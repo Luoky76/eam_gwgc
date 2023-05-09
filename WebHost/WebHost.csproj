@@ -8,8 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Remove="wwwroot\demo\**;wwwroot\ui\**" />
-		<None Include="wwwroot\demo\**;wwwroot\ui\**" />
 		<Content Remove="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
 		<None Include="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
 		<Content Remove="wwwroot\lib\jquery\jquery.all.js" />
@@ -41,7 +39,6 @@
 	<ItemGroup>
 		<PluginPublishProject Include="..\Gksyb.Server\Gksyb.Server.csproj" />
 		<PluginPublishProject Include="..\Gksyb.Workflow\Gksyb.Workflow.csproj" />
-		<PluginPublishProject Include="..\XXX.Business\XXX.Business.csproj" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
