@@ -1,0 +1,397 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>任务调度</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/third-party/broadcast/broadcast.js"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            detailWidth: 800,
+            detailHeight: 700,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "任务名称", name: "_search_TASK_NAME", dbname: "TASK_NAME", newline: false, type: "text", options: {} },
+                            { display: "任务组", name: "_search_TASK_GROUP", dbname: "TASK_GROUP", newline: false, type: "text", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "任务名称", name: "TASK_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "任务组", name: "TASK_GROUP", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "任务描述", name: "TASK_DESC", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "间隔(Cron)", name: "TASK_CRON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "下次执行时间", name: "NextFireTime", width: 100, type: "date" },
+                            { display: "状态", name: "TASK_STATUS", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "服务器IP", name: "TASK_RUNIP", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "调用方法", name: "TASK_INVOKE", width: 100, type: "text", editor: { type: 'text' } },
+                            /*{ display: "数据", name: "TASK_DATA", width: 100, type: "text", editor: { type: 'text' } },*/
+                            { display: "视图", name: "TASK_VIEW", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "执行时间", name: "TASK_LAST_RUNDATE", width: 100, type: "date" },
+                            { display: "耗时(毫秒)", name: "TASK_ELAPSED_TIME", width: 100, type: "int" },
+                            { display: "执行状态", name: "TASK_RUNSTATUS", width: 100, type: "text" },
+                            { display: "执行IP", name: "TASK_LAST_RUNIP", width: 100, type: "text" },
+                            { display: "执行结果", name: "TASK_LAST_RESULT", width: 100, type: "text" }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'task/list',
+                    dateFormat: "yyyy-MM-dd hh:mm:ss",
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'TASK_NAME',
+                    sortOrder: 'asc',
+                    width: '100%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: false,
+                    clickToEdit: false,
+                    usePager: false,
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows;
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDID = row.ID;
+                                row.TASK_DATA = encrypt(row.TASK_DATA);
+                                row.TASK_ERROR_REGEX = encrypt(row.TASK_ERROR_REGEX);
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        if (rowdata && rowdata.TASK_STATUS && rowdata.TASK_STATUS === "停止") {
+                            return "style='color:red;'";
+                        }
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "excute":
+                            me.excute();
+                            break;
+                        case "start":
+                            me.start();
+                            break;
+                        case "stop":
+                            me.stop();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid.set({
+                    toolbar: {
+                        "items": [
+                            { id: "add", text: '新建任务', cls: "reviseBtn commonBtn", click: me.toolbarBtnItemClick, icon: "fa fa-plus" },
+                            { id: "excute", text: '立即执行', cls: "confirmBtn commonBtn", click: me.toolbarBtnItemClick, icon: "fa fa-caret-square-o-right" },
+                            { id: "start", text: '启用任务', cls: "reviseBtn commonBtn", click: me.toolbarBtnItemClick, icon: "fa fa-caret-square-o-right" },
+                            { id: "stop", text: '停止任务', cls: "cancelBtn commonBtn", click: me.toolbarBtnItemClick, icon: "fa fa-caret-square-o-right" },
+                            { id: "modify", text: '修改任务', cls: "reviseBtn commonBtn", click: me.toolbarBtnItemClick, icon: "fa fa-edit" },
+                            { id: "delete", text: '删除任务', cls: "deleteBtn commonBtn", click: me.toolbarBtnItemClick, icon: "fa fa-times" }
+                        ]
+                    }
+                });
+            },
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '新建任务',
+                    url: "TaskDetail.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me)
+                });
+            },
+            modify: function (rowid) { //修改
+                var me = this;
+                var selected = null;
+                if (rowid) selected = me.grid.getRow(rowid);
+                else selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var sid = selected.ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '修改任务',
+                        url: "TaskDetail.html?sid=" + sid,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me)
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'task/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            excute: function () { //执行
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定执行吗?', function (confirm) {
+                            if (confirm) {
+                                LG.ajax({
+                                    jsToken: true,
+                                    url: 'task/excute',
+                                    loading: '正在执行中...',
+                                    data: selected,
+                                    success: function () {
+                                        LG.showSuccess('执行成功', function () {
+                                            me.reload();
+                                        });
+                                    },
+                                    error: function (message) {
+                                        LG.showError(message);
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            start: function () { //启用
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定启用吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, l = selected.length; i < l; i++) {
+                                    var row = selected[i];
+                                    me.grid._updateHandle(row);
+                                    row.TASK_STATUS = "正常";
+                                }
+                                me.grid.isDataChanged = true;
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            stop: function () { //停止
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定停止吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, l = selected.length; i < l; i++) {
+                                    var row = selected[i];
+                                    me.grid._updateHandle(row);
+                                    row.TASK_STATUS = "停止";
+                                }
+                                me.grid.isDataChanged = true;
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.buttons[0].click(); //查询
+            },
+            init: function () {
+                var me = this;
+                me.setConfig();
+                me.setGrid();
+                me.setForm();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

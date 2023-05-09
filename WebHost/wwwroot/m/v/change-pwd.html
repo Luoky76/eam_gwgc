@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <title>微平台</title>
+    <link rel="stylesheet" href="../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="view view-main">
+            <div class="page-content login-screen-content">
+                <div class="login-screen-title">微平台</div>
+                <form id="my-form">
+                    <div class="list no-hairlines-md">
+                        <ul>
+                            <li class="item-content item-input">
+                                <div class="item-media">
+                                    <i class="f7-icons">person</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title item-floating-label">账号</div>
+                                    <div class="item-input-wrap">
+                                        <input type="text" id="username" name="username" placeholder="请输入账号" required validate trim />
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item-content item-input">
+                                <div class="item-media">
+                                    <i class="f7-icons">person</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title item-floating-label">旧密码</div>
+                                    <div class="item-input-wrap">
+                                        <input type="password" id="oldpassword" name="oldpassword" placeholder="请输入旧密码" required validate trim />
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item-content item-input">
+                                <div class="item-media">
+                                    <i class="f7-icons">lock</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title item-floating-label">新密码</div>
+                                    <div class="item-input-wrap">
+                                        <input type="password" id="newpassword" name="newpassword" placeholder="请输入新密码" required validate trim />
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="item-content item-input">
+                                <div class="item-media">
+                                    <i class="f7-icons">lock</i>
+                                </div>
+                                <div class="item-inner">
+                                    <div class="item-title item-floating-label">新密码</div>
+                                    <div class="item-input-wrap">
+                                        <input type="password" id="againpassword" name="againpassword" placeholder="请再次输入新密码" required validate trim />
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+                <div class="block">
+                    <p class="row">
+                        <button id="btnLogin" name="btnLogin" type="button" class="col button button-raised button-fill">确定</button>
+                    </p>
+                </div>
+                <div class="block">
+                    <p class="row">
+                        <div class="block-footer">技术支持:厦门自贸试验区电子口岸有限公司</div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            //提交
+            submit: function () {
+                var form = $$("#my-form");
+                if (!app.methods.validateInputs(form)) {
+                    return;
+                }
+                var formData = app.form.convertToData(form);
+                if (formData.newpassword != formData.againpassword) {
+                    app.dialog.error('两次密码输入不一致。');
+                    return;
+                }
+                formData.username = encrypt(formData.username);
+                formData.oldpassword = encrypt(formData.oldpassword);
+                formData.newpassword = encrypt(formData.newpassword);
+                app.ajax({
+                    noGlobal: true,
+                    url: 'Auth/ChangePassword',
+                    data: formData,
+                    success: function (data) {
+                        app.dialog.alert('密码修改成功', function () {
+                            var fromUrl = getQueryStringByName("FromUrl");
+                            if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
+                            fromUrl = fromUrl || "index.html";
+                            location.href = fromUrl;
+                        });
+                    },
+                    beforeSend: function (jqXHR, options) {
+                        app.request({
+                            noGlobal: true,
+                            async: false,
+                            url: "Auth/LoginToken",
+                            type: 'post',
+                            dataType: "text",
+                            success: function (result) {
+                                eval(result);
+                            }
+                        });
+                    }
+                });
+            },
+            //事件绑定
+            eventBind: function () {
+                var me = this;
+                $$("#btnLogin").off("click").click(function () {
+                    me.submit();
+                });
+                $$("#username").keydown(function (e) {
+                    if (e.keyCode == 13) {
+                        e.preventDefault();
+                        $$("#oldpassword").focus();
+                    }
+                });
+                $$("#oldpassword").keydown(function (e) {
+                    if (e.keyCode == 13) {
+                        e.preventDefault();
+                        $$("#newpassword").focus();
+                    }
+                });
+                $$("#newpassword").keydown(function (e) {
+                    if (e.keyCode == 13) {
+                        e.preventDefault();
+                        $$("#againpassword").focus();
+                    }
+                });
+            },
+            //初始化
+            init: function () {
+                var me = this;
+                me.eventBind();
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

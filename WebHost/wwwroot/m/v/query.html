@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>通用查询</title>
+    <link rel="stylesheet" href="../dist/Framework7/mobile.css" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="driver-binding">
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <a href='javascript:app.methods.toUrl("/")' class="link external">
+                            <i class="f7-icons">home</i>
+                            <span class="ios-only">主页</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="page-content">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../dist/Framework7/mobile.all.js"></script>
+    <script type="text/javascript" src="../dist/Framework7/app.js?v=1"></script>
+    <script id="scriptBlock" type="text/javascript">
+        'use strict';
+        var business = {
+            htmlContent: "",
+            dataDom: null,
+            view: null,
+            setData: function (data) {
+                var me = this;
+                var type = Object.prototype.toString.apply(data);
+                if (type === '[object Object]') {
+                    data = [data];
+                }
+                me.dataDom.html("");
+                var html = [];
+                for (var i = 0, l = data.length; i < l; i++) {
+                    var model = data[i];
+                    var $dom = $$(me.htmlContent);
+                    $dom.find('[dataName]').each(function (i, ele) {
+                        $$(this).html((model[$$(this).attr("dataName")] || ""));
+                    });
+                    html.push($dom.parent().html());
+                }
+                me.dataDom.html(html.join(''));
+                var $dataTable = me.dataDom.parents(".data-table");
+                if ($dataTable.hasClass("data-table-collapsible")) {
+                    var dataTable = app.dataTable.get($dataTable);
+                    if (!dataTable) dataTable = app.dataTable.create({
+                        "el": $dataTable
+                    });
+                    dataTable.setCollapsibleLabels();
+                } else {
+                    app.methods.frozenTable(me.dataDom.parents("table"));
+                }
+            },
+            buildDataArea: function (fields) {
+                var $table = $$(".page-current .page-content .data-table").find("table");
+                var theads = ['<tr>'];
+                var tbodys = ['<tr>'];
+                for (var i = 0, l = fields.length; i < l; i++) {
+                    var item = fields[i];
+                    var cls = (item.Value === "int" || item.Value === "float") ? "numeric-cell" : "label-cell";
+                    cls += (item.Key.indexOf("隐藏") >= 0) ? " display-none" : "";
+                    theads.push('<th class="' + cls + '">' + item.Key + '</th>');
+                    tbodys.push('<td class="' + cls + '"><span dataname="' + item.Key + '"></span></td>');
+                }
+                theads.push('</tr>');
+                tbodys.push('</tr>');
+                if (!$table.find("thead").html()) {
+                    var theadHtml = theads.join('');
+                    if ($table.find("thead").length < 1) {
+                        theadHtml = '<table><thead>' + theadHtml + '</thead></table>'
+                        $(theadHtml).find("thead").prependTo($table);
+                    }
+                    else {
+                        $table.find("thead").html(theadHtml);
+                    }
+                }
+                if (!$table.find("tbody").html()) {
+                    var tbodyHtml = tbodys.join('');
+                    if ($table.find("tbody").length < 1) {
+                        tbodyHtml = '<table><tbody class="data-area">' + tbodyHtml + '</tbody></table>';
+                        $(tbodyHtml).find("tbody").appendTo($table);
+                    }
+                    else {
+                        $table.find("tbody").html(tbodyHtml);
+                    }
+                }
+            },
+            search: function () {
+                var me = this;
+                if (!app.methods.validateInputs(".page-current #my-form")) {
+                    return;
+                }
+                var formData = app.form.convertToData(".page-current #my-form");
+                if (me.limit) {
+                    if (me.limit(formData) === false) return false;
+                }
+                me.loadData(formData);
+            },
+            loadData: function (formData) {
+                var me = this;
+                app.ajax({
+                    url: 'common/jsonvalue',
+                    data: {
+                        ViewName: me.view,
+                        Param: formData
+                    },
+                    success: function (data) {
+                        me.setData(data);
+                    }
+                });
+            },
+            loadConfig: function () {
+                var me = this;
+                app.ajax({
+                    url: 'common/queryconfig',
+                    async: false,
+                    data: {
+                        viewName: me.view
+                    },
+                    success: function (data) {
+                        var html = data.GRID || "";
+                        var fields = data.Fields || [];
+                        if (html.indexOf('data-table') < 0) {
+                            html += '<div class="card data-table data-table-collapsible"><div class="card-content"><table><thead></thead><tbody class="data-area"></tbody></table></div></div>';
+                        }
+                        $$(".page-current .page-content").html(html);
+                        me.buildDataArea(fields);
+                        me.dataDom = $$(".page-current .data-area");
+                        me.htmlContent = me.dataDom.html();
+                        var $thead = me.dataDom.parents("table").find("thead");
+                        if ($thead.length && !$thead.html().trim()) {
+                            var htmlArray = [];
+                            htmlArray.push("<tr>");
+                            me.dataDom.find("tbody tr").eq(0).find("td").each(function (i, ele) {
+                                var html = this.outerHTML.replace(/<td /, "<th ").replace(/<\/td>/,
+                                    "</th>");
+                                var $o = $(this).find("[dataName]");
+                                if ($o.length) {
+                                    htmlArray.push($(html).html($o.attr("dataName"))[0].outerHTML);
+                                } else {
+                                    htmlArray.push(html);
+                                }
+                            });
+                            htmlArray.push("</tr>");
+                            $thead.html(htmlArray.join(''));
+                        }
+                        me.dataDom.html("");
+                        if (!data.FORM) {
+                            me.search();
+                            return;
+                        }
+                        eval(data.FORM);
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                var pageParm = app.utils.parseUrlQuery(page.router.currentRoute.route.url);
+                me.view = getQueryStringByName("v") || pageParm.v || page.router.currentRoute.name;
+                if (!me.view) {
+                    app.dialog.error("请传递参数");
+                    return;
+                }
+                me.loadConfig();
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

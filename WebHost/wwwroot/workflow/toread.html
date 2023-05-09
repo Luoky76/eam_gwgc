@@ -1,0 +1,273 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>知会我的</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dataStatus: [{ ID: 0, TEXT: "待阅" }, { ID: 1, TEXT: "已阅" }],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "通知时间从", name: "sdate", dbname: "StartDate", newline: false, upper: true, type: "date", op: "greaterorequal", options: { format: "yyyy-MM-dd hh:mm" } },
+                            { display: "到", name: "edate", dbname: "StartDate", newline: false, upper: true, type: "date", op: "lessorequal", options: { format: "yyyy-MM-dd hh:mm" } },
+                            { display: "流程标题", name: "_search_Title", dbname: "Title", newline: false, upper: true, type: "text", options: {} },
+                            { display: "状态", name: "_search_NodeStatus", dbname: "NodeStatus", width:80, newline: false, upper: true, type: "select", options: { data: function () { return me.dataStatus; } } }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "流程标题", name: "Title", type: "text" },
+                            {
+                                display: "状态", name: "NodeStatus", type: "text", minWidth: 100, render: function (rowdata, _rowindex, value) {
+                                    var text = "待阅", cls = "";
+                                    if (value === 1) {
+                                        text = "已阅";
+                                        cls = "l-tag-success";
+                                    }
+                                    return '<div class="l-tag ' + cls + '">' + text + '</div>';
+                                }
+                            },
+                            { display: "通知时间", name: "StartDate", type: "date" },
+                            { display: "通知人", name: "Creator", type: "text" },
+                            {
+                                display: "操作", name: "Action", type: "text", minWidth: 100, render: function (rowdata, _rowindex, value) {
+                                    var htmls = [];
+                                    if (rowdata.NodeStatus !== 1) htmls.push('<a class="l-grid-row-button" href="javascript:business.read()"><i class="fa fa-eye" aria-hidden="true" /></i>已阅</a>');
+                                    htmls.push('<a class="l-grid-row-button" href="javascript:business.handle()"><i class="fa fa-search" aria-hidden="true" /></i>详情</a>');
+                                    return htmls.join('');
+
+                                    return '<a class="l-grid-row-button" href="javascript:business.handle()"><i class="fa fa-search" aria-hidden="true" /></i>详情</a>';
+                                }
+                            }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    dateFormat: 'yyyy-MM-dd hh:mm',
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'workflow/query/toread',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'CreateDate',
+                    sortOrder: 'desc',
+                    width: '100%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: false,
+                    clickToEdit: true
+                });
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "read":
+                            me.read();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                };
+                me.grid.set({
+                    toolbar: {
+                        "items": [
+                            { id: "read", text: '全部标记成已阅', click: me.toolbarBtnItemClick, icon: "fa fa-eye" }
+                        ]
+                    }
+                });
+            },
+            addTab: function (text, url, data) {
+                var me = this;
+                if (parent.f_addTab) {
+                    parent.f_addTab(undefined, text, gksybConfigs.urlBase + "workflow/" + url);
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 800,
+                    allowClose: true,
+                    title: text,
+                    url: url,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    data: data,
+                    onClosed: me.reload.bind(me)
+                });
+            },
+            readAll: function () {
+                var me = this;
+                LG.ajax({
+                    jsToken: true,
+                    url: 'workflow/task/readAll',
+                    loading: '正在保存中...',
+                    success: function () {
+                        LG.showSuccess('保存成功', function () {
+                            me.reload();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            read: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    me.readAll();
+                    return;
+                }
+                var ids = [];
+                for (var i = 0, l = rows.length; i < l; i++) {
+                    ids.push(rows[i].TaskId);
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'workflow/task/read',
+                    loading: '正在保存中...',
+                    data: ids,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () {
+                            me.reload();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            handle: function () { //处理
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                me.addTab(selected.Title, 'flow-detail.html?nid=' + selected.Id + '&isView=1');
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                        g.setData({ sdate: LG.addDays(new Date(), -180), edate: LG.truncDate(LG.addDays(new Date(), 1), "")});
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+            window.onActive = function () {
+                business.reload();
+            };
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>UI</title>
+    <script src="../../../../lib/LGboot.js" type="text/javascript"></script>
+    <style>
+        body {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="groupTitle"><span>1、可输入多选下拉  nullText: "空值",cancelable: true,isMultiSelect:true,autocomplete: true</span></div>
+    <!--<input id="i1" />-->
+    <select name="select2" id="select2">
+        <option value="opt1">Big Option test line with more wordssss</option>
+        <option value="opt2" selected>Option 2</option>
+        <option value="opt3">Option 3</option>
+        <option value="opt4">Option 4</option>
+        <option value="opt5">Option 5</option>
+        <option value="opt6">Option 6</option>
+        <option value="opt7">Option 7</option>
+        <option value="opt8">Option 8</option>
+    </select>
+    <div class="groupTitle">
+        <span>
+            2、多选下拉表单（多列） nullText: "空值",
+            resize: true,
+            data: dataConsize,
+            isMultiSelect: true,
+            width: 300,
+            autocomplete: false,
+            columns: [
+            { header: 'ID', name: 'ID', width: 20 },
+            { header: '名字', name: 'TEXT' }
+            ],
+            cancelable: true
+        </span>
+    </div>
+    <input id="i2" />
+    <div class="groupTitle">
+        <span>
+            3、可输入多选下拉框（首字母拼音）
+            isMultiSelect: true,
+            cancelable: true,
+            pingyinable: true,
+            autocomplete: true
+        </span>
+    </div>
+    <input id="i3" />
+    <div class="groupTitle">
+        <span>
+            4、可输入下拉框（带事件） selectBoxHeight: 100, cancelable: true,
+            pingyinable: true,
+            autocomplete: true
+        </span>
+    </div>
+    <input id="i4" />
+    <div class="groupTitle">
+        <span>
+            5、下拉树 value:6,
+            selectBoxWidth: 600,
+            selectBoxHeight: 300,  treeLeafOnly: true,
+            tree: {
+            data: dataTree,
+            parentIDFieldName: 'PID',
+            slide: false,
+            checkbox: false,
+            parentIcon: true,
+            childIcon: true,
+            iconClsFieldName: "icon"
+            }
+        </span>
+    </div>
+    <input id="i5" />
+    <div class="groupTitle">
+        <span>
+            6、下拉表格
+        </span>
+    </div>
+    <input id="i6" />
+    <div class="groupTitle"><span>7、下拉新页面选取 </span></div>
+    <input id="i7" />
+    <div class="groupTitle"><span>8、不可用 disabled:true </span></div>
+    <input id="i8" />
+    <div class="groupTitle"><span>9、只读 readonly:true </span></div>
+    <input id="i9" />
+    <p id="p1">等待触发</p>
+    <div class="groupTitle"><span>10、值改变事件 onChangeValue:function(input,value,g){} </span></div>
+    <input id="i10" />
+    <p id="p2">等待触发</p>
+    <script>
+        var dataBigArray = [];
+        for (var i = 0; i < 100000; i++) {
+            dataBigArray.push({ ID: "值" + i, TEXT: "显示" + i });
+        }
+        var dataConsize = [{ ID: "PL", TEXT: "PL平板箱" }, { ID: "GP", TEXT: "GP普通箱" }, { ID: "RF", TEXT: "RF冷藏箱" }, { ID: "RH", TEXT: "RH超高冷藏箱" }, { ID: "OH", TEXT: "OH开顶式超高箱" }
+            , { ID: "OT", TEXT: "OT开顶箱" }, { ID: "TK", TEXT: "TK油罐箱" }, { ID: "HC", TEXT: "HC超高箱" }, { ID: "FR", TEXT: "FR框架箱" }
+            , { ID: "A1", TEXT: "A1开顶箱" }, { ID: "A2", TEXT: "A2开顶箱" }, { ID: "A3", TEXT: "A3开顶箱" }, { ID: "A4", TEXT: "A4开顶箱" }
+            , { ID: "A5", TEXT: "A5开顶箱" }, { ID: "A6", TEXT: "A6开顶箱" }, { ID: "A7", TEXT: "A7开顶箱" }, { ID: "A8", TEXT: "A8开顶箱" }];
+        var dataTree = [
+            { ID: 1, PID: 0, TEXT: '1', icon: "fa fa-bug" },
+            { ID: 2, PID: 1, TEXT: '1.1', icon: "fa fa-bus" },
+            { ID: 4, PID: 2, TEXT: '1.1.2', icon: "fa fa-car" },
+            { ID: 5, PID: 2, TEXT: '1.1.2', icon: "fa fa-cog fa-spin" },
+            { ID: 10, PID: 8, TEXT: 'wefwfwfe', icon: "fa fa-cog fa-spin" },
+            { ID: 11, PID: 8, TEXT: 'wgegwgwg', icon: "fa fa-cog fa-spin" },
+            { ID: 12, PID: 8, TEXT: 'gwegwg', icon: "fa fa-cog fa-spin" },
+            { ID: 6, PID: 2, TEXT: '1.1.3', icon: "fa fa-cog fa-spin" },
+            { ID: 7, PID: 2, TEXT: '1.1.4', icon: "fa fa-cog fa-spin" },
+            { ID: 8, PID: 7, TEXT: '1.1.5', icon: "fa fa-cog fa-spin" },
+            { ID: 9, PID: 7, TEXT: '1.1.6', icon: "fa fa-cog fa-spin" }
+        ];
+        //基本文本框
+        var $i1 = $("#select2").ligerComboBox({
+            absolute: false,
+            nullText: "空值",
+            cancelable: true,
+            isMultiSelect: true,
+            autocomplete: true,
+            addRowButtonClick: function () {
+
+            }
+        });
+        $i1.setValue("opt2");
+
+        $("#i2").ligerComboBox({
+            absolute: true,
+            nullText: "空值",
+            resize: true,
+            selectBoxWidth: 400,
+            data: dataBigArray,
+            isMultiSelect: true,
+            width: 200,
+            height: 100,
+            autocomplete: false,
+            columns: [
+                { header: 'ID', name: 'ID', width: 100 },
+                { header: '名字', name: 'TEXT' }
+            ],
+            cancelable: true
+        });
+
+        $("#i3").ligerComboBox({
+            data: dataConsize,
+            isMultiSelect: true,
+            cancelable: true,
+            pingyinable: true,
+            autocomplete: true,
+            onChangeValue: function (input, value, g) {
+                console.log("123" + value);
+            }
+        });
+
+        var $i4 = $("#i4").ligerComboBox({
+            //data: dataConsize,
+            selectBoxHeight: 100,
+            cancelable: true,
+            pingyinable: true,
+            autocomplete: true,
+            url: "ui/data/data.json",
+            ajaxType: "get",
+            parms: function () {
+                return {};
+            },
+            onBeforeSelect: function (newvalue) {
+                alert('要选择的是' + newvalue);
+                return confirm('onBeforeSelect事件可以阻止选择，是否继续');
+            },
+            onSelected: function (newvalue) {
+                alert('选择的是' + newvalue);
+            }
+        });
+        $i4.addItem({ ID: 0, TEXT: "新增0" });
+
+        var $i5 = $("#i5").ligerComboBox({
+            value: 6,
+            selectBoxWidth: 600,
+            selectBoxHeight: 300, treeLeafOnly: true,
+            tree: {
+                data: dataTree,
+                parentIDFieldName: 'PID',
+                slide: false,
+                checkbox: true,
+                parentIcon: true,
+                childIcon: true,
+                iconClsFieldName: "icon"
+            }
+        });
+        $i5.setValue("8");
+
+        var $i6 = $("#i6").ligerComboBox({
+            alwayShowInTop: true,
+            width: 250, slide: true,
+            selectBoxWidth: 800,
+            selectBoxHeight: 200,
+            valueField: '箱号', textField: '箱号',
+            delayLoadGrid: true,
+            hideGridOnLoseFocus: false,
+            resize: true,
+            grid: {
+                columns: [
+                    { display: "箱号", name: "箱号", width: 150, type: "text", align: "center", validate: { required: true }, editor: { upper: true, type: 'text' } },
+                    { display: "进出口", name: "进出口", width: 150, type: "text", align: "center" },
+                    { display: "船名/航次", name: "船名/航次", width: 150, type: "text", align: "center" },
+                    { display: "提单号", name: "提单号", width: 150, type: "text", align: "center" }
+                ], switchPageSizeApplyComboBox: false, delayLoad: false,
+                method: "get",
+                url: 'ui/data/gridData.json',
+                autoWidth: true,
+                //usePager: false,
+                checkbox: true
+            },
+            condition: { fields: [{ name: '箱号', label: '客户', width: 180, type: 'text' }] }
+        });
+
+        var $i7 = $("#i7").ligerComboBox({
+            onBeforeOpen: function () {
+                var d = $.ligerDialog.prompt("请输入值", "我是下一个prompt的标题栏", function (isOk, val) {
+                    if (isOk) {
+                        $i7.setText(val);
+                    }
+                });
+                return false;
+            }, width: 300, canDifferent: true
+        });
+
+        var $i8 = $("#i8").ligerComboBox({
+            data: dataConsize,
+            selectBoxHeight: 100,
+            cancelable: true,
+            pingyinable: true,
+            autocomplete: true,
+            value: "RF",
+            disabled: true
+        });
+
+        var $i9 = $("#i9").ligerComboBox({
+            data: dataConsize,
+            selectBoxHeight: 100,
+            cancelable: true,
+            pingyinable: true,
+            autocomplete: true,
+            value: "RF",
+            readonly: true
+        });
+        var i = 0;
+        var $i10 = $("#i10").ligerComboBox({
+            data: dataBigArray,
+            alwayShowInTop:true,
+            selectBoxHeight: 100,
+            cancelable: true,
+            pingyinable: true,
+            autocomplete: true,
+            value: "值3",
+            initTrigger: true,
+            onChangeValue: function (input, value, g) {
+                $("#p2").html((++i) + "事件onChangeValue被触发,参数为{input:输入框,value:" + value + ",g:liger对象}");
+                if (value) {
+                    value = value;
+                }
+            }
+        });
+        //$i10.setValue("值10");
+    </script>
+</body>
+</html>

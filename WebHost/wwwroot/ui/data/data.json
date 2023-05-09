@@ -1,0 +1,17 @@
+﻿[
+  {
+    "ID": "XM",
+    "TEXT": "厦门",
+    "VALUE": "XIAMEN"
+  },
+  {
+    "ID": "QZ",
+    "TEXT": "泉州",
+    "VALUE": "QIANZHOU"
+  },
+  {
+    "ID": "ZZ",
+    "TEXT": "漳州",
+    "VALUE": "ZHANGZHOU"
+  }
+]

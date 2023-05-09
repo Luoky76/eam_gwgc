@@ -1,0 +1,324 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>通用表格穿梭框</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .transfer-operation {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form id="mainform">
+        <div id="layout-panel">
+            <div position="left">
+                <div id="maingrid" style="float: left">
+                </div>
+            </div>
+            <div position="center">
+                <div id="layout-panel-child">
+                    <div position="left">
+                        <div class="transfer-operation">
+                            <button class="transfer-right"></button>
+                            <br />
+                            <button class="transfer-left"></button>
+                        </div>
+                    </div>
+                    <div position="center">
+                        <div id="maingrid2" style="float: right">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            isFirst: true,
+            initValues: function () {
+                var me = this;
+                var values = [];
+                if (me.isFirst) {
+                    values = $.isArray(me.data.values) ? me.data.values : (me.data.values || "").split(me.data.split);
+                }
+                else {
+                    var p = me.grid2.options;
+                    var rows = me.grid2.data[p.root];
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var row = rows[i];
+                        values.push(row[p.rowKey]);
+                    }
+                }
+                me.isFirst = false;
+                me.values = "@#" + values.removeNull().join("@#") + "@#";
+            },
+            setGrid: function () {
+                var me = this;
+                var options = {
+                    inWindow: false,
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    rowKey: "ID",
+                    sortName: 'TEXT',
+                    sortOrder: 'asc',
+                    width: '100%',
+                    height: '100%',
+                    checkbox: true,
+                    allowUnSelectRow: true,
+                    enabledEdit: false,
+                    clickToEdit: false,
+                    columns: [
+                        { display: me.data.display || "类型", name: "TEXT", type: "text" }
+                    ],
+                    rowAttrRender: function () {
+                        return "style='user-select:none;'";
+                    },
+                    onCheckAllRow: function () {
+                        me.setButton();
+                    },
+                    onCheckRow: function () {
+                        me.setButton();
+                    },
+                    onDblClickRow: function (data, id, row) {
+                        me.transferInner(this, [data], this === me.grid ? me.grid2 : me.grid);
+                    },
+                }
+                me.setGrid2(options);
+                options = $.extend(options, {
+                    url: me.data.url,
+                    onLoadSuccess: function (data) {
+                        var g = this, p = g.options;
+                        var rows = data[p.root] || [];
+                        data[p.record] = null;
+                        if (rows.length < 1) return;
+                        me.initValues();
+                        var grid2Rows = [];
+                        for (var i = rows.length - 1; i >= 0; i--) {
+                            var row = rows[i];
+                            var key = "@#" + castString(row[p.rowKey]) + "@#";
+                            if (me.values.indexOf(key) >= 0) {
+                                grid2Rows.push(row);
+                                rows.splice(i, 1);
+                            }
+                        }
+                        var grid2Data = {};
+                        grid2Data[me.grid2.options.root] = grid2Rows;
+                        me.grid2._setData(grid2Data);
+                    }
+                }, me.data.options);
+                options.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid(options);
+            },
+            setGrid2: function (p) {
+                var me = this;
+                var options = $.extend(true, {}, p, me.data.options, { url: null, data: null }, (me.data.options || {}).grid2);
+                options.columns.removeNull();
+                me.grid2 = $("#maingrid2").ligerGrid(options);
+                delete me.data.options.grid2;
+            },
+            setButton: function () {
+                var me = this;
+                me.rightButton._setDisabled(me.grid.getSelectedRows().length > 0 ? false : true);
+                me.leftButton._setDisabled(me.grid2.getSelectedRows().length > 0 ? false : true);
+            },
+            transfer: function (grid1, grid2) {
+                var me = this;
+                me.transferInner(grid1, grid1.getSelectedRows(), grid2);
+            },
+            transferInner: function (grid1, rows, grid2) {
+                var me = this;
+                rows = rows || [];
+                if (rows.length < 1) return;
+                for (var i = rows.length - 1; i >= 0; i--) {
+                    var row = rows[i];
+                    grid1._removeData(row);
+                    var newRow = grid1.formatRecord($.extend(true, {}, row), true);
+                    grid2._addData(newRow);
+                }
+                grid1.isDataChanged = false;
+                grid2.isDataChanged = false;
+                grid2.changeSort(grid2.options.sortName, grid2.options.sortOrder);
+                me.setButton();
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            setForm: function () {
+                var me = this;
+                var $formsearch = $("#formsearch")
+                var options = {
+                    fields: me.data.fields || [
+                        { display: me.data.display || "类型", name: "TEXT", width: 100, type: "text" }
+                    ],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                            me.grid.options.dataType = "local";
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                };
+                options.fields.removeNull();
+                if (options.fields.length > 0) $("#mainsearch").show();
+                me.searchForm = $formsearch.ligerForm(options);
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setFormButtons: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                buttons.push({ text: '确定', onclick: me.save.bind(me) });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            save: function () {
+                var me = this;
+                if (me.grid2.endEdit() === false) return;
+                var rows = me.grid2.data[me.grid2.options.root] || [];
+                var values = [];
+                for (var i = 0, l = rows.length; i < l; i++) {
+                    var row = rows[i];
+                    values.push(row[me.grid2.options.rowKey]);
+                }
+                if (me.data.callback) {
+                    me.data.callback(values, rows);
+                }
+                me.close();
+            },
+            initButton: function () {
+                var me = this;
+                me.leftButton = $(".transfer-left").ligerButton({
+                    icon: "fa fa-chevron-left",
+                    type: "primary icon-only small",
+                    disabled: true,
+                    onClick: function () {
+                        me.transfer(me.grid2, me.grid);
+                    }
+                });
+                me.rightButton = $(".transfer-right").ligerButton({
+                    icon: "fa fa-chevron-right",
+                    type: "primary icon-only small",
+                    disabled: true,
+                    onClick: function () {
+                        me.transfer(me.grid, me.grid2);
+                    }
+                });
+            },
+            initLayout: function () {
+                var me = this;
+                me.data.leftWidth = me.data.leftWidth || "45%";
+                $("#layout-panel").ligerLayout({
+                    leftWidth: me.data.leftWidth,
+                    heightDiff: -45,
+                    border: false,
+                    space: 0,
+                    allowCenterResize: false,
+                    allowLeftResize: false
+                });
+                $("#layout-panel-child").ligerLayout({
+                    leftWidth: 50,
+                    heightDiff: -50,
+                    border: false,
+                    space: 0,
+                    allowCenterResize: false,
+                    allowLeftResize: false,
+                    onResize: function () {
+                        var $operation = $(".transfer-operation");
+                        $operation.css({
+                            "margin-top": (($operation.parent().height() - $operation.height()) / 2 + this.options.heightDiff) + "px"
+                        });
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialog._setTitle(me.dialog.options.title + '<span style="color:red;">【双击可加入】</span>');
+                    me.data = frameElement.dialog.get('data') || {};
+                    //me.data = {
+                    //    url: 'popup/users',
+                    //    display: "列名",//默认值中的列名
+                    //    values: "123,456,789",//[123,456,789]
+                    //    //rowKey: "ID",
+                    //    //sortName: 'TEXT',
+                    //    //split:",",
+                    //    options: {
+                    //        sortName: 'Name', rowKey: "",
+                    //        columns: [
+                    //            { display: "表格列", name: "column", type: "text" }//默认TEXT
+                    //        ]
+                    //    },
+                    //    //fields: [
+                    //    //    { display: "查询条件", name: "name", type: "text" }//默认TEXT
+                    //    //],
+                    //    callback: function (values, rows) {
+                    //    }
+                    //};
+                }
+                if (!me.data) {
+                    LG.showError("参数不完整");
+                    return;
+                }
+                me.data.split = me.data.split || ",";
+                me.setForm();
+                me.setFormButtons();
+                me.initLayout();
+                me.initButton();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>广播</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        select,
+        button {
+            cursor: pointer;
+        }
+
+        .box {
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 4px;
+            border-style: solid;
+            border-width: 1px;
+            border-color: black;
+            min-height: 50px;
+            width: 600px;
+            margin-top: 50px;
+            padding: 10px;
+        }
+
+        @media screen and (max-width: 700px) {
+            .box {
+                width: 90%;
+            }
+        }
+
+        input {
+            width: 300px;
+            padding: 2px;
+            font-size: 20px;
+        }
+
+        button {
+            font-size: 20px;
+        }
+
+        #messages {
+            width: 100%;
+            min-height: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h2>广播<span style="color:red" id="Leader"></span></h2>
+        <p>
+            广播测试 开多个页签进行测试
+        </p>
+        <h2 id="title"></h2>
+        <button id="close">关闭</button>
+        <div id="messages"></div>
+    </div>
+    <script src="../../lib/jquery/jquery.js"></script>
+    <script src="../../lib/js/common.js"></script>
+    <!--<script src="../../lib/third-party/broadcast/signalr.js"></script>
+    <script src="../../lib/third-party/broadcast/broadcast-browser.js"></script>-->
+    <script src="../../lib/third-party/broadcast/broadcast.js"></script>
+    <script>
+        "use strict";
+        var messagesBox = document.getElementById('messages');
+        function addTextToMessageBox(text) {
+            var textnode = document.createTextNode(text);
+            var lineBreak = document.createElement('br');
+            messagesBox.appendChild(textnode);
+            messagesBox.appendChild(lineBreak);
+        }
+        var channel = Broadcast.getInstance();//创建广播通道
+        channel.onLeader = function () {
+            document.getElementById("title").innerHTML = "我是主节点，我同signal交互";
+        };
+        var now = new Date();
+        setInterval(function () {
+            channel.postMessage({ Action: "Time", Data: now });
+            channel.postMessage({ Action: "DemoHub/Time", Data: now });
+            channel.postMessage({ Action: "DemoHub/StringTest", Data: "123我是中文abc" });
+            channel.postMessage({ Action: "DemoHub/ObjectTest", Data: { USERID: 20, LOGINNAME: "我是中文", LASTLOGINTIME: now } });
+            channel.postMessage({ Action: "DemoHub/ObjectTest2", Data: { USERID: 20, LOGINNAME: "我是中文", LASTLOGINTIME: now } });
+        }, 3000);
+        channel.onTime = function (data, type) {
+            type = type || "";
+            console.dir('接收: ' + type + data);
+            addTextToMessageBox('接收: ' + type + data);
+        }
+        document.getElementById("close").onclick = function () {
+            channel.close();
+            document.getElementById("close").disabled = true;
+            document.getElementById("title").innerHTML = "连接已关闭";
+        };
+    </script>
+</body>
+</html>

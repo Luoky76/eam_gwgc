@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>UI</title>
+    <script src="../../../../lib/LGboot.js" type="text/javascript"></script>
+    <style>
+        body {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="groupTitle">
+        <span>1、基本日期戴初始值 value:"2017-10-21"</span>
+    </div>
+    <input id="i1" />
+    <div class="groupTitle">
+        <span>2、带时间 format: "yyyy-MM-dd hh:mm:ss",width: 250,height:40</span>
+    </div>
+    <input id="i2" />
+    <div class="groupTitle">
+        <span>3、空值提示 nullText:"yyyy-MM-dd" </span>
+    </div>
+    <input id="i3" />
+    <div class="groupTitle">
+        <span>4、选择年 format: "yyyy",valueType:"string" </span>
+    </div>
+    <input id="i4" />
+    <div class="groupTitle">
+        <span>5、选择月 format: "yyyy-MM",valueType:"string"</span>
+    </div>
+    <input id="i5" />
+    <div class="groupTitle">
+        <span>6、选择时间 format: "hh:mm",valueType:"string" </span>
+    </div>
+    <input id="i6" />
+    <div class="groupTitle">
+        <span>7、不可用 disabled:true </span>
+    </div>
+    <input id="i7" />
+    <div class="groupTitle">
+        <span>8、只读 readonly:true </span>
+    </div>
+    <input id="i8" />
+    <div class="groupTitle">
+        <span>9、限制值 minDate:"2016-01-01",maxDate:"2018-12-31" </span>
+    </div>
+    <input id="i9" />
+    <div class="groupTitle">
+        <span>10、值改变事件 onChangeValue:function(input,value,g){} </span>
+    </div>
+    <input id="i10" />
+    <p id="p2">等待触发</p>
+    <script>
+        //基本文本框
+        var $i1 = $("#i1").ligerDateEditor({
+            initValue: "2017-10-21",
+            nullText: "yyyy-MM-dd"
+        });
+        $i1.setValue("2017-10-21".toDate("yyyy-MM-dd"));
+        //自定义宽高
+        $("#i2").ligerDateEditor({
+            format: "yyyy-MM-dd hh:mm",
+            width: 250,
+            height: 40
+        });
+
+        //空值提示
+        $("#i3").ligerDateEditor({
+            nullText: "yyyy-MM-dd",
+        });
+
+        //只选择年
+        $("#i4").ligerDateEditor({
+            format: "yyyy",
+            valueType: "string"
+        });
+
+        //只能输入浮点数
+        $("#i5").ligerDateEditor({
+            format: "yyyy-MM",
+            valueType: "string"
+        });
+
+        //是否显示为货币形式(逗号分隔三位数字)
+        $("#i6").ligerDateEditor({
+            format: "hh:mm",
+            valueType: "string"
+        });
+
+        //不可用
+        var date7 = $("#i7").ligerDateEditor({
+            //disabled: true,
+            value: "2017-10-21"
+        });
+        date7._setDisabled(true);
+
+        //只读
+        var date8 = $("#i8").ligerDateEditor({
+            //readonly: true,
+            value: "2017-10-21"
+        });
+        date8.setReadonly(true);
+
+        //事件
+        var date9 = $("#i9").ligerDateEditor({
+            minDate: "2016-01-01",
+            maxDate: "2018-12-31"
+        });
+        date9._setNullText("请输入范围内的值");
+
+        //改变值事件
+        var index = 1;
+        var $i10 = $("#i10").ligerDateEditor({
+            value: "2017-10-21",
+            initTrigger: true,
+            onChangeValue: function (input, value, g) {
+                $("#p2").html((index++) + "事件onChangeValue被触发,参数为{input:输入框,value:" + value + ",g:ligerTextBox对象}");
+            }
+        });
+                    //$i10.setValue("2017-10-22");
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>UI</title>
+    <script src="../../../../lib/LGboot.js" type="text/javascript"></script>
+    <style>
+        body {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="groupTitle"><span>1、listBox isShowCheckBox:true,isMultiSelect:true,title:"请选择",width:200,height: 100</span></div>
+    <div id="r1"></div>
+    <div class="groupTitle"><span>2、listBox isShowCheckBox:true,title:"请选择",width:200,height: 100</span></div>
+    <div id="r2"></div>
+    <div class="groupTitle"><span>3、事件触发</span></div>
+    <div id="r3"></div>
+    <p id="p2">等待触发</p>
+    <p id="p3">等待触发</p>
+    <script>
+        var data = [];
+        for (var i = 0; i < 10; i++) {
+            data.push({
+                "ID": "c" + i,
+                "TEXT": "Content" + i,
+                "VALUE": "内容" + i
+            });
+        }
+        $("#r1").ligerTransfer({
+            title: "请选择",
+            width: 200,
+            height: 300,
+            data: data,
+            value:"c1,c3"
+        });
+        //var dataGridColumns = [
+        //    { header: 'ID', name: 'ID', width: 20 },
+        //    { header: '名字', name: 'TEXT' },
+        //    { header: '值', name: 'VALUE' }
+        //];
+        //$("#r2").ligerListBox({
+        //    isShowCheckBox: true,
+        //    isMultiSelect: false,
+        //    title: "请选择",
+        //    columns: dataGridColumns,
+        //    height: 200,
+        //    data: data
+        //});
+
+        //var $r3 = $("#r3").ligerListBox({
+        //    isShowCheckBox: true,
+        //    isMultiSelect: false,
+        //    columns: dataGridColumns,
+        //    height: 200,
+        //    data: data,
+        //    onSelect: function (value, text, data) {
+        //        if (value == "c0") {
+        //            $("#p2").html('事件onSelect被触发,第一项阻止选中');
+        //            return false;
+        //        }
+        //        $("#p2").html('事件onSelect被触发');
+        //        return true;
+        //    },
+        //    onSelected: function (value, text, data) {
+        //        $("#p3").html('事件onSelected被触发');
+        //        return true;
+        //    },
+        //    onChangeValue: function (input, value, g) {
+        //        $("#p2").html('事件onChangeValue被触发,参数为{input:输入框,value:' + value + ',g:liger对象}');
+        //    }
+        //});
+        //$r3.setValue("c2");
+        //$r3.setValue("c2");
+    </script>
+</body>
+</html>
