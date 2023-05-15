@@ -207,7 +207,7 @@
                 var sid = selected.ID
                 me.addTab('【' + selected.FLOW_NAME + '】流程设计', 'flow-design.html?sid=' + sid);
             },
-            save: function () { //保存
+            save: function (method) { //保存
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
@@ -216,9 +216,10 @@
                     }
                     if (!me.grid.validChangeRows()) return false;
                     var changeRow = me.grid.getChangedRows();
+                    method = method || "saveOrder";
                     LG.ajax({
                         jsToken: true,
-                        url: 'workflow/definition/saveOrder',
+                        url: 'workflow/definition/' + method,
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -248,7 +249,7 @@
                                 for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.save();
+                                me.save("save");
                             }
                         });
                     } else {

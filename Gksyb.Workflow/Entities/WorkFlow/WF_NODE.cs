@@ -5,7 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
 
@@ -22,48 +21,49 @@ namespace Gksyb.Model.WorkFlow
         /// 主键
         /// </summary>
         [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString, Size = 11)]
         public string ID { get; set; }
 
         /// <summary>
         /// 流程主键
         /// </summary>
         [Description("流程主键")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string FLOW_ID { get; set; }
 
         /// <summary>
         /// 任务主键
         /// </summary>
         [Description("任务主键")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string TASK_ID { get; set; }
 
         /// <summary>
         /// 节点编号
         /// </summary>
         [Description("节点编号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string NODE_ID { get; set; }
 
         /// <summary>
         /// 节点名称
         /// </summary>
         [Description("节点名称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string NODE_NAME { get; set; }
 
         /// <summary>
         /// 节点标题
         /// </summary>
         [Description("节点标题")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string NODE_TITLE { get; set; }
 
         /// <summary>
         /// 节点类型
         /// </summary>
         [Description("节点类型")]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string NODE_TYPE { get; set; }
 
         /// <summary>
@@ -82,33 +82,35 @@ namespace Gksyb.Model.WorkFlow
         /// 节点处理人
         /// </summary>
         [Description("节点处理人账号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string NODE_USERNAME { get; set; }
 
         /// <summary>
         /// 节点处理人
         /// </summary>
         [Description("节点处理人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string NODE_USER { get; set; }
 
         /// <summary>
         /// 处理意见
         /// </summary>
         [Description("处理意见")]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string NODE_REASON { get; set; }
 
         /// <summary>
         /// 下一节点编号
         /// </summary>
         [Description("下一节点编号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string TO_NODE_ID { get; set; }
 
         /// <summary>
         /// 创建人
         /// </summary>
         [Description("创建人")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>

@@ -5,7 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
 
@@ -21,42 +20,42 @@ namespace Gksyb.Model.WorkFlow
         /// 主键
         /// </summary>
         [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString, Size = 11)]
         public string ID { get; set; }
 
         /// <summary>
         /// 流程主键
         /// </summary>
         [Description("流程主键")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string FLOW_ID { get; set; }
 
         /// <summary>
         /// 流程名称
         /// </summary>
         [Description("流程名称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string FLOW_NAME { get; set; }
 
         /// <summary>
         /// 流程名称
         /// </summary>
         [Description("流程名称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string FLOW_TITLE { get; set; }
 
         /// <summary>
         /// 流程备注
         /// </summary>
         [Description("流程备注")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string FLOW_REMARK { get; set; }
 
         /// <summary>
         /// 流程表单数据
         /// </summary>
         [Description("流程表单数据")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string FLOW_FORM_DATA { get; set; }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Gksyb.Model.WorkFlow
         /// 所属组织
         /// </summary>
         [Description("所属组织")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string CORPID { get; set; }
 
         /// <summary>
@@ -82,14 +81,14 @@ namespace Gksyb.Model.WorkFlow
         /// 创建账号
         /// </summary>
         [Description("创建账号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSERNAME { get; set; }
 
         /// <summary>
         /// 创建者
         /// </summary>
         [Description("创建者")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace Gksyb.Model.WorkFlow
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

@@ -5,7 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
 
@@ -29,49 +28,49 @@ namespace Gksyb.Model.WorkFlow
         /// 任务编号
         /// </summary>
         [Description("任务编号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string TASK_ID { get; set; }
 
         /// <summary>
         /// 节点主键
         /// </summary>
         [Description("节点主键")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string WF_NODE_ID { get; set; }
 
         /// <summary>
         /// 节点编号
         /// </summary>
         [Description("节点编号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string NODE_ID { get; set; }
 
         /// <summary>
         /// 操作人
         /// </summary>
         [Description("操作人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string OPERATOR { get; set; }
 
         /// <summary>
         /// 操作类型
         /// </summary>
         [Description("操作类型")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string OPERTYPE { get; set; }
 
         /// <summary>
         /// 操作标题
         /// </summary>
         [Description("操作标题")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string OPERTITLE { get; set; }
 
         /// <summary>
         /// 操作明细
         /// </summary>
         [Description("操作明细")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string OPERDETAIL { get; set; }
 
         /// <summary>

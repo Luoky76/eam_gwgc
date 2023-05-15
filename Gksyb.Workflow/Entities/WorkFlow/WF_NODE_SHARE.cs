@@ -5,7 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
 
@@ -29,14 +28,14 @@ namespace Gksyb.Model.WorkFlow
         /// 任务主键
         /// </summary>
         [Description("任务主键")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string TASK_ID { get; set; }
 
         /// <summary>
         /// 节点主键
         /// </summary>
         [Description("节点主键")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string NODE_ID { get; set; }
 
         /// <summary>
@@ -49,13 +48,14 @@ namespace Gksyb.Model.WorkFlow
         /// 处理人
         /// </summary>
         [Description("节点处理人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string USER { get; set; }
        
         /// <summary>
         /// 创建人
         /// </summary>
         [Description("创建人")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Gksyb.Model.WorkFlow
         /// 任务完成标志
         /// </summary>
         [Description("任务完成标志")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1)]
         public string TASK_FINISH_FLAG { get; set; } = "0";
 
     }
