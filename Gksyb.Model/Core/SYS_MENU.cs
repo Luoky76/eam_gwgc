@@ -30,14 +30,14 @@ namespace Gksyb.Model.Core
         /// 菜单号
         /// </summary>
         [Description("菜单号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string MENUNO { get; set; }
 
         /// <summary>
         /// 父菜单号
         /// </summary>
         [Description("父菜单号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string MENUPARENTNO { get; set; }
 
         /// <summary>
@@ -50,21 +50,21 @@ namespace Gksyb.Model.Core
         /// 菜单名称
         /// </summary>
         [Description("菜单名称")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 50)]
         public string MENUNAME { get; set; }
 
         /// <summary>
         /// 菜单链接
         /// </summary>
         [Description("菜单链接")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string MENUURL { get; set; }
 
         /// <summary>
         /// 菜单图标
         /// </summary>
         [Description("菜单图标")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MENUICON { get; set; }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Gksyb.Model.Core
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
     }

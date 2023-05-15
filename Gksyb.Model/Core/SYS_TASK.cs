@@ -31,84 +31,84 @@ namespace Gksyb.Model.Core
         /// 任务名称
         /// </summary>
         [Description("任务名称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string TASK_NAME { get; set; }
 
         /// <summary>
         /// 任务组
         /// </summary>
         [Description("任务组")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string TASK_GROUP { get; set; }
 
         /// <summary>
         /// 任务描述
         /// </summary>
         [Description("任务描述")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string TASK_DESC { get; set; }
 
         /// <summary>
         /// 间隔(Cron)
         /// </summary>
         [Description("间隔(Cron)")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 30)]
         public string TASK_CRON { get; set; }
 
         /// <summary>
         /// 状态
         /// </summary>
         [Description("状态")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 10)]
         public string TASK_STATUS { get; set; }
 
         /// <summary>
         /// 调用方法
         /// </summary>
         [Description("调用方法")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string TASK_INVOKE { get; set; }
 
         /// <summary>
         /// 数据
         /// </summary>
         [Description("数据")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string TASK_DATA { get; set; }
 
         /// <summary>
         /// 视图
         /// </summary>
         [Description("视图")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string TASK_VIEW { get; set; }
 
         /// <summary>
         /// 服务器IP
         /// </summary>
         [Description("服务器IP")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 30)]
         public string TASK_RUNIP { get; set; }
 
         /// <summary>
         /// 错误正则匹配
         /// </summary>
         [Description("错误正则匹配")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string TASK_ERROR_REGEX { get; set; }
 
         /// <summary>
         /// 错误回调
         /// </summary>
         [Description("错误回调")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string TASK_ERROR_INVOKE { get; set; }
 
         /// <summary>
         /// 运行状态
         /// </summary>
         [Description("运行状态")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string TASK_RUNSTATUS { get; set; }
 
         /// <summary>
@@ -121,21 +121,21 @@ namespace Gksyb.Model.Core
         /// 最后执行结果
         /// </summary>
         [Description("最后执行结果")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string TASK_LAST_RESULT { get; set; }
 
         /// <summary>
         /// 最后执行IP
         /// </summary>
         [Description("最后执行IP")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string TASK_LAST_RUNIP { get; set; }
 
         /// <summary>
         /// 最后执行的数据标识
         /// </summary>
         [Description("最后执行的数据标识")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string TASK_LAST_KEY { get; set; }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Gksyb.Model.Core
         /// 修改人
         /// </summary>
         [Description("修改人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>

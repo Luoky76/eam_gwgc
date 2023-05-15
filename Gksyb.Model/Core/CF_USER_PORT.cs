@@ -31,42 +31,42 @@ namespace Gksyb.Model.Core
         /// 登录名称/工号
         /// </summary>
         [Description("登录名称/工号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string LOGINNAME { get; set; }
 
         /// <summary>
         /// 组织
         /// </summary>
         [Description("组织")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 400)]
         public string CORPID { get; set; }
 
         /// <summary>
         /// 分类（业务、生产）
         /// </summary>
         [Description("分类（业务、生产）")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 40)]
         public string OPTYPE { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
         [Description("备注")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1000)]
         public string REMARK { get; set; }
 
         /// <summary>
         /// 登记人员@#Create User
         /// </summary>
         [Description("登记人员")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Gksyb.Model.Core
         /// 最后修改人
         /// </summary>
         [Description("最后修改人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>

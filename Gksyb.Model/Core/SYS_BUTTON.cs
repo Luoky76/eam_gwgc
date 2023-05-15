@@ -30,49 +30,49 @@ namespace Gksyb.Model.Core
         /// 按钮名称
         /// </summary>
         [Description("按钮名称")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string BTNNAME { get; set; }
 
         /// <summary>
         /// 按钮编号
         /// </summary>
         [Description("按钮编号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string BTNNO { get; set; }
 
         /// <summary>
         /// 按钮样式
         /// </summary>
         [Description("按钮样式")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string BTNCLASS { get; set; }
 
         /// <summary>
         /// 按钮图标
         /// </summary>
         [Description("按钮图标")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string BTNICON { get; set; }
 
         /// <summary>
         /// 按钮编码
         /// </summary>
         [Description("按钮编码")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string BTNSCRIPT { get; set; }
 
         /// <summary>
         /// 所属菜单编号
         /// </summary>
         [Description("所属菜单编号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string MENUNO { get; set; }
 
         /// <summary>
         /// 初始状态
         /// </summary>
         [Description("初始状态")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string INITSTATUS { get; set; }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Gksyb.Model.Core
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
     }

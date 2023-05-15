@@ -31,42 +31,42 @@ namespace Gksyb.Model.Core
         /// 权限拥有者
         /// </summary>
         [Description("权限拥有者")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string PRIVILEGEMASTER { get; set; }
 
         /// <summary>
         /// 权限拥有者ID
         /// </summary>
         [Description("权限拥有者ID")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string PRIVILEGEMASTERKEY { get; set; }
 
         /// <summary>
         /// 拥有权限
         /// </summary>
         [Description("拥有权限")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string PRIVILEGEACCESS { get; set; }
 
         /// <summary>
         /// 拥有权限ID
         /// </summary>
         [Description("拥有权限ID")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string PRIVILEGEACCESSKEY { get; set; }
 
         /// <summary>
         /// 是否拥有
         /// </summary>
         [Description("是否拥有")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string PRIVILEGEOPERATION { get; set; }
 
         /// <summary>
         /// 创建者
         /// </summary>
         [Description("创建者")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Gksyb.Model.Core
         /// 最后修改人
         /// </summary>
         [Description("最后修改人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>
@@ -92,14 +92,14 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
     }

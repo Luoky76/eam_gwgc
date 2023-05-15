@@ -30,28 +30,28 @@ namespace Gksyb.Model.Core
         /// 日志类型
         /// </summary>
         [Description("日志类型")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string LOGTYPE { get; set; }
 
         /// <summary>
         /// 日志标题
         /// </summary>
         [Description("日志标题")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string LOGTITLE { get; set; }
 
         /// <summary>
         /// 日志摘要
         /// </summary>
         [Description("日志摘要")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string LOGSUMMARY { get; set; }
 
         /// <summary>
         /// 登录名称/工号
         /// </summary>
         [Description("登录名称/工号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string LOGINNAME { get; set; }
 
         /// <summary>
@@ -64,21 +64,21 @@ namespace Gksyb.Model.Core
         /// IP
         /// </summary>
         [Description("IP")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 30)]
         public string IP { get; set; }
 
         /// <summary>
         /// 浏览器
         /// </summary>
         [Description("浏览器")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1000)]
         public string UA { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

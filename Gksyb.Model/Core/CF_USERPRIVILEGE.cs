@@ -5,7 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
 
@@ -31,42 +30,42 @@ namespace Gksyb.Model.Core
         /// 标识用户(岗位)
         /// </summary>
         [Description("标识用户(岗位)")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string PRIVILEGEMASTER { get; set; }
 
         /// <summary>
         /// 用户ID
         /// </summary>
         [Description("用户ID")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string PRIVILEGEMASTERKEY { get; set; }
 
         /// <summary>
         /// 拥有字段(模块+数据窗口)
         /// </summary>
         [Description("拥有字段(模块+数据窗口)")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string PRIVILEGEACCESS { get; set; }
 
         /// <summary>
         /// 字段ID(字段名)
         /// </summary>
         [Description("字段ID(字段名)")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string PRIVILEGEACCESSKEY { get; set; }
 
         /// <summary>
         /// 是否拥有
         /// </summary>
         [Description("是否拥有")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string PRIVILEGEOPERATION { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
     }

@@ -51,5 +51,15 @@
         /// 票据版本号（可用于踢出所有用户）
         /// </summary>
         public string TicketVersion { get; set; }
+
+        /// <summary>
+        /// 密码超期时间，单位（天）
+        /// </summary>
+        public long? PasswordExpiresIn { private get; set; }
+
+        /// <summary>
+        /// 获取密码超期时间，单位（天）
+        /// </summary>
+        public long GetPasswordExpiresIn => PasswordExpiresIn ?? 100 * 365;
     }
 }

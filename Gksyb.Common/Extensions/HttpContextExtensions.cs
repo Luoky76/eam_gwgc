@@ -27,7 +27,7 @@ namespace Gksyb.Common
         {
             if (value == null) return;
             source.Items.Remove(RequestBodyName);
-            source.Items.Add(RequestBodyName, value);
+            source.Items.Add(RequestBodyName, value.ToMiniJson());
         }
 
         public static string GetRequestBodyItem(this HttpContext source)
@@ -35,7 +35,7 @@ namespace Gksyb.Common
             var body = source.Request.ContentType;
             if (source.Items.ContainsKey(RequestBodyName))
             {
-                body = source.Items[RequestBodyName].ToMiniJson();
+                body = source.Items[RequestBodyName] as string;
             }
             return body;
         }
@@ -44,7 +44,7 @@ namespace Gksyb.Common
         {
             if (value == null) return;
             source.Items.Remove(ResponseBodyName);
-            source.Items.Add(ResponseBodyName, value);
+            source.Items.Add(ResponseBodyName, value.ToMiniJson());
         }
 
         public static string GetResponseBodyItem(this HttpContext source)
@@ -52,7 +52,7 @@ namespace Gksyb.Common
             var body = source.Response.ContentType;
             if (source.Items.ContainsKey(ResponseBodyName))
             {
-                body = source.Items[ResponseBodyName].ToMiniJson();
+                body = source.Items[ResponseBodyName] as string;
             }
             return body;
         }

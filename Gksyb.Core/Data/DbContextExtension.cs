@@ -55,6 +55,10 @@ namespace Chloe
             dbContext = DbContextFactory.CreateContext(dbType, tDBLinkEntity.CONNSTR);
             if (!isCache) linkName = GuidHelper.NewShortId();
             source.SetItem(linkName, dbContext);
+            if (tDBLinkEntity.VALIDFLAG == "2")
+            {
+                dbContext.DisableDbLog();
+            }
             return dbContext;
         }
 

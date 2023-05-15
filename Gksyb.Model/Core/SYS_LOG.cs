@@ -30,32 +30,35 @@ namespace Gksyb.Model.Core
         /// 日志类型
         /// </summary>
         [Description("日志类型")]
+        [Column(DbType = DbType.String, Size = 100)]
         public string LOGTYPE { get; set; }
 
         /// <summary>
         /// 日志关联标识
         /// </summary>
         [Description("日志关联标识")]
+        [Column(DbType = DbType.String, Size = 200)]
         public string LOGNO { get; set; }
 
         /// <summary>
         /// 日志摘要
         /// </summary>
         [Description("日志摘要")]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string LOGSUMMARY { get; set; }
 
         /// <summary>
         /// 日志详情LOGDETAIL
         /// </summary>
         [Description("日志详情LOGDETAIL")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string LOGDETAIL { get; set; }
 
         /// <summary>
         /// 是否大文本
         /// </summary>
         [Description("是否大文本")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1)]
         public string ISCLOB { get; set; }
 
         /// <summary>
@@ -68,12 +71,14 @@ namespace Gksyb.Model.Core
         /// 记录日志人
         /// </summary>
         [Description("记录日志人")]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string LOGOP { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

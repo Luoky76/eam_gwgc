@@ -64,7 +64,8 @@ namespace Gksyb.Server.Services.Auth
             if (user == null) return AjaxResult.Error("用户名密码错误");
             if (user.LOGINPASSWORD != request.Password) return AjaxResult.Error("用户名密码错误");
 
-            var errorMsg = CheckPassword(request.Username, request.InputPassword);
+            var lastChangeTime = user.SUPPLIERID == null ? (await _dbContext.GetSysdate()) : DateTime.UnixEpoch.AddSeconds(user.SUPPLIERID.CastTo<double>());
+            var errorMsg = await CheckPassword(request.Username, request.InputPassword, lastChangeTime);
             if (checkPassword && !string.IsNullOrWhiteSpace(errorMsg)) return AjaxResult.Error(errorMsg, "1");
 
             var roles = await _dbContext.Query<CF_ROLE>()
@@ -106,12 +107,13 @@ namespace Gksyb.Server.Services.Auth
                 userSession.Roles.Add(_guestRole);
             }
             //登录成功，更新用户数据
-            await _dbContext.UpdateAsync<CF_USER>(a => a.USERID == user.USERID, a => new CF_USER()
-            {
-                LASTLOGINTIME = DateTime.Now,
-                FAX = request.IP,
-                ADDRESS = request.UserAgent
-            });
+            _dbContext.TrackEntity(user);
+            user.LASTLOGINTIME = await _dbContext.GetSysdate();
+            user.FAX = request.IP;
+            user.ADDRESS = request.UserAgent;
+            user.SUPPLIERID ??= (user.LASTLOGINTIME.Value - DateTime.UnixEpoch).TotalSeconds.CastTo<long>();
+            await _dbContext.UpdateAsync(user);
+
             var userResponse = await userSession.SaveAsync(_options);
             return AjaxResult.Success(userResponse);
         }
@@ -138,15 +140,18 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<AjaxResult> ChangePasswordAsync(ChangePasswordRequest request)
         {
+            if (request.OldPassword == request.NewPassword) return AjaxResult.Error("修改失败，密码不能与上次密码一样");
             request.OldPassword = UserSession.Encrypt(request.OldPassword);
             var user = await GetUserAsync(request.Username, request.OldPassword);
             if (user == null) return AjaxResult.Error("修改失败，请输入正确的账号密码");
             if (user.LOGINPASSWORD != request.OldPassword) return AjaxResult.Error("修改失败，请输入正确的账号密码");
-            var errorMsg = CheckPassword(request.Username, request.NewPassword);
+            var errorMsg = await CheckPassword(request.Username, request.NewPassword);
             if (!string.IsNullOrWhiteSpace(errorMsg)) return AjaxResult.Error(errorMsg);
             request.NewPassword = UserSession.Encrypt(request.NewPassword);
+            var ticks = ((await _dbContext.GetSysdate()).Value - DateTime.UnixEpoch).TotalSeconds.CastTo<long>();
             await _dbContext.UpdateAsync<CF_USER>(a => a.USERID == user.USERID, a => new CF_USER()
             {
+                SUPPLIERID = ticks,
                 LOGINPASSWORD = request.NewPassword
             });
             await _dbContext.UserLogAsync("密码修改", "密码修改", "密码修改");
@@ -304,14 +309,20 @@ namespace Gksyb.Server.Services.Auth
         /// 判断密码是否符合规则
         /// </summary>
         /// <returns></returns>
-        private string CheckPassword(string username, string password)
+        private async Task<string> CheckPassword(string username, string password, DateTime? lastChangeTime = null)
         {
+            if (string.IsNullOrWhiteSpace(password)) return string.Empty;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
             var isInit = password == _options.InitPassWord;
             if (isInit) return "密码为初始密码，请先修改";
-            if (string.IsNullOrWhiteSpace(password)) return string.Empty;
-            if (!PasswordHelper.IsStrong(password, username))
+            if (!PasswordHelper.IsStrong(password ?? "", username))
             {
                 return PasswordHelper.DirectionMsg;
+            }
+            if (lastChangeTime == null) return string.Empty;
+            var sysdate = await _dbContext.GetSysdate();
+            if (lastChangeTime.Value.AddDays(_options.GetPasswordExpiresIn) < sysdate)
+            {
+                return "密码已过期，请先修改";
             }
             return string.Empty;
         }

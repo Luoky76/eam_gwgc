@@ -155,7 +155,7 @@ namespace Gksyb.Server.Controllers.Auth
             return await service.LoginAsync(request, userSession =>
             {
                 userSession.ExtendData = user.ExtendData;
-            });
+            }, false);
         }
 
         /// <summary>

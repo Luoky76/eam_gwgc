@@ -20,28 +20,28 @@ namespace Gksyb.Model.Core
         /// 主键
         /// </summary>
         [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString, Size = 11)]
         public string SID { get; set; }
 
         /// <summary>
         /// 类型
         /// </summary>
         [Description("类型")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CODE_TYPE { get; set; }
 
         /// <summary>
         /// 编码
         /// </summary>
         [Description("编码")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string CODE_EN { get; set; }
 
         /// <summary>
         /// 名称
         /// </summary>
         [Description("名称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string CODE_CN { get; set; }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Gksyb.Model.Core
         /// 备注
         /// </summary>
         [Description("备注")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string REMARK { get; set; }
 
     }

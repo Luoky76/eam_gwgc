@@ -31,7 +31,7 @@ namespace Gksyb.Model.Core
         /// 收藏名称
         /// </summary>
         [Description("收藏名称")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string FAVORITETITLE { get; set; }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Gksyb.Model.Core
         /// 收藏内容
         /// </summary>
         [Description("收藏内容")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string FAVORITECONTENT { get; set; }
 
         /// <summary>
@@ -57,21 +57,21 @@ namespace Gksyb.Model.Core
         /// 链接
         /// </summary>
         [Description("链接")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string URL { get; set; }
 
         /// <summary>
         /// 图标
         /// </summary>
         [Description("图标")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string ICON { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
     }

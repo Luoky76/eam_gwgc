@@ -30,35 +30,35 @@ namespace Gksyb.Model.Core
         /// 表名
         /// </summary>
         [Description("表名")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string VIEWS { get; set; }
 
         /// <summary>
         /// 表格json
         /// </summary>
         [Description("表格json")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string GRID { get; set; }
 
         /// <summary>
         /// 查询json
         /// </summary>
         [Description("查询json")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string SEARCH { get; set; }
 
         /// <summary>
         /// 表单json
         /// </summary>
         [Description("表单json")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string FORM { get; set; }
 
         /// <summary>
         /// 程序名称
         /// </summary>
         [Description("程序名称")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
     }

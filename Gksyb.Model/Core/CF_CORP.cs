@@ -23,154 +23,154 @@ namespace Gksyb.Model.Core
         /// CORPID
         /// </summary>
         [Description("CORPID")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString, Size = 11)]
         public string CORPID { get; set; }
 
         /// <summary>
         /// 组织机构代码(用友代码)
         /// </summary>
         [Description("组织机构代码(用友代码)")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 30)]
         public string CNO { get; set; }
 
         /// <summary>
         /// 企业简称
         /// </summary>
         [Description("企业简称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string CORP_SNAME { get; set; }
 
         /// <summary>
         /// 企业英文全称
         /// </summary>
         [Description("企业英文全称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CORP_ENAME { get; set; }
 
         /// <summary>
         /// 企业全称
         /// </summary>
         [Description("企业全称")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CNAME { get; set; }
 
         /// <summary>
         /// 上级企业代码
         /// </summary>
         [Description("上级企业代码")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string CORPPARENTID { get; set; }
 
         /// <summary>
         /// 公司通讯地址
         /// </summary>
         [Description("公司通讯地址")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 150)]
         public string CORP_ADDRESS { get; set; }
 
         /// <summary>
         /// 公司联系电话
         /// </summary>
         [Description("公司联系电话")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string CORP_TELE { get; set; }
 
         /// <summary>
         /// 公司传真
         /// </summary>
         [Description("公司传真")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string CORP_FAX { get; set; }
 
         /// <summary>
         /// 公司Email
         /// </summary>
         [Description("公司Email")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string CORP_EMAIL { get; set; }
 
         /// <summary>
         /// 主要联系人
         /// </summary>
         [Description("主要联系人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string CORP_LINK_MAN { get; set; }
 
         /// <summary>
         /// 主要联系人
         /// </summary>
         [Description("主要联系人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string LINK_MAN_TELE { get; set; }
 
         /// <summary>
         /// 主要联系人
         /// </summary>
         [Description("主要联系人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string LINK_MAN_EMAIL { get; set; }
 
         /// <summary>
         /// 付款人纳税人识别号
         /// </summary>
         [Description("付款人纳税人识别号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string FEECLIENT_ID { get; set; }
 
         /// <summary>
         /// 开户行
         /// </summary>
         [Description("开户行")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string BANK { get; set; }
 
         /// <summary>
         /// 帐号
         /// </summary>
         [Description("帐号")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 40)]
         public string ACCONTNO { get; set; }
 
         /// <summary>
         /// 财务电话
         /// </summary>
         [Description("财务电话")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 40)]
         public string CWTELE { get; set; }
 
         /// <summary>
         /// 有效标志
         /// </summary>
         [Description("有效标志")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1)]
         public string VALIDFLAG { get; set; }
 
         /// <summary>
         /// 存路径
         /// </summary>
         [Description("存路径")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1000)]
         public string CORP_PATH { get; set; }
 
         /// <summary>
         /// 分类标识(公司、作业区、部门、作业小队)
         /// </summary>
         [Description("分类标识(公司、作业区、部门、作业小队)")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1)]
         public string CLASSFLAG { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
         [Description("备注")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1000)]
         public string REMARK { get; set; }
 
         /// <summary>
         /// 登记人员@#Create User
         /// </summary>
         [Description("登记人员@#Create User")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Gksyb.Model.Core
         /// 最后修改人
         /// </summary>
         [Description("最后修改人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
     }

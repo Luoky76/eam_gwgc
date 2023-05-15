@@ -57,35 +57,35 @@ namespace Gksyb.Model.Core
         /// 主键(Guid)
         /// </summary>
         [Description("主键(Guid)")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString, Size = 11)]
         public string SID { get; set; }
 
         /// <summary>
         /// 模板
         /// </summary>
         [Description("模板")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string TEMPLATE { get; set; }
 
         /// <summary>
         /// 通知对象
         /// </summary>
         [Description("通知对象")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string RECEIVER { get; set; }
 
         /// <summary>
         /// 通知URL
         /// </summary>
         [Description("通知URL")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string URL { get; set; }
 
         /// <summary>
         /// 通知数据json
         /// </summary>
         [Description("通知数据json")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string TDATA { get; set; }
 
         /// <summary>
@@ -98,14 +98,14 @@ namespace Gksyb.Model.Core
         /// 调用结果
         /// </summary>
         [Description("调用结果")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 400)]
         public string RESULT { get; set; }
 
         /// <summary>
         /// 状态
         /// </summary>
         [Description("状态")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string STATUS { get; set; } = InitStatus;
 
         /// <summary>
@@ -124,6 +124,7 @@ namespace Gksyb.Model.Core
         /// 修改人
         /// </summary>
         [Description("修改人")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>

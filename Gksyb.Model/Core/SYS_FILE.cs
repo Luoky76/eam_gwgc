@@ -30,35 +30,35 @@ namespace Gksyb.Model.Core
         /// 文件hash
         /// </summary>
         [Description("文件hash")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 32)]
         public string FILE_HASH { get; set; }
 
         /// <summary>
         /// 文件名
         /// </summary>
         [Description("文件名")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string FILE_NAME { get; set; }
 
         /// <summary>
         /// 文件路径
         /// </summary>
         [Description("文件路径")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 2000)]
         public string FILE_PATH { get; set; }
 
         /// <summary>
         /// 文件地址
         /// </summary>
         [Description("文件地址")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 2000)]
         public string FILE_URL { get; set; }
 
         /// <summary>
         /// 原始文件名
         /// </summary>
         [Description("原始文件名")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string ORGIN_FILE_NAME { get; set; }
 
         /// <summary>
@@ -71,28 +71,28 @@ namespace Gksyb.Model.Core
         /// 文件类型
         /// </summary>
         [Description("文件类型")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string FILE_TYPE { get; set; }
 
         /// <summary>
         /// 上传IP
         /// </summary>
         [Description("上传IP")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 30)]
         public string IP { get; set; }
 
         /// <summary>
         /// 来源路由
         /// </summary>
         [Description("来源路由")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string SOURCE_PATH { get; set; }
 
         /// <summary>
         /// 来源url
         /// </summary>
         [Description("来源url")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string SOURCE_URL { get; set; }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Gksyb.Model.Core
         /// 创建人
         /// </summary>
         [Description("创建人")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>

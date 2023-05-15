@@ -22,35 +22,35 @@ namespace Gksyb.Model.Core
         /// 连接名
         /// </summary>
         [Description("连接名")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString, Size = 20)]
         public string LINKNAME { get; set; }
 
         /// <summary>
         /// 公司
         /// </summary>
         [Description("公司")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 10)]
         public string CORPID { get; set; }
 
         /// <summary>
         /// 连接类型
         /// </summary>
         [Description("连接类型")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 10)]
         public string LINKTYPE { get; set; }
 
         /// <summary>
         /// 连接字符串
         /// </summary>
         [Description("连接字符串")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string CONNSTR { get; set; }
 
         /// <summary>
         /// 有效否
         /// </summary>
         [Description("有效否")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 1)]
         public string VALIDFLAG { get; set; }
 
     }

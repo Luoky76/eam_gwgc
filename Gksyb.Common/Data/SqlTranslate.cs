@@ -53,7 +53,7 @@ namespace Gksyb.Common.Data
         /// <returns></returns>
         private static string OracleTranslate(string sql)
         {
-            sql = Regex.Replace(sql, @"@(\w+)", ":$1");
+            sql = Regex.Replace(sql, @"(?<!@)@(\w+)", ":$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "SYSDATE", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(group_concat)\b", "wm_concat", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(len)\b", "length", RegexOptions.IgnoreCase);
@@ -91,8 +91,7 @@ namespace Gksyb.Common.Data
         /// <returns></returns>
         private static string MySqlTranslate(string sql)
         {
-            sql = Regex.Replace(sql, @"@(\w+)", "?$1");
-            sql = Regex.Replace(sql, @"@\?(\w+)", "@@$1");//连续@@不处理
+            sql = Regex.Replace(sql, @"(?<!@)@(\w+)", "?$1");
             sql = Regex.Replace(sql, @":(\w+)", "?$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "now()", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(from)\b\s*\b(dual)\b[\s\S]*", "", RegexOptions.IgnoreCase);
@@ -201,7 +200,7 @@ namespace Gksyb.Common.Data
         /// <returns></returns>
         private static string DamengTranslate(string sql)
         {
-            sql = Regex.Replace(sql, @"@(\w+)", ":$1");
+            sql = Regex.Replace(sql, @"(?<!@)@(\w+)", ":$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "now()", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(group_concat)\b", "wm_concat", RegexOptions.IgnoreCase);
             return sql;

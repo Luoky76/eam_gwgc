@@ -31,21 +31,21 @@ namespace Gksyb.Model.Core
         /// 角色名称
         /// </summary>
         [Description("角色名称")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string ROLENAME { get; set; }
 
         /// <summary>
         /// 角色描述
         /// </summary>
         [Description("角色描述")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string ROLEDESC { get; set; }
 
         /// <summary>
         /// 创建者
         /// </summary>
         [Description("创建者")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -64,28 +64,28 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string APPNAME { get; set; }
 
         /// <summary>
         /// 最后修改人
         /// </summary>
         [Description("最后修改人")]
-        [Column(DbType = DbType.String)]
+        [Column(DbType = DbType.String, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>
         /// 组织ID
         /// </summary>
         [Description("组织ID")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString, Size = 11)]
         public string CORPID { get; set; }
 
     }
