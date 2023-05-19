@@ -1816,16 +1816,19 @@ table.l-filter-group-alt table.l-filter-group {
 /* 文本框只读状态*/
 
 .l-text-readonly {
+    cursor: default !important;
     margin: 2px;
     border: 0;
     border-bottom: 1px solid #b1b1b1;
+    border-radius: 5px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
     background: none;
-    cursor: default !important;
 }
 
-    .l-text-readonly .l-text-field {
+    .l-text-readonly .l-text-field, .l-text-readonly .l-textarea {
         cursor: default !important;
-        border: 0;
+        border: 0 !important;
+        box-shadow: none !important;
         background: none;
     }
 
@@ -1838,15 +1841,11 @@ table.l-filter-group-alt table.l-filter-group {
 
 /*文本框失效状态*/
 
-.l-text-disabled {
+.l-text-disabled, .l-text-disabled .l-text-field, .l-text-disabled .l-textarea {
+    cursor: not-allowed !important;
     border-color: #c2c2c2 !important;
     background: #e0e0e0 !important;
 }
-
-    .l-text-disabled .l-text-field {
-        cursor: not-allowed !important;
-        background: #e0e0e0 !important;
-    }
 
     .l-text-disabled .l-text-icon {
         pointer-events: none;
