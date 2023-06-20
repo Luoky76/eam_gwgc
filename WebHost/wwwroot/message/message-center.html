@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>消息类型</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/third-party/broadcast/broadcast.js"></script>
+    <style type="text/css">
+        #maingrid {
+            background: #f8f8f9;
+        }
+
+        .l-grid-row-cell {
+            border-right: 0px;
+            border-bottom: 0px;
+        }
+
+        .l-selected .l-grid-row-cell {
+            background: none;
+        }
+
+        .card {
+            border: 1px solid #e9eaec;
+            text-align: left;
+            background: #fff;
+            position: relative;
+            border-radius: 4px;
+            font-size: 14px;
+            margin: 3px 16px 32px 16px;
+            box-shadow: rgba(0, 0, 0, 0.2) 0px;
+            line-height: 32px;
+        }
+
+        .card-date {
+            color: rgb(153, 153, 153);
+            font-size: 12px !important;
+            line-height: 32px;
+        }
+
+        .card-header {
+            min-height: 36px;
+            line-height: 36px;
+            color: rgb(33, 33, 33);
+            font-size: 16px;
+            font-weight: bold;
+            padding: 4px 16px;
+            border-bottom: 1px solid #e9eaec;
+        }
+
+        .card-footer {
+            border-top: 1px solid #e9eaec;
+            min-height: 36px;
+            line-height: 36px;
+            color: rgba(0, 0, 0, 0.54);
+            font-size: 14px;
+            font-weight: 400;
+            padding: 4px 16px;
+        }
+
+        .card-header {
+            border-radius: 4px 4px 0 0;
+        }
+
+        .card-extra {
+            position: absolute;
+            right: 16px;
+            top: 10px;
+        }
+
+        .card-footer {
+            border-radius: 0 0 4px 4px;
+        }
+
+        .card-content {
+            position: relative;
+        }
+
+        .card-content-padding {
+            position: relative;
+            padding: 16px;
+        }
+
+        .right-button {
+            position: absolute;
+            top:1px;
+            right: 20px;
+        }
+
+        .l-tag-invalid {
+            color: #bbbec4;
+            background: #f7f7f7;
+            border-color: #e8eaec;
+        }
+    </style>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="消息类型" id="mainmenu">
+            <ul id="maintree"></ul>
+        </div>
+        <div id="center" position="center" title="消息类型列表">
+            <div id="iframeloading" class='l-loading'>
+            </div>
+            <form id="mainform">
+                <div id="maingrid"></div>
+            </form>
+        </div>
+    </div>
+    <ul class="iconlist"></ul>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            iframeloading: $("#iframeloading"),
+            selectNode: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            {
+                                display: '消息详情', name: 'MSG_CONTENT', width: "100%", render: function (rowdata, rowindex, value, column) {
+                                    var html = [];
+                                    var extra = rowdata.READDATE ? '<div class="card-extra l-tag l-tag-invalid">已读</div>' : '<a href="javascript:business.read();" class="card-extra l-tag">标记已读</a>';
+                                    html.push('<div class="card-date">' + rowdata.CREATEDATE + '</div>');
+                                    html.push('<div class="card">');
+                                    html.push('		<div class="card-header">' + extra + (rowdata.MSG_TITLE || rowdata.CREATEDATE) + '</div>');
+                                    html.push('		<div class="card-content card-content-padding">' + rowdata.MSG_CONTENT + '</div>');
+                                    if (rowdata.MSG_HREF) {
+                                        html.push('	<div class="card-footer"><a href="javascript:business.toDetail();">详情</a></div>');
+                                    }
+                                    html.push('	</div>');
+                                    return html.join('');
+                                }
+                            }
+                        ]
+                    }
+                };
+            },
+            toDetail: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                if (!row) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                LG.toDetail(row.MSG_TITLE, row.MSG_HREF, row.MSG_HREF_TARGET);
+            },
+            read: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                if (!row) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                LG.ajax({
+                    loading: '正在标记中...',
+                    url: 'message/read',
+                    data: { id: row.ID },
+                    success: function () {
+                        me.grid.updateRow(row, { "READDATE": new Date().format("yyyy-MM-dd hh:mm:ss") });
+                        if (me.callback) me.callback();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            readAll: function () {
+                var me = this;
+                LG.ajax({
+                    loading: '正在标记中...',
+                    url: 'message/readAll',
+                    success: function () {
+                        me.reload();
+                        if (me.callback) me.callback();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    scrollToPage: true,
+                    autoWidth: false,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'message/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'ID',
+                    sortOrder: 'desc',
+                    width: '100%',
+                    height: '100%',
+                    pageSize: 100,
+                    rowHeight: 178,
+                    checkbox: false,
+                    enabledEdit: false,
+                    clickToEdit: false,
+                    alternatingRow: false,
+                    mouseoverRowCssClass: "",
+                    onSuccess: function (data, g) {
+                        me.iframeloading.hide();
+                    },
+                    onRendered: function () {
+                        var g = this;
+                        g.gridheader.css({ "height": 0, "min-height": "0px" });
+                    }
+                });
+                me.grid.isValid = true;
+                me.bindGridEvent();
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setTree: function () {
+                var me = this;
+                var rootValue = "ROOT";
+                me.tree = $("#maintree").ligerTree({
+                    url: "message/tree",
+                    nodeWidth: 160,
+                    slide: false,
+                    checkbox: false,
+                    single: true,
+                    needCancel: false,
+                    iconClsFieldName: 'ICON',
+                    parentIDFieldName: 'PARENTID',
+                    isExpand: 2,
+                    onSuccess: function (data) {
+                        $(".l-tree .l-body span").each(function () {
+                            var $this = $(this);
+                            var text = $this.text();
+                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
+                        });
+                        var selectID = (me.selectNode && me.selectNode.data) ? me.selectNode.data.ID : ((this.data && this.data.length) ? this.data[0].ID : null);
+                        if (selectID) this.selectNode(selectID);
+                    },
+                    onSelect: function (node) {
+                        me.iframeloading.show();
+                        var nodeData = node.data;
+                        var where = {};
+                        if (nodeData) {
+                            var parentNo = nodeData.ID;
+                            where = {
+                                rules: [],
+                                groups: [{
+                                    rules: [], op: "or"
+                                }], op: "and"
+                            };
+                            if (parentNo !== rootValue) {
+                                if (parentNo === "UNREAD") {
+                                    where.groups[0].rules.push({ field: 'READDATE', value: "", op: 'isnull' });
+                                }
+                                else {
+                                    where.groups[0].rules.push({ field: 'MSG_GROUP', value: parentNo, op: 'equal' });
+                                }
+                            }
+                            me.grid.set('parms', { "where": JSON2.stringify(where) });
+                            me.parentNO = parentNo;
+                            me.reload();
+                        }
+                    }
+                });
+            },
+            initLayout: function () {
+                var me = this;
+                me.layout = $("#layout").ligerLayout({ leftWidth: 240, allowCenterCollapse: false });
+                $('<button></button>').prependTo(me.layout.center.header).ligerButton({
+                    text: '全部标记已读', type: "primary small", icon: "fa fa-eye", cls: "right-button", onClick: function () {
+                        me.readAll();
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.callback = (frameElement.dialog.get('data') || {}).callback;
+                }
+                me.initLayout();
+                me.iframeloading.show();
+                me.setConfig();
+                me.setGrid();
+                me.setTree();
+                var channel = Broadcast.getInstance();//创建广播通道
+                channel.onMessageCenter = function () {
+                    me.reload();
+                };
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

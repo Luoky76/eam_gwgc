@@ -1,0 +1,628 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>文件上传</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/webuploader/webuploader.js" type="text/javascript"></script>
+    <script src="../lib/js-export/FileSaver.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="../lib/webuploader/webuploader.css?v=1" />
+    <link rel="stylesheet" type="text/css" href="uploadfile.css?v=1" />
+</head>
+<body>
+    <div id="fileColumnWin" style="">
+        <form id="fileColumn" action="">
+        </form>
+    </div>
+    <div id="wrapper">
+        <div id="file_down" style="padding: 5px; text-align: right; display: none;">
+        </div>
+        <div class="page-body">
+            <div class="container" id="post-container">
+                <div class="page-container">
+                    <div id="uploader" class="wu-example">
+                        <div class="queueList">
+                            <div id="dndArea" class="placeholder" style="text-align: center">
+                                <div id="filePicker">
+                                </div>
+                                <p>
+                                    您可以尝试文件拖拽，使用QQ截屏工具，然后激活窗口后粘贴(ctrl+v)
+                                </p>
+                            </div>
+                        </div>
+                        <div class="statusBar" style="display: none;">
+                            <div class="progress">
+                                <span class="text">0%</span> <span class="percentage"></span>
+                            </div>
+                            <div class="info">
+                            </div>
+                            <div class="btns">
+                                <div id="filePicker2">
+                                </div>
+                                <div class="uploadBtn">
+                                    开始上传
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        // 添加全局站点信息
+        var BASE_URL = '../lib/webuploader';
+        var dialog = null;
+        var dialogData = {};
+        var type = null;
+        var method = null;
+        var callback = null;
+        var fileTypeExts = null;
+        var errorMsg = "";
+        var callbackData = [];
+        if (frameElement && frameElement.dialog) dialog = frameElement.dialog; //调用页面的dialog对象(ligerui对象)
+        if (dialog) {
+            dialogData = dialog.get('data'); //获取data参数
+            type = dialogData.type;
+            method = dialogData.method;
+            callback = dialogData.callback;
+            if (dialogData.showSuccess != false) dialogData.showSuccess = true;
+            if (dialogData.mouldFileName) {
+                var link = $('#file_down');
+                link.show();
+                link.append("<a href='javascript:void(0)'>点击我下载上传模板</a>");
+                link.find("a").click(function () {
+                    if (typeof dialogData.mouldFileName === "function") {
+                        return dialogData.mouldFileName();
+                    }
+                    LG.download({
+                        url: dialogData.mouldFileName,
+                        type: "post"
+                    });
+                });
+            }
+        }
+        function f_close() {
+            if (dialog) dialog.close();
+            if (callbackData.length === 1) callbackData = callbackData[0];
+            if (callback) {
+                if (errorMsg) callback(false, callbackData);
+                else callback(true, callbackData);
+            }
+        }
+
+        if (dialogData.fileColumn) {
+            type = dialogData.fileColumntype || "AjaxCommon";
+            method = dialogData.fileColumnmethod || "GetFileColumn";
+        }
+
+        //弹出多选导入列
+        var fileColumnWin = null;
+        function f_fileColumn(datatemp) {
+            var dataColumn = [];
+            for (var i = 0, l = datatemp.length; i < l; i++) {
+                dataColumn.push({ "ID": datatemp[i], "TEXT": datatemp[i] });
+            }
+            if (fileColumnWin) {
+                var cbm = liger.get("_search_fileColumn");
+                cbm.setData(dataColumn);
+                fileColumnWin.show();
+            }
+            else {
+                //创建表单结构
+                var fileColumn = $("#fileColumn");
+                fileColumn.ligerForm({
+                    fields: [{ display: "导入列", name: "_search_fileColumn", newline: false, labelWidth: 60, width: 150, type: 'select', options: { isMultiSelect: true, data: dataColumn } }],
+                    appendID: true,
+                    toJSON: JSON2.stringify
+                });
+                fileColumnWin = $.ligerDialog.open({
+                    target: $("#fileColumnWin"), width: 280, height: 150, top: 30, allowClose: false, isHidden: true,
+                    buttons: [{ text: '确定', onclick: function () { f_confirm(); } },
+                    { text: '取消', onclick: function () { fileColumnWin.hide() } }]
+                });
+            }
+        }
+        function f_confirm() {
+            var fileName = {};
+            var columnName = {};
+            var cbm = liger.get("_search_fileColumn");
+            cbm._toggleSelectBox(true)
+            var column = cbm.getValue();
+            if (!column) {
+                LG.showError("请至少选取一个列");
+            }
+            jQuery.ligerDialog.confirm(column.replace(/;/g, "<br />"), "即将导入以下列", function (confirm) {
+                if (confirm) {
+                    var columnArray = column.split(";");
+                    for (var i = 0, l = columnArray.length; i < l; i++) {
+                        columnName["columnName_" + i.toString()] = columnArray[i];
+                    }
+                    for (var i = 0, l = callbackData.length; i < l; i++) {
+                        fileName["fileName_" + i.toString()] = callbackData[i].Message;
+                    }
+                    $.ajax({
+                        cache: false,
+                        async: dialogData.async || false,
+                        url: dialogData.url || "../handler/ajax.ashx?",
+                        data: {
+                            'type': dialogData.type,
+                            'method': dialogData.method,
+                            'fileName': JSON2.stringify(fileName),
+                            'columnName': JSON2.stringify(columnName)
+                        },
+                        dataType: 'json', type: 'post',
+                        beforeSend: function () {
+                            LG.showLoading(p.loading);
+                        },
+                        complete: function () {
+                            LG.loading = false;
+                            LG.hideLoading();
+                        },
+                        success: function (result) {
+                            if (!result) return;
+                            if (!result.IsError) {
+                                fileColumnWin.hide();
+                                LG.showSuccess("上传成功", f_close)
+                            }
+                            else {
+                                LG.showError(result.Message);
+                            }
+                        },
+                        error: function (result, b) {
+                            LG.tip('发现系统错误 <BR>错误码：' + result.status);
+                        }
+                    });
+                }
+            });
+        }
+        //上传部分
+        $(function () {
+            //初始化webUploaderOptions
+            var fileSizeLimit = dialogData.fileSizeLimit;
+            if (fileSizeLimit) {
+                fileSizeLimit = (parseFloat((dialogData.fileSizeLimit).replace(/MB/g, "")) * 1024 * 1024);
+            }
+            fileSizeLimit = dialogData.fileSingleSizeLimit || fileSizeLimit || (2 * 1024 * 1024);
+            var extensions = dialogData.extensions || (dialogData.fileTypeExts || 'xls,xlsx').replace(/\*./g, "").replace(/;/g, ",");
+            var mimes = {
+                "xls": "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                , "doc": "application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                , "pdf": "application/pdf"
+            }
+            var mimeTypes = "image/*";
+            for (var mimeType in mimes) {
+                if (extensions.indexOf(mimeType) >= 0) {
+                    mimeTypes = mimes[mimeType];
+                    break;
+                }
+            }
+            var compressOptions = $.extend(true, {
+                width: 800,
+                height: 800,
+                quality: 90,
+                allowMagnify: false,
+                crop: false,
+                preserveHeaders: true,
+                compressSize: 0.1 * 1024 * 1024,
+            }, dialogData.compress);
+            if (compressOptions.width === 0) delete compressOptions.width;
+            if (compressOptions.height === 0) delete compressOptions.height;
+            var server = dialogData.server || dialogData.uploader || "";
+            server = gksybConfigs.getUrl(server);
+            var webUploaderOptions = {
+                // swf文件路径
+                swf: BASE_URL + '/Uploader.swf',
+                server: server,
+                dnd: '#uploader .queueList',
+                disableGlobalDnd: true,
+                paste: document.body,
+                pick: {
+                    id: '#filePicker',
+                    innerHTML: '点击选择文件',
+                    multiple: (dialogData.multiple || dialogData.multi || false)
+                },
+                accept: {
+                    title: '文件',
+                    extensions: extensions,
+                    mimeTypes: dialogData.mimeTypes || mimeTypes
+                },
+                compress: compressOptions,
+                auto: dialogData.auto || false,
+                runtimeOrder: dialogData.runtimeOrder || "html5,flash",
+                formData: dialogData.data,
+                fileVal: "formFile",
+                chunked: false,
+                fileNumLimit: dialogData.fileNumLimit || dialogData.queueSizeLimit || 5,
+                fileSingleSizeLimit: fileSizeLimit,
+                duplicate: dialogData.duplicate || true
+            };
+            if (!webUploaderOptions.pick.multiple) webUploaderOptions.fileNumLimit = 1;
+            if (webUploaderOptions.fileNumLimit == 1) webUploaderOptions.auto = true;
+
+            var $wrap = $('#uploader');
+            // 文件容器
+            var $queue = $('<ul class="filelist"></ul>').appendTo($wrap.find('.queueList'));
+            // 状态栏，包括进度和控制按钮
+            var $statusBar = $wrap.find('.statusBar');
+            // 文件总体选择信息。
+            var $info = $statusBar.find('.info');
+            // 上传按钮
+            var $upload = $wrap.find('.uploadBtn');
+            // 没选择文件之前的内容。
+            var $placeHolder = $wrap.find('.placeholder');
+            // 总体进度条
+            var $progress = $statusBar.find('.progress').hide();
+            // 添加的文件数量
+            var fileCount = 0;
+            // 添加的文件总大小
+            var fileSize = 0;
+            // 优化retina, 在retina下这个值是2
+            var ratio = window.devicePixelRatio || 1;
+            // 缩略图大小
+            var thumbnailWidth = 110 * ratio;
+            var thumbnailHeight = 110 * ratio;
+            // 可能有pedding, ready, uploading, confirm, done.
+            var state = 'pedding';
+            // 所有文件的进度信息，key为file id
+            var percentages = {};
+            var supportTransition = (function () {
+                var s = document.createElement('p').style,
+                    r = 'transition' in s ||
+                        'WebkitTransition' in s ||
+                        'MozTransition' in s ||
+                        'msTransition' in s ||
+                        'OTransition' in s;
+                s = null;
+                return r;
+            })();
+            // WebUploader实例
+            var uploader;
+            if (!WebUploader.Uploader.support()) {
+                LG.showError('Web Uploader 不支持您的浏览器！如果你使用的是IE浏览器，请尝试升级 flash 播放器');
+                return;
+            }
+            if (webUploaderOptions.compress !== false) {
+                webUploaderOptions.fileSingleSizeLimit = undefined;
+            }
+            // 实例化
+            uploader = WebUploader.create(webUploaderOptions);
+            // 添加“添加文件”的按钮，
+            uploader.addButton({
+                id: '#filePicker2',
+                label: '继续添加'
+            });
+            // 当有文件添加进来时执行，负责view的创建
+            function addFile(file) {
+                var $li = $('<li id="' + file.id + '">' +
+                    '<p class="title">' + file.name + '</p>' +
+                    '<p class="imgWrap"></p>' +
+                    '<p class="progress"><span></span></p>' +
+                    '</li>');
+                var $btns = $('<div class="file-panel">' +
+                    '<span class="cancel">删除</span>' +
+                    '<span class="rotateRight">向右旋转</span>' +
+                    '<span class="rotateLeft">向左旋转</span></div>').appendTo($li);
+                var $prgress = $li.find('p.progress span');
+                $wrap = $li.find('p.imgWrap');
+                $info = $('<p class="error"></p>');
+                var showError = function (code) {
+                    var text = '上传失败，请重试';
+                    switch (code) {
+                        case 'http':
+                            text = '连接断开,刷新重试';
+                            break;
+                        case 'exceed_size':
+                            text = '文件大小超出';
+                            break;
+                        case 'interrupt':
+                            text = '上传暂停';
+                            break;
+                    }
+                    $info.text(text).appendTo($li);
+                    if (code !== "http" || uploader.redo === true) return;
+                    uploader.redo = true;
+                    window.refreshGksybToken(function () {//刷新票据重试
+                        uploader.retry();
+                    });
+                };
+                if (file.getStatus() === 'invalid') {
+                    showError(file.statusText);
+                } else {
+                    $wrap.text('预览中');
+                    uploader.makeThumb(file, function (error, src) {
+                        if (error) {
+                            $wrap.text('不能预览');
+                            return;
+                        }
+                        var img = $('<img src="' + src + '">');
+                        $wrap.empty().append(img);
+                    }, thumbnailWidth, thumbnailHeight);
+                    percentages[file.id] = [file.size, 0];
+                    file.rotation = 0;
+                }
+                file.on('statuschange', function (cur, prev) {
+                    if (prev === 'progress') {
+                        $prgress.hide().width(0);
+                    } else if (prev === 'queued') {
+                        $li.off('mouseenter mouseleave');
+                        $btns.remove();
+                    }
+                    // 成功
+                    if (cur === 'error' || cur === 'invalid') {
+                        showError(file.statusText);
+                        percentages[file.id][1] = 1;
+                    } else if (cur === 'interrupt') {
+                        showError('interrupt');
+                    } else if (cur === 'queued') {
+                        percentages[file.id][1] = 0;
+                    } else if (cur === 'progress') {
+                        $info.remove();
+                        $prgress.css('display', 'block');
+                    } else if (cur === 'complete') {
+                        $li.append('<span class="success"></span>');
+                    }
+
+                    $li.removeClass('state-' + prev).addClass('state-' + cur);
+                });
+                $li.on('mouseenter', function () {
+                    $btns.stop().animate({ height: 30 });
+                });
+                $li.on('mouseleave', function () {
+                    $btns.stop().animate({ height: 0 });
+                });
+                $btns.on('click', 'span', function () {
+                    var index = $(this).index(), deg;
+                    switch (index) {
+                        case 0:
+                            uploader.removeFile(file);
+                            return;
+                        case 1:
+                            file.rotation += 90;
+                            break;
+                        case 2:
+                            file.rotation -= 90;
+                            break;
+                    }
+                    if (supportTransition) {
+                        deg = 'rotate(' + file.rotation + 'deg)';
+                        $wrap.css({
+                            '-webkit-transform': deg,
+                            '-mos-transform': deg,
+                            '-o-transform': deg,
+                            'transform': deg
+                        });
+                    } else {
+                        $wrap.css('filter', 'progid:DXImageTransform.Microsoft.BasicImage(rotation=' + (~ ~((file.rotation / 90) % 4 + 4) % 4) + ')');
+                    }
+                });
+                $li.appendTo($queue);
+            }
+
+            // 负责view的销毁
+            function removeFile(file) {
+                var $li = $('#' + file.id);
+                delete percentages[file.id];
+                updateTotalProgress();
+                $li.off().find('.file-panel').off().end().remove();
+            }
+
+            function updateTotalProgress() {
+                var loaded = 0, total = 0, spans = $progress.children(), percent;
+                $.each(percentages, function (k, v) {
+                    total += v[0];
+                    loaded += v[0] * v[1];
+                });
+                percent = total ? loaded / total : 0;
+                spans.eq(0).text(Math.round(percent * 100) + '%');
+                spans.eq(1).css('width', Math.round(percent * 100) + '%');
+                updateStatus();
+            }
+            function updateStatus() {
+                var text = '', stats;
+                if (state === 'ready') {
+                    text = '选中' + fileCount + '个文件，共' +
+                        WebUploader.formatSize(fileSize) + '。';
+                } else if (state === 'confirm') {
+                    stats = uploader.getStats();
+                    if (stats.uploadFailNum) {
+                        text = '已成功上传' + stats.successNum + '个文件，' +
+                            stats.uploadFailNum + '个文件上传失败，<a class="retry" href="#">重新上传</a>失败文件或<a class="ignore" href="#">忽略</a>'
+                    }
+                } else {
+                    stats = uploader.getStats();
+                    text = '共' + fileCount + '个（' +
+                        WebUploader.formatSize(fileSize) +
+                        '），已上传' + stats.successNum + '个';
+                    if (stats.uploadFailNum) {
+                        text += '，失败' + stats.uploadFailNum + '个';
+                    }
+                }
+                $info.html(text);
+            }
+
+            function setState(val) {
+                var file, stats;
+                if (val === state) {
+                    return;
+                }
+                $upload.removeClass('state-' + state);
+                $upload.addClass('state-' + val);
+                state = val;
+                switch (state) {
+                    case 'pedding':
+                        $placeHolder.removeClass('element-invisible');
+                        $queue.parent().removeClass('filled');
+                        $queue.hide();
+                        $statusBar.addClass('element-invisible');
+                        uploader.refresh();
+                        break;
+                    case 'ready':
+                        $placeHolder.addClass('element-invisible');
+                        if (webUploaderOptions.fileNumLimit == 1) {
+                            $('#filePicker2').addClass('element-invisible');
+                        }
+                        else {
+                            $('#filePicker2').removeClass('element-invisible');
+                        }
+                        $queue.parent().addClass('filled');
+                        $queue.show();
+                        $statusBar.removeClass('element-invisible');
+                        uploader.refresh();
+                        break;
+                    case 'uploading':
+                        $('#filePicker2').addClass('element-invisible');
+                        $progress.show();
+                        $upload.text('暂停上传');
+                        break;
+                    case 'paused':
+                        $progress.show();
+                        $upload.text('继续上传');
+                        break;
+                    case 'confirm':
+                        $progress.hide();
+                        $upload.text('开始上传').addClass('disabled');
+                        stats = uploader.getStats();
+                        if (stats.successNum && !stats.uploadFailNum) {
+                            setState('finish');
+                            return;
+                        }
+                        break;
+                    case 'finish':
+                        stats = uploader.getStats();
+                        if (errorMsg) {
+                            LG.showError(errorMsg, f_close);
+                        } else {
+                            if (dialogData.fileColumn) {
+                                if (callbackData) f_fileColumn(callbackData[callbackData.length - 1].Data);
+                            }
+                            else {
+                                if (dialogData.showSuccess) LG.showSuccess("上传成功", f_close);
+                                else f_close();
+                            }
+                        }
+                        break;
+                }
+                updateStatus();
+            }
+            uploader.on('uploadSuccess', function (file, ret) {
+                var dataResult = JSON2.parse(ret._raw || ret);
+                callbackData.push(dataResult);
+                if (dataResult.IsError) {
+                    errorMsg += dataResult.Message + "<br />";
+                }
+            });
+
+            uploader.onUploadProgress = function (file, percentage) {
+                var $li = $('#' + file.id), $percent = $li.find('.progress span');
+                $percent.css('width', percentage * 100 + '%');
+                percentages[file.id][1] = percentage;
+                updateTotalProgress();
+            };
+
+            uploader.onFileQueued = function (file) {
+                fileCount++;
+                fileSize += file.size;
+                if (fileCount === 1) {
+                    $placeHolder.addClass('element-invisible');
+                    $statusBar.show();
+                }
+                addFile(file);
+                setState('ready');
+                updateTotalProgress();
+            };
+
+            uploader.onFileDequeued = function (file) {
+                fileCount--;
+                fileSize -= file.size;
+                if (!fileCount) {
+                    setState('pedding');
+                }
+                removeFile(file);
+                updateTotalProgress();
+            };
+            uploader.on('all', function (type, block, data, headers) {
+                switch (type) {
+                    case 'uploadBeforeSend':
+                        if (this.options.compress) {
+                            var file = block.file;
+                            if (file.size > fileSizeLimit) {
+                                this.trigger('error', 'F_EXCEED_SIZE', fileSizeLimit, file);
+                                this.cancelFile(file);
+                                return false;
+                            }
+                        }
+                        var jqXHR = {
+                            setRequestHeader: function (header, value) {
+                                headers[header] = value;
+                            }
+                        };
+                        if (dialogData.jsToken) window.generateJsToken(jqXHR, dialogData);
+                        delete dialogData.tokenOptions;
+                        window.setGksybToken(jqXHR);
+                        break;
+                    case 'uploadStart':
+                        if (dialogData.uploadStart) dialogData.uploadStart(this);
+                        break;
+                    case 'uploadFinished':
+                        setState('confirm');
+                        break;
+                    case 'startUpload':
+                        setState('uploading');
+                        break;
+                    case 'stopUpload':
+                        setState('paused');
+                        break;
+                }
+            });
+
+            uploader.onError = function (code, arg) {
+                switch (code) {
+                    case 'Q_TYPE_DENIED':
+                        LG.showError("只能上传文件类型为" + webUploaderOptions.accept.extensions + "的文件");
+                        break;
+                    case 'Q_EXCEED_NUM_LIMIT':
+                        LG.showError("最多只能上传" + webUploaderOptions.fileNumLimit + "个文件");
+                        break;
+                    case 'Q_EXCEED_SIZE_LIMIT':
+                        LG.showError("上传文件大小过大");
+                        break;
+                    case 'F_EXCEED_SIZE':
+                        LG.showError("文件大小超过限制,最多能传" + parseInt(arg / 1024) + "KB");
+                        break;
+                    case 'F_DUPLICATE':
+                        LG.showError("重复的文件");
+                        break;
+                    default:
+                        LG.showError('Error: ' + code);
+                        break;
+                }
+            };
+
+            $upload.on('click', function () {
+                if ($(this).hasClass('disabled')) {
+                    return false;
+                }
+                if (state === 'ready') {
+                    uploader.upload();
+                } else if (state === 'paused') {
+                    uploader.upload();
+                } else if (state === 'uploading') {
+                    uploader.stop();
+                }
+            });
+
+            $info.on('click', '.retry', function () {
+                uploader.retry();
+            });
+
+            $info.on('click', '.ignore', function () {
+                LG.showError('todo');
+            });
+            $upload.addClass('state-' + state);
+            updateTotalProgress();
+        });
+    </script>
+</body>
+</html>

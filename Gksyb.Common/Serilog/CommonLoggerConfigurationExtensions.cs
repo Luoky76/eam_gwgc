@@ -1,0 +1,48 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Serilog.Events;
+using System.IO;
+
+namespace Serilog
+{
+    /// <summary>
+    /// 日志通用设置
+    /// </summary>
+    public static class CommonLoggerConfigurationExtensions
+    {
+        private const string DefaultOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] ({Application}/{MachineName}) {Message:lj}{NewLine}{Exception}";
+        private static readonly string KeyPropertyName = nameof(LogPath);
+
+        /// <summary>
+        /// 日志通用设置
+        /// </summary>
+        public static LoggerConfiguration CommonLoggerConfiguration(this LoggerConfiguration loggerConfiguration, IConfiguration configuration, string directory = null)
+        {
+            directory ??= Path.Combine(AppContext.BaseDirectory, configuration.GetValue("Serilog:File:FileName", defaultValue: "logs"));
+            var isWriteToFile = configuration.GetValue("Serilog:WriteToFile", defaultValue: true);
+            var retainedFileCountLimit = configuration.GetValue("Serilog:File:CountLimit", defaultValue: 2 * 31);
+            var fileSizeLimitBytes = configuration.GetValue("Serilog:File:SizeLimitBytes", defaultValue: 20) * 1024 * 1024;
+            loggerConfiguration
+            .WriteTo.Map(le =>//支持分路径写入文件 必须在最前面 因为会更新LogPath
+            {
+                string path = null;
+                if (le.Properties.TryGetValue(KeyPropertyName, out var v) && v is ScalarValue sv)
+                {
+                    path = sv.Value?.ToString();
+                }
+                path = string.IsNullOrWhiteSpace(path) ? "Application" : path;
+                le.AddOrUpdateProperty(new LogEventProperty(KeyPropertyName, new ScalarValue(path)));
+                return path;
+            }, (path, configuration) =>
+            {
+                if (!isWriteToFile) return;
+                path = Path.Combine(directory, $@"{path}/log-.txt");
+                configuration.Async(configure =>//异步写入
+                {
+                    configure.File(path, retainedFileCountLimit: retainedFileCountLimit, fileSizeLimitBytes: fileSizeLimitBytes, rollOnFileSizeLimit: true, rollingInterval: RollingInterval.Day, outputTemplate: DefaultOutputTemplate);
+                }, bufferSize: 10000);
+            });
+            return loggerConfiguration;
+        }
+    }
+}

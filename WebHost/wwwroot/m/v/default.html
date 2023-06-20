@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>微平台</title>
+    <link rel="stylesheet" href="../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="view view-main view-skip-init">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div id="myTitle" class="title">
+                            欢迎您
+                        </div>
+                        <div class="right">
+                            <a href='javascript:business.exit();' class="link external"><i class="f7-icons">exit</i> <span class="ios-only">退出</span> </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="toolbar tabbar tabbar-labels toolbar-bottom-md">
+                    <div id="rootMenu" class="toolbar-inner">
+                    </div>
+                </div>
+                <div id="myTabs" class="tabs">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    <script type="text/javascript" src="../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            //初始路由
+            initRoutes: function () {
+                app.routes.push({
+                    name: "default",
+                    path: "/",
+                    url: gksybConfigs.urlBase + "default.html"
+                }, {
+                    name: "iframe",
+                    path: "/iframe/:url/:title/:backType",
+                    componentUrl: gksybConfigs.urlBase + "iframe.html",
+                });
+            },
+            //退出
+            exit: function () {
+                app.ajax({
+                    url: 'auth/exit',
+                    headers: {
+                        ticket: window.ticket
+                    },
+                    success: function () {
+                        var inWeixin = window.session.Openid;
+                        ticket = null;
+                        session = null;
+                        if (inWeixin) {
+                            weixinOauth();
+                            return;
+                        }
+                        window._toLogin();
+                    }
+                });
+            },
+            //菜单数据标准化
+            customMenuData: function (menus) {
+                var firstRoute = app.routes.length > 0 ? app.routes[0] : null;
+                for (var i = 0, l = menus.length; i < l; i++) {
+                    var menu = menus[i];
+                    menu.MENUCSS = menu.MENUICON || "";
+                    var array = menu.MENUCSS.split(" ");
+                    if (array.length > 1) {
+                        menu.MENUICON = array[array.length - 1];
+                    }
+                    menu.Extend = "";
+                    menu.Path = "/" + menu.MENUNO + "/";
+                    if (menu.MENUURL.length < 2) continue;
+                    if (menu.MENUURL.indexOf("javascript:") >= 0 || menu.MENUURL.indexOf("http") === 0) {
+                        menu.Path = menu.MENUURL;
+                        menu.Extend = "external";
+                        continue;
+                    }
+                    menu.isTabHome = menu.MENUCSS.indexOf("tab-home") >= 0;
+                    menu.isComponent = menu.MENUCSS.indexOf("component") >= 0;
+                    menu.MENUURL = (menu.MENUURL || "").replace(/.aspx/i, ".html");
+                    menu.MENUURL = gksybConfigs.urlBase + menu.MENUURL;
+                    var bolContinue = true;
+                    var route = {
+                        id: menu.MENUNO,
+                        name: menu.MENUNO,
+                        path: menu.Path,
+                        url: menu.isComponent ? undefined : menu.MENUURL,
+                        componentUrl: menu.isComponent ? menu.MENUURL :undefined,
+                        title: menu.MENUNAME,
+                        on: {}
+                    };
+                    if (!menu.MENUPARENTNO && firstRoute.tabs) {
+                        if (menu.isTabHome) {
+                            menu.Path = route.path = "/";
+                        }
+                        firstRoute.tabs.push(route);
+                        continue;
+                    }
+                    for (var j = 0, l2 = app.routes.length; j < l2; j++) {
+                        var o = app.routes[j];
+                        if (o.path == menu.Path) {
+                            app.routes[j] = app.utils.extend(true, route, o);
+                            bolContinue = false;
+                            break;
+                        }
+                    }
+                    if (!bolContinue) continue;
+                    app.routes.push(route); //加入路由
+                }
+            },
+            //填充菜单
+            fillMenuBody: function (menus) {
+                var $menu = $$("#rootMenu");
+                var $tabs = $$("#myTabs");
+                $menu.html("");
+                $tabs.html("");
+                for (var i = 0, l = menus.length; i < l; i++) {
+                    var menu = menus[i];
+                    $$('<a href="#' + menu.MENUNO + '" class="tab-link ' + (menu.isTabHome ? 'tab-link-active' :
+                        '') +
+                        '"><i class="' + menu.MENUCSS +
+                        '">' + menu.MENUICON + '</i><span class="tabbar-label">' + menu.MENUNAME +
+                        '</span></a>').appendTo($menu);
+                    var $tab = $$('<div id="' + menu.MENUNO +
+                        '" class="page-content tab bg-color menus ' + (menu.isTabHome ? 'tab-active' : '') +
+                        '"></div>'
+                    ).appendTo($tabs);
+                    var subMenus = menu.children || [];
+                    for (var j = 0, l1 = subMenus.length; j < l1; j++) {
+                        var subMenu = subMenus[j] || [];
+                        if (subMenu.children.length > 0) {
+                            var $grid = $$('<div class="small-card card"><div class="card-header">' +
+                                subMenu.MENUNAME +
+                                '</div><div class="card-content"><div class="actions-grid"><div class="actions-group"></div></div></div></div>'
+                            ).appendTo($tab).find(".actions-group");
+                            var grandMenus = subMenu.children;
+                            for (var k = 0, l2 = grandMenus.length; k < l2; k++) {
+                                var grandMenu = grandMenus[k];
+                                $$('<div class="actions-button"><a href="' + grandMenu.Path +
+                                    '" class="' + grandMenu.Extend +
+                                    '"><div class="actions-button-media"><i class="icon ' +
+                                    grandMenu.MENUCSS +
+                                    '">' + grandMenu.MENUICON +
+                                    '</i></div><div class="actions-button-text">' + grandMenu.MENUNAME +
+                                    '</div></a></div>').appendTo($grid);
+                            }
+                        } else {
+                            if (j == 0) {
+                                var $grids = $$(
+                                    '<div class="small-card card"><div class="card-content"><div class="actions-grid"><div class="actions-group"></div></div></div></div>'
+                                ).appendTo($tab).find(".actions-group");
+                            }
+                            $$('<div class="actions-button"><a href="' + subMenu.Path +
+                                '" class="' + (subMenu.Extend) + '"><div class="actions-button-media"><i class="icon ' +
+                                subMenu.MENUCSS +
+                                '">' + subMenu.MENUICON +
+                                '</i></div><div class="actions-button-text">' +
+                                subMenu.MENUNAME +
+                                '</div></a></div>').appendTo($grids);
+                        }
+                    }
+                }
+            },
+            //加载菜单
+            loadMenu: function () {
+                var me = this;
+                app.ajax({
+                    _toLogin: true,
+                    url: 'auth/mymenus',
+                    async: false,
+                    success: function (menus) {
+                        me.customMenuData(menus);
+                        menus = menus.toTree("MENUNO", "MENUPARENTNO");//转成树形结构
+                        me.fillMenuBody(menus);
+                    }
+                });
+            },
+            //url处理
+            handleUrl: function () {
+                var url = getQueryStringByName("r");
+                if (!url) return;
+                url = app.params.view.browserHistorySeparator + "/" + url + "/";
+                location.replace(location.origin + location.pathname + url);
+            },
+            //获取菜单
+            getMenu: function (menuno) {
+                for (var i = 0, l = app.menus.length; i < l; i++) {
+                    var menu = app.menus[i];
+                    if (menu.MENUNO === menuno) {
+                        return menu;
+                    }
+                }
+            },
+            //内嵌其他网页
+            iframe: function (url, title, backType) {
+                url = "/iframe/" + encodeURIComponent(url) + "/" + encodeURIComponent(title || "") + "/" + (backType || "0");
+                mainView.router.navigate(url);
+            },
+            //初始化
+            init: function () {
+                var me = this;
+                me.handleUrl();
+                me.initRoutes();
+                me.loadMenu();
+                $$("#myTitle").html("欢迎您，" + (session ? (session.RealName || "") : ""));
+                app.methods.initMainView({
+                    url: "/",
+                    browserHistoryRoot: gksybConfigs.urlBase + "default.html",
+                    browserHistory: true
+                });
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

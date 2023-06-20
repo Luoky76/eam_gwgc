@@ -1,0 +1,482 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>流程设计</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/flow-boot.js" type="text/javascript"></script>
+    <style type="text/css">
+        html, body, #container {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #main-form .l-form li {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="view-panel" style="display:none;">
+        <form action="" id="view-form" class="l-form"></form>
+    </div>
+    <div id="layout-panel">
+        <div position="center">
+            <div id="container"></div>
+        </div>
+        <div position="right" title="流程属性">
+            <form id="main-form" style="margin-top:5px;">
+            </form>
+            <form id="flow-form" style="margin-top: 5px;">
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            lf: null,
+            defaultValue: {
+                "bpmn:startEvent": { name: "start" },
+                "bpmn:userTask": { title: "用户任务" },
+                "bpmn:serviceTask": { title: "系统任务" },
+                "bpmn:endEvent": { name: "end" },
+            },
+            sid: getQueryStringByName("sid"),
+            isView: getQueryStringByName("isView") === "1",
+            initFlow: function () {
+                var me = this;
+                me.lf = new eflow({
+                    multipleSelectKey: "shift",
+                    isSilentMode: false,
+                    container: $("#container")[0],
+                    onControlForm: function () {
+                        me.form();
+                    },
+                    onControlSee: function (data) {
+                        me.view(data);
+                    },
+                    onControlSave: function () {
+                        me.save();
+                    }
+                });
+                me.lf.on('blank:click', function () {//空白处点击
+                    setTimeout(function () {
+                        me.selectElement(null);
+                    }, 50);
+                });
+                me.lf.on('element:click', function (eventOptions) {//元素单击
+                    var id = eventOptions.data.id;
+                    setTimeout(function () {
+                        me.selectElement(me.lf.getDataById(id));
+                    }, 50);
+                });
+                me.lf.on('text:update', function (eventOptions) {//元素单击
+                    me.lf.setProperties(eventOptions.id, { title: eventOptions.text });
+                    if (me.selectNode.id === eventOptions.id) {
+                        me.flowForm.setData({ title: eventOptions.text }, false);
+                        return;
+                    }
+                });
+            },
+            changeOperatorType: function (input, value, g) {
+                var list = g.options.data;
+                var model = null;
+                for (var i = 0, l = list.length; i < l; i++) {
+                    var item = list[i];
+                    if (item.ID === value) {
+                        model = item;
+                        break;
+                    }
+                }
+                if (!model) return;
+                g.options.host_form.setData({ "operators": "" });
+                g.options.host_form.setVisible("operators", true);
+                LG.ajax({
+                    async: false,
+                    url: model.VALUE,
+                    success: function (data) {
+                        liger.get("operators").setData(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                $("#operators-label").html(item.TEXT);
+            },
+            initFlowForm: function () {
+                var me = this;
+                var fields = [
+                    { display: "名称", name: "name", newline: true, type: "text", options: {} },
+                    { display: "标题", name: "title", newline: true, bpmn: "bpmn:userTask,bpmn:serviceTask,bpmn:sequenceFlow", type: "text", options: {} },
+                    {
+                        display: "操作人类型", name: "operatorType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
+                            data: me.dataOperatorType,
+                            onChangeValue: me.changeOperatorType
+                        }
+                    },
+                    {
+                        display: '<span id="operators-label">操作人</span>', name: "operators", newline: true, bpmn: "no", type: "select", options: {
+                            isMultiSelect: true,
+                            split: ","
+                        }
+                    },
+                    //{ display: "表单", name: "form", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
+                    { display: "类路径", name: "clazz", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
+                    { display: "方法名", name: "methodName", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
+                    { display: "参数变量", name: "args", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
+                    {
+                        display: "表达式", name: "expr", newline: true, bpmn: "bpmn:exclusiveGateway,bpmn:sequenceFlow", type: "textarea", options: {
+                            rows: 3
+                        }
+                    },
+                    { display: "处理类", name: "handle", newline: true, bpmn: "bpmn:exclusiveGateway", type: "text", options: {} },
+                    //{
+                    //    display: "任务类型", name: "taskType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
+                    //        data: [{ ID: 1, TEXT: "主办任务" }, { ID: 2, TEXT: "协办任务" }]
+                    //    }
+                    //},
+                    //{
+                    //    display: "参与类型", name: "performType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
+                    //        data: [{ ID: 1, TEXT: "普通参与" }, { ID: 2, TEXT: "会签参与" }]
+                    //    }
+                    //},
+                    { display: "前置拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
+                    { display: "后置拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
+                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: {} }
+                    //, { display: "提醒时间", name: "reminderTime", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
+                    //{ display: "重复提醒间隔", name: "reminderRepeat", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
+                    //{ display: "期待完成时间", name: "expireTime", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
+                    //{
+                    //    display: "是否自动完成", name: "autoExecute", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
+                    //        data: [{ ID: "N", TEXT: "否" }, { ID: "Y", TEXT: "是" }]
+                    //    }
+                    //},
+                    //{ display: "回调处理", name: "callback", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} }
+                ];
+                for (var i = 0, l = fields.length; i < l; i++) {
+                    var field = fields[i];
+                    field.options = field.options || {};
+                    field.options._orginOnChangeValue = field.options.onChangeValue;
+                    field.options.onChangeValue = function (input, value, g) {
+                        if (g.options._orginOnChangeValue) g.options._orginOnChangeValue(input, value, g);
+                        if (me._skipUpdateProperties === true) return;
+                        var properties = {};
+                        properties[g.id] = value;
+                        me.lf.setProperties(me.selectNode.id, properties);
+                        if (g.id === "title") {
+                            if (me.lf.graphModel.textEditElement) me.lf.graphModel.textEditElement.setElementState(1);
+                            me.lf.updateText(me.selectNode.id, value);
+                        }
+                    };
+                }
+                me.fields = fields;
+                me.flowForm = $("#flow-form").ligerForm({
+                    labelWidth: 100,
+                    inputWidth: 180,
+                    fields: fields,
+                    space: 3,
+                    validate: true,
+                    onAfterSetFields: function (g) {
+                    }
+                });
+                me.setInVisible();
+            },
+            setInVisible: function () {
+                var me = this;
+                for (var i = 0, l = me.fields.length; i < l; i++) {
+                    me.flowForm._setFieldPanelVisible(null, i, false);
+                }
+            },
+            selectElement: function (node) {
+                var me = this;
+                var header = $(".l-layout-right .l-layout-header-inner");
+                me.flowForm.reset(false);
+                if (!node) {
+                    me.flowForm.form.hide();
+                    me.mainForm.form.show();
+                    header.html("流程属性");
+                    me.setInVisible();
+                    delete me.selectNode;
+                    return;
+                }
+                me.mainForm.form.hide();
+                me.flowForm.form.show();
+                me.selectNode = node;
+                for (var i = 0, l = me.fields.length; i < l; i++) {
+                    var field = me.fields[i];
+                    var visible = true;
+                    if (field.bpmn && field.bpmn.indexOf(node.type) < 0) {
+                        visible = false;
+                    }
+                    if (field.bpmnHide && field.bpmnHide.indexOf(node.type) > - 1) {
+                        visible = false;
+                    }
+                    me.flowForm._setFieldPanelVisible(null, i, visible);
+                }
+                var title = node.text ? node.text.value : node.type;
+                header.html(title + "节点  属性");
+                if ($.isEmptyObject(node.properties)) {
+                    me.flowForm.setData($.extend({ name: node.id }, me.defaultValue[node.type]), true);
+                    return;
+                }
+                me._skipUpdateProperties = true;
+                me.flowForm.setData(node.properties);
+                delete me._skipUpdateProperties;
+            },
+            initMainForm: function () {
+                var me = this;
+                me.mainForm = $("#main-form").ligerForm({
+                    labelWidth: 100,
+                    inputWidth: 180,
+                    fields: [
+                        { name: "FLOW_FORM", type: "hidden" },
+                        { display: "流程名称", name: "FLOW_NAME", newline: true, type: "text", options: {} },
+                        { display: "流程标题", name: "FLOW_TITLE", newline: true, type: "textarea", options: { rows: 3 } },
+                        { display: "所属组织", name: "CORPID", newline: true, type: "select", options: { data: function () { return me.dataCorp; }, autocomplete: true } },
+                        { display: "顺序", name: "FLOW_ORDER", newline: true, type: "int" },
+                        { display: "表单url", name: "FLOW_FORM_URL", newline: true, type: "textarea", options: { rows: 3 } },
+                    ],
+                    space: 3,
+                    validate: true
+                });
+            },
+            render: function (data) {
+                var me = this;
+                me.mainForm.setOrginData(data);
+                me.setTitle();
+                var graphData = {};
+                try {
+                    graphData = JSON.parse(data.FLOW_CONTENT || "{}");
+                }
+                catch (e) {
+
+                }
+                me.lf.render(graphData);
+            },
+            form: function () {
+                var me = this;
+                var data = me.mainForm.getData();;
+                $.ligerDialog.open({
+                    width: 900,
+                    height: 600,
+                    allowClose: true,
+                    title: '流程表单',
+                    data: {
+                        FLOW_FORM: data.FLOW_FORM, callback: function (formData) {
+                            me.mainForm.setData(formData);
+                            if (!me.sid) {
+                                setTimeout(function () {
+                                    me.save();
+                                }, 100);
+                            }
+                        }
+                    },
+                    url: "flow-form.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false
+                });
+            },
+            view: function (data) {
+                var me = this;
+                var width = 500, height = 500;
+                if (!me.viewForm) {
+                    me.viewForm = $("#view-form").ligerForm({
+                        fields: [
+                            {
+                                display: "", hideLabel: true, name: "flowJson", newline: true, width: width, type: "textarea", options: {
+                                    height: height
+                                }
+                            }
+                        ],
+                        space: 3,
+                        validate: true,
+                        onAfterSetFields: function (g) {
+                            me.viewForm = g;
+                        }
+                    });
+                }
+                me.viewForm.setOrginData({ flowJson: JSON.stringify(data) });
+                var dialog = $.ligerDialog.open({
+                    width: width + 10,
+                    height: height + 20,
+                    allowClose: true,
+                    title: "查看流程数据",
+                    target: me.viewForm.form,
+                    contentCls:"l-dialog-content-nopadding l-overflow-hidden",
+                    isHidden: true,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: false,
+                    slide: false,
+                    buttons: [{
+                        text: "复制", type: "info", onClick: function () {
+                            var json = me.viewForm.getData().flowJson;
+                            if (navigator.clipboard) {
+                                navigator.clipboard.writeText(json);
+                            }
+                            else if (window.clipboardData) {
+                                window.clipboardData.setData('text', json);
+                            }
+                            LG.tip("复制成功");
+                        }
+                    }, {
+                        text: "确定", type: "info", onClick: function () {
+                            var graphData = JSON.parse(me.viewForm.getData().flowJson);
+                            me.lf.render(graphData);
+                            dialog.hide();
+                        }
+                    }]
+                });
+            },
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'workflow/definition/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
+                        me.dataOperatorType = data.operatorTypeData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                if (!me.sid) {
+                    me.render({});
+                    return;
+                }
+                LG.ajax({
+                    async: false,
+                    url: 'workflow/definition/get',
+                    loading: '正在获取中...',
+                    data: { id: me.sid },
+                    success: function (data) {
+                        me.render(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                var graphData = me.lf.getGraphData();
+                function handle(data) {
+                    data.FLOW_CONTENT = encrypt(data.FLOW_CONTENT);
+                    data.FLOW_FORM = encrypt(data.FLOW_FORM);
+                    return data;
+                }
+                var data = me.mainForm.getData();
+                data.FLOW_CONTENT = JSON.stringify(graphData);
+                handle(data);
+                var original = handle(me.mainForm.getOrginData());
+                var changeRow = new Object();
+                if (!me.sid) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'workflow/definition/save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function (data, message) {
+                        LG.showSuccess('保存成功', function () {
+                            if (data.length < 1) {
+                                location.reload(true);
+                                return;
+                            }
+                            location.href = location.pathname + "?sid=" + data[0].ID;
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.flowForm.getChanges();
+                    if (!$.isEmptyObject(data)) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setTitle: function () {
+                var me = this;
+                var title = me.mainForm.getData().FLOW_NAME;
+                if (!title) return;
+                title = "[" + title + "]" + "  流程设计";
+                if (me.dialog) {
+                    me.dialog._setTitle(title);
+                    return;
+                }
+                window.document.title = title;
+            },
+            initLayout: function () {
+                $("#layout-panel").ligerLayout({
+                    rightWidth: 320,
+                    onResize: function () {
+
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
+                }
+                me.loadComboxData();
+                me.initLayout();
+                me.initFlow();
+                me.initFlowForm();
+                me.initMainForm();
+                me.loadData();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>
