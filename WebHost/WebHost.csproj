@@ -93,5 +93,6 @@
 		</ItemGroup>
 		<Copy SourceFiles="@(PublishFile)" DestinationFolder="$(PublishDir)\plugins\" />
 	</Target>
+	<ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 	
 </Project>
