@@ -1,8 +1,10 @@
 ﻿#pragma warning disable IDE0051,IDE0052 // 删除未使用的私有成员
 
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Gksyb.Server.Services.Common
@@ -73,6 +75,34 @@ namespace Gksyb.Server.Services.Common
         }
 
         private static readonly Dictionary<string, MethodInfo> _methodInfos = null;
+
+        /// <summary>
+        /// 设备分类编码下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DeviceTypeCode(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.TYPE_CODE, TEXT = c.TYPE_CODE, VALUE = c.TYPE_CODE })
+                .Distinct()
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 设备分类名称下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DeviceTypeName(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.TYPE_NAME, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+                .Distinct()
+               .ToListAsync();
+        }
 
         /// <summary>
         /// 初始化
