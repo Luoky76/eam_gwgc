@@ -35,7 +35,7 @@ namespace EAM.Device.Services
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
                 { "DeviceTypeCode",null},
-                { "DeviceTypeName", (Expression<Func<BASE_DEVICETYPE, bool>>)null}
+                { "DeviceTypeName", (Expression<Func<BASE_DEVICETYPE, bool>>)null},
             });
 
             return AjaxResult.Success(data);
@@ -143,7 +143,13 @@ namespace EAM.Device.Services
             entity.ADD_USERID = _userSession.UserID.ToString();
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
-
+            var query = await _dbContext.Query<BASE_DEVICETYPE>()
+                .Where(c => c.TYPE_ID == entity.PRE_TYPEID&&c.PRE_TYPEID==entity.TYPE_ID||c.TYPE_ID == entity.PRE_TYPEID&&c.TYPE_ID==entity.TYPE_ID)
+                .FirstOrDefaultAsync();
+            if (query!=null)
+            {
+                throw new MessageException("上级节点只能为父节点！");
+            }
             await Task.CompletedTask;
         }
 
@@ -156,7 +162,14 @@ namespace EAM.Device.Services
         {
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
-
+            var query = await _dbContext.Query<BASE_DEVICETYPE>()
+                .Where(c => c.TYPE_ID == entity.PRE_TYPEID&&c.PRE_TYPEID==entity.TYPE_ID||c.TYPE_ID == entity.PRE_TYPEID&&c.TYPE_ID==entity.TYPE_ID)
+                .FirstOrDefaultAsync();
+            if (query!=null)
+            {
+                throw new MessageException("上级节点只能为父节点！");
+            }
+            
             await Task.CompletedTask;
         }
 

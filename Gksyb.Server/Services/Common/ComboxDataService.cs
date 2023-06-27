@@ -2,6 +2,7 @@
 
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
@@ -99,11 +100,52 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
-                .Select(c => new ComboxData() { ID = c.TYPE_NAME, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+                .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+                .Distinct()
+               .ToListAsync();
+        }
+        /// <summary>
+        /// 设备构造树编码下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DeviceComposeCode(Expression<Func<BASE_DEVICE_COMPOSE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_DEVICE_COMPOSE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.COMPOSE_CODE, TEXT = c.COMPOSE_CODE, VALUE = c.COMPOSE_CODE })
                 .Distinct()
                .ToListAsync();
         }
 
+        /// <summary>
+        /// 设备构造树名称下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DeviceComposeName(Expression<Func<BASE_DEVICE_COMPOSE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_DEVICE_COMPOSE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.COMPOSE_ID, TEXT = c.COMPOSE_NAME, VALUE = c.COMPOSE_NAME })
+                .Distinct()
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 构造类型
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ConsType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "constype").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+        
         /// <summary>
         /// 初始化
         /// </summary>

@@ -31,7 +31,6 @@
     </div>
     <script type="text/javascript">
         'use strict';
-        var rootPath = "../";
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
@@ -62,14 +61,25 @@
                         columns: [
                             { display: "设备类别编码", name: "TYPE_CODE", dbname: "TYPE_CODE", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
                             { display: "设备类别名称", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "使用年限", name: "WORK_YEAR", dbname: "WORK_YEAR", minWidth: 200, type: "int", align: "left", editor: { type: 'int' } },
-                            { display: "专项管理属性", name: "IS_SPEC", dbname: "IS_SPEC", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "设备类别级别", name: "TYPE_LEVEL", dbname: "TYPE_LEVEL", minWidth: 200, type: "int", align: "left", editor: { type: 'int' } },
-                            { display: "设备类别描述", name: "TYPE_DESC", dbname: "TYPE_DESC", minWidth: 200, type: "text", align: "left", editor: { type: 'text' } },
-                            { display: "上一节点id", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "text", align: "left", hide: true },
-                            { display: "上级节点", name: "PRE_TYPENAME", dbname: "PRE_TYPENAME", minWidth: 200, type: "text" },
+                            { display: "使用年限", name: "WORK_YEAR", dbname: "WORK_YEAR", minWidth: 200, type: "float", align: "left", editor: { type: 'float' }, hide: true },
+                            { display: "专项管理属性", name: "IS_SPEC", dbname: "IS_SPEC", minWidth: 150, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            //{ display: "设备类别级别", name: "TYPE_LEVEL", dbname: "TYPE_LEVEL", minWidth: 50, type: "int", align: "left", editor: { type: 'int' } },
+                            { display: "设备类别描述", name: "TYPE_DESC", dbname: "TYPE_DESC", minWidth: 250, type: "text", align: "left", editor: { type: 'text' } },
+                            //{ display: "上一节点id", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "text", align: "left", hide: true },
                             {
-                                display: "状态", name: "STATUS", dbname: "STATUS", minWidth: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
+                                display: "上级节点", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.DeviceTypeName },
+                                render: function (rowdata, rowindex, value, column) {
+                                    //debugger
+                                    var item = me.DeviceTypeName.find(x => x.ID === value);
+                                    var pre_typeid = "";
+                                    if (item)
+                                        pre_typeid = item.TEXT;
+                                    return pre_typeid;
+                                },
+                            },
+                            //{ display: "上级节点", name: "PRE_TYPENAME", dbname: "PRE_TYPENAME", minWidth: 200, type: "text" },
+                            {
+                                display: "状态", name: "STATUS", dbname: "STATUS", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
                             },
                             { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text", align: "left", editor: { type: 'text' } },
                             { display: "主键", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text", align: "left", hide: true },
@@ -111,7 +121,7 @@
                     columns: me.config.grid.columns,
                     //dataAction: 'server',
                     toolbar: {},
-                    url: 'Device/type/list',
+                    url: 'Device/DeviceType/list',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -160,8 +170,8 @@
                         case "add":
                             me.add();
                             break;
-                        case "modify":
-                            me.modify();
+                        case "modifyParent":
+                            me.modifyParent();
                             break;
                         case "delete":
                             me.delete();
@@ -193,6 +203,31 @@
                 else {
                     var nodeId = me.currentNode.data.TYPE_ID;
                     me.grid.addEditRow({ "PRE_TYPEID": (nodeId == "ROOT" ? "" : nodeId), "PRE_TYPENAME": me.currentNode.data.TYPE_NAME, "STATUS": "1" });
+                }
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var sid = selected.MODEL_ID;
+                    $.ligerDialog.open({
+                        width: 1280,
+                        height: 720,
+                        allowClose: true,
+                        title: '[修改]上级节点',
+                        url: "FireControlDetail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
                 }
             },
             save: function () { //保存

@@ -26,12 +26,6 @@ namespace Gksyb.Model
         public string COMPOSE_CODE { get; set; }
 
         /// <summary>
-        /// 等级
-        /// </summary>
-        [Description("等级")]
-        public decimal? TYPE_LEVEL { get; set; }
-
-        /// <summary>
         /// 级别
         /// </summary>
         [Description("级别")]
@@ -52,81 +46,11 @@ namespace Gksyb.Model
         public string COMPOSE_NAME { get; set; }
 
         /// <summary>
-        /// 设备全称
-        /// </summary>
-        [Description("设备全称")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ALLNAME { get; set; }
-
-        /// <summary>
-        /// 工作单元
-        /// </summary>
-        [Description("工作单元")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WORD_UNIT { get; set; }
-
-        /// <summary>
-        /// 机构
-        /// </summary>
-        [Description("机构")]
-        [Column(DbType = DbType.AnsiString)]
-        public string INSTITUTION { get; set; }
-
-        /// <summary>
-        /// 部件
-        /// </summary>
-        [Description("部件")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PARTS { get; set; }
-
-        /// <summary>
-        /// 器件
-        /// </summary>
-        [Description("器件")]
-        [Column(DbType = DbType.AnsiString)]
-        public string COMPONENT { get; set; }
-
-        /// <summary>
         /// 设备分类
         /// </summary>
         [Description("设备分类")]
         [Column(DbType = DbType.AnsiString)]
         public string TYPE_NAME { get; set; }
-
-        /// <summary>
-        /// 结构件
-        /// </summary>
-        [Description("结构件")]
-        [Column(DbType = DbType.AnsiString)]
-        public string STRUCTURE { get; set; }
-
-        /// <summary>
-        /// 功能件
-        /// </summary>
-        [Description("功能件")]
-        [Column(DbType = DbType.AnsiString)]
-        public string FUNCTOR { get; set; }
-
-        /// <summary>
-        /// 元件
-        /// </summary>
-        [Description("元件")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ELEMENT { get; set; }
-
-        /// <summary>
-        /// 使用部门
-        /// </summary>
-        [Description("使用部门")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_NAME { get; set; }
-
-        /// <summary>
-        /// 部门ID
-        /// </summary>
-        [Description("部门ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_ID { get; set; }
 
         /// <summary>
         /// 类别ID
@@ -174,6 +98,13 @@ namespace Gksyb.Model
         /// </summary>
         [Description("修改时间")]
         public DateTime? MODIFY_DATE { get; set; }
+
+        /// <summary>
+        /// 结构分类
+        /// </summary>
+        [Description("结构分类")]
+        [Column(DbType = DbType.AnsiString)]
+        public string COMPOSE_TYPE { get; set; }
 
     }
 }
