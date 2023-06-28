@@ -137,6 +137,7 @@
             searchForm: null,
             buttons: null,
             setGrid: function () {
+                //debugger
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
@@ -252,6 +253,7 @@
                 }
             },
             save: function () { //保存
+                
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
@@ -350,6 +352,7 @@
             setTree: function () {
                 var me = this;
                 var rootValue = "ROOT";
+               
                 me.tree = $("#maintree").ligerTree({
                     url: "menu/tree",
                     parms: {
@@ -380,6 +383,7 @@
                         if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.ID);
                     },
                     onSelect: function (node) {
+                        
                         me.iframeloading.show();
                         var nodeData = node.data;
                         var where = {};
@@ -397,6 +401,7 @@
                             }
                             where.groups[0].rules.push({ field: 'MENUPARENTNO', value: parentNo, op: 'equal' });
                             me.grid.set('parms', { "where": JSON2.stringify(where) });
+                            //debugger
                             me.currentMenuParentNo = parentNo;
                             me.reload();
                         }

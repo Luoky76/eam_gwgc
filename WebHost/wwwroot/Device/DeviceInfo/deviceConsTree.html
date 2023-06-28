@@ -1,0 +1,449 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>设备构造树</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="设备构造树" id="mainmenu">
+            <ul id="maintree" style="margin-top:5px;"></ul>
+        </div>
+        <div position="center" title="设备构造树列表">
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <div id="iframeloading" class='l-loading'>
+            </div>
+            <form id="mainform">
+                <div id="maingrid" style="margin: 2px;"></div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            iframeloading: $("#iframeloading"),
+            tree: null,
+            ConsType: [],
+            DeviceTypeName:[],
+            currentNode: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            {
+                                display: "编码", name: "_search_COMPOSE_CODE", dbname: "COMPOSE_CODE", newline: false, type: "select", options: {
+                                    type: "select",
+                                    data: me.DeviceComposeCode
+                                }
+                            },
+                            {
+                                display: "名称", name: "_search_COMPOSE_NAME", dbname: "COMPOSE_NAME", newline: false, type: "select", options: {
+                                    type: "select",
+                                    data: me.DeviceComposeName
+                                }
+                            },
+                            { display: "上一节点id", name: "_search_PRE_COMPOSEID", dbname: "PRE_COMPOSEID", op: "equal", type: "hidden", options: {} },
+                            { display: "上一节点id", name: "_search_TYPE_ID", dbname: "TYPE_ID", op: "startwith", type: "hidden", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "编码", name: "COMPOSE_CODE", dbname: "COMPOSE_CODE", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            { display: "名称", name: "COMPOSE_NAME", dbname: "COMPOSE_NAME", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            {
+                                display: "结构分类", name: "COMPOSE_TYPE", dbname: "COMPOSE_TYPE", minWidth: 100, type: "text", align: "left", validate: { required: true },
+                                editor: {
+                                    type: "combobox", options: {
+                                        data: me.ConsType, autocomplete: true, selectBoxHeight: 280
+                                    }
+                                }
+                            },
+                            //{ display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 150, type: "text", align: "left", readonly: true, hide: true },
+                            //{ display: "上级节点", name: "PRE_COMPOSE_NAME", dbname: "PRE_COMPOSE_NAME", minWidth: 200, align: "left", type: "text" },
+                            {
+                                display: "上级节点", name: "PRE_COMPOSEID", dbname: "PRE_COMPOSEID", minWidth: 200, type: "text", align: "left", editor: { type: 'select', data: me.DeviceComposeName },
+                                render: function (rowdata, rowindex, value, column) {
+                                    //debugger
+                                    var item = me.DeviceComposeName.find(x => x.ID === value);
+                                    var pre_composeid = "";
+                                    if (item)
+                                        pre_composeid = item.TEXT;
+                                    return pre_composeid;
+                                },
+                            },
+                            {
+                                display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", minWidth: 200, type: "text", align: "left", editor: { type: 'select', data: me.DeviceComposeName },
+                                render: function (rowdata, rowindex, value, column) {
+                                    //debugger
+                                    var item = me.DeviceTypeName.find(x => x.ID === value);
+                                    var deviceTypeName = "";
+                                    if (item)
+                                        deviceTypeName = item.TEXT;
+                                    return deviceTypeName;
+                                },
+                            },
+                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text", align: "left", editor: { type: 'text' } },
+
+                            //{ display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text", align: "left", hide: true },
+                           
+                            { display: "主键", name: "COMPOSE_ID", dbname: "COMPOSE_ID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "创建人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "创建人", name: "ADD_USERNAME", dbname: "ADD_USERNAME", width: 100, type: "text", align: "center", hide: true },
+                            { display: "创建时间", name: "ADD_DATE", dbname: "ADD_DATE", width: 100, type: "date", align: "center", hide: true },
+                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 100, type: "text", align: "center", hide: true },
+                            { display: "修改人", name: "MODIFY_USERNAME", dbname: "MODIFY_USERNAME", width: 100, type: "text", align: "center", hide: true },
+                            { display: "修改时间", name: "MODIFY_DATE", dbname: "MODIFY_DATE", width: 100, type: "date", align: "center", hide: true }
+
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            loadComboxData: function () {
+                var me = this;
+                var dataControl = [];
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceConsTree/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.DeviceComposeCode = data.DeviceComposeCode
+                        me.DeviceComposeName = data.DeviceComposeName;
+                        me.ConsType = data.ConsType;
+                        me.DeviceTypeName = data.DeviceTypeName;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                return dataControl;
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Device/DeviceConsTree/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'COMPOSE_CODE',
+                    sortOrder: 'asc',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        me.iframeloading.hide();
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        if (rowdata && rowdata.VALIDFLAG && rowdata.VALIDFLAG !== "1") {
+                            return "style='color:red;'";
+                        }
+                        return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.modify(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+                if (me.currentNode == null || me.currentNode == undefined) {
+                    LG.tip('请选择左侧树节点!');
+                }
+                else {
+                    var nodeId = me.currentNode.data.COMPOSE_ID;
+                    if (nodeId == "ROOT") {
+                        LG.showError("请选择非根节点进行新增数据");
+                        return;
+                    }
+                    if (me.currentNode.data.TYPE == "1") {
+                        me.grid.addEditRow({ "PRE_COMPOSEID": nodeId, "TYPE_ID": me.currentNode.data.TYPE_ID,   "STATUS": "1" });
+                    }
+                    if (me.currentNode.data.TYPE == "0") {
+                        me.grid.addEditRow({ "TYPE_ID": nodeId,  "STATUS": "1" });
+                    }
+                }
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'device/DeviceConsTree/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            location.reload();
+                            //me.reloadTree();
+                            //me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            reloadTree: function () {
+                var me = this;
+                me.selectNode = me.tree.getSelected();
+                me.tree.reload();
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setTree: function () {
+                var me = this;
+                var rootValue = "ROOT";
+                me.tree = $("#maintree").ligerTree({
+                    url: "Device/DeviceConsTree/tree",
+                    parms: {},
+                    nodeWidth: 160,
+                    slide: false,
+                    checkbox: false,
+                    single: true,
+                    needCancel: false,
+                    idFieldName: 'COMPOSE_ID',
+                    textFieldName: 'COMPOSE_NAME',
+                    parentIDFieldName: 'PARENTID',
+                    iconClsFieldName: "ICON",
+                    isExpand: 2,
+                    onSuccess: function (data) {
+                        $(".l-tree .l-body span").each(function () {
+                            var $this = $(this);
+                            var text = $this.text();
+                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
+                        });
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.COMPOSE_ID);
+                        else me.tree.selectNode(rootValue);
+                    },
+                    onSelect: function (node) {
+                        me.iframeloading.show();
+                        var nodeData = node.data;
+                        me.currentNode = node;
+                        var where = {};
+                        if (nodeData) {
+                            var parentNo = nodeData.COMPOSE_ID;
+                            //根据树形数据设置查询条件
+                            if (nodeData.TYPE == "0") {
+                                $("#_search_PRE_COMPOSEID").val("");
+                                $("#_search_TYPE_ID").val((parentNo == "ROOT" ? "" : parentNo));
+                            }
+                            else if (nodeData.TYPE == "1") {
+                                $("#_search_PRE_COMPOSEID").val(parentNo);
+                                $("#_search_TYPE_ID").val("");
+                            }
+                            else {
+                                $("#_search_PRE_COMPOSEID").val("");
+                                $("#_search_TYPE_ID").val("");
+                            }
+
+                            where = {
+                                rules: [],
+                                groups: [{
+                                    rules: [], op: "or"
+                                }], op: "and"
+                            };
+                            if (parentNo === rootValue) {
+                                parentNo = "";
+                                where.groups[0].rules.push({ field: "PRE_COMPOSEID", op: "isnull" });
+                                where.groups[0].rules.push({ field: "PRE_COMPOSEID", op: "equal", value: "0" });
+                            }
+
+                            if (nodeData.TYPE == "0") {
+                                where.groups[0].rules.push({ field: 'TYPE_ID', value: parentNo, op: 'startwith' });
+                            }
+                            else if (nodeData.TYPE == "1") {
+                                where.groups[0].rules.push({ field: 'PRE_COMPOSEID', value: parentNo, op: 'equal' });
+                            }
+                            else {
+                                where.groups[0].rules.push({ field: 'PRE_COMPOSEID', value: parentNo, op: 'startwith' });
+                            }
+                            me.grid.set('parms', { "where": JSON2.stringify(where) });
+                            me.currentMenuParentNo = parentNo;
+                            me.reload();
+                        }
+                    }
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                $("#layout").ligerLayout({ leftWidth: 240 });
+                me.iframeloading.show();
+                me.loadComboxData();
+                me.setConfig();
+                me.setGrid();
+                me.setTree();
+                me.setForm();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

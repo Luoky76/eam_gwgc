@@ -1,0 +1,422 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>设备分类</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="设备分类树" id="mainmenu">
+            <ul id="maintree" style="margin-top:5px;"></ul>
+        </div>
+        <div position="center" title="设备分类列表">
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <div id="iframeloading" class='l-loading'>
+            </div>
+            <form id="mainform">
+                <div id="maingrid" style="margin: 2px;"></div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            iframeloading: $("#iframeloading"),
+            tree: null,
+            currentNode: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            {
+                                display: "设备类别编码", name: "_search_TYPE_CODE", dbname: "TYPE_CODE", newline: false, type: "select", options: {
+                                    type: "select",
+                                    data: me.DeviceTypeCode
+                                }
+                            },
+                            {
+                                display: "设备类别名称", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", newline: false, width: 200, type: "select", options: {
+                                    type: "select",
+                                    data: me.DeviceTypeName
+                                }
+                            },
+                            { display: "上一节点id", name: "_search_PRE_TYPEID", dbname: "PRE_TYPEID", op: "equal", type: "hidden", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "设备类别编码", name: "TYPE_CODE", dbname: "TYPE_CODE", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            { display: "设备类别名称", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            { display: "使用年限", name: "WORK_YEAR", dbname: "WORK_YEAR", minWidth: 200, type: "float", align: "left", editor: { type: 'float' }, hide: true },
+                            { display: "专项管理属性", name: "IS_SPEC", dbname: "IS_SPEC", minWidth: 150, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            //{ display: "设备类别级别", name: "TYPE_LEVEL", dbname: "TYPE_LEVEL", minWidth: 50, type: "int", align: "left", editor: { type: 'int' } },
+                            { display: "设备类别描述", name: "TYPE_DESC", dbname: "TYPE_DESC", minWidth: 250, type: "text", align: "left", editor: { type: 'text' } },
+                            //{ display: "上一节点id", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "text", align: "left", hide: true },
+                            {
+                                display: "上级节点", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.DeviceTypeName },
+                                render: function (rowdata, rowindex, value, column) {
+                                    //debugger
+                                    var item = me.DeviceTypeName.find(x => x.ID === value);
+                                    var pre_typeid = "";
+                                    if (item)
+                                        pre_typeid = item.TEXT;
+                                    return pre_typeid;
+                                },
+                            },
+                            //{ display: "上级节点", name: "PRE_TYPENAME", dbname: "PRE_TYPENAME", minWidth: 200, type: "text" },
+                            {
+                                display: "状态", name: "STATUS", dbname: "STATUS", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
+                            },
+                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text", align: "left", editor: { type: 'text' } },
+                            { display: "主键", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "创建人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "创建时间", name: "ADD_DATE", dbname: "ADD_DATE", minWidth: 150, type: "date", align: "center", hide: true },
+                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "修改时间", name: "MODIFY_DATE", dbname: "MODIFY_DATE", minWidth: 150, type: "date", align: "center", hide: true }
+
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            loadComboxData: function () {
+                var me = this;
+                var dataControl = [];
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceType/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.DeviceTypeCode = data.DeviceTypeCode
+                        me.DeviceTypeName = data.DeviceTypeName;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                return dataControl;
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.grid.columns,
+                    //dataAction: 'server',
+                    toolbar: {},
+                    url: 'Device/DeviceType/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'TYPE_CODE',
+                    sortOrder: 'asc',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        me.iframeloading.hide();
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        if (rowdata && rowdata.VALIDFLAG && rowdata.VALIDFLAG !== "1") {
+                            return "style='color:red;'";
+                        }
+                        return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.modify(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modifyParent":
+                            me.modifyParent();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+                if (me.currentNode == null || me.currentNode == undefined) {
+                    LG.tip('请选择左侧树节点!');
+                }
+                else {
+                    var nodeId = me.currentNode.data.TYPE_ID;
+                    me.grid.addEditRow({ "PRE_TYPEID": (nodeId == "ROOT" ? "" : nodeId), "PRE_TYPENAME": me.currentNode.data.TYPE_NAME, "STATUS": "1" });
+                }
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var sid = selected.MODEL_ID;
+                    $.ligerDialog.open({
+                        width: 1280,
+                        height: 720,
+                        allowClose: true,
+                        title: '[修改]上级节点',
+                        url: "FireControlDetail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/DeviceType/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            location.reload();
+                            //me.reloadTree();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            reloadTree: function () {
+                var me = this;
+                me.selectNode = me.tree.getSelected();
+                me.tree.reload();
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setTree: function () {
+                var me = this;
+                var rootValue = "ROOT";
+                me.tree = $("#maintree").ligerTree({
+                    url: "Device/DeviceType/Tree",
+                    parms: {},
+                    nodeWidth: 160,
+                    slide: false,
+                    checkbox: false,
+                    single: true,
+                    needCancel: false,
+                    idFieldName: 'TYPE_ID',
+                    textFieldName: 'TYPE_NAME',
+                    parentIDFieldName: 'PARENTID',
+                    iconClsFieldName: "ICON",
+                    isExpand: 2,
+                    onSuccess: function (data) {
+                        $(".l-tree .l-body span").each(function () {
+                            var $this = $(this);
+                            var text = $this.text();
+                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
+                        });
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.TYPE_ID);
+                        else me.tree.selectNode(rootValue);
+                    },
+                    onSelect: function (node) {
+                        me.iframeloading.show();
+                        var nodeData = node.data;
+                        me.currentNode = node;
+                        var where = {};
+                        if (nodeData) {
+                            var parentNo = nodeData.TYPE_ID;
+                            $("#_search_PRE_TYPEID").val((parentNo == "ROOT" ? "" : parentNo));
+                            where = {
+                                rules: [],
+                                groups: [{
+                                    rules: [], op: "or"
+                                }], op: "and"
+                            };
+                            if (parentNo === rootValue) {
+                                parentNo = "";
+                                //where.groups[0].rules.push({ field: "PRE_TYPEID", op: "isnull" });
+                                //where.groups[0].rules.push({ field: "PRE_TYPEID", op: "equal", value: "0" });
+                            } else {
+                                where.groups[0].rules.push({ field: 'PRE_TYPEID', value: parentNo, op: 'equal' });
+                            }
+
+                            me.grid.set('parms', { "where": JSON2.stringify(where) });
+                            me.currentMenuParentNo = parentNo;
+                            me.reload();
+                        }
+                    }
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                $("#layout").ligerLayout({ leftWidth: 240 });
+                me.iframeloading.show();
+                me.loadComboxData();
+                me.setConfig();
+                me.setGrid();
+                me.setTree();
+                me.setForm();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

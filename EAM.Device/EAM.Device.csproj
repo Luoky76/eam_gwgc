@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controller\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Gksyb.Common\Gksyb.Common.csproj" />
     <ProjectReference Include="..\Gksyb.Core\Gksyb.Core.csproj" />
     <ProjectReference Include="..\Gksyb.Model\Gksyb.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Chloe">
+      <HintPath>..\Gksyb.Server\bin\Debug\net6.0\Chloe.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
