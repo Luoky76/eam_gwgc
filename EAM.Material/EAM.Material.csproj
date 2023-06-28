@@ -13,9 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controller\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Services\" />
+    <Reference Include="Chloe">
+      <HintPath>..\dll\Chloe.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

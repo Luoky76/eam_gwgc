@@ -1,12 +1,12 @@
 ﻿namespace Microsoft.AspNetCore.Mvc
 {
-    [Route("material")]
+    [Route("Material")]
     [ApiController]
     public class AreaController<T> : BaseController<T>
     {
     }
 
-    [Route("material")]
+    [Route("Material")]
     [ApiController]
     public class AreaController : BaseController
     {
