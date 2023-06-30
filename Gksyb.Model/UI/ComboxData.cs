@@ -24,5 +24,11 @@
         /// 标志
         /// </summary>
         public object FLAG { get; set; }
+
+        /// <summary>
+        /// 扩展2
+        /// </summary>
+        public object EXTEND { get; set; }
+        
     }
 }
