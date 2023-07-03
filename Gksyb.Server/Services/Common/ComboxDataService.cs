@@ -1,5 +1,6 @@
 ﻿#pragma warning disable IDE0051,IDE0052 // 删除未使用的私有成员
 
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
@@ -18,14 +19,15 @@ namespace Gksyb.Server.Services.Common
     {
         private readonly IDbContext _dbContext;
         private readonly IBCCodeService _codeService;
-
+        private readonly UserSession _userSession;
         /// <summary>
         /// 下拉数据
         /// </summary>
-        public ComboxDataService(IDbContext dbContext, IBCCodeService codeService)
+        public ComboxDataService(IDbContext dbContext, IBCCodeService codeService, UserSession userSession)
         {
             _dbContext = dbContext;
             _codeService = codeService;
+            _userSession = userSession;
         }
 
         /// <summary>
@@ -141,11 +143,42 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "constype").Where(predicate)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 设备运行状态
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> RunStatus(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "run_status").Where(predicate)
                 .OrderBy(c => c.CODE_SEQ)
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
-        
+
+        /// <summary>
+        /// 设备卡片
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DeviceInfo(Expression<Func<DEVICE_CARD, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            var qry = _dbContext.Query<DEVICE_CARD>();
+            if (!_userSession.IsAdmin)
+            {
+                qry = qry.Where(c => _userSession.Corp.CorpID == c.SEC_DEPTID);
+            }
+            return await qry.Where(predicate).Where(c => c.AUDITING=="1")
+                .Select(c => new ComboxData() { ID = c.DEVICE_ID, TEXT = c.DEVICE_NAME, VALUE = c.DEVICE_CODE, EXTEND =c.STATUS })
+               .ToListAsync();
+        }
+
         /// <summary>
         /// 初始化
         /// </summary>
