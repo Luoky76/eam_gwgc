@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
+    <script src="../../lib/LGboot.js?ver=<%=SystemService.JsVersion %>" type="text/javascript"></script>
+    <title></title>
+</head>
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform">
+    </form>
+    <script type="text/javascript">
+       //获取调用页面的dialog对象
+        function f_init() {
+            var rootPath = "../";
+            var dialog = null;
+            var dialogData = null;
+            var callback = null;
+            if (frameElement && frameElement.dialog) dialog = frameElement.dialog; //调用页面的dialog对象(ligerui对象)
+            if (!dialog) return;
+            dialogData = dialog.get('data'); //获取data参数
+            if (dialogData) callback = dialogData.callback;
+            var config = {};
+            var isValid = true;
+
+            //是否查看状态
+            var sid = dialogData.sid;
+            if ((sid || "0") === "0") sid = "";
+            var isAddNew = (sid === "");
+            var isView = dialogData.view === "1";
+            var orginData = {};
+
+            //初始化下拉框数据
+            var auditingData = [
+                { ID: "0", TEXT: "未提交", VALUE: "0" },
+                { ID: "1", TEXT: "已提交", VALUE: "1" }
+            ];
+            var devicetype = [
+                { ID: "1", TEXT: "船舶", VALUE: "1" },
+                { ID: "2", TEXT: "设备", VALUE: "2" }
+            ];
+            var assetStatus = [
+                { ID: "1", TEXT: "在用", VALUE: "1" }
+            ];
+            var yesno = [
+                { ID: "0", TEXT: "否", VALUE: "0" },
+                { ID: "1", TEXT: "是", VALUE: "1" }
+            ];
+            var purpose = [
+                { ID: "0", TEXT: "非生产", VALUE: "0" },
+                { ID: "1", TEXT: "生产", VALUE: "1" }
+            ];
+
+            var dataComb = [];
+
+            function f_loadData() {//刷新下拉数据窗口
+                mainform.getEditor("TERMINAL").setData(auditingData);
+                mainform.getEditor("TYPE_NAME").setData(devicetype);
+                mainform.getEditor("STATUS").setData(assetStatus);
+                mainform.getEditor("IS_GREEN").setData(yesno);
+                mainform.getEditor("PURPOSE").setData(purpose);
+            }
+
+            config.Form = { fields: [
+                { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", editor: { type: 'select', data: auditingData }, options: {}, group: "基础信息" },
+                { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, type: "text", options: {} },
+                { display: "立卡日期", name: "CARD_DATE", newline: false, upper: true, type: "date", options: {} },
+                { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text",  options:{} },
+                { display: "设备机型", name: "BOM_NAME", newline: false, upper: true, type: "text",  options:{} },
+                { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "select", editor: { type: 'select', data: devicetype }, options:{} },
+                { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {} },
+                { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {} },
+                { display: "维保部门", name: "WDEPT_NAME", newline: false, upper: true, type: "text", options: {} },
+                { display: "负责人", name: "CARD_USER", newline: false, upper: true, type: "text", options: {} },
+                { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", options: {} },
+                { display: "启用日期", name: "REV_DATE", newline: false, upper: true, type: "date", options: {} },
+                { display: "当前管理状态", name: "STATUS", newline: false, upper: true, type: "select", editor: { type: 'select', data: assetStatus }, options: {} },
+                { display: "状态变动日期", name: "STATUS_DATE", newline: false, upper: true, type: "date", options: {} },
+                { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {}, group: "船舶/设备信息" },
+                { display: "制造厂", name: "FACTORY", newline: false, upper: true, type: "text", options: {} },
+                { display: "出厂编号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: {} },
+                { display: "出厂日期", name: "OUT_DATE", newline: false, upper: true, type: "date", options: {} },
+                { display: "生产用途", name: "PURPOSE", newline: false, upper: true, type: "select", editor: { type: 'select', data: purpose }, options: {} },
+                { display: "图号", name: "GRAPH_NO", newline: false, upper: true, type: "text", options: {} },
+                { display: "船舶类型", name: "SHIP_TYPE", newline: false, upper: true, type: "text", options: {} },
+                { display: "船舶识别号", name: "SHIP_ID", newline: false, upper: true, type: "text", options: {} },
+                { display: "船长", name: "SHIP_LENGTH", newline: false, upper: true, type: "text", options: {} },
+                { display: "型宽", name: "SHIP_WIDTH", newline: false, upper: true, type: "text", options: {} },
+                { display: "型深", name: "SHIP_DEPTH", newline: false, upper: true, type: "text", options: {} },
+                { display: "吃水", name: "SHIP_DRAFT", newline: false, upper: true, type: "text", options: {} },
+                { display: "主机功率", name: "MAIN_POWER", newline: false, upper: true, type: "text", options: {} },
+                { display: "副机功率", name: "SECOND_POWER", newline: false, upper: true, type: "text", options: {} },
+                { display: "航速", name: "SPEED", newline: false, upper: true, type: "text", options: {} },
+                { display: "拖力", name: "DRAG_FORCE", newline: false, upper: true, type: "text", options: {} },
+                { display: "总吨", name: "TOTAL_TON", newline: false, upper: true, type: "text", options: {} },
+                { display: "净吨", name: "PURE_TON", newline: false, upper: true, type: "text", options: {} },
+                { display: "坞修日期(三年)", name: "REP_DATE", newline: false, upper: true, type: "date", options: {} },
+                { display: "是否环保设备", name: "IS_GREEN", newline: false, upper: true, type: "select", editor: { type: 'select', data: yesno }, options: {} },
+                { display: "坞修日期(五年)", name: "REP_DATE5", newline: false, upper: true, type: "date", options: {} },
+                { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text", options: {}, group: "财务信息" },
+                { display: "财务分类", name: "FINAN_TYPE", newline: false, upper: true, type: "text",  options:{} },
+                { display: "当前折旧月度", name: "DEP_MONTH", newline: false, upper: true, type: "date",  options:{} },
+                { display: "当前累计折旧", name: "DEP_VALUE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "安装及杂费(元)", name: "INSTALL_FEE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "单价(元)", name: "PRICE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "原值(元)", name: "ORG_VALUE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "净值(元)", name: "NET_VALUE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "使用年限(年)", name: "USE_YEAR", newline: false, upper: true, type: "int",  options:{} },
+                { display: "净残值比例(%)", name: "NET_RATE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "年折旧率(%)", name: "DEP_RATE", newline: false, upper: true, type: "int",  options:{} },
+                { display: "资产来源", name: "ASSET_SOURCE", newline: false, upper: true, type: "text",  options:{} },
+                { display: "参数组", name: "PARAMS", newline: false, upper: true, type: "text", options: {}, group: "其他信息" },
+                { display: "备注", name: "MEMO", newline: false, upper: true, type: "text",  options:{} },
+                
+                
+                
+            ]};
+
+            var mainform;
+            $("#mainform").ligerForm({
+                EnterMoveNextControl: true,
+                labelAlign: 'right',
+                space: 3,
+                validate: true,
+                fields: config.Form.fields,
+                labelWidth:150,
+                inputWidth:200,
+                onAfterSetFields: function (g) {
+                    mainform = g;
+                }
+            });
+
+            f_setDefault();//设置默认值
+            setFormDefaultBtn(f_cancel, isView ? null : f_save);//设置按钮
+
+            //表单底部按钮
+            function setFormDefaultBtn(cancleCallback, savedCallback) {
+                //表单底部按钮
+                var buttons = [];
+                if (!isView) {
+                    buttons.push({ text: '重置', onclick: function(){
+                        $.ligerDialog.confirm("确定重置数据吗?",function (confirm) {
+                            if(confirm){
+                                f_clear();
+                            }
+                        });
+                    }});
+                }
+                if (cancleCallback) {
+                    buttons.push({ text: '关闭', onclick: cancleCallback });
+                }
+                if (savedCallback) {
+                    buttons.push({ text: '保存', onclick: savedCallback });
+                }
+                LG.addFormButtons(buttons);
+            };
+
+            //重置
+            function f_clear() {
+                mainform.reset();
+                f_setDefault();
+            }
+
+            //根据表单是否改变处理是否继续操作 {1:无改变继续,2:确认继续,0:确认不继续,-1:等待确认}
+            function f_canContinue(cback){
+                var data = mainform.getData();
+                var updateFields = LG.getFormCombChanges(data, orginData, true);
+                if (updateFields) {
+                    $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                        if (confirm) {
+                            if(cback) cback(2);
+                        }
+                        else{
+                            if(cback) cback(0);
+                        }
+                    });
+                    if(cback) return cback(-1);
+                    return false;
+                }
+                if(cback) return cback(1);
+                return true;
+            }
+
+            //取消
+            function f_cancel() {
+                f_canContinue(function(status){
+                    if(status > 0){
+                        if (dialog) dialog.close();
+                        if (callback) callback(false);
+                    }
+                });
+            }
+
+            //设置默认值
+            function f_setDefault() {
+                //f_loadData();
+                if (isAddNew) {
+                    delete orginData;
+                    orginData = {};
+                    mainform.setData(orginData);
+                    var data = mainform.getData();
+                    LG.getFormCombChanges(data,orginData,true);
+                    delete orginData;
+                    orginData = data;
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/DeviceCard/Get',
+                        loading: '正在获取中...',
+                        data: { id: sid },
+                        success: function (data, message) {
+                            delete orginData;
+                            orginData = $.extend({}, data);
+                            mainform.setData(data);
+                            var data = mainform.getData();
+                            LG.getFormCombChanges(data, orginData, true);
+                            delete orginData;
+                            orginData = data;
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (isView) {
+                        mainform.setReadonly(true);
+                    }
+                }
+                //var input = mainform.getEditor(config.Form.fields[0].name).inputText;
+                //if (input.parent()) input.parent().focus();
+                //input.focus();
+                //input.select();
+            }
+
+            //保存
+            function f_save() {
+                debugger
+                if (!mainform.valid()) {
+                    mainform.showInvalid();
+                    return;
+                }
+                var data = mainform.getData();
+                var original = orginData;
+                var changeRow = new Object();
+                if (isAddNew) {
+                    changeRow["added"] = [data];
+                } else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/DeviceCard/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', dialog.close());
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            }
+        }
+
+        f_init();
+    </script>
+</body>
+</html>
