@@ -180,6 +180,21 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 供应商名下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ProviderName(Expression<Func<PROVIDER, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<PROVIDER>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.PROVIDER_ID, TEXT = c.PROVIDER_NAME, VALUE = c.PROVIDER_NAME })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         static ComboxDataService()
