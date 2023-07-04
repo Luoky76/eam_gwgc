@@ -33,6 +33,7 @@
                     form: {
                         labelwidth: 220,
                         fields: [
+                            //基础信息
                             { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true, group: "基础信息" },
                             { display: "服务单位", name: "ORG_NAME", dbname: "ORG_NAME", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "管理部门", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
@@ -46,11 +47,6 @@
                             { display: "营业执照号", name: "LICENSE_CODE", dbname: "LICENSE_CODE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "企业年资", name: "ENTER_QUALITY", dbname: "ENTER_QUALITY", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "经营许可证", name: "BUSINESS_LIC", dbname: "BUSINESS_LIC", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "联系人", name: "PROVIDER_CONTACT", dbname: "PROVIDER_CONTACT", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "联系电话", name: "PROVIDER_PHONE", dbname: "PROVIDER_PHONE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "传真", name: "FAX", dbname: "FAX", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "邮件", name: "EMAIL", dbname: "EMAIL", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "网站", name: "WEBSITE", dbname: "WEBSITE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "一般纳税人", name: "AVERAGE_TAX", dbname: "AVERAGE_TAX", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "主供范围", name: "BIZ_SCOPE", dbname: "BIZ_SCOPE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "供应商来源", name: "PROVIDER_SRC", dbname: "PROVIDER_SRC", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
@@ -65,8 +61,6 @@
                             { display: "开户银行", name: "BANK_NAME", dbname: "BANK_NAME", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "联行号", name: "BANK_CODE", dbname: "BANK_CODE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "税务登记号", name: "TAX_REG_NO", dbname: "TAX_REG_NO", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "登记日期", name: "EDIT_DATE", dbname: "EDIT_DATE", width: 310, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", validate: { required: true }, readonly: true },
-                            { display: "登记人", name: "EDIT_USER", dbname: "EDIT_USER", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "物资品质", name: "QUALITY", dbname: "QUALITY", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "交货期", name: "DELIVERY", dbname: "DELIVERY", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "紧急订单处理情况", name: "ORDER_SIT", dbname: "ORDER_SIT", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
@@ -76,11 +70,23 @@
                             { display: "售后服务品质", name: "SERVICE_QUAL", dbname: "SERVICE_QUAL", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "服务单位ID", name: "ORG_ID", dbname: "ORG_ID", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "管理部门ID", name: "DEPT_ID", dbname: "DEPT_ID", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
-                            { display: "登记人ID", name: "EDIT_USERID", dbname: "EDIT_USERID", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
+
+                            //联系信息
+                            { display: "联系人", name: "PROVIDER_CONTACT", dbname: "PROVIDER_CONTACT", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true, group: "联系信息" },
+                            { display: "联系电话", name: "PROVIDER_PHONE", dbname: "PROVIDER_PHONE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
+                            { display: "传真", name: "FAX", dbname: "FAX", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
+                            { display: "邮件", name: "EMAIL", dbname: "EMAIL", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
+                            { display: "网站", name: "WEBSITE", dbname: "WEBSITE", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
+
+                            //记录信息
+                            { display: "登记日期", name: "EDIT_DATE", dbname: "EDIT_DATE", width: 310, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", validate: { required: true }, readonly: true },
+                            { display: "登记人", name: "EDIT_USER", dbname: "EDIT_USER", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
+                            { display: "登记人ID", name: "EDIT_USERID", dbname: "EDIT_USERID", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true, group: "记录信息" },
                             { display: "添加人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "添加时间", name: "ADD_DATE", dbname: "ADD_DATE", width: 310, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", validate: { required: true }, readonly: true },
                             { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 310, type: "text", align: "left", validate: { required: true }, readonly: true },
                             { display: "修改时间", name: "MODIFY_DATE", dbname: "MODIFY_DATE", width: 310, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", validate: { required: true }, readonly: true },
+
                             //隐藏
                             { display: "主键", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 310, type: "hidden", align: "left"},
                         ]
