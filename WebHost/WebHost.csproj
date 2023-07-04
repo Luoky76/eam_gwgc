@@ -45,9 +45,6 @@
 		<PluginPublishProject Include="..\EAM.Special\EAM.Special.csproj" />
 		<PluginPublishProject Include="..\EAM.Energy\EAM.Energy.csproj" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="wwwroot\Material\Provider\" />
-	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
 		<PluginTarget>Build</PluginTarget>
