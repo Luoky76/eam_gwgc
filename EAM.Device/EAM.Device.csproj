@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Reference Include="Chloe">
-      <HintPath>..\Gksyb.Server\bin\Debug\net6.0\Chloe.dll</HintPath>
+		<HintPath>..\dll\Chloe.dll</HintPath>
     </Reference>
   </ItemGroup>
 
