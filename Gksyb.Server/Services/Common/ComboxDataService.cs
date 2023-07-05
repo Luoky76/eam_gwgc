@@ -217,7 +217,7 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { 
                     ID = c.DEVICE_ID,
                     TEXT = c.DEVICE_NAME,
-                    VALUE = c.DEVICE_CODE,
+                    VALUE = c.DEVICE_NO,
                     EXTEND =c.STATUS,
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,

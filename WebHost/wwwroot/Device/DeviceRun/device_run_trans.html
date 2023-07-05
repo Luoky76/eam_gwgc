@@ -38,7 +38,7 @@
                     search: {
                         fields: [
                             {
-                                display: "设备编号", name: "_search_DEVICE_CODE", dbname: "DEVICE_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                             {
                                 display: "状态转换时间", name: "_search_TRANS_DATE", dbname: "TRANS_DATE", width: 120, newline: false, type: "date", op: 'greaterorequal', vt: 'date',
@@ -58,7 +58,7 @@
                         columns: [
                             { display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select",  editor: { type: 'select', data: me.auditing, } },
                             { display: "状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", minWidth: 150, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" }, format: "yyyy-MM-dd" },
-                            { display: "设备编号", name: "DEVICE_CODE", dbname: "DEVICE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "设备编号", name: "DEVICE_NO", dbname: "DEVICE_NO", minWidth: 200, type: "text",  editor: { type: 'text' } },
                             { display: "设备名称", name: "DEVICE_NAME", dbname: "DEVICE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
 
                             { display: "原状态", name: "RUN_STATUS", dbname: "RUN_STATUS", minWidth: 200, type: "text",  editor: { type: 'text' } },

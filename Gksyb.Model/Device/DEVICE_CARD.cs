@@ -30,7 +30,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("设备编号")]
         [Column(DbType = DbType.AnsiString)]
-        public string DEVICE_CODE { get; set; }
+        public string DEVICE_NO { get; set; }
 
         /// <summary>
         /// 设备名称

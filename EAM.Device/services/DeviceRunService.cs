@@ -17,6 +17,7 @@ using Gksyb.Core.Grid;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Device.services
 {
@@ -78,7 +79,7 @@ namespace EAM.Device.services
                     c.AUDITING,
                     c.TRANS_ID,
                     c.TRANS_DATE,
-                    c.DEVICE_CODE,
+                    c.DEVICE_NO,
                     c.DEVICE_NAME,
                     c.RUN_STATUS,
                     c.NEW_RUN_STATUS,
@@ -138,19 +139,34 @@ namespace EAM.Device.services
         {
             if (!_userSession.IsAdmin)
             {
-                var qry = _dbContext.Query<DEVICE_CARD>()
-                .LeftJoin<RUN_TRANS>((a, b) => a.DEVICE_ID ==b.DEVICE_ID && b.AUDITING == "1")
-                .Where((a, b) => _userSession.Corp.CorpID == a.SEC_DEPTID)
-                .Select((a, b) => new
+                var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
                 {
-                    STATUS = a.STATUS == null ? "正常" : a.STATUS,
-                    DEVICE_CODE = a.DEVICE_CODE,
-                    DEVICE_NAME = a.DEVICE_NAME,
-                    TYPE_NAME = a.TYPE_NAME,
-                    TRANS_MEMO = b.TRANS_MEMO,
-                    SEC_DEPT = a.SEC_DEPT,
-                    DEPT_NAME = a.DEPT_NAME,
-                }).OrderBy(a =>
+                    x.DEVICE_ID,
+                    x.ADD_DATE,
+                }).GroupBy(x => new
+                {
+                    x.DEVICE_ID,
+                }).Select(x => new
+                {
+                    x.DEVICE_ID,
+                    ADD_DATE = Sql.Max(x.ADD_DATE),
+                });
+                var qry = _dbContext.Query<DEVICE_CARD>()
+                     .LeftJoin(detail, (a, b) => a.DEVICE_ID ==b.DEVICE_ID && a.AUDITING == "1")
+                     .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID ==c.DEVICE_ID&&b.ADD_DATE==c.ADD_DATE)
+                     .Where((a, b, c) => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                     .Select((a, b, c) => new
+                     {
+                         STATUS = a.STATUS == null ? "正常" : a.STATUS,
+                         DEVICE_NO = a.DEVICE_NO,
+                         DEVICE_NAME = a.DEVICE_NAME,
+                         TYPE_NAME = a.TYPE_NAME,
+                         TRANS_MEMO = c.TRANS_MEMO,
+                         SEC_DEPT = a.SEC_DEPT,
+                         DEPT_NAME = a.DEPT_NAME,
+                         ADD_DATE = b.ADD_DATE,
+                     })
+                .OrderBy(a =>
                     Case.When(a.STATUS.Equals("停机")).Then("1")
                         .When(a.STATUS.Equals("维修")).Then("2")
                         .When(a.STATUS.Equals("事故")).Then("3")
@@ -159,23 +175,39 @@ namespace EAM.Device.services
                         .When(a.STATUS.Equals("正常")).Then("6")
                         .When(a.STATUS.Equals("备用")).Then("7").Else("")
                     )
-                    .ThenBy(c => c.DEVICE_CODE); ;
+                    .ThenBy(c => c.DEVICE_NO);
+
                 return await qry.GetGridData(request);
             }
             else
             {
+                var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
+                {
+                    x.DEVICE_ID,
+                    x.ADD_DATE,
+                }).GroupBy(x => new
+                {
+                    x.DEVICE_ID,
+                }).Select(x => new
+                {
+                    x.DEVICE_ID,
+                    ADD_DATE = Sql.Max(x.ADD_DATE),
+                });
                 var qry = _dbContext.Query<DEVICE_CARD>()
-                    .LeftJoin<RUN_TRANS>((a, b) => a.DEVICE_ID ==b.DEVICE_ID && b.AUDITING == "1")
-                    .Select((a, b) => new
-                    {
-                        STATUS = a.STATUS == null ? "正常" : a.STATUS,
-                        DEVICE_CODE = a.DEVICE_CODE,
-                        DEVICE_NAME = a.DEVICE_NAME,
-                        TYPE_NAME = a.TYPE_NAME,
-                        TRANS_MEMO = b.TRANS_MEMO,
-                        SEC_DEPT = a.SEC_DEPT,
-                        DEPT_NAME = a.DEPT_NAME,
-                    }).OrderBy(a =>
+                     .LeftJoin(detail, (a, b) => a.DEVICE_ID ==b.DEVICE_ID && a.AUDITING == "1")
+                     .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID ==c.DEVICE_ID&&b.ADD_DATE==c.ADD_DATE)
+                     .Select((a, b, c) => new
+                     {
+                         STATUS = a.STATUS == null ? "正常" : a.STATUS,
+                         DEVICE_NO = a.DEVICE_NO,
+                         DEVICE_NAME = a.DEVICE_NAME,
+                         TYPE_NAME = a.TYPE_NAME,
+                         TRANS_MEMO = c.TRANS_MEMO,
+                         SEC_DEPT = a.SEC_DEPT,
+                         DEPT_NAME = a.DEPT_NAME,
+                         ADD_DATE = b.ADD_DATE,
+                     })
+                .OrderBy(a =>
                     Case.When(a.STATUS.Equals("停机")).Then("1")
                         .When(a.STATUS.Equals("维修")).Then("2")
                         .When(a.STATUS.Equals("事故")).Then("3")
@@ -184,7 +216,7 @@ namespace EAM.Device.services
                         .When(a.STATUS.Equals("正常")).Then("6")
                         .When(a.STATUS.Equals("备用")).Then("7").Else("")
                     )
-                    .ThenBy(c => c.DEVICE_CODE);
+                    .ThenBy(c => c.DEVICE_NO);
                 return await qry.GetGridData(request);
             }
 

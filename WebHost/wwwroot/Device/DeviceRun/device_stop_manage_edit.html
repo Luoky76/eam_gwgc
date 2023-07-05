@@ -83,7 +83,7 @@
                             ],
                             onChangeValue: function (input, value, g) {
                                 if (g.selected != undefined) {
-                                    $('#DEVICE_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                    $('#DEVICE_NO').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                     $('#DEVICE_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                     $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                     $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
@@ -143,7 +143,7 @@
                     { display: "编制人ID", name: "EDIT_USERID", newline: false, upper: true, type: "hidden", options: {} },
                     { display: "使用部门", name: "APPLY_DEPT", newline: false, upper: true, type: "hidden", options: {} },
                     { display: "使用部门ID", name: "APPLY_DEPTID", newline: false, upper: true, type: "hidden", options: {} },
-                    { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, type: "hidden", options: {} },
+                    { display: "设备编号", name: "DEVICE_NO", newline: false, upper: true, type: "hidden", options: {} },
                     { display: "分类ID", name: "TYPE_ID", newline: false, upper: true, type: "hidden", options: {} },
                     { display: "故障报修ID", name: "REPORT_ID", newline: false, upper: true, type: "hidden", options: {} },
                     { display: "故障台账ID", name: "PROBLEM_ID", newline: false, upper: true, type: "hidden", options: {} },
