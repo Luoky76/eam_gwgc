@@ -167,7 +167,8 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         private async Task<List<ComboxData>> MaintDept(Expression<Func<BC_CODE, bool>> predicate)
         {
-            return await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "ship_dept").Where(predicate)
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "ship_dept").Where(predicate)
                 .OrderBy(c => c.CODE_SEQ)
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
@@ -179,7 +180,8 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         private async Task<List<ComboxData>> RepairType(Expression<Func<BC_CODE, bool>> predicate)
         {
-            return await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "maint_type").Where(predicate)
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "maint_type").Where(predicate)
                 .OrderBy(c => c.CODE_SEQ)
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
@@ -191,24 +193,13 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         private async Task<List<ComboxData>> RepairDealType(Expression<Func<BC_CODE, bool>> predicate)
         {
-            return await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "deal_type").Where(predicate)
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "deal_type").Where(predicate)
                 .OrderBy(c => c.CODE_SEQ)
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
-        /// <summary>
-        /// 船舶列表
-        /// </summary>
-        /// <param name="predicate"></param>
-        /// <returns></returns>
-        private async Task<List<DEVICE_CARD>> ShipList(Expression<Func<DEVICE_CARD, bool>> predicate)
-        {
-            var result = await _dbContext.Query<DEVICE_CARD>().Where(predicate)
-                .OrderBy(c => c.DEVICE_ID)
-                .Select(c => new DEVICE_CARD { DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_CODE = c.DEVICE_CODE, DEPT_NAME = c.DEPT_NAME, WDEPT_NAME = c.WDEPT_NAME })
-               .ToListAsync();
-            return result;
-        }
+        
         /// <summary>
         /// 设备卡片
         /// </summary>

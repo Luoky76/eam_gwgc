@@ -44,32 +44,53 @@
                     loading: '正在获取中...',
                     success: function (data, message) {
                         maintdept = data.MaintDept;
+                        debugger
                         repairtype = data.RepairType;
                         repairhandtype = data.RepairDealType;
-                        shiplist = data.ShipList;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                }); 
+                LG.ajax({
+                    async: false,
+                    url: 'Repair/RepairPlan/ShipList',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        shiplist = data;
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 }); 
             }
+            f_loadData();
 
             config.Form = {
                 fields: [
-                    { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: auditingStatus, value: "0" }, group: "维修计划-设备信息" },
+                    { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: auditingStatus }, group: "维修计划-设备信息" },
                     { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", options: {} },
                     { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", options: {} },
                     {
                         display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "select", options: {
                             data: shiplist,
                             autocomplete: true,
-                            selectBoxWidth: 400,
-                            column: [
-                                { header: "船舶名称", name: "DEVICE_NAME" },
-                                { header: "设备编号", name: "DEVICE_CODE" },
-                                { header: "使用部门", name: "DEPT_NAME" },
-                                { header: "维保部门", name: "WDEPT_NAME" }
+                            valueField: "DEVICE_ID",
+                            textField: "DEVICE_NAME",
+                            columns: [
+                                { header: "船舶名称", name: "DEVICE_NAME", width: 100 },
+                                { header: "设备编号", name: "DEVICE_CODE", width: 100 },
+                                { header: "DEPT_NAME", name: "DEPT_NAME", width: 100 },
+                                { header: "维保部门", name: "WSEC_DEPT", width: 100 }
                             ],
+                            onChangeValue: function (input, value, g) {
+                                if (g.selected != undefined) {
+                                    $("#DEVICE_NAME").val(g.selected.DEVICE_NAME);
+                                    $("#DEVICE_CODE").val(g.selected.DEVICE_CODE);
+                                    $("#DEPT_NAME").val(g.selected.DEPT_NAME);
+                                    $("#WSEC_DEPT").val(g.selected.WSEC_DEPT);
+                                }
+                            }
                         }
                     },
                     { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, type: "text", options: {} },
@@ -91,17 +112,9 @@
                     { display: "维修内容", name: "REPAIR_MEMO", newline: true, upper: true, type: "text", options: {} }
                 ]
             };
-
-            if (isAddNew) {
-                var dicNames = ["AUDITING", "PLAN_CODE", "PLAN_STATE", "DEVICE_CODE", "DEVICE_TYPE", "ASSET_CODE", "DEPT_NAME", "INSTALL_SITE",
-                    "PLAN_START_DATE", "PLAN_END_DATE", "PLAN_STOP_TIME", "CHARGE_USER", "COLLECT_METHOD", "PLAN_MONEY", "REPAIR_MEMO"];
-                config.Form.fields.forEach(x => {
-                    if (dicNames.indexOf(x.name) > -1) x.options.disabled = true;
-                });
-            }
             var mainform;
             $("#mainform").ligerForm({
-                EnterMoveNextControl: true,
+                //EnterMoveNextControl: true,
                 labelAlign: 'right',
                 space: 3,
                 validate: true,
@@ -112,9 +125,10 @@
                     mainform = g;
                 }
             });
-
             f_setDefault();//设置默认值
+
             setFormDefaultBtn(f_cancel, isView ? null : f_save);//设置按钮
+
 
             //表单底部按钮
             function setFormDefaultBtn(cancleCallback, savedCallback) {
@@ -178,7 +192,7 @@
 
             //设置默认值
             function f_setDefault() {
-                f_loadData();
+                //f_loadData();
                 if (isAddNew) {
                     delete orginData;
                     orginData = {};
@@ -187,6 +201,18 @@
                     LG.getFormCombChanges(data, orginData, true);
                     delete orginData;
                     orginData = data;
+
+                    var dicNames = ["AUDITING", "PLAN_CODE", "PLAN_STATE", "DEVICE_CODE", "DEVICE_TYPE", "ASSET_CODE", "DEPT_NAME", "INSTALL_SITE",
+                        "PLAN_START_DATE", "PLAN_END_DATE", "PLAN_STOP_TIME", "CHARGE_USER", "COLLECT_METHOD", "PLAN_MONEY", "REPAIR_MEMO"];
+
+                    let count = 0;
+                    for (const key in mainform.editors) {
+                        var obj = mainform.editors[count];
+                        if (dicNames.indexOf(obj.control.id) > -1) {
+                            mainform.setEnabled(obj.control.id, false);
+                        }
+                        count++;
+                    }
                 }
                 else {
                     LG.ModelAjax({

@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Repair.dto;
 using EAM.Repair.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -7,6 +6,9 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace EAM.Repair.services
 {
@@ -22,25 +24,18 @@ namespace EAM.Repair.services
             _comboxDataService = comboxDataService;
         }
         /// <summary>
-        /// 获得下拉框数据
+        /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
         {
-            try
-            {
-                var data = await _comboxDataService.Get(new Dictionary<string, object>() {
-                    //{"ShipList",null },
+            var result = await _comboxDataService.Get(new Dictionary<string, object>(){
+                    {"ShipList",null },
                     {"MaintDept", null},
                     {"RepairType",null },
                     {"RepairDealType",null }
-                });
-                return AjaxResult.Success(data);
-            }
-            catch (Exception)
-            {
-                throw new MessageException("拉取下拉框数据失败");
-            }
+            });
+            return result;
         }
         public async Task<GridData> ListAsync(GridRequest request)
         {
@@ -125,5 +120,17 @@ namespace EAM.Repair.services
         {
             await Task.CompletedTask;
         }
-    }
+        /// <summary>
+        /// 船舶列表
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ShipList()
+        {
+            var result = await _dbContext.Query<DEVICE_CARD>()
+                .OrderBy(c => c.DEVICE_ID)
+                .Select(c => new DEVICE_CARD { DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_CODE = c.DEVICE_CODE, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT })
+               .ToListAsync();
+            return AjaxResult.Success(result, "成功");
+        }
+    }   
 }
