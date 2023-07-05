@@ -195,7 +195,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeDelete(PROVIDER entity)
         {
-
             await Task.CompletedTask;
         }
 
@@ -206,7 +205,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task AfterSave(List<PROVIDER> added, List<PROVIDER> updated, List<PROVIDER> deleted)
         {
-
             await Task.CompletedTask;
         }
 

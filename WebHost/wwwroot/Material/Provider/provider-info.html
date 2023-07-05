@@ -52,7 +52,7 @@ var business = {
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "SUBMITSTATUS", dbname: "SUBMITSTATUS", width: 100, type: "chk" },
+                            { display: "已提交", name: "AUDITING", dbname: "AUDITING", width: 100, type: "chk" },
                             { display: "供应商名称", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", minWidth: 150, type: "text", align: "left", validate: { required: true } },
                             { display: "供应商编码", name: "PROVIDER_CODE", dbname: "PROVIDER_CODE", minWidth: 150, type: "text", align: "left"},
                             { display: "供应商简称", name: "ABBREVIATION", dbname: "ABBREVIATION", minWidth: 150, type: "text", align: "left"},
@@ -63,8 +63,7 @@ var business = {
                             { display: "供应商状态", name: "PROVIDER_STATUS", dbname: "PROVIDER_STATUS", minWidth: 150, type: "text" },
                             //隐藏
                             { display: "主键", name: "c", dbname: "PROVIDER_ID", width: 150, type: "text", align: "left", hide: true },
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 150, type: "text", align: "left", hide: true },
-                            { display: "服务单位", name: "ORG_NAME", dbname: "ORG_NAME", width: 150, type: "text", align: "left", hide: true },
+                            /*{ display: "服务单位", name: "ORG_NAME", dbname: "ORG_NAME", width: 150, type: "text", align: "left", hide: true },
                             { display: "管理部门", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 150, type: "text", align: "left", hide: true },
                             { display: "注册资金", name: "ENTITY_REG_FUND", dbname: "ENTITY_REG_FUND", width: 150, type: "text", align: "left", hide: true },
                             { display: "企业性质", name: "ENTER_NATURE", dbname: "ENTER_NATURE", width: 150, type: "text", align: "left", hide: true },
@@ -97,7 +96,7 @@ var business = {
                             { display: "售后服务响应速度", name: "RESPONE_SPEED", dbname: "RESPONE_SPEED", width: 150, type: "text", align: "left", hide: true },
                             { display: "售后服务品质", name: "SERVICE_QUAL", dbname: "SERVICE_QUAL", width: 150, type: "text", align: "left", hide: true },
                             { display: "服务单位ID", name: "ORG_ID", dbname: "ORG_ID", width: 150, type: "text", align: "left", hide: true },
-                            { display: "管理部门ID", name: "DEPT_ID", dbname: "DEPT_ID", width: 150, type: "text", align: "left", hide: true },
+                            { display: "管理部门ID", name: "DEPT_ID", dbname: "DEPT_ID", width: 150, type: "text", align: "left", hide: true },*/
                             { display: "登记人ID", name: "EDIT_USERID", dbname: "EDIT_USERID", width: 150, type: "text", align: "left", hide: true },
                             { display: "添加人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 150, type: "text", align: "left", hide: true },
                             { display: "添加时间", name: "ADD_DATE", dbname: "ADD_DATE", width: 150, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", hide: true },
@@ -254,7 +253,7 @@ var business = {
                 }
                 var selected = me.grid.getSelectedRow();
                 if (selected) {
-                    if (selected.SUBMITSTATUS == "1") {
+                    if (selected.AUDITING == "1") {
                         LG.showError("该数据以提交,无法修改!");
                         return
                     }
@@ -271,7 +270,7 @@ var business = {
                         isResize: true,
                         slide: false,
                         onClosed: me.reload.bind(me),
-                        data: { "sid": selected.MAINKEY, isNew: false, isView: false }
+                        data: { "sid": selected.PROVIDER_ID, isNew: false, isView: false }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -286,7 +285,7 @@ var business = {
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        upd.SUBMITSTATUS = "1";
+                        upd.AUDITING = "1";
                         orginarr.push(ori);
                         updatedarr.push(upd)
                     }
@@ -296,10 +295,10 @@ var business = {
                     LG.ajax({
                         jsToken: true,
                         url: 'Material/ProviderInfo/save',
-                        loading: '正在保存中...',
+                        loading: '正在提交中...',
                         data: changeRow,
                         success: function () {
-                            LG.showSuccess('保存成功');
+                            LG.showSuccess('提交成功');
                             me.grid.isDataChanged = false;
                             me.reload();
                         },
@@ -344,7 +343,7 @@ var business = {
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
                     for (var i = 0; i < selected.length; i++) {
-                        if (selected[i].SUBMITSTATUS == "1") {
+                        if (selected[i].AUDITING == "1") {
                             LG.showError("选中数据有部分已提交,无法删除");
                             return;
                         }
