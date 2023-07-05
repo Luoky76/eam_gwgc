@@ -160,7 +160,46 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
-
+        /// <summary>
+        /// 维保部门
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> MaintDept(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "ship_dept").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+        /// <summary>
+        /// 维修类型
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> RepairType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "maint_type").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+        /// <summary>
+        /// 维修处理方式
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> RepairDealType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "deal_type").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+        
         /// <summary>
         /// 设备卡片
         /// </summary>
@@ -214,6 +253,21 @@ namespace Gksyb.Server.Services.Common
         }
         
 
+
+        /// <summary>
+        /// 供应商名下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ProviderName(Expression<Func<PROVIDER, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<PROVIDER>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.PROVIDER_ID, TEXT = c.PROVIDER_NAME, VALUE = c.PROVIDER_NAME })
+                .Distinct()
+                .ToListAsync();
+        }
 
         /// <summary>
         /// 初始化
