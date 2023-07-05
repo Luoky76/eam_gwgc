@@ -59,13 +59,13 @@
                     },
                     grid: {
                         columns: [
-                            { display: "设备类别编码", name: "TYPE_CODE", dbname: "TYPE_CODE", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "设备类别名称", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "使用年限", name: "WORK_YEAR", dbname: "WORK_YEAR", minWidth: 200, type: "float", align: "left", editor: { type: 'float' }, hide: true },
-                            { display: "专项管理属性", name: "IS_SPEC", dbname: "IS_SPEC", minWidth: 150, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
-                            //{ display: "设备类别级别", name: "TYPE_LEVEL", dbname: "TYPE_LEVEL", minWidth: 50, type: "int", align: "left", editor: { type: 'int' } },
-                            { display: "设备类别描述", name: "TYPE_DESC", dbname: "TYPE_DESC", minWidth: 250, type: "text", align: "left", editor: { type: 'text' } },
-                            //{ display: "上一节点id", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "text", align: "left", hide: true },
+                            { display: "设备类别编码", name: "TYPE_CODE", dbname: "TYPE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
+                            { display: "设备类别名称", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
+                            { display: "使用年限", name: "WORK_YEAR", dbname: "WORK_YEAR", minWidth: 200, type: "float",  editor: { type: 'float' }, hide: true },
+                            { display: "专项管理属性", name: "IS_SPEC", dbname: "IS_SPEC", minWidth: 150, type: "text",  editor: { type: 'text' }, validate: { required: true } },
+                            //{ display: "设备类别级别", name: "TYPE_LEVEL", dbname: "TYPE_LEVEL", minWidth: 50, type: "int",  editor: { type: 'int' } },
+                            { display: "设备类别描述", name: "TYPE_DESC", dbname: "TYPE_DESC", minWidth: 250, type: "text",  editor: { type: 'text' } },
+                            //{ display: "上一节点id", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "text",  hide: true },
                             {
                                 display: "上级节点", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.DeviceTypeName },
                                 render: function (rowdata, rowindex, value, column) {
@@ -81,11 +81,11 @@
                             {
                                 display: "状态", name: "STATUS", dbname: "STATUS", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
                             },
-                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text", align: "left", editor: { type: 'text' } },
-                            { display: "主键", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text", align: "left", hide: true },
-                            { display: "创建人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text",  editor: { type: 'text' } },
+                            { display: "主键", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text",  hide: true },
+                            { display: "创建人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 100, type: "text",  hide: true },
                             { display: "创建时间", name: "ADD_DATE", dbname: "ADD_DATE", minWidth: 150, type: "date", align: "center", hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 100, type: "text",  hide: true },
                             { display: "修改时间", name: "MODIFY_DATE", dbname: "MODIFY_DATE", minWidth: 150, type: "date", align: "center", hide: true }
 
                         ]

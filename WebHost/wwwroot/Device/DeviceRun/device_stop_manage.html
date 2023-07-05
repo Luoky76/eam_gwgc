@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>设备运行状态转换</title>
+    <title>设备停机记录</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 <body style="padding: 5px; height: 100%;">
@@ -30,7 +30,7 @@
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
-            runStatus: [],
+            stopSource: [], 
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             setConfig: function () {
                 var me = this;
@@ -38,56 +38,24 @@
                     search: {
                         fields: [
                             {
+                                display: "停机编码", name: "_search_STOP_CODE", dbname: "STOP_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
+                            },
+                            {
                                 display: "设备编号", name: "_search_DEVICE_CODE", dbname: "DEVICE_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
-                            },
-                            {
-                                display: "状态转换时间", name: "_search_TRANS_DATE", dbname: "TRANS_DATE", width: 120, newline: false, type: "date", op: 'greaterorequal', vt: 'date',
-                                options: {
-                                    format: "yyyy-MM-dd"
-                                }
-                            },
-                            {
-                                display: "至", name: "_search_TRANS_DATE", dbname: "TRANS_DATE", width: 120, newline: false, type: "date", op: 'lessorequal', vt: 'date',
-                                options: {
-                                    format: "yyyy-MM-dd"
-                                }
                             },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select",  editor: { type: 'select', data: me.auditing, } },
-                            { display: "状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", minWidth: 150, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" }, format: "yyyy-MM-dd" },
+                            { display: "停机编码", name: "STOP_CODE", dbname: "STOP_CODE", minWidth: 200, type: "text",  editor: { type: 'text' } },
                             { display: "设备编号", name: "DEVICE_CODE", dbname: "DEVICE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' } },
-                            { display: "设备名称", name: "DEVICE_NAME", dbname: "DEVICE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
 
-                            { display: "原状态", name: "RUN_STATUS", dbname: "RUN_STATUS", minWidth: 200, type: "text",  editor: { type: 'text' } },
-                            { display: "现状态", name: "NEW_RUN_STATUS", dbname: "NEW_RUN_STATUS", minWidth: 200, type: "text",  editor: { type: 'text' } },
-                            /*{
-                                display: "原状态", name: "RUN_STATUS", dbname: "RUN_STATUS", labelWidth: 100, minWidth: 70, newline: true, type: "text",
-                                render: function (rowdata, rowindex, value, column) {
-                                    var item = me.runStatus.find(x => x.ID === value);
-                                    var run_status = "";
-                                    if (item)
-                                        run_status = item.TEXT;
-                                    return run_status;
-                                },
-                            },
-                            {
-                                display: "现状态", name: "NEW_RUN_STATUS", dbname: "NEW_RUN_STATUS", labelWidth: 100, minWidth: 70, newline: true, type: "text",
-                                render: function (rowdata, rowindex, value, column) {
-                                    var item = me.runStatus.find(x => x.ID === value);
-                                    var new_run_status = "";
-                                    if (item)
-                                        new_run_status = item.TEXT;
-                                    return new_run_status;
-                                },
-                            },*/
-                            { display: "转换原因", name: "TRANS_MEMO", dbname: "TRANS_MEMO",  width: 100, minWidth: 200, maxWidth: 300, type: "text", editor: { type: 'text' } },
-                            { display: "使用部门", name: "DEPT_NAME", dbname: "DEPT_NAME",  minWidth: 200, maxWidth: 400, type: "text", editor: { type: 'text' } },
-                            { display: "二级单位", name: "SEC_DEPT", dbname: "SEC_DEPT",  minWidth: 200, maxWidth: 400, type: "text", editor: { type: 'text' } },
-                            { display: "DEVICE_ID", name: "DEVICE_ID", hide: true },
-                            { display: "TRANS_ID", name: "TRANS_ID", hide: true },
+                            { display: "设备名称", name: "DEVICE_NAME", dbname: "DEVICE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "设备型号", name: "DEVICE_TYPE", dbname: "DEVICE_TYPE", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "停机分类名称", name: "STOP_SOURCE", dbname: "STOP_SOURCE", minWidth: 150, type: "select",  editor: { type: 'select', data: me.stopSource, } },
+                            { display: "RUN_STOP_ID", name: "RUN_STOP_ID", hide: true },
                         ]
                     },
                 };
@@ -100,10 +68,10 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Device/DeviceRun/ComboxData',
+                    url: 'Device/DeviceStop/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.runStatus = data.runStatus;
+                        me.stopSource = data.stopSource;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -122,7 +90,7 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Device/DeviceRun/GetRun',
+                    url: 'Device/DeviceStop/GetStopList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -257,17 +225,21 @@
                     LG.showError("请选择一行")
                     return
                 }
-                var selected = me.grid.getSelectedRow();
+                var selected = me.grid.getSelectedRows();
                 if (selected) {
                     if (selected.AUDITING == "1") {
                         LG.tip('已提交，无法再次提交!');
                     }
                     else {
+                        var sids = [];
+                        selected.forEach((a) => {
+                            sids.push(a.RUN_STOP_ID)
+                        })
                         LG.ajax({
                             jsToken: true,
-                            url: 'Device/DeviceRun/Submit',
+                            url: 'Device/DeviceStop/Submit',
                             loading: '正在保存中...',
-                            data: { "sids": selected.TRANS_ID, "deid": selected.DEVICE_ID, "newStatus": selected.NEW_RUN_STATUS },
+                            data: { "sids": sids },
                             success: function () {
                                 LG.showSuccess('保存成功');
                                 me.grid.isDataChanged = false;
@@ -357,10 +329,10 @@
                 var me = this;
                 $.ligerDialog.open({
                     width: 1100,
-                    height: 350,
+                    height: 620,
                     allowClose: true,
                     title: '新增转换记录',
-                    url: "device_run_trans_edit.html?MenuNo=" + me.menuNo,
+                    url: "device_stop_manage_edit.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -372,7 +344,7 @@
                 });
             },
 
-            view: function (rowdata) { //修改
+            view: function (rowdata) { //查看
                 var me = this;
                 var selected = me.grid.getSelectedRow();
 
@@ -382,10 +354,10 @@
                 if (selected) {
                     $.ligerDialog.open({
                         width: 1100,
-                        height: 350,
+                        height: 620,
                         allowClose: true,
-                        title: '查看转换记录',
-                        url: "device_run_trans_edit.html?MenuNo=" + me.menuNo,
+                        title: '查看停机记录',
+                        url: "device_stop_manage_edit.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
                         showToggle: false,
@@ -393,7 +365,7 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.TRANS_ID, "view": "1" }
+                        data: { "sid": selected.RUN_STOP_ID, "view": "1" }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -422,10 +394,10 @@
                     if (selected) {
                         $.ligerDialog.open({
                             width: 1100,
-                            height: 350,
+                            height: 620,
                             allowClose: true,
                             title: '修改运行状态',
-                            url: "device_run_trans_edit.html?MenuNo=" + me.menuNo,
+                            url: "device_stop_manage_edit.html?MenuNo=" + me.menuNo,
                             isHidden: false,
                             showMax: false,
                             showToggle: false,
@@ -433,7 +405,7 @@
                             isResize: true,
                             slide: false,
                             onClosed: me.buttons[0].click,
-                            data: { "sid": selected.TRANS_ID }
+                            data: { "sid": selected.RUN_STOP_ID }
                         });
 
 
@@ -447,7 +419,6 @@
             delete: function () { //删除
                 var me = this;
                 if (me.grid.endEdit() != false) {
-                    debugger
                     var selected = me.grid.getSelectedRows();
                     if (selected.length > 0) {
                         for (var i = 0; i < selected.length; i++) {
@@ -484,7 +455,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Device/DeviceRun/Manage',
+                        url: 'Device/DeviceStop/ManageStop',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {

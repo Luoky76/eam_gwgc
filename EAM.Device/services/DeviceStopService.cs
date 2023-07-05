@@ -1,0 +1,214 @@
+﻿using Chloe;
+using EAM.Device.interfaces;
+using Gksyb.Common;
+using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
+using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model.Core;
+using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+using Gksyb.Model;
+using Gksyb.Core.Grid;
+
+namespace EAM.Device.services
+{
+    public class DeviceStopService : BaseService, IDeviceStopService
+    {
+        private readonly IDbContext _dbContext;
+        private readonly IComboxDataService _comboxService;
+        private readonly UserSession _userSession;
+        private DateTime? _Sysdate;
+
+        /// <summary>
+        /// 获取数据库时间
+        /// </summary>
+        private DateTime? Sysdate
+        {
+            get
+            {
+                if (!_Sysdate.HasValue)
+                {
+                    _Sysdate = _dbContext.GetSysdate().Result();
+                }
+                return _Sysdate;
+            }
+        }
+
+        public DeviceStopService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        {
+            _dbContext = dbContext;
+            _comboxService = comboxService;
+            _userSession = userSession;
+        }
+
+        /// <summary>
+        /// 下拉
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        {
+            return await _comboxService.Get(new Dictionary<string, object>(){
+                { "StopSource",null},
+                { "MalType",null},
+                { "DeviceInfo",null},
+
+            });
+        }
+
+        /// <summary>
+        /// 获取停机记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetStopList(GridRequest request)
+        {
+            return await _dbContext.Query<RUN_STOP>()
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.RUN_START)
+                .GetGridData(request);
+        }
+        /// <summary>
+        /// 管理停机记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManageStop(SaveRequest<RUN_STOP> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.AUDITING,
+                    c.STOP_CODE,
+                    c.DEVICE_ID,
+                    c.DEVICE_NAME,
+                    c.DEVICE_TYPE,
+                    c.TYPE_NAME,
+                    c.STOP_SOURCE,
+                    c.RUN_START,
+                    c.RUN_END,
+                    c.STOP_HOURS,
+                    c.EDIT_USER,
+                    c.DEPT_NAME,
+                    c.SEC_DEPT,
+                    c.EDIT_DATE,
+                    c.STOP_DESC,
+                    c.CHECK_USER,
+                    c.CHECK_USERID,
+                    c.CHECK_DEPT,
+                    c.CHECK_DATE,
+                    c.MAL_TYPE_NAME,
+                    c.MAL_PARTS,
+                    c.CHECK_DESC,
+                    c.MEMO,
+                    c.DEPT_ID,
+                    c.SEC_DEPTID,
+                    c.EDIT_USERID,
+                    c.APPLY_DEPT,
+                    c.APPLY_DEPTID,
+                    c.TYPE_ID,
+                    c.PROBLEM_ID,
+                    c.REPORT_ID,
+                    c.MAL_TYPE_ID,
+                    c.CHECK_DEPTID,
+                    c.RUN_STOP_ID,
+                    c.ADD_USERID,
+                    c.ADD_DATE,
+                    c.MODIFY_USERID,
+                    c.MODIFY_DATE,
+                },
+                c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+        }
+
+        public async Task BeforeAdd(RUN_STOP entity)
+        {
+            entity.SEC_DEPTID = _userSession.Corp.CorpID;
+            entity.SEC_DEPT = _userSession.Corp.CName;
+            entity.DEPT_ID = _userSession.Corp.DeptId;
+            entity.DEPT_NAME = _userSession.Corp.DeptName; 
+            entity.EDIT_USER = _userSession.RealName;
+            entity.EDIT_DATE = await _dbContext.GetSysdate();
+            Random random = new Random();
+            int randomNumber = random.Next(1000, 10000);
+            entity.STOP_CODE = "TG"+DateTime.Now.Year+DateTime.Now.ToString("MM")+randomNumber;
+            entity.AUDITING = "0";
+            entity.RUN_STOP_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.ADD_USERID = _userSession.UserID.ToString();
+            entity.ADD_DATE = await _dbContext.GetSysdate();
+        }
+
+        public async Task BeforeUpdate(RUN_STOP entity)
+        {
+            entity.MODIFY_USERID = _userSession.RealName;
+            entity.MODIFY_DATE = await _dbContext.GetSysdate();
+        }
+        public async Task BeforeDelete(RUN_STOP entity)
+        {
+        }
+        /// <summary>
+        /// 提交
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> Submit(List<string> sids)
+        {
+            await _dbContext.UpdateAsync<RUN_STOP>(x => sids.Contains(x.RUN_STOP_ID),
+                x => new RUN_STOP
+                {
+                    AUDITING = "1",
+                });
+            return AjaxResult.Success("成功");
+        }
+
+        /// <summary>
+        /// 获取停机分类
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetStopTypeList(GridRequest request)
+        {
+            return await _dbContext.Query<RUN_STOP_TYPE>()
+                .GetGridData(request);
+        }
+        /// <summary>
+        /// 管理停机分类
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManageStopType(SaveRequest<RUN_STOP_TYPE> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.MEMO,
+                    c.IS_STOP,
+                    c.IS_PLAN,
+                    c.STOP_NAME,
+                    c.STOP_TYPE_ID,
+                    c.ADD_USERID,
+                    c.ADD_DATE,
+                    c.MODIFY_USERID,
+                    c.MODIFY_DATE,
+                    c.TENANT_ID,
+                },
+                c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+        }
+
+        public async Task BeforeAdd(RUN_STOP_TYPE entity)
+        {
+            entity.STOP_TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.ADD_USERID = _userSession.UserID.ToString();
+            entity.ADD_DATE = await _dbContext.GetSysdate();
+        }
+
+        public async Task BeforeUpdate(RUN_STOP_TYPE entity)
+        {
+            entity.MODIFY_USERID = _userSession.RealName;
+            entity.MODIFY_DATE = await _dbContext.GetSysdate();
+        }
+        public async Task BeforeDelete(RUN_STOP_TYPE entity)
+        {
+        }
+    }
+}

@@ -62,20 +62,20 @@
                     },
                     grid: {
                         columns: [
-                            { display: "编码", name: "COMPOSE_CODE", dbname: "COMPOSE_CODE", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "名称", name: "COMPOSE_NAME", dbname: "COMPOSE_NAME", minWidth: 200, type: "text", align: "left", editor: { type: 'text' }, validate: { required: true } },
+                            { display: "编码", name: "COMPOSE_CODE", dbname: "COMPOSE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
+                            { display: "名称", name: "COMPOSE_NAME", dbname: "COMPOSE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             {
-                                display: "结构分类", name: "COMPOSE_TYPE", dbname: "COMPOSE_TYPE", minWidth: 100, type: "text", align: "left", validate: { required: true },
+                                display: "结构分类", name: "COMPOSE_TYPE", dbname: "COMPOSE_TYPE", minWidth: 100, type: "text",  validate: { required: true },
                                 editor: {
                                     type: "combobox", options: {
                                         data: me.ConsType, autocomplete: true, selectBoxHeight: 280
                                     }
                                 }
                             },
-                            //{ display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 150, type: "text", align: "left", readonly: true, hide: true },
-                            //{ display: "上级节点", name: "PRE_COMPOSE_NAME", dbname: "PRE_COMPOSE_NAME", minWidth: 200, align: "left", type: "text" },
+                            //{ display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 150, type: "text",  readonly: true, hide: true },
+                            //{ display: "上级节点", name: "PRE_COMPOSE_NAME", dbname: "PRE_COMPOSE_NAME", minWidth: 200,  type: "text" },
                             {
-                                display: "上级节点", name: "PRE_COMPOSEID", dbname: "PRE_COMPOSEID", minWidth: 200, type: "text", align: "left", editor: { type: 'select', data: me.DeviceComposeName },
+                                display: "上级节点", name: "PRE_COMPOSEID", dbname: "PRE_COMPOSEID", minWidth: 200, type: "text",  editor: { type: 'select', data: me.DeviceComposeName },
                                 render: function (rowdata, rowindex, value, column) {
                                     //debugger
                                     var item = me.DeviceComposeName.find(x => x.ID === value);
@@ -86,7 +86,7 @@
                                 },
                             },
                             {
-                                display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", minWidth: 200, type: "text", align: "left", editor: { type: 'select', data: me.DeviceComposeName },
+                                display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", minWidth: 200, type: "text",  editor: { type: 'select', data: me.DeviceComposeName },
                                 render: function (rowdata, rowindex, value, column) {
                                     //debugger
                                     var item = me.DeviceTypeName.find(x => x.ID === value);
@@ -96,12 +96,12 @@
                                     return deviceTypeName;
                                 },
                             },
-                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text", align: "left", editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text",  editor: { type: 'text' } },
 
-                            //{ display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text", align: "left", hide: true },
+                            //{ display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text",  hide: true },
                            
-                            { display: "主键", name: "COMPOSE_ID", dbname: "COMPOSE_ID", width: 100, type: "text", align: "left", hide: true },
-                            { display: "创建人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "主键", name: "COMPOSE_ID", dbname: "COMPOSE_ID", width: 100, type: "text",  hide: true },
+                            { display: "创建人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 100, type: "text",  hide: true },
                             { display: "创建人", name: "ADD_USERNAME", dbname: "ADD_USERNAME", width: 100, type: "text", align: "center", hide: true },
                             { display: "创建时间", name: "ADD_DATE", dbname: "ADD_DATE", width: 100, type: "date", align: "center", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 100, type: "text", align: "center", hide: true },
