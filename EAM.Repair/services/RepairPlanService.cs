@@ -59,7 +59,7 @@ namespace EAM.Repair.services
                 a.EIDT_DATE,
                 b.DEVICE_ID,
                 b.DEVICE_NAME,
-                b.DEVICE_CODE,
+                b.DEVICE_NO,
                 b.ASSET_CODE,
                 AUDITINGSORT = Case.When(a.AUDITING.Equals("6")).Then("1.5").Else(a.AUDITING)
             }).GetGridData(request);
@@ -128,7 +128,7 @@ namespace EAM.Repair.services
         {
             var result = await _dbContext.Query<DEVICE_CARD>()
                 .OrderBy(c => c.DEVICE_ID)
-                .Select(c => new DEVICE_CARD { DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_CODE = c.DEVICE_CODE, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT })
+                .Select(c => new DEVICE_CARD { DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_NO = c.DEVICE_NO, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT })
                .ToListAsync();
             return AjaxResult.Success(result, "成功");
         }

@@ -79,14 +79,14 @@
                             textField: "DEVICE_NAME",
                             columns: [
                                 { header: "船舶名称", name: "DEVICE_NAME", width: 100 },
-                                { header: "设备编号", name: "DEVICE_CODE", width: 100 },
-                                { header: "DEPT_NAME", name: "DEPT_NAME", width: 100 },
+                                { header: "设备编号", name: "DEVICE_NO", width: 100 },
+                                { header: "使用部门", name: "DEPT_NAME", width: 100 },
                                 { header: "维保部门", name: "WSEC_DEPT", width: 100 }
                             ],
                             onChangeValue: function (input, value, g) {
                                 if (g.selected != undefined) {
                                     $("#DEVICE_NAME").val(g.selected.DEVICE_NAME);
-                                    $("#DEVICE_CODE").val(g.selected.DEVICE_CODE);
+                                    $("#DEVICE_CODE").val(g.selected.DEVICE_NO);
                                     $("#DEPT_NAME").val(g.selected.DEPT_NAME);
                                     $("#WSEC_DEPT").val(g.selected.WSEC_DEPT);
                                 }
@@ -202,7 +202,7 @@
                     delete orginData;
                     orginData = data;
 
-                    var dicNames = ["AUDITING", "PLAN_CODE", "PLAN_STATE", "DEVICE_CODE", "DEVICE_TYPE", "ASSET_CODE", "DEPT_NAME", "INSTALL_SITE",
+                    var dicNames = ["AUDITING", "PLAN_CODE", "PLAN_STATE", "DEVICE_NO", "DEVICE_TYPE", "ASSET_CODE", "DEPT_NAME", "INSTALL_SITE",
                         "PLAN_START_DATE", "PLAN_END_DATE", "PLAN_STOP_TIME", "CHARGE_USER", "COLLECT_METHOD", "PLAN_MONEY", "REPAIR_MEMO"];
 
                     let count = 0;

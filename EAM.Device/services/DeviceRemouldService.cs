@@ -38,7 +38,7 @@ namespace EAM.Device.Services
         {
             var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_REMOULD>((a,b) => a.DEVICE_ID == b.DEVICE_ID).Select((a,b) => new { 
                 a.DEVICE_ID,
-                a.DEVICE_CODE,
+                a.DEVICE_NO,
                 b.REMOULD_TYPE,
                 b.DEVICE_REMOULD_ID,
                 b.START_DATE,
