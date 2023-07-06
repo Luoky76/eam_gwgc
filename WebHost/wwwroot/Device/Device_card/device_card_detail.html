@@ -61,9 +61,11 @@
                 mainform.getEditor("PURPOSE").setData(purpose);
             }
 
-            config.Form = { fields: [
+            config.Form = {
+                fields: [
+                { display: "DEVICE_ID", name: "DEVICE_ID", newline: false, upper: true, type: "text", options: {}, hide: true },
                 { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", editor: { type: 'select', data: auditingData }, options: {}, group: "基础信息" },
-                { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, type: "text", options: {} },
+                { display: "设备编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                 { display: "立卡日期", name: "CARD_DATE", newline: false, upper: true, type: "date", options: {} },
                 { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text",  options:{} },
                 { display: "设备机型", name: "BOM_NAME", newline: false, upper: true, type: "text",  options:{} },
@@ -240,14 +242,16 @@
                     return;
                 }
                 var data = mainform.getData();
-                var original = orginData;
                 var changeRow = new Object();
-                if (isAddNew) {
-                    changeRow["added"] = [data];
-                } else {
-                    changeRow["updated"] = [data];
-                    changeRow["original"] = [original];
+                var formdata = [];
+                var o_formdata = [];
+                formdata.push(data);
+                o_formdata.push(orginData);
+                var op = isAddNew ? "added" : "updated";
+                if (!isAddNew) {
+                    changeRow["original"] = o_formdata;
                 }
+                changeRow[op] = formdata;
                 LG.ajax({
                     jsToken: true,
                     url: 'Device/DeviceCard/Save',

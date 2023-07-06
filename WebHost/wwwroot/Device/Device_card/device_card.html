@@ -35,14 +35,14 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "设备编号", name: "_search_DEVICE_CODE", dbname: "DEVICE_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
                             { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text",options:{} }
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
-                            { display: "设备编号", name: "DEVICE_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text",  editor: { type: 'text'} },
@@ -96,7 +96,7 @@
                             rules: []
                         })
                     },
-                    sortName: 'DEVICE_CODE',
+                    sortName: 'DEVICE_NO',
                     sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
@@ -192,7 +192,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url:'Device/DeviceCard/Manager',
+                        url:'Device/DeviceCard/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
