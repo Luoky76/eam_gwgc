@@ -50,7 +50,7 @@ namespace Gksyb.Model.Core
         /// 菜单名称
         /// </summary>
         [Description("菜单名称")]
-        [Column(DbType = DbType.String, Size = 50)]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
         public string MENUNAME { get; set; }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Gksyb.Model.Core
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

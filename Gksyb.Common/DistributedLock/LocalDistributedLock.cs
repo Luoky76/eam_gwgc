@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Gksyb.Common.DistributedLock
 {
@@ -91,8 +90,12 @@ namespace Gksyb.Common.DistributedLock
         /// <inheritdoc/>
         public string LockQuery(string key)
         {
-            _lockPool.TryGetValue(key, out var lockValue);
-            return lockValue?.Value;
+            if (_lockPool.TryGetValue(key, out var lockValue) && lockValue?.Expiry >= DateTime.UtcNow)
+            {
+                return lockValue.Value;
+            }
+            _lockPool.Remove(key);
+            return null;
         }
 
         /// <inheritdoc/>
@@ -106,12 +109,9 @@ namespace Gksyb.Common.DistributedLock
         [MethodImpl(MethodImplOptions.Synchronized)]
         public bool LockTake(string key, string value, double expiry)
         {
-            if (_lockPool.TryGetValue(key, out var lockValue))
-            {
-                if (lockValue.Expiry <= DateTime.UtcNow) _lockPool.Remove(key);
-            }
+            LockQuery(key);
             if (_lockPool.ContainsKey(key)) return false;
-            lockValue = new LockValue()
+            var lockValue = new LockValue()
             {
                 Key = key,
                 Value = value,

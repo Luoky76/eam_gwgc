@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using System.Threading;
 
 namespace Gksyb.Common.EventBus
 {
@@ -85,7 +84,7 @@ namespace Gksyb.Common.EventBus
                             obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
                         }
                         _logger.LogInformation(_logPath, $"触发事件:{eventHandler.Handler.DeclaringType}:{eventHandler.Handler.Name}");
-                        var invokeResult =  eventHandler.Handler!.Invoke(obj, values);
+                        var invokeResult = eventHandler.Handler!.Invoke(obj, values);
                         if (invokeResult is Task task) await task;
                     }
                     catch (Exception ex)

@@ -2,10 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>单点跳转</title>
+    <title></title>
 </head>
 
 <body>
+    <h3 id="error"></h3>
     <script type="text/javascript">
         'use strict';
         var business = {
@@ -16,64 +17,77 @@
                 }
                 return decodeURIComponent(result[1]);
             },
-            success: function (data) {
-                var me = this;
-                window.localStorage.setItem("GksybTicket", data.Ticket);
-                delete data.Ticket;
-                window.localStorage.setItem("GksybData", JSON.stringify(data));
-
-                var fromUrl = me.getQueryStringByName("FromUrl");
-                if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
-                fromUrl = fromUrl || "../index.html";
-                location.replace(fromUrl);
+            getBaseUrl: function (root) {
+                return location.href.substring(0, location.href.lastIndexOf("/") + 1) + root;
             },
             error: function (xhr, msg) {
                 msg = (xhr.status || "") + " " + (xhr.statusText || "") + " " + msg;
-                alert(msg);
+                document.getElementById("error").innerHTML = msg;
+            },
+            httpRequest: function (p) {
+                var me = this;
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", me.baseUrl + p.url, false);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                if (p.headers) {
+                    for (var key in p.headers) {
+                        xhr.setRequestHeader(key, p.headers[key]);
+                    }
+                }
+                p.error = p.error || me.error;
+                xhr.onload = function onload() {
+                    var errorMsg;
+                    if (xhr.status === 200) {
+                        if (p.dataType === "text") {
+                            if (p.dataType) p.success(xhr.responseText);
+                            return;
+                        }
+                        var responseData;
+                        try {
+                            responseData = JSON.parse(xhr.responseText);
+                        } catch (err) {
+                            errorMsg = "parseerror";
+                        }
+                        if (!errorMsg) {
+                            if (!responseData.IsError) {
+                                if (p.success) p.success(responseData.Data, responseData.Message);
+                                return;
+                            }
+                            errorMsg = responseData.Message;
+                        }
+                    }
+                    p.error(xhr, errorMsg);
+                };
+                xhr.onerror = function onerror() {
+                    p.error(xhr);
+                };
+                xhr.ontimeout = function () {
+                    p.error(xhr, "timeout");
+                };
+                if (p.beforeSend) p.beforeSend(xhr, p);
+                xhr.send();
             },
             init: function () {
                 var me = this;
                 var code = me.getQueryStringByName("code");
-                if (code) {
-                    var url = location.href.replace(location.pathname.substring(location.pathname.lastIndexOf("/") + 1), '../../../weixin/oauth');
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", url, false);
-                    xhr.setRequestHeader('Content-Type', 'application/json');
-                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                    xhr.setRequestHeader('code', code);
-                    xhr.onload = function onload() {
-                        var errorMsg;
-                        if (xhr.status === 200) {
-                            var responseData;
-                            try {
-                                responseData = JSON.parse(xhr.responseText);
-                            } catch (err) {
-                                errorMsg = "parseerror";
-                            }
-                            if (!errorMsg) {
-                                if (!responseData.IsError) {
-                                    me.success(responseData.Data);
-                                    return;
-                                }
-                                var data = { Openid: responseData.Data };
-                                window.localStorage.setItem("GksybData", JSON.stringify(data));
-                                errorMsg = responseData.Message;
-                                if (errorMsg === "-1") {
-                                    location.replace("binding.html");
-                                    return;
-                                }
-                            }
-                        }
-                        me.error(xhr, errorMsg);
-                    };
-                    xhr.onerror = function onerror() {
-                        me.error(xhr);
-                    };
-                    xhr.ontimeout = function () {
-                        me.error(xhr, "timeout");
-                    };
-                    xhr.send();
-                }
+                if (!code) return;
+                me.baseUrl = me.getBaseUrl("../../../");
+                me.httpRequest({
+                    url: 'weixin/oauth',
+                    headers: {
+                        code: code
+                    },
+                    success: function (data) {
+                        window.localStorage.setItem("GksybTicket", data.Ticket);
+                        delete data.Ticket;
+                        window.localStorage.setItem("GksybData", JSON.stringify(data));
+                        var fromUrl = me.getQueryStringByName("FromUrl");
+                        if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
+                        fromUrl = fromUrl || "../index.html";
+                        location.replace(fromUrl);
+                    }
+                });
             }
         };
         business.init();

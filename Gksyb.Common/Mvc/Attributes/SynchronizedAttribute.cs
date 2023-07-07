@@ -1,27 +1,31 @@
-﻿using Gksyb.Core.Auth;
-using Microsoft.AspNetCore.Mvc.Controllers;
+﻿using Gksyb.Common;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// 锁过滤器
+    /// 锁
     /// </summary>
-    public class SynchronizedFilter : IAsyncActionFilter
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+    public sealed class SynchronizedAttribute : Attribute, IAsyncActionFilter
     {
-        public SynchronizedFilter()
-        {
-        }
+        public string Key;
+
+        /// <summary>
+        /// 锁
+        /// </summary>
+        public SynchronizedAttribute()
+        { }
+
+        /// <summary>
+        /// 锁
+        /// </summary>
+        /// <param name="key">指定key会变成分布式锁</param>
+        public SynchronizedAttribute(string key) => Key = key;
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var description = (ControllerActionDescriptor)context.ActionDescriptor;
-            var synchronizedAttribute = description.MethodInfo.GetAttribute<SynchronizedAttribute>();
-            if (synchronizedAttribute == null)
-            {
-                await next();
-                return;
-            }
-            var key = synchronizedAttribute.Key;
+            var key = Key;
             var httpContext = context.HttpContext;
             if (string.IsNullOrWhiteSpace(key))
             {

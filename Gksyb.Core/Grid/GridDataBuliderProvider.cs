@@ -139,7 +139,7 @@ namespace Gksyb.Core.Grid
                 var type = typeof(T);
                 paraname ??= type.Name;
                 var parameterExpressions = new ParameterExpression[] { Expression.Parameter(typeof(T), paraname) };
-                source = source.Where(request, parameterExpressions);
+                source = source.Where(request.Where, parameterExpressions);
                 if (!string.IsNullOrEmpty(request.GroupBy))//分组处理 限制非常大请考虑直接在Query查询
                 {
                     var groupExpression = DynamicExpressionParser.ParseLambda(parameterExpressions, null, $"new ({request.GroupBy})");
@@ -186,24 +186,11 @@ namespace Gksyb.Core.Grid
         }
 
         /// <summary>
-        /// 获取where条件
+        /// 字符串条件过滤
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="where"></param>
-        /// <param name="parameterExpressions"></param>
-        /// <returns></returns>
-        public static IQuery<T> Where<T>(this IQuery<T> source, GridRequest request, ParameterExpression[] parameterExpressions)
+        public static IQuery<T> Where<T>(this IQuery<T> source, string where, ParameterExpression[] parameterExpressions = null)
         {
-            var predicate = request.GetWhereExpression<T>(parameterExpressions);
-            if (predicate == null) return source;
-            source = source.Where(predicate);
-            return source;
-        }
-
-        public static Expression<Func<T, bool>> GetWhereExpression<T>(this GridRequest request, ParameterExpression[] parameterExpressions = null)
-        {
-            if (string.IsNullOrWhiteSpace(request.Where)) return null;
+            if (string.IsNullOrWhiteSpace(where)) return source;
             if (parameterExpressions == null)
             {
                 var type = typeof(T);
@@ -211,7 +198,7 @@ namespace Gksyb.Core.Grid
             }
             var whereTranslator = new FilterTranslatorLinq(EntityTypeContainer.GetDescriptor(typeof(T)))
             {
-                Group = JSONHelper.FromJson<FilterGroup>(request.Where)
+                Group = JSONHelper.FromJson<FilterGroup>(where)
             };
             whereTranslator.Group?.Check();
             whereTranslator.Translate();
@@ -221,7 +208,7 @@ namespace Gksyb.Core.Grid
                 return ExpressionExtension.MakeWrapperAccess(c.Value, c.Value == null ? null : c.Type);
             }).ToArray();
             var exp = DynamicExpressionParser.ParseLambda(parameterExpressions, typeof(bool), expression, values);
-            return (Expression<Func<T, bool>>)exp;
+            return source.Where((Expression<Func<T, bool>>)exp);
         }
 
         /// <summary>

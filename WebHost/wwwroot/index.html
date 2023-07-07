@@ -631,7 +631,7 @@
                     me.showMessageCenter();
                 });
             },
-            toDetail: function (dom,title, href, target) {
+            toDetail: function (dom, title, href, target) {
                 liger.get($(dom).parents(".l-dialog")).close();
                 LG.toDetail(title, href, target);
             },
@@ -684,6 +684,12 @@
                     }
                 });
             },
+            clearTempStorage: function () {
+                if (window.performance && window.performance.navigation && window.performance.navigation.type !== 0) {//非首次加载
+                    return;
+                }
+                if (window.tempStorage) window.tempStorage = null;
+            },
             init: function () {
                 var me = this;
                 $("#realname").text(window.session.RealName);
@@ -691,6 +697,7 @@
                 me.initMessageCenter();
             }
         };
+        business.clearTempStorage();
     </script>
 </body>
 </html>

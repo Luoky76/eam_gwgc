@@ -168,8 +168,14 @@ namespace Gksyb.Common.Weixin
                     await Task.Delay(3 * 1000);
                     return;
                 }
-                var url = $"{ApiHost}/cgi-bin/token?grant_type=client_credential&appid={WeixinSetting.AppId}&secret={WeixinSetting.AppSecret}";
-                var response = await url.GetJsonAsync<AccessTokenResponse>();
+                var url = $"{ApiHost}/cgi-bin/stable_token";
+                var response = await url.PostJsonAsync(new
+                {
+                    grant_type = "client_credential",
+                    appid = WeixinSetting.AppId,
+                    secret = WeixinSetting.AppSecret,
+                    force_refresh = false
+                }).ReceiveJson<AccessTokenResponse>();
                 if (response.IsError) throw new MessageException(response.ToString());
                 response.SeExpiresTime();
                 await accessTokenHandle.SetAsync(response);

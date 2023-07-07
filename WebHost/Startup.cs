@@ -1,41 +1,35 @@
 using Chloe;
 using Gksyb.Common;
 using Gksyb.Common.Interface;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Serilog;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace WebHost
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
         private readonly List<IPlugin> _plugins = new();
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            _configuration = configuration;
+            _env = env;
+            var pluginDirectory = Path.Combine(AppContext.BaseDirectory, "plugins");
+            if (!Directory.Exists(pluginDirectory)) return;
             //插件处理
             var pluginType = typeof(IPlugin);
             var loadedFileNames = AssemblyLoadContext.Default.Assemblies.Where(c => !c.IsDynamic && !string.IsNullOrWhiteSpace(c.Location))
                 .Select(c => Path.GetFileNameWithoutExtension(c.Location)).ToList();
-            var fileNames = Directory.GetFiles(StaticData.PluginDirectory, "*.dll", SearchOption.TopDirectoryOnly);
+            var fileNames = Directory.GetFiles(pluginDirectory, "*.dll", SearchOption.TopDirectoryOnly);
             var businessAssemblies = new ConcurrentQueue<Assembly>();
             var pluginsPrefixs = configuration.GetSection(OptionName.PluginsPrefix).Get<List<string>>();
             var assemblyLoadContext = AssemblyLoadContext.Default;//new AssemblyLoadContext("GksybPlugins", false);
@@ -78,40 +72,40 @@ namespace WebHost
             _plugins = _plugins.OrderBy(c => c.GetOrder()).ToList();
         }
 
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.Use((context, next) =>
             {
                 context.Response.AddSecurityHeader();//安全响应头
                 return next.Invoke();
             });
-            if (env.IsDevelopment())
+            if (_env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            if (string.IsNullOrWhiteSpace(env.WebRootPath))
+            if (string.IsNullOrWhiteSpace(_env.WebRootPath))
             {
                 var rootPath = Directory.GetCurrentDirectory();
                 var index = rootPath.IndexOf("\\bin\\");
-                env.WebRootPath = Path.Combine(rootPath[..index], "wwwroot");
-                env.WebRootFileProvider = new PhysicalFileProvider(env.WebRootPath);
+                _env.WebRootPath = Path.Combine(rootPath[..index], "wwwroot");
+                _env.WebRootFileProvider = new PhysicalFileProvider(_env.WebRootPath);
             }
             _plugins.ForEach(plugin =>
             {
-                plugin.PreConfigure(app, env);
+                plugin.PreConfigure(app, _env);
             });
             app.UseDefaultFiles();
             app.UseSafeStaticFiles(new StaticFileOptions()
             {
-                ContentTypeProvider = new WebFileContentTypeProvider(Configuration.GetSection(OptionName.FileContentType).Get<Dictionary<string, string>>())
+                ContentTypeProvider = new WebFileContentTypeProvider(_configuration.GetSection(OptionName.FileContentType).Get<Dictionary<string, string>>())
             }, ctx =>
             {
+                var resuest = ctx.Context.Request;
                 var response = ctx.Context.Response;
-                if (response.ContentType == "text/html")//html不缓存
+                if (response.ContentType == "text/html" || (response.ContentType == "text/javascript" && !resuest.Path.StartsWithSegments("/lib")))//html不缓存
                 {
+                    if (resuest.QueryString.HasValue && resuest.QueryString.Value.Contains("cache=1")) return;
                     response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
                 }
             });
@@ -130,7 +124,7 @@ namespace WebHost
             app.UseRouting();
             _plugins.ForEach(plugin =>
             {
-                plugin.Configure(app, env);
+                plugin.Configure(app, _env);
             });
             app.UseEndpoints(endpoints =>
             {
@@ -141,9 +135,7 @@ namespace WebHost
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSysService(Configuration);
-            services.AddDistributedCache(Configuration);
-            services.AddHttpContextAccessor();
+            services.AddSysService(_configuration);
             var mvcBuilder = services.AddControllers(configure =>
             {
                 configure.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;//禁止C# 8.0 验证非可空引用类型
@@ -160,13 +152,13 @@ namespace WebHost
                 options.SerializerSettings.Custom();
             });
             //SignalR
-            services.AddSignalR().AddRedis(Configuration).AddNewtonsoftJsonProtocol(configure =>//配置使用NewtonsoftJson
+            services.AddSignalR().AddRedis(_configuration).AddNewtonsoftJsonProtocol(configure =>//配置使用NewtonsoftJson
             {
                 configure.PayloadSerializerSettings.Custom(igronNull: true);
             });
             _plugins.ForEach(plugin =>
             {
-                plugin.ConfigureServices(services, mvcBuilder, Configuration);
+                plugin.ConfigureServices(services, mvcBuilder, _configuration);
             });
         }
     }

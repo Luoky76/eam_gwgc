@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Gksyb.Common.EventBus
+﻿namespace Gksyb.Common.EventBus
 {
     /// <summary>
     /// 事件存储器

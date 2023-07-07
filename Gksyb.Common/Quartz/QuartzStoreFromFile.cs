@@ -1,6 +1,5 @@
 ﻿using Gksyb.Common.Quartz.Dtos;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
 
 namespace Gksyb.Common.Quartz
 {

@@ -37,28 +37,28 @@ namespace Gksyb.Model.Core
         /// 表格json
         /// </summary>
         [Description("表格json")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string GRID { get; set; }
 
         /// <summary>
         /// 查询json
         /// </summary>
         [Description("查询json")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string SEARCH { get; set; }
 
         /// <summary>
         /// 表单json
         /// </summary>
         [Description("表单json")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string FORM { get; set; }
 
         /// <summary>
         /// 程序名称
         /// </summary>
         [Description("程序名称")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

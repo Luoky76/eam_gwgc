@@ -226,6 +226,7 @@ namespace Chloe
                 Oracle.OracleContext => "oracle",
                 MySql.MySqlContext => "mysql",
                 SQLite.SQLiteContext => "sqlite",
+                Dameng.DamengContext => "dameng",
                 PostgreSQL.PostgreSQLContext => "pgsql",
                 SqlServer.MsSqlContext => "sqlserver",
                 _ => "oracle",

@@ -4,7 +4,6 @@ using Chloe.Oracle;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Text.RegularExpressions;
-using System.Threading;
 
 namespace Gksyb.Common.Data
 {

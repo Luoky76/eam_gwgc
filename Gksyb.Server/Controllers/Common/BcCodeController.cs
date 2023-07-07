@@ -8,7 +8,7 @@ namespace Gksyb.Server.Controllers.Auth
     /// <summary>
     /// 字典管理
     /// </summary>
-    [GksybAuthorize(IsOurCompany = true)]
+    [GksybAuthorize(MenuNo = "CodeManage$", Mode = GksybAuthorizeMode.Regex)]
     public class BcCodeController : BaseController<BC_CODE>
     {
         public BcCodeController(IService<BC_CODE> service) : base(service)

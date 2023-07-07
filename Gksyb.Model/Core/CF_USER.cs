@@ -51,21 +51,21 @@ namespace Gksyb.Model.Core
         /// 真实姓名
         /// </summary>
         [Description("真实姓名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string REALNAME { get; set; }
 
         /// <summary>
         /// 显示名称
         /// </summary>
         [Description("显示名称")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string TITLE { get; set; }
 
         /// <summary>
         /// 性别
         /// </summary>
         [Description("性别")]
-        [Column(DbType = DbType.String, Size = 8)]
+        [Column(DbType = DbType.AnsiString, Size = 8)]
         public string SEX { get; set; }
 
         /// <summary>
@@ -100,14 +100,14 @@ namespace Gksyb.Model.Core
         /// 昵称
         /// </summary>
         [Description("昵称")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string NICKNAME { get; set; }
 
         /// <summary>
         /// 地址
         /// </summary>
         [Description("地址")]
-        [Column(DbType = DbType.String, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string ADDRESS { get; set; }
 
         /// <summary>
@@ -117,10 +117,10 @@ namespace Gksyb.Model.Core
         public DateTime? LASTLOGINTIME { get; set; }
 
         /// <summary>
-        /// 创建者
+        /// 创建人
         /// </summary>
-        [Description("创建者")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Description("创建人")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Gksyb.Model.Core
         /// 最后修改人
         /// </summary>
         [Description("最后修改人")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>
@@ -146,14 +146,14 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Gksyb.Model.Core
         /// 部门代码
         /// </summary>
         [Description("部门代码")]
-        [Column(DbType = DbType.AnsiString, Size = 10)]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
         public string DEPARTCODE { get; set; }
 
         /// <summary>

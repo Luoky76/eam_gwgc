@@ -28,17 +28,9 @@ namespace Gksyb.Common.Weixin
         public void SeExpiresTime()
         {
             var expireInSeconds = ExpiresIn;
-            if (expireInSeconds > 3600)
+            if (expireInSeconds > 180)
             {
-                expireInSeconds -= 600;//提前10分钟过期
-            }
-            else if (expireInSeconds > 1800)
-            {
-                expireInSeconds -= 300;//提前5分钟过期
-            }
-            else if (expireInSeconds > 300)
-            {
-                expireInSeconds -= 30;//提前1分钟过期
+                expireInSeconds -= 180;//提前3分钟过期
             }
             ExpiresTime = DateTime.Now.AddSeconds(expireInSeconds);
         }
