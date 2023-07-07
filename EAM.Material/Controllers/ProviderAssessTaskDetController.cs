@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controller
 {
-    [GksybAuthorize(true)]
+    [GksybAuthorize(MenuNo = "ProviderAssessTask")]
     public class ProviderAssessTaskDetController : AreaController
     {
         private readonly IProviderAssessTaskDetService _service;
@@ -52,7 +52,6 @@ namespace EAM.Material.Controller
         [HttpPost]
         public async Task<GridData> GetAssessTaskAsync(string assessTaskId)
         {
-            if (assessTaskId.IsNullOrEmpty()) return new GridData();
             return await _service.GetAssessTaskAsync(assessTaskId);
         }
 

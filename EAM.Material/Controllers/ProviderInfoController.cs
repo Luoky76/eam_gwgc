@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controller
 {
-    [GksybAuthorize(true)]
+    [GksybAuthorize(MenuNo = "ProviderInfo")]
     public class ProviderInfoController : AreaController
     {
         private readonly IProviderInfoService _service;

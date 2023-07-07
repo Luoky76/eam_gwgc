@@ -34,10 +34,6 @@
             sid: getQueryStringByName("sid"),
             isAddNew: false,
             isView: true,
-            dataCycleUnit: [{ ID: "小时", TEXT: "小时" }, { ID: "天", TEXT: "天" }, { ID: "周", TEXT: "周" }, { ID: "月", TEXT: "月" }, { ID: "年", TEXT: "年" }],
-            dataType: [{ ID: "10", TEXT: "清扫" }, { ID: "20", TEXT: "给油" }, { ID: "30", TEXT: "点检" }, { ID: "40", TEXT: "清扫&点检" }, { ID: "50", TEXT: "定检" }],
-            dataState: [{ ID: "20", TEXT: "运转" }, { ID: "10", TEXT: "停机" }],
-            dataYN: [{ ID: "1", TEXT: "是" }, { ID: "0", TEXT: "否" }],
             dataAuditing: [{ ID: "1", TEXT: "已提交" }, { ID: "0", TEXT: "未提交" }],
             orginData: {},
             setConfig: function () {
@@ -91,7 +87,7 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    me.mainform.setData({});
+                    me.mainform.setData({"AUDITION": '0'});
                     inner();
                 }
                 else {
@@ -322,14 +318,11 @@
                         case "refresh":
                             me.reloadTaskBase();
                             break;
-                        case "add":
-                            me.addTaskBase();
+                        case "import":
+                            me.importTaskBase();
                             break;
                         case "delete":
                             me.deleteTaskBase();
-                            break;
-                        case "save":
-                            me.saveTaskBase();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -345,6 +338,7 @@
                             break;
                     }
                 }
+                //加载detail按钮 
                 me.grid.toolbarManager.options.group = 'detail';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
@@ -353,15 +347,9 @@
                 var me = this;
                 me.grid.loadData();
             },
-            //新增
-            addTaskBase: function () {
+            //导入
+            importTaskBase: function () {
                 var me = this;
-                if ($('#ASSESS_TASK_ID').val() == '') {
-                    LG.showError("请先保存主表数据");
-                    return;
-                }
-                me.grid.addEditRow({ "ASSESS_TASK_ID": $('#ASSESS_TASK_ID').val() });
-                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
             },
             //保存
             saveTaskBase: function () {
@@ -407,7 +395,7 @@
                     }
                 }
             },
-
+            //初始化
             init: function () {
                 var me = this;
                 debugger
@@ -415,21 +403,19 @@
                     me.dialog = frameElement.dialog;
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
-                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.sid != undefined) me.sid = me.dialogData.sid;
                     if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
                     if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
-                    if (me.dialogData.typeid) me.typeid = me.dialogData.typeid;
-                    if (me.dialogData.typename) me.typename = me.dialogData.typename;
                 }
 
                 //获取下拉框数据
                 me.loadComboxData();
-                //加在基础信息
+                //加载基础信息
                 me.setConfig();
                 me.setForm();
                 me.loadData();
 
-                //加载维保标准明细
+                //加载任务基础
                 me.setGrid();
                 me.reloadTaskBase();
 
