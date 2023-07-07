@@ -2,9 +2,11 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<NoWarn>$(NoWarn);1591;</NoWarn>
 		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+		<SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,9 +16,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.16" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="6.0.16" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.19" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="6.0.19" />
 		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
 	</ItemGroup>
 
@@ -39,11 +40,6 @@
 	<ItemGroup>
 		<PluginPublishProject Include="..\Gksyb.Server\Gksyb.Server.csproj" />
 		<PluginPublishProject Include="..\Gksyb.Workflow\Gksyb.Workflow.csproj" />
-		<PluginPublishProject Include="..\EAM.Device\EAM.Device.csproj" />
-		<PluginPublishProject Include="..\EAM.Repair\EAM.Repair.csproj" />
-		<PluginPublishProject Include="..\EAM.Material\EAM.Material.csproj" />
-		<PluginPublishProject Include="..\EAM.Special\EAM.Special.csproj" />
-		<PluginPublishProject Include="..\EAM.Energy\EAM.Energy.csproj" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
@@ -98,6 +94,5 @@
 		</ItemGroup>
 		<Copy SourceFiles="@(PublishFile)" DestinationFolder="$(PublishDir)\plugins\" />
 	</Target>
-	<ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
-	
+
 </Project>

@@ -48,6 +48,7 @@
         selectBoxRender: null,       //自定义selectbox的内容
         triggerToLoad: false, //是否在点击下拉按钮时加载
         triggerIcon: null, //下拉按钮
+        focusToggle: null,     //获取焦点是否展开下拉，默认在grid时不展开，其他展开
         addRowButton: '新增',           //新增按钮
         addRowButtonClick: null,        //新增事件
         css: null,//控件css样式
