@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace Gksyb.Workflow.Controllers
+﻿namespace Microsoft.AspNetCore.Mvc
 {
     [Route("Workflow")]
     [ApiController]
