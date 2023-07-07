@@ -1,4 +1,6 @@
-﻿namespace EAM.Repair.dto
+﻿using System;
+
+namespace EAM.Repair.dto
 {
     public class ShipPlanRequest
     {
