@@ -44,7 +44,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
                 query = query.Where(c => corpids.Contains(c.CORPID));
             }
-            return await query.Ignore(c => new { c.FLOW_CONTENT, c.FLOW_FORM, c.FLOW_FORM_URL }).GetGridData(request);
+            return await query.Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM, c.FLOW_FORM_URL }).GetGridData(request);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Gksyb.Workflow.Services.Workflow
             var model = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == entity.ID).FirstOrDefaultAsync()
                 ?? throw new MessageException($"找不到流程{entity.FLOW_NAME}");
             var isExists = await _dbContext.Query<WF_FLOW>().Where(c => c.APPNAME == _options.AppName
-                && c.FLOW_NAME == entity.FLOW_FORM && c.FLAG == "1" && c.ID != entity.ID).AnyAsync();
+                && c.FLOW_NAME == entity.FLOW_NAME && c.FLAG == "1" && c.ID != entity.ID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在流程{entity.FLOW_NAME}");
             if (!_user.IsAdmin)
             {
@@ -146,7 +146,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <returns></returns>
         private async Task BeforeDelete(WF_FLOW entity)
         {
-            var model = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == entity.ID).Ignore(c => new { c.FLOW_CONTENT, c.FLOW_FORM }).FirstOrDefaultAsync();
+            var model = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == entity.ID).Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM }).FirstOrDefaultAsync();
             if (!_user.IsAdmin)
             {
                 if (!_user.AllCorps.Exists(c => c.CorpID == model.CORPID)) throw new MessageException($"您无权进行此操作");
