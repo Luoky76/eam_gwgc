@@ -47,7 +47,7 @@ namespace EAM.Device.Services
                 c => new
                 {
                     c.DEVICE_ID,
-                    c.DEVICE_CODE,
+                    c.DEVICE_NO,
                     c.DEVICE_NAME,
                     c.TYPE_NAME,
                     c.BOM_NAME,

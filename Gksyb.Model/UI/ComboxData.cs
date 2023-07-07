@@ -26,9 +26,17 @@
         public object FLAG { get; set; }
 
         /// <summary>
-        /// 扩展2
+        /// 扩展
         /// </summary>
         public object EXTEND { get; set; }
-        
+        /// <summary>
+        /// 扩展1
+        /// </summary>
+        public object EXTEND1 { get; set; }
+        /// <summary>
+        /// 扩展2
+        /// </summary>
+        public object EXTEND2 { get; set; }
+
     }
 }

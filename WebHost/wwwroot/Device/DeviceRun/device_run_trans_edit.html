@@ -67,20 +67,20 @@
                             valueField: "ID",
                             textField: "TEXT",
                             columns: [
-                                { header: '设备编号', name: 'TEXT', width: 100 },
-                                { header: '设备名称', name: 'VALUE' }
+                                { header: '设备编号', name: 'VALUE', width: 100 },
+                                { header: '设备名称', name: 'TEXT' }
                             ],
                             onChangeValue: function (input, value, g) {
                                 if (g.selected != undefined) {
-                                    $('#DEVICE_NAME').val(g.selected.VALUE);
-                                    $('#RUN_STATUS').val(g.selected.EXTEND);
-                                    $('#DEVICE_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                    $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                    $('#RUN_STATUS').val(g.selected.EXTEND == null ? '' : g.selected.EXTEND);
+                                    $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                 }
                             }
                         }
                     },
-                    { display: "设备编号", name: "DEVICE_CODE", dbname: "DEVICE_CODE", labelWidth: 130, width: 200, type: "hidden", options: {} },
-                    { display: "设备名称", name: "DEVICE_NAME", newline: true, upper: true, width: 310, type: "text", options: {} },
+                    { display: "设备编号", name: "DEVICE_NO", dbname: "DEVICE_NO", labelWidth: 130, width: 200, type: "hidden", options: {} },
+                    { display: "设备名称", name: "DEVICE_NAME", newline: true, upper: true, width: 310, type: "text", options: {}, editor: { disabled: true }, },
                     { display: "状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", width: 310, validate: { required: true }, minWidth: 150, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" } },
                     { display: "原状态", name: "RUN_STATUS", newline: false, upper: true, width: 310, type: "text", options: { },editor: { disabled: true }, },
                     { display: "现状态", name: "NEW_RUN_STATUS", newline: false, upper: true, width: 310, type: "select", options: { data: runStatus } },

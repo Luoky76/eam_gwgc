@@ -1,11 +1,12 @@
-﻿<!DOCTYPE html>
+﻿<%@ Page Language="C#" Inherits="gksyyb.Common.ViewPageBase" %>
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <title></title>
-    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
 <body style="padding: 5px; height: 100%;">
@@ -30,28 +31,47 @@
                 var me = this;
                 me.config = {
                     search: {
-                        fields: 
-                        [
-                            { display: "设备编码", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "改造开始时间", name: "_search_START_DATE", dbname: "START_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "改造结束时间", name: "_search_END_DATE", dbname: "END_DATE", newline: false, upper: true, type: "date", options: {} },
+                        fields: [
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text",options:{} },
+                            { display: "变动单号", name: "_search_VARY_CODE", dbname: "VARY_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "申请日期", name: "_search_APPLY_DATE", dbname: "APPLY_DATE", newline: false, upper: true, type: "date",options:{} },
+                            { display: "变动完成日期", name: "_search_VARY_DATE", dbname: "VARY_DATE", newline: false, upper: true, type: "date",options:{} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编码", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "改造开始时间", name: "START_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "改造结束时间", name: "END_DATE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "改造类型", name: "REMOULD_TYPE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "改造情况描述", name: "REMOULD_DESC", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "是否完成改造", name: "ISFINISH", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "备注", name: "REMARK", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "DEVICE_ID", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 100, type: "text", align: "left", hide: true },
-                            { display: "DEVICE_REMOULD_ID", name: "DEVICE_REMOULD_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加时间", name: "ADD_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true }
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "变动单号", name: "VARY_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "登记人", name: "EIDT_USER", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "登记人ID", name: "EIDT_USERID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调出使用部门", name: "DEPT_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调出使用部门ID", name: "DEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调出二级单位", name: "SEC_DEPT", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调出二级单位ID", name: "SEC_DEPTID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调入使用部门", name: "WDEPT_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调入使用部门ID", name: "WDEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调入二级单位", name: "WSEC_DEPT", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "调入二级单位ID", name: "WSEC_DEPTID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "申请日期", name: "APPLY_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "变动完成日期", name: "VARY_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "计划启用日期", name: "PLAN_START_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "设备总原值(元)", name: "SUM_ORG_VALUE", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "设备总净值(元)", name: "SUM_NET_VALUE", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "总已提折旧(元)", name: "SUM_DEP_VALUE", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "变卖总金额(元)", name: "SUM_ALLOT_MONEY", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "变动原因", name: "REASONS", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备技术状态", name: "TECH_STATUS", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "鉴定人", name: "APPRAISER", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "鉴定人ID", name: "APPRAISER_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "接收单位", name: "RECEIVING", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "备注", name: "MEMO", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "鉴定结果", name: "RESULT", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "主键", name: "VARY_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text'} },
+                            { display: "变动类型", name: "VARY_TYPE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "添加时间", name: "ADD_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} }
                         ]
                     }
                 };
@@ -89,16 +109,16 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: rootPath + 'Device/DeviceRemould/List',
+                    url: rootPath + 'Apis/DeviceVary/Get',
                     //url: rootPath + 'handler/grid.ashx',
                     parms: {
-                        //"view": "device_remould",
+                        //"view": "device_vary",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'START_DATE',
+                    sortName: 'AUDITING',
                     sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
@@ -118,7 +138,7 @@
                         if (data && data.Rows) {
                             var rows = data.Rows;
                             for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDDEVICE_REMOULD_ID = rows[i].DEVICE_REMOULD_ID;
+                                rows[i].OLDVARY_ID = rows[i].VARY_ID;
                                 rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
                             }
                         }
@@ -183,13 +203,13 @@
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({}, true);
+                me.grid.addEditRow({ },true);
             },
             modify: function () { //修改
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected) {
-                    var sid = selected.START_DATE;
+                    var sid = selected.AUDITING;
                     $.ligerDialog.open({
                         width: me.detailWidth,
                         height: me.detailHeight,
@@ -221,7 +241,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: rootPath + 'Device/DeviceRemould/Save',
+                        url:rootPath + 'Apis/DeviceVary/Manager',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -331,7 +351,7 @@
             },
             init: function () {
                 var me = this;
-                //me.loadComboxData();
+                me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();

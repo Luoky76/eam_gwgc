@@ -214,9 +214,45 @@ namespace Gksyb.Server.Services.Common
                 qry = qry.Where(c => _userSession.Corp.CorpID == c.SEC_DEPTID);
             }
             return await qry.Where(predicate).Where(c => c.AUDITING=="1")
-                .Select(c => new ComboxData() { ID = c.DEVICE_ID, TEXT = c.DEVICE_NAME, VALUE = c.DEVICE_CODE, EXTEND =c.STATUS })
+                .Select(c => new ComboxData() { 
+                    ID = c.DEVICE_ID,
+                    TEXT = c.DEVICE_NAME,
+                    VALUE = c.DEVICE_NO,
+                    EXTEND =c.STATUS,
+                    EXTEND1 =c.DEVICE_TYPE,
+                    EXTEND2 =c.TYPE_NAME,
+                })
                .ToListAsync();
         }
+        /// <summary>
+        /// 停机分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> StopSource(Expression<Func<RUN_STOP_TYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<RUN_STOP_TYPE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.STOP_TYPE_ID, TEXT = c.STOP_NAME, VALUE = c.STOP_NAME })
+                .Distinct()
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 故障分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> MalType(Expression<Func<RUN_MAL_TYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<RUN_MAL_TYPE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.MAL_TYPE_ID, TEXT = c.MAL_TYPE_NAME, VALUE = c.MAL_TYPE_NAME })
+                .Distinct()
+               .ToListAsync();
+        }
+        
+
 
         /// <summary>
         /// 供应商名下拉框

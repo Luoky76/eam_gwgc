@@ -1,7 +1,7 @@
 ﻿using Chloe;
+using EAM.Device.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
-using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
 using Gksyb.Model;
@@ -10,19 +10,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Gksyb.Core.Grid;
 using Gksyb.Common;
-using EAM.Device.Interfaces;
 
 namespace EAM.Device.Services
 {
-    public class DeviceRemouldService : BaseService, IDeviceRemouldService
+    public class DeviceParamService : BaseService, IDeviceParamService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
         private readonly IComboxDataService _comboxService;
         private DateTime? _Sysdate;
 
-        public DeviceRemouldService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxService)
+        public DeviceParamService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxService)
         {
             _dbContext = dbContext;
             _userSession = userSession;
@@ -36,20 +36,20 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_REMOULD>((a,b) => a.DEVICE_ID == b.DEVICE_ID).Select((a,b) => new { 
+            var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_PARAM>((a, b) => a.DEVICE_ID == b.DEVICE_ID).Select((a, b) => new {
                 a.DEVICE_ID,
                 a.DEVICE_NO,
-                b.REMOULD_TYPE,
-                b.DEVICE_REMOULD_ID,
-                b.START_DATE,
-                b.END_DATE,
-                b.REMOULD_DESC,
-                b.ISFINISH,
-                b.REMARK,
+                b.PARAM_NAME,
+                b.PARAM_VALUE,
+                b.PARAM_MEMO,
+                b.PARAM_CODE,
+                b.PARAM_SUB,
+                b.TECHFUN_NAME,
+                b.PARAM_ID,
                 b.ADD_USERID,
                 b.ADD_DATE,
                 b.MODIFY_USERID,
-                b.MODIFY_DATE,
+                b.MODIFY_DATE
             }).GetGridData(request);
             return list;
         }
@@ -59,25 +59,25 @@ namespace EAM.Device.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_REMOULD> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_PARAM> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
                     c.DEVICE_ID,
-                    c.REMOULD_TYPE,
-                    c.REMOULD_DESC,
-                    c.ISFINISH,
-                    c.REMARK,
-                    c.START_DATE,
-                    c.END_DATE,
-                    c.DEVICE_REMOULD_ID,
+                    c.PARAM_NAME,
+                    c.PARAM_VALUE,
+                    c.PARAM_MEMO,
+                    c.PARAM_CODE,
+                    c.PARAM_SUB,
+                    c.TECHFUN_NAME,
+                    c.PARAM_ID,
                     c.ADD_USERID,
                     c.ADD_DATE,
                     c.MODIFY_USERID,
                     c.MODIFY_DATE,
                 },
-                c => a => a.DEVICE_REMOULD_ID == c.DEVICE_REMOULD_ID
+                c => a => a.PARAM_ID == c.PARAM_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
         }
 
@@ -86,10 +86,10 @@ namespace EAM.Device.Services
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeAdd(DEVICE_REMOULD entity)
+        private async Task BeforeAdd(DEVICE_PARAM entity)
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.DEVICE_REMOULD_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.PARAM_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.ADD_DATE = Sysdate;
             entity.ADD_USERID = _userSession.UserID.ToString();
             entity.MODIFY_DATE = Sysdate;
@@ -103,7 +103,7 @@ namespace EAM.Device.Services
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeUpdate(DEVICE_REMOULD entity)
+        private async Task BeforeUpdate(DEVICE_PARAM entity)
         {
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
@@ -116,11 +116,11 @@ namespace EAM.Device.Services
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeDelete(DEVICE_REMOULD entity)
+        private async Task BeforeDelete(DEVICE_PARAM entity)
         {
             await Task.CompletedTask;
         }
-        private async Task AfterSave(List<DEVICE_REMOULD> added, List<DEVICE_REMOULD> updated, List<DEVICE_REMOULD> deleted)
+        private async Task AfterSave(List<DEVICE_PARAM> added, List<DEVICE_PARAM> updated, List<DEVICE_PARAM> deleted)
         {
 
             await Task.CompletedTask;

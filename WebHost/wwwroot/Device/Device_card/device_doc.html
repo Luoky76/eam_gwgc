@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -30,24 +31,22 @@
                 var me = this;
                 me.config = {
                     search: {
-                        fields: 
-                        [
-                            { display: "设备编码", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "改造开始时间", name: "_search_START_DATE", dbname: "START_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "改造结束时间", name: "_search_END_DATE", dbname: "END_DATE", newline: false, upper: true, type: "date", options: {} },
+                        fields: [
+                            { display: "档案编号", name: "_search_DOC_CODE", dbname: "DOC_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编码", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "改造开始时间", name: "START_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "改造结束时间", name: "END_DATE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "改造类型", name: "REMOULD_TYPE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "改造情况描述", name: "REMOULD_DESC", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "是否完成改造", name: "ISFINISH", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "备注", name: "REMARK", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "DEVICE_ID", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 100, type: "text", align: "left", hide: true },
-                            { display: "DEVICE_REMOULD_ID", name: "DEVICE_REMOULD_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "档案编号", name: "DOC_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "资料名称", name: "DOC_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "份数", name: "DOC_NUM", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "存放地点", name: "DOC_SITE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "附件", name: "DOC_ATTACH", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "说明", name: "DOC_EXPLAIN", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "主键", name: "DOC_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text' }, hide: true },
                             { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "添加时间", name: "ADD_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
@@ -89,16 +88,16 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: rootPath + 'Device/DeviceRemould/List',
+                    url: rootPath + 'DEVICE/DeviceDoc/List',
                     //url: rootPath + 'handler/grid.ashx',
                     parms: {
-                        //"view": "device_remould",
+                        //"view": "device_doc",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'START_DATE',
+                    sortName: 'DOC_CODE',
                     sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
@@ -118,7 +117,7 @@
                         if (data && data.Rows) {
                             var rows = data.Rows;
                             for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDDEVICE_REMOULD_ID = rows[i].DEVICE_REMOULD_ID;
+                                rows[i].OLDDOC_ID = rows[i].DOC_ID;
                                 rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
                             }
                         }
@@ -183,13 +182,13 @@
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({}, true);
+                me.grid.addEditRow({ },true);
             },
             modify: function () { //修改
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected) {
-                    var sid = selected.START_DATE;
+                    var sid = selected.DOC_CODE;
                     $.ligerDialog.open({
                         width: me.detailWidth,
                         height: me.detailHeight,
@@ -221,7 +220,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: rootPath + 'Device/DeviceRemould/Save',
+                        url:rootPath + 'Device/DeviceDoc/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -331,7 +330,6 @@
             },
             init: function () {
                 var me = this;
-                //me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
