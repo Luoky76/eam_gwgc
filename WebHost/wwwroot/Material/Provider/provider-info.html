@@ -27,8 +27,8 @@
         </div>
     </div>
     <script type="text/javascript">
-'use strict';
-var business = {
+        'use strict';
+        var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
@@ -118,7 +118,7 @@ var business = {
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/ProviderInfo/list',
+                    url: 'Material/ProviderInfo/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -254,7 +254,7 @@ var business = {
                 var selected = me.grid.getSelectedRow();
                 if (selected) {
                     if (selected.AUDITING == "1") {
-                        LG.showError("该数据以提交,无法修改!");
+                        LG.showError("该数据已提交,无法修改!");
                         return
                     }
                     $.ligerDialog.open({
@@ -294,7 +294,7 @@ var business = {
                     changeRow["original"] = orginarr;
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/ProviderInfo/save',
+                        url: 'Material/ProviderInfo/Save',
                         loading: '正在提交中...',
                         data: changeRow,
                         success: function () {
@@ -321,7 +321,7 @@ var business = {
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/ProviderInfo/save',
+                        url: 'Material/ProviderInfo/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {

@@ -1,0 +1,445 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>任务明细</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%; overflow:auto;">
+    <div id="mainform" style="width:97%;">
+    </div>
+    <div style="width: 94.5%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>评估任务明细</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="margin-bottom: 50px; width: 100%;" id="task-base-grid">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            dialogData: {},
+            sid: getQueryStringByName("sid"),
+            isAddNew: false,
+            isView: true,
+            dataCycleUnit: [{ ID: "小时", TEXT: "小时" }, { ID: "天", TEXT: "天" }, { ID: "周", TEXT: "周" }, { ID: "月", TEXT: "月" }, { ID: "年", TEXT: "年" }],
+            dataType: [{ ID: "10", TEXT: "清扫" }, { ID: "20", TEXT: "给油" }, { ID: "30", TEXT: "点检" }, { ID: "40", TEXT: "清扫&点检" }, { ID: "50", TEXT: "定检" }],
+            dataState: [{ ID: "20", TEXT: "运转" }, { ID: "10", TEXT: "停机" }],
+            dataYN: [{ ID: "1", TEXT: "是" }, { ID: "0", TEXT: "否" }],
+            dataAuditing: [{ ID: "1", TEXT: "已提交" }, { ID: "0", TEXT: "未提交" }],
+            orginData: {},
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        labelwidth: 220,
+                        fields: [
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "select", align: "left", editor: { type: 'select', data: me.dataAuditing, disabled: true } },
+                            { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text" },
+                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "text" },
+                            { display: "任务制定人", name: "FORMULATER_NAME", dbname: "FORMULATER_NAME", width: 300, type: "text" },
+                            { display: "考核人", name: "EXAMINER_NAME", dbname: "EXAMINER_NAME", width: 300, type: "text" },
+                            { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
+                            { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
+                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
+                            { display: "备注", name: "REMARK", dbname: "REMARK", width: 1000, type: "textarea" },
+                            //隐藏
+                            { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
+                            { display: "供应商id", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "hidden" },
+                            { display: "任务制定人id", name: "FORMULATER_ID", dbname: "FORMULATER_ID", width: 300, type: "hidden" },
+                            { display: "考核人id", name: "EXAMINER_ID", dbname: "EXAMINER_ID", width: 300, type: "hidden" },
+                            { display: "添加人ID", name: "ADD_USERID", dbname: "ADD_USERID", width: 300, type: "hidden" },
+                            { display: "添加时间", name: "ADD_DATE", dbname: "ADD_DATE", width: 300, type: "hidden" },
+                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 300, type: "hidden" },
+                            { display: "修改时间", name: "MODIFY_DATE", dbname: "MODIFY_DATE", width: 300, type: "hidden" },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "评价内容", name: "CONTENT", minWidth: 400, type: "text" },
+                            //隐藏
+                            { display: "主键", name: "ASSESS_BASE_ID", width: 100, type: "text", hide: true },
+                            { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text", hide: true },
+                            { display: "添加时间", name: "ADD_DATE", width: 100, type: "date", hide: true },
+                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
+                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date", hide: true },
+                            { display: "系统租户ID", name: "TENANT_ID", width: 100, type: "text", hide: true }
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadData: function () {
+                var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
+                if (me.isAddNew) {
+                    me.mainform.setData({});
+                    inner();
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Material/ProviderAssessTask/Get',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setData(data);
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+            },
+            //保存
+            save: function () { //保存
+                var me = this;
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow = new Object();
+                if (me.isAddNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/ProviderAssessTask/Save',
+                    loading: '正在保存中...',
+                    data: { request: changeRow },
+                    success: function (result) {
+                        LG.showSuccess('保存成功', function () {
+                            if (me.dialog) me.dialog.close();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    if (updateFields) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
+                    }
+                });
+            },
+            setFormDefaultBtn: function (cancleCallback, savedCallback) {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', icon: 'fa fa-undo', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    me.loadData();
+                                }
+                            });
+                        }
+                    });
+                }
+                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            //获取下拉框数据
+            loadComboxData: function () {
+                var me = this;
+                var dataControl = [];
+                LG.ajax({
+                    async: false,
+                    url: 'Material/ProviderAssessTask/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        //me.ProviderName = data.ProviderName;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                return dataControl;
+            },
+            grid: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#task-base-grid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/ProviderAssessTaskDet/GetAssessTask',
+                    parms: {
+                        assessTaskId: me.sid
+                    },
+                    sortName: 'ASSESS_TASK_DET_ID',
+                    sortOrder: 'asc',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+                me.grid.isValid = true;
+                if (!me.isView) {
+                    me.loadToolbar();
+                }
+                me.bindGridEvent();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadTaskBase();
+                            break;
+                        case "add":
+                            me.addTaskBase();
+                            break;
+                        case "delete":
+                            me.deleteTaskBase();
+                            break;
+                        case "save":
+                            me.saveTaskBase();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid.toolbarManager.options.group = 'detail';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            //刷新
+            reloadTaskBase: function () {
+                var me = this;
+                me.grid.loadData();
+            },
+            //新增
+            addTaskBase: function () {
+                var me = this;
+                if ($('#ASSESS_TASK_ID').val() == '') {
+                    LG.showError("请先保存主表数据");
+                    return;
+                }
+                me.grid.addEditRow({ "ASSESS_TASK_ID": $('#ASSESS_TASK_ID').val() });
+                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
+            },
+            //保存
+            saveTaskBase: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/ProviderAssessTaskDet/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            //删除
+            deleteTaskBase: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+
+            init: function () {
+                var me = this;
+                debugger
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data');
+                    me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
+                    if (me.dialogData.typeid) me.typeid = me.dialogData.typeid;
+                    if (me.dialogData.typename) me.typename = me.dialogData.typename;
+                }
+
+                //获取下拉框数据
+                me.loadComboxData();
+                //加在基础信息
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+
+                //加载维保标准明细
+                me.setGrid();
+                me.reloadTaskBase();
+
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>
