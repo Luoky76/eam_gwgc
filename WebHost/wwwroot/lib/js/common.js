@@ -36,13 +36,15 @@
         },
         generateJsToken: function (jqXHR, opt) {//js票据 eval用到jqXHR
             opt = opt || { jsToken: "JsToken" };
+            var key = opt.jsToken;
+            if (key === true) {
+                key = gksybConfigs.getUrl(opt.url || "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "");
+            }
             var tokenOptions = $.extend(true, {
                 noGlobal: true,
                 url: "Auth/JsToken",
                 async: false,
-                data: {
-                    key: (opt.jsToken === true) ? gksybConfigs.getUrl(opt.url || "").replace(/^\//, "").replace(/\/$/, "") : opt.jsToken
-                },
+                data: { key: key },
                 dataType: "text",
                 type: 'post',
                 success: function (result) {
@@ -130,7 +132,7 @@
             var r = [-1, -1, -1, -1, -1, -1],
                 groupIndex = 0,
                 regStr = "^",
-                str = format || "yyyy-MM-dd hh:mm:ss";
+                str = (format || "yyyy-MM-dd hh:mm:ss").replace(/H/g, "h");
             while (true) {
                 var tmp_r = str.match(/^yyyy|MM|dd|mm|hh|HH|ss|-|\/|:|\s/);
                 if (tmp_r) {
@@ -248,8 +250,9 @@
         var itemLength = data.length;           //数据集合的个数
         for (var i = 0; i < itemLength; i++) {
             var o = data[i];
-            o[childrenName] = [];
+            delete o[childrenName];
             var key = getKey(o[id]);
+            if (key === null || key === undefined) continue;
             records[key] = o;
         }
         for (var i = 0; i < itemLength; i++) {
@@ -260,14 +263,13 @@
                 targetData.push(currentData);
                 continue;
             }
-            if (parentData[childrenName] === undefined) continue;
             parentData[childrenName] = parentData[childrenName] || [];
             parentData[childrenName].push(currentData);
         }
         return targetData;
 
         function getKey(key) {
-            if (typeof (key) == "string") key = key.replace(/[.]/g, '').toLowerCase();
+            if (typeof key === "string") key = key.replace(/[.]/g, '').toLowerCase();
             return key;
         }
     };
@@ -280,7 +282,8 @@
     Array.prototype.toTree || (Array.prototype.toTree = arrayToTree);
 
     $.ajaxSetup({
-        processData: false
+        processData: false,
+        paramData: true
     });
 
     $(document).unbind("ajaxError").ajaxError(function (event, jqXHR, opt, thrownError) {
@@ -391,16 +394,15 @@
         if (isJson && dataType !== "[object String]") {
             opt.data = JSON.stringify(opt.data);
         }
-        else if (opt.data && opt.processData !== "0" && dataType !== "[object String]") {
+        else if (opt.data && opt.paramData && dataType !== "[object String]") {
             opt.data = $.param(opt.data, opt.traditional);
         }
     });
 
-    if (!window.session) {
-        var sessionKey = "GksybData";
-        Object.defineProperty(window, 'session', {
+    var initStorage = function (name, key) {
+        Object.defineProperty(window, name, {
             get: function () {
-                var data = window.localStorage.getItem(sessionKey);
+                var data = window.localStorage.getItem(key);
                 if (data) return JSON.parse(data);
                 return data || {};
             },
@@ -409,29 +411,31 @@
                     val = JSON.stringify(val);
                 }
                 if (val) {
-                    window.localStorage.setItem(sessionKey, val);
+                    window.localStorage.setItem(key, val);
                 } else {
-                    window.localStorage.removeItem(sessionKey);
+                    window.localStorage.removeItem(key);
                 }
             }
         });
     }
-
-    if (!window.ticket) {
-        var ticketKey = "GksybTicket";
-        Object.defineProperty(window, 'ticket', {
+    var initStorageString = function (name, key) {
+        Object.defineProperty(window, name, {
             get: function () {
-                return window.localStorage.getItem(ticketKey) || "";
+                return window.localStorage.getItem(key) || "";
             },
             set: function (val) {
                 if (val) {
-                    window.localStorage.setItem(ticketKey, val);
+                    window.localStorage.setItem(key, val);
                 } else {
-                    window.localStorage.removeItem(ticketKey);
+                    window.localStorage.removeItem(key);
                 }
             }
         });
     }
+    if (!window.session) initStorage("session", "GksybData");
+    if (!window.tempStorage) initStorage("tempStorage", "GksybTemp");
+    if (!window.ticket) initStorageString("ticket", "GksybTicket");
+
     if (!window.topWindow) {
         Object.defineProperty(window, 'topWindow', {
             get: function () {//获取不跨域的顶层窗口

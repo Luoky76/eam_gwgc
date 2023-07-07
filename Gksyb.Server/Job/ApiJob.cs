@@ -4,7 +4,6 @@ using Gksyb.Common.Quartz;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Quartz;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 
 namespace Gksyb.Server.Job

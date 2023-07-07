@@ -88,6 +88,7 @@ $.ligerDialog.open = function (p) {
                 if (!child || child.closed) {
                     if (p.onClosed) p.onClosed();
                     if (window._dialogData && p.uid) delete window._dialogData[uid];
+                    if (child.id) $.ligerui.remove(child.id);
                 }
             }, 200);
         }
@@ -113,8 +114,10 @@ $.ligerDialog.open = function (p) {
     var dialog = $.ligerDialog._open(p);
     dialog.winalone = $('<i class="l-dialog-winbtn l-dialog-alone fa fa-desktop"></i>').prependTo(dialog.dialog.winbtns);//独立窗口
     dialog.winalone.click(function () {//独立弹出
-        _alone(dialog.options);
+        var win = _alone(dialog.options);
+        win.id = dialog.id;
         dialog.doClose();
+        $.ligerui.add(win);
     });
     return dialog;
 };

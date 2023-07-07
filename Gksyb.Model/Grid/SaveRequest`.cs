@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Gksyb.Model.Grid
+﻿namespace Gksyb.Model.Grid
 {
     /// <summary>
     /// 通用保存

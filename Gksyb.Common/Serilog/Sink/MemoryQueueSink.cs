@@ -2,7 +2,6 @@
 using Serilog.Events;
 using Serilog.Formatting;
 using System.Collections.Concurrent;
-using System.IO;
 
 namespace Serilog.Sinks.MemoryQueue
 {

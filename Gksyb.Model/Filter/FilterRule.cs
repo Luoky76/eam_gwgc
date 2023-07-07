@@ -16,9 +16,9 @@
 
         public FilterRule(string field, object value, string op)
         {
-            this.Field = field;
-            this.Value = value;
-            this.Op = op;
+            Field = field;
+            Value = value;
+            Op = op;
         }
 
         public string Field { get; set; }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
-using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
@@ -91,12 +91,7 @@ namespace Gksyb.Common
         /// <summary>
         /// 获取用户代理
         /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static string GetUserAgent(this HttpRequest source)
-        {
-            return source.Headers[HeaderNames.UserAgent];
-        }
+        public static string GetUserAgent(this HttpRequest source) => source.Headers[HeaderNames.UserAgent];
 
         /// <summary>
         /// 获取真实地址

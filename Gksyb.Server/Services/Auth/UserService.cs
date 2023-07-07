@@ -86,7 +86,7 @@ namespace Gksyb.Server.Services.Auth
                 query = query.Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && a.ROLEID == roleid).Any());
             }
             query = FilterCorp(query, user.CORP);
-            var data = await query.MapTo<UserRequest>().Ignore(a => new { a.LOGINPASSWORD, a.RECORDSTATUS }).GetGridData(request);
+            var data = await query.MapTo<UserRequest>().Exclude(a => new { a.LOGINPASSWORD, a.RECORDSTATUS }).GetGridData(request);
             var list = (data.Rows as List<UserRequest>) ?? new List<UserRequest>();
             var userRoles = await _dbContext.Query<CF_USERROLE>().Where(a => a.APPNAME == _options.RoleAppName).Select(c => new CF_USERROLE()
             {

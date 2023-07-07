@@ -30,14 +30,14 @@ namespace Gksyb.Model.Core
         /// 日志类型
         /// </summary>
         [Description("日志类型")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string LOGTYPE { get; set; }
 
         /// <summary>
         /// 日志关联标识
         /// </summary>
         [Description("日志关联标识")]
-        [Column(DbType = DbType.String, Size = 200)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string LOGNO { get; set; }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Gksyb.Model.Core
         /// 日志详情LOGDETAIL
         /// </summary>
         [Description("日志详情LOGDETAIL")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string LOGDETAIL { get; set; }
 
         /// <summary>

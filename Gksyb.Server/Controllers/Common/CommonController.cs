@@ -4,6 +4,7 @@ using Gksyb.Core.Common;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,6 +18,13 @@ namespace Gksyb.Server.Controllers.Auth
         public CommonController(ICommonService commonService)
         {
             _commonService = commonService;
+        }
+
+        [JsToken]
+        public async Task<AjaxResult> Upload([FileOptions("jpg,jpeg,bmp,png,gif", 2)] IFormFile formFile, string folder)
+        {
+            var url = await formFile.SaveAs((folder ?? "").Replace("Public", "", StringComparison.OrdinalIgnoreCase), isCreateDayDirectory: true);
+            return AjaxResult.Success(url, formFile.Name);
         }
 
         [AllowAnonymous]

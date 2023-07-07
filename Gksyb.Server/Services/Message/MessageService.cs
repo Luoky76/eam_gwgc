@@ -33,7 +33,7 @@ namespace Gksyb.Server.Services.Message
         public async Task<GridData> ListAsync(GridRequest request)
         {
             return await _dbContext.Query<SYS_MESSAGE>(c => c.NOTICE_USER == _user.UserName && c.APPNAME == _user.MenuAppname)
-                .Select(c => new { c.ID,c.MSG_GROUP, c.MSG_TITLE, c.MSG_CONTENT, c.MSG_HREF, c.MSG_HREF_TARGET, c.MSG_MOBILE_HREF, c.CREATEDATE, c.READDATE }).GetGridData(request);
+                .Select(c => new { c.ID, c.MSG_GROUP, c.MSG_TITLE, c.MSG_CONTENT, c.MSG_HREF, c.MSG_HREF_TARGET, c.MSG_MOBILE_HREF, c.CREATEDATE, c.READDATE }).GetGridData(request);
         }
 
         /// <summary>

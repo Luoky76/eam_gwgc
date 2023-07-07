@@ -1,17 +1,18 @@
 ﻿using Gksyb.Core.Auth;
-using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using System.IO;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class UploadDirectoryExtensions
     {
+        private static string Passport;
+        private static string MapPath;
+
         /// <summary>
         /// 上传目录安全处理
         /// </summary>
@@ -21,16 +22,18 @@ namespace Microsoft.AspNetCore.Builder
             var configuration = requestServices.GetService<IConfiguration>();
             var webhost = requestServices.GetService<IWebHostEnvironment>();
             var path = configuration.GetValue<string>(OptionName.UploadDirectory) ?? nameof(OptionName.UploadDirectory);
-            var mapPath = configuration.GetValue<string>(OptionName.UploadDirectoryMapPath) ?? Path.Combine(webhost.WebRootPath, path);
-            if (!Directory.Exists(mapPath)) return app;
+            MapPath = configuration.GetValue<string>(OptionName.UploadDirectoryMapPath) ?? Path.Combine(webhost.WebRootPath, path);
+            if (!Directory.Exists(MapPath)) return app;
+            Passport = configuration.GetValue($"{OptionName.SysContext}:Passport", "t6VJoFPZwq7jGpyHi20ucv3eaW4NAz9IdkmLEX5Csr!fQKOSbD#hTBxU8R@Yl1gn");
             var staticFileOptions = new StaticFileOptions()
             {
                 RequestPath = new PathString($"/{path}"),
-                FileProvider = new PhysicalFileProvider(mapPath)
+                FileProvider = new PhysicalFileProvider(MapPath)
             };
             app.UseSafeStaticFiles(staticFileOptions, ctx =>
             {
-                if (ctx.File.PhysicalPath.Contains("Public\\", StringComparison.OrdinalIgnoreCase)) return;//带有Public的文件夹不验证权限
+                if (ctx.File.PhysicalPath.Contains($"{IFormFileExtensions.Public}\\", StringComparison.OrdinalIgnoreCase)) return;//带有Public的文件夹不验证权限
+                if (ctx.Context.Request.Headers["Passport"] == Passport) return;//有通行证的不验证权限
                 if (Valid(ctx.Context, ctx.File)) return;
                 ctx.Context.Response.ClearWithStatusCode();
             });
@@ -49,15 +52,10 @@ namespace Microsoft.AspNetCore.Builder
             if (string.IsNullOrWhiteSpace(token)) return false;
             var user = context.GetCurrentUserAsync(token).Result();
             if (user == null) return false;
-            if (!fileInfo.PhysicalPath.Contains("Auth\\", StringComparison.OrdinalIgnoreCase)) return true;
+            var directory = Path.GetDirectoryName(fileInfo.PhysicalPath.Replace(MapPath, "")).Trim(Path.DirectorySeparatorChar);
+            if (!$"{directory}{Path.DirectorySeparatorChar}".Contains($"{IFormFileExtensions.Auth}{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)) return true;
             var dbContext = context.RequestServices.GetService<IDbContext>();
-            var fileUser = dbContext.Query<SYS_FILE>().Where(c => c.FILE_PATH == fileInfo.PhysicalPath).Select(c => new UserInfo()
-            {
-                Id = c.CREATEUSERID,
-                Name = c.CREATEUSER
-            }).FirstOrDefault();
-            if (user.UserID == fileUser?.Id) return true;
-            return false;
+            return dbContext.Query<SYS_FILE>().Where(c => c.FILE_PATH == directory && c.CREATEUSERID == user.UserID).Any();
         }
     }
 }

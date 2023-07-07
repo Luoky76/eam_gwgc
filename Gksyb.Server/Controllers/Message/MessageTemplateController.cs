@@ -46,7 +46,7 @@ namespace Gksyb.Server.Controllers.Message
         /// 保存
         /// </summary>
         [JsToken]
-        public async Task<AjaxResult> SendAsync([FromServices] IMessageCenterService service, [FromBody]MessageInfo info)
+        public async Task<AjaxResult> SendAsync([FromServices] IMessageCenterService service, [FromBody] MessageInfo info)
         {
             await service.SendAsync(info);
             return AjaxResult.Success();

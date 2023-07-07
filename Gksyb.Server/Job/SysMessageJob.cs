@@ -28,7 +28,7 @@ namespace Gksyb.Server.Job
             var sysdate = await _dbContext.GetSysdate(false);
             var listNotice = await _dbContext.Query<SYS_MESSAGE>().Where(c => c.MSG_STATUS == SYS_MESSAGE.InitStatus && c.CREATEDATE > sysdate.Value.AddMinutes(-3) && c.CREATEDATE < sysdate)
                 .WhereIfNotNullOrEmpty(_quartzTask.TaskData, c => c.APPNAME == _quartzTask.TaskData)
-                .Ignore(c => new { c.CREATEUSERID, c.CREATEUSER, c.CREATEDATE }).ToListAsync();
+                .Exclude(c => new { c.CREATEUSERID, c.CREATEUSER, c.CREATEDATE }).ToListAsync();
             if (listNotice.Count < 1) return;
             _logger.LogInformation(_logPath, $"准备发送站内消息数：{listNotice.Count}");
             listNotice = listNotice.OrderBy(c => c.ID).ToList();

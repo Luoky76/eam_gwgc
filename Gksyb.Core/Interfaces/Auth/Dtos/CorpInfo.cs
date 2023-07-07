@@ -22,7 +22,7 @@ namespace Gksyb.Core.Interfaces.Auth
         /// </summary>
         public string CNO { get; set; }
         /// <summary>
-        /// 组织简称称
+        /// 组织简称
         /// </summary>
         public string SName { get; set; }
         /// <summary>

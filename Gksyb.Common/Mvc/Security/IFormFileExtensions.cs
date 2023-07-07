@@ -4,49 +4,80 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SixLabors.ImageSharp;
-using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+using System.Text;
+using System.Web;
 
 namespace Microsoft.AspNetCore.Http
 {
     public static class IFormFileExtensions
     {
         /// <summary>
+        /// 不需要权限访问的公共文件夹
+        /// </summary>
+        public const string Public = "public";
+
+        /// <summary>
+        /// 验证用户
+        /// </summary>
+        public const string Auth = "public";
+
+        /// <summary>
         /// 文件另存
         /// </summary>
         /// <returns></returns>
         public static async Task<string> SaveAs(this IFormFile source, string folder = null, string fileName = null, bool isCreateDayDirectory = false)
         {
-            var requestServices = Gksyb.Common.Static.HttpContext.RequestServices;
-            var webhost = requestServices.GetService<IWebHostEnvironment>();
-            var config = requestServices.GetService<IConfiguration>();
-            var uploadDirectory = config.GetValue<string>(OptionName.UploadDirectory) ?? nameof(OptionName.UploadDirectory);
-            var mapPath = config.GetValue<string>(OptionName.UploadDirectoryMapPath) ?? Path.Combine(webhost.WebRootPath, uploadDirectory);
             folder ??= "";
-            folder = new Regex(@"[\\\/\:\*\?\042\<\>\|]").Replace(folder, "");
             var now = DateTime.Now;
-            var path = Path.Combine(mapPath, folder, now.ToString("yyyyMM"), isCreateDayDirectory ? now.ToString("dd") : "");
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            if (string.IsNullOrWhiteSpace(fileName)) fileName = $"{GuidHelper.NewShortId()}{Path.GetExtension(source.FileName)}";
-            path = Path.Combine(path, fileName);
-            var webPath = path.Replace(mapPath, uploadDirectory);
-            webPath = webPath.Replace("\\", "/");
-            await source.Save(path, webPath);
-            return webPath;
+            var path = Path.Combine(folder, now.ToString("yyyyMM"), isCreateDayDirectory ? now.ToString("dd") : "");
+            if (string.IsNullOrWhiteSpace(fileName)) fileName = $"{GuidHelper.NewShortId()}_{source.FileName[Math.Max(0, source.FileName.Length - 120)..]}";
+            return await Save(source, Path.Combine(path, fileName));
         }
 
         /// <summary>
         /// 文件保存
         /// </summary>
-        public static async Task Save(this IFormFile source, string path, string url)
+        public static async Task<string> Save(IFormFile source, string path)
         {
-            using var stream = File.Create(path);
-            await source.CopyToAsync(stream);
+            var mapPath = MapPath(out var uploadDirectory);
+            var allPath = Path.GetFullPath(Path.Combine(mapPath, path.TrimStart(Path.DirectorySeparatorChar)));
+            MessageException.ThrowIf(!allPath.StartsWith(mapPath), "路径错误");
+            path = Path.GetRelativePath(mapPath, allPath);
+            var directory = Path.GetDirectoryName(allPath);
+            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+            var url = $"{uploadDirectory}/{path.Replace(Path.DirectorySeparatorChar, '/')}";
+            url = HttpUtility.UrlPathEncode(url);
             var service = Gksyb.Common.Static.HttpContext.Current.RequestServices.GetService<IFormFileService>();
-            service?.Save(url, path, source);
+            var saveUrl = await service?.SaveAsync(url, path, mapPath, source);
+            if (saveUrl != url) return saveUrl;
+            using var stream = File.Create(allPath);
+            await source.CopyToAsync(stream);
+            return url;
         }
+
+        /// <summary>
+        /// map路径
+        /// </summary>
+        public static string MapPath()
+        {
+            return MapPath(out var _);
+        }
+
+        /// <summary>
+        /// map路径
+        /// </summary>
+        public static string MapPath(out string uploadDirectory)
+        {
+            var requestServices = Gksyb.Common.Static.HttpContext.RequestServices;
+            var webhost = requestServices.GetService<IWebHostEnvironment>();
+            var config = requestServices.GetService<IConfiguration>();
+            uploadDirectory = config.GetValue<string>(OptionName.UploadDirectory) ?? nameof(OptionName.UploadDirectory);
+            var mapPath = config.GetValue<string>(OptionName.UploadDirectoryMapPath) ?? Path.Combine(webhost.WebRootPath, uploadDirectory);
+            return mapPath;
+        }
+
 
         /// <summary>
         /// 获取文件hash
@@ -129,7 +160,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (!_securityContentType.Value.ContainsKey(fileExtension)) return false;
             var contentType = _securityContentType.Value[fileExtension];
-            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+            if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && contentType != "image/svg+xml")
             {
                 return true;
             }

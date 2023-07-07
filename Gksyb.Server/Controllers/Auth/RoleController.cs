@@ -32,12 +32,12 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(new
             {
                 corpData = await _service.CorpData()
-            }, "成功");
+            });
         }
 
         public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await _service.ListAsync(request));
         }
 
         [JsToken]

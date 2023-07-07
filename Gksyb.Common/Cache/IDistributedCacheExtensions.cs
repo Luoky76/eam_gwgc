@@ -1,4 +1,7 @@
 ﻿using Gksyb.Common;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 
 namespace Microsoft.Extensions.Caching.Distributed
@@ -124,5 +127,28 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <param name="source"></param>
         /// <returns></returns>
         private static bool IsComplexType(this Type source) => !TypeDescriptor.GetConverter(source).CanConvertFrom(typeof(string));
+
+        /// <summary>
+        /// 分布式缓存
+        /// </summary>
+        /// <returns></returns>
+        public static IServiceCollection AddDistributedCache(this IServiceCollection services, IConfiguration config)
+        {
+            var cacheOptions = config.GetSection(OptionName.RedisCache).Get<RedisCacheOptions>();
+            if (string.IsNullOrWhiteSpace(cacheOptions.Configuration))
+            {
+                services.AddDistributedMemoryCache();
+            }
+            else
+            {
+                services.AddStackExchangeRedisCache(options =>
+                {
+                    options.Configuration = cacheOptions.Configuration;
+                    options.InstanceName = cacheOptions.InstanceName;
+                    options.ConfigurationOptions = cacheOptions.ConfigurationOptions;
+                });
+            }
+            return services;
+        }
     }
 }

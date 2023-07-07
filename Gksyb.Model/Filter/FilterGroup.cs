@@ -1,5 +1,4 @@
 ﻿using Gksyb.Common;
-using System.Collections.Generic;
 
 namespace Gksyb.Model.Filter
 {

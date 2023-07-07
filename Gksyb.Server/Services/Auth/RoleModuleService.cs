@@ -109,34 +109,13 @@ namespace Gksyb.Server.Services.Auth
             if (string.IsNullOrWhiteSpace(btnNo)) return await ValidMenuModule(roleName, menuAppname, menuNo, mode);
             var menus = (menuNo ?? "").Split(",");
             var btns = (btnNo ?? "").Split(",");
-            if (mode != GksybAuthorizeMode.Regex)
-            {
-                foreach (var menu in menus)
-                {
-                    var list = await GetButtonModule(roleName, menuAppname, menu, mode);
-                    if (mode == GksybAuthorizeMode.StartsWith)
-                    {
-                        foreach (var btn in btns)
-                        {
-                            if (list.Contains(c => btn.StartsWith(c.BTNNO))) return true;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var btn in btns)
-                        {
-                            if (list.Contains(c => c.BTNNO == btn)) return true;
-                        }
-                    }
-                }
-                return false;
-            }
+            var match = mode.GetFunc();
             foreach (var menu in menus)
             {
                 var list = await GetButtonModule(roleName, menuAppname, menu, mode);
                 foreach (var btn in btns)
                 {
-                    if (list.Contains(c => c.BTNNO.IsMatch(btn))) return true;
+                    if (list.Any(c => match(c.BTNNO, btn))) return true;
                 }
             }
             return false;
@@ -147,27 +126,10 @@ namespace Gksyb.Server.Services.Auth
         {
             var list = await GetMenuModule(roleName, menuAppname);
             var menus = (menuNo ?? "").Split(",");
-            if (mode != GksybAuthorizeMode.Regex)
-            {
-                if (mode == GksybAuthorizeMode.StartsWith)
-                {
-                    foreach (var menu in menus)
-                    {
-                        if (list.Exists(c => menu.StartsWith(c.MENUNO))) return true;
-                    }
-                }
-                else
-                {
-                    foreach (var menu in menus)
-                    {
-                        if (list.Exists(c => c.MENUNO == menu)) return true;
-                    }
-                }
-                return false;
-            }
+            var match = mode.GetFunc();
             foreach (var menu in menus)
             {
-                if (list.Exists(c => c.MENUNO.IsMatch(menu))) return true;
+                if (list.Any(c => match(c.MENUNO, menu))) return true;
             }
             return false;
         }
