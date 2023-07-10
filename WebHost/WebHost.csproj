@@ -40,6 +40,11 @@
 	<ItemGroup>
 		<PluginPublishProject Include="..\Gksyb.Server\Gksyb.Server.csproj" />
 		<PluginPublishProject Include="..\Gksyb.Workflow\Gksyb.Workflow.csproj" />
+		<PluginPublishProject Include="..\EAM.Device\EAM.Device.csproj" />
+		<PluginPublishProject Include="..\EAM.Repair\EAM.Repair.csproj" />
+		<PluginPublishProject Include="..\EAM.Material\EAM.Material.csproj" />
+		<PluginPublishProject Include="..\EAM.Special\EAM.Special.csproj" />
+		<PluginPublishProject Include="..\EAM.Energy\EAM.Energy.csproj" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
