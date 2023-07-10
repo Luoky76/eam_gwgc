@@ -58,6 +58,7 @@ namespace Gksyb.Common
         /// <returns></returns>
         public static T FromJson<T>(string value, JsonSerializerSettings settings = null)
         {
+            if (value == null) return default;
             return JsonConvert.DeserializeObject<T>(value, settings);
         }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Security.Cryptography;
+using System.Text;
 using System.Xml;
 
 namespace Gksyb.Common.Weixin

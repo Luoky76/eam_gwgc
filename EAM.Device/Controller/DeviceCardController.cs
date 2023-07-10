@@ -1,15 +1,9 @@
-﻿using EAM.Device.interfaces;
-using EAM.Device.Interfaces;
+﻿using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
-using Gksyb.Model.Grid;
 using Gksyb.Model;
+using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAM.Device.Controller
 {

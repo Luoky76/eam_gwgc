@@ -38,7 +38,7 @@ namespace Gksyb.Model.Core
         /// 权限拥有者ID
         /// </summary>
         [Description("权限拥有者ID")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string PRIVILEGEMASTERKEY { get; set; }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Gksyb.Model.Core
         /// 拥有权限ID
         /// </summary>
         [Description("拥有权限ID")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string PRIVILEGEACCESSKEY { get; set; }
 
         /// <summary>
@@ -63,9 +63,9 @@ namespace Gksyb.Model.Core
         public string PRIVILEGEOPERATION { get; set; }
 
         /// <summary>
-        /// 创建者
+        /// 创建人
         /// </summary>
-        [Description("创建者")]
+        [Description("创建人")]
         [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
@@ -92,14 +92,14 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

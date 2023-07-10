@@ -22,7 +22,7 @@ namespace Gksyb.Core.Interfaces.Auth
         /// </summary>
         public string CNO { get; set; }
         /// <summary>
-        /// 组织简称称
+        /// 组织简称
         /// </summary>
         public string SName { get; set; }
         /// <summary>
@@ -42,15 +42,6 @@ namespace Gksyb.Core.Interfaces.Auth
         /// 岗位
         /// </summary>
         public List<string> Station { get; set; } = new List<string>();
-
-        /// <summary>
-        /// 用户当前公司部门
-        /// </summary>
-        public string DeptName { get; set; }
-        /// <summary>
-        /// 用户当前公司部门id
-        /// </summary>
-        public string DeptId { get; set; }
 
         /// <summary>
         /// 获取父级组织

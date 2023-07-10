@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <RuntimeIdentifiers>win-x64;linux-x64;win-x86;</RuntimeIdentifiers>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RuntimeIdentifiers>win-x64;linux-x64;win-x86;</RuntimeIdentifiers>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'1'=='1'">
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>$(NoWarn);1591</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup Condition="'1'=='1'">
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Gksyb.Common\Gksyb.Common.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Gksyb.Common\Gksyb.Common.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Chloe">
-      <HintPath>..\dll\Chloe.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<Reference Include="Chloe">
+			<HintPath>..\dll\Chloe.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 </Project>

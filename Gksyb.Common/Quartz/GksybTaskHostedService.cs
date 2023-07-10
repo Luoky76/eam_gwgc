@@ -1,15 +1,13 @@
-using Gksyb.Common;
-using Gksyb.Common.Quartz;
 using Gksyb.Common.Quartz.Dtos;
 using Gksyb.Common.Static;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Quartz;
 using Quartz.Spi;
 using System.Text.RegularExpressions;
-using System.Threading;
 
-namespace Quartz
+namespace Gksyb.Common.Quartz
 {
     internal class GksybTaskHostedService : BackgroundService
     {
@@ -36,7 +34,7 @@ namespace Quartz
                 var tasks = await quartzStore.GetTasks();
                 tasks ??= new List<QuartzTask>();
                 var addressList = HttpContext.AddressList;
-                _logger.LogInformation(_logPath, $"本机IP：{addressList.ToStr(",")}");
+                _logger.LogInformation(_logPath, $"本机IP：{addressList.ToStr(",")},任务数{tasks.Count}");
                 scheduler = await _schedulerFactory.GetScheduler(stoppingToken);
                 foreach (var task in tasks)
                 {
@@ -44,6 +42,7 @@ namespace Quartz
                     {
                         var ips = (task.TaskIP ?? "").Split(",").DistinctAndOrderBy().ToList();
                         if (ips.Count > 0 && !addressList.Any(ip => ips.Any(reg => Regex.IsMatch(ip, reg)))) continue;
+                        _logger.LogInformation(_logPath, $"开始启动任务：{task.TaskName}");
                         Type jobType = _typeLoadHelper.LoadType(task.TaskMethod);
                         IJobDetail job = JobBuilder.Create(jobType).WithIdentity(task.TaskName, task.TaskGroup).WithDescription(task.TaskDesc)
                             .SetJobData(new JobDataMap() { { "QuartzTask", task } })

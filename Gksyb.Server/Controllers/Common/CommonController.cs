@@ -3,7 +3,9 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Common;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
+using Gksyb.Server.Services.Common;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,6 +19,13 @@ namespace Gksyb.Server.Controllers.Auth
         public CommonController(ICommonService commonService)
         {
             _commonService = commonService;
+        }
+
+        [JsToken]
+        public async Task<AjaxResult> Upload([FileOptions("jpg,jpeg,bmp,png,gif", 2)] IFormFile formFile, string folder)
+        {
+            var url = await formFile.SaveAs((folder ?? "").Replace("Public", "", StringComparison.OrdinalIgnoreCase), isCreateDayDirectory: true);
+            return AjaxResult.Success(url, formFile.Name);
         }
 
         [AllowAnonymous]
@@ -95,6 +104,13 @@ namespace Gksyb.Server.Controllers.Auth
             await HttpContext.ValidViewAsync(request.View);
             return AjaxResult.Success(await _commonService.QueryAsync(request), "");
         }
+
+        public async Task<List<string>> GetDeptList(string dept)
+        {
+            var result = await _commonService.GetDeptList(dept);
+            return result;
+        }
+
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

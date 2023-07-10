@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog.Events;
-using System.IO;
 
 namespace Serilog
 {
@@ -16,8 +16,12 @@ namespace Serilog
         /// <summary>
         /// 日志通用设置
         /// </summary>
-        public static LoggerConfiguration CommonLoggerConfiguration(this LoggerConfiguration loggerConfiguration, IConfiguration configuration, string directory = null)
+        public static LoggerConfiguration CommonLoggerConfiguration(this LoggerConfiguration loggerConfiguration, IConfiguration configuration = null, string directory = null)
         {
+            configuration ??= new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", true)
+                .AddJsonFile($"appsettings.{Environments.Production}.json", true)
+                .Build();
             directory ??= Path.Combine(AppContext.BaseDirectory, configuration.GetValue("Serilog:File:FileName", defaultValue: "logs"));
             var isWriteToFile = configuration.GetValue("Serilog:WriteToFile", defaultValue: true);
             var retainedFileCountLimit = configuration.GetValue("Serilog:File:CountLimit", defaultValue: 2 * 31);

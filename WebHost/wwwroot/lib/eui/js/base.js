@@ -3,7 +3,7 @@
     //yyyy-MM-dd hh:mm:ss
     String.prototype.toDate = function (format) { };
     //yyyy-MM-dd hh:mm:ss
-    Date.prototype.format || (Date.prototype.format = function (format) { };
+    Date.prototype.format || (Date.prototype.format = function (format) { });
 
     //几个默认的编辑器构造函数
     liger.editors = {

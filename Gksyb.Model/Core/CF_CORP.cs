@@ -196,7 +196,7 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
     }

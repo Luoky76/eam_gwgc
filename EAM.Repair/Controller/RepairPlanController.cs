@@ -1,11 +1,9 @@
-﻿using EAM.Repair.dto;
-using EAM.Repair.interfaces;
+﻿using EAM.Repair.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace EAM.Repair.Controller
 {

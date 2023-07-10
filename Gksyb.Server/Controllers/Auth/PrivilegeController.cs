@@ -11,7 +11,7 @@ namespace Gksyb.Server.Controllers.Auth
     /// <summary>
     /// 权限管理
     /// </summary>
-    [GksybAuthorize(IsRegex = true, IsMenuAppname = true, MenuNo = "PrivilegeManage$")]
+    [GksybAuthorize(Mode = GksybAuthorizeMode.Regex, IsMenuAppname = true, MenuNo = "PrivilegeManage$")]
     public class PrivilegeController : BaseController
     {
         private readonly PrivilegeService _service;

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EAM.Device.controller
+﻿namespace EAM.Device.controller
 {
     internal class SelectUserController
     {

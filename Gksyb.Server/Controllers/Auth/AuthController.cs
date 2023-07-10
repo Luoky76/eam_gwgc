@@ -230,7 +230,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>();
                 var user = UserSession.ParseTicket(ticket, options.Value.TicketVersion);
-                MessageException.ThrowIf(CryptographyHelper.GetMd5(Request.GetUserAgent()) != user.UserAgent, "无效票据");
+                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent, "无效票据");
                 MessageException.ThrowIf(Request.GetRealIP() != user.IP, "无效票据");
                 var distributedCache = HttpContext.RequestServices.GetService<IDistributedCache>();
                 MessageException.ThrowIf(await distributedCache.GetStringAsync(ticket) == "1", "无效票据");

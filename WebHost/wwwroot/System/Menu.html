@@ -137,7 +137,6 @@
             searchForm: null,
             buttons: null,
             setGrid: function () {
-                //debugger
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
@@ -222,6 +221,13 @@
             buttons: function () {
                 var me = this;
                 var selected = me.grid.getSelected();
+                if (!selected) {
+                    var node = me.tree.getSelected();
+                    if (node) {
+                        var nodeData = node.data;
+                        selected = { MENUNO: nodeData.ID, MENUNAME: nodeData.TEXT, APPNAME: nodeData.APPNAME };
+                    }
+                }
                 if (!selected) return;
                 $.ligerDialog.open({
                     width: 800,
@@ -253,7 +259,6 @@
                 }
             },
             save: function () { //保存
-                
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
@@ -352,13 +357,11 @@
             setTree: function () {
                 var me = this;
                 var rootValue = "ROOT";
-               
                 me.tree = $("#maintree").ligerTree({
                     url: "menu/tree",
                     parms: {
                         appname: me.appname
                     },
-                    nodeWidth: 200,
                     slide: false,
                     checkbox: false,
                     single: true,
@@ -366,6 +369,7 @@
                     parentIDFieldName: 'PARENTID',
                     //iconClsFieldName: "ICON",
                     isExpand: 2,
+                    filter: true,
                     onSuccess: function (data) {
                         var combData = [];
                         for (var i = 0, l = data.length; i < l; i++) {
@@ -375,15 +379,9 @@
                             }
                         }
                         me.grid.getColumnByName("MENUPARENTNO").editor.data = combData;
-                        $(".l-tree .l-body span").each(function () {
-                            var $this = $(this);
-                            var text = $this.text();
-                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
-                        });
                         if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.ID);
                     },
                     onSelect: function (node) {
-                        
                         me.iframeloading.show();
                         var nodeData = node.data;
                         var where = {};
@@ -401,7 +399,6 @@
                             }
                             where.groups[0].rules.push({ field: 'MENUPARENTNO', value: parentNo, op: 'equal' });
                             me.grid.set('parms', { "where": JSON2.stringify(where) });
-                            //debugger
                             me.currentMenuParentNo = parentNo;
                             me.reload();
                         }

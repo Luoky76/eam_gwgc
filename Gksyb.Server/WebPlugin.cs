@@ -35,7 +35,6 @@ namespace Gksyb.Server
             builder.AddMvcOptions(configure =>
             {
                 configure.Filters.Add<GksybAuthFilter>();
-                configure.Filters.Add<SynchronizedFilter>();
             });
 
             services.AddSignalR(options =>//signalR处理

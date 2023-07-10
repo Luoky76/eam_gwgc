@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using WkHtmlToPdfDotNet;
 
 namespace Gksyb.Server.Controllers.Auth
@@ -28,6 +27,7 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(request);
         }
 
+        [JsToken]
         public async Task<AjaxResult> Upload([FileOptions("png", 1)] IFormFile formFile, string folder)
         {
             //await formFile.Import<ExportData>(async c =>

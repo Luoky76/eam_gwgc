@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<RuntimeIdentifiers>win-x64;linux-x64;win-x86;</RuntimeIdentifiers>
 	</PropertyGroup>
 
@@ -15,15 +16,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
-    <Folder Include="Controller\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
+		<ProjectReference Include="..\Gksyb.Common\Gksyb.Common.csproj" />
+		<ProjectReference Include="..\Gksyb.Core\Gksyb.Core.csproj" />
+		<ProjectReference Include="..\Gksyb.Model\Gksyb.Model.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Gksyb.Common\Gksyb.Common.csproj" />
-    <ProjectReference Include="..\Gksyb.Core\Gksyb.Core.csproj" />
-    <ProjectReference Include="..\Gksyb.Model\Gksyb.Model.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<Reference Include="Chloe">
+			<HintPath>..\dll\Chloe.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
 </Project>

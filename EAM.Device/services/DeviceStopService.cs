@@ -3,19 +3,12 @@ using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
-using Gksyb.Model.Core;
+using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Gksyb.Model;
-using Gksyb.Core.Grid;
 
 namespace EAM.Device.services
 {
@@ -24,22 +17,6 @@ namespace EAM.Device.services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
-        private DateTime? _Sysdate;
-
-        /// <summary>
-        /// 获取数据库时间
-        /// </summary>
-        private DateTime? Sysdate
-        {
-            get
-            {
-                if (!_Sysdate.HasValue)
-                {
-                    _Sysdate = _dbContext.GetSysdate().Result();
-                }
-                return _Sysdate;
-            }
-        }
 
         public DeviceStopService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
         {
@@ -58,7 +35,6 @@ namespace EAM.Device.services
                 { "StopSource",null},
                 { "MalType",null},
                 { "DeviceInfo",null},
-
             });
         }
 
@@ -73,6 +49,7 @@ namespace EAM.Device.services
                 .ThenByDesc(c => c.RUN_START)
                 .GetGridData(request);
         }
+
         /// <summary>
         /// 管理停机记录
         /// </summary>
@@ -121,20 +98,20 @@ namespace EAM.Device.services
                     c.MODIFY_USERID,
                     c.MODIFY_DATE,
                 },
-                c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+                c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd, BeforeUpdate);
         }
 
         public async Task BeforeAdd(RUN_STOP entity)
         {
             entity.SEC_DEPTID = _userSession.Corp.CorpID;
             entity.SEC_DEPT = _userSession.Corp.CName;
-            entity.DEPT_ID = _userSession.Corp.DeptId;
-            entity.DEPT_NAME = _userSession.Corp.DeptName; 
+            entity.DEPT_ID = _userSession.Corp.CorpID;
+            entity.DEPT_NAME = _userSession.Corp.CName;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_DATE = await _dbContext.GetSysdate();
-            Random random = new Random();
+            var random = new Random();
             int randomNumber = random.Next(1000, 10000);
-            entity.STOP_CODE = "TG"+DateTime.Now.Year+DateTime.Now.ToString("MM")+randomNumber;
+            entity.STOP_CODE = "TG" + DateTime.Now.Year + DateTime.Now.ToString("MM") + randomNumber;
             entity.AUDITING = "0";
             entity.RUN_STOP_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.ADD_USERID = _userSession.UserID.ToString();
@@ -146,9 +123,7 @@ namespace EAM.Device.services
             entity.MODIFY_USERID = _userSession.RealName;
             entity.MODIFY_DATE = await _dbContext.GetSysdate();
         }
-        public async Task BeforeDelete(RUN_STOP entity)
-        {
-        }
+
         /// <summary>
         /// 提交
         /// </summary>
@@ -172,6 +147,7 @@ namespace EAM.Device.services
             return await _dbContext.Query<RUN_STOP_TYPE>()
                 .GetGridData(request);
         }
+
         /// <summary>
         /// 管理停机分类
         /// </summary>
@@ -192,7 +168,7 @@ namespace EAM.Device.services
                     c.MODIFY_DATE,
                     c.TENANT_ID,
                 },
-                c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+                c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd, BeforeUpdate);
         }
 
         public async Task BeforeAdd(RUN_STOP_TYPE entity)
@@ -206,9 +182,6 @@ namespace EAM.Device.services
         {
             entity.MODIFY_USERID = _userSession.RealName;
             entity.MODIFY_DATE = await _dbContext.GetSysdate();
-        }
-        public async Task BeforeDelete(RUN_STOP_TYPE entity)
-        {
         }
     }
 }

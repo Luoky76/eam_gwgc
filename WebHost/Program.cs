@@ -1,10 +1,4 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace WebHost
 {
@@ -13,6 +7,7 @@ namespace WebHost
         public static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
+                .CommonLoggerConfiguration()
                 .WriteTo.Console()
                 .CreateBootstrapLogger();
             try

@@ -54,7 +54,8 @@ namespace EAM.Material.Services
         {
             try
             {
-                var dic = await _comboxDataService.Get(new Dictionary<string, object>(){
+                var dic = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
                     //{ "TerminalData", "码头" },
                     //{ "DeviceTypeData", "设备类型" }
                 });
@@ -93,11 +94,11 @@ namespace EAM.Material.Services
                     c.EDIT_DATE,
                     c.NOVALID_DATE
                 },
-                c => a => a.TYPE_ID == c.TYPE_ID, BeforeAdd, BeforeUpdate, null, false, null, afterSave
+                c => a => a.TYPE_ID == c.TYPE_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
                 );
         }
 
-        private async Task afterSave(List<BASE_SPTYPE> adds, List<BASE_SPTYPE> updates, List<BASE_SPTYPE> deletes)
+        private async Task AfterSave(List<BASE_SPTYPE> adds, List<BASE_SPTYPE> updates, List<BASE_SPTYPE> deletes)
         {
             string operType = "物资分类";
             foreach (var entity in adds)

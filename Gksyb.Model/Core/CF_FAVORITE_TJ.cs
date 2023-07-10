@@ -29,14 +29,14 @@ namespace Gksyb.Model.Core
         /// 收藏名称
         /// </summary>
         [Description("收藏名称")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string FAVORITETITLE { get; set; }
 
         /// <summary>
         /// 收藏内容
         /// </summary>
         [Description("收藏内容")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string FAVORITECONTENT { get; set; }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Gksyb.Model.Core
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
         /// <summary>

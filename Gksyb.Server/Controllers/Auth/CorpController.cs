@@ -25,7 +25,6 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 树形结构
         /// </summary>
-        /// <returns></returns>
         public async Task<AjaxResult> TreeAsync()
         {
             return await _service.TreeAsync();
@@ -34,13 +33,12 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 下拉数据
         /// </summary>
-        /// <returns></returns>
         public async Task<AjaxResult> ComboxData()
         {
             return AjaxResult.Success(new
             {
                 corpData = await _service.CorpData()
-            }, "成功");
+            });
         }
     }
 }

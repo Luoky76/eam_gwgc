@@ -18,6 +18,7 @@
         textField: 'TEXT',      //显示成员
         valueFieldID: null,     //值 隐藏域 表单名
         split: ";",             //分隔符
+        searchSplit: null,         //查询分隔符
         data: null,             //数据
         parms: null,            //ajax提交表单
         url: null,              //数据源URL(需返回JSON)

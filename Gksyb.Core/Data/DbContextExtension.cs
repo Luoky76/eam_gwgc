@@ -5,8 +5,10 @@ using Chloe.Infrastructure;
 using Gksyb.Common.Data;
 using Gksyb.Common.Static;
 using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Gksyb.Model.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Data;
@@ -91,25 +93,26 @@ namespace Chloe
         /// <param name="beforeAdd">新增前委托</param>
         /// <param name="beforeUpdate">修改前委托</param>
         /// <param name="beforeDelete">删除前委托</param>
-        /// <param name="IsSoftDelete">是否软删除</param>
+        /// <param name="isSoftDelete">是否软删除</param>
         /// <param name="beforeSave">保存前委托</param>
         /// <param name="afterSave">保存后委托</param
-        /// <param name="isLog">是否记录日志 默认记录</param>
+        /// <param name="orgin">如果没有原始值，则主动从数据库获取</param>
         /// <returns></returns>
         public static async Task<AjaxResult> SaveEntityAnsyc<T>(this IDbContext source,
             SaveRequest<T> request,
             Expression<Func<T, object>> updateFields,
             Func<T, Expression<Func<T, bool>>> updateCondition,
             Func<T, Task> beforeAdd = null, Func<T, Task> beforeUpdate = null,
-            Func<T, Task> beforeDelete = null, bool IsSoftDelete = false,
+            Func<T, Task> beforeDelete = null, bool isSoftDelete = false,
             Func<List<T>, List<T>, List<T>, Task> beforeSave = null,
-            Func<List<T>, List<T>, List<T>, Task> afterSave = null)
+            Func<List<T>, List<T>, List<T>, Task> afterSave = null, bool orgin = false)
         {
             var canTransationOper = false;
             try
             {
                 request.Added ??= new List<T>();
                 request.Updated ??= new List<T>();
+                request.Original ??= new List<T>();
                 request.Deleted ??= new List<T>();
                 canTransationOper = !source.Session.IsInTransaction;
                 if (canTransationOper)
@@ -128,7 +131,7 @@ namespace Chloe
                 var datePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => DatePropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == dateType).ToList();
                 foreach (var entity in request.Deleted)
                 {
-                    if (IsSoftDelete)
+                    if (isSoftDelete)
                     {
                         source.TrackEntity(entity);
                         idPropertys.ForEach(c => { c.SetValue(entity, user.UserID); });
@@ -165,9 +168,10 @@ namespace Chloe
                 for (int i = 0; i < request.Updated.Count; i++)
                 {
                     var entity = request.Updated[i];
-                    var orgin = request.Original.Count > i ? request.Original[i] : default;
+                    var old = request.Original.Count > i ? request.Original[i] : (orgin ? await source.Query<T>().Where(updateCondition(entity)).FirstOrDefaultAsync() : default);
+                    if (orgin && !request.Original.Contains(old)) request.Original.Add(old);
                     source.TrackEntity(entity);
-                    source.SetChangedFields(entity, updateFields, orgin);
+                    source.SetChangedFields(entity, updateFields, old);
                     idPropertys.ForEach(c => { c.SetValue(entity, user.UserID); });
                     namePropertys.ForEach(c => { c.SetValue(entity, user.Display); });
                     datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
@@ -302,7 +306,7 @@ namespace Chloe
                 ID = GuidHelper.NewSnowflakeId(),
                 LOGTYPE = type,
                 LOGTITLE = title,
-                LOGSUMMARY = summary,
+                LOGSUMMARY = (summary ?? "").SubStr(0, 2000),
                 LOGINNAME = user.UserName,
                 LOGINDATE = await source.GetSysdate(),
                 IP = user.IP,
@@ -313,43 +317,51 @@ namespace Chloe
         }
 
         /// <summary>
+        /// 树形节点处理
+        /// </summary>
+        public static async Task<string> TreeHandle<T>(this IDbContext source, T entity, string oldTreeNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable, new()
+        {
+            var parentNode = "";
+            if (!string.IsNullOrWhiteSpace(entity.PARENTID))//有父节点
+            {
+                parentNode = await source.Query<T>().Where(c => c.ID == entity.PARENTID).Select(c => c.TREENODE).FirstOrDefaultAsync();
+            }
+            entity.TREENODE = await source.GetTreeNode(parentNode, predicate, length);
+            if (string.IsNullOrWhiteSpace(oldTreeNode)) return entity.TREENODE;
+            if (parentNode.StartsWith(oldTreeNode))
+            {
+                throw new MessageException("层级关系错误，上级不能直接改成下级");
+            }
+            var childs = (await source.Query<T>().Where(c => c.TREENODE.StartsWith(oldTreeNode) && c.ID != entity.ID).ToListAsync()).OrderBy(c => c.TREENODE.Length);
+            foreach (var child in childs)
+            {
+                var parent = childs.FirstOrDefault(c => c.ID == child.PARENTID) ?? (new T() { TREENODE = entity.TREENODE });
+                var corpPath = await source.GetTreeNode(parent.TREENODE, predicate, length);
+                await source.UpdateAsync<T>(c => c.ID == child.ID, c => new T()
+                {
+                    TREENODE = corpPath
+                });
+            }
+            return entity.TREENODE;
+        }
+
+        /// <summary>
         /// 获取树形节点的节点值
         /// </summary>
-        /// <param name="source">事务</param>
-        /// <param name="tableName">表名</param>
-        /// <param name="parentNode">父节点值</param>
-        /// <param name="where">条件</param>
-        /// <param name="length">长度</param>
-        /// <param name="nodeName">节点字段名</param>
-        /// <returns></returns>
-        public static async Task<string> GetTreeNode(this IDbContext source, string tableName, string parentNode, string where = "", int length = 3, string nodeName = "TreeNode")
+        private static async Task<string> GetTreeNode<T>(this IDbContext source, string parentNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable, new()
         {
-            parentNode ??= "";
-            where = (where ?? "").Trim();
-            if (!string.IsNullOrEmpty(where) && !where.StartsWith("and", false, System.Globalization.CultureInfo.CurrentCulture))
-            {
-                where = "and " + where;
-            }
-            var sql = $"select {nodeName} from {tableName} where {nodeName} like '{parentNode}%' and len({nodeName}) = {parentNode.Length + length} {where}";
-            var list = (await source.SqlQueryAsync<string>(sql)).Select(c =>
-            {
-                return c.Remove(0, parentNode.Length).CastTo<int>();
-            }).ToList();
-            var pow = Math.Pow(10, length);
+            var len = parentNode.Length + length;
+            var nodes = await source.Query<T>().Where(c => c.TREENODE.StartsWith(parentNode) && c.TREENODE.Length == len)
+                .Where(predicate).Select(c => c.TREENODE).ToListAsync();
+            var list = nodes.Select(c => c.Remove(0, parentNode.Length).CastTo<int>()).ToList();
             var maxNode = (list.Count == 0 ? 0 : list.Max()) + 1;
-            if (maxNode >= pow)
+            var max = Math.Pow(10, length);
+            var format = max.CastTo<string>()[1..];
+            if (maxNode < max) return $"{parentNode}{maxNode.ToString(format)}";
+            for (var i = 1; i < max; i++)
             {
-                for (var i = 1; i < pow; i++)
-                {
-                    if (!list.Contains(i))
-                    {
-                        return $"{parentNode}{i.ToString(pow.CastTo<string>()[1..])}";
-                    }
-                }
-            }
-            else
-            {
-                return $"{parentNode}{maxNode.ToString(pow.CastTo<string>()[1..])}";
+                if (list.Contains(i)) continue;
+                return $"{parentNode}{i.ToString(format)}";
             }
             throw new MessageException("序号已经被用完");
         }
