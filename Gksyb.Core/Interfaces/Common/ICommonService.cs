@@ -55,5 +55,11 @@ namespace Gksyb.Core.Interfaces.Common
         /// </summary>
         /// <returns></returns>
         Task<bool> ClearAsync();
+
+        /// <summary>
+        /// 部门
+        /// </summary>
+        /// <returns></returns>
+        public Task<List<string>> GetDeptList(string dept);
     }
 }

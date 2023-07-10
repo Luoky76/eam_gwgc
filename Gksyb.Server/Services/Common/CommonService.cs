@@ -6,6 +6,7 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Oracle.ManagedDataAccess.Client;
@@ -25,6 +26,7 @@ namespace Gksyb.Server.Services.Common
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
         private readonly string _appName;
+        private readonly UserSession CurrentUser;
 
         /// <summary>
         /// 查询视图
@@ -32,11 +34,12 @@ namespace Gksyb.Server.Services.Common
         /// <param name="dbContext"></param>
         /// <param name="distributedCache"></param>
         /// <param name="options"></param>
-        public CommonService(IDbContext dbContext, IDistributedCache distributedCache, IOptions<SysContextOptions> options)
+        public CommonService(IDbContext dbContext, IDistributedCache distributedCache, IOptions<SysContextOptions> options, UserSession currentUser)
         {
             _dbContext = dbContext;
             _distributedCache = distributedCache;
             _appName = options.Value.ConfigAppName ?? options.Value.AppName;
+            CurrentUser = currentUser;
         }
 
         /// <summary>
@@ -330,6 +333,35 @@ namespace Gksyb.Server.Services.Common
             });
             return true;
         }
+
+        public async Task<List<string>> GetDeptList(string dept)
+        {
+            //获取当前登录人所在公司
+            var dept_id = dept;
+            var sql = @"WITH RECURSIVE temp AS (
+                           SELECT t.* FROM cf_dept t WHERE t.DEPT_ID = @dept_id
+                           UNION ALL
+                           SELECT t.* FROM cf_dept t INNER JOIN temp ON t.PARENT_ID = temp.DEPT_ID
+                       )
+                       SELECT * FROM temp";
+
+            var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
+            {
+                dept_id = dept_id
+            });
+
+            List<string> returnList = new List<string>();
+
+            foreach (var item in list)
+            {
+                returnList.Add("," + item.ID.ToString() + ",");
+            }
+
+            return returnList;
+        }
+
+
+
 
         //缓存前缀
         private static readonly string CachePrefix = "View_";
