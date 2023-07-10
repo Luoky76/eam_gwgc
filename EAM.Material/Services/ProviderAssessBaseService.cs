@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -8,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessBase : BaseService, IProviderAssessBaseService
+    public class ProviderAssessBase : IProviderAssessBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

@@ -8,7 +8,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessTask : BaseService, IProviderAssessTaskService
+    public class ProviderAssessTask : IProviderAssessTaskService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
