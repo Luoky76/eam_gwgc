@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -8,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderInfoService : BaseService, IProviderInfoService
+    public class ProviderInfoService : IProviderInfoService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -27,10 +26,9 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<PROVIDER> GetAsync(object id)
+        public async Task<PROVIDER> GetAsync(string id)
         {
-            string? sid = id.ToString();
-            var query = await _dbContext.Query<PROVIDER>().Where(c => c.PROVIDER_ID == sid).FirstAsync();
+            var query = await _dbContext.Query<PROVIDER>().Where(c => c.PROVIDER_ID == id).FirstAsync();
             return query;
         }
 
@@ -200,7 +198,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 保存后验证
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="added"></param>
+        /// <param name="updated"></param>
+        /// <param name="deleted"></param>
         /// <returns></returns>
         private async Task AfterSave(List<PROVIDER> added, List<PROVIDER> updated, List<PROVIDER> deleted)
         {

@@ -239,6 +239,7 @@
                     showMin: false,
                     isResize: true,
                     slide: false,
+                    //弹出框关闭前的回调函数
                     onClosed: me.reload.bind(me),
                     data: { "sid": selected.ASSESS_TASK_ID, "isNew": false, "isView": true }
                 });
@@ -389,6 +390,7 @@
                             LG.commonSearch($formsearch, me.grid);
                         }
                     }],
+                    //在设置完表单字段后触发
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;

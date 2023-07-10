@@ -348,8 +348,35 @@
                 me.grid.loadData();
             },
             //导入
+            //定义导入窗口的回调函数
+            handleDialogClose: function(returnValue) {
+                console.log('返回值为：', returnValue);
+            },
             importTaskBase: function () {
                 var me = this;
+                var gridData = me.grid.getData(["ASSESS_BASE_ID"]);
+                var currentBaseIds = {};
+                for (var item of gridData) {
+                    currentBaseIds.push(item.ASSESS_BASE_ID);
+                }
+                var options = {
+                    width: 300,
+                    height: 150,
+                    allowClose: true,
+                    title: '[导入]评估任务基础',
+                    url: "provider-assess-base-select.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    //弹出框关闭时的回调函数，获取返回的评估明细数据
+                    callback: handleDialogClose,
+                    //传入当前已在评估任务中的任务基础，导入时将其排除
+                    data: currentBaseIds
+                }
+                $.ligerDialog.open(options);
             },
             //保存
             saveTaskBase: function () {

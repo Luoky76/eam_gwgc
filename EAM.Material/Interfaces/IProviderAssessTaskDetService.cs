@@ -17,14 +17,14 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<PROVIDER_ASSESS_TASK_DET> GetAsync(object id);
+        public Task<PROVIDER_ASSESS_TASK_DET> GetAsync(string id);
 
         /// <summary>
         /// 根据评估任务ID ASSESS_TASK_ID 获取多行记录
         /// </summary>
         /// <param name="assessTaskId"></param>
         /// <returns></returns>
-        public Task<GridData> GetAssessTaskAsync(object assessTaskId);
+        public Task<GridData> GetAssessTaskAsync(string assessTaskId);
 
         /// <summary>
         /// 保存

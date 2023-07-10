@@ -8,7 +8,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessTaskDet : BaseService, IProviderAssessTaskDetService
+    public class ProviderAssessTaskDet : IProviderAssessTaskDetService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -27,7 +27,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<PROVIDER_ASSESS_TASK_DET> GetAsync(object id)
+        public async Task<PROVIDER_ASSESS_TASK_DET> GetAsync(string id)
         {
             string? sid = id.ToString();
             var query = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>().Where(c => c.ASSESS_TASK_DET_ID == sid).FirstAsync();
@@ -39,15 +39,12 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="assessTaskId"></param>
         /// <returns></returns>
-        public async Task<GridData> GetAssessTaskAsync(object assessTaskId)
+        public async Task<GridData> GetAssessTaskAsync(string assessTaskId)
         {
-            string? sid;
-            if (assessTaskId == null) sid = "";
-            else sid = assessTaskId.ToString();
             var query = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                .InnerJoin<PROVIDER_ASSESS_TASK_DET>((a, b)=>a.ASSESS_TASK_ID==b.ASSESS_TASK_ID)
-                .LeftJoin< PROVIDER_ASSESS_BASE >((a, b, c)=>b.ASSESS_BASE_ID==c.ASSESS_BASE_ID)
-                .Where((a, b, c)=>a.ASSESS_TASK_ID==sid)
+                .InnerJoin<PROVIDER_ASSESS_TASK_DET>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .LeftJoin< PROVIDER_ASSESS_BASE >((a, b, c) => b.ASSESS_BASE_ID == c.ASSESS_BASE_ID)
+                .Where((a, b, c) => a.ASSESS_TASK_ID == assessTaskId)
                 .Select((a, b, c) => new { 
                    a.ASSESS_TASK_ID,
                    b.ASSESS_TASK_DET_ID,
@@ -141,7 +138,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 保存后验证
         /// </summary>
-        /// <param name="entity"></param>
+        /// <param name="added"></param>
+        /// <param name="updated"></param>
+        /// <param name="deleted"></param>
         /// <returns></returns>
         private async Task AfterSave(List<PROVIDER_ASSESS_TASK_DET> added, List<PROVIDER_ASSESS_TASK_DET> updated, List<PROVIDER_ASSESS_TASK_DET> deleted)
         {
