@@ -44,15 +44,6 @@ namespace Gksyb.Core.Interfaces.Auth
         public List<string> Station { get; set; } = new List<string>();
 
         /// <summary>
-        /// 用户当前公司部门
-        /// </summary>
-        public string DeptName { get; set; }
-        /// <summary>
-        /// 用户当前公司部门id
-        /// </summary>
-        public string DeptId { get; set; }
-
-        /// <summary>
         /// 获取父级组织
         /// </summary>
         /// <returns></returns>

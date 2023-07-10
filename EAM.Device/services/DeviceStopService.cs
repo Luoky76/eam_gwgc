@@ -105,8 +105,8 @@ namespace EAM.Device.services
         {
             entity.SEC_DEPTID = _userSession.Corp.CorpID;
             entity.SEC_DEPT = _userSession.Corp.CName;
-            entity.DEPT_ID = _userSession.Corp.DeptId;
-            entity.DEPT_NAME = _userSession.Corp.DeptName;
+            entity.DEPT_ID = _userSession.Corp.CorpID;
+            entity.DEPT_NAME = _userSession.Corp.CName;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_DATE = await _dbContext.GetSysdate();
             var random = new Random();
