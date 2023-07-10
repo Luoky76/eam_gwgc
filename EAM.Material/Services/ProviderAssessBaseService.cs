@@ -8,7 +8,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessBase : IProviderAssessBaseService
+    public class ProviderAssessBase : BaseService, IProviderAssessBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -27,9 +27,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<PROVIDER_ASSESS_BASE> GetAsync(string id)
+        public async Task<PROVIDER_ASSESS_BASE> GetAsync(object id)
         {
-            var query = await _dbContext.Query<PROVIDER_ASSESS_BASE>().Where(c => c.ASSESS_BASE_ID == id).FirstAsync();
+            string? sid = id.ToString();
+            var query = await _dbContext.Query<PROVIDER_ASSESS_BASE>().Where(c => c.ASSESS_BASE_ID == sid).FirstAsync();
             return query;
         }
 
@@ -116,9 +117,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 保存后验证
         /// </summary>
-        /// <param name="added"></param>
-        /// <param name="updated"></param>
-        /// <param name="deleted"></param>
+        /// <param name="entity"></param>
         /// <returns></returns>
         private async Task AfterSave(List<PROVIDER_ASSESS_BASE> added, List<PROVIDER_ASSESS_BASE> updated, List<PROVIDER_ASSESS_BASE> deleted)
         {
