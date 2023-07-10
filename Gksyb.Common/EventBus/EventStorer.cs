@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using System.Threading;
 using System.Threading.Channels;
 
 namespace Gksyb.Common.EventBus
@@ -25,7 +24,7 @@ namespace Gksyb.Common.EventBus
         private static string _keyStream;
         private static string _groupName;
         private static string _consumerName;
-        private static string _channelName;
+        private static RedisChannel _channelName;
         private volatile IConnectionMultiplexer _connection;
         private IDatabase _redis;
         private ISubscriber _bus;
@@ -51,7 +50,7 @@ namespace Gksyb.Common.EventBus
                 _keyStream = $"{_options.InstanceName ?? string.Empty}{nameof(EventStorer)}";
                 _groupName = $"{_keyStream}_Group";
                 _consumerName = $"{_keyStream}_Consumer";
-                _channelName = $"{_keyStream}_Channel";
+                _channelName = new RedisChannel($"{_keyStream}_Channel", RedisChannel.PatternMode.Auto);
             }
             _logger.LogInformation(_logPath, $"启用{(_isLocal ? "本地" : "reids")}事件存储器");
         }

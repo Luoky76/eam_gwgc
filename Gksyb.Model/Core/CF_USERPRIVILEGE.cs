@@ -65,7 +65,7 @@ namespace Gksyb.Model.Core
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

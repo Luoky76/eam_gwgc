@@ -77,7 +77,7 @@ namespace Quartz
                 }
                 catch (Exception ex2)
                 {
-                    _logger.LogError(_logPath, "ErrorHandle:" + ex2.ToString());
+                    _logger.LogError(_logPath, $"ErrorHandle:{ex2}");
                 }
                 _logger.LogError(_logPath, ex.ToString());
                 throw;

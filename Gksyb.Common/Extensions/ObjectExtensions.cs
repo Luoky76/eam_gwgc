@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using System.Text;
 
 namespace Gksyb.Common
 {

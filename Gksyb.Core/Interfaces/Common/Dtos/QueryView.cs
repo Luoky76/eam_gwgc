@@ -48,12 +48,11 @@ namespace Gksyb.Core.Common
         /// <summary>
         /// 数据处理
         /// </summary>
-        /// <returns></returns>
-        public async Task HandleAsync(IDbContext dbContext)
+        public async Task HandleAsync(IDbContext dbContext, bool isThrow)
         {
             HastParmMatch = Regex.IsMatch(SEARCH, @"{(\w+)}");
             if (SEARCH.Contains("DataSource")) SearchHandle();
-            await GridHandle(dbContext);
+            await GridHandle(dbContext, isThrow);
             Fields ??= new List<KeyValueItem>();
         }
 
@@ -73,8 +72,7 @@ namespace Gksyb.Core.Common
         /// <summary>
         /// Grid处理
         /// </summary>
-        /// <returns></returns>
-        private async Task GridHandle(IDbContext dbContext)
+        private async Task GridHandle(IDbContext dbContext, bool isThrow)
         {
             IDbContext dbContextLind = await dbContext.GetDbContext(DataSource);
             try
@@ -110,6 +108,10 @@ namespace Gksyb.Core.Common
                         Value = value
                     });
                 }
+            }
+            catch (Exception)
+            {
+                if (isThrow) throw;
             }
             finally
             {

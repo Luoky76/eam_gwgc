@@ -11,6 +11,7 @@ using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.Encoders;
 using Org.BouncyCastle.X509;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace Gksyb.Common
 {
@@ -323,7 +324,7 @@ namespace Gksyb.Common
         public static string GetSM3(string value, Encoding encoding = null)
         {
             encoding ??= Encoding.UTF8;
-            return Convert.ToHexString(encoding.GetBytes(value));
+            return Convert.ToHexString(GetSM3(encoding.GetBytes(value)));
         }
 
         /// <summary>

@@ -33,7 +33,7 @@
                         labelwidth: 220,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "select", align: "left", editor: { type: 'select', data: me.auditing }, readonly: true, group: "基础信息" },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "select", align: "left", editor: { type: 'select', data: me.auditing, disabled: true }, group: "基础信息" },
                             { display: "服务单位", name: "ORG_NAME", dbname: "ORG_NAME", width: 310, type: "text", align: "left" },
                             { display: "管理部门", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 310, type: "text", align: "left" },
                             { display: "供应商编码", name: "PROVIDER_CODE", dbname: "PROVIDER_CODE", width: 310, type: "text", align: "left" },

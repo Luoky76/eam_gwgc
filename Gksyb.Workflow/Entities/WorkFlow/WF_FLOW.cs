@@ -94,9 +94,9 @@ namespace Gksyb.Model.WorkFlow
         public int? CREATEUSERID { get; set; }
 
         /// <summary>
-        /// 创建者
+        /// 创建人
         /// </summary>
-        [Description("创建者")]
+        [Description("创建人")]
         [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 

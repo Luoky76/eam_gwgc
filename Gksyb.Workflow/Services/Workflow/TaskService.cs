@@ -69,7 +69,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         public async Task CancelAsync(FlowExecuteInfo info)
         {
-            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Ignore(c => new { c.FLOW_FORM_DATA }).FirstOrDefaultAsync();
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Exclude(c => new { c.FLOW_FORM_DATA }).FirstOrDefaultAsync();
             MessageException.ThrowIf(task == null, "任务已结束");
             MessageException.ThrowIf(!_user.IsSuper && task.CREATEUSERID != _user.UserID, "您无权进行此操作");
             info.FlowId = task.FLOW_ID;

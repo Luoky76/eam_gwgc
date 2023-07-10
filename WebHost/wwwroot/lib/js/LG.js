@@ -98,11 +98,15 @@
         delete options.ashxUrl;
         delete options.success;
         delete options.error;
+        if (Object.prototype.toString.apply(options.data) === "[object FormData]") {
+            options.contentType = false;
+            options.paramData = false;
+        }
         var p = $.extend(true, {
             dataType: 'json',
             type: 'post',
-            beforeSend: function (jqXHR, opt) {
-                LG.showLoading(p.loading, { maskClose: false });
+            beforeSend: function (xhr, opt) {
+                if (opt.loading !== false) LG.showLoading(opt.loading, { maskClose: false });
             },
             complete: function () {
                 LG.hideLoading();
@@ -111,17 +115,18 @@
                 if (!result) return;
                 if (result.IsError) {
                     if (options.errorInner) options.errorInner(result.Message, result.Data);
-                } else {
-                    if (options.successInner) options.successInner(result.Data, result.Message);
+                    return;
                 }
+                if (options.successInner) options.successInner(result.Data, result.Message);
             },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                LG.showError('请求数据出错,页面即将跳转!<br/>原因为：' + (XMLHttpRequest.responseText || "") + "<br/>错误码:" + (XMLHttpRequest.status || "") + (errorThrown || ""),
+            error: function (xhr, status, error) {
+                LG.showError('请求数据出错,页面即将跳转!<br/>原因为：' + (xhr.responseText || "") + "<br/>错误码:" + (xhr.status || "") + (error || ""),
                     function () {
                         location.reload();
                     });
             }
         }, options);
+        if (p.async === false) p.loading = false;
         $.ajax(p);
     };
 
@@ -156,10 +161,8 @@
     //优先级2：加载QueryString，名字为MenuNo的值
     LG.getPageMenuNo = function () {
         var menuno = $("#MenuNo").val();
-        if (!menuno) {
-            menuno = getQueryStringByName("MenuNo");
-        }
-        return menuno;
+        if (menuno) return menuno;
+        return getQueryStringByName("MenuNo");
     };
 
     //创建按钮

@@ -23,7 +23,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         public async Task<GridData> FlowListAsync(GridRequest request)
         {
-            return await _dbContext.Query<WF_FLOW>().Where(FilterCorp).Ignore(c => new { c.FLOW_CONTENT, c.FLOW_FORM }).GetGridData(request);
+            return await _dbContext.Query<WF_FLOW>().Where(FilterCorp).Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM }).GetGridData(request);
         }
 
         /// <summary>

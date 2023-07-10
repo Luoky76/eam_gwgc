@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Listener;
-using System.Threading;
 
 namespace Gksyb.Common.Quartz
 {

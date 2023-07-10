@@ -5,7 +5,6 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
@@ -14,7 +13,6 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
-        private DateTime? _Sysdate;
 
         public ProviderInfoService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
@@ -28,10 +26,9 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<PROVIDER> GetAsync(object id)
+        public async Task<PROVIDER> GetAsync(string id)
         {
-            string? sid = id.ToString();
-            var query = await _dbContext.Query<PROVIDER>().Where(c => c.PROVIDER_ID == sid).FirstAsync();
+            var query = await _dbContext.Query<PROVIDER>().Where(c => c.PROVIDER_ID == id).FirstAsync();
             return query;
         }
 
@@ -201,26 +198,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 保存后验证
         /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         private async Task AfterSave(List<PROVIDER> added, List<PROVIDER> updated, List<PROVIDER> deleted)
         {
             await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 获取数据库时间
-        /// </summary>
-        private DateTime? Sysdate
-        {
-            get
-            {
-                if (!_Sysdate.HasValue)
-                {
-                    _Sysdate = _dbContext.GetSysdate().Result();
-                }
-                return _Sysdate;
-            }
         }
 
         /// <summary>

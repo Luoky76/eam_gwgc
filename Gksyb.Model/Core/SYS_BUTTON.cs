@@ -30,7 +30,7 @@ namespace Gksyb.Model.Core
         /// 按钮名称
         /// </summary>
         [Description("按钮名称")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string BTNNAME { get; set; }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Gksyb.Model.Core
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

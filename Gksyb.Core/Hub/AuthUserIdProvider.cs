@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var userSession = distributedCache.Get<UserSession>(token, default);
                 if (userSession != null)
                 {
-                    if (!userSession.CheckIP(httpContext.Request.GetRealIP(), distributedCache)) return connection.UserIdentifier;
+                    if (!userSession.Check(httpContext.Request, distributedCache)) return connection.UserIdentifier;
                     lock (httpContext)//source.Items不是多线程安全
                     {
                         httpContext.Items.Remove(nameof(UserSession));

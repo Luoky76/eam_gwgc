@@ -121,7 +121,7 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         public async Task<AjaxResult> QueryConfigAsync(string view)
         {
-            var entity = await GetViewAsync(_dbContext, view)
+            var entity = await GetViewAsync(_dbContext, view, isThrow: true)
                 ?? throw new MessageException($"视图{view}不存在");
             return AjaxResult.Success(new { entity.FORM, entity.GRID, entity.Fields }, "");
         }
@@ -132,7 +132,7 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         public async Task<GridData<IList>> QueryAsync(GridRequest request)
         {
-            var entity = await GetViewAsync(_dbContext, request.View)
+            var entity = await GetViewAsync(_dbContext, request.View, isThrow: true)
                 ?? throw new MessageException($"视图{request.View}不存在");
             var dbContextLind = await _dbContext.GetDbContext(entity.DataSource);
             request.View = entity.SEARCH;
@@ -287,7 +287,7 @@ namespace Gksyb.Server.Services.Common
         /// 获取视图
         /// </summary>
         /// <returns></returns>
-        public async Task<QueryView> GetViewAsync(IDbContext dbContext, string view, string appname = null)
+        public async Task<QueryView> GetViewAsync(IDbContext dbContext, string view, string appname = null, bool isThrow = false)
         {
             appname ??= _appName;
             var cacheName = $"{CachePrefix}{view}";
@@ -298,7 +298,7 @@ namespace Gksyb.Server.Services.Common
                 list ??= new List<QueryView>();
                 foreach (var c in list)
                 {
-                    await c.HandleAsync(dbContext);
+                    await c.HandleAsync(dbContext, isThrow);
                 }
                 await _distributedCache.SetAsync(cacheName, list, new DistributedCacheEntryOptions()
                 {

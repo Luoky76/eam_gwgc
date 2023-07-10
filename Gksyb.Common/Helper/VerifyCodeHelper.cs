@@ -4,8 +4,8 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace Gksyb.Common
 {

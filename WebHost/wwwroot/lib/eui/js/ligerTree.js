@@ -60,7 +60,7 @@
         2,也可以是数字(层次)N 代表第1层到第N层都是展开的，其他收缩
         3,或者是判断函数 函数参数e(data,level) 返回true/false
 
-        优先级没有节点数据的isexpand属性高,并没有delay属性高
+        优先级没有节点数据的isexpand属性高,且没有delay属性高
         */
         isExpand: null,
         /*
@@ -79,7 +79,9 @@
         idField: null,
         //parent id字段，可用于线性数据转换为tree数据
         parentIDField: null,
-        iconClsFieldName: null
+        iconClsFieldName: null,
+        filter: false,//过滤框
+        filterWidth: null
     };
 
 })(jQuery);

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Gksyb.Common
@@ -157,7 +158,7 @@ namespace Gksyb.Common
             if (string.IsNullOrWhiteSpace(value)) return value;
             if (Regex.IsMatch(value, @"(insert\s+|union\s+|update\s+|delete\s+|select\s+|\s+or\s+|\s+=\s+|\s+dual\s+|create\s+|declare\s+|exec\s+|sys\.|dbms_|extractvalue|dburitype)", RegexOptions.IgnoreCase))
                 throw new MessageException("防注入系统");
-            if (limit != null && value.Length > limit && Regex.Replace(value, $@"^((\w|\.|,){{{limit},}})|(\basc\b)|(\bdesc\b)|( )", "", RegexOptions.IgnoreCase).Length > limit) 
+            if (limit != null && value.Length > limit && Regex.Replace(value, $@"^((\w|\.|,){{{limit},}})|(\basc\b)|(\bdesc\b)|( )", "", RegexOptions.IgnoreCase).Length > limit)
                 throw new MessageException("防注入系统");
             return value;
         }

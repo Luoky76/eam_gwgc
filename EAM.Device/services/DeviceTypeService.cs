@@ -3,16 +3,10 @@ using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
-using Gksyb.Model.Grid;
+using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Core.Grid;
-using Gksyb.Model.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
+using Gksyb.Model.Grid;
 using System.Linq.Expressions;
 
 namespace EAM.Device.Services
@@ -50,9 +44,9 @@ namespace EAM.Device.Services
             var list = await _dbContext.Query<BASE_DEVICETYPE>().Where(c => c.STATUS == "1").ToListAsync();
             var data = list.Select(c => new
             {
-                TYPE_CODE = c.TYPE_CODE,
-                TYPE_NAME = c.TYPE_NAME,
-                TYPE_ID = c.TYPE_ID,
+                c.TYPE_CODE,
+                c.TYPE_NAME,
+                c.TYPE_ID,
                 PARENTID = (string.IsNullOrWhiteSpace(c.PRE_TYPEID) || c.PRE_TYPEID == "0") ? "ROOT" : c.PRE_TYPEID,
                 ICON = "fa fa-group"
             }).OrderBy(c => c.TYPE_CODE).ToList();
@@ -144,9 +138,9 @@ namespace EAM.Device.Services
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICETYPE>()
-                .Where(c => c.TYPE_ID == entity.PRE_TYPEID&&c.PRE_TYPEID==entity.TYPE_ID||c.TYPE_ID == entity.PRE_TYPEID&&c.TYPE_ID==entity.TYPE_ID)
+                .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
                 .FirstOrDefaultAsync();
-            if (query!=null)
+            if (query != null)
             {
                 throw new MessageException("上级节点只能为父节点！");
             }
@@ -163,13 +157,13 @@ namespace EAM.Device.Services
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICETYPE>()
-                .Where(c => c.TYPE_ID == entity.PRE_TYPEID&&c.PRE_TYPEID==entity.TYPE_ID||c.TYPE_ID == entity.PRE_TYPEID&&c.TYPE_ID==entity.TYPE_ID)
+                .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
                 .FirstOrDefaultAsync();
-            if (query!=null)
+            if (query != null)
             {
                 throw new MessageException("上级节点只能为父节点！");
             }
-            
+
             await Task.CompletedTask;
         }
 
@@ -182,7 +176,7 @@ namespace EAM.Device.Services
         {
             //验证是否存在下属节点
             var query = await _dbContext.Query<BASE_DEVICETYPE>().Where(c => c.STATUS == "1" && c.PRE_TYPEID == entity.TYPE_ID).ToListAsync();
-            if (query.Count()>0) throw new MessageException("该节点存在有效下级节点，不能删除！");
+            if (query.Count > 0) throw new MessageException("该节点存在有效下级节点，不能删除！");
 
             await Task.CompletedTask;
         }

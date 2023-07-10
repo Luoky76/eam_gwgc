@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Gksyb.Common
+﻿namespace Gksyb.Common
 {
     /// <summary>
     /// 唯一ID生成帮助类

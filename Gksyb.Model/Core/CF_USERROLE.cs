@@ -40,10 +40,10 @@ namespace Gksyb.Model.Core
         public long? ROLEID { get; set; }
 
         /// <summary>
-        /// 创建者
+        /// 创建人
         /// </summary>
-        [Description("创建者")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Description("创建人")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string CREATEUSER { get; set; }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Gksyb.Model.Core
         /// 最后修改人
         /// </summary>
         [Description("最后修改人")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string MODIFYUSER { get; set; }
 
         /// <summary>
@@ -69,14 +69,14 @@ namespace Gksyb.Model.Core
         /// 记录状态
         /// </summary>
         [Description("记录状态")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string RECORDSTATUS { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
     }

@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Microsoft.AspNetCore.Http
+﻿namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// 文件属性

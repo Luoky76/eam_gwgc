@@ -1,6 +1,7 @@
 ﻿using Gksyb.Common.Static;
 using Gksyb.Core.Interfaces.Auth;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Globalization;
@@ -100,6 +101,11 @@ namespace Gksyb.Core.Auth
         public bool IsOurCompany { get; set; }
 
         /// <summary>
+        /// 是否Api用户
+        /// </summary>
+        public bool IsApi { get; set; }
+
+        /// <summary>
         /// IP地址
         /// </summary>
         public string IP { get; set; }
@@ -180,106 +186,15 @@ namespace Gksyb.Core.Auth
         }
 
         /// <summary>
-        /// 验证按钮权限
-        /// </summary>
-        /// <param name="menuNo">菜单编号(多个用,分隔)</param>
-        /// <param name="btnNo">按钮编号</param>
-        /// <param name="mode">匹配模式</param>
-        /// <param name="appname">应用名称</param>
-        /// <returns></returns>
-        public bool CheckButton(string menuNo, string btnNo, GksybAuthorizeMode mode, string appname)
-        {
-            if (string.IsNullOrWhiteSpace(btnNo)) return CheckMenu(menuNo, mode, appname);
-            appname ??= MenuAppname;
-            var menus = (menuNo ?? "").Split(",");
-            var btns = (btnNo ?? "").Split(",");
-            if (mode != GksybAuthorizeMode.Regex)
-            {
-                foreach (var menu in menus)
-                {
-                    var key = $"{menu}__{appname}";
-                    //禁止的菜单权限
-                    if (!ForbinButtons.ContainsKey(key)) return true;
-                    if (mode == GksybAuthorizeMode.StartsWith)
-                    {
-                        foreach (var btn in btns)
-                        {
-                            if (!ForbinButtons[key].Exists(c => btn.StartsWith(c.BTNNO) && c.APPNAME == appname)) return true;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var btn in btns)
-                        {
-                            if (!ForbinButtons[key].Exists(c => c.BTNNO == btn && c.APPNAME == appname)) return true;
-                        }
-                    }
-                }
-                return false;
-            }
-            foreach (var menu in menus)
-            {
-                var key = $"{menu}__{appname}";
-                //禁止的菜单权限
-                foreach (var menuKey in ForbinButtons.Keys)
-                {
-                    if (menuKey.IsMatch(key))
-                    {
-                        foreach (var btn in btns)
-                        {
-                            if (ForbinButtons[menuKey].Exists(c => c.BTNNO.IsMatch(btn))) return false;
-                        }
-                    }
-                }
-                return true;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 验证菜单
-        /// </summary>
-        /// <param name="menuNo"></param>
-        /// <param name="mode">匹配模式</param>
-        /// <param name="appname"></param>
-        /// <returns></returns>
-        public bool CheckMenu(string menuNo, GksybAuthorizeMode mode, string appname)
-        {
-            appname ??= MenuAppname;
-            var menus = (menuNo ?? "").Split(",");
-            if (mode != GksybAuthorizeMode.Regex)
-            {
-                if (mode == GksybAuthorizeMode.StartsWith)
-                {
-                    foreach (var menu in menus)
-                    {
-                        if (!ForbinMenus.Exists(c => menu.StartsWith(c.MENUNO) && c.APPNAME == appname)) return true;
-                    }
-                }
-                else
-                {
-                    foreach (var menu in menus)
-                    {
-                        if (!ForbinMenus.Exists(c => c.MENUNO == menu && c.APPNAME == appname)) return true;
-                    }
-                }
-                return false;
-            }
-            foreach (var menu in menus)
-            {
-                if (!ForbinMenus.Exists(c => c.MENUNO.IsMatch(menu) && c.APPNAME == appname)) return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 判断IP
+        /// 判断IP和UA
         /// </summary>
         /// <returns></returns>
-        public bool CheckIP(string ip, IDistributedCache distributedCache = null)
+        public bool Check(Microsoft.AspNetCore.Http.HttpRequest request, IDistributedCache distributedCache = null)
         {
-            if (IP == ip) return true;
-            distributedCache ??= HttpContext.Current.RequestServices.GetService<IDistributedCache>();
+            var ip = request.GetRealIP();
+            var userAgent = request.GetUserAgent();
+            if (IP == ip && UserAgent == userAgent) return true;
+            distributedCache ??= request.HttpContext.RequestServices.GetService<IDistributedCache>();
             distributedCache.Remove(Token);
             return false;
         }
@@ -322,17 +237,18 @@ namespace Gksyb.Core.Auth
             Token = GuidHelper.NewShortId();
             await SaveAsync();
             HttpContext.Current.SetClientID(Token);
-            var ticket = CryptographyHelper.EncryptSM4(new string[]
+            var ticket = new string[]
             {
                 $"{DateTime.Now.AddHours(options.RememberHours):yyyyMMddHHmmss}",
-                CryptographyHelper.GetMd5(UserAgent),
+                Hash(UserAgent),
                 IP,
                 options.TicketVersion,
                 UserName,
                 MenuAppname,
                 RoleAppName,
                 ExtendData.ToJson()
-            }.ToStr("@#"), KEY);
+            }.ToStr("@#");
+            ticket = CryptographyHelper.EncryptSM4(ticket, KEY);
             return ToUserResponse(ticket);
         }
 
@@ -367,11 +283,29 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 密码加密
         /// </summary>
-        public static string Encrypt(string password) => CryptographyHelper.Encrypt(password);
+        public static string Encrypt(string password)
+        {
+            if (string.IsNullOrWhiteSpace(Cryptography))
+            {
+                var configuration = HttpContext.RequestServices.GetService<IConfiguration>();
+                Cryptography = configuration.GetValue($"{OptionName.SysContext}:Cryptography", defaultValue: "DES64");
+            }
+            return Cryptography switch
+            {
+                "SM" => CryptographyHelper.EncryptSM4(password, UKEY),
+                _ => CryptographyHelper.Encrypt(password),
+            };
+        }
+
+        public static string Hash(string value) => CryptographyHelper.GetSM3(value);
+
+        private static string Cryptography;
 
         /// <summary>
         /// ticket密钥
         /// </summary>
         private const string KEY = "ASTWuovn2!x4j@awBbOGHch5RNylILF8iCKXqm1PVz9egJD#s7pM6ZdY30kfUtEQ";
+
+        private const string UKEY = "yNJ1baz#5CLFiOPHIcDGh6xvQdWYR2uKpmnw8lEtVsgZo4fT@jXU3qBAMS7ek!0r";
     }
 }

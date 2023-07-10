@@ -33,14 +33,19 @@ namespace Gksyb.Core.Auth
         public bool IsBaseAuth { get; set; }
 
         /// <summary>
-        /// 起始于
+        /// 验证是否API用户
         /// </summary>
-        public bool IsStartsWith { get; set; }
+        public bool IsApi { get; set; }
 
         /// <summary>
-        /// 权限验证启用正则匹配
+        /// 验证模式
         /// </summary>
-        public bool IsRegex { get; set; }
+        public GksybAuthorizeMode Mode { get; set; } = GksybAuthorizeMode.Equal;
+
+        /// <summary>
+        /// 组
+        /// </summary>
+        public string Group { get; set; }
 
         /// <summary>
         /// 菜单编号
@@ -77,9 +82,7 @@ namespace Gksyb.Core.Auth
         /// 通用权限验证
         /// </summary>
         /// <param name="menuNo">菜单编号</param>
-        /// <param name="addBtn">新增按钮</param>
-        /// <param name="updateBtn">更新按钮</param>
-        /// <param name="deleteBtn">删除按钮</param>
+        /// <param name="btnNo">按钮</param>
         public GksybAuthorizeAttribute(string menuNo, string btnNo = null)
         {
             MenuNo = menuNo;
@@ -96,7 +99,7 @@ namespace Gksyb.Core.Auth
             MenuNo ??= "";
             BtnNo ??= "";
             if (SkipBtnNos.Contains(BtnNo)) BtnNo = "";
-            var user = await httpContext.GetCurrentUserAsync();
+            user = await httpContext.GetCurrentUserAsync();
             if (user == null)
             {
                 try
@@ -109,23 +112,92 @@ namespace Gksyb.Core.Auth
                 return false;
             }
             if (IsBaseAuth) return true;
-            if (IsSuper && user.IsSuper) return true;
-            if (IsAdmin && user.IsAdmin) return true;
-            if (IsOurCompany && user.IsOurCompany) return true;
-            var appname = httpContext.Request.Query["appname"].ToString();
-            appname = string.IsNullOrWhiteSpace(appname) ? (httpContext.Request.Headers[HeaderNames.Referer].ToString() ?? "").GetParm("appname") : appname;
-            appname = string.IsNullOrWhiteSpace(appname) ? user.MenuAppname : appname;
-            if (IsMenuAppname) appname = user.MenuAppname;
-            var mode = IsRegex ? GksybAuthorizeMode.Regex : IsStartsWith ? GksybAuthorizeMode.StartsWith : GksybAuthorizeMode.Equal;
-            if (!user.CheckButton(MenuNo, BtnNo, mode, appname)) return false;
+            if (IsSuper) return user.IsSuper;
+            if (IsAdmin) return user.IsAdmin;
+            if (IsOurCompany) return user.IsOurCompany;
+            if (IsApi) return user.IsApi;
+            SetAppname(httpContext);
+            if (!CheckGroup()) return false;
+            if (!CheckButton()) return false;
             var roleModuleService = httpContext.RequestServices.GetService<IRoleModuleService>();
             foreach (var roleName in user.Roles)
             {
-                var isValid = await roleModuleService.ValidButtonModule(roleName, appname, MenuNo, BtnNo, mode);
+                var isValid = await roleModuleService.ValidButtonModule(roleName, appname, MenuNo, BtnNo, Mode);
                 if (isValid) return true;
             }
             return false;
         }
+
+        /// <summary>
+        /// 验证按钮权限
+        /// </summary>
+        public bool CheckButton()
+        {
+            if (string.IsNullOrWhiteSpace(BtnNo)) return CheckMenu();
+            if (user.ForbinButtons == null || user.ForbinButtons.Count < 1) return true;
+            var menus = (MenuNo ?? "").Split(",");
+            var btns = (BtnNo ?? "").Split(",");
+            var match = Mode.GetFunc();
+            foreach (var menu in menus)
+            {
+                var key = $"{menu}__{appname}";
+                if (!user.ForbinButtons.Keys.Any(c => match(c, key))) return true;
+                foreach (var menuKey in user.ForbinButtons.Keys)
+                {
+                    foreach (var btn in btns)
+                    {
+                        if (!user.ForbinButtons[menuKey].Any(c => match(c.BTNNO, btn) && c.APPNAME == appname)) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 验证菜单
+        /// </summary>
+        public bool CheckMenu()
+        {
+            if (user.ForbinMenus == null || user.ForbinMenus.Count < 1) return true;
+            var menus = (MenuNo ?? "").Split(",");
+            var match = Mode.GetFunc();
+            foreach (var menu in menus)
+            {
+                if (!user.ForbinMenus.Any(c => match(c.MENUNO, menu) && c.APPNAME == appname)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 验证用户
+        /// </summary>
+        private bool CheckGroup()
+        {
+            if (string.IsNullOrWhiteSpace(Group)) return true;
+            var match = Mode.GetFunc();
+            return match(Group, user.Group);
+        }
+
+        /// <summary>
+        /// 设置应用名
+        /// </summary>
+        private void SetAppname(HttpContext httpContext)
+        {
+            appname = httpContext.Request.Query["appname"].ToString();
+            appname = string.IsNullOrWhiteSpace(appname) ? (httpContext.Request.Headers[HeaderNames.Referer].ToString() ?? "").GetParm("appname") : appname;
+            appname = string.IsNullOrWhiteSpace(appname) ? user.MenuAppname : appname;
+            if (IsMenuAppname) appname = user.MenuAppname;
+        }
+
+        /// <summary>
+        /// 当前用户
+        /// </summary>
+        private UserSession user;
+
+        /// <summary>
+        /// 应用名
+        /// </summary>
+        private string appname;
 
         public override int GetOrder() => 20;
     }
@@ -149,5 +221,18 @@ namespace Gksyb.Core.Auth
         /// 正则
         /// </summary>
         Regex
+    }
+
+    public static class GksybAuthorizeModeExtensions
+    {
+        /// <summary>
+        /// 根据模式获取比较函数
+        /// </summary>
+        public static Func<string, string, bool> GetFunc(this GksybAuthorizeMode mode) => mode switch
+        {
+            GksybAuthorizeMode.Regex => (a, b) => a.IsMatch(b),
+            GksybAuthorizeMode.StartsWith => (a, b) => b.StartsWith(a),
+            _ => (a, b) => a == b,
+        };
     }
 }

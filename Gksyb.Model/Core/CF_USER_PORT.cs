@@ -38,21 +38,21 @@ namespace Gksyb.Model.Core
         /// 组织
         /// </summary>
         [Description("组织")]
-        [Column(DbType = DbType.String, Size = 400)]
+        [Column(DbType = DbType.AnsiString, Size = 400)]
         public string CORPID { get; set; }
 
         /// <summary>
         /// 分类（业务、生产）
         /// </summary>
         [Description("分类（业务、生产）")]
-        [Column(DbType = DbType.String, Size = 40)]
+        [Column(DbType = DbType.AnsiString, Size = 40)]
         public string OPTYPE { get; set; }
 
         /// <summary>
         /// 程序名
         /// </summary>
         [Description("程序名")]
-        [Column(DbType = DbType.String, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
         public string APPNAME { get; set; }
 
         /// <summary>

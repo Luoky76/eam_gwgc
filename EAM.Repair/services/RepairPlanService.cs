@@ -1,28 +1,26 @@
 ﻿using Chloe;
 using EAM.Repair.interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
-using System.Linq.Expressions;
 
 namespace EAM.Repair.services
 {
     public class RepairPlanService : IRepairPlanService
     {
         private readonly IDbContext _dbContext;
-        private readonly UserSession _userSession;
         private readonly IComboxDataService _comboxDataService;
-        public RepairPlanService(IDbContext dbContext,UserSession userSession,IComboxDataService comboxDataService) 
-        { 
+
+        public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService)
+        {
             _dbContext = dbContext;
-            _userSession = userSession;
             _comboxDataService = comboxDataService;
         }
+
         /// <summary>
         /// 下拉
         /// </summary>
@@ -37,6 +35,7 @@ namespace EAM.Repair.services
             });
             return result;
         }
+
         public async Task<GridData> ListAsync(GridRequest request)
         {
             var query = await _dbContext.JoinQuery<REP_PLAN, DEVICE_CARD>((a, b) => new object[]
@@ -65,6 +64,7 @@ namespace EAM.Repair.services
             }).GetGridData(request);
             return query;
         }
+
         /// <summary>
         /// 保存
         /// </summary>
@@ -74,25 +74,26 @@ namespace EAM.Repair.services
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
-                   c.AUDITING,
-                   c.PLAN_CODE,
-                   c.PLAN_STATE,
-                   c.DEPT_NAME,
-                   c.WSEC_DEPT,
-                   c.MAINT_TYPE,
-                   c.DEAL_TYPE,
-                   c.FAULT_DESCRIBE,
-                   c.PLAN_MEMO,
-                   c.PLAN_START_DATE,
-                   c.PLAN_END_DATE,
-                   c.PLAN_STOP_TIME,
-                   c.CHARGE_USER,
-                   c.COLLECT_METHOD,
-                   c.PLAN_MONEY,
-                   c.REPAIR_MEMO
+                    c.AUDITING,
+                    c.PLAN_CODE,
+                    c.PLAN_STATE,
+                    c.DEPT_NAME,
+                    c.WSEC_DEPT,
+                    c.MAINT_TYPE,
+                    c.DEAL_TYPE,
+                    c.FAULT_DESCRIBE,
+                    c.PLAN_MEMO,
+                    c.PLAN_START_DATE,
+                    c.PLAN_END_DATE,
+                    c.PLAN_STOP_TIME,
+                    c.CHARGE_USER,
+                    c.COLLECT_METHOD,
+                    c.PLAN_MONEY,
+                    c.REPAIR_MEMO
                 },
                 c => a => a.PLAN_ID == c.PLAN_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);
         }
+
         /// <summary>
         /// 新增
         /// </summary>
@@ -102,6 +103,7 @@ namespace EAM.Repair.services
             entity.PLAN_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
+
         /// <summary>
         /// 更新
         /// </summary>
@@ -111,6 +113,7 @@ namespace EAM.Repair.services
         {
             await Task.CompletedTask;
         }
+
         /// <summary>
         /// 删除
         /// </summary>
@@ -120,6 +123,7 @@ namespace EAM.Repair.services
         {
             await Task.CompletedTask;
         }
+
         /// <summary>
         /// 船舶列表
         /// </summary>
@@ -132,5 +136,5 @@ namespace EAM.Repair.services
                .ToListAsync();
             return AjaxResult.Success(result, "成功");
         }
-    }   
+    }
 }

@@ -5,10 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using Gksyb.Core.Interfaces.Auth;
-using System;
-using System.ComponentModel;
-using System.Data;
 
 namespace Gksyb.Model.Core
 {

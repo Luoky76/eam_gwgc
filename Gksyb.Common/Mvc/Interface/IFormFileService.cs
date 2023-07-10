@@ -9,8 +9,9 @@ namespace Gksyb.Common.Mvc.Interface
         /// </summary>
         /// <param name="url">web路径</param>
         /// <param name="path">硬盘路径</param>
+        /// <param name="mapPath">映射路径</param>
         /// <param name="formFile">上传文件</param>
         /// <returns></returns>
-        Task Save(string url, string path, IFormFile formFile);
+        Task<string> SaveAsync(string url, string path, string mapPath, IFormFile formFile);
     }
 }

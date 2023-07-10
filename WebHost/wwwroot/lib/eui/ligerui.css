@@ -1004,9 +1004,11 @@ table.l-filter-group-alt table.l-filter-group {
         transform: translate3d(0, -100%, 0);
     }
 }
+
 .l-anim-out {
     animation-name: eui-out;
 }
+
 /* 任务栏 */
 .l-taskbar {
     line-height: 36px;
@@ -2281,6 +2283,7 @@ table.l-filter-group-alt table.l-filter-group {
     border: 1px solid #e9eaec;
     border-radius: 3px;
     background: #f7f7f7;
+    word-break: break-all;
 }
 
 .l-box-select-tag-icon {
@@ -2296,6 +2299,10 @@ table.l-filter-group-alt table.l-filter-group {
     .l-box-select-tag-icon:hover {
         color: black;
     }
+
+.l-text-readonly .l-box-select-tag-icon, .l-text-disabled .l-box-select-tag-icon {
+    display: none !important;
+}
 
 .l-box-multiSelect {
     height: auto !important;
@@ -2734,6 +2741,120 @@ table.l-filter-group-alt table.l-filter-group {
     background-color: #ffeded;
     border-color: #ffdbdb;
 }
+
+/* -------------
+    * 上传 *
+* ------------- */
+.l-upload-wrapper {
+    display: inline-block;
+}
+
+.l-upload-text {
+    position: relative;
+    box-sizing: border-box;
+    padding: 0 30px 0 4px;
+    border: 1px solid #dddee1;
+    border-radius: 5px;
+}
+
+.l-upload-wrapper:not(.l-text-disabled,.l-upload-readonly) .l-upload-text:hover {
+    border-color: #2b85e4;
+}
+
+.l-upload-tags {
+    line-height: normal;
+}
+
+.l-upload-item {
+    position: relative;
+    vertical-align: top;
+    display: inline-block;
+    line-height: inherit;
+    text-align: center;
+    border-radius: 8px;
+    margin-left: 8px;
+}
+
+.l-upload-list .l-upload-item:first-child {
+    margin-left: 0px;
+}
+
+.l-upload-item.l-upload-select {
+    background-color: rgba(0, 0, 0, 0.02);
+    border: 1px dashed #dddee1;
+    cursor: pointer;
+}
+
+.l-upload-item-display {
+    border: 1px solid #dddee1;
+    cursor: pointer;
+}
+
+    .l-upload-item-display img {
+        position: static;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+    }
+
+    .l-upload-item-display .fileName {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        max-height: 40%;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 5px 5px 8px 8px;
+        text-align: center;
+        font-size: 12px;
+        line-height: normal;
+        z-index: 10;
+    }
+
+.l-upload-item-actions {
+    display: none;
+    position: absolute;
+    line-height: inherit;
+    top: 0;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    border-radius: inherit;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    z-index: 100;
+}
+
+    .l-upload-item-actions i {
+        margin: 8px;
+    }
+
+.l-upload-over .l-upload-item-actions {
+    display: block;
+}
+
+.l-upload-disabled .l-upload-text {
+    cursor: not-allowed !important;
+    border-color: #c2c2c2 !important;
+    background: #e0e0e0 !important;
+}
+
+.l-upload-readonly .l-upload-remove, .l-upload-disabled .l-upload-remove {
+    display: none !important;
+}
+
+.l-upload-readonly .l-upload-list .l-upload-select, .l-upload-disabled .l-upload-list .l-upload-select {
+    display: none !important;
+}
+
+.l-upload-drag-over {
+    border-color: #19be6b !important;
+}
+
 /* -----------------------
    * 表格 *
 * ----------------------- */
@@ -4040,7 +4161,7 @@ l-grid {
 * ------------ */
 .l-menu {
     position: absolute;
-    z-index: 1001;
+    z-index: 11001;
 }
 
 .l-menu-inner {
@@ -4436,6 +4557,7 @@ l-grid {
         font-size: 14px;
         line-height: 24px;
         min-height: 24px;
+        white-space:nowrap;
     }
 
         .l-tree .l-body span {
@@ -4570,4 +4692,8 @@ l-grid {
     margin-top: 2px;
     margin-left: 2px;
     border: 0;
+}
+
+.l-tree-search {
+    padding: 3px;
 }

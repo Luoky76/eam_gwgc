@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Oracle.ManagedDataAccess.Client;
 using Serilog.Extensions.Logging;
 using System.Data;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Gksyb.Common.Data

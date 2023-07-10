@@ -353,6 +353,19 @@
             stackPages: true,
         },
         on: {
+            calendarOpen: function (calendar) {
+                $(calendar.$el).find('.calendar-close').off('click').on('click', function () {
+                    if (calendar.params.rangePicker && calendar.value.length !== 2) {
+                        app.toast.create({
+                            text: '请选择时间范围',
+                            position: 'top',
+                            closeTimeout: 2000
+                        }).open();
+                        return;
+                    }
+                    calendar.close();
+                });
+            },
             pageMounted: function (page) {
                 var scriptEl = "#scriptMounted";
                 if ($$(page.router.tempDom).find(scriptEl).length > 0) {

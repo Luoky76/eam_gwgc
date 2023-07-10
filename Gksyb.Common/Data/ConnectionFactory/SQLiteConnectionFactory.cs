@@ -2,7 +2,6 @@
 using Chloe.SQLite;
 using Microsoft.Data.Sqlite;
 using System.Data;
-using System.IO;
 
 namespace Gksyb.Common.Data
 {
