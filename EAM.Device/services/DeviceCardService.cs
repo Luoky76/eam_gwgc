@@ -1,18 +1,11 @@
 ﻿using Chloe;
-using EAM.Device.interfaces;
 using EAM.Device.Interfaces;
+using Gksyb.Common;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
-using Gksyb.Core.Interfaces.Common;
-using Gksyb.Model.Grid;
-using Gksyb.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Gksyb.Core.Grid;
-using Gksyb.Common;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
@@ -20,14 +13,12 @@ namespace EAM.Device.Services
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
-        private readonly IComboxDataService _comboxService;
         private DateTime? _Sysdate;
 
-        public DeviceCardService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxService)
+        public DeviceCardService(IDbContext dbContext, UserSession userSession)
         {
             _dbContext = dbContext;
             _userSession = userSession;
-            _comboxService = comboxService;
         }
 
         /// <summary>

@@ -3,17 +3,12 @@ using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Grid;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Gksyb.Core.Grid;
 using Gksyb.Model.Core;
+using Gksyb.Model.Grid;
+using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
@@ -51,11 +46,11 @@ namespace EAM.Device.services
             var composeData = await _dbContext.Query<BASE_DEVICE_COMPOSE>().ToListAsync();
             var composeList = composeData.Select(c => new
             {
-                COMPOSE_CODE = c.COMPOSE_CODE,
-                COMPOSE_NAME = c.COMPOSE_NAME,
-                COMPOSE_ID = c.COMPOSE_ID,
-                TYPE_NAME = c.TYPE_NAME,
-                TYPE_ID = c.TYPE_ID,
+                c.COMPOSE_CODE,
+                c.COMPOSE_NAME,
+                c.COMPOSE_ID,
+                c.TYPE_NAME,
+                c.TYPE_ID,
                 TYPE = "1",
                 PARENTID = (string.IsNullOrWhiteSpace(c.PRE_COMPOSEID)) ? c.TYPE_ID : c.PRE_COMPOSEID,
                 ICON = "fa fa-group"
@@ -67,8 +62,8 @@ namespace EAM.Device.services
                 COMPOSE_CODE = c.TYPE_CODE,
                 COMPOSE_NAME = c.TYPE_NAME,
                 COMPOSE_ID = c.TYPE_ID,
-                TYPE_NAME = c.TYPE_NAME,
-                TYPE_ID = c.TYPE_ID,
+                c.TYPE_NAME,
+                c.TYPE_ID,
                 TYPE = "0",
                 PARENTID = (string.IsNullOrWhiteSpace(c.PRE_TYPEID) || c.PRE_TYPEID == "0") ? "ROOT" : c.PRE_TYPEID,
                 ICON = "fa fa-cog"
@@ -169,9 +164,9 @@ namespace EAM.Device.services
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
-                .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID&&c.PRE_COMPOSEID==entity.COMPOSE_ID||c.COMPOSE_ID == entity.PRE_COMPOSEID&&c.COMPOSE_ID==entity.COMPOSE_ID)
+                .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
                 .FirstOrDefaultAsync();
-            if (query!=null)
+            if (query != null)
             {
                 throw new MessageException("上级节点只能为父节点！");
             }
@@ -188,19 +183,20 @@ namespace EAM.Device.services
             entity.MODIFY_DATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
-                .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID&&c.PRE_COMPOSEID==entity.COMPOSE_ID||c.COMPOSE_ID == entity.PRE_COMPOSEID&&c.COMPOSE_ID==entity.COMPOSE_ID)
+                .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
                 .FirstOrDefaultAsync();
-            if (query!=null)
+            if (query != null)
             {
                 throw new MessageException("上级节点只能为父节点！");
             }
-            else {
+            else
+            {
                 var queryType = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
-                    .Where(c => c.COMPOSE_ID==entity.PRE_COMPOSEID).FirstOrDefaultAsync();
-                entity.TYPE_ID=queryType.TYPE_ID;
-                    
+                    .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID).FirstOrDefaultAsync();
+                entity.TYPE_ID = queryType.TYPE_ID;
+
             }
-            
+
             await Task.CompletedTask;
         }
 
@@ -212,8 +208,8 @@ namespace EAM.Device.services
         private async Task BeforeDelete(BASE_DEVICE_COMPOSE entity)
         {
             //验证是否存在下属节点
-            var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>().Where(c =>  c.PRE_COMPOSEID == entity.COMPOSE_ID).ToListAsync();
-            if (query.Count() > 0) throw new MessageException("该节点存在有效下级节点，不能删除！");
+            var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>().Where(c => c.PRE_COMPOSEID == entity.COMPOSE_ID).ToListAsync();
+            if (query.Count > 0) throw new MessageException("该节点存在有效下级节点，不能删除！");
 
             await Task.CompletedTask;
         }

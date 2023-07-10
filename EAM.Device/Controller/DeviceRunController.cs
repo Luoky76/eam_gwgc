@@ -4,11 +4,6 @@ using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAM.Device.controller
 {

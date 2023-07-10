@@ -17,7 +17,7 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<PROVIDER_ASSESS_BASE> GetAsync(object id);
+        public Task<PROVIDER_ASSESS_BASE> GetAsync(string id);
 
         /// <summary>
         /// 保存

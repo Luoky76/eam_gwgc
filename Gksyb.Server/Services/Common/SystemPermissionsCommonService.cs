@@ -1,30 +1,10 @@
-﻿using Chloe;
-using Gksyb.Common;
-using Gksyb.Common.Static;
-using Gksyb.Core.Auth;
-using Gksyb.Core.Common;
-using Gksyb.Core.Filter;
-using Gksyb.Core.Grid;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
-using Gksyb.Model.Core;
-using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-using Oracle.ManagedDataAccess.Client;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Gksyb.Server.Services.Common
 {
-    public class SystemPermissionsCommonService:ISystemPermissionsCommonService
+    public class SystemPermissionsCommonService : ISystemPermissionsCommonService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession CurrentUser;
@@ -44,7 +24,7 @@ namespace Gksyb.Server.Services.Common
                 throw new MessageException("获取当前登录人信息异常");
             }
 
-            return AjaxResult.Success(corp.CorpID,"成功");
+            return AjaxResult.Success(corp.CorpID, "成功");
         }
 
         public async Task<List<string>> GetCompanyList()
@@ -73,10 +53,10 @@ namespace Gksyb.Server.Services.Common
 
             var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
             {
-                corpId = corpId
+                corpId
             });
 
-            List<string> returnList = new List<string>();
+            var returnList = new List<string>();
 
             foreach (var item in list)
             {
@@ -113,7 +93,7 @@ namespace Gksyb.Server.Services.Common
 
             var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
             {
-                corpId = corpId
+                corpId
             });
 
             return list;
@@ -145,10 +125,10 @@ namespace Gksyb.Server.Services.Common
 
             var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
             {
-                corpId = corpId
+                corpId
             });
 
-            List<string> returnList = new List<string>();
+            var returnList = new List<string>();
 
             foreach (var item in list)
             {
@@ -171,10 +151,10 @@ namespace Gksyb.Server.Services.Common
 
             var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
             {
-                corpId = corpId
+                corpId
             });
 
-            List<string> returnList = new List<string>();
+            var returnList = new List<string>();
 
             foreach (var item in list)
             {

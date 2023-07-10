@@ -13,7 +13,6 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
-        private DateTime? _Sysdate;
 
         public ProviderAssessTaskDet(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
@@ -27,10 +26,9 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<PROVIDER_ASSESS_TASK_DET> GetAsync(object id)
+        public async Task<PROVIDER_ASSESS_TASK_DET> GetAsync(string id)
         {
-            string? sid = id.ToString();
-            var query = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>().Where(c => c.ASSESS_TASK_DET_ID == sid).FirstAsync();
+            var query = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>().Where(c => c.ASSESS_TASK_DET_ID == id).FirstAsync();
             return query;
         }
 
@@ -39,21 +37,19 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="assessTaskId"></param>
         /// <returns></returns>
-        public async Task<GridData> GetAssessTaskAsync(object assessTaskId)
+        public async Task<GridData> GetAssessTaskAsync(string assessTaskId)
         {
-            string? sid;
-            if (assessTaskId == null) sid = "";
-            else sid = assessTaskId.ToString();
             var query = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                .InnerJoin<PROVIDER_ASSESS_TASK_DET>((a, b)=>a.ASSESS_TASK_ID==b.ASSESS_TASK_ID)
-                .LeftJoin< PROVIDER_ASSESS_BASE >((a, b, c)=>b.ASSESS_BASE_ID==c.ASSESS_BASE_ID)
-                .Where((a, b, c)=>a.ASSESS_TASK_ID==sid)
-                .Select((a, b, c) => new { 
-                   a.ASSESS_TASK_ID,
-                   b.ASSESS_TASK_DET_ID,
-                   c.ASSESS_BASE_ID,
-                   c.CONTENT,
-                   c.IS_VALID
+                .InnerJoin<PROVIDER_ASSESS_TASK_DET>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .LeftJoin<PROVIDER_ASSESS_BASE>((a, b, c) => b.ASSESS_BASE_ID == c.ASSESS_BASE_ID)
+                .Where((a, b, c) => a.ASSESS_TASK_ID == assessTaskId)
+                .Select((a, b, c) => new
+                {
+                    a.ASSESS_TASK_ID,
+                    b.ASSESS_TASK_DET_ID,
+                    c.ASSESS_BASE_ID,
+                    c.CONTENT,
+                    c.IS_VALID
                 }).GetGridData(null);
             return query;
         }
@@ -141,26 +137,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 保存后验证
         /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         private async Task AfterSave(List<PROVIDER_ASSESS_TASK_DET> added, List<PROVIDER_ASSESS_TASK_DET> updated, List<PROVIDER_ASSESS_TASK_DET> deleted)
         {
             await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 获取数据库时间
-        /// </summary>
-        private DateTime? Sysdate
-        {
-            get
-            {
-                if (!_Sysdate.HasValue)
-                {
-                    _Sysdate = _dbContext.GetSysdate().Result();
-                }
-                return _Sysdate;
-            }
         }
 
         /// <summary>

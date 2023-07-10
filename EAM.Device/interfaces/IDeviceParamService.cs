@@ -1,11 +1,6 @@
 ﻿using Gksyb.Common;
-using Gksyb.Model.Grid;
 using Gksyb.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Gksyb.Model.Grid;
 
 namespace EAM.Device.Interfaces
 {

@@ -1,5 +1,4 @@
-﻿using Gksyb.Common;
-using Gksyb.Common.EventBus;
+﻿using Gksyb.Common.EventBus;
 using Gksyb.Common.Interface;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

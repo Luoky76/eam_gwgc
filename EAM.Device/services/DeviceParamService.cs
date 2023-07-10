@@ -1,17 +1,11 @@
 ﻿using Chloe;
 using EAM.Device.Interfaces;
+using Gksyb.Common;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
-using Gksyb.Core.Interfaces.Common;
-using Gksyb.Model.Grid;
-using Gksyb.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Gksyb.Core.Grid;
-using Gksyb.Common;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
@@ -19,14 +13,12 @@ namespace EAM.Device.Services
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
-        private readonly IComboxDataService _comboxService;
         private DateTime? _Sysdate;
 
-        public DeviceParamService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxService)
+        public DeviceParamService(IDbContext dbContext, UserSession userSession)
         {
             _dbContext = dbContext;
             _userSession = userSession;
-            _comboxService = comboxService;
         }
 
         /// <summary>
@@ -36,7 +28,8 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_PARAM>((a, b) => a.DEVICE_ID == b.DEVICE_ID).Select((a, b) => new {
+            var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_PARAM>((a, b) => a.DEVICE_ID == b.DEVICE_ID).Select((a, b) => new
+            {
                 a.DEVICE_ID,
                 a.DEVICE_NO,
                 b.PARAM_NAME,
@@ -120,9 +113,9 @@ namespace EAM.Device.Services
         {
             await Task.CompletedTask;
         }
+
         private async Task AfterSave(List<DEVICE_PARAM> added, List<DEVICE_PARAM> updated, List<DEVICE_PARAM> deleted)
         {
-
             await Task.CompletedTask;
         }
 
