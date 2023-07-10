@@ -85,8 +85,8 @@ namespace EAM.Device.services
         {
             entity.SEC_DEPTID = _userSession.Corp.CorpID;
             entity.SEC_DEPT = _userSession.Corp.CName;
-            entity.DEPT_ID = _userSession.Corp.DeptId;
-            entity.DEPT_NAME = _userSession.Corp.DeptName;
+            entity.DEPT_ID = _userSession.Corp.CorpID;
+            entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
             entity.TRANS_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.ADD_USERID = _userSession.UserID.ToString();
