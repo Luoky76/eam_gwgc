@@ -270,6 +270,21 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 评估基础下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssessBaseContent(Expression<Func<PROVIDER_ASSESS_BASE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<PROVIDER_ASSESS_BASE>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.ASSESS_BASE_ID, TEXT = c.CONTENT, VALUE = c.CONTENT })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         static ComboxDataService()

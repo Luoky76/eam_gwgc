@@ -70,8 +70,7 @@
                             { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text", hide: true },
                             { display: "添加时间", name: "ADD_DATE", width: 100, type: "date", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
-                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date", hide: true },
-                            { display: "系统租户ID", name: "TENANT_ID", width: 100, type: "text", hide: true }
+                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date", hide: true }
                         ]
                     }
                 };
@@ -221,10 +220,10 @@
                 var dataControl = [];
                 LG.ajax({
                     async: false,
-                    url: 'Material/ProviderAssessTask/ComboxData',
+                    url: 'Material/ProviderAssessTaskDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        //me.ProviderName = data.ProviderName;
+                        me.assessTaskContent = data.assessTaskContent;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -321,6 +320,9 @@
                         case "import":
                             me.importTaskBase();
                             break;
+                        case "add":
+                            me.add();
+                            break;
                         case "delete":
                             me.deleteTaskBase();
                             break;
@@ -347,6 +349,11 @@
                 var me = this;
                 me.grid.loadData();
             },
+            //新增
+            add: function () {
+                var me = this;
+                me.grid.addEditRow({}, true);
+            },
             //导入
             //定义导入窗口的回调函数
             handleDialogClose: function(returnValue) {
@@ -354,14 +361,14 @@
             },
             importTaskBase: function () {
                 var me = this;
-                var gridData = me.grid.getData(["ASSESS_BASE_ID"]);
-                var currentBaseIds = {};
+                var gridData = me.grid.getData();
+                var currentBaseIds = [];
                 for (var item of gridData) {
                     currentBaseIds.push(item.ASSESS_BASE_ID);
                 }
                 var options = {
-                    width: 300,
-                    height: 150,
+                    width: 800,
+                    height: 400,
                     allowClose: true,
                     title: '[导入]评估任务基础',
                     url: "provider-assess-base-select.html?MenuNo=" + me.menuNo,
@@ -372,7 +379,7 @@
                     isResize: true,
                     slide: false,
                     //弹出框关闭时的回调函数，获取返回的评估明细数据
-                    callback: handleDialogClose,
+                    callback: me.handleDialogClose,
                     //传入当前已在评估任务中的任务基础，导入时将其排除
                     data: currentBaseIds
                 }
