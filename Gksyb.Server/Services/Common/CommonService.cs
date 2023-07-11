@@ -26,7 +26,6 @@ namespace Gksyb.Server.Services.Common
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
         private readonly string _appName;
-        private readonly UserSession CurrentUser;
 
         /// <summary>
         /// 查询视图
@@ -34,12 +33,11 @@ namespace Gksyb.Server.Services.Common
         /// <param name="dbContext"></param>
         /// <param name="distributedCache"></param>
         /// <param name="options"></param>
-        public CommonService(IDbContext dbContext, IDistributedCache distributedCache, IOptions<SysContextOptions> options, UserSession currentUser)
+        public CommonService(IDbContext dbContext, IDistributedCache distributedCache, IOptions<SysContextOptions> options)
         {
             _dbContext = dbContext;
             _distributedCache = distributedCache;
             _appName = options.Value.ConfigAppName ?? options.Value.AppName;
-            CurrentUser = currentUser;
         }
 
         /// <summary>
@@ -347,10 +345,10 @@ namespace Gksyb.Server.Services.Common
 
             var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
             {
-                dept_id = dept_id
+                dept_id
             });
 
-            List<string> returnList = new List<string>();
+            var returnList = new List<string>();
 
             foreach (var item in list)
             {
@@ -359,9 +357,6 @@ namespace Gksyb.Server.Services.Common
 
             return returnList;
         }
-
-
-
 
         //缓存前缀
         private static readonly string CachePrefix = "View_";

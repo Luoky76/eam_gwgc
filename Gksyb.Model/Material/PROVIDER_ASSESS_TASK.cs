@@ -133,12 +133,5 @@ namespace Gksyb.Model
         [Description("修改时间")]
         public DateTime? MODIFY_DATE { get; set; }
 
-        /// <summary>
-        /// 系统租户ID
-        /// </summary>
-        [Description("系统租户ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string TENANT_ID { get; set; }
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -8,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessBase : BaseService, IProviderAssessBaseService
+    public class ProviderAssessBase : IProviderAssessBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -47,8 +46,7 @@ namespace EAM.Material.Services
                 c.ADD_USERID,
                 c.ADD_DATE,
                 c.MODIFY_USERID,
-                c.MODIFY_DATE,
-                c.TENANT_ID
+                c.MODIFY_DATE
             }).GetGridData(request);
             return list;
         }
@@ -69,8 +67,7 @@ namespace EAM.Material.Services
                     c.ADD_USERID,
                     c.ADD_DATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
-                    c.TENANT_ID
+                    c.MODIFY_DATE
                 },
                 c => a => a.ASSESS_BASE_ID == c.ASSESS_BASE_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);

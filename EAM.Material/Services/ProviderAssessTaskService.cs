@@ -8,7 +8,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessTask : BaseService, IProviderAssessTaskService
+    public class ProviderAssessTask : IProviderAssessTaskService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -57,8 +57,7 @@ namespace EAM.Material.Services
                 c.ADD_USERID,
                 c.ADD_DATE,
                 c.MODIFY_USERID,
-                c.MODIFY_DATE,
-                c.TENANT_ID
+                c.MODIFY_DATE
             }).GetGridData(request);
             return list;
         }
@@ -89,8 +88,7 @@ namespace EAM.Material.Services
                     c.ADD_USERID,
                     c.ADD_DATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
-                    c.TENANT_ID
+                    c.MODIFY_DATE
                 },
                 c => a => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -130,6 +128,8 @@ namespace EAM.Material.Services
         private async Task BeforeDelete(PROVIDER_ASSESS_TASK entity)
         {
             await Task.CompletedTask;
+
+
         }
 
         /// <summary>
