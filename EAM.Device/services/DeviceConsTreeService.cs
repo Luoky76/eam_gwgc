@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class DeviceConsTreeService : BaseService, IDeviceConsTreeService
+    public class DeviceConsTreeService :  IDeviceConsTreeService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

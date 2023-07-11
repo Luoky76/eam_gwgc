@@ -4,7 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title>维修计划管理</title>
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>设备卡片</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -19,44 +23,60 @@
     </form>
     <script type="text/javascript">
         'use strict';
+        var rootPath = "../";
+        window["encryptUrl"] = ["/Apis/"];
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
+            detailWidth:1220,
+            detailHeight:650,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "编制日期", name: "_search_EIDT_DATE", dbname: "EIDT_DATE", newline: false, upper: true, type: "date", vt: "date", options: { showTime: false, format: "yyyy-MM-dd" } },
+                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
+                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text",options:{} }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "text", },
-                            { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
-                            { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
-                            { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "text", },
-                            { display: "计划提交日期", name: "AUDIT_TIME", width: 100, type: "text", },
-                            { display: "计划开工时间", name: "PLAN_START_DATE", width: 100, type: "text", },
-                            { display: "计划完工时间", name: "PLAN_END_DATE", width: 100, type: "text", },
-                            { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", },
-                            { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
-                            { display: "计划单号", name: "PLAN_CODE", width: 100, type: "text", },
-                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
-                            { display: "负责人", name: "CHARGE_USER", width: 100, type: "text", },
-                            { display: "备注", name: "PLAN_MEMO", width: 100, type: "text", }
-                        ],
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶识别号", name: "SHIP_ID", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船长", name: "SHIP_LENGTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型宽", name: "SHIP_WIDTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型深", name: "SHIP_DEPTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "吃水", name: "SHIP_DRAFT", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶类型", name: "SHIP_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主机功率", name: "MAIN_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "副机功率", name: "SECOND_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "航速", name: "SPEED", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "拖力", name: "DRAG_FORCE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "总吨", name: "TOTAL_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "净吨", name: "PURE_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "启用日期", name: "REV_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditingData, selectBoxHeight: 100 }},
+                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "立卡日期", name: "CARD_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "负责人", name: "CARD_USER", width: 100, type: "text", editor: { type: 'text' } }
+                        ]
                     }
                 };
             },
             grid: null,
             searchForm: null,
             buttons: null,
-            UserInfo:null,
-            loadComboxData: function () {
-                var me = this;
-            },
+            auditingData: [
+                { ID: "0", TEXT: "未提交", VALUE: "0" },
+                { ID: "1", TEXT: "已提交", VALUE: "1" }
+            ],
             setGrid: function () {
                 var me = this;
                 var columns = me.config.grid.columns;
@@ -69,23 +89,19 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Repair/RepairPlan/List',
+                    url: 'Device/DeviceCard/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'AUDITINGSORT ASC,EIDT_DATE',
-                    sortOrder: 'DESC',
+                    sortName: 'DEVICE_NO',
+                    sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
                     dateFormat: 'yyyy-MM-dd HH:mm',
-                    checkbox: false,
-                    usePager: true,
-                    rownumbers: false,
-                    enabledEdit: false,
-                    clickToEdit: false,
+                    checkbox: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -98,7 +114,7 @@
                         if (data && data.Rows) {
                             var rows = data.Rows;
                             for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDSID = rows[i].SID;
+                                rows[i].OLDDEVICE_ID = rows[i].DEVICE_ID;
                                 rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
                             }
                         }
@@ -113,6 +129,7 @@
             },
             loadToolbar: function () {
                 var me = this;
+                debugger
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
                         case "refresh":
@@ -127,15 +144,18 @@
                         case "delete":
                             me.delete();
                             break;
+                        case "save":
+                            me.save();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: rootPath + "System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: rootPath + "System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
@@ -146,40 +166,73 @@
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: innerWidth - 50,
-                    height: innerHeight - 50,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
-                    title: '[维修计划新增]',
-                    url: "repair-plan-edit.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    title: '[新增]',
+                    url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
-                    showMax: true,
+                    showMax: false,
                     showToggle: false,
                     showMin: false,
                     isResize: true,
                     slide: false,
-                    rownumbers: true,
-                    onClosed: null,
-                    data: { "sid": "" }
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null}
                 });
             },
-            modify: function () { //修改
+            save: function () { //保存
                 var me = this;
-            },
-            loadRecord: function () { //保存
-                var me = this;
-                LG.ajax({
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
                         jsToken: true,
-                    url: 'Attendance/AttendanceDaily/LoadRecord',
-                        loading: '正在同步中...',
+                        url:'Device/DeviceCard/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
                         success: function () {
-                            LG.showSuccess('同步成功');
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
                             me.reload();
                         },
                         error: function (message) {
                             LG.showError(message);
                         }
                     });
+                }
+
             },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var sid = selected.DEVICE_ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[修改]',
+                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
@@ -264,12 +317,8 @@
                         width: 60,
                         click: function () {
                             LG.commonSearch($formsearch, me.grid);
-                            //var data = me.searchForm.getData();
-                            //me.setGrid(data._search_EVENTTIMEB.format("yyyy-MM"), data._search_DEPARTCODE, data._search_EMPLOYEENAME, data._search_DEPT);
                         }
-                    },
-
-                    ],
+                    }],
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
@@ -279,7 +328,6 @@
             },
             init: function () {
                 var me = this;
-                me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();

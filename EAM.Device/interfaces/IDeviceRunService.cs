@@ -14,6 +14,11 @@ namespace EAM.Device.interfaces
         /// <returns></returns>
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
         /// <summary>
+        /// 获取设备卡片基础信息
+        /// </summary>
+        /// <returns></returns>
+        public Task<List<ComboxData>> DeviceData();
+        /// <summary>
         /// 获取列表
         /// </summary>
         /// <returns></returns>
@@ -29,7 +34,7 @@ namespace EAM.Device.interfaces
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> Submit(string sids, string deid, string newStatus);
+        public Task<AjaxResult> Submit(string sids);
 
         /// <summary>
         /// 获取运行状态一览表

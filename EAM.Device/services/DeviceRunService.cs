@@ -1,18 +1,18 @@
 ﻿using Chloe;
 using EAM.Device.interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
-    public class DeviceRunService : BaseService, IDeviceRunService
+    public class DeviceRunService : IDeviceRunService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -25,7 +25,6 @@ namespace EAM.Device.services
             _userSession = userSession;
         }
 
-
         /// <summary>
         /// 下拉
         /// </summary>
@@ -34,8 +33,44 @@ namespace EAM.Device.services
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "RunStatus",null},
-                { "DeviceInfo",null},
             });
+        }
+        /// <summary>
+        /// 获取设备卡片基础信息
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<ComboxData>> DeviceData()
+        {
+            //取设备运行状态分组第一条
+            var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
+            {
+                x.DEVICE_ID,
+                x.ADD_DATE,
+            }).GroupBy(x => new
+            {
+                x.DEVICE_ID,
+            }).Select(x => new
+            {
+                x.DEVICE_ID,
+                ADD_DATE = Sql.Max(x.ADD_DATE),
+            });
+
+            var qry = _dbContext.Query<DEVICE_CARD>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
+                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.ADD_DATE == c.ADD_DATE)
+                .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1");
+            return await qry
+                .Select((a, b, c) => new ComboxData()
+                {
+                    ID = a.DEVICE_ID,
+                    TEXT = a.DEVICE_NAME,
+                    VALUE = a.DEVICE_NO,
+                    EXTEND =c.NEW_RUN_STATUS,
+                    EXTEND1 =a.DEVICE_TYPE,
+                    EXTEND2 =a.TYPE_NAME,
+                })
+               .ToListAsync();
         }
         /// <summary>
         /// 获取列表
@@ -78,42 +113,31 @@ namespace EAM.Device.services
                     c.DEPT_NAME,
                     c.SEC_DEPT,
                 },
-                c => a => a.TRANS_ID == c.TRANS_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.TRANS_ID == c.TRANS_ID, BeforeAdd);
         }
 
         private async Task BeforeAdd(RUN_TRANS entity)
         {
+
             entity.SEC_DEPTID = _userSession.Corp.CorpID;
             entity.SEC_DEPT = _userSession.Corp.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
             entity.TRANS_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.ADD_DATE = await _dbContext.GetSysdate();
-        }
-        private async Task BeforeUpdate(RUN_TRANS entity)
-        {
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = await _dbContext.GetSysdate();
+            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> Submit(string sids, string deid, string newStatus)
+        public async Task<AjaxResult> Submit(string sids)
         {
             var changeAuditing = await _dbContext.UpdateAsync<RUN_TRANS>(x => x.TRANS_ID == sids,
                 x => new RUN_TRANS
                 {
                     AUDITING = "1",
-                });
-
-            var changestatus = await _dbContext.UpdateAsync<DEVICE_CARD>(x => x.DEVICE_ID == deid,
-                x => new DEVICE_CARD
-                {
-                    STATUS = newStatus,
                 });
             return AjaxResult.Success("成功");
         }
@@ -124,90 +148,42 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetAllRun(GridRequest request)
         {
-            if (!_userSession.IsAdmin)
+            var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
             {
-                var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
-                {
-                    x.DEVICE_ID,
-                    x.ADD_DATE,
-                }).GroupBy(x => new
-                {
-                    x.DEVICE_ID,
-                }).Select(x => new
-                {
-                    x.DEVICE_ID,
-                    ADD_DATE = Sql.Max(x.ADD_DATE),
-                });
-                var qry = _dbContext.Query<DEVICE_CARD>()
-                     .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID && a.AUDITING == "1")
-                     .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.ADD_DATE == c.ADD_DATE)
-                     .Where((a, b, c) => _userSession.Corp.CorpID == a.SEC_DEPTID)
-                     .Select((a, b, c) => new
-                     {
-                         STATUS = a.STATUS ?? "正常",
-                         a.DEVICE_NO,
-                         a.DEVICE_NAME,
-                         a.TYPE_NAME,
-                         c.TRANS_MEMO,
-                         a.SEC_DEPT,
-                         a.DEPT_NAME,
-                         b.ADD_DATE,
-                     })
-                .OrderBy(a =>
-                    Case.When(a.STATUS.Equals("停机")).Then("1")
-                        .When(a.STATUS.Equals("维修")).Then("2")
-                        .When(a.STATUS.Equals("事故")).Then("3")
-                        .When(a.STATUS.Equals("保养")).Then("4")
-                        .When(a.STATUS.Equals("检查")).Then("5")
-                        .When(a.STATUS.Equals("正常")).Then("6")
-                        .When(a.STATUS.Equals("备用")).Then("7").Else("")
-                    )
-                    .ThenBy(c => c.DEVICE_NO);
+                x.DEVICE_ID,
+                x.ADD_DATE,
+            }).GroupBy(x => new
+            {
+                x.DEVICE_ID,
+            }).Select(x => new
+            {
+                x.DEVICE_ID,
+                ADD_DATE = Sql.Max(x.ADD_DATE),
+            });
 
-                return await qry.GetGridData(request);
-            }
-            else
-            {
-                var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
-                {
-                    x.DEVICE_ID,
-                    x.ADD_DATE,
-                }).GroupBy(x => new
-                {
-                    x.DEVICE_ID,
-                }).Select(x => new
-                {
-                    x.DEVICE_ID,
-                    ADD_DATE = Sql.Max(x.ADD_DATE),
-                });
-                var qry = _dbContext.Query<DEVICE_CARD>()
-                     .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID && a.AUDITING == "1")
-                     .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.ADD_DATE == c.ADD_DATE)
-                     .Select((a, b, c) => new
-                     {
-                         STATUS = a.STATUS ?? "正常",
-                         a.DEVICE_NO,
-                         a.DEVICE_NAME,
-                         a.TYPE_NAME,
-                         c.TRANS_MEMO,
-                         a.SEC_DEPT,
-                         a.DEPT_NAME,
-                         b.ADD_DATE,
-                     })
-                .OrderBy(a =>
-                    Case.When(a.STATUS.Equals("停机")).Then("1")
-                        .When(a.STATUS.Equals("维修")).Then("2")
-                        .When(a.STATUS.Equals("事故")).Then("3")
-                        .When(a.STATUS.Equals("保养")).Then("4")
-                        .When(a.STATUS.Equals("检查")).Then("5")
-                        .When(a.STATUS.Equals("正常")).Then("6")
-                        .When(a.STATUS.Equals("备用")).Then("7").Else("")
-                    )
-                    .ThenBy(c => c.DEVICE_NO);
-                return await qry.GetGridData(request);
-            }
+            var qry = _dbContext.Query<DEVICE_CARD>()
+                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
+                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.ADD_DATE == c.ADD_DATE)
+                 .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)
+                 .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1")
+                 .Select((a, b, c, d) => new
+                 {
+                     NEW_RUN_STATUS = c.NEW_RUN_STATUS ?? "正常",
+                     a.DEVICE_NO,
+                     a.DEVICE_NAME,
+                     a.TYPE_NAME,
+                     a.SEC_DEPT,
+                     a.DEPT_NAME,
+                     b.ADD_DATE,
+                     c.TRANS_MEMO,
+                     CODE_SEQ = d.CODE_SEQ ?? 10,
+                 })
+                .OrderBy(a => a.CODE_SEQ)
+                .ThenBy(c => c.DEVICE_NO);
+
+            return await qry.GetGridData(request);
 
         }
-
     }
 }

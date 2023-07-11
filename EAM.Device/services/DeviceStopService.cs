@@ -12,7 +12,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
-    public class DeviceStopService : BaseService, IDeviceStopService
+    public class DeviceStopService : IDeviceStopService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -98,7 +98,7 @@ namespace EAM.Device.services
                     c.MODIFY_USERID,
                     c.MODIFY_DATE,
                 },
-                c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd);
         }
 
         public async Task BeforeAdd(RUN_STOP entity)
@@ -114,14 +114,6 @@ namespace EAM.Device.services
             entity.STOP_CODE = "TG" + DateTime.Now.Year + DateTime.Now.ToString("MM") + randomNumber;
             entity.AUDITING = "0";
             entity.RUN_STOP_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.ADD_DATE = await _dbContext.GetSysdate();
-        }
-
-        public async Task BeforeUpdate(RUN_STOP entity)
-        {
-            entity.MODIFY_USERID = _userSession.RealName;
-            entity.MODIFY_DATE = await _dbContext.GetSysdate();
         }
 
         /// <summary>
@@ -168,20 +160,14 @@ namespace EAM.Device.services
                     c.MODIFY_DATE,
                     c.TENANT_ID,
                 },
-                c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd);
         }
 
         public async Task BeforeAdd(RUN_STOP_TYPE entity)
         {
             entity.STOP_TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.ADD_DATE = await _dbContext.GetSysdate();
+             await Task.CompletedTask;
         }
 
-        public async Task BeforeUpdate(RUN_STOP_TYPE entity)
-        {
-            entity.MODIFY_USERID = _userSession.RealName;
-            entity.MODIFY_DATE = await _dbContext.GetSysdate();
-        }
     }
 }

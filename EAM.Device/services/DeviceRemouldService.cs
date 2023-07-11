@@ -9,7 +9,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
-    public class DeviceRemouldService : BaseService, IDeviceRemouldService
+    public class DeviceRemouldService : IDeviceRemouldService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

@@ -63,26 +63,6 @@
 
                             { display: "原状态", name: "RUN_STATUS", dbname: "RUN_STATUS", minWidth: 200, type: "text",  editor: { type: 'text' } },
                             { display: "现状态", name: "NEW_RUN_STATUS", dbname: "NEW_RUN_STATUS", minWidth: 200, type: "text",  editor: { type: 'text' } },
-                            /*{
-                                display: "原状态", name: "RUN_STATUS", dbname: "RUN_STATUS", labelWidth: 100, minWidth: 70, newline: true, type: "text",
-                                render: function (rowdata, rowindex, value, column) {
-                                    var item = me.runStatus.find(x => x.ID === value);
-                                    var run_status = "";
-                                    if (item)
-                                        run_status = item.TEXT;
-                                    return run_status;
-                                },
-                            },
-                            {
-                                display: "现状态", name: "NEW_RUN_STATUS", dbname: "NEW_RUN_STATUS", labelWidth: 100, minWidth: 70, newline: true, type: "text",
-                                render: function (rowdata, rowindex, value, column) {
-                                    var item = me.runStatus.find(x => x.ID === value);
-                                    var new_run_status = "";
-                                    if (item)
-                                        new_run_status = item.TEXT;
-                                    return new_run_status;
-                                },
-                            },*/
                             { display: "转换原因", name: "TRANS_MEMO", dbname: "TRANS_MEMO",  width: 100, minWidth: 200, maxWidth: 300, type: "text", editor: { type: 'text' } },
                             { display: "使用部门", name: "DEPT_NAME", dbname: "DEPT_NAME",  minWidth: 200, maxWidth: 400, type: "text", editor: { type: 'text' } },
                             { display: "二级单位", name: "SEC_DEPT", dbname: "SEC_DEPT",  minWidth: 200, maxWidth: 400, type: "text", editor: { type: 'text' } },
@@ -360,7 +340,7 @@
                     height: 350,
                     allowClose: true,
                     title: '新增转换记录',
-                    url: "device_run_trans_edit.html?MenuNo=" + me.menuNo,
+                    url: "device-run-trans-detail.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -385,7 +365,7 @@
                         height: 350,
                         allowClose: true,
                         title: '查看转换记录',
-                        url: "device_run_trans_edit.html?MenuNo=" + me.menuNo,
+                        url: "device-run-trans-detail.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
                         showToggle: false,
@@ -425,7 +405,7 @@
                             height: 350,
                             allowClose: true,
                             title: '修改运行状态',
-                            url: "device_run_trans_edit.html?MenuNo=" + me.menuNo,
+                            url: "device-run-trans-detail.html?MenuNo=" + me.menuNo,
                             isHidden: false,
                             showMax: false,
                             showToggle: false,
