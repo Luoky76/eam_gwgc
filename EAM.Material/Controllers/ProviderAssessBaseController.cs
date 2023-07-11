@@ -32,6 +32,18 @@ namespace EAM.Material.Controller
         }
 
         /// <summary>
+        /// 有效列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> ValidListAsync(GridRequest request)
+        {
+            //怎么写where
+            return await _service.ListAsync(request);
+        }
+
+        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>

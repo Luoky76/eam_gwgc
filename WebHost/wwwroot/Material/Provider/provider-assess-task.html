@@ -33,8 +33,13 @@
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
             //明细页面大小
-            detailWidth: 1500,
-            detailHeight: 700,
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -396,6 +401,7 @@
             },
             init: function () {
                 var me = this;
+                me.setDialogSize();
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

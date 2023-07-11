@@ -119,12 +119,6 @@
                     dataAction: 'server',
                     toolbar: {},
                     url: 'Material/ProviderInfo/List',
-                    parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
-                    },
                     sortName: 'PROVIDER_NAME',
                     sortOrder: 'asc',
                     width: '99%',
@@ -196,7 +190,6 @@
                             break;
                     }
                 }
-                //me.grid.toolbarManager.options.group = 'main';    //按钮分组
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             add: function () { //新增
