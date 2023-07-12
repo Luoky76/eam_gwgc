@@ -9,7 +9,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
-    public class DeviceCardService : BaseService, IDeviceCardService
+    public class DeviceCardService :  IDeviceCardService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -58,7 +58,7 @@ namespace EAM.Device.Services
                     c.PURE_TON,
                     c.REV_DATE,
                     c.AUDITING,
-                    c.ADD_DATE,
+                    c.CREATEDATE,
                     c.DEPT_NAME,
                     c.WDEPT_NAME,
                     c.CARD_DATE,
@@ -111,9 +111,9 @@ namespace EAM.Device.Services
         private async Task BeforeAdd(DEVICE_CARD entity)
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_DATE = Sysdate;
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
+            entity.CREATEDATE = Sysdate;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             await Task.CompletedTask;
         }
@@ -125,7 +125,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_CARD entity)
         {
-            entity.MODIFY_DATE = Sysdate;
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.AUDITING = "1";
 

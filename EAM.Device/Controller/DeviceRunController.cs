@@ -29,7 +29,18 @@ namespace EAM.Device.controller
             return AjaxResult.Success(new
             {
                 runStatus = comboxData["RunStatus"],
-                deviceInfo = comboxData["DeviceInfo"],
+            }, "成功");
+        }
+        /// <summary>
+        /// 获取设备卡片基础信息
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> DeviceData()
+        {
+            return AjaxResult.Success(new
+            {
+                deviceData = await _service.DeviceData()
             }, "成功");
         }
         /// <summary>
@@ -57,9 +68,9 @@ namespace EAM.Device.controller
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SubmitAsync(string sids, string deid, string newStatus)
+        public async Task<AjaxResult> SubmitAsync(string sids)
         {
-            return await _service.Submit(sids, deid, newStatus);
+            return await _service.Submit(sids);
         }
 
 

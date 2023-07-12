@@ -12,73 +12,102 @@ using System.Data;
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类device_base_param
+    /// 实体类DEVICE_SCAN_DET
     /// </summary>
-    [Table("device_base_param")]
-    public class DEVICE_BASE_PARAM
+    [Table("DEVICE_SCAN_DET")]
+    public class DEVICE_SCAN_DET
     {
 
         /// <summary>
-        /// 一级参数名称
+        /// 盘点ID
         /// </summary>
-        [Description("一级参数名称")]
+        [Description("盘点ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string FIRST_PARAM_NAME { get; set; }
+        public string SCAN_ID { get; set; }
 
         /// <summary>
-        /// 参数名称
+        /// 设备ID
         /// </summary>
-        [Description("参数名称")]
+        [Description("设备ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string PARAM_NAME { get; set; }
+        public string DEVICE_ID { get; set; }
 
         /// <summary>
-        /// 参数编号
+        /// 已处理
         /// </summary>
-        [Description("参数编号")]
+        [Description("已处理")]
         [Column(DbType = DbType.AnsiString)]
-        public string PARAM_CODE { get; set; }
+        public string HANDLE { get; set; }
 
         /// <summary>
-        /// 设备分类ID
+        /// 盘点结果
         /// </summary>
-        [Description("设备分类ID")]
+        [Description("盘点结果")]
         [Column(DbType = DbType.AnsiString)]
-        public string TYPE_ID { get; set; }
+        public string SCAN_RESULT { get; set; }
 
         /// <summary>
-        /// 设备分类名称
+        /// 标识
         /// </summary>
-        [Description("设备分类名称")]
+        [Description("标识")]
         [Column(DbType = DbType.AnsiString)]
-        public string TYPE_NAME { get; set; }
+        public string IDENT { get; set; }
 
         /// <summary>
-        /// 排序
+        /// 设备编号
         /// </summary>
-        [Description("排序")]
-        public decimal? SORT { get; set; }
-
-        /// <summary>
-        /// 参数单位
-        /// </summary>
-        [Description("参数单位")]
+        [Description("设备编号")]
         [Column(DbType = DbType.AnsiString)]
-        public string UNIT { get; set; }
+        public string DEVICE_NO { get; set; }
 
         /// <summary>
-        /// 状态
+        /// 设备名称
         /// </summary>
-        [Description("状态")]
+        [Description("设备名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NAME { get; set; }
+
+        /// <summary>
+        /// 使用部门
+        /// </summary>
+        [Description("使用部门")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 使用部门ID
+        /// </summary>
+        [Description("使用部门ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_ID { get; set; }
+
+        /// <summary>
+        /// 当前管理状态
+        /// </summary>
+        [Description("当前管理状态")]
         [Column(DbType = DbType.AnsiString)]
         public string STATUS { get; set; }
+
+        /// <summary>
+        /// 二级单位ID
+        /// </summary>
+        [Description("二级单位ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SEC_DEPTID { get; set; }
+
+        /// <summary>
+        /// 二级单位
+        /// </summary>
+        [Description("二级单位")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SEC_DEPT { get; set; }
 
         /// <summary>
         /// 主键
         /// </summary>
         [Description("主键")]
         [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string DEVICE_PARAMS_ID { get; set; }
+        public string SCAN_DET_ID { get; set; }
 
         /// <summary>
         /// 添加人ID
@@ -105,6 +134,13 @@ namespace Gksyb.Model
         /// </summary>
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [Description("备注")]
+        [Column(DbType = DbType.AnsiString)]
+        public string MEMO { get; set; }
 
     }
 }

@@ -19,10 +19,10 @@
         </div>
     </form>
     <script type="text/javascript">
-        'use strict';
-        var rootPath = "../";
-        window["encryptUrl"] = ["/Apis/"];
-        var business = {
+'use strict';
+var rootPath = "../";
+window["encryptUrl"] = ["/Apis/"];
+var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             detailWidth: 920,
@@ -32,25 +32,26 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "档案编号", name: "_search_DOC_CODE", dbname: "DOC_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
+                            { display: "参数名称", name: "_search_PARAM_NAME", dbname: "PARAM_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "设备编码", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "档案编号", name: "DOC_CODE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "资料名称", name: "DOC_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "份数", name: "DOC_NUM", width: 100, type: "decimal",  editor: { type: 'decimal'} },
-                            { display: "存放地点", name: "DOC_SITE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "附件", name: "DOC_ATTACH", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "说明", name: "DOC_EXPLAIN", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "设备ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "主键", name: "DOC_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text' }, hide: true },
-                            { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加时间", name: "ADD_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
+                            { display: "设备编码", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数名称", name: "PARAM_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数值", name: "PARAM_VALUE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "说明", name: "PARAM_MEMO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数编号", name: "PARAM_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数子项", name: "PARAM_SUB", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "技术性能", name: "TECHFUN_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
+                            { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true }
+                            { display: "主键", name: "PARAM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "设备机型ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "设备主键", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                         ]
                     }
                 };
@@ -88,16 +89,16 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: rootPath + 'DEVICE/DeviceDoc/List',
+                    url: rootPath + 'Device/DeviceParam/List',
                     //url: rootPath + 'handler/grid.ashx',
                     parms: {
-                        //"view": "device_doc",
+                        //"view": "device_param",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'DOC_CODE',
+                    sortName: 'PARAM_NAME',
                     sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
@@ -117,7 +118,7 @@
                         if (data && data.Rows) {
                             var rows = data.Rows;
                             for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDDOC_ID = rows[i].DOC_ID;
+                                rows[i].OLDPARAM_ID = rows[i].PARAM_ID;
                                 rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
                             }
                         }
@@ -182,13 +183,13 @@
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({ },true);
+                me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected) {
-                    var sid = selected.DOC_CODE;
+                    var sid = selected.PARAM_NAME;
                     $.ligerDialog.open({
                         width: me.detailWidth,
                         height: me.detailHeight,
@@ -220,7 +221,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url:rootPath + 'Device/DeviceDoc/Save',
+                        url: rootPath + 'Device/DeviceParam/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -330,13 +331,14 @@
             },
             init: function () {
                 var me = this;
+                //me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
                 return me;
             }
-        };
-        business.init();
+};
+business.init();
     </script>
 </body>
 

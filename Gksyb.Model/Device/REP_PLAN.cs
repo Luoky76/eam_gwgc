@@ -281,13 +281,13 @@ namespace Gksyb.Model
         /// </summary>
         [Description("添加人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string ADD_USERID { get; set; }
+        public string CREATE_USERID { get; set; }
 
         /// <summary>
         /// 添加时间
         /// </summary>
         [Description("添加时间")]
-        public DateTime? ADD_DATE { get; set; }
+        public DateTime? CREATEDATE { get; set; }
 
         /// <summary>
         /// 修改人ID
@@ -300,7 +300,7 @@ namespace Gksyb.Model
         /// 修改时间
         /// </summary>
         [Description("修改时间")]
-        public DateTime? MODIFY_DATE { get; set; }
+        public DateTime? MODIFYDATE { get; set; }
 
         /// <summary>
         /// 使用部门ID

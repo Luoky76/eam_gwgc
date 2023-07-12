@@ -9,7 +9,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
-    public class DeviceRemouldService : BaseService, IDeviceRemouldService
+    public class DeviceRemouldService : IDeviceRemouldService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -39,10 +39,10 @@ namespace EAM.Device.Services
                 b.REMOULD_DESC,
                 b.ISFINISH,
                 b.REMARK,
-                b.ADD_USERID,
-                b.ADD_DATE,
+                b.CREATE_USERID,
+                b.CREATEDATE,
                 b.MODIFY_USERID,
-                b.MODIFY_DATE,
+                b.MODIFYDATE,
             }).GetGridData(request);
             return list;
         }
@@ -65,10 +65,10 @@ namespace EAM.Device.Services
                     c.START_DATE,
                     c.END_DATE,
                     c.DEVICE_REMOULD_ID,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                 },
                 c => a => a.DEVICE_REMOULD_ID == c.DEVICE_REMOULD_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -83,9 +83,9 @@ namespace EAM.Device.Services
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.DEVICE_REMOULD_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_DATE = Sysdate;
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
+            entity.CREATEDATE = Sysdate;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
 
             await Task.CompletedTask;
@@ -98,7 +98,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_REMOULD entity)
         {
-            entity.MODIFY_DATE = Sysdate;
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
 
             await Task.CompletedTask;

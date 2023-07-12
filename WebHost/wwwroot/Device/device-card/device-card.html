@@ -1,11 +1,14 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title></title>
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>设备卡片</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -19,39 +22,50 @@
         </div>
     </form>
     <script type="text/javascript">
-'use strict';
-var rootPath = "../";
-window["encryptUrl"] = ["/Apis/"];
-var business = {
+        'use strict';
+        var rootPath = "../";
+        window["encryptUrl"] = ["/Apis/"];
+        var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
-            detailWidth: 920,
-            detailHeight: 450,
+            detailWidth:1220,
+            detailHeight:650,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "参数名称", name: "_search_PARAM_NAME", dbname: "PARAM_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "设备编码", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
+                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text",options:{} }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编码", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "参数名称", name: "PARAM_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "参数值", name: "PARAM_VALUE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "说明", name: "PARAM_MEMO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "参数编号", name: "PARAM_CODE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "参数子项", name: "PARAM_SUB", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "技术性能", name: "TECHFUN_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "修改时间", name: "MODIFY_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
-                            { display: "添加人ID", name: "ADD_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加时间", name: "ADD_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "主键", name: "PARAM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "设备机型ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "设备主键", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶识别号", name: "SHIP_ID", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船长", name: "SHIP_LENGTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型宽", name: "SHIP_WIDTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型深", name: "SHIP_DEPTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "吃水", name: "SHIP_DRAFT", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶类型", name: "SHIP_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主机功率", name: "MAIN_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "副机功率", name: "SECOND_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "航速", name: "SPEED", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "拖力", name: "DRAG_FORCE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "总吨", name: "TOTAL_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "净吨", name: "PURE_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "启用日期", name: "REV_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditingData, selectBoxHeight: 100 }},
+                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "立卡日期", name: "CARD_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "负责人", name: "CARD_USER", width: 100, type: "text", editor: { type: 'text' } }
                         ]
                     }
                 };
@@ -59,24 +73,10 @@ var business = {
             grid: null,
             searchForm: null,
             buttons: null,
-            loadComboxData: function () {
-                var me = this;
-                var param = {
-                    "Common": {},
-                };
-                LG.ajax({
-                    async: false,
-                    url: rootPath + 'Apis/Common/JsonValueMul/Get',
-                    data: { "parm": JSON2.stringify(param) },
-                    loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.dataCommon = data.Common;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-            },
+            auditingData: [
+                { ID: "0", TEXT: "未提交", VALUE: "0" },
+                { ID: "1", TEXT: "已提交", VALUE: "1" }
+            ],
             setGrid: function () {
                 var me = this;
                 var columns = me.config.grid.columns;
@@ -89,23 +89,19 @@ var business = {
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: rootPath + 'Device/DeviceParam/List',
-                    //url: rootPath + 'handler/grid.ashx',
+                    url: 'Device/DeviceCard/List',
                     parms: {
-                        //"view": "device_param",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'PARAM_NAME',
+                    sortName: 'DEVICE_NO',
                     sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
                     dateFormat: 'yyyy-MM-dd HH:mm',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -118,7 +114,7 @@ var business = {
                         if (data && data.Rows) {
                             var rows = data.Rows;
                             for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDPARAM_ID = rows[i].PARAM_ID;
+                                rows[i].OLDDEVICE_ID = rows[i].DEVICE_ID;
                                 rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
                             }
                         }
@@ -133,6 +129,7 @@ var business = {
             },
             loadToolbar: function () {
                 var me = this;
+                debugger
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
                         case "refresh":
@@ -152,13 +149,13 @@ var business = {
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: rootPath + "System/Export.aspx?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: rootPath + "System/Export.aspx?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
@@ -168,47 +165,21 @@ var business = {
             },
             add: function () { //新增
                 var me = this;
-                // $.ligerDialog.open({
-                //     width: detailWidth,
-                //     height: detailHeight,
-                //     allowClose: true,
-                //     title: '[新增]',
-                //     url: "Detail.aspx?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                //     isHidden: false,
-                //     showMax: false,
-                //     showToggle: false,
-                //     showMin: false,
-                //     isResize: true,
-                //     slide: false,
-                //     onClosed: me.reload.bind(me),
-                //     data: { "sid": null }
-                // });
-                me.grid.addEditRow({}, true);
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var sid = selected.PARAM_NAME;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]',
-                        url: "Detail.aspx?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": sid }
-                    });
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null}
+                });
             },
             save: function () { //保存
                 var me = this;
@@ -221,7 +192,7 @@ var business = {
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: rootPath + 'Device/DeviceParam/Save',
+                        url:'Device/DeviceCard/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -236,6 +207,32 @@ var business = {
                 }
 
             },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var sid = selected.DEVICE_ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[修改]',
+                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
@@ -331,14 +328,13 @@ var business = {
             },
             init: function () {
                 var me = this;
-                //me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
                 return me;
             }
-};
-business.init();
+        };
+        business.init();
     </script>
 </body>
 

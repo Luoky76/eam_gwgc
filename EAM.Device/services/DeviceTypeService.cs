@@ -11,17 +11,14 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.Services
 {
-    public class DeviceTypeService : BaseService, IDeviceTypeService
+    public class DeviceTypeService : IDeviceTypeService
     {
         private readonly IDbContext _dbContext;
-        private readonly UserSession _userSession;
         private readonly IComboxDataService _comboxService;
-        private DateTime? _Sysdate;
 
-        public DeviceTypeService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxService)
+        public DeviceTypeService(IDbContext dbContext,IComboxDataService comboxService)
         {
             _dbContext = dbContext;
-            _userSession = userSession;
             _comboxService = comboxService;
         }
 
@@ -53,7 +50,6 @@ namespace EAM.Device.Services
             data.Add(new { TYPE_CODE = "ROOT", TYPE_NAME = "设备分类", TYPE_ID = "ROOT", PARENTID = "", ICON = "fa fa-sitemap" });
             return AjaxResult.Success(data, "成功");
         }
-
 
         /// <summary>
         /// 根据ID获取记录
@@ -87,11 +83,10 @@ namespace EAM.Device.Services
                 c.PRE_TYPEID,
                 PRE_TYPENAME = _dbContext.Query<BASE_DEVICETYPE>().Where(r => r.TYPE_ID == c.PRE_TYPEID).First().TYPE_NAME,
                 c.MEMO,
-                c.MODIFY_DATE,
+                c.MODIFYDATE,
                 c.MODIFY_USERID,
-                c.ADD_DATE,
-                c.ADD_USERID,
-
+                c.CREATEDATE,
+                c.CREATE_USERID,
             }).GetGridData(request);
             return list;
         }
@@ -116,10 +111,10 @@ namespace EAM.Device.Services
                     c.TYPE_LEVEL,
                     c.PRE_TYPEID,
                     c.MEMO,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                     c.MODIFY_USERID,
-                    c.ADD_DATE,
-                    c.ADD_USERID,
+                    c.CREATEDATE,
+                    c.CREATE_USERID,
                 },
                 c => a => a.TYPE_ID == c.TYPE_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -133,10 +128,6 @@ namespace EAM.Device.Services
         private async Task BeforeAdd(BASE_DEVICETYPE entity)
         {
             entity.TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_DATE = Sysdate;
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICETYPE>()
                 .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
                 .FirstOrDefaultAsync();
@@ -154,8 +145,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(BASE_DEVICETYPE entity)
         {
-            entity.MODIFY_DATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICETYPE>()
                 .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
                 .FirstOrDefaultAsync();
@@ -180,27 +169,11 @@ namespace EAM.Device.Services
 
             await Task.CompletedTask;
         }
+
         private async Task AfterSave(List<BASE_DEVICETYPE> added, List<BASE_DEVICETYPE> updated, List<BASE_DEVICETYPE> deleted)
         {
-
             await Task.CompletedTask;
         }
 
-
-
-        /// <summary>
-        /// 获取数据库时间
-        /// </summary>
-        private DateTime? Sysdate
-        {
-            get
-            {
-                if (!_Sysdate.HasValue)
-                {
-                    _Sysdate = _dbContext.GetSysdate().Result();
-                }
-                return _Sysdate;
-            }
-        }
     }
 }

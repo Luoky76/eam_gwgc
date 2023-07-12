@@ -43,10 +43,10 @@ namespace EAM.Material.Services
                 c.ASSESS_BASE_ID,
                 c.IS_VALID,
                 c.CONTENT,
-                c.ADD_USERID,
-                c.ADD_DATE,
+                c.CREATE_USERID,
+                c.CREATEDATE,
                 c.MODIFY_USERID,
-                c.MODIFY_DATE
+                c.MODIFYDATE
             }).GetGridData(request);
             return list;
         }
@@ -87,10 +87,10 @@ namespace EAM.Material.Services
                     c.ASSESS_BASE_ID,
                     c.IS_VALID,
                     c.CONTENT,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE
+                    c.MODIFYDATE
                 },
                 c => a => a.ASSESS_BASE_ID == c.ASSESS_BASE_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);

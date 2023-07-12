@@ -43,31 +43,31 @@
                     grid: {
                         columns: [
                             {
-                                display: "运行状态", name: "STATUS", minWidth: 100, type: "text", editor: { type: 'text' },
+                                display: "运行状态", name: "NEW_RUN_STATUS", minWidth: 100, type: "text", editor: { type: 'text' },
                                 render: function (rowdata) {
-                                    if (rowdata.STATUS == "正常") {
-                                        return "<div style='background: #00FF00;color: white;'>" + rowdata.STATUS + "</div>";
+                                    if (rowdata.NEW_RUN_STATUS == "正常") {
+                                        return "<div style='background: #00FF00;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
-                                    else if (rowdata.STATUS == "维修") {
-                                        return "<div style='background: black;color: white;'>" + rowdata.STATUS + "</div>";
+                                    else if (rowdata.NEW_RUN_STATUS == "维修") {
+                                        return "<div style='background: black;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
-                                    else if (rowdata.STATUS == "停机") {
-                                        return "<div style='background: red;color: white;'>" + rowdata.STATUS + "</div>";
+                                    else if (rowdata.NEW_RUN_STATUS == "停机") {
+                                        return "<div style='background: red;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
-                                    else if (rowdata.STATUS == "事故") {
-                                        return "<div style='background: black;color: white;'>" + rowdata.STATUS + "</div>";
+                                    else if (rowdata.NEW_RUN_STATUS == "事故") {
+                                        return "<div style='background: black;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
-                                    else if (rowdata.STATUS == "保养") {
-                                        return "<div style='background: #2BD5D5;color: white;'>" + rowdata.STATUS + "</div>";
+                                    else if (rowdata.NEW_RUN_STATUS == "保养") {
+                                        return "<div style='background: #2BD5D5;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
-                                    else if (rowdata.STATUS == "检查") {
-                                        return "<div style='background: green;color: white;'>" + rowdata.STATUS + "</div>";
+                                    else if (rowdata.NEW_RUN_STATUS == "检查") {
+                                        return "<div style='background: green;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
-                                    else if (rowdata.STATUS == "备用") {
-                                        return "<div style='background: green;color: white;'>" + rowdata.STATUS + "</div>";
+                                    else if (rowdata.NEW_RUN_STATUS == "备用") {
+                                        return "<div style='background: green;color: white;'class='l-tag'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
                                     else {
-                                        return "<div style='background: green;color: white;'>" + rowdata.STATUS + "</div>";
+                                        return "<div style='background: green;color: white;'>" + rowdata.NEW_RUN_STATUS + "</div>";
                                     }
                                 }
                             },
@@ -221,7 +221,7 @@
             },
             init: function () {
                 var me = this;
-               // me.loadComboxData();
+                // me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();

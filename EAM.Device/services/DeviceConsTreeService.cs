@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class DeviceConsTreeService : BaseService, IDeviceConsTreeService
+    public class DeviceConsTreeService :  IDeviceConsTreeService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -116,10 +116,10 @@ namespace EAM.Device.services
                 c.PRE_COMPOSEID,
                 PRE_COMPOSE_NAME = _dbContext.Query<BASE_DEVICE_COMPOSE>().Where(r => r.COMPOSE_ID == c.PRE_COMPOSEID).First().COMPOSE_NAME,
                 c.MEMO,
-                c.MODIFY_DATE,
+                c.MODIFYDATE,
                 c.MODIFY_USERID,
-                c.ADD_DATE,
-                c.ADD_USERID,
+                c.CREATEDATE,
+                c.CREATE_USERID,
             }).GetGridData(request);
             return list;
         }
@@ -142,10 +142,10 @@ namespace EAM.Device.services
                     c.COMPOSE_TYPE,
                     c.PRE_COMPOSEID,
                     c.MEMO,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                     c.MODIFY_USERID,
-                    c.ADD_DATE,
-                    c.ADD_USERID,
+                    c.CREATEDATE,
+                    c.CREATE_USERID,
                 },
                 c => a => a.COMPOSE_ID == c.COMPOSE_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -159,9 +159,9 @@ namespace EAM.Device.services
         private async Task BeforeAdd(BASE_DEVICE_COMPOSE entity)
         {
             entity.COMPOSE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_DATE = Sysdate;
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
+            entity.CREATEDATE = Sysdate;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
                 .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
@@ -180,7 +180,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         private async Task BeforeUpdate(BASE_DEVICE_COMPOSE entity)
         {
-            entity.MODIFY_DATE = Sysdate;
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
                 .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
