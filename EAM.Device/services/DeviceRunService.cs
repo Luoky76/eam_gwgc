@@ -45,20 +45,20 @@ namespace EAM.Device.services
             var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
             {
                 x.DEVICE_ID,
-                x.ADD_DATE,
+                x.CREATEDATE,
             }).GroupBy(x => new
             {
                 x.DEVICE_ID,
             }).Select(x => new
             {
                 x.DEVICE_ID,
-                ADD_DATE = Sql.Max(x.ADD_DATE),
+                CREATEDATE = Sql.Max(x.CREATEDATE),
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.ADD_DATE == c.ADD_DATE)
+                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
                 .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1");
             return await qry
                 .Select((a, b, c) => new ComboxData()
@@ -151,20 +151,20 @@ namespace EAM.Device.services
             var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
             {
                 x.DEVICE_ID,
-                x.ADD_DATE,
+                x.CREATEDATE,
             }).GroupBy(x => new
             {
                 x.DEVICE_ID,
             }).Select(x => new
             {
                 x.DEVICE_ID,
-                ADD_DATE = Sql.Max(x.ADD_DATE),
+                CREATEDATE = Sql.Max(x.CREATEDATE),
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
                  .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.ADD_DATE == c.ADD_DATE)
+                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)
                  .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1")
                  .Select((a, b, c, d) => new
@@ -175,7 +175,7 @@ namespace EAM.Device.services
                      a.TYPE_NAME,
                      a.SEC_DEPT,
                      a.DEPT_NAME,
-                     b.ADD_DATE,
+                     b.CREATEDATE,
                      c.TRANS_MEMO,
                      CODE_SEQ = d.CODE_SEQ ?? 10,
                  })

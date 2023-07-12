@@ -127,10 +127,10 @@ namespace EAM.Device.services
                     c.TYPE_ID,
                     c.IDENT,
                     c.SCAN_ID,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                 },
                 c => a => a.SCAN_ID == c.SCAN_ID, BeforeAdd);
         }

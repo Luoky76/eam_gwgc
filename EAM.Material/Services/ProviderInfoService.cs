@@ -86,10 +86,10 @@ namespace EAM.Material.Services
                 c.ORG_ID,
                 c.DEPT_ID,
                 c.EDIT_USERID,
-                c.ADD_USERID,
-                c.ADD_DATE,
+                c.CREATE_USERID,
+                c.CREATEDATE,
                 c.MODIFY_USERID,
-                c.MODIFY_DATE
+                c.MODIFYDATE
             }).GetGridData(request);
             return list;
         }
@@ -149,10 +149,10 @@ namespace EAM.Material.Services
                     c.ORG_ID,
                     c.DEPT_ID,
                     c.EDIT_USERID,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE
+                    c.MODIFYDATE
                 },
                 c => a => a.PROVIDER_ID == c.PROVIDER_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);

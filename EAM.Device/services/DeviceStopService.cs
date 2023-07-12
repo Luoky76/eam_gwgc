@@ -93,10 +93,10 @@ namespace EAM.Device.services
                     c.MAL_TYPE_ID,
                     c.CHECK_DEPTID,
                     c.RUN_STOP_ID,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                 },
                 c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd);
         }
@@ -154,10 +154,10 @@ namespace EAM.Device.services
                     c.IS_PLAN,
                     c.STOP_NAME,
                     c.STOP_TYPE_ID,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                     c.TENANT_ID,
                 },
                 c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd);

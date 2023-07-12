@@ -84,10 +84,10 @@ namespace EAM.Material.Services
                     c.IS_CANCEL,
                     c.MEMO,
                     c.TYPE_ID,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                     c.PURTYPE_ID,
                     c.PURTYPE_NAME,
                     c.EDIT_USER,
@@ -120,10 +120,10 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_USERID = _userSession.UserName;
-            entity.ADD_DATE = dt;
+            entity.CREATE_USERID = _userSession.UserName;
+            entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserName;
-            entity.MODIFY_DATE = dt;
+            entity.MODIFYDATE = dt;
         }
 
         private async Task BeforeUpdate(BASE_SPTYPE entity)
@@ -131,7 +131,7 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.MODIFY_USERID = _userSession.UserName;
-            entity.MODIFY_DATE = dt;
+            entity.MODIFYDATE = dt;
 
         }
     }

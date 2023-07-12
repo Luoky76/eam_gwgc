@@ -83,10 +83,10 @@ namespace EAM.Device.Services
                 c.PRE_TYPEID,
                 PRE_TYPENAME = _dbContext.Query<BASE_DEVICETYPE>().Where(r => r.TYPE_ID == c.PRE_TYPEID).First().TYPE_NAME,
                 c.MEMO,
-                c.MODIFY_DATE,
+                c.MODIFYDATE,
                 c.MODIFY_USERID,
-                c.ADD_DATE,
-                c.ADD_USERID,
+                c.CREATEDATE,
+                c.CREATE_USERID,
             }).GetGridData(request);
             return list;
         }
@@ -111,10 +111,10 @@ namespace EAM.Device.Services
                     c.TYPE_LEVEL,
                     c.PRE_TYPEID,
                     c.MEMO,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                     c.MODIFY_USERID,
-                    c.ADD_DATE,
-                    c.ADD_USERID,
+                    c.CREATEDATE,
+                    c.CREATE_USERID,
                 },
                 c => a => a.TYPE_ID == c.TYPE_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);

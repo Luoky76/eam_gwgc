@@ -39,10 +39,10 @@ namespace EAM.Device.Services
                 b.DOC_ATTACH,
                 b.DOC_EXPLAIN,
                 b.DOC_ID,
-                b.ADD_USERID,
-                b.ADD_DATE,
+                b.CREATE_USERID,
+                b.CREATEDATE,
                 b.MODIFY_USERID,
-                b.MODIFY_DATE
+                b.MODIFYDATE
             }).GetGridData(request);
             return list;
         }
@@ -65,10 +65,10 @@ namespace EAM.Device.Services
                     c.DOC_SITE,
                     c.DOC_ATTACH,
                     c.DOC_EXPLAIN,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE,
+                    c.MODIFYDATE,
                 },
                 c => a => a.DOC_ID == c.DOC_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -83,9 +83,9 @@ namespace EAM.Device.Services
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.DOC_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ADD_DATE = Sysdate;
-            entity.ADD_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
+            entity.CREATEDATE = Sysdate;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
 
             await Task.CompletedTask;
@@ -98,7 +98,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_DOC entity)
         {
-            entity.MODIFY_DATE = Sysdate;
+            entity.MODIFYDATE = Sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
 
             await Task.CompletedTask;
