@@ -21,6 +21,11 @@ namespace EAM.Device.interfaces
         public Task<GridData> GetStopList(GridRequest request);
 
         /// <summary>
+        /// 获取单条停机记录
+        /// </summary>
+        /// <returns></returns>
+        Task<AjaxResult> GetStopListDetail(string ID);
+        /// <summary>
         /// 管理停机记录
         /// </summary>
         /// <returns></returns>

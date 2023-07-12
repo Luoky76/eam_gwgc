@@ -94,6 +94,16 @@ namespace EAM.Device.services
         }
 
         /// <summary>
+        /// 获取单条记录
+        /// </summary>
+        /// <returns></returns>
+
+        public async Task<AjaxResult> GetRunDetail(string ID)
+        {
+            var qry = await _dbContext.QueryByKeyAsync<RUN_TRANS>(ID);
+            return AjaxResult.Success(qry);
+        }
+        /// <summary>
         /// 增删改
         /// </summary>
         /// <returns></returns>

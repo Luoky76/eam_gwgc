@@ -52,7 +52,17 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.GetRun(request), "成功");
         }
-
+        /// <summary>
+        /// 根据ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetRunDetailAsync(string ID)
+        {
+            if (ID==null) return AjaxResult.Error("参数错误");
+            return await _service.GetRunDetail(ID);
+        }
         /// <summary>
         /// 增删改
         /// </summary>
