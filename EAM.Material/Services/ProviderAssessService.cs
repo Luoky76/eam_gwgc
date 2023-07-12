@@ -49,10 +49,10 @@ namespace EAM.Material.Services
                 c.REMARK,
                 c.TOTAL_SCORE,
                 c.RESULT,
-                c.ADD_USERID,
-                c.ADD_DATE,
+                c.CREATE_USERID,
+                c.CREATEDATE,
                 c.MODIFY_USERID,
-                c.MODIFY_DATE
+                c.MODIFYDATE
 
             }).GetGridData(request);
             return list;
@@ -77,10 +77,10 @@ namespace EAM.Material.Services
                     a.REMARK,
                     a.TOTAL_SCORE,
                     a.RESULT,
-                    a.ADD_USERID,
-                    a.ADD_DATE,
-                    a.MODIFY_USERID,
-                    a.MODIFY_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE,
                     b.PROVIDER_ID,
                     b.PROVIDER_NAME,
                     b.FORMULATER_ID,
@@ -110,10 +110,10 @@ namespace EAM.Material.Services
                     c.REMARK,
                     c.TOTAL_SCORE,
                     c.RESULT,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE
+                    c.MODIFYDATE
                 },
                 c => a => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
