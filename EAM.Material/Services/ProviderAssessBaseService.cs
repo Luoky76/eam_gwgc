@@ -64,10 +64,10 @@ namespace EAM.Material.Services
                     c.ASSESS_BASE_ID,
                     c.IS_VALID,
                     c.CONTENT,
-                    c.ADD_USERID,
-                    c.ADD_DATE,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE
+                    c.MODIFYDATE
                 })
                 .Where(c => c.IS_VALID == "1")
                 .GetGridData(request);
