@@ -12,7 +12,7 @@ namespace EAM.Material.Controller
         private readonly IProviderAssessService _service;
 
         /// <summary>
-        /// 供应商评估任务基础
+        /// 供应商评估主表
         /// </summary>
         /// <param name="service"></param>
         public ProviderAssessController(IProviderAssessService service)
@@ -29,6 +29,17 @@ namespace EAM.Material.Controller
         public async Task<GridData> ListAsync(GridRequest request)
         {
             return await _service.ListAsync(request);
+        }
+
+        /// <summary>
+        /// 连接评估任务表后返回列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> ExtendListAsync(GridRequest request)
+        {
+            return await _service.ExtendListAsync(request);
         }
 
         /// <summary>

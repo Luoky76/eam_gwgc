@@ -76,13 +76,15 @@
                 var me = this;
                 var rows = me.grid.getSelectedRows();
                 for (var i = 0; i < rows.length; i++) {
-                    rows[i].ASSESS_TASK_ID = me.assessTaskId;
+                    rows[i]["ASSESS_TASK_ID"] = me.assessTaskId;
                 }
+                var changeRow = new Object();
+                changeRow["added"] = rows;
                 LG.ajax({
                     jsToken: true,
                     url: 'Material/ProviderAssessTaskDet/Save',
                     loading: '正在导入中...',
-                    data: rows,
+                    data: { request: changeRow },
                     success: function () {
                         LG.showSuccess('导入成功');
                     },

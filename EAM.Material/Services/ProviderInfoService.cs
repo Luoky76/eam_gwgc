@@ -211,7 +211,8 @@ namespace EAM.Material.Services
             try
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>(){
-                    {"ProviderName", null}
+                    {"ProviderName", null},
+                    {"Auditing", null }
                 });
 
                 return AjaxResult.Success(data);

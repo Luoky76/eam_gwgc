@@ -12,7 +12,7 @@ namespace EAM.Material.Controller
         private readonly IProviderAssessTaskDetService _service;
 
         /// <summary>
-        /// 供应商评估任务基础
+        /// 供应商评估任务明细
         /// </summary>
         /// <param name="service"></param>
         public ProviderAssessTaskDetController(IProviderAssessTaskDetService service)

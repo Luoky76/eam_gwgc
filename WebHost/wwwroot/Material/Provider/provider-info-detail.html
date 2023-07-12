@@ -23,7 +23,7 @@
             sid: getQueryStringByName("sid"),
             isAddNew: false,
             isView: true,
-            auditing: [{ ID: "1", TEXT: "已提交" }, { ID: "0", TEXT: "未提交" }],
+            auditing: [],
             dataDevice: [],
             orginData: {},
             setConfig: function () {
@@ -234,6 +234,23 @@
                 });
                 me.setFormDefaultBtn();
             },
+            //获取下拉框数据
+            loadComboxData: function () {
+                var me = this;
+                var dataControl = [];
+                LG.ajax({
+                    async: false,
+                    url: 'Material/ProviderInfo/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.auditing = data.Auditing;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                return dataControl;
+            },
             init: function () {
                 var me = this;
                 debugger
@@ -249,6 +266,7 @@
                 }
 
                 //加载基础信息
+                me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.loadData();

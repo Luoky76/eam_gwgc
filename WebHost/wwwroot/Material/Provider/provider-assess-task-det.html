@@ -31,10 +31,12 @@
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
+            //主表主键
             sid: getQueryStringByName("sid"),
             isAddNew: false,
             isView: true,
-            dataAuditing: [{ ID: "1", TEXT: "已提交" }, { ID: "0", TEXT: "未提交" }],
+            auditing: [],
+            assessBaseContent: [],
             orginData: {},
             setConfig: function () {
                 var me = this;
@@ -42,7 +44,7 @@
                     form: {
                         labelwidth: 220,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "select", align: "left", editor: { type: 'select', data: me.dataAuditing, disabled: true } },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "select", align: "left", editor: { type: 'select', data: me.auditing, disabled: true } },
                             { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text" },
                             { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "text" },
                             { display: "任务制定人", name: "FORMULATER_NAME", dbname: "FORMULATER_NAME", width: 300, type: "text" },
@@ -65,13 +67,15 @@
                     grid: {
                         columns: [
                             {
-                                display: "评价内容", name: "CONTENT", dbname: "CONTENT", minWidth: 400, op: "equal", type: "select", editor: {
+                                //实际为评估基础主键
+                                display: "评估内容", name: "ASSESS_BASE_ID", dbname: "ASSESS_BASE_ID", minWidth: 400, op: "equal", type: "select", editor: {
                                     type: "select",
-                                    data: me.AssessBaseContent
+                                    data: me.assessBaseContent
                                 }
                             },
                             //隐藏
-                            { display: "主键", name: "ASSESS_BASE_ID", width: 100, type: "text" },
+                            { display: "评估内容", name: "CONTENT", width: 100, type: "text", hide: true },
+                            { display: "评估任务ID", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true },
                             { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", hide: true },
                             { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
@@ -143,9 +147,7 @@
                     loading: '正在保存中...',
                     data: { request: changeRow },
                     success: function (result) {
-                        LG.showSuccess('保存成功', function () {
-                            if (me.dialog) me.dialog.close();
-                        });
+                        LG.showSuccess('保存成功');
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -228,7 +230,8 @@
                     url: 'Material/ProviderAssessTaskDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.AssessBaseContent = data.AssessBaseContent;
+                        me.assessBaseContent = data.AssessBaseContent;
+                        me.auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -252,7 +255,7 @@
                     parms: {
                         assessTaskId: me.sid
                     },
-                    sortName: 'ASSESS_TASK_DET_ID',
+                    sortName: 'ASSESS_BASE_ID',
                     sortOrder: 'asc',
                     width: '99%',
                     height: '100%',
@@ -322,14 +325,17 @@
                         case "refresh":
                             me.reloadTaskBase();
                             break;
-                        case "import":
-                            me.importTaskBase();
-                            break;
                         case "add":
-                            me.add();
+                            me.addTaskBase();
                             break;
                         case "delete":
                             me.deleteTaskBase();
+                            break;
+                        case "import":
+                            me.importTaskBase();
+                            break;
+                        case "save":
+                            me.saveTaskBase();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -343,6 +349,8 @@
                                 modal: true
                             });
                             break;
+                        default:
+                            break;
                     }
                 }
                 //加载detail按钮
@@ -355,9 +363,10 @@
                 me.grid.loadData();
             },
             //新增
-            add: function () {
+            addTaskBase: function () {
                 var me = this;
-                me.grid.addEditRow({}, true);
+                //设置新增行的ASSESS_TASK_ID为主表主键
+                me.grid.addEditRow({"ASSESS_TASK_ID": me.sid}, true);
             },
             //导入
             importTaskBase: function () {
@@ -382,7 +391,7 @@
                     //传入当前已在评估任务中的任务基础，导入时将其排除
                     currentBaseIds: currentBaseIds,
                     //传入主键
-                    assessTaskId: sid,
+                    assessTaskId: me.sid,
                     onClose: function () {
                         me.reloadTaskBase();
                     }
@@ -425,7 +434,7 @@
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.save();
+                                me.saveTaskBase();
                             }
                         });
                     } else {

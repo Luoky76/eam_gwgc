@@ -33,9 +33,9 @@ namespace Gksyb.Model
         public string IS_VALID { get; set; }
 
         /// <summary>
-        /// 评价内容
+        /// 评估内容
         /// </summary>
-        [Description("评价内容")]
+        [Description("评估内容")]
         [Column(DbType = DbType.AnsiString)]
         public string CONTENT { get; set; }
 

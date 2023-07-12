@@ -34,8 +34,8 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text", options: {} },
-                            { display: "考核人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_NAME", newline: false, upper: true, type: "text", options: {} }
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, type: "text", options: {} },
+                            { display: "考核人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_NAME", newline: false, type: "text", options: {} }
                         ]
                     },
                     grid: {
@@ -53,13 +53,13 @@
                             //隐藏
                             { display: "主键", name: "ASSESS_ID", width: 100, type: "text", validate: { required: true }, hide: true },
                             { display: "评估任务id", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true },
-                            { display: "考核人id", name: "EXAMINER_ID", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "考核人id", name: "EXAMINER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", hide: true },
                             { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
                             { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", hide: true },
-                            { display: "供应商id", name: "PROVIDER_ID", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "任务制定人id", name: "FORMULATER_ID", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "供应商id", name: "PROVIDER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "任务制定人id", name: "FORMULATER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                         ]
                     }
                 };
