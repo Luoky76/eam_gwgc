@@ -6,16 +6,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controller
 {
-    [GksybAuthorize(MenuNo = "ProviderAssessBase")]
-    public class ProviderAssessBaseController : AreaController
+    [GksybAuthorize(MenuNo = "ProviderAssess")]
+    public class ProviderAssessDetController : AreaController
     {
-        private readonly IProviderAssessBaseService _service;
+        private readonly IProviderAssessDetService _service;
 
         /// <summary>
         /// 供应商评估任务基础
         /// </summary>
         /// <param name="service"></param>
-        public ProviderAssessBaseController(IProviderAssessBaseService service)
+        public ProviderAssessDetController(IProviderAssessDetService service)
         {
             _service = service;
         }
@@ -32,27 +32,15 @@ namespace EAM.Material.Controller
         }
 
         /// <summary>
-        /// 有效列表
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<GridData> ValidListAsync(GridRequest request)
-        {
-            //怎么写where
-            return await _service.ListAsync(request);
-        }
-
-        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<PROVIDER_ASSESS_BASE>> GetAsync(string id)
+        public async Task<AjaxResult<PROVIDER_ASSESS_DET>> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
-            return AjaxResult<PROVIDER_ASSESS_BASE>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_DET>.Error("请传递参数");
+            return AjaxResult<PROVIDER_ASSESS_DET>.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>
@@ -61,7 +49,7 @@ namespace EAM.Material.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_BASE> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_DET> request)
         {
             return await _service.SaveAsync(request);
         }

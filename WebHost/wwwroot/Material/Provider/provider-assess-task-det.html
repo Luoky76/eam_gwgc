@@ -64,9 +64,14 @@
                     },
                     grid: {
                         columns: [
-                            { display: "评价内容", name: "CONTENT", minWidth: 400, type: "text" },
+                            {
+                                display: "评价内容", name: "CONTENT", dbname: "CONTENT", minWidth: 400, op: "equal", type: "select", editor: {
+                                    type: "select",
+                                    data: me.AssessBaseContent
+                                }
+                            },
                             //隐藏
-                            { display: "主键", name: "ASSESS_BASE_ID", width: 100, type: "text", hide: true },
+                            { display: "主键", name: "ASSESS_BASE_ID", width: 100, type: "text" },
                             { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", hide: true },
                             { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
@@ -223,7 +228,7 @@
                     url: 'Material/ProviderAssessTaskDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.assessTaskContent = data.assessTaskContent;
+                        me.AssessBaseContent = data.AssessBaseContent;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -355,10 +360,6 @@
                 me.grid.addEditRow({}, true);
             },
             //导入
-            //定义导入窗口的回调函数
-            handleDialogClose: function(returnValue) {
-                console.log('返回值为：', returnValue);
-            },
             importTaskBase: function () {
                 var me = this;
                 var gridData = me.grid.getData();
@@ -378,10 +379,13 @@
                     showMin: false,
                     isResize: true,
                     slide: false,
-                    //弹出框关闭时的回调函数，获取返回的评估明细数据
-                    callback: me.handleDialogClose,
                     //传入当前已在评估任务中的任务基础，导入时将其排除
-                    data: currentBaseIds
+                    currentBaseIds: currentBaseIds,
+                    //传入主键
+                    assessTaskId: sid,
+                    onClose: function () {
+                        me.reloadTaskBase();
+                    }
                 }
                 $.ligerDialog.open(options);
             },

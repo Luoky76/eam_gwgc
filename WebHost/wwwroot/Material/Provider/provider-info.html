@@ -43,7 +43,7 @@
                         fields: [
                             {
                                 //实际取的是PROVIDER_ID，op: "equal"表示需要严格相等
-                                display: "供应商名称", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_ID", newline: false, minWidth: 300, upper: true, op: "equal", type: "select", options: {
+                                display: "供应商名称", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_ID", newline: false, minWidth: 300, upper: false, op: "equal", type: "select", options: {
                                     type: "select",
                                     data: me.ProviderName
                                 }
@@ -119,12 +119,6 @@
                     dataAction: 'server',
                     toolbar: {},
                     url: 'Material/ProviderInfo/List',
-                    parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
-                    },
                     sortName: 'PROVIDER_NAME',
                     sortOrder: 'asc',
                     width: '99%',
@@ -196,7 +190,6 @@
                             break;
                     }
                 }
-                //me.grid.toolbarManager.options.group = 'main';    //按钮分组
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             add: function () { //新增

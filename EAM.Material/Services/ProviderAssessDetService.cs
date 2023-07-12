@@ -1,4 +1,5 @@
 ﻿using EAM.Material.Interfaces;
+using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -7,13 +8,13 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessBase : IProviderAssessBaseService
+    public class ProviderAssessDetService : IProviderAssessDetService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
 
-        public ProviderAssessBase(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public ProviderAssessDetService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
@@ -25,9 +26,9 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<PROVIDER_ASSESS_BASE> GetAsync(string id)
+        public async Task<PROVIDER_ASSESS_DET> GetAsync(string id)
         {
-            var query = await _dbContext.Query<PROVIDER_ASSESS_BASE>().Where(c => c.ASSESS_BASE_ID == id).FirstAsync();
+            var query = await _dbContext.Query<PROVIDER_ASSESS_DET>().Where(c => c.ASSESS_ID == id).FirstAsync();
             return query;
         }
 
@@ -38,11 +39,13 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<PROVIDER_ASSESS_BASE>().Select(c => new
+            var list = await _dbContext.Query<PROVIDER_ASSESS_DET>().Select(c => new
             {
+                c.ASSESS_DET_ID,
+                c.ASSESS_ID,
                 c.ASSESS_BASE_ID,
-                c.IS_VALID,
-                c.CONTENT,
+                c.SCORE,
+                c.SCORE_DESC,
                 c.CREATE_USERID,
                 c.CREATEDATE,
                 c.MODIFY_USERID,
@@ -52,47 +55,26 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 获取有效列表
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<GridData> ValidListAsync(GridRequest request)
-        {
-            var list = await _dbContext.Query<PROVIDER_ASSESS_BASE>()
-                .Select(c => new
-                {
-                    c.ASSESS_BASE_ID,
-                    c.IS_VALID,
-                    c.CONTENT,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE
-                })
-                .Where(c => c.IS_VALID == "1")
-                .GetGridData(request);
-            return list;
-        }
-
-        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_BASE> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
+                    c.ASSESS_DET_ID,
+                    c.ASSESS_ID,
                     c.ASSESS_BASE_ID,
-                    c.IS_VALID,
-                    c.CONTENT,
+                    c.SCORE,
+                    c.SCORE_DESC,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
-                c => a => a.ASSESS_BASE_ID == c.ASSESS_BASE_ID
+                c => a => a.ASSESS_DET_ID == c.ASSESS_DET_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
         }
 
@@ -101,13 +83,13 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeAdd(PROVIDER_ASSESS_BASE entity)
+        private async Task BeforeAdd(PROVIDER_ASSESS_DET entity)
         {
-            entity.ASSESS_BASE_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.ASSESS_DET_ID = GuidHelper.NewSnowflakeId().ToString();
 
-            if (string.IsNullOrEmpty(entity.ASSESS_BASE_ID))
+            if (string.IsNullOrEmpty(entity.ASSESS_DET_ID))
             {
-                entity.ASSESS_BASE_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_DET_ID = _userSession.Corp.CorpID;
             }
             await Task.CompletedTask;
         }
@@ -117,7 +99,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeUpdate(PROVIDER_ASSESS_BASE entity)
+        private async Task BeforeUpdate(PROVIDER_ASSESS_DET entity)
         {
             await Task.CompletedTask;
         }
@@ -127,15 +109,17 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeDelete(PROVIDER_ASSESS_BASE entity)
+        private async Task BeforeDelete(PROVIDER_ASSESS_DET entity)
         {
             await Task.CompletedTask;
+
+
         }
 
         /// <summary>
         /// 保存后验证
         /// </summary>
-        private async Task AfterSave(List<PROVIDER_ASSESS_BASE> added, List<PROVIDER_ASSESS_BASE> updated, List<PROVIDER_ASSESS_BASE> deleted)
+        private async Task AfterSave(List<PROVIDER_ASSESS_DET> added, List<PROVIDER_ASSESS_DET> updated, List<PROVIDER_ASSESS_DET> deleted)
         {
             await Task.CompletedTask;
         }
