@@ -45,6 +45,18 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
+        /// 根据ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetStopListDetailAsync(string ID)
+        {
+            if (ID==null) return AjaxResult.Error("参数错误");
+            return await _service.GetStopListDetail(ID);
+        }
+
+        /// <summary>
         /// 管理停机记录
         /// </summary>
         /// <returns></returns>

@@ -25,6 +25,11 @@ namespace EAM.Device.interfaces
         public Task<GridData> GetRun(GridRequest request);
 
         /// <summary>
+        /// 获取单条记录
+        /// </summary>
+        /// <returns></returns>
+        Task<AjaxResult> GetRunDetail(string ID);
+        /// <summary>
         /// 增删改
         /// </summary>
         /// <returns></returns>

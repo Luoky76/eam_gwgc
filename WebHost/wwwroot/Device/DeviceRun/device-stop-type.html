@@ -90,8 +90,9 @@
                 me.grid = $("#maingrid").ligerGrid({
                     autoWidth: true,
                     delayLoad: true,
+                    usePager: false,
                     columns: me.config.grid.columns,
-                    dataAction: 'server',
+                    //dataAction: 'server',
                     toolbar: {},
                     url:  'Device/DeviceStop/GetStopTypeList',
                     //url:  'handler/grid.ashx',
