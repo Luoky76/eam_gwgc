@@ -48,7 +48,7 @@
                             { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text" },
                             { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "text" },
                             { display: "任务制定人", name: "FORMULATER_NAME", dbname: "FORMULATER_NAME", width: 300, type: "text" },
-                            { display: "考核人", name: "EXAMINER_NAME", dbname: "EXAMINER_NAME", width: 300, type: "text" },
+                            { display: "评分人", name: "EXAMINER_NAME", dbname: "EXAMINER_NAME", width: 300, type: "text" },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
@@ -57,7 +57,7 @@
                             { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
                             { display: "供应商id", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "hidden" },
                             { display: "任务制定人id", name: "FORMULATER_ID", dbname: "FORMULATER_ID", width: 300, type: "hidden" },
-                            { display: "考核人id", name: "EXAMINER_ID", dbname: "EXAMINER_ID", width: 300, type: "hidden" },
+                            { display: "评分人id", name: "EXAMINER_ID", dbname: "EXAMINER_ID", width: 300, type: "hidden" },
                             { display: "添加人ID", name: "CREATE_USERID", dbname: "CREATE_USERID", width: 300, type: "hidden" },
                             { display: "添加时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 300, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 300, type: "hidden" },
@@ -95,7 +95,8 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    me.mainform.setData({ "AUDITION": '0' });
+                    //设置记录状态的初值为未提交
+                    me.mainform.setData({ AUDITING: "0" });
                     inner();
                 }
                 else {

@@ -35,13 +35,13 @@
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, type: "text", options: {} },
-                            { display: "考核人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_NAME", newline: false, type: "text", options: {} }
+                            { display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_NAME", newline: false, type: "text", options: {} }
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "记录状态", name: "AUDITING", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "考核人", name: "EXAMINER_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "评分人", name: "EXAMINER_NAME", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "考核说明", name: "REMARK", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "评价总分", name: "TOTAL_SCORE", width: 100, type: "double", editor: { type: 'double' } },
                             { display: "评价结果", name: "RESULT", width: 100, type: "text", editor: { type: 'text' } },
@@ -53,7 +53,7 @@
                             //隐藏
                             { display: "主键", name: "ASSESS_ID", width: 100, type: "text", validate: { required: true }, hide: true },
                             { display: "评估任务id", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true },
-                            { display: "考核人id", name: "EXAMINER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "评分人id", name: "EXAMINER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", hide: true },
                             { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },

@@ -40,16 +40,16 @@ namespace Gksyb.Model
         public string ASSESS_TASK_ID { get; set; }
 
         /// <summary>
-        /// 考核人id
+        /// 评分人id
         /// </summary>
-        [Description("考核人id")]
+        [Description("评分人id")]
         [Column(DbType = DbType.AnsiString)]
         public string EXAMINER_ID { get; set; }
 
         /// <summary>
-        /// 考核人
+        /// 评分人
         /// </summary>
-        [Description("考核人")]
+        [Description("评分人")]
         [Column(DbType = DbType.AnsiString)]
         public string EXAMINER_NAME { get; set; }
 
