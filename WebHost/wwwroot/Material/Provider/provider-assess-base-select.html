@@ -44,6 +44,8 @@
             },
             //已在评估任务中的评估基础
             currentBaseIds: [],
+            //将导入的评估任务ID
+            assessTaskId: null,
             grid: null,
             //底部按钮
             buttons: [],
@@ -55,15 +57,9 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/ProviderAssessBase/list',
-                    parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
-                    },
+                    url: 'Material/ProviderAssessBase/ValidList',
                     sortName: 'ASSESS_BASE_ID',
                     sortOrder: 'asc',
                     width: '98%',
@@ -74,6 +70,26 @@
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
+            },
+            //导入
+            import: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                for (var i = 0; i < rows.length; i++) {
+                    rows[i].ASSESS_TASK_ID = me.assessTaskId;
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/ProviderAssessTaskDet/Save',
+                    loading: '正在导入中...',
+                    data: rows,
+                    success: function () {
+                        LG.showSuccess('导入成功');
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             //添加底部按钮
             loadToolbar: function () {
@@ -89,7 +105,8 @@
                     text: '确定',
                     icon: 'fa fa-check',
                     onclick: function () {
-                        me.dialog.close(me.grid.getSelectedRows());
+                        me.import();
+                        me.dialog.close();
                     }
                 });
                 LG.addFormButtons(me.buttons);
@@ -105,8 +122,8 @@
                 //获取打开对话框时的传入参数
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
-                    me.dialogData = me.dialog.get('data');
-                    me.currentBaseIds = me.dialogData;
+                    me.currentBaseIds = me.dialog.get('currentBaseIds');
+                    me.assessTaskId = me.dialog.get('assessTaskId');
                 }
                 me.setConfig();
                 me.setGrid();
