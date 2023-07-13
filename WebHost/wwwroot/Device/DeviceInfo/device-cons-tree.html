@@ -37,6 +37,7 @@
             iframeloading: $("#iframeloading"),
             tree: null,
             ConsType: [],
+            DeviceComposeName:[],
             DeviceTypeName:[],
             currentNode: null,
             setConfig: function () {
@@ -75,26 +76,11 @@
                             //{ display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 150, type: "text",  readonly: true, hide: true },
                             //{ display: "上级节点", name: "PRE_COMPOSE_NAME", dbname: "PRE_COMPOSE_NAME", minWidth: 200,  type: "text" },
                             {
-                                display: "上级节点", name: "PRE_COMPOSEID", dbname: "PRE_COMPOSEID", minWidth: 200, type: "text",  editor: { type: 'select', data: me.DeviceComposeName },
-                                render: function (rowdata, rowindex, value, column) {
-                                    //debugger
-                                    var item = me.DeviceComposeName.find(x => x.ID === value);
-                                    var pre_composeid = "";
-                                    if (item)
-                                        pre_composeid = item.TEXT;
-                                    return pre_composeid;
-                                },
+                                display: "上级节点", name: "PRE_COMPOSEID", dbname: "PRE_COMPOSEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.DeviceComposeName }
+                                
                             },
                             {
-                                display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", minWidth: 200, type: "text",  editor: { type: 'select', data: me.DeviceComposeName },
-                                render: function (rowdata, rowindex, value, column) {
-                                    //debugger
-                                    var item = me.DeviceTypeName.find(x => x.ID === value);
-                                    var deviceTypeName = "";
-                                    if (item)
-                                        deviceTypeName = item.TEXT;
-                                    return deviceTypeName;
-                                },
+                                display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", minWidth: 200, type: "select", editor: { type: 'select', data: me.DeviceTypeName },
                             },
                             { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text",  editor: { type: 'text' } },
 

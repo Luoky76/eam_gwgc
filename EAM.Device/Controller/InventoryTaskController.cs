@@ -62,18 +62,6 @@ namespace EAM.Device.controller
             return AjaxResult.Success(await _service.GetDeviceScanList(request), "成功");
         }
 
-        /// <summary>
-        /// 根据ID获取信息 查看设备盘点明细
-        /// </summary>
-        /// <param name="ID"></param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<AjaxResult> GetDeviceScanDetailAsync(long? ID)
-        {
-            if (!ID.HasValue) return AjaxResult.Error("参数错误");
-            return await _service.GetDeviceScanDetail(ID);
-        }
-
 
         /// <summary>
         /// 管理设备盘点任务列表
@@ -88,6 +76,9 @@ namespace EAM.Device.controller
         /// <summary>
         /// 生成盘点清单
         /// </summary>
+        /// <param name="sid">盘点ID</param>
+        /// <param name="deptid">部门ID</param>
+        /// <param name="typeid">类型ID</param>
         /// <returns></returns>
         [HttpPost]
         public async Task<AjaxResult> MakeScanList(string sid, string deptid, string typeid)
@@ -105,6 +96,27 @@ namespace EAM.Device.controller
             return await _service.Submit(sids);
         }
 
+
+        /// <summary>
+        /// 设备盘点明细列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetDeviceScanDetailsAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetDeviceScanDetails(request), "成功");
+        }
+
+        /// <summary>
+        /// 管理设备盘点任务明细列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManageScanDetailAsync(SaveRequest<DEVICE_SCAN_DET> request)
+        {
+            return await _service.ManageScanDetail(request);
+        }
+
         /// <summary>
         /// 获取设备盘点结果
         /// </summary>
@@ -113,6 +125,37 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> GetDeviceScanResultAsync(GridRequest request)
         {
             return AjaxResult.Success(await _service.GetDeviceScanResult(request), "成功");
+        }
+
+        /// <summary>
+        /// 提交盘点明细结果
+        /// </summary>
+        /// <param name="sid">盘点ID</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitScanDetAsync(string sid)
+        {
+            return await _service.SubmitScanDet(sid);
+        }
+
+        /// <summary>
+        /// 设备盈亏记录列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetUpDownListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetUpDownList(request), "成功");
+        }
+
+        /// <summary>
+        /// 管理盈亏记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManageUpDownAsync(SaveRequest<DEVICE_SCAN_RESULT> request)
+        {
+            return await _service.ManageUpDown(request);
         }
     }
 }

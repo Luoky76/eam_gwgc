@@ -30,10 +30,10 @@
             ver: getQueryStringByName("ver"),
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             peopleData: [],
-            scanStatus:[],
+            scanStatus: [],
             deviceType: [],
             deptData: [],
-            userid:null,
+            userid: null,
             detailWidth: 920,
             detailHeight: 450,
             setConfig: function () {
@@ -50,28 +50,14 @@
                     grid: {
                         columns: [
                             {
-                                display: "记录状态", name: "AUDITING", labelWidth: 100, width: 300, newline: true, type: "text",
-                                render: function (rowdata, rowindex, value, column) {
-                                    var item = me.dataCheck.find(x => x.ID === value);
-                                    var status = "";
-                                    if (item)
-                                        status = item.TEXT;
-                                    return status;
-                                },
+                                display: "记录状态", name: "AUDITING", labelWidth: 100, width: 300, newline: true, type: "select", format: { data: me.dataCheck }
                             },
-                            { display: "盘点单号", name: "SCAN_CODE", minWidth: 120, type: "text"},
+                            { display: "盘点单号", name: "SCAN_CODE", minWidth: 120, type: "text" },
                             {
-                                display: "盘点状态", name: "STATUS", minWidth: 100, type: "text",
-                                render: function (rowdata, rowindex, value, column) {
-                                    var item = me.scanStatus.find(x => x.ID === value);
-                                    var status = "";
-                                    if (item)
-                                        status = item.TEXT;
-                                    return status;
-                                },
+                                display: "盘点状态", name: "STATUS", minWidth: 100, type: "select", format: { data: me.scanStatus }
                             },
                             {
-                                display: "盘点部门", name: "DEPT_ID", minWidth: 120, type: "select",
+                                display: "盘点部门", name: "DEPT_ID", minWidth: 120, type: "select", validate: { required: true },
                                 editor: {
                                     type: 'select',
                                     data: me.deptData,
@@ -92,15 +78,11 @@
                             { display: "盘点日期", name: "SCAN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "二级单位", name: "SEC_DEPT", minWidth: 150, type: "text" },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
-                            
+
                             { display: "盘点部门编码", name: "DEPT_CODE", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "二级单位ID", name: "SEC_DEPTID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "标识", name: "IDENT", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "主键", name: "SCAN_ID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加人ID", name: "CREATE_USERID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true }
 
                         ]
                     }
@@ -119,7 +101,7 @@
                         me.scanStatus = data.scanStatus;
                         me.deviceType = data.deviceType;
                         me.deptData = data.deptData;
-                        
+
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -147,7 +129,7 @@
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
-                    dataAction: 'server',
+                    //dataAction: 'server',
                     toolbar: {},
                     url: 'Device/InventoryTask/GetDeviceScanList',
                     //url: rootPath + 'handler/grid.ashx',
@@ -177,15 +159,6 @@
                         }
                     },
                     onSuccess: function (data, g) {
-                        if (data && data.Rows) {
-                            var rows = data.Rows;
-                            for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDID = rows[i].SCAN_ID;
-                                rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
-                            }
-                        }
-
-
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
@@ -217,15 +190,18 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "checkscandet":
+                            me.checkscandet();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: rootPath + "System/Export.aspx?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: rootPath + "System/Export.aspx?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
@@ -250,7 +226,7 @@
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({ });
+                me.grid.addEditRow({});
                 me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 1)]);
             },
             save: function () { //保存
@@ -264,7 +240,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url:'Device/InventoryTask/ManageDeviceScan',
+                        url: 'Device/InventoryTask/ManageDeviceScan',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -314,7 +290,7 @@
                 }
             },
 
-            submit: function() {    //提交
+            submit: function () {    //提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 if (selected.length > 0) {
@@ -327,11 +303,11 @@
                     else {
                         var sids = [];
                         selected.forEach((a) => {
-                            sids.push(a.ID)
+                            sids.push(a.SCAN_ID)
                         })
                         LG.ajax({
                             jsToken: true,
-                            url:  'Device/InventoryTask/Submit',
+                            url: 'Device/InventoryTask/Submit',
                             loading: '正在保存中...',
                             data: { "sids": sids },
                             success: function () {
@@ -347,6 +323,42 @@
 
                 }
                 else {
+                    LG.tip('请选择行!');
+                }
+            },
+            checkscandet: function (rowdata) { //查看盘点任务明细
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                var selected = me.grid.getSelectedRow();
+                if (rowdata) {
+                    selected = rowdata;
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: 1100,
+                        height: 620,
+                        allowClose: true,
+                        title: '查看盘点任务明细',
+                        url: "inventscan-det.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected.SCAN_ID }
+                    });
+
+
+                } else {
                     LG.tip('请选择行!');
                 }
             },
