@@ -68,20 +68,6 @@ namespace Gksyb.Model
         public string FORMULATER_NAME { get; set; }
 
         /// <summary>
-        /// 考核人id
-        /// </summary>
-        [Description("考核人id")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EXAMINER_ID { get; set; }
-
-        /// <summary>
-        /// 考核人
-        /// </summary>
-        [Description("考核人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EXAMINER_NAME { get; set; }
-
-        /// <summary>
         /// 考核开始时间
         /// </summary>
         [Description("考核开始时间")]

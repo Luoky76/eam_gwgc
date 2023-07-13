@@ -161,6 +161,7 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
+
         /// <summary>
         /// 维保部门
         /// </summary>
@@ -251,7 +252,21 @@ namespace Gksyb.Server.Services.Common
                .ToListAsync();
         }
 
-
+        /// <summary>
+        /// 记录状态下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> Auditing(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "auditing")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
 
         /// <summary>
         /// 供应商名下拉框
@@ -309,6 +324,21 @@ namespace Gksyb.Server.Services.Common
             return await dbContext.Query<PROVIDER_ASSESS_BASE>()
                 .Where(predicate)
                 .Select(c => new ComboxData() { ID = c.ASSESS_BASE_ID, TEXT = c.CONTENT, VALUE = c.CONTENT })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 用户ID、真实姓名下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> User(Expression<Func<CF_USER, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<CF_USER>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.USERID, TEXT = c.REALNAME, VALUE = c.REALNAME })
                 .Distinct()
                 .ToListAsync();
         }

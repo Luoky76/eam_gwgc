@@ -45,7 +45,6 @@ namespace EAM.Material.Services
                 c.AUDITING,
                 c.ASSESS_TASK_ID,
                 c.EXAMINER_ID,
-                c.EXAMINER_NAME,
                 c.REMARK,
                 c.TOTAL_SCORE,
                 c.RESULT,
@@ -53,7 +52,6 @@ namespace EAM.Material.Services
                 c.CREATEDATE,
                 c.MODIFY_USERID,
                 c.MODIFYDATE
-
             }).GetGridData(request);
             return list;
         }
@@ -73,7 +71,6 @@ namespace EAM.Material.Services
                     a.AUDITING,
                     a.ASSESS_TASK_ID,
                     a.EXAMINER_ID,
-                    a.EXAMINER_NAME,
                     a.REMARK,
                     a.TOTAL_SCORE,
                     a.RESULT,
@@ -93,6 +90,33 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 根据评估任务ID ASSESS_TASK_ID 返回列表
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        public async Task<GridData> GetCertainAssessTaskAsync(string assessTaskId)
+        {
+            var list = await _dbContext.Query<PROVIDER_ASSESS>()
+                .Select(c => new
+                {
+                    c.ASSESS_ID,
+                    c.AUDITING,
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_ID,
+                    c.REMARK,
+                    c.TOTAL_SCORE,
+                    c.RESULT,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
+                })
+                .Where(c => c.ASSESS_TASK_ID == assessTaskId )
+                .GetGridData(null);
+            return list;
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
@@ -106,7 +130,6 @@ namespace EAM.Material.Services
                     c.AUDITING,
                     c.ASSESS_TASK_ID,
                     c.EXAMINER_ID,
-                    c.EXAMINER_NAME,
                     c.REMARK,
                     c.TOTAL_SCORE,
                     c.RESULT,
@@ -126,11 +149,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS entity)
         {
-            entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            if (string.IsNullOrEmpty(entity.ASSESS_TASK_ID))
+            if (entity.ASSESS_TASK_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_TASK_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             await Task.CompletedTask;
         }
@@ -174,7 +195,7 @@ namespace EAM.Material.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-
+                    {"Auditing", null }
                 });
 
                 return AjaxResult.Success(data);

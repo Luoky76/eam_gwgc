@@ -1,4 +1,5 @@
-﻿using EAM.Material.Interfaces;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -12,7 +13,7 @@ namespace EAM.Material.Controller
         private readonly IProviderAssessTaskService _service;
 
         /// <summary>
-        /// 供应商评估任务基础
+        /// 供应商评估任务制定
         /// </summary>
         /// <param name="service"></param>
         public ProviderAssessTaskController(IProviderAssessTaskService service)
@@ -41,6 +42,17 @@ namespace EAM.Material.Controller
         {
             if (id.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_TASK>.Error("请传递参数");
             return AjaxResult<PROVIDER_ASSESS_TASK>.Success(await _service.GetAsync(id), "成功");
+        }
+
+        /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost]
+        public AjaxResult<string> CreatePrimaryKey()
+        {
+            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
         }
 
         /// <summary>

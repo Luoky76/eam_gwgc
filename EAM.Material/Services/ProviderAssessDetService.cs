@@ -85,11 +85,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS_DET entity)
         {
-            entity.ASSESS_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            if (string.IsNullOrEmpty(entity.ASSESS_DET_ID))
+            if (entity.ASSESS_DET_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_DET_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             await Task.CompletedTask;
         }
