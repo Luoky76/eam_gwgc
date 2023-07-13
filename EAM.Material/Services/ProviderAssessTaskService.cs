@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -33,6 +32,16 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public string CreatePrimaryKey()
+        {
+            return GuidHelper.NewSnowflakeId().ToString();
+        }
+
+        /// <summary>
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>
@@ -48,8 +57,6 @@ namespace EAM.Material.Services
                 c.PROVIDER_NAME,
                 c.FORMULATER_ID,
                 c.FORMULATER_NAME,
-                c.EXAMINER_ID,
-                c.EXAMINER_NAME,
                 c.BEGIN_TIME,
                 c.END_TIME,
                 c.PROVIDER_PRODUCTION,
@@ -79,8 +86,6 @@ namespace EAM.Material.Services
                     c.PROVIDER_NAME,
                     c.FORMULATER_ID,
                     c.FORMULATER_NAME,
-                    c.EXAMINER_ID,
-                    c.EXAMINER_NAME,
                     c.BEGIN_TIME,
                     c.END_TIME,
                     c.PROVIDER_PRODUCTION,
@@ -101,11 +106,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS_TASK entity)
         {
-            entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            if (string.IsNullOrEmpty(entity.ASSESS_TASK_ID))
+            if (entity.ASSESS_TASK_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_TASK_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             await Task.CompletedTask;
         }

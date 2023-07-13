@@ -45,7 +45,6 @@ namespace EAM.Material.Services
                 c.AUDITING,
                 c.ASSESS_TASK_ID,
                 c.EXAMINER_ID,
-                c.EXAMINER_NAME,
                 c.REMARK,
                 c.TOTAL_SCORE,
                 c.RESULT,
@@ -73,7 +72,6 @@ namespace EAM.Material.Services
                     a.AUDITING,
                     a.ASSESS_TASK_ID,
                     a.EXAMINER_ID,
-                    a.EXAMINER_NAME,
                     a.REMARK,
                     a.TOTAL_SCORE,
                     a.RESULT,
@@ -106,7 +104,6 @@ namespace EAM.Material.Services
                     c.AUDITING,
                     c.ASSESS_TASK_ID,
                     c.EXAMINER_ID,
-                    c.EXAMINER_NAME,
                     c.REMARK,
                     c.TOTAL_SCORE,
                     c.RESULT,
@@ -126,11 +123,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS entity)
         {
-            entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            if (string.IsNullOrEmpty(entity.ASSESS_TASK_ID))
+            if (entity.ASSESS_TASK_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_TASK_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             await Task.CompletedTask;
         }

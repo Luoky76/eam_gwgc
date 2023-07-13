@@ -47,13 +47,6 @@ namespace Gksyb.Model
         public string EXAMINER_ID { get; set; }
 
         /// <summary>
-        /// 评分人
-        /// </summary>
-        [Description("评分人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EXAMINER_NAME { get; set; }
-
-        /// <summary>
         /// 考核说明
         /// </summary>
         [Description("考核说明")]

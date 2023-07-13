@@ -103,11 +103,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS_BASE entity)
         {
-            entity.ASSESS_BASE_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            if (string.IsNullOrEmpty(entity.ASSESS_BASE_ID))
+            if (entity.ASSESS_BASE_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_BASE_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_BASE_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             await Task.CompletedTask;
         }

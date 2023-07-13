@@ -1,5 +1,6 @@
 ﻿using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Interfaces
 {
@@ -18,6 +19,13 @@ namespace EAM.Material.Interfaces
         /// <param name="id"></param>
         /// <returns></returns>
         public Task<PROVIDER_ASSESS_TASK> GetAsync(string id);
+
+        /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public string CreatePrimaryKey();
 
         /// <summary>
         /// 保存
