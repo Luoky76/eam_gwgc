@@ -20,6 +20,13 @@ namespace EAM.Material.Interfaces
         public Task<GridData> ExtendListAsync(GridRequest request);
 
         /// <summary>
+        /// 根据评估任务ID ASSESS_TASK_ID 返回列表
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        public Task<GridData> GetCertainAssessTaskAsync(string assessTaskId);
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

@@ -332,9 +332,6 @@
                     }
                     return true;
                 });
-                LG.validate($("#mainform"), {
-                    debug: true
-                });
             },
             loadToolbar: function () {
                 var me = this;
@@ -461,22 +458,23 @@
                     }
                 }
             },
+            examinerGrid: null,
             setExaminerGrid: function () {
                 var me = this;
-                /*me.config.grid.columns.removeNull();
-                me.grid = $("#examiner-grid").ligerGrid({
+                me.config.examinerGrid.columns.removeNull();
+                me.examinerGrid = $("#examiner-grid").ligerGrid({
                     dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
                     usePager: false,
-                    columns: me.config.grid.columns,
+                    columns: me.config.examinerGrid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/ProviderAssessTaskDet/GetAssessTask',
+                    url: 'Material/ProviderAssess/GetCertainAssessTask',
                     parms: {
                         assessTaskId: me.sid
                     },
-                    sortName: 'ASSESS_BASE_ID',
+                    sortName: 'ASSESS_ID',
                     sortOrder: 'asc',
                     width: '99%',
                     height: '100%',
@@ -487,11 +485,98 @@
                         //me.iframeloading.hide();
                     }
                 });
-                me.grid.isValid = true;
+                me.examinerGrid.isValid = true;
                 if (!me.isView) {
-                    me.loadToolbar();
+                    me.loadExaminerToolbar();
                 }
-                me.bindGridEvent();*/
+                me.bindExaminerGridEvent();
+            },
+            bindExaminerGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.examinerToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.examinerToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.examinerGrid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.examinerGrid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+            },
+            loadExaminerToolbar: function () {
+                var me = this;
+                me.examinerToolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadExaminer();
+                            break;
+                        case "add":
+                            me.addExaminer();
+                            break;
+                        case "delete":
+                            me.deleteExaminer();
+                            break;
+                        case "import":
+                            me.importExaminer();
+                            break;
+                        case "save":
+                            me.saveExaminer();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                //加载detail按钮
+                me.examinerGrid.toolbarManager.options.group = 'examiner';
+                LG.loadToolbar(me.examinerGrid, me.examinerToolbarBtnItemClick);
+            },
+            //刷新
+            reloadExaminer: function () {
+                var me = this;
+                me.examinerGrid.loadData();
             },
             //初始化
             init: function () {
@@ -535,6 +620,7 @@
 
                 //加载评分人
                 me.setExaminerGrid();
+                me.reloadExaminer();
 
                 return me;
             }

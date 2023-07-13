@@ -43,6 +43,17 @@ namespace EAM.Material.Controller
         }
 
         /// <summary>
+        /// 根据评估任务ID ASSESS_TASK_ID 返回列表
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> GetCertainAssessTaskAsync(string assessTaskId)
+        {
+            return await _service.GetCertainAssessTaskAsync(assessTaskId);
+        }
+
+        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>

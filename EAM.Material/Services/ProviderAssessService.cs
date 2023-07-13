@@ -52,7 +52,6 @@ namespace EAM.Material.Services
                 c.CREATEDATE,
                 c.MODIFY_USERID,
                 c.MODIFYDATE
-
             }).GetGridData(request);
             return list;
         }
@@ -87,6 +86,33 @@ namespace EAM.Material.Services
                     b.END_TIME,
                     b.PROVIDER_PRODUCTION
                 }).GetGridData(request);
+            return list;
+        }
+
+        /// <summary>
+        /// 根据评估任务ID ASSESS_TASK_ID 返回列表
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        public async Task<GridData> GetCertainAssessTaskAsync(string assessTaskId)
+        {
+            var list = await _dbContext.Query<PROVIDER_ASSESS>()
+                .Select(c => new
+                {
+                    c.ASSESS_ID,
+                    c.AUDITING,
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_ID,
+                    c.REMARK,
+                    c.TOTAL_SCORE,
+                    c.RESULT,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
+                })
+                .Where(c => c.ASSESS_TASK_ID == assessTaskId )
+                .GetGridData(null);
             return list;
         }
 
