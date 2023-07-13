@@ -417,6 +417,7 @@
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
+                            me.reloadTaskBase();
                         },
                         error: function (message) {
                             LG.showError(message);

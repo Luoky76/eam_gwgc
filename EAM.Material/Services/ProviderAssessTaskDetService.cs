@@ -80,6 +80,25 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_TASK_DET> request)
         {
+            //去除重复的<ASSESS_TASK_ID, ASSESS_BASE_ID>
+            for (int i = request.Added.Count - 1; i >= 0; --i)
+            {
+                var entity = request.Added[i];
+                var list = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.ASSESS_BASE_ID
+                })
+                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.ASSESS_BASE_ID == entity.ASSESS_BASE_ID)
+                .GetGridData(null);
+                if (list.Total > 0)
+                {
+                    //有重复，删除该请求
+                    request.Added.RemoveAt(i);
+                }
+            }
+
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -102,11 +121,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS_TASK_DET entity)
         {
-            entity.ASSESS_TASK_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            if (string.IsNullOrEmpty(entity.ASSESS_TASK_DET_ID))
+            if (entity.ASSESS_TASK_DET_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_TASK_DET_ID = _userSession.Corp.CorpID;
+                entity.ASSESS_TASK_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             await Task.CompletedTask;
         }
