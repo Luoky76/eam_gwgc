@@ -331,6 +331,21 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 用户ID、真实姓名下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> User(Expression<Func<CF_USER, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<CF_USER>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.USERID, TEXT = c.REALNAME, VALUE = c.REALNAME })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         static ComboxDataService()

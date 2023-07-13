@@ -19,11 +19,11 @@
         <div class="l-form-container">
             <div class="l-group" style="width: 100%;"><span>评估任务明细</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
-                <li style=" width: 50%; float: left">
+                <li style="width: 50%; float: left">
                     <div style="margin-bottom: 50px; width: 100%;" id="task-base-grid">
                     </div>
                 </li>
-                <li style=" width: 50%; float: left">
+                <li style="width: 50%; float: left">
                     <div style="margin-bottom: 50px; width: 100%;" id="examiner-grid">
                     </div>
                 </li>
@@ -41,6 +41,7 @@
             isView: true,
             auditing: [],
             assessBaseContent: [],
+            examiner: [],
             orginData: {},
             setConfig: function () {
                 var me = this;
@@ -82,6 +83,19 @@
                             { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
                             { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", hide: true }
+                        ]
+                    },
+                    examinerGrid: {
+                        columns: [
+                            {
+                                //实际为评分人id
+                                display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", minWidth: 400, op: "equal", type: "select", editor: {
+                                    type: "select",
+                                    data: me.examiner
+                                }
+                            },
+                            //隐藏
+                            { display: "评估任务ID", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true }
                         ]
                     }
                 };
@@ -235,6 +249,7 @@
                     success: function (data, message) {
                         me.assessBaseContent = data.AssessBaseContent;
                         me.auditing = data.Auditing;
+                        me.examiner = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
