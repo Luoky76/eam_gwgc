@@ -275,10 +275,10 @@
                         LG.ajax({
                             jsToken: true,
                             url: 'Device/InventoryTask/MakeScanList',
-                            loading: '正在保存中...',
+                            loading: '正在生成盘点清单中...',
                             data: { "sid": selected.SCAN_ID, "deptid": selected.DEPT_ID, "typeid": selected.TYPE_ID },
                             success: function () {
-                                LG.showSuccess('保存成功');
+                                LG.showSuccess('生成盘点清单成功');
                                 me.grid.isDataChanged = false;
                                 me.reload();
                             },
