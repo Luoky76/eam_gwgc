@@ -123,6 +123,25 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS> request)
         {
+            //去除重复的<ASSESS_TASK_ID, EXAMINER_ID>
+            for (int i = request.Added.Count - 1; i >= 0; --i)
+            {
+                var entity = request.Added[i];
+                var list = await _dbContext.Query<PROVIDER_ASSESS>()
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_ID
+                })
+                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.EXAMINER_ID == entity.EXAMINER_ID)
+                .GetGridData(null);
+                if (list.Total > 0)
+                {
+                    //有重复，删除该请求
+                    request.Added.RemoveAt(i);
+                }
+            }
+
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {

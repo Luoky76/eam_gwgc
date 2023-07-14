@@ -578,6 +578,57 @@
                 var me = this;
                 me.examinerGrid.loadData();
             },
+            //新增
+            addExaminer: function () {
+                var me = this;
+                //设置新增行的ASSESS_TASK_ID为主表主键
+                me.examinerGrid.addEditRow({ "ASSESS_TASK_ID": me.sid }, true);
+            },
+            //删除
+            deleteExaminer: function () {
+                var me = this;
+                if (me.examinerGrid.endEdit() != false) {
+                    var selected = me.examinerGrid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.examinerGrid.deleteRow(selected[i]);
+                                }
+                                me.saveExaminer();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            //保存
+            saveExaminer: function () {
+                var me = this;
+                if (me.examinerGrid.endEdit() != false) {
+                    if (!me.examinerGrid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.examinerGrid.validChangeRows()) return false;
+                    var changeRow = me.examinerGrid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/ProviderAssess/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.examinerGrid.isDataChanged = false;
+                            me.reloadExaminer();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
             //初始化
             init: function () {
                 var me = this;
