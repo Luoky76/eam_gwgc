@@ -32,7 +32,8 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "text", },
+                            { display: "PLAN_ID", name: "PLAN_ID", width: 100, type: "text", hide: true },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", options: { data: me.auditingStatus } },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
                             { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
@@ -51,6 +52,7 @@
                 };
             },
             grid: null,
+            auditingStatus: [{ "ID": "0", "TEXT": "未提交", VALUE: "0" }, { "ID": "1", "TEXT": "已提交", VALUE: "1" }],
             searchForm: null,
             buttons: null,
             UserInfo:null,
@@ -162,8 +164,56 @@
                     data: { "sid": "" }
                 });
             },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
             modify: function () { //修改
                 var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var sid = selected.PLAN_ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[修改]',
+                        url: "repair-plan-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
             },
             loadRecord: function () { //保存
                 var me = this;

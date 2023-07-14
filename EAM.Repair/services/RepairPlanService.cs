@@ -41,7 +41,8 @@ namespace EAM.Repair.services
             var query = await _dbContext.JoinQuery<REP_PLAN, DEVICE_CARD>((a, b) => new object[]
             {
                 JoinType.LeftJoin,a.DEVICE_ID.Equals(b.DEVICE_ID)
-            }).Select((a, b) => new
+            })
+            .Select((a, b) => new
             {
                 a.PLAN_ID,
                 a.AUDITING,
@@ -58,6 +59,7 @@ namespace EAM.Repair.services
                 a.EIDT_DATE,
                 b.DEVICE_ID,
                 b.DEVICE_NAME,
+                b.DEVICE_TYPE,
                 b.DEVICE_NO,
                 b.ASSET_CODE,
                 AUDITINGSORT = Case.When(a.AUDITING.Equals("6")).Then("1.5").Else(a.AUDITING)
@@ -83,6 +85,7 @@ namespace EAM.Repair.services
                     c.DEAL_TYPE,
                     c.FAULT_DESCRIBE,
                     c.PLAN_MEMO,
+                    c.DEVICE_ID,
                     c.PLAN_START_DATE,
                     c.PLAN_END_DATE,
                     c.PLAN_STOP_TIME,
@@ -130,9 +133,9 @@ namespace EAM.Repair.services
         /// <returns></returns>
         public async Task<AjaxResult> ShipList()
         {
-            var result = await _dbContext.Query<DEVICE_CARD>()
+            var result = await _dbContext.Query<DEVICE_CARD>(a=> a.TYPE_NAME == "1")//设备类别为船舶
                 .OrderBy(c => c.DEVICE_ID)
-                .Select(c => new DEVICE_CARD { DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_NO = c.DEVICE_NO, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT })
+                .Select(c => new DEVICE_CARD { AUDITING = c.AUDITING, DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_NO = c.DEVICE_NO, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT, DEVICE_TYPE = c.DEVICE_TYPE })
                .ToListAsync();
             return AjaxResult.Success(result, "成功");
         }

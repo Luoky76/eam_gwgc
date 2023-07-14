@@ -68,6 +68,7 @@
 
             config.Form = {
                 fields: [
+                    { display: "DEVICE_ID", name: "DEVICE_ID", type: "hidden" },
                     { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: auditingStatus }, group: "维修计划-设备信息" },
                     { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", options: {} },
                     { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", options: {} },
@@ -85,15 +86,18 @@
                             ],
                             onChangeValue: function (input, value, g) {
                                 if (g.selected != undefined) {
+                                    $("#DEVICE_ID").val(g.selected.DEVICE_ID);
                                     $("#DEVICE_NAME").val(g.selected.DEVICE_NAME);
-                                    $("#DEVICE_CODE").val(g.selected.DEVICE_NO);
+                                    $("#DEVICE_NO").val(g.selected.DEVICE_NO);
                                     $("#DEPT_NAME").val(g.selected.DEPT_NAME);
                                     $("#WSEC_DEPT").val(g.selected.WSEC_DEPT);
+                                    $("#ASSET_CODE").val(g.selected.ASSET_CODE);
+                                    $("#DEVICE_TYPE").val(g.selected.DEVICE_TYPE);
                                 }
                             }
                         }
                     },
-                    { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, type: "text", options: {} },
+                    { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                     { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {} },
                     { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", options: {} },
                     { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {} },
@@ -194,6 +198,7 @@
             function f_setDefault() {
                 //f_loadData();
                 if (isAddNew) {
+                    $("#AUDITING").val("0")
                     delete orginData;
                     orginData = {};
                     mainform.setData(orginData);
@@ -246,19 +251,23 @@
                 }
                 var data = mainform.getData();
                 var changeRow = new Object();
+                var formdata = [];
+                var o_formdata = [];
+                formdata.push(data);
+                o_formdata.push(orginData);
                 var op = isAddNew ? "added" : "updated";
-                var updateFields = "";
                 if (!isAddNew) {
-                    changeRow["updateFields"] = LG.getFormCombChanges(data, orginData, true);
+                    changeRow["original"] = o_formdata;
                 }
-                changeRow[op] = "[" + JSON2.stringify($.extend({}, data)) + "]";
+                changeRow[op] = formdata;
+                debugger
                 LG.ajax({
                     async: false,
-                    url: 'Repair/RepairPlan/ComboxData',
+                    url: 'Repair/RepairPlan/Save',
                     loading: '正在保存中...',
                     data: changeRow,
                     success: function () {
-                        LG.showSuccess('保存成功', f_clear);
+                        LG.showSuccess('保存成功', dialog.close());
                     },
                     error: function (message) {
                         LG.showError(message);

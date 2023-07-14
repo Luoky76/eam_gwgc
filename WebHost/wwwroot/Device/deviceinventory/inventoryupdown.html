@@ -162,7 +162,7 @@
                     else {
                         if (me.grid.endEdit() != false) {
                             if (!me.grid.isDataChanged) {
-                                LG.showSuccess('无修改');
+                                LG.showSuccess('请先填写结果说明！');
                                 return;
                             }
                             if (!me.grid.validChangeRows()) return false;

@@ -1,4 +1,6 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Device.interfaces;
 using Gksyb.Common;
@@ -224,7 +226,7 @@ namespace EAM.Device.services
         public async Task<AjaxResult> Submit(List<string> sids)
         {
             var query = _dbContext.Query<DEVICE_SCAN_DET>()
-                 .Where(c => sids.Contains(c.SCAN_ID));
+                 .Where(c => sids.Contains(c.SCAN_ID)).First();
             if (query == null)
             {
                 throw new MessageException("盘点任务明细没有数据，必须填写！");
@@ -323,7 +325,7 @@ namespace EAM.Device.services
         }
 
         /// <summary>
-        /// 提交
+        /// 提交盘点任务结果
         /// </summary>
         /// <returns></returns>
         public async Task<AjaxResult> SubmitScanDet(string sid)
@@ -430,11 +432,31 @@ namespace EAM.Device.services
         }
 
         /// <summary>
-        /// 管理设备盈亏记录
+        /// 提交设备盈亏记录
         /// </summary>
         /// <returns></returns>
         public async Task<AjaxResult> ManageUpDown(SaveRequest<DEVICE_SCAN_RESULT> request)
         {
+            foreach (var entity in request.Updated)
+            {
+                await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.SCAN_ID==entity.SCAN_ID,
+                    x => new DEVICE_SCAN_RESULT
+                    {
+                        AUDITING = "1",
+                    });
+                var qry = await _dbContext.Query<DEVICE_SCAN>()
+                    .LeftJoin<DEVICE_SCAN_RESULT>((a, b) => a.SCAN_ID == b.SCAN_ID)
+                    .Where((a, b) => a.SCAN_ID==entity.SCAN_ID).Select((a, b) => b.AUDITING).ToListAsync();
+                if (!qry.Contains("0"))
+                {
+                    await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==entity.SCAN_ID,
+                    x => new DEVICE_SCAN
+                    {
+                        STATUS = "4",
+                    });
+                }
+                
+            }
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -450,7 +472,6 @@ namespace EAM.Device.services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_SCAN_RESULT entity)
         {
-            entity.AUDITING = "1";
             await Task.CompletedTask;
         }
         #endregion
