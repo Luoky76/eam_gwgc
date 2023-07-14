@@ -13,6 +13,13 @@ namespace EAM.Material.Interfaces
         public Task<GridData> ListAsync(GridRequest request);
 
         /// <summary>
+        /// 根据评估id ASSESS_ID 获取列表
+        /// </summary>
+        /// <param name="assessId"></param>
+        /// <returns></returns>
+        public Task<GridData> CertainAssessListAsync(string assessId);
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

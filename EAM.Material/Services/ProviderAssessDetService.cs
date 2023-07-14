@@ -55,6 +55,30 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 根据评估id ASSESS_ID 获取列表
+        /// </summary>
+        /// <param name="assessId"></param>
+        /// <returns></returns>
+        public async Task<GridData> CertainAssessListAsync(string assessId)
+        {
+            var list = await _dbContext.Query<PROVIDER_ASSESS_DET>().Select(c => new
+            {
+                c.ASSESS_DET_ID,
+                c.ASSESS_ID,
+                c.ASSESS_BASE_ID,
+                c.SCORE,
+                c.SCORE_DESC,
+                c.CREATE_USERID,
+                c.CREATEDATE,
+                c.MODIFY_USERID,
+                c.MODIFYDATE
+            })
+            .Where(c => c.ASSESS_ID == assessId)
+            .GetGridData(null);
+            return list;
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
@@ -110,8 +134,6 @@ namespace EAM.Material.Services
         private async Task BeforeDelete(PROVIDER_ASSESS_DET entity)
         {
             await Task.CompletedTask;
-
-
         }
 
         /// <summary>
@@ -131,7 +153,7 @@ namespace EAM.Material.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-
+                    
                 });
 
                 return AjaxResult.Success(data);

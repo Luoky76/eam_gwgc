@@ -17,13 +17,14 @@
     </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
-            <div class="l-group" style="width: 100%;"><span>评估任务明细</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style="width: 50%; float: left">
+                    <div class="l-group" style="display: inline-block; width: 100%; float: left"><span>评估任务明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="task-base-grid">
                     </div>
                 </li>
                 <li style="width: 50%; float: left">
+                    <div class="l-group" style="display: inline-block; width: 100%; float: left "><span>评分人明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="examiner-grid">
                     </div>
                 </li>
@@ -278,7 +279,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
@@ -320,17 +321,6 @@
                         left: e.pageX
                     });
                     return false;
-                });
-                me.grid.bind('beforeSubmitEdit', function (e) {
-                    if (this.isValid) {
-                        if (!LG.validator.form()) {
-                            LG.showInvalidTip();
-                            return false;
-                        }
-                    } else {
-                        $(".l-verify-tip").remove();
-                    }
-                    return true;
                 });
             },
             loadToolbar: function () {
@@ -479,7 +469,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
@@ -522,17 +512,6 @@
                     });
                     return false;
                 });
-                me.examinerGrid.bind('beforeSubmitEdit', function (e) {
-                    if (this.isValid) {
-                        if (!LG.validator.form()) {
-                            LG.showInvalidTip();
-                            return false;
-                        }
-                    } else {
-                        $(".l-verify-tip").remove();
-                    }
-                    return true;
-                });
             },
             loadExaminerToolbar: function () {
                 var me = this;
@@ -569,7 +548,7 @@
                             break;
                     }
                 }
-                //加载detail按钮
+                //加载examiner按钮
                 me.examinerGrid.toolbarManager.options.group = 'examiner';
                 LG.loadToolbar(me.examinerGrid, me.examinerToolbarBtnItemClick);
             },

@@ -1,10 +1,12 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using System.Collections.Generic;
 
 namespace EAM.Material.Services
 {
@@ -117,6 +119,42 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 连接评估任务表后
+        /// 根据评估ID ASSESS_ID 返回单行记录
+        /// </summary>
+        /// <param name="assessId"></param>
+        /// <returns></returns>
+        public async Task<PROVIDER_ASSESS_AND_TASK> GetCertainAssessAsync(string assessId)
+        {
+            var row = await _dbContext.Query<PROVIDER_ASSESS>()
+                .LeftJoin<PROVIDER_ASSESS_TASK>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .Select((a, b) => new PROVIDER_ASSESS_AND_TASK
+                {
+                    ASSESS_ID = a.ASSESS_ID,
+                    AUDITING = a.AUDITING,
+                    ASSESS_TASK_ID = a.ASSESS_TASK_ID,
+                    EXAMINER_ID = a.EXAMINER_ID,
+                    REMARK = a.REMARK,
+                    TOTAL_SCORE = a.TOTAL_SCORE,
+                    RESULT = a.RESULT,
+                    CREATE_USERID = a.CREATE_USERID,
+                    CREATEDATE = a.CREATEDATE,
+                    MODIFY_USERID = a.MODIFY_USERID,
+                    MODIFYDATE = a.MODIFYDATE,
+                    PROVIDER_ID = b.PROVIDER_ID,
+                    PROVIDER_NAME = b.PROVIDER_NAME,
+                    FORMULATER_ID = b.FORMULATER_ID,
+                    FORMULATER_NAME = b.FORMULATER_NAME,
+                    BEGIN_TIME = b.BEGIN_TIME,
+                    END_TIME = b.END_TIME,
+                    PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION
+                })
+                .Where(c => c.ASSESS_ID == assessId)
+                .FirstAsync();
+            return row;
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
@@ -168,9 +206,14 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS entity)
         {
-            if (entity.ASSESS_TASK_ID.IsNullOrEmpty())
+            if (entity.ASSESS_ID.IsNullOrEmpty())
             {
-                entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
+                entity.ASSESS_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            //AUDITING 默认为未提交
+            if (entity.AUDITING.IsNullOrEmpty())
+            {
+                entity.AUDITING = "0";
             }
             await Task.CompletedTask;
         }
@@ -214,7 +257,9 @@ namespace EAM.Material.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-                    {"Auditing", null }
+                    {"Auditing", null },
+                    {"User", null },
+                    {"AssessBaseContent", null }
                 });
 
                 return AjaxResult.Success(data);
