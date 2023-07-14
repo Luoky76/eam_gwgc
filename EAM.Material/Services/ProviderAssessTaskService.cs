@@ -106,10 +106,13 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS_TASK entity)
         {
+            //获取并设置主键
             if (entity.ASSESS_TASK_ID.IsNullOrEmpty())
             {
                 entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
             }
+            //设置记录状态为已提交
+            entity.AUDITING = "1";
             await Task.CompletedTask;
         }
 
