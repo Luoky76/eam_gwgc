@@ -201,7 +201,7 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
-        
+
         /// <summary>
         /// 设备卡片
         /// </summary>
@@ -210,13 +210,11 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeviceInfo(Expression<Func<DEVICE_CARD, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            var qry = _dbContext.Query<DEVICE_CARD>();
-            if (!_userSession.IsAdmin)
-            {
-                qry = qry.Where(c => _userSession.Corp.CorpID == c.SEC_DEPTID);
-            }
+            var qry = _dbContext.Query<DEVICE_CARD>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID);
             return await qry.Where(predicate).Where(c => c.AUDITING=="1")
-                .Select(c => new ComboxData() { 
+                .Select(c => new ComboxData()
+                {
                     ID = c.DEVICE_ID,
                     TEXT = c.DEVICE_NAME,
                     VALUE = c.DEVICE_NO,
@@ -305,11 +303,11 @@ namespace Gksyb.Server.Services.Common
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        private async Task<List<ComboxData>> DeptData(Expression<Func<CF_DEPT, bool>> predicate)
+        private async Task<List<ComboxData>> DeptData(Expression<Func<CF_CORP, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<CF_DEPT>().Where(predicate)
-                .Select(c => new ComboxData() { ID = c.DEPT_ID, TEXT = c.DEPT_NAME, VALUE = c.DEPT_CODE })
+            return await dbContext.Query<CF_CORP>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.CORP_SNAME })
                 .Distinct()
                .ToListAsync();
         }

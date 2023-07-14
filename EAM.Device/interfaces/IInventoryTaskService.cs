@@ -1,15 +1,8 @@
 ﻿using Gksyb.Common;
-using Gksyb.Core.Application;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAM.Device.interfaces
 {
@@ -34,13 +27,6 @@ namespace EAM.Device.interfaces
         public Task<GridData> GetDeviceScanList(GridRequest request);
 
         /// <summary>
-        /// 查看设备盘点明细
-        /// </summary>
-        /// <returns></returns>
-        Task<AjaxResult> GetDeviceScanDetail(long? ID);
-
-
-        /// <summary>
         /// 管理设备盘点任务列表
         /// </summary>
         /// <returns></returns>
@@ -59,9 +45,39 @@ namespace EAM.Device.interfaces
         public Task<AjaxResult> Submit(List<string> sids);
 
         /// <summary>
+        /// 获取设备盘点任务明细
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetDeviceScanDetails(GridRequest request);
+
+        /// <summary>
+        /// 管理设备盘点任务明细列表
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> ManageScanDetail(SaveRequest<DEVICE_SCAN_DET> request);
+
+        /// <summary>
         /// 获取获取设备盘点结果
         /// </summary>
         /// <returns></returns>
         public Task<GridData> GetDeviceScanResult(GridRequest request);
+
+        /// <summary>
+        /// 提交盘点明细结果
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> SubmitScanDet(string sid);
+
+        /// <summary>
+        /// 获取盈亏记录列表
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetUpDownList(GridRequest request);
+
+        /// <summary>
+        /// 管理盈亏记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> ManageUpDown(SaveRequest<DEVICE_SCAN_RESULT> request);
     }
 }

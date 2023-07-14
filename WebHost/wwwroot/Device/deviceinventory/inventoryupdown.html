@@ -1,13 +1,10 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <meta http-equiv="Expires" content="0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Cache" content="no-cache">
     <title></title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
@@ -23,34 +20,42 @@
     </form>
     <script type="text/javascript">
         'use strict';
-        var rootPath = "../";
-        window["encryptUrl"] = ["/Apis/"];
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
-            ver: getQueryStringByName("ver"),
-            detailWidth: 920,
-            detailHeight: 450,
-            dataFlag: [{ ID: "1", TEXT: "是" }, { ID: "0", TEXT: "否" }],
+            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            scanresult: [{ "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "停机分类名称", name: "_search_STOP_NAME", dbname: "STOP_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "是否故障停机", name: "_search_IS_STOP", dbname: "IS_STOP", newline: false, upper: true, type: "select", options: { type: 'select', data: me.dataFlag } },
-                            { display: "是否计划内停机", name: "_search_IS_PLAN", dbname: "IS_PLAN", newline: false, upper: true, type: "select", options: { type: 'select', data: me.dataFlag } },
-                            
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "盘点日期", name: "_search_SCAN_DATE", dbname: "SCAN_DATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "盘点结果类型", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { data: me.scanresult } },
+                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-
-                            { display: "停机分类名称", name: "STOP_NAME", minWidth: 200, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "是否故障停机", name: "IS_STOP", width: 100, type: "select", editor: { type: 'select', data: me.dataFlag }, validate: { required: true } },
-                            { display: "是否计划内停机", name: "IS_PLAN", width: 100, type: "select", editor: { type: 'select', data: me.dataFlag }, validate: { required: true } },
-                            { display: "备注", name: "MEMO", minWidth: 400, type: "text", editor: { type: 'text' } },
-                            { display: "主键", name: "STOP_TYPE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", format: { data: me.dataCheck } },
+                            { display: "盘点单号", name: "SCAN_CODE", width: 100, type: "text", },
+                            { display: "盘点日期", name: "SCAN_DATE", width: 100, type: "date", },
+                            { display: "盘点结果类型", name: "SCAN_TYPE", width: 100, type: "text" },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text" },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text" },
+                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text" },
+                            { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text" },
+                            /*{ display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text"},*/
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "text" },
+                            {
+                                display: "结果说明", name: "RESULT_MEMO", minWidth: 200, type: "text",validate: { required: true },
+                                editor: {
+                                    type: 'text',
+                                }
+                            },
+                            { display: "备注", name: "MEMO", minWidth: 200, type: "text" },
                         ]
                     }
                 };
@@ -58,51 +63,41 @@
             grid: null,
             searchForm: null,
             buttons: null,
-            loadComboxData: function () {
+            /*loadComboxData: function () {
                 var me = this;
-                var param = {
-                    "Common": {},
-                };
                 LG.ajax({
                     async: false,
-                    url:  'Device/DeviceStop/ComboxData',
-                    data: { "parm": JSON2.stringify(param) },
+                    url: 'DeviceScanResult/comboxdata',
                     loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.dataCommon = data.Common;
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
-            },
+            },*/
             setGrid: function () {
                 var me = this;
-                var columns = me.config.grid.columns;
-                for (var i = columns.length - 1; i >= 0; i--) {
-                    if (!columns[i]) columns.splice(i, 1);
-                }
+                me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: false,
                     columns: me.config.grid.columns,
-                    //dataAction: 'server',
+                    usePager: false,
+                    dataAction: 'local',
                     toolbar: {},
-                    url:  'Device/DeviceStop/GetStopTypeList',
-                    //url:  'handler/grid.ashx',
+                    url: 'Device/InventoryTask/GetUpDownList',
                     parms: {
-                        //"view": "SAFE_EQUIPMENT",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'STOP_TYPE_ID',
-                    sortOrder: 'desc',
-                    width: '100%',
+                    //sortName: 'AUDITING',
+                    //sortOrder: 'asc',
+                    width: '98%',
                     height: '100%',
-                    dateFormat: 'yyyy-MM-dd HH:mm',
                     checkbox: true,
                     enabledEdit: true,
                     clickToEdit: true,
@@ -115,7 +110,16 @@
                         }
                     },
                     onSuccess: function (data, g) {
-
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
                     }
                 });
                 me.grid.isValid = true;
@@ -129,24 +133,18 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "add":
-                            me.add();
-                            break;
-                        case "delete":
-                            me.delete();
-                            break;
-                        case "save":
-                            me.save();
+                        case "submit":
+                            me.submit();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../../System/Export.html?exporttype=xls",
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../../System/Export.html?exporttype=doc",
                                 modal: true
                             });
                             break;
@@ -154,58 +152,45 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            submit: function () {    //提交
                 var me = this;
-                me.grid.addEditRow({});
-                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 1)]);
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    if (selected.AUDITING == "1") {
+                        LG.tip('已提交，无法再次提交!');
                     }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url:  'Device/DeviceStop/ManageStopType',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+                    else {
+                        if (me.grid.endEdit() != false) {
+                            if (!me.grid.isDataChanged) {
+                                LG.showSuccess('无修改');
+                                return;
+                            }
+                            if (!me.grid.validChangeRows()) return false;
+                            var changeRow = me.grid.getChangedRows();
+                            LG.ajax({
+                                jsToken: true,
+                                url: 'Device/InventoryTask/ManageUpDown',
+                                loading: '正在保存中...',
+                                data: changeRow,
+                                success: function () {
+                                    LG.showSuccess('保存成功');
+                                    me.grid.isDataChanged = false;
+                                    me.reload();
+                                },
+                                error: function (message) {
+                                    LG.showError(message);
+                                }
+                            });
                         }
-                    });
+                    }
                 }
-
+                else {
+                    LG.tip('请选择行!');
+                }
             },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
-            },
-            delete: function () { //删除
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
             },
             bindGridEvent: function () {
                 var me = this;
@@ -255,10 +240,7 @@
             },
             setForm: function () {
                 var me = this;
-                var columns = me.config.search.fields;
-                for (var i = columns.length - 1; i >= 0; i--) {
-                    if (!columns[i]) columns.splice(i, 1);
-                }
+                me.config.search.fields.removeNull();
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
@@ -276,19 +258,18 @@
                         me.buttons = g.options.buttons;
                     }
                 });
-                me.buttons[0].click(); //查询
             },
             init: function () {
                 var me = this;
-                me.loadComboxData();
+                //me.loadComboxData();
                 me.setConfig();
-                me.setGrid();
                 me.setForm();
+                me.setGrid();
+                me.reload();
                 return me;
             }
         };
         business.init();
     </script>
 </body>
-
 </html>

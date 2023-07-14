@@ -35,6 +35,7 @@ namespace EAM.Device.services
                 { "RunStatus",null},
             });
         }
+
         /// <summary>
         /// 获取设备卡片基础信息
         /// </summary>
@@ -72,24 +73,17 @@ namespace EAM.Device.services
                 })
                .ToListAsync();
         }
+
         /// <summary>
         /// 获取列表
         /// </summary>
         /// <returns></returns>
         public async Task<GridData> GetRun(GridRequest request)
         {
-            var qry = _dbContext.Query<RUN_TRANS>();
-            if (!_userSession.IsAdmin)
-            {
-                qry = qry.Where(c => _userSession.Corp.CorpID == c.SEC_DEPTID)
-                    .OrderByDesc(c => c.AUDITING)
-                    .ThenByDesc(c => c.TRANS_DATE);
-            }
-            else
-            {
-                qry = qry.OrderByDesc(c => c.AUDITING)
-                        .ThenByDesc(c => c.TRANS_DATE);
-            }
+            var qry = _dbContext.Query<RUN_TRANS>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .OrderByDesc(c => c.AUDITING)
+                .ThenByDesc(c => c.TRANS_DATE);
             return await qry.GetGridData(request);
         }
 
@@ -103,6 +97,7 @@ namespace EAM.Device.services
             var qry = await _dbContext.QueryByKeyAsync<RUN_TRANS>(ID);
             return AjaxResult.Success(qry);
         }
+
         /// <summary>
         /// 增删改
         /// </summary>
@@ -128,7 +123,6 @@ namespace EAM.Device.services
 
         private async Task BeforeAdd(RUN_TRANS entity)
         {
-
             entity.SEC_DEPTID = _userSession.Corp.CorpID;
             entity.SEC_DEPT = _userSession.Corp.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
@@ -193,7 +187,6 @@ namespace EAM.Device.services
                 .ThenBy(c => c.DEVICE_NO);
 
             return await qry.GetGridData(request);
-
         }
     }
 }

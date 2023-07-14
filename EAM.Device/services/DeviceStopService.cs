@@ -119,7 +119,7 @@ namespace EAM.Device.services
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_DATE = await _dbContext.GetSysdate();
             var random = new Random();
-            int randomNumber = random.Next(1000, 10000);
+            var randomNumber = random.Next(1000, 10000);
             entity.STOP_CODE = "TG" + DateTime.Now.Year + DateTime.Now.ToString("MM") + randomNumber;
             entity.AUDITING = "0";
             entity.RUN_STOP_ID = GuidHelper.NewSnowflakeId().ToString();

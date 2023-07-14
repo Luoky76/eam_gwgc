@@ -68,14 +68,6 @@
                             //{ display: "上一节点id", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "text",  hide: true },
                             {
                                 display: "上级节点", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.DeviceTypeName },
-                                render: function (rowdata, rowindex, value, column) {
-                                    //debugger
-                                    var item = me.DeviceTypeName.find(x => x.ID === value);
-                                    var pre_typeid = "";
-                                    if (item)
-                                        pre_typeid = item.TEXT;
-                                    return pre_typeid;
-                                },
                             },
                             //{ display: "上级节点", name: "PRE_TYPENAME", dbname: "PRE_TYPENAME", minWidth: 200, type: "text" },
                             {
