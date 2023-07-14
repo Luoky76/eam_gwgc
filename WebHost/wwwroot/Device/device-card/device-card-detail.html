@@ -63,7 +63,7 @@
 
             config.Form = {
                 fields: [
-                { display: "DEVICE_ID", name: "DEVICE_ID", newline: false, upper: true, type: "text", options: {}, hide: true },
+                { display: "DEVICE_ID", name: "DEVICE_ID", type: "hidden" },
                 { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", editor: { type: 'select', data: auditingData }, options: {}, group: "基础信息" },
                 { display: "设备编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                 { display: "立卡日期", name: "CARD_DATE", newline: false, upper: true, type: "date", options: {} },

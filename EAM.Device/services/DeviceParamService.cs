@@ -38,11 +38,7 @@ namespace EAM.Device.Services
                 b.PARAM_CODE,
                 b.PARAM_SUB,
                 b.TECHFUN_NAME,
-                b.PARAM_ID,
-                b.CREATE_USERID,
-                b.CREATEDATE,
-                b.MODIFY_USERID,
-                b.MODIFYDATE
+                b.PARAM_ID
             }).GetGridData(request);
             return list;
         }
@@ -64,11 +60,7 @@ namespace EAM.Device.Services
                     c.PARAM_CODE,
                     c.PARAM_SUB,
                     c.TECHFUN_NAME,
-                    c.PARAM_ID,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE,
+                    c.PARAM_ID
                 },
                 c => a => a.PARAM_ID == c.PARAM_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -83,10 +75,6 @@ namespace EAM.Device.Services
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.PARAM_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATEDATE = Sysdate;
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
 
             await Task.CompletedTask;
         }
@@ -98,9 +86,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_PARAM entity)
         {
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-
             await Task.CompletedTask;
         }
 

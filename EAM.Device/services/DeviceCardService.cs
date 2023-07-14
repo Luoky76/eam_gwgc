@@ -58,7 +58,6 @@ namespace EAM.Device.Services
                     c.PURE_TON,
                     c.REV_DATE,
                     c.AUDITING,
-                    c.CREATEDATE,
                     c.DEPT_NAME,
                     c.WDEPT_NAME,
                     c.CARD_DATE,
@@ -111,10 +110,6 @@ namespace EAM.Device.Services
         private async Task BeforeAdd(DEVICE_CARD entity)
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATEDATE = Sysdate;
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             await Task.CompletedTask;
         }
 
@@ -125,8 +120,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_CARD entity)
         {
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.AUDITING = "1";
 
             await Task.CompletedTask;
