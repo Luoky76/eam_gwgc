@@ -165,6 +165,7 @@ namespace EAM.Material.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
+                    {"ProviderName", null },
                     {"AssessBaseContent", null},
                     {"Auditing", null},
                     {"User", null}

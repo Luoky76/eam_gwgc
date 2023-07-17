@@ -56,13 +56,13 @@ namespace Gksyb.Model
         /// <summary>
         /// 评价总分
         /// </summary>
-        [Description("评价总分")]
+        [Description("评估总分")]
         public double? TOTAL_SCORE { get; set; }
 
         /// <summary>
         /// 评价结果
         /// </summary>
-        [Description("评价结果")]
+        [Description("评估结果")]
         [Column(DbType = DbType.AnsiString)]
         public string RESULT { get; set; }
 

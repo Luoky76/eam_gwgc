@@ -49,8 +49,8 @@
                             },
                             { display: "评分人", name: "EXAMINER_NAME", newline: false, type: "text" },
                             { display: "考核说明", name: "REMARK", newline: false, type: "text" },
-                            { display: "评价总分", name: "TOTAL_SCORE", newline: false, type: "double" },
-                            { display: "评价结果", name: "RESULT", newline: false, type: "text" },
+                            { display: "评估总分", name: "TOTAL_SCORE", newline: false, type: "float" },
+                            { display: "评估结果", name: "RESULT", newline: false, type: "text" },
                             { display: "供应商名", name: "PROVIDER_NAME", newline: false, type: "text" },
                             { display: "任务制定人", name: "FORMULATER_NAME", newline: false, type: "text" },
                             { display: "考核开始时间", name: "BEGIN_TIME", newline: false, type: "date" },
@@ -74,10 +74,11 @@
                                 //实际为评估基础主键
                                 display: "评估内容", name: "ASSESS_BASE_ID", minWidth: 400, type: "select", editor: {
                                     type: "select",
-                                    data: me.assessBaseContent
+                                    data: me.assessBaseContent,
+                                    disabled: true
                                 }
                             },
-                            { display: "分数", name: "SCORE", width: 100, type: "double", editor: { type: 'double' } },
+                            { display: "分数", name: "SCORE", width: 100, type: "float", editor: { type: 'float' } },
                             { display: "分数等级", name: "SCORE_DESC", width: 100, type: "text", editor: { type: 'text' } },
                             //隐藏
                             { display: "主键", name: "ASSESS_DET_ID", width: 100, type: "text", hide: true },
@@ -133,7 +134,9 @@
             },
             save: function () { //保存
                 var me = this;
-                if ($.isEmptyObject(me.mainform.getChanges())) {
+                //子表有修改而未保存时，先保存子表
+                if (me.grid.isDataChanged) me.saveAssessDet();
+                else if ($.isEmptyObject(me.mainform.getChanges())) {
                     LG.showSuccess('无修改');
                     return;
                 }
@@ -158,6 +161,7 @@
                 }
                 LG.ajax({
                     jsToken: true,
+                    //TODO not found
                     url: 'Materail/ProviderAssess/Save',
                     loading: '正在保存中...',
                     data: changeRow,
@@ -205,7 +209,13 @@
                 var me = this;
                 //表单底部按钮
                 var buttons = [];
-                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                buttons.push({
+                    text: '关闭',
+                    onclick: function () {
+                        var me = this;
+                        me.close(false);
+                    }.bind(me)
+                });
                 if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
 
                 LG.addFormButtons(buttons);
@@ -303,7 +313,7 @@
                             me.reloadAssessDet();
                             break;
                         case "save":
-                            me.saveTaskAssessDet();
+                            me.saveAssessDet();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -331,25 +341,38 @@
                 me.grid.loadData();
             },
             //保存
-            saveTaskAssessDet: function () {
+            saveAssessDet: function () {
                 var me = this;
-                if (me.examinerGrid.endEdit() != false) {
-                    if (!me.examinerGrid.isDataChanged) {
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
                         LG.showSuccess('无修改');
                         return;
                     }
-                    if (!me.examinerGrid.validChangeRows()) return false;
-                    var changeRow = me.examinerGrid.getChangedRows();
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
                         url: 'Material/ProviderAssessDet/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
-                            LG.showSuccess('保存成功');
-                            me.examinerGrid.isDataChanged = false;
-                            me.reloadExaminer();
-                        },
+                            var me = this;
+                            //LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reloadAssessDet();
+
+                            //计算评估明细的总分，设置主表的 TOTAL_SCORE
+                            var me = this;
+                            let sum = 0;
+                            let data = me.grid.getData();
+                            for (let item of data) {
+                                sum += item.SCORE;
+                            }
+                            me.mainform.setData({TOTAL_SCORE: sum});
+
+                            //子表保存后同时保存主表
+                            //me.save();
+                        }.bind(me),
                         error: function (message) {
                             LG.showError(message);
                         }
