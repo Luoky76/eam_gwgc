@@ -38,5 +38,13 @@ namespace EAM.Material.Interfaces
         /// 获取下拉框数据
         /// </summary>
         public Task<AjaxResult> ComboxData();
+
+        /// <summary>
+        /// 连接评估表PROVIDER_ASSESS
+        /// 返回评估结果
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public Task<GridData> ResultListAsync(GridRequest request);
     }
 }

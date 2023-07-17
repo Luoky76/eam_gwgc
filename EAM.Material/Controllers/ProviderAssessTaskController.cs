@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -75,6 +74,18 @@ namespace EAM.Material.Controller
         public async Task<AjaxResult> ComboxData()
         {
             return await _service.ComboxData();
+        }
+
+        /// <summary>
+        /// 连接评估表PROVIDER_ASSESS
+        /// 返回评估结果
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> ResultListAsync(GridRequest request)
+        {
+            return await _service.ResultListAsync(request);
         }
     }
 }
