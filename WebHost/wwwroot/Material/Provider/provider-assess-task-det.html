@@ -42,7 +42,7 @@
             isView: true,
             auditing: [],
             assessBaseContent: [],
-            examiner: [],
+            user: [],
             providerName: [],
             orginData: {},
             setConfig: function () {
@@ -77,7 +77,13 @@
                                     }
                                 }
                             },
-                            { display: "任务制定人", name: "FORMULATER_NAME", dbname: "FORMULATER_NAME", width: 300, type: "text" },
+                            //实际为任务制定人id
+                            {
+                                display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", options: {
+                                    type: "select",
+                                    data: me.user
+                                }
+                            },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
@@ -86,7 +92,6 @@
                             { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
                             { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "hidden" },
                             { display: "任务制定人id", name: "FORMULATER_ID", dbname: "FORMULATER_ID", width: 300, type: "hidden" },
-                            { display: "添加人ID", name: "CREATE_USERID", dbname: "CREATE_USERID", width: 300, type: "hidden" },
                             { display: "添加时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 300, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 300, type: "hidden" },
                             { display: "修改时间", name: "MODIFYDATE", dbname: "MODIFYDATE", width: 300, type: "hidden" },
@@ -116,7 +121,7 @@
                                 //实际为评分人id
                                 display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", minWidth: 400, op: "equal", type: "select", editor: {
                                     type: "select",
-                                    data: me.examiner
+                                    data: me.user
                                 }
                             },
                             //隐藏
@@ -276,7 +281,7 @@
                         me.providerName = data.ProviderName;
                         me.assessBaseContent = data.AssessBaseContent;
                         me.auditing = data.Auditing;
-                        me.examiner = data.User;
+                        me.user = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
