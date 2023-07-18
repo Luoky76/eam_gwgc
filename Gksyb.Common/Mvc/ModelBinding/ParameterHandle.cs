@@ -79,7 +79,7 @@ namespace Gksyb.Common.Mvc.ModelBinding
             if (!isAppend && isSimpleType && (handles == null || !handles.Any())) return false;//无处理对象的简单类型
             if (isSimpleType)//简单类型
             {
-                handles = isAppend ? AddSqlFilter(handles) : handles;
+                handles = isAppend ? AddBaseFilter(handles) : handles;
                 var newParamValue = HandleValueInner(paramValue, handles);
                 if (newParamValue == paramValue) return false;
                 setter(newParamValue);
@@ -272,11 +272,12 @@ namespace Gksyb.Common.Mvc.ModelBinding
         /// <summary>
         /// 加入sql过滤
         /// </summary>
-        private static IEnumerable<ParameterHandleAttribute> AddSqlFilter(IEnumerable<ParameterHandleAttribute> handles)
+        private static IEnumerable<ParameterHandleAttribute> AddBaseFilter(IEnumerable<ParameterHandleAttribute> handles)
         {
             handles ??= new List<ParameterHandleAttribute>();
-            if (handles.Any(c => c is SqlFilterAttribute)) return handles;
-            return handles.Append(new SqlFilterAttribute(-1));
+            if (!handles.Any(c => c is SqlFilterAttribute))
+                handles = handles.Append(new SqlFilterAttribute(-1));
+            return handles;
         }
 
         /// <summary>

@@ -165,7 +165,7 @@ namespace Gksyb.Server.Controllers.Auth
         {
             if (string.IsNullOrEmpty(appname)) appname = CurrentUser.MenuAppname;
             var list = await service.MyMenusAsync(CurrentUser, appname);
-            return AjaxResult.Success(list, "成功");
+            return AjaxResult.Success(list);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 list = list.FindAll(c => c.BTNNO.StartsWith(prefix));
             }
-            return AjaxResult.Success(list, "成功");
+            return AjaxResult.Success(list);
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace Gksyb.Server.Controllers.Auth
             var user = CurrentUser;
             await service.ChangeCorp(user, corpid);
             await user.SaveAsync();
-            return AjaxResult.Success(user.Corp, "成功");
+            return AjaxResult.Success(user.Corp);
         }
 
         /// <summary>

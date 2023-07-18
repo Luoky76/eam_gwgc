@@ -176,7 +176,7 @@ namespace Chloe
                     namePropertys.ForEach(c => { c.SetValue(entity, user.Display); });
                     datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
                     if (beforeUpdate != null) await beforeUpdate(entity);
-                    row = await source.UpdateAsync(entity, updateCondition(entity));
+                    row = await source.UpdateAsync(entity, updateCondition(orgin ? old : entity));
                     if (row != 1)
                     {
                         return AjaxResult.Error("修改记录出错");

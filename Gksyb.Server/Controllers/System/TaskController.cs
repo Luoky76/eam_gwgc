@@ -49,7 +49,7 @@ namespace Gksyb.Server.Controllers.System
         public async Task<AjaxResult<SYS_TASK>> GetAsync(long? id)
         {
             if (!id.HasValue) return AjaxResult<SYS_TASK>.Error("请传递参数");
-            return AjaxResult<SYS_TASK>.Success(await _service.GetAsync(id.Value), "成功");
+            return AjaxResult<SYS_TASK>.Success(await _service.GetAsync(id.Value));
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Gksyb.Server.Controllers.System
         /// <returns></returns>
         public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await _service.ListAsync(request));
         }
 
         /// <summary>
