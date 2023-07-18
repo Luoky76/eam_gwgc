@@ -81,7 +81,8 @@
                             {
                                 display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", options: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.user,
+                                    readonly: true
                                 }
                             },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
