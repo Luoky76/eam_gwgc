@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (Skip) return value;
             if (value == null) return value;
             if (value is not string sValue) return value;
-            return sValue.SqlFilter(Limit); ;
+            return sValue.SqlFilter(Limit);
         }
     }
 }

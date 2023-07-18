@@ -36,7 +36,7 @@ namespace Gksyb.Server.Services.Auth
                 ICON = "fa fa-group"
             }).ToList();
             data.Add(new { ID = "ROOT", TEXT = "组织结构", PARENTID = "", CORP_PATH = "", CLASSFLAG = "", ICON = "fa fa-sitemap" });
-            return AjaxResult.Success(data, "成功");
+            return AjaxResult.Success(data);
         }
 
         /// <summary>

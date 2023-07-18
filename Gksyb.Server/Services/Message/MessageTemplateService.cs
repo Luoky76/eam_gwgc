@@ -32,7 +32,7 @@ namespace Gksyb.Server.Services.Message
             }).ToList();
             data.Insert(0, new { ID = "UNREAD", TEXT = "未读", PARENTID = "ROOT", ICON = "fa fa-send" });
             data.Add(new { ID = "ROOT", TEXT = "全部", PARENTID = "", ICON = "fa fa-folder" });
-            return AjaxResult.Success(data, "成功");
+            return AjaxResult.Success(data);
         }
 
         /// <summary>

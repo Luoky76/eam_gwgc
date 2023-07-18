@@ -140,6 +140,7 @@
                         '"></div>'
                     ).appendTo($tabs);
                     var subMenus = menu.children || [];
+                    var isFirst = true;
                     for (var j = 0, l1 = subMenus.length; j < l1; j++) {
                         var subMenu = subMenus[j] || [];
                         if (subMenu.children.length > 0) {
@@ -159,10 +160,11 @@
                                     '</div></a></div>').appendTo($grid);
                             }
                         } else {
-                            if (j == 0) {
+                            if (isFirst) {
                                 var $grids = $$(
                                     '<div class="small-card card"><div class="card-content"><div class="actions-grid"><div class="actions-group"></div></div></div></div>'
                                 ).appendTo($tab).find(".actions-group");
+                                isFirst = false;
                             }
                             $$('<div class="actions-button"><a href="' + subMenu.Path +
                                 '" class="' + (subMenu.Extend) + '"><div class="actions-button-media"><i class="icon ' +

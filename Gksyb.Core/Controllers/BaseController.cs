@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
         [HttpPost]
         public virtual async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await Service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await Service.ListAsync(request));
         }
 
         [HttpPost]
