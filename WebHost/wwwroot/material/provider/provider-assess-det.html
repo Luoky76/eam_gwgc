@@ -35,19 +35,26 @@
             sid: getQueryStringByName("sid"),
             auditing: [],
             assessBaseContent: [],
+            examiner: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", type: "select", editor: {
-                                    type: 'select',
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", type: "select", options: {
+                                    type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }
                             },
-                            { display: "评分人", name: "EXAMINER_NAME", newline: false, type: "text" },
+                            //实际为评分人id
+                            {
+                                display: "评分人", name: "EXAMINER_ID", newline: false, type: "select", options: {
+                                    type: "select",
+                                    data: me.examiner
+                                }
+                            },
                             { display: "考核说明", name: "REMARK", newline: false, type: "text" },
                             { display: "评估总分", name: "TOTAL_SCORE", newline: false, type: "float" },
                             { display: "评估结果", name: "RESULT", newline: false, type: "text" },
@@ -59,7 +66,7 @@
                             //隐藏
                             { display: "主键", name: "ASSESS_ID", newline: false, type: "hidden" },
                             { display: "评估任务id", name: "ASSESS_TASK_ID", newline: false, type: "hidden" },
-                            { display: "评分人id", name: "EXAMINER_ID", newline: false, type: "hidden" },
+                            { display: "评分人", name: "EXAMINER_NAME", newline: false, type: "hidden" },
                             { display: "添加人ID", name: "CREATE_USERID", newline: false, type: "hidden" },
                             { display: "添加时间", name: "CREATEDATE", newline: false, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", newline: false, type: "hidden" },
@@ -102,6 +109,7 @@
                     success: function (data) {
                         me.auditing = data.Auditing;
                         me.assessBaseContent = data.AssessBaseContent;
+                        me.examiner = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -232,7 +240,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 60,
+                    labelWidth: 120,
+                    readonly: true,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

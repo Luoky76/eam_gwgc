@@ -61,10 +61,10 @@ namespace EAM.Material.Controller
         /// <param name="assessId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<PROVIDER_ASSESS_AND_TASK> GetCertainAssessAsync(string assessId)
+        public async Task<AjaxResult> GetCertainAssessAsync(string assessId)
         {
             var result = await _service.GetCertainAssessAsync(assessId);
-            return result;
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
