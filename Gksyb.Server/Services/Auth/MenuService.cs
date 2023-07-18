@@ -37,7 +37,7 @@ namespace Gksyb.Server.Services.Auth
             var data = list.Select(c => new { ID = c.MENUNO, TEXT = c.MENUNAME, PARENTID = string.IsNullOrWhiteSpace(c.MENUPARENTNO) ? "ROOT" : c.MENUPARENTNO, ICON = c.MENUICON, c.APPNAME })
                            .ToList();
             data.Add(new { ID = "ROOT", TEXT = "主菜单", PARENTID = "", ICON = "fa fa-folder-open", APPNAME = appname });
-            return AjaxResult.Success(data, "成功");
+            return AjaxResult.Success(data);
         }
 
         /// <summary>

@@ -406,12 +406,16 @@
             if ($table.find("table").length) $table = $table.find("table");
             $table.parents(".frozen-wrap").find(".frozen-child").remove();
             num = num || ($table.find("[frozen]").index() + 1);
+            if (isRowFrozen === undefined) isRowFrozen = $table.attr("frozen") !== null;
             if (!num && (isRowFrozen !== true)) return;
             var $wrap = $table.parents(".frozen-wrap");
             if (!$wrap.length) {
                 $wrap = $$('<div class="frozen-wrap" style="position:relative;"><div id="table-wrap-orgin" name="table-wrap-orgin" style="width:100%;overflow-x:auto;-webkit-overflow-scrolling: touch;"></div></div>');
                 $wrap.insertBefore($table);
                 $table.prependTo($wrap.find("div"));
+                var $dataTable = $table.parents(".data-table");
+                var tableHeight = $dataTable.parent().height() - $dataTable.offset().top - parseInt($dataTable.parent().css("padding-bottom")) - ($dataTable.outerHeight(true) - $dataTable.height(true)) / 2;
+                $dataTable.css("max-height", tableHeight + "px");
             }
 
             function f_checkbox_change(obj) {
@@ -444,10 +448,10 @@
                     $table.find("th").eq(index).click();
                 }, 150);
             }
-            var frozenWidth = ($table.find("tr th").eq(num).offset().left - $table.find("tr th").eq(0).offset().left) + "px";
+            var frozenWidth = ($table.find("tr th").eq(num || 0).offset().left - $table.find("tr th").eq(0).offset().left) + "px";
             var frozenHeight = $table.find("tr th").outerHeight(true) + "px";
             if (isRowFrozen === true) {
-                $divRow = $$('<div class="frozen-row frozen-child"></div>');
+                var $divRow = $$('<div class="frozen-row frozen-child"></div>');
                 $divRow.html($table.prop("outerHTML"));
                 $divRow.css({
                     "position": "fixed",

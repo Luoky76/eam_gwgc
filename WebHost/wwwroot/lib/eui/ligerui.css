@@ -1004,11 +1004,9 @@ table.l-filter-group-alt table.l-filter-group {
         transform: translate3d(0, -100%, 0);
     }
 }
-
 .l-anim-out {
     animation-name: eui-out;
 }
-
 /* 任务栏 */
 .l-taskbar {
     line-height: 36px;

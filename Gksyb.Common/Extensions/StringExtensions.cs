@@ -164,6 +164,17 @@ namespace Gksyb.Common
         }
 
         /// <summary>
+        /// 防止Xss注入
+        /// </summary>
+        public static string XssFilter(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return value;
+            if (Regex.IsMatch(value, @"<[^>]+>", RegexOptions.IgnoreCase))
+                throw new MessageException("防注入");
+            return value;
+        }
+
+        /// <summary>
         /// 为sql语句格式化字符串
         /// </summary>
         /// <param name="value"></param>
@@ -454,8 +465,8 @@ namespace Gksyb.Common
             byte[] bytes = Encoding.UTF8.GetBytes(cnChar.ToString());
             if (bytes.Length > 1)
             {
-                int area = (short)bytes[0];
-                int pos = (short)bytes[1];
+                int area = bytes[0];
+                int pos = bytes[1];
                 int code = (area << 8) + pos;
                 int[] areacode = { 45217, 45253, 45761, 46318, 46826, 47010, 47297, 47614, 48119, 48119, 49062, 49324, 49896, 50371, 50614, 50622, 50906, 51387, 51446, 52218, 52698, 52698, 52698, 52980, 53689, 54481 };
 

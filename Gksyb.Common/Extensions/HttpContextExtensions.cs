@@ -134,7 +134,7 @@ namespace Gksyb.Common
         {
             if (value == null) return;
             source.Items.Remove(RequestBodyName);
-            source.Items.Add(RequestBodyName, value.ToMiniJson());
+            source.Items.Add(RequestBodyName, value is string ? value : value.ToMiniJson());
         }
 
         public static string GetRequestBodyItem(this HttpContext source)

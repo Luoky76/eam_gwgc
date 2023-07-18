@@ -30,7 +30,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await _service.ListAsync(request));
         }
 
         /// <summary>
