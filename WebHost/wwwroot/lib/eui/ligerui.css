@@ -525,7 +525,6 @@ input::-ms-clear {
     filter: alpha(opacity=50);
 }
 
-
 /* -------------
    * timeline *
  * ------------- */
@@ -591,7 +590,6 @@ input::-ms-clear {
     margin-bottom: 10px;
     line-height: 22px
 }
-
 
 /* filter */
 
@@ -990,7 +988,6 @@ table.l-filter-group-alt table.l-filter-group {
     animation-name: eui-fadeout
 }
 
-
 @keyframes eui-out {
     0% {
         opacity: 1;
@@ -1004,9 +1001,11 @@ table.l-filter-group-alt table.l-filter-group {
         transform: translate3d(0, -100%, 0);
     }
 }
+
 .l-anim-out {
     animation-name: eui-out;
 }
+
 /* 任务栏 */
 .l-taskbar {
     line-height: 36px;
@@ -1127,6 +1126,7 @@ table.l-filter-group-alt table.l-filter-group {
     .l-dialog-title .l-dialog-title-inner {
         font-size: 16px;
         color: #333;
+        user-select: none;
     }
 
 .l-dialog-body {
@@ -1781,6 +1781,7 @@ table.l-filter-group-alt table.l-filter-group {
     width: auto;
     cursor: text;
     color: #999 !important;
+    user-select: none;
 }
 
 /*文本框wrapper鼠标划过*/
@@ -2338,6 +2339,7 @@ table.l-filter-group-alt table.l-filter-group {
     padding: 6px 16px 0px 5px;
     text-align: left;
     color: #495060;
+    user-select: none;
 }
 
     .l-listbox-title .l-listbox-title-count {
@@ -3258,6 +3260,7 @@ l-grid {
     color: rgb(24,144,255);
     text-decoration: none;
 }
+
     .l-grid-row-button + .l-grid-row-button {
         margin-left: 10px
     }
@@ -3594,6 +3597,7 @@ l-grid {
 
 .l-layout-header-inner {
     padding-right: 22px;
+    user-select: none;
 }
 
 .l-layout-header-toggle {
@@ -4555,7 +4559,7 @@ l-grid {
         font-size: 14px;
         line-height: 24px;
         min-height: 24px;
-        white-space:nowrap;
+        white-space: nowrap;
     }
 
         .l-tree .l-body span {
@@ -4563,6 +4567,7 @@ l-grid {
             line-height: inherit;
             display: inline-block;
             padding: 0 3px;
+            user-select: none;
         }
 
         .l-tree .l-body .l-box {

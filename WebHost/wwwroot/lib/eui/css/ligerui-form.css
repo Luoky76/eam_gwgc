@@ -417,6 +417,7 @@
     width: auto;
     cursor: text;
     color: #999 !important;
+    user-select: none;
 }
 
 /*文本框wrapper鼠标划过*/
@@ -974,6 +975,7 @@
     padding: 6px 16px 0px 5px;
     text-align: left;
     color: #495060;
+    user-select: none;
 }
 
     .l-listbox-title .l-listbox-title-count {
