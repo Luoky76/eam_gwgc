@@ -50,6 +50,4 @@ document.write('<link href="' + bootPATH + 'css/ui.expand.css?ver=1.4" rel="styl
 document.write('<script src="' + bootPATH + 'js/ui.expand.js?ver=' + JsVersion + '" type="text/javascript"></sc' + 'ript>');
 document.write('<script src="' + bootPATH + 'js/common.js?ver=' + JsVersion + '" type="text/javascript"></sc' + 'ript>');
 document.write('<script src="' + bootPATH + 'js/LG.js?ver=' + JsVersion + '" type="text/javascript"></sc' + 'ript>');
-document.write('<script src="' + bootPATH + 'js/validator.js" type="text/javascript"></sc' + 'ript>');
-document.write('<script src="' + bootPATH + 'json2.js" type="text/javascript"></sc' + 'ript>');
 document.write('<script src="' + bootPATH + 'lc.js?ver=' + JsVersion + '" type="text/javascript"></sc' + 'ript>');

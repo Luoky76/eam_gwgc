@@ -118,6 +118,7 @@
     .l-dialog-title .l-dialog-title-inner {
         font-size: 16px;
         color: #333;
+        user-select: none;
     }
 
 .l-dialog-body {

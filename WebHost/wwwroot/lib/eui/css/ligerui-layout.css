@@ -41,6 +41,7 @@
 
 .l-layout-header-inner {
     padding-right: 22px;
+    user-select: none;
 }
 
 .l-layout-header-toggle {

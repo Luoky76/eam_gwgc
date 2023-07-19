@@ -525,7 +525,6 @@ input::-ms-clear {
     filter: alpha(opacity=50);
 }
 
-
 /* -------------
    * timeline *
  * ------------- */
@@ -591,7 +590,6 @@ input::-ms-clear {
     margin-bottom: 10px;
     line-height: 22px
 }
-
 
 /* filter */
 
@@ -990,7 +988,6 @@ table.l-filter-group-alt table.l-filter-group {
     animation-name: eui-fadeout
 }
 
-
 @keyframes eui-out {
     0% {
         opacity: 1;
@@ -1004,6 +1001,7 @@ table.l-filter-group-alt table.l-filter-group {
         transform: translate3d(0, -100%, 0);
     }
 }
+
 .l-anim-out {
     animation-name: eui-out;
 }
