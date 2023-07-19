@@ -37,7 +37,7 @@
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             //主表主键
-            sid: getQueryStringByName("sid"),
+            sid: null,
             isAddNew: false,
             isView: true,
             auditing: [],
@@ -112,11 +112,7 @@
                             },
                             //隐藏
                             { display: "评估内容", name: "CONTENT", width: 100, type: "text", hide: true },
-                            { display: "评估任务ID", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true },
-                            { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", hide: true },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", hide: true }
+                            { display: "评估任务ID", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true }
                         ]
                     },
                     examinerGrid: {
@@ -145,8 +141,8 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    //设置记录状态的初值为未提交
-                    me.mainform.setData({ AUDITING: "0" });
+                    //设置记录状态的初值为未提交，同时设置主键
+                    me.mainform.setData({ AUDITING: "0", ASSESS_TASK_ID: me.sid });
                     inner();
                 }
                 else {
@@ -199,6 +195,10 @@
                     data: { request: changeRow },
                     success: function (result) {
                         LG.showSuccess('保存成功');
+                        //保存过一次后自动变为修改模式
+                        me.isAddNew = false;
+                        //保存后原始数据变为当前数据
+                        me.orginData = data;
                     },
                     error: function (message) {
                         LG.showError(message);

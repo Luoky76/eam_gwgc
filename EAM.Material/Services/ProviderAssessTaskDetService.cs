@@ -38,17 +38,15 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> GetAssessTaskAsync(string assessTaskId)
         {
-            var query = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                .InnerJoin<PROVIDER_ASSESS_TASK_DET>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
-                .LeftJoin<PROVIDER_ASSESS_BASE>((a, b, c) => b.ASSESS_BASE_ID == c.ASSESS_BASE_ID)
-                .Where((a, b, c) => a.ASSESS_TASK_ID == assessTaskId)
-                .Select((a, b, c) => new
+            var query = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
+                .LeftJoin<PROVIDER_ASSESS_BASE>((a, b) => a.ASSESS_BASE_ID == b.ASSESS_BASE_ID)
+                .Where((a, b) => a.ASSESS_TASK_ID == assessTaskId)
+                .Select((a, b) => new
                 {
                     a.ASSESS_TASK_ID,
-                    b.ASSESS_TASK_DET_ID,
-                    c.ASSESS_BASE_ID,
-                    c.CONTENT,
-                    c.IS_VALID
+                    b.ASSESS_BASE_ID,
+                    b.CONTENT,
+                    b.IS_VALID
                 }).GetGridData(null);
             return query;
         }

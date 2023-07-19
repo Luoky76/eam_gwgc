@@ -110,8 +110,6 @@ namespace EAM.Material.Services
             }
             //设置记录状态为已提交
             entity.AUDITING = "1";
-            //设置任务制定人为当前登录者
-            //entity.FORMULATER_NAME = window.session.RealName;
             await Task.CompletedTask;
         }
 
