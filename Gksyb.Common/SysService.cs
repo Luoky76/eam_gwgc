@@ -21,6 +21,7 @@ namespace Gksyb.Common
         /// </summary>
         public static IServiceCollection AddBaseService(this IServiceCollection services, IConfiguration config)
         {
+            JsonSerializerSettingsExtensions.Init(config);
             services.Configure<RedisCacheOptions>(config.GetSection(OptionName.RedisCache));
             services.Configure<SysContextOptions>(config.GetSection(OptionName.SysContext));
             //全局存储服务描述列表

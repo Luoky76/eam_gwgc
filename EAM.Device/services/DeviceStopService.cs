@@ -1,7 +1,6 @@
 ﻿using Chloe;
 using EAM.Device.interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -49,6 +48,7 @@ namespace EAM.Device.services
                 .ThenByDesc(c => c.RUN_START)
                 .GetGridData(request);
         }
+
         /// <summary>
         /// 获取单条停机记录
         /// </summary>
@@ -59,6 +59,7 @@ namespace EAM.Device.services
             var qry = await _dbContext.QueryByKeyAsync<RUN_STOP>(ID);
             return AjaxResult.Success(qry);
         }
+
         /// <summary>
         /// 管理停机记录
         /// </summary>
@@ -175,8 +176,7 @@ namespace EAM.Device.services
         public async Task BeforeAdd(RUN_STOP_TYPE entity)
         {
             entity.STOP_TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-             await Task.CompletedTask;
+            await Task.CompletedTask;
         }
-
     }
 }

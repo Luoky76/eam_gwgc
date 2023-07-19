@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>委外维修验收明细</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform">
+    </form>
+    <div style="width: 94.5%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>物资消耗明细</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="margin-bottom: 50px; width: 100%;" id="remouldgird">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialogData: {},
+            maintDept: [],
+            repSourceType: [],
+            repOutType: [],
+            providerData: [],
+            notaxmoney: null,
+            repmoney: null,
+            curratio: null,
+            isleave: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
+            ratio: [{ "ID": "0.13", "TEXT": "13%" }, { "ID": "0.03", "TEXT": "3%" }, { "ID": "0.06", "TEXT": "6%" }, { "ID": "0.10", "TEXT": "10%" }, { "ID": "0.00", "TEXT": "0%" }, { "ID": "0.16", "TEXT": "16%" }, { "ID": "0.01", "TEXT": "1%" }],
+            status: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            isView: true,
+            sid: getQueryStringByName("sid"),
+            dataCorp: [],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.status, disabled: true }, group: "委外维修确认" },
+                            { display: "委外单号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "委外状态", name: "OUT_STATUS", newline: false, upper: true, type: "select", options: { data: me.repOutType, disabled: true } },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "维修设备名称", name: "REP_DEVICE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "来源类型", name: "SRC_TYPE", newline: false, upper: true, type: "select", options: { disabled: true, date: me.repSourceType } },
+                            { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", options: { data: me.maintDept, disabled: true } },
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", options: { data: me.isleave, disabled: true } },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "故障原因", name: "REASON", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "解决方法", name: "SOLUTION", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "委外维修内容", name: "OUT_REPAIR_MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+
+                            { display: "合同编号", name: "PACT_CODE", newline: false, upper: true, type: "text", options: {}, group: "委外维修合同信息" },
+                            { display: "合同名称", name: "PACT_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "签订日期", name: "PACT_DATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "编制日期", name: "EIDT_DATE", newline: false, upper: true, type: "date", options: {disabled: true} },
+                            { display: "编制人", name: "EIDT_USER", newline: false, upper: true, type: "text", options: {disabled: true} },
+                            //{ display: "计划预估金额", name: " ", newline: false, upper: true, type: "text", options: {disabled: true} },
+
+                            {
+                                display: "税率", name: "RATIO", newline: false, upper: true, type: "select",
+                                options: {
+                                    type: 'select',
+                                    data: me.ratio,
+                                    onChangeValue: function (input, value, g) {
+                                        me.curratio = value
+                                    },
+                                }
+                            },
+                            {
+                                display: "维修费用(元)", name: "REP_MONEY", newline: false, upper: true, type: "float",
+                                options: {
+                                    onChangeValue: function (input, value, g) {
+                                        me.repmoney = value
+                                        var item = me.ratio.find(x => x.ID === me.curratio);
+                                        var ratio = "";
+                                        var newratio = "";
+                                        if (item) {
+                                            ratio = item.TEXT;
+                                            newratio = ratio.replace("%", "");
+                                        }
+                                        var notax_money = (me.repmoney / (1 + newratio / 100)).toFixed(2);
+                                        $('#NOTAX_MONEY').val(notax_money);
+                                    },
+                                }
+                            },
+                            {
+                                display: "不含税维修费用(元)", name: "NOTAX_MONEY", newline: false, upper: true, type: "float",
+                                options: {
+                                    onChangeValue: function (input, value, g) {
+                                        me.notax_money = value
+                                        var item = me.ratio.find(x => x.ID === me.curratio);
+                                        var ratio = "";
+                                        var newratio = "";
+                                        if (item) {
+                                            ratio = item.TEXT;
+                                            newratio = ratio.replace("%", "");
+                                        }
+                                        var repmoney = (me.notax_money * (1 + newratio / 100)).toFixed(2);
+                                        $('#REP_MONEY').val(repmoney);
+                                    },
+                                }
+                            },
+                            //{ display: "供应商名称", name: "PROVIDER_ID", newline: false, upper: true, type: "select", options: { data: me.providerData } },
+                            { display: "供应商名称", name: "PROVIDER_ID", newline: false, upper: true, type: "text", options: { } },
+
+                            { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: { disabled: true }, group: "委外维修验收" },
+                            { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "委外停机时间(H)", name: "ACT_STOP_TIME", newline: false, upper: true, type: "float", options: { disabled: true } },
+                            { display: "实际完工时间", name: "REAL_ENDTIME", newline: false, upper: true, type: "date", options: { disabled: true } },
+                            { display: "实际开工时间", name: "REAL_BEGINTIME", newline: false, upper: true, type: "date", options: { disabled: true } },
+                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: 780, upper: true, validate: { required: true }, type: "textarea", options: { rows: "2" } },
+                            { display: "主键", name: "OUT_ID", width: 100, type: "hidden" },
+
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "物资编码", name: "SP_CODE", minWidth: 150, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 150, type: "text" },
+                            { display: "规格/型号", name: "SP_TYPE", minWidth: 150, type: "text" },
+                            { display: "实际消耗数量", name: "FACT_NUM", width: 100, type: "decimal" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
+                            { display: "品牌", name: "BRAND", minWidth: 100, type: "text" },
+                            { display: "其他编号", name: "OTHER_CODE", minWidth: 100, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 250, type: "text" },
+                            { display: "明细表主键", name: "PLAN_SP_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "主表主键", name: "OUT_ID", minWidth: 100, type: "text", hide: true },
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/RepOut/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        //me.providerData = data.providerData;
+                        me.maintDept = data.maintDept;
+                        me.repSourceType = data.repSourceType;
+                        me.repOutType = data.repOutType;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                if (!me.sid) {
+                    me.mainform.setOrginData({});
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/RepOut/GetRepOutDetail',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                me.mainform.focus();
+            },
+            save: function () { //保存
+                debugger
+                var me = this;
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    LG.showSuccess('请填写验收情况！');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.mainform.getOrginData());
+                var changeRow = new Object();
+                if (!me.sid) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/RepOut/ManageRepOutAccept',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () { if (me.dialog) { me.dialog.close(); } });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                function inner(callback) {
+                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                /*if (!me.isView) {
+                    buttons.push({
+                        text: '重置', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+                    });
+                }*/
+                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                if (me.auditing == "0") {
+                    buttons.push({ text: '保存', onclick: me.save.bind(me) });
+                }
+                else {
+                    me.mainform.setReadonly(true);
+                }
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 140,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            grid: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#remouldgird").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    usePager: false,
+                    columns: me.config.grid.columns,
+                    dataAction: 'local',
+                    //toolbar: {},
+                    url: 'Device/RepOut/GetRepOutAcceptDetail',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'OUT_ID', op: 'equal', value: $("#OUT_ID").val() }]
+                        })
+                    },
+                    width: '99%',
+                    height: '100%',
+                    checkbox: false,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+                me.grid.isValid = true;
+                me.bindGridEvent();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.auditing) me.auditing = me.dialogData.auditing;
+                    if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
+                }
+                me.isView = false;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                me.setGrid();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>
