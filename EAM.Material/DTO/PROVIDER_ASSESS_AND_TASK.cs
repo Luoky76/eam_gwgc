@@ -66,12 +66,6 @@ namespace EAM.Material.DTO
         public long FORMULATER_ID { get; set; }
 
         /// <summary>
-        /// 任务制定人
-        /// </summary>
-        [Description("任务制定人")]
-        public string FORMULATER_NAME { get; set; }
-
-        /// <summary>
         /// 考核开始时间
         /// </summary>
         [Description("考核开始时间")]

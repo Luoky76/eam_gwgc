@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -61,20 +60,21 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> CertainAssessListAsync(string assessId)
         {
-            var list = await _dbContext.Query<PROVIDER_ASSESS_DET>().Select(c => new
-            {
-                c.ASSESS_DET_ID,
-                c.ASSESS_ID,
-                c.ASSESS_BASE_ID,
-                c.SCORE,
-                c.SCORE_DESC,
-                c.CREATE_USERID,
-                c.CREATEDATE,
-                c.MODIFY_USERID,
-                c.MODIFYDATE
-            })
-            .Where(c => c.ASSESS_ID == assessId)
-            .GetGridData(null);
+            var list = await _dbContext.Query<PROVIDER_ASSESS_DET>()
+                .Select(c => new
+                {
+                    c.ASSESS_DET_ID,
+                    c.ASSESS_ID,
+                    c.ASSESS_BASE_ID,
+                    c.SCORE,
+                    c.SCORE_DESC,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
+                })
+                .Where(c => c.ASSESS_ID == assessId)
+                .GetGridData(null);
             return list;
         }
 

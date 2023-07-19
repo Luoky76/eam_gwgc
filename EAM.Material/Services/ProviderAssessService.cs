@@ -132,6 +132,7 @@ namespace EAM.Material.Services
                     RESULT = a.RESULT,
                     PROVIDER_ID = b.PROVIDER_ID,
                     PROVIDER_NAME = b.PROVIDER_NAME,
+                    FORMULATER_ID = a.CREATE_USERID,
                     BEGIN_TIME = b.BEGIN_TIME,
                     END_TIME = b.END_TIME,
                     PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION,
