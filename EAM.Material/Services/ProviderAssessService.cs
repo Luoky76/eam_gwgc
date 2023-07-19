@@ -76,17 +76,12 @@ namespace EAM.Material.Services
                     a.REMARK,
                     a.TOTAL_SCORE,
                     a.RESULT,
-                    a.CREATE_USERID,
-                    a.CREATEDATE,
-                    a.MODIFY_USERID,
-                    a.MODIFYDATE,
                     b.PROVIDER_ID,
                     b.PROVIDER_NAME,
-                    b.FORMULATER_ID,
-                    b.FORMULATER_NAME,
                     b.BEGIN_TIME,
                     b.END_TIME,
-                    b.PROVIDER_PRODUCTION
+                    b.PROVIDER_PRODUCTION,
+                    b.CREATE_USERID,
                 }).GetGridData(request);
             return list;
         }
@@ -137,17 +132,12 @@ namespace EAM.Material.Services
                     REMARK = a.REMARK,
                     TOTAL_SCORE = a.TOTAL_SCORE,
                     RESULT = a.RESULT,
-                    CREATE_USERID = a.CREATE_USERID,
-                    CREATEDATE = a.CREATEDATE,
-                    MODIFY_USERID = a.MODIFY_USERID,
-                    MODIFYDATE = a.MODIFYDATE,
                     PROVIDER_ID = b.PROVIDER_ID,
                     PROVIDER_NAME = b.PROVIDER_NAME,
-                    FORMULATER_ID = b.FORMULATER_ID,
-                    FORMULATER_NAME = b.FORMULATER_NAME,
                     BEGIN_TIME = b.BEGIN_TIME,
                     END_TIME = b.END_TIME,
-                    PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION
+                    PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION,
+                    CREATE_USERID = b.CREATE_USERID,
                 })
                 .Where(c => c.ASSESS_ID == assessId)
                 .FirstAsync();

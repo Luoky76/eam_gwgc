@@ -35,7 +35,7 @@
             sid: getQueryStringByName("sid"),
             auditing: [],
             assessBaseContent: [],
-            examiner: [],
+            user: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -52,14 +52,20 @@
                             {
                                 display: "评分人", name: "EXAMINER_ID", newline: false, type: "select", options: {
                                     type: "select",
-                                    data: me.examiner
+                                    data: me.user
                                 }
                             },
                             { display: "考核说明", name: "REMARK", newline: false, type: "text" },
                             { display: "评估总分", name: "TOTAL_SCORE", newline: false, type: "float" },
                             { display: "评估结果", name: "RESULT", newline: false, type: "text" },
                             { display: "供应商名", name: "PROVIDER_NAME", newline: false, type: "text" },
-                            { display: "任务制定人", name: "FORMULATER_NAME", newline: false, type: "text" },
+                            //实际为任务制定人id
+                            {
+                                display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", options: {
+                                    type: "select",
+                                    data: me.user
+                                }
+                            },
                             { display: "考核开始时间", name: "BEGIN_TIME", newline: false, type: "date" },
                             { display: "考核结束时间", name: "END_TIME", newline: false, type: "date" },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", newline: false, type: "text" },
@@ -67,12 +73,10 @@
                             { display: "主键", name: "ASSESS_ID", newline: false, type: "hidden" },
                             { display: "评估任务id", name: "ASSESS_TASK_ID", newline: false, type: "hidden" },
                             { display: "评分人", name: "EXAMINER_NAME", newline: false, type: "hidden" },
-                            { display: "添加人ID", name: "CREATE_USERID", newline: false, type: "hidden" },
+                            { display: "供应商id", name: "PROVIDER_ID", newline: false, type: "hidden" },
                             { display: "添加时间", name: "CREATEDATE", newline: false, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", newline: false, type: "hidden" },
                             { display: "修改时间", name: "MODIFYDATE", newline: false, type: "hidden" },
-                            { display: "供应商id", name: "PROVIDER_ID", newline: false, type: "hidden" },
-                            { display: "任务制定人id", name: "FORMULATER_ID", newline: false, type: "hidden" },
                         ]
                     },
                     grid: {
@@ -109,7 +113,7 @@
                     success: function (data) {
                         me.auditing = data.Auditing;
                         me.assessBaseContent = data.AssessBaseContent;
-                        me.examiner = data.User;
+                        me.user = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
