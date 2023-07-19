@@ -5,5 +5,9 @@
     /// </summary>
     public partial class UserResponse
     {
+        /// <summary>
+        /// 用户ID
+        /// </summary>
+        public long UserID { get; set; }
     }
 }

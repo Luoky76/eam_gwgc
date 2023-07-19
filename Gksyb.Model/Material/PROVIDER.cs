@@ -249,19 +249,6 @@ namespace Gksyb.Model
         public string TAX_REG_NO { get; set; }
 
         /// <summary>
-        /// 登记日期
-        /// </summary>
-        [Description("登记日期")]
-        public DateTime? EDIT_DATE { get; set; }
-
-        /// <summary>
-        /// 登记人
-        /// </summary>
-        [Description("登记人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EDIT_USER { get; set; }
-
-        /// <summary>
         /// 物资品质
         /// </summary>
         [Description("物资品质")]
@@ -323,13 +310,6 @@ namespace Gksyb.Model
         [Description("管理部门ID")]
         [Column(DbType = DbType.AnsiString)]
         public string DEPT_ID { get; set; }
-
-        /// <summary>
-        /// 登记人ID
-        /// </summary>
-        [Description("登记人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EDIT_USERID { get; set; }
 
         /// <summary>
         /// 添加人ID

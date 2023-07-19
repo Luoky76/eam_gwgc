@@ -64,8 +64,6 @@
                             { display: "综合实力", name: "STRENGTH", dbname: "STRENGTH", width: 300, type: "text", align: "left" },
                             { display: "售后服务响应速度", name: "RESPONE_SPEED", dbname: "RESPONE_SPEED", width: 300, type: "text", align: "left" },
                             { display: "售后服务品质", name: "SERVICE_QUAL", dbname: "SERVICE_QUAL", width: 300, type: "text", align: "left" },
-                            { display: "服务单位ID", name: "ORG_ID", dbname: "ORG_ID", width: 300, type: "text", align: "left" },
-                            { display: "管理部门ID", name: "DEPT_ID", dbname: "DEPT_ID", width: 300, type: "text", align: "left" },
 
                             //地址
                             { display: "国家", name: "COUNTY", dbname: "COUNTY", width: 300, type: "text", align: "left", group: "地址" },
@@ -81,15 +79,14 @@
 
                             //隐藏
                             //记录信息
-                            { display: "登记日期", name: "EDIT_DATE", dbname: "EDIT_DATE", width: 300, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", group: "记录信息", hide: true },
-                            { display: "登记人", name: "EDIT_USER", dbname: "EDIT_USER", width: 300, type: "text", align: "left", hide: true },
-                            { display: "登记人ID", name: "EDIT_USERID", dbname: "EDIT_USERID", width: 300, type: "text", align: "left" },
-                            { display: "添加人ID", name: "CREATE_USERID", dbname: "CREATE_USERID", width: 300, type: "text", align: "left", hide: true },
-                            { display: "添加时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 300, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 300, type: "text", align: "left", hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", dbname: "MODIFYDATE", width: 300, type: "date", format: "yyyy-MM-dd hh:mm", align: "left", hide: true },
+                            { display: "添加人ID", name: "CREATE_USERID", dbname: "CREATE_USERID", width: 300, type: "hidden", align: "left" },
+                            { display: "添加时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 300, type: "hidden", format: "yyyy-MM-dd hh:mm", align: "left" },
+                            { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 300, type: "hidden", align: "left" },
+                            { display: "修改时间", name: "MODIFYDATE", dbname: "MODIFYDATE", width: 300, type: "hidden", format: "yyyy-MM-dd hh:mm", align: "left" },
 
                             { display: "主键", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "hidden", align: "left" },
+                            { display: "服务单位ID", name: "ORG_ID", dbname: "ORG_ID", width: 300, type: "hidden", align: "left" },
+                            { display: "管理部门ID", name: "DEPT_ID", dbname: "DEPT_ID", width: 300, type: "hidden", align: "left" },
                         ]
                     }
                 };

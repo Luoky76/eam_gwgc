@@ -19,7 +19,7 @@
         <div class="l-form-container">
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style="width: 50%; float: left">
-                    <div class="l-group" style="display: inline-block; width: 100%; float: left"><span>评估任务明细</span></div>
+                    <div class="l-group" style="display: inline-block; width: 100%; float: left"><span>评估内容明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="task-base-grid">
                     </div>
                 </li>
@@ -79,10 +79,13 @@
                             },
                             //实际为任务制定人id
                             {
-                                display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", options: {
+                                display: "任务制定人", name: "CREATE_USERID", width: 300, type: "select", editor: {
                                     type: "select",
-                                    data: me.user,
-                                    readonly: true
+                                    options: {
+                                        autocomplete: true,
+                                        data: me.user
+                                    },
+                                    disabled: true
                                 }
                             },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
