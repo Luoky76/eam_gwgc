@@ -46,7 +46,7 @@ namespace Gksyb.Server.Services.Auth
                 .Select(c => new { ID = c.MENUNO + "*" + c.BTNNO, PID = c.MENUNO, ACCESSNAME = c.BTNNAME, ACCESSICON = c.BTNICON, ACCESSNO = c.MENUNO + "*" + c.BTNNO, MENUID = (long?)0, c.BTNID }).ToListAsync();
             buttons.RemoveAll(c => !menus.Contains(a => a.ID == c.PID));
             menus.AddRange(buttons);
-            return AjaxResult.Success(menus, "成功");
+            return AjaxResult.Success(menus);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Gksyb.Server.Services.Auth
                 .Select(c => new { ID = c.BTNNO, PID = c.MENUNO, ACCESSNAME = c.BTNNAME, ACCESSICON = c.BTNICON, ACCESSNO = c.MENUNO + "*" + c.BTNNO, MENUID = (long?)0, c.BTNID }).ToListAsync();
             buttons.RemoveAll(c => !menus.Contains(a => a.ID == c.PID));
             menus.AddRange(buttons);
-            return AjaxResult.Success(menus, "成功");
+            return AjaxResult.Success(menus);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Gksyb.Server.Services.Auth
             {
                 return c.PRIVILEGEACCESS == "SYS_MENU" ? new { MENUNO = c.PRIVILEGEACCESSKEY, BTNNO = "0" } : new { MENUNO = "0", BTNNO = c.PRIVILEGEACCESSKEY };
             }).ToList();
-            return AjaxResult.Success(list, "成功");
+            return AjaxResult.Success(list);
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace Gksyb.Server.Services.Auth
 
             list = list.DistinctBy(c => $"{c.MENUNO}*{c.BTNNO}").ToList();//去重
 
-            return AjaxResult.Success(list, "成功");
+            return AjaxResult.Success(list);
         }
 
         public async Task<AjaxResult> PrivilegeSaveAsync(List<PrivilegeRequest> list)

@@ -221,8 +221,8 @@
                 if (!limit(mainform)) return false;
             }
             var rule = LG.bulidFilterGroup(form);
-            if (loadServer === false) {
-                grid.loadData(false, undefined, rule);
+            if (loadServer !== undefined) {
+                grid.loadData((loadServer === false) ? false : undefined, undefined, rule);
                 return;
             }
             var parms = grid.options.parms;
@@ -406,12 +406,12 @@
     LG.loadToolbar = function (grid, toolbarBtnItemClick, callback, isLine) {
         if (!grid.toolbarManager) return;
         var toolbarOptions = grid.toolbarManager.options;
-        var MenuNo = LG.getPageMenuNo();
+        var menuNo = toolbarOptions.menuNo || LG.getPageMenuNo();
         LG.ajax({
             loading: '正在加载工具条中...',
             url: "Auth/MyButtons",
             data: {
-                menuNo: MenuNo,
+                menuNo: menuNo,
                 group: toolbarOptions.group,//按钮组
                 prefix: toolbarOptions.prefix//按钮前缀
             },

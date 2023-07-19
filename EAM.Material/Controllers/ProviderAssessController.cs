@@ -1,4 +1,5 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -51,6 +52,19 @@ namespace EAM.Material.Controller
         public async Task<GridData> GetCertainAssessTaskAsync(string assessTaskId)
         {
             return await _service.GetCertainAssessTaskAsync(assessTaskId);
+        }
+
+        /// <summary>
+        /// 连接评估任务表后
+        /// 根据评估ID ASSESS_ID 返回列表
+        /// </summary>
+        /// <param name="assessId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetCertainAssessAsync(string assessId)
+        {
+            var result = await _service.GetCertainAssessAsync(assessId);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>

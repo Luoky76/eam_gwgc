@@ -17,13 +17,14 @@
     </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
-            <div class="l-group" style="width: 100%;"><span>评估任务明细</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style="width: 50%; float: left">
+                    <div class="l-group" style="display: inline-block; width: 100%; float: left"><span>评估内容明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="task-base-grid">
                     </div>
                 </li>
                 <li style="width: 50%; float: left">
+                    <div class="l-group" style="display: inline-block; width: 100%; float: left "><span>评分人明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="examiner-grid">
                     </div>
                 </li>
@@ -41,7 +42,8 @@
             isView: true,
             auditing: [],
             assessBaseContent: [],
-            examiner: [],
+            user: [],
+            providerName: [],
             orginData: {},
             setConfig: function () {
                 var me = this;
@@ -49,19 +51,51 @@
                     form: {
                         labelwidth: 220,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 310, type: "select", align: "left", editor: { type: 'select', data: me.auditing, disabled: true } },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 300, type: "select", editor: { type: 'select', data: me.auditing, disabled: true } },
                             { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text" },
-                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "text" },
-                            { display: "任务制定人", name: "FORMULATER_NAME", dbname: "FORMULATER_NAME", width: 300, type: "text" },
+                            //实际为供应商id
+                            {
+                                display: "供应商名", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "select", editor: {
+                                    type: 'select',
+                                    options: {
+                                        autocomplete: true,
+                                        data: me.providerName
+                                    },
+                                    render: function (rowdata, rowindex, value, column) {
+                                        var showText = '';
+                                        for (var i = 0; i < me.providerName.length; ++i) {
+                                            if (rowdata == me.providerName[i].ID) {
+                                                showText = me.providerName[i].TEXT;
+                                                //同时填充其它字段
+                                                me.mainform.setData({
+                                                    PROVIDER_NAME: me.providerName[i].VALUE
+                                                });
+                                                break;
+                                            }
+                                        }
+                                        return showText;  
+                                    }
+                                }
+                            },
+                            //实际为任务制定人id
+                            {
+                                display: "任务制定人", name: "CREATE_USERID", width: 300, type: "select", editor: {
+                                    type: "select",
+                                    options: {
+                                        autocomplete: true,
+                                        data: me.user
+                                    },
+                                    disabled: true
+                                }
+                            },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
                             { display: "备注", name: "REMARK", dbname: "REMARK", width: 1000, type: "textarea" },
                             //隐藏
                             { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
-                            { display: "供应商id", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "hidden" },
+                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "hidden" },
                             { display: "任务制定人id", name: "FORMULATER_ID", dbname: "FORMULATER_ID", width: 300, type: "hidden" },
-                            { display: "添加人ID", name: "CREATE_USERID", dbname: "CREATE_USERID", width: 300, type: "hidden" },
                             { display: "添加时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 300, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 300, type: "hidden" },
                             { display: "修改时间", name: "MODIFYDATE", dbname: "MODIFYDATE", width: 300, type: "hidden" },
@@ -91,7 +125,7 @@
                                 //实际为评分人id
                                 display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", minWidth: 400, op: "equal", type: "select", editor: {
                                     type: "select",
-                                    data: me.examiner
+                                    data: me.user
                                 }
                             },
                             //隐藏
@@ -231,6 +265,7 @@
                     validate: true,
                     fields: me.config.form.fields,
                     labelWidth: 120,
+                    //readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -247,9 +282,10 @@
                     url: 'Material/ProviderAssessTaskDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
+                        me.providerName = data.ProviderName;
                         me.assessBaseContent = data.AssessBaseContent;
                         me.auditing = data.Auditing;
-                        me.examiner = data.User;
+                        me.user = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -278,7 +314,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
@@ -320,17 +356,6 @@
                         left: e.pageX
                     });
                     return false;
-                });
-                me.grid.bind('beforeSubmitEdit', function (e) {
-                    if (this.isValid) {
-                        if (!LG.validator.form()) {
-                            LG.showInvalidTip();
-                            return false;
-                        }
-                    } else {
-                        $(".l-verify-tip").remove();
-                    }
-                    return true;
                 });
             },
             loadToolbar: function () {
@@ -479,7 +504,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
@@ -522,17 +547,6 @@
                     });
                     return false;
                 });
-                me.examinerGrid.bind('beforeSubmitEdit', function (e) {
-                    if (this.isValid) {
-                        if (!LG.validator.form()) {
-                            LG.showInvalidTip();
-                            return false;
-                        }
-                    } else {
-                        $(".l-verify-tip").remove();
-                    }
-                    return true;
-                });
             },
             loadExaminerToolbar: function () {
                 var me = this;
@@ -569,7 +583,7 @@
                             break;
                     }
                 }
-                //加载detail按钮
+                //加载examiner按钮
                 me.examinerGrid.toolbarManager.options.group = 'examiner';
                 LG.loadToolbar(me.examinerGrid, me.examinerToolbarBtnItemClick);
             },

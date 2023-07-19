@@ -1,4 +1,5 @@
-﻿using Gksyb.Model;
+﻿using EAM.Material.DTO;
+using Gksyb.Model;
 using Gksyb.Model.Grid;
 
 namespace EAM.Material.Interfaces
@@ -25,6 +26,14 @@ namespace EAM.Material.Interfaces
         /// <param name="assessTaskId"></param>
         /// <returns></returns>
         public Task<GridData> GetCertainAssessTaskAsync(string assessTaskId);
+
+        /// <summary>
+        /// 连接评估任务表后
+        /// 根据评估ID ASSESS_ID 返回列表
+        /// </summary>
+        /// <param name="assessId"></param>
+        /// <returns></returns>
+        public Task<PROVIDER_ASSESS_AND_TASK> GetCertainAssessAsync(string assessId);
 
         /// <summary>
         /// 根据ID获取单行记录

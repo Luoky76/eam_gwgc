@@ -78,7 +78,7 @@ $.extend($.ligerui.controls.Grid.prototype, {
 独立弹出
 */
 $.ligerDialog._open = $.ligerDialog.open;
-$.ligerDialog.open = function (p) {
+$.ligerDialog.open = function (p, wid) {
     var isDialog = p.modal || !p.url || p.type || p.onClose || p.isDialog;
     if (!isDialog) isDialog = (window.localStorage.getItem("dialogType") || "1") !== "1";
     if (isDialog || p.title === null) return $.ligerDialog._open(p);
@@ -107,17 +107,19 @@ $.ligerDialog.open = function (p) {
             url = curWindow.location.protocol + "//" + curWindow.location.host + curWindow.location.pathname.substring(0, curWindow.location.pathname.lastIndexOf("/")) + "/" + url;
         }
         url = gksybConfigs.urlBase + "dialog.html?uid=" + uid + "&url=" + encodeURIComponent(url) + "&title=" + encodeURIComponent(p.title);
-        if (!window.dialogData) window._dialogData = new Object();
+        if (!window._dialogData) window._dialogData = new Object();
         window._dialogData[uid] = p;
-        return window.open(url, '_blank', specs);
+        var win = window.open(url, '_blank', specs);
+        win.id = wid || uid;
+        $.ligerui.add(win);
+        return win;
     }
+    if (p.alone === true) return _alone(p, p.id);
     var dialog = $.ligerDialog._open(p);
     dialog.winalone = $('<i class="l-dialog-winbtn l-dialog-alone fa fa-desktop"></i>').prependTo(dialog.dialog.winbtns);//独立窗口
     dialog.winalone.click(function () {//独立弹出
-        var win = _alone(dialog.options);
-        win.id = dialog.id;
+        _alone(dialog.options, dialog.id);
         dialog.doClose();
-        $.ligerui.add(win);
     });
     return dialog;
 };

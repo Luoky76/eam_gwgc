@@ -31,7 +31,7 @@ namespace Gksyb.Server.Controllers.System
         public async Task<AjaxResult<CF_CONFIGURATION>> GetAsync(long? id)
         {
             if (!id.HasValue) return AjaxResult<CF_CONFIGURATION>.Error("请传递参数");
-            return AjaxResult<CF_CONFIGURATION>.Success(await _service.GetAsync(id.Value), "成功");
+            return AjaxResult<CF_CONFIGURATION>.Success(await _service.GetAsync(id.Value));
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Gksyb.Server.Controllers.System
         /// <returns></returns>
         public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await _service.ListAsync(request));
         }
 
         /// <summary>

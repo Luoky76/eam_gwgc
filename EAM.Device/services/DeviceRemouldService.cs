@@ -38,11 +38,7 @@ namespace EAM.Device.Services
                 b.END_DATE,
                 b.REMOULD_DESC,
                 b.ISFINISH,
-                b.REMARK,
-                b.CREATE_USERID,
-                b.CREATEDATE,
-                b.MODIFY_USERID,
-                b.MODIFYDATE,
+                b.REMARK
             }).GetGridData(request);
             return list;
         }
@@ -64,11 +60,7 @@ namespace EAM.Device.Services
                     c.REMARK,
                     c.START_DATE,
                     c.END_DATE,
-                    c.DEVICE_REMOULD_ID,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE,
+                    c.DEVICE_REMOULD_ID
                 },
                 c => a => a.DEVICE_REMOULD_ID == c.DEVICE_REMOULD_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
@@ -83,10 +75,6 @@ namespace EAM.Device.Services
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.DEVICE_REMOULD_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATEDATE = Sysdate;
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
 
             await Task.CompletedTask;
         }
@@ -98,9 +86,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_REMOULD entity)
         {
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-
             await Task.CompletedTask;
         }
 

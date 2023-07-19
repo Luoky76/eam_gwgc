@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>供应商评估</title>
+    <title>供应商评估结果</title>
     <script src="../../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -35,27 +35,25 @@
                     search: {
                         fields: [
                             {
-                                display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_ID", newline: false, op: "equal", type: "select", options: {
+                                display: "供应商", name: "_search_PROVIDER_ID", dbname: "PROVIDER_ID", newline: false, type: "select", op: "equal", options: {
+                                    type: "select",
+                                    data: me.providerName
+                                }
+                            },
+                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", newline: false, type: "text" },
+                            {
+                                display: "任务制定人", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", newline: false, type: "select", op: "equal", options: {
                                     type: "select",
                                     data: me.user
                                 }
                             }
+
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            //实际为评分人id
-                            {
-                                display: "评分人", name: "EXAMINER_ID", minWidth: 100, type: "select", editor: {
-                                    type: "select",
-                                    data: me.user
-                                }
-                            },
-                            { display: "考核说明", name: "REMARK", width: 100, type: "text" },
-                            { display: "评价总分", name: "TOTAL_SCORE", width: 100, type: "double" },
-                            { display: "评价结果", name: "RESULT", width: 100, type: "text" },
-                            { display: "供应商名", name: "PROVIDER_NAME", width: 100, type: "text" },
+                            { display: "供应商", name: "PROVIDER_NAME", minWidth: 300, type: "text" },
+                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", width: 300, type: "text" },
                             //实际为任务制定人id
                             {
                                 display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", editor: {
@@ -63,41 +61,32 @@
                                     data: me.user
                                 }
                             },
-                            { display: "考核开始时间", name: "BEGIN_TIME", width: 100, type: "date" },
-                            { display: "考核结束时间", name: "END_TIME", width: 100, type: "date" },
-                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", width: 100, type: "text" },
+                            { display: "总分", name: "TOTAL_SCORE_SUM", width: 300, type: "text" },
+                            { display: "平均分", name: "AVERAGE_SCORE", width: 300, type: "text" },
+                            { display: "最高分", name: "MAX_SCORE", width: 300, type: "text" },
+                            { display: "最低分", name: "MIN_SCORE", width: 300, type: "text" },
+                            { display: "实际评分人数", name: "EXAMINER_CNT_ACTUAL", width: 300, type: "text" },
+                            { display: "计划评分人数", name: "EXMAINER_CNT", width: 300, type: "text" },
                             //隐藏
-                            { display: "主键", name: "ASSESS_ID", width: 100, type: "text", hide: true },
-                            { display: "评分人", name: "EXAMINER_NAME", width: 100, type: "text", hide: true },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", hide: true },
-                            { display: "供应商id", name: "PROVIDER_ID", width: 100, type: "text", hide: true },
-                            { display: "任务制定人id", name: "FORMULATER_ID", width: 100, type: "text", hide: true },
+                            { display: "主键", name: "ASSESS_TASK_ID", width: 300, type: "text", hide: true },
+                            { display: "供应商ID", name: "PROVIDER_ID", width: 300, type: "text", hide: true },
                         ]
                     }
                 };
             },
-            //明细页面大小
-            detailWidth: null,
-            detailHeight: null,
-            setDialogSize: function () {
-                var me = this;
-                me.detailWidth = window.innerWidth * 0.9;
-                me.detailHeight = window.innerHeight * 0.9;
-            },
-            menuNo: getQueryStringByName("MenuNo"),
+            providerName: [],
+            user: [],
             grid: null,
             searchForm: null,
             buttons: null,
-            user: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Material/ProviderAssess/Comboxdata',
+                    url: 'Material/ProviderAssessTask/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
+                        me.providerName = data.ProviderName;
                         me.user = data.User;
                     },
                     error: function (message) {
@@ -113,38 +102,24 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/ProviderAssess/ExtendList',
-                    sortName: 'ASSESS_ID',
+                    url: 'Material/ProviderAssessTask/ResultList',
+                    sortName: 'ASSESS_TASK_ID',
                     sortOrder: 'asc',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
                     enabledEdit: false,
-                    clickToEdit: true,
+                    clickToEdit: false,
                     onBeforeEdit: function (editParm) {
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
+
                     },
                     onSuccess: function (data, g) {
-                        if (data && data.Rows) {
-                            var rows = data.Rows || [];
-                            for (var i = 0, len = rows.length; i < len; i++) {
-                                var row = rows[i];
-                                row.OLDROLEID = row.ROLEID;
-                            }
-                        }
+
                     },
                     rowAttrRender: function (rowdata, rowid) {
-                        return "";
-                    },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.view(rowid);
+
                     }
                 });
                 me.grid.isValid = true;
@@ -158,9 +133,6 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "modify":
-                            me.modify();
-                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -173,54 +145,12 @@
                                 modal: true
                             });
                             break;
+                        default:
+                            break;
                     }
                 }
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            view: function (rowid) { //查看
-                var me = this;
-                var selected = me.grid.records[rowid];
-                var sid = selected.ASSESS_ID;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[查看]评估明细',
-                    url: "provider-assess-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid, "isView": true }
-                });
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
-                }
-                var sid = selected.ASSESS_ID;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '评分录入',
-                    url: "provider-assess-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid, "isView": false }
-                });
             },
             reload: function () { //刷新
                 var me = this;
@@ -297,7 +227,6 @@
                 var me = this;
                 me.loadComboxData();
                 me.setConfig();
-                me.setDialogSize();
                 me.setForm();
                 me.setGrid();
                 me.reload();

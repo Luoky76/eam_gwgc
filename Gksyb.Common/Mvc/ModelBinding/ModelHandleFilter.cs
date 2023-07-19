@@ -39,7 +39,13 @@ namespace Microsoft.AspNetCore.Mvc
                 return !description.Parameters.Any(a => a.Name == c.Key && a.BindingInfo != null &&
                 (a.BindingInfo.BindingSource == BindingSource.Services || a.BindingInfo.BindingSource == BindingSource.FormFile));
             }).ToList();
-            if (arguments?.Count > 0) context.HttpContext.SetRequestBodyItem(arguments);
+            if (arguments?.Count > 0)
+            {
+                var body = arguments.ToMiniJson();
+                if (!description.MethodInfo.HasAttribute<SkipXssFilterAttribute>(false))
+                    body.XssFilter();
+                context.HttpContext.SetRequestBodyItem(body);
+            }
             if (context.Result == null && !context.ModelState.IsValid)
             {
                 _logger.LogDebug(new EventId(1, "ModelEncryptFilterExecuting"), "The request has model state errors, returning an error response.");

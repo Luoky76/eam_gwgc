@@ -36,7 +36,7 @@ namespace Gksyb.Server.Controllers.Auth
                 corp = (await _service.CorpData()).Rows,
                 station = await codeService.Get("岗位"),
                 initPassword = _service.GetInitPassword()
-            }, "成功");
+            });
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         public async Task<AjaxResult> RoleData(GridRequest request)
         {
-            return AjaxResult.Success(await _service.RoleData(request), "成功");
+            return AjaxResult.Success(await _service.RoleData(request));
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         public async Task<AjaxResult> CorpData(GridRequest request)
         {
-            return AjaxResult.Success(await _service.CorpData(request), "成功");
+            return AjaxResult.Success(await _service.CorpData(request));
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         public async Task<AjaxResult<GridData>> ListAsync(UserRequest user, GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(user, request), "成功");
+            return AjaxResult<GridData>.Success(await _service.ListAsync(user, request));
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// </summary>
         public async Task<AjaxResult<GridData>> RoleListAsync([FromServices] IRoleService service, GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await service.ListAsync(request));
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Gksyb.Server.Controllers.Auth
         public async Task<AjaxResult<GridData>> UserListAsync([FromServices] UserService service, GridRequest request)
         {
             var data = await service.ListAsync(new UserRequest(), request);
-            return AjaxResult<GridData>.Success(data, "成功");
+            return AjaxResult<GridData>.Success(data);
         }
 
         /// <summary>
