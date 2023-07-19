@@ -1,10 +1,21 @@
 ﻿using Gksyb.Common;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Serialization;
 
 namespace Newtonsoft.Json
 {
     public static class JsonSerializerSettingsExtensions
     {
+        private static bool IgnoreNull = false;
+
+        /// <summary>
+        /// 初始化json配置，应该在所有调用之前
+        /// </summary>
+        public static void Init(IConfiguration configuration)
+        {
+            IgnoreNull = configuration.GetValue($"{OptionName.SysContext}:IgnoreJsonNull", defaultValue: false);
+        }
+
         /// <summary>
         /// 定制化json
         /// </summary>
@@ -19,7 +30,7 @@ namespace Newtonsoft.Json
             source.ContractResolver = new DefaultContractResolver();
             source.Converters.Add(new MinifiedNumArrayConverter());
             source.Converters.Add(new JsLongConverter());
-            if (igronNull) source.NullValueHandling = NullValueHandling.Ignore;
+            if (igronNull || IgnoreNull) source.NullValueHandling = NullValueHandling.Ignore;
             return source;
         }
 

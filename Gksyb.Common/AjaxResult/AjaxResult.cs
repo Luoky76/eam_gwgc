@@ -65,7 +65,7 @@ namespace Gksyb.Common
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return this.ToJson();
         }
     }
 }

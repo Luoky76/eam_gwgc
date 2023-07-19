@@ -9,8 +9,6 @@ using Gksyb.Core.Grid;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.Tree;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -219,8 +217,6 @@ namespace Chloe
             await source.DBLog($"{table} {op}", key, detail, curoper);
         }
 
-        private static readonly LogPath _logPath = new("SQL");
-
         /// <summary>
         /// 数据库日志
         /// </summary>
@@ -261,9 +257,10 @@ namespace Chloe
             }
             entity.LOGOP = curoper;
             entity.APPNAME = user.MenuAppname;
-            await source.InsertAsync(entity);
-            var logger = HttpContext.RequestServices.GetService<ILogger<SYS_LOG>>();//同时写入日志系统
-            logger.LogInformation(_logPath, "{LogNO}  {@entity}", entity.LOGNO, entity);
+            await source.NotSqlLog(async () =>
+            {
+                await source.InsertAsync(entity);
+            });
         }
 
         /// <summary>
