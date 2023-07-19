@@ -34,6 +34,7 @@
         currency: false, //是否显示为货币形式
         trim: true, //文本去两边空格
 
+        xss: true,
         clearPromptChar: false,//清空提示字符 可填入填充的字符串
         promptChar: '_',//提示字符
         rules: {},//附加规则
