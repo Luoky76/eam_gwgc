@@ -1,7 +1,4 @@
 ﻿using Chloe;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -11,7 +8,6 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using System;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
@@ -22,8 +18,8 @@ namespace EAM.Device.services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
-        private readonly ICommonService _iCommonService;
         private DateTime? _Sysdate;
+
         /// <summary>
         /// 获取数据库时间
         /// </summary>
@@ -39,12 +35,11 @@ namespace EAM.Device.services
             }
         }
 
-        public InventoryTaskService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession, ICommonService iCommonService)
+        public InventoryTaskService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
             _userSession = userSession;
-            _iCommonService=iCommonService;
         }
 
         /// <summary>
@@ -418,6 +413,7 @@ namespace EAM.Device.services
         #endregion 设备盘点结果
 
         #region 设备盈亏记录
+
         /// <summary>
         /// 获取盈亏记录列表
         /// </summary>
@@ -455,7 +451,6 @@ namespace EAM.Device.services
                         STATUS = "4",
                     });
                 }
-                
             }
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -465,6 +460,7 @@ namespace EAM.Device.services
                 },
                 c => a => a.RESULT_ID == c.RESULT_ID, null, BeforeUpdate);
         }
+
         /// <summary>
         /// 更新前验证
         /// </summary>
@@ -474,7 +470,7 @@ namespace EAM.Device.services
         {
             await Task.CompletedTask;
         }
-        #endregion
 
+        #endregion 设备盈亏记录
     }
 }

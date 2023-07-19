@@ -209,89 +209,61 @@
             },
             save: function () { //保存
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/InventoryTask/ManageScanDetail',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
+                if (me.auditing = "1") {
+                    LG.tip('已提交，无法操作!');
                 }
-
+                else {
+                    if (me.grid.endEdit() != false) {
+                        if (!me.grid.isDataChanged) {
+                            LG.showSuccess('无修改');
+                            return;
+                        }
+                        if (!me.grid.validChangeRows()) return false;
+                        var changeRow = me.grid.getChangedRows();
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/ManageScanDetail',
+                            loading: '正在保存中...',
+                            data: changeRow,
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
             },
 
             submit: function () {    //提交
-                var me = this;/*
-                if (selected[0].AUDITING == null) {
-                    LG.tip('请先保存!');
-                }
-*/
-                $.ligerDialog.confirm('确定提交吗?', function (confirm) {
-                    if (confirm) {
-                        LG.ajax({
-                            jsToken: true,
-                            url: 'Device/InventoryTask/SubmitScanDet',
-                            loading: '正在保存中...',
-                            data: { "sid": me.sid },
-                            success: function () {
-                                LG.showSuccess('保存成功');
-                                me.grid.isDataChanged = false;
-                                me.reload();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
-                    }
-                });
-/*
-                var selected = me.grid.getSelectedRows();
-                if (selected.length > 0) {
-                    if (selected[0].AUDITING == null) {
-                        LG.tip('请先保存!');
-                    }
-                    else if (selected[0].AUDITING != "0") {
-                        LG.tip('已提交，无法再次提交!');
-                    }
-                    else {
-                        var sids = [];
-                        selected.forEach((a) => {
-                            sids.push(a.SCAN_ID)
-                        })
-                        LG.ajax({
-                            jsToken: true,
-                            url: 'Device/InventoryTask/Submit',
-                            loading: '正在保存中...',
-                            data: { "sids": sids },
-                            success: function () {
-                                LG.showSuccess('保存成功');
-                                me.grid.isDataChanged = false;
-                                me.reload();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
-                    }
-
+                var me = this;
+                if (me.auditing = "1") {
+                    LG.tip('已提交，无法操作!');
                 }
                 else {
-                    LG.tip('请选择行!');
-                }*/
+                    $.ligerDialog.confirm('确定提交吗?', function (confirm) {
+                        if (confirm) {
+                            LG.ajax({
+                                jsToken: true,
+                                url: 'Device/InventoryTask/SubmitScanDet',
+                                loading: '正在保存中...',
+                                data: { "sid": me.sid },
+                                success: function () {
+                                    LG.showSuccess('保存成功');
+                                    me.grid.isDataChanged = false;
+                                    me.reload();
+                                },
+                                error: function (message) {
+                                    LG.showError(message);
+                                }
+                            });
+                        }
+                    });
+                }
+                
             },
             reload: function () { //刷新
                 var me = this;
@@ -304,6 +276,7 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid
+                    if (me.dialogData.auditing) me.auditing = me.dialogData.auditing
                     me.isView = me.dialogData.view === "1";
                 }
                 if ((me.sid || "0") === "0") me.sid = "";

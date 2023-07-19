@@ -1,8 +1,6 @@
 ﻿using Chloe;
 using EAM.Device.Interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
@@ -16,7 +14,7 @@ namespace EAM.Device.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
 
-        public DeviceTypeService(IDbContext dbContext,IComboxDataService comboxService)
+        public DeviceTypeService(IDbContext dbContext, IComboxDataService comboxService)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
@@ -174,6 +172,5 @@ namespace EAM.Device.Services
         {
             await Task.CompletedTask;
         }
-
     }
 }
