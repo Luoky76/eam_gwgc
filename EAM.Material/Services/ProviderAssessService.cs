@@ -135,7 +135,6 @@ namespace EAM.Material.Services
                     BEGIN_TIME = b.BEGIN_TIME,
                     END_TIME = b.END_TIME,
                     PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION,
-                    CREATE_USERID = b.CREATE_USERID,
                 })
                 .Where(c => c.ASSESS_ID == assessId)
                 .FirstAsync();

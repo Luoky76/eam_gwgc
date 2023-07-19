@@ -27,7 +27,7 @@ namespace EAM.Material.DTO
         /// 评分人id
         /// </summary>
         [Description("评分人id")]
-        public string EXAMINER_ID { get; set; }
+        public long EXAMINER_ID { get; set; }
 
         /// <summary>
         /// 考核说明
@@ -48,30 +48,6 @@ namespace EAM.Material.DTO
         public string RESULT { get; set; }
 
         /// <summary>
-        /// 添加人ID
-        /// </summary>
-        [Description("添加人ID")]
-        public string CREATE_USERID { get; set; }
-
-        /// <summary>
-        /// 添加时间
-        /// </summary>
-        [Description("添加时间")]
-        public DateTime? CREATEDATE { get; set; }
-
-        /// <summary>
-        /// 修改人ID
-        /// </summary>
-        [Description("修改人ID")]
-        public string MODIFY_USERID { get; set; }
-
-        /// <summary>
-        /// 修改时间
-        /// </summary>
-        [Description("修改时间")]
-        public DateTime? MODIFYDATE { get; set; }
-
-        /// <summary>
         /// 供应商id
         /// </summary>
         [Description("供应商id")]
@@ -87,7 +63,7 @@ namespace EAM.Material.DTO
         /// 任务制定人id
         /// </summary>
         [Description("任务制定人id")]
-        public string FORMULATER_ID { get; set; }
+        public long FORMULATER_ID { get; set; }
 
         /// <summary>
         /// 任务制定人

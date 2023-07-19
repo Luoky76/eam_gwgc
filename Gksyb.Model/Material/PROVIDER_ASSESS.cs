@@ -44,7 +44,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("评分人id")]
         [Column(DbType = DbType.AnsiString)]
-        public string EXAMINER_ID { get; set; }
+        public long EXAMINER_ID { get; set; }
 
         /// <summary>
         /// 考核说明
@@ -71,7 +71,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("添加人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
+        public long CREATE_USERID { get; set; }
 
         /// <summary>
         /// 添加时间
@@ -84,7 +84,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("修改人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
+        public long MODIFY_USERID { get; set; }
 
         /// <summary>
         /// 修改时间

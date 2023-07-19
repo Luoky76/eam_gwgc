@@ -316,7 +316,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("添加人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
+        public long CREATE_USERID { get; set; }
 
         /// <summary>
         /// 添加时间
@@ -329,7 +329,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("修改人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
+        public long MODIFY_USERID { get; set; }
 
         /// <summary>
         /// 修改时间
