@@ -78,25 +78,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_TASK_DET> request)
         {
-            //去除重复的<ASSESS_TASK_ID, ASSESS_BASE_ID>
-            for (int i = request.Added.Count - 1; i >= 0; --i)
-            {
-                var entity = request.Added[i];
-                var list = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
-                .Select(c => new
-                {
-                    c.ASSESS_TASK_ID,
-                    c.ASSESS_BASE_ID
-                })
-                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.ASSESS_BASE_ID == entity.ASSESS_BASE_ID)
-                .GetGridData(null);
-                if (list.Total > 0)
-                {
-                    //有重复，删除该请求
-                    request.Added.RemoveAt(i);
-                }
-            }
-
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -109,7 +90,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.ASSESS_TASK_DET_ID == c.ASSESS_TASK_DET_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>
@@ -122,6 +103,18 @@ namespace EAM.Material.Services
             if (entity.ASSESS_TASK_DET_ID.IsNullOrEmpty())
             {
                 entity.ASSESS_TASK_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            var list = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.ASSESS_BASE_ID
+                })
+                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.ASSESS_BASE_ID == entity.ASSESS_BASE_ID)
+                .ToListAsync();
+            if (list.Any())
+            {
+                throw new MessageException("请勿重复添加评估内容！");
             }
             await Task.CompletedTask;
         }

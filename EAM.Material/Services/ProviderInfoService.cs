@@ -149,7 +149,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.PROVIDER_ID == c.PROVIDER_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>

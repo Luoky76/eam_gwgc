@@ -1,12 +1,10 @@
 ﻿using EAM.Material.DTO;
 using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using System.Collections.Generic;
 
 namespace EAM.Material.Services
 {
@@ -151,25 +149,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS> request)
         {
-            //去除重复的<ASSESS_TASK_ID, EXAMINER_ID>
-            for (int i = request.Added.Count - 1; i >= 0; --i)
-            {
-                var entity = request.Added[i];
-                var list = await _dbContext.Query<PROVIDER_ASSESS>()
-                .Select(c => new
-                {
-                    c.ASSESS_TASK_ID,
-                    c.EXAMINER_ID
-                })
-                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.EXAMINER_ID == entity.EXAMINER_ID)
-                .GetGridData(null);
-                if (list.Total > 0)
-                {
-                    //有重复，删除该请求
-                    request.Added.RemoveAt(i);
-                }
-            }
-
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -185,8 +164,8 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
-                c => a => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                c => a => a.ASSESS_ID == c.ASSESS_ID
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>
@@ -205,6 +184,19 @@ namespace EAM.Material.Services
             {
                 entity.AUDITING = "0";
             }
+            var list = await _dbContext.Query<PROVIDER_ASSESS>()
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_ID
+                })
+                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.EXAMINER_ID == entity.EXAMINER_ID)
+                .ToListAsync();
+            if (list.Any())
+            {
+                throw new MessageException("请勿重复添加评分人！");
+            }
+
             await Task.CompletedTask;
         }
 
@@ -226,8 +218,6 @@ namespace EAM.Material.Services
         private async Task BeforeDelete(PROVIDER_ASSESS entity)
         {
             await Task.CompletedTask;
-
-
         }
 
         /// <summary>

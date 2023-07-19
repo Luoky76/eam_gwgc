@@ -99,7 +99,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.ASSESS_DET_ID == c.ASSESS_DET_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>
