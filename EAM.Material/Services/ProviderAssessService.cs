@@ -33,6 +33,16 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public string CreatePrimaryKey()
+        {
+            return GuidHelper.NewSnowflakeId().ToString();
+        }
+
+        /// <summary>
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>

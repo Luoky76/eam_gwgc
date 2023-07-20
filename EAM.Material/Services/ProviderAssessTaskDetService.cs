@@ -43,6 +43,7 @@ namespace EAM.Material.Services
                 .Where((a, b) => a.ASSESS_TASK_ID == assessTaskId)
                 .Select((a, b) => new
                 {
+                    a.ASSESS_TASK_DET_ID,
                     a.ASSESS_TASK_ID,
                     b.ASSESS_BASE_ID,
                     b.CONTENT,

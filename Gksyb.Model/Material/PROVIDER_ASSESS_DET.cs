@@ -17,26 +17,18 @@ namespace Gksyb.Model
     [Table("PROVIDER_ASSESS_DET")]
     public class PROVIDER_ASSESS_DET
     {
-
         /// <summary>
-        /// 主键
-        /// </summary>
-        [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string ASSESS_DET_ID { get; set; }
-
-        /// <summary>
-        /// 评估主表id
+        /// 评估主表id 主键
         /// </summary>
         [Description("评估主表id")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
         public string ASSESS_ID { get; set; }
 
         /// <summary>
-        /// 评估基础id
+        /// 评估基础id 主键
         /// </summary>
         [Description("评估基础id")]
-        [Column(DbType = DbType.AnsiString)]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
         public string ASSESS_BASE_ID { get; set; }
 
         /// <summary>
