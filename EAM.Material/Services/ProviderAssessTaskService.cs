@@ -108,8 +108,6 @@ namespace EAM.Material.Services
             {
                 entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            //设置记录状态为已提交
-            entity.AUDITING = "1";
             await Task.CompletedTask;
         }
 
@@ -174,7 +172,7 @@ namespace EAM.Material.Services
         {
             // 评估任务id 供应商id 供应商名 供应商产品 总分 平均分 最高分 最低分 实际评分人数 计划评分人数 任务制定人id
 
-            var query = _dbContext.Query<PROVIDER_ASSESS_TASK>()
+            var query1 = _dbContext.Query<PROVIDER_ASSESS_TASK>()
                 .LeftJoin<PROVIDER_ASSESS>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
                 .Select((a, b) => new
                 {
@@ -182,6 +180,7 @@ namespace EAM.Material.Services
                     a.PROVIDER_ID,
                     a.PROVIDER_NAME,
                     a.PROVIDER_PRODUCTION,
+                    b.AUDITING,
                     TOTAL_SCORE_SUM = Sql.Sum(b.TOTAL_SCORE),
                     AVERAGE_SCORE = Sql.Average(b.TOTAL_SCORE),
                     MAX_SCORE = Sql.Max(b.TOTAL_SCORE),
@@ -205,7 +204,26 @@ namespace EAM.Material.Services
                     c.EXAMINER_CNT_ACTUAL,
                     c.EXMAINER_CNT
                 });
-            var list = await query.GetGridData(request);
+
+            /*var query2 = _dbContext.Query<PROVIDER_ASSESS_TASK>()
+                .LeftJoin<PROVIDER_ASSESS>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .Select((a, b) => new
+                {
+                    a.ASSESS_TASK_ID,
+                    b.AUDITING,
+                    EXAMINER_CNT_ACTUAL = Sql.Count()
+                })
+                .GroupBy(c => c.ASSESS_TASK_ID)
+                .Having(c=> c.AUDITING == "1")
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_CNT_ACTUAL
+                });*/
+
+            
+
+            var list = await query1.GetGridData(request);
 
             return list;
         }
