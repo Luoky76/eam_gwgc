@@ -18,6 +18,15 @@ namespace Gksyb.Server.Controllers.Common
         }
 
         /// <summary>
+        /// 获取用户当前选中公司的用户
+        /// </summary>
+        public async Task<AjaxResult> CorpUsersAsync([FromServices] IUserService service, [FromServices] UserSession user)
+        {
+            if (user.Corp == null) return AjaxResult.Success(new List<UserInfo>());
+            return AjaxResult.Success(await service.FindByCorp(user.Corp.CorpID));
+        }
+
+        /// <summary>
         /// 获取无公司、相同公司、子公司的用户
         /// </summary>
         public async Task<AjaxResult> UsersAsync([FromServices] IUserService service)
