@@ -41,7 +41,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitRepOutCheckAsync(List<string> sids)
         {
-            return await _service.SubmitRepOutCheck(sids);
+            return AjaxResult.Success(await _service.SubmitRepOutCheck(sids), "成功");
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> GetRepOutDetailAsync(string ID)
         {
             if (ID==null) return AjaxResult.Error("参数错误");
-            return await _service.GetRepOutDetail(ID);
+            return AjaxResult.Success(await _service.GetRepOutDetail(ID), "成功");
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitRepOutAcceptAsync(List<string> sids)
         {
-            return await _service.SubmitRepOutAccept(sids);
+            return AjaxResult.Success(await _service.SubmitRepOutAccept(sids), "成功");
         }
 
         /// <summary>

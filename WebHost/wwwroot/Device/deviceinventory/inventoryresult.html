@@ -30,11 +30,7 @@
             ver: getQueryStringByName("ver"),
             detailWidth: 920,
             detailHeight: 450,
-
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
-            peopleData: [],
-            scanStatus: [],
-            deviceType: [],
             deptData: [],
             setConfig: function () {
                 var me = this;
@@ -55,17 +51,9 @@
                             {
                                 display: "盘点状态", name: "STATUS", minWidth: 100, type: "select", format: { data: me.scanStatus }
                             },
-                            {
-                                display: "盘点部门", name: "DEPT_ID", minWidth: 120, type: "select",  format: { data: me.deptData }
-                            },
-                            {
-                                display: "设备类别", name: "TYPE_ID", minWidth: 100, type: "select",
-                                editor: { type: 'select', data: me.deviceType }
-                            },  
-
-                            {
-                                display: "盘点人", name: "USER_ID", minWidth: 100, type: "select",format: { data: me.peopleData }
-                            },
+                            { display: "盘点部门", name: "DEPT_NAME", width: 100, type: "text" },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text" },
+                            { display: "盘点人", name: "USER_NAME", width: 100, type: "text" },
                             { display: "盘点日期", name: "SCAN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "二级单位", name: "SEC_DEPT", minWidth: 150, type: "text" },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
@@ -89,20 +77,7 @@
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.scanStatus = data.scanStatus;
-                        me.deviceType = data.deviceType;
-                        me.deptData = data.deptData;
 
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-                LG.ajax({
-                    async: false,
-                    url: 'Device/InventoryTask/UserData',
-                    loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.peopleData = data.userData;
                     },
                     error: function (message) {
                         LG.showError(message);

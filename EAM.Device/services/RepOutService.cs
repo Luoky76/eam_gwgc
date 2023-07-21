@@ -44,7 +44,7 @@ namespace EAM.Device.services
         /// 提交委外维修确认
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> SubmitRepOutCheck(List<string> sids)
+        public async Task<int> SubmitRepOutCheck(List<string> sids)
         {
             foreach (var sid in sids)
             {
@@ -61,13 +61,13 @@ namespace EAM.Device.services
                     throw new MessageException("核对委外维修确认单是否填写完成！");
                 }
             }
-            await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
+           var updaterepout =  await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
                 x => new REP_OUT
                 {
                     OUT_STATUS = "25",
                     AUDITING = "1",
                 });
-            return AjaxResult.Success("成功");
+            return updaterepout;
         }
         /// <summary>
         /// 管理委外维修确认
@@ -128,10 +128,10 @@ namespace EAM.Device.services
         /// </summary>
         /// <returns></returns>
 
-        public async Task<AjaxResult> GetRepOutDetail(string ID)
+        public async Task<REP_OUT> GetRepOutDetail(string ID)
         {
             var qry = await _dbContext.QueryByKeyAsync<REP_OUT>(ID);
-            return AjaxResult.Success(qry);
+            return qry;
         }
 
         #endregion
@@ -141,7 +141,7 @@ namespace EAM.Device.services
         /// 提交委外维修验收
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> SubmitRepOutAccept(List<string> sids)
+        public async Task<int> SubmitRepOutAccept(List<string> sids)
         {
             foreach (var sid in sids)
             {
@@ -156,13 +156,13 @@ namespace EAM.Device.services
                     throw new MessageException("核对委外维修确认单是否填写完成！");
                 }
             }
-            await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
+            var updaterepout = await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
                 x => new REP_OUT
                 {
                     OUT_STATUS = "30",
                     AUDITING_CHK = "1",
                 });
-            return AjaxResult.Success("成功");
+            return updaterepout;
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace EAM.Device.services
                     c.PROVIDER_ID,
                     c.OUT_ID,
                 },
-                c => a => a.OUT_ID == c.OUT_ID, null, BeforeUpdate);
+                c => a => a.OUT_ID == c.OUT_ID,null, BeforeUpdate);
         }
         public async Task BeforeUpdate(REP_OUT entity)
         {

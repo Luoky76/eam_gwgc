@@ -1,4 +1,6 @@
-﻿using EAM.Device.interfaces;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
+using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -41,18 +43,6 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
-        /// 下拉人员数据
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<AjaxResult> UserData()
-        {
-            return AjaxResult.Success(new
-            {
-                userData = await _service.UserData()
-            }, "成功");
-        }
-        /// <summary>
         /// 设备盘点任务列表
         /// </summary>
         /// <returns></returns>
@@ -83,7 +73,10 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> MakeScanList(string sid, string deptid, string typeid)
         {
-            return await _service.MakeScanList(sid, deptid,typeid);
+            if (sid.IsNullOrEmpty()||deptid.IsNullOrEmpty()) {
+                return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
+            }
+            return AjaxResult.Success(await _service.MakeScanList(sid, deptid, typeid), "成功");
         }
 
         /// <summary>
@@ -93,7 +86,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
-            return await _service.Submit(sids);
+            return AjaxResult.Success(await _service.Submit(sids), "成功");
         }
 
 
@@ -135,7 +128,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitScanDetAsync(string sid)
         {
-            return await _service.SubmitScanDet(sid);
+            return AjaxResult.Success(await _service.SubmitScanDet(sid), "成功");
         }
 
         /// <summary>

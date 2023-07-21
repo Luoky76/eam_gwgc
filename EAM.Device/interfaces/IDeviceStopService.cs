@@ -24,7 +24,7 @@ namespace EAM.Device.interfaces
         /// 获取单条停机记录
         /// </summary>
         /// <returns></returns>
-        Task<AjaxResult> GetStopListDetail(string ID);
+        Task<RUN_STOP> GetStopListDetail(string ID);
         /// <summary>
         /// 管理停机记录
         /// </summary>
@@ -34,7 +34,7 @@ namespace EAM.Device.interfaces
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> Submit(List<string> sids);
+        public Task<int> Submit(List<string> sids);
 
         /// <summary>
         /// 获取停机分类

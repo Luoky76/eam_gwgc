@@ -1,4 +1,5 @@
-﻿using EAM.Device.interfaces;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -60,8 +61,8 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetRunDetailAsync(string ID)
         {
-            if (ID==null) return AjaxResult.Error("参数错误");
-            return await _service.GetRunDetail(ID);
+            if (ID.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetRunDetail(ID), "成功");
         }
         /// <summary>
         /// 增删改
@@ -80,7 +81,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(string sids)
         {
-            return await _service.Submit(sids);
+            return AjaxResult.Success(await _service.Submit(sids), "成功");
         }
 
 

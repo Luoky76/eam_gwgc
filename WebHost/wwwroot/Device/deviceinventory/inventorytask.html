@@ -32,6 +32,7 @@
             peopleData: [],
             scanStatus: [],
             deviceType: [],
+            secDept: [],
             deptData: [],
             userid: null,
             detailWidth: 920,
@@ -61,28 +62,76 @@
                                 editor: {
                                     type: 'select',
                                     data: me.deptData,
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.deptData.length; i++) {
+                                                if (rowdata.value == me.deptData[i].ID) {
+                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.deptData[i].TEXT, rowdata.record);
+                                                    liger.get("maingrid").updateCell("DEPT_CODE", me.deptData[i].VALUE, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("DEPT_NAME", "", rowdata.record);
+                                            liger.get("maingrid").updateCell("DEPT_CODE", "", rowdata.record);
+                                        }
+                                    },
                                 }
                             },
                             {
                                 display: "设备类别", name: "TYPE_ID", minWidth: 100, type: "select",
-                                editor: { type: 'select', data: me.deviceType }
+                                editor: {
+                                    type: 'select',
+                                    data: me.deviceType,
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.deviceType.length; i++) {
+                                                if (rowdata.value == me.deviceType[i].ID) {
+                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.deviceType[i].TEXT, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
+                                        }
+                                    },
+                                },
                             },
-
                             {
                                 display: "盘点人", name: "USER_ID", minWidth: 100, type: "select", validate: { required: true },
                                 editor: {
                                     type: 'select',
                                     data: me.peopleData,
+                                    valueField: "Id",
+                                    textField: "Name",
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.peopleData.length; i++) {
+                                                if (rowdata.value == me.peopleData[i].Id) {
+                                                    liger.get("maingrid").updateCell("USER_NAME", me.peopleData[i].Name, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("USER_NAME", "", rowdata.record);
+                                        }
+                                    },
                                 },
                             },
                             { display: "盘点日期", name: "SCAN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "二级单位", name: "SEC_DEPT", minWidth: 150, type: "text" },
+                            {
+                                display: "二级单位", name: "SEC_DEPT", minWidth: 150, type: "text"
+                            },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
 
                             { display: "盘点部门编码", name: "DEPT_CODE", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "二级单位ID", name: "SEC_DEPTID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "标识", name: "IDENT", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "主键", name: "SCAN_ID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "主键", name: "SCAN_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "盘点人", name: "USER_NAME", width: 100, type: "text", hide: true },
+                            { display: "盘点部门", name: "DEPT_NAME", width: 100, type: "text", hide: true },
+                            { display: "盘点部门编码", name: "DEPT_CODE", width: 100, type: "text", hide: true },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text", hide: true },
 
                         ]
                     }
@@ -101,7 +150,6 @@
                         me.scanStatus = data.scanStatus;
                         me.deviceType = data.deviceType;
                         me.deptData = data.deptData;
-
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -109,10 +157,10 @@
                 });
                 LG.ajax({
                     async: false,
-                    url: 'Device/InventoryTask/UserData',
+                    url: 'Popup/Users',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.peopleData = data.userData;
+                        me.peopleData = data;
                     },
                     error: function (message) {
                         LG.showError(message);
