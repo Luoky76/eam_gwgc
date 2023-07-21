@@ -15,12 +15,6 @@ namespace EAM.Device.interfaces
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
 
         /// <summary>
-        /// 获取人员下拉
-        /// </summary>
-        /// <returns></returns>
-        public Task<List<ComboxData>> UserData();
-
-        /// <summary>
         /// 获取设备盘点任务列表
         /// </summary>
         /// <returns></returns>
@@ -36,13 +30,13 @@ namespace EAM.Device.interfaces
         /// 生成盘点清单
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> MakeScanList(string sid, string deptid, string typeid);
+        public Task<string> MakeScanList(string sid, string deptid, string typeid);
 
         /// <summary>
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> Submit(List<string> sids);
+        public Task<int> Submit(List<string> sids);
 
         /// <summary>
         /// 获取设备盘点任务明细
@@ -66,7 +60,7 @@ namespace EAM.Device.interfaces
         /// 提交盘点明细结果
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> SubmitScanDet(string sid);
+        public Task<string> SubmitScanDet(string sid);
 
         /// <summary>
         /// 获取盈亏记录列表

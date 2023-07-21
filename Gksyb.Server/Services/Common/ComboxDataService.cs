@@ -332,10 +332,13 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeptData(Expression<Func<CF_CORP, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<CF_CORP>().Where(predicate)
-                .Select(c => new ComboxData() { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.CORP_SNAME })
+            var corpPath = _dbContext.Query<CF_CORP>().Where(predicate)
+                .Select(c => c.CORP_PATH).ToList().Join();
+            return await _dbContext.Query<CF_CORP>()
+                .Where(a => (","+a.CORP_PATH).Contains(","+corpPath))
+                .Select(c => new ComboxData() { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.CNO })
                 .Distinct()
-               .ToListAsync();
+                .ToListAsync();
         }
 
 

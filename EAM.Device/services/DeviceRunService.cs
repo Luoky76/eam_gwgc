@@ -92,10 +92,10 @@ namespace EAM.Device.services
         /// </summary>
         /// <returns></returns>
 
-        public async Task<AjaxResult> GetRunDetail(string ID)
+        public async Task<RUN_TRANS> GetRunDetail(string ID)
         {
             var qry = await _dbContext.QueryByKeyAsync<RUN_TRANS>(ID);
-            return AjaxResult.Success(qry);
+            return qry;
         }
 
         /// <summary>
@@ -136,14 +136,13 @@ namespace EAM.Device.services
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> Submit(string sids)
+        public async Task<int> Submit(string sids)
         {
-            var changeAuditing = await _dbContext.UpdateAsync<RUN_TRANS>(x => x.TRANS_ID == sids,
+            return await _dbContext.UpdateAsync<RUN_TRANS>(x => x.TRANS_ID == sids,
                 x => new RUN_TRANS
                 {
                     AUDITING = "1",
                 });
-            return AjaxResult.Success("成功");
         }
 
         /// <summary>

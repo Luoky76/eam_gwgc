@@ -3,6 +3,7 @@ using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
@@ -10,6 +11,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
+using System.Reflection.Metadata;
 
 namespace EAM.Device.services
 {
@@ -17,6 +19,7 @@ namespace EAM.Device.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
 
@@ -35,9 +38,10 @@ namespace EAM.Device.services
             }
         }
 
-        public InventoryTaskService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public InventoryTaskService(IDbContext dbContext, ICorpService corpService, IComboxDataService comboxService, UserSession userSession)
         {
             _dbContext = dbContext;
+            _corpService = corpService;
             _comboxService = comboxService;
             _userSession = userSession;
         }
@@ -51,25 +55,8 @@ namespace EAM.Device.services
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "ScanStatus",(Expression<Func<BC_CODE, bool>>)(c => "1" == "1")},
                 { "DeviceTypeName",(Expression<Func<BASE_DEVICETYPE, bool>>)(c => "1" == "1")},
-                { "DeptData",(Expression<Func<CF_CORP, bool>>)(c => "1" == "1")},
+                { "DeptData",(Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.Corp.CorpID)},
             });
-        }
-
-        /// <summary>
-        /// 人员下拉
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<ComboxData>> UserData()
-        {
-            var corpId = _userSession.Corp.CorpID;
-            return await _dbContext.Query<CF_USER>()
-               .LeftJoin<CF_USER_PORT>((a, b) => a.LOGINNAME == b.LOGINNAME)
-               .LeftJoin<CF_DEPT>((a, b, c) => c.CORPID == b.CORPID)
-               .LeftJoin<CF_CORP>((a, b, c, d) => c.CORPID == d.CORPID)
-               .Select((a, b, c, d) => new
-               ComboxData
-               { ID = a.USERID, TEXT = a.REALNAME, VALUE =a.LOGINNAME, EXTEND = d.CORPID })
-               .Where(c => c.EXTEND.ToString() == corpId).ToListAsync();
         }
 
         #region 盘点任务
@@ -122,29 +109,15 @@ namespace EAM.Device.services
 
         public async Task BeforeAdd(DEVICE_SCAN entity)
         {
-            var random = new Random();
-            var randomNumber = random.Next(1000, 10000);
-            entity.SCAN_CODE = "PD"+DateTime.Now.Year+DateTime.Now.ToString("MM")+randomNumber;
+            string aa = "PD" + DateTime.Now.ToString("yyyyMM");
+            string def = aa + "0000";
+            var model = await _dbContext.Query<DEVICE_SCAN>(x => x.SCAN_CODE.Contains(aa)).Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            entity.SCAN_CODE = aa + index.ToString("D4");
             entity.AUDITING = "0";
             entity.STATUS = "1";
-            var type_query = await _dbContext.Query<BASE_DEVICETYPE>().Where(c => c.TYPE_ID==entity.TYPE_ID).FirstAsync();
-            entity.TYPE_NAME = type_query == null ? "" : type_query.TYPE_NAME;
-            var user_query = await _dbContext.Query<CF_USER>().Where(c => c.USERID.ToString()==entity.USER_ID).FirstAsync();
-            entity.USER_NAME = user_query == null ? "" : user_query.REALNAME;
-            var dept_query = await _dbContext.Query<CF_DEPT>().Where(c => c.DEPT_ID==entity.DEPT_ID).FirstAsync();
-            entity.DEPT_NAME = dept_query == null ? "" : dept_query.DEPT_NAME;
-            entity.DEPT_CODE = dept_query == null ? "" : dept_query.DEPT_CODE;
-            var a_query = await _dbContext.Query<CF_CORP>()
-                .LeftJoin<CF_DEPT>((a, b) => a.CORPID==b.CORPID)
-                .Select((a, b) => new
-                {
-                    a.CORPID,
-                    a.CORP_SNAME,
-                    b.DEPT_ID
-                })
-                .Where(c => c.DEPT_ID == entity.DEPT_ID).FirstAsync();
-            entity.SEC_DEPTID = a_query == null ? "" : a_query.CORPID;
-            entity.SEC_DEPT = a_query == null ? "" : a_query.CORP_SNAME;
+            entity.SEC_DEPTID = _userSession.Corp.CorpID;
+            entity.SEC_DEPT = _userSession.Corp.CName;
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -155,7 +128,7 @@ namespace EAM.Device.services
         /// <param name="deptid">部门ID</param>
         /// <param name="typeid">类型ID</param>
         /// <returns></returns>
-        public async Task<AjaxResult> MakeScanList(string sid, string deptid, string typeid)
+        public async Task<string> MakeScanList(string sid, string deptid, string typeid)
         {
             //查询盘点任务明细是否有数据
             var qrydet = _dbContext.Query<DEVICE_SCAN_DET>()
@@ -211,14 +184,14 @@ namespace EAM.Device.services
                 }
             }
 
-            return AjaxResult.Success("成功");
+            return "";
         }
 
         /// <summary>
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> Submit(List<string> sids)
+        public async Task<int> Submit(List<string> sids)
         {
             var query = _dbContext.Query<DEVICE_SCAN_DET>()
                  .Where(c => sids.Contains(c.SCAN_ID)).First();
@@ -228,13 +201,13 @@ namespace EAM.Device.services
             }
             else
             {
-                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => sids.Contains(x.SCAN_ID),
+                var updatedevice = await _dbContext.UpdateAsync<DEVICE_SCAN>(x => sids.Contains(x.SCAN_ID),
                     x => new DEVICE_SCAN
                     {
                         AUDITING = "1",
                         STATUS = "2",
                     });
-                return AjaxResult.Success("成功");
+                return updatedevice;
             }
         }
 
@@ -294,6 +267,17 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> ManageScanDetail(SaveRequest<DEVICE_SCAN_DET> request)
         {
+            if (request.Updated[0].SCAN_ID != null)
+            {
+                var query = _dbContext.Query<DEVICE_SCAN_DET>()
+                     .Where(c => c.SCAN_ID==request.Updated[0].SCAN_ID).Select(c =>
+                         c.HANDLE
+                     ).ToList();
+                if (!query.Contains("0"))
+                {
+                    throw new MessageException("已经全部处理完成！");
+                }
+            }
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -323,7 +307,7 @@ namespace EAM.Device.services
         /// 提交盘点任务结果
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> SubmitScanDet(string sid)
+        public async Task<string> SubmitScanDet(string sid)
         {
             var queryScan = _dbContext.Query<DEVICE_SCAN>()
                  .Where(c => c.SCAN_ID==sid).Select(c => c.STATUS).First();
@@ -342,24 +326,27 @@ namespace EAM.Device.services
             else
             {
                 await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==sid,
-                    x => new DEVICE_SCAN
-                    {
-                        STATUS = "3",
-                    });
-                var random = new Random();
-                var randomNumber = random.Next(1000, 10000);
+                   x => new DEVICE_SCAN
+                   {
+                       STATUS = "3",
+                   });
+
+                string aa = DateTime.Now.ToString("yyyyMM");
+                string def = aa + "0000";
                 var queryups = _dbContext.Query<DEVICE_SCAN_DET>()
                  .Where(c => c.SCAN_ID==sid&&c.SCAN_RESULT=="盘盈").ToList();
                 if (queryups!=null)
                 {
                     foreach (var queryup in queryups)
                     {
+                        var py = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa)&&x.SCAN_TYPE=="盘盈").Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
+                        var pyindex = py.SubStr(8, 4).CastTo<int>() + 1;
                         var scandetre = new DEVICE_SCAN_RESULT()
                         {
                             RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
                             AUDITING = "0",
                             SCAN_ID = sid,
-                            SCAN_CODE = "PY"+DateTime.Now.Year+DateTime.Now.ToString("MM")+randomNumber,
+                            SCAN_CODE = "PY"+ aa + pyindex.ToString("D4"),
                             SCAN_DATE = Sysdate,
                             SCAN_TYPE = "盘盈",
                             DEVICE_NO = queryup.DEVICE_NO,
@@ -383,12 +370,14 @@ namespace EAM.Device.services
                 {
                     foreach (var querydown in querydowns)
                     {
+                        var pk = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa)&&x.SCAN_TYPE=="盘亏").Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
+                        var pkindex = pk.SubStr(8, 4).CastTo<int>() + 1;
                         var scandetre = new DEVICE_SCAN_RESULT()
                         {
                             RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
                             AUDITING = "0",
                             SCAN_ID = sid,
-                            SCAN_CODE = "PK"+DateTime.Now.Year+DateTime.Now.ToString("MM")+randomNumber,
+                            SCAN_CODE = "PK" + aa + pkindex.ToString("D4"),
                             SCAN_DATE = Sysdate,
                             SCAN_TYPE = "盘亏",
                             DEVICE_NO = querydown.DEVICE_NO,
@@ -406,7 +395,7 @@ namespace EAM.Device.services
                         var insertScandetre = await _dbContext.InsertAsync(scandetre);
                     }
                 }
-                return AjaxResult.Success("成功");
+                return "";
             }
         }
 

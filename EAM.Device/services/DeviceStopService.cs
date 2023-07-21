@@ -54,10 +54,10 @@ namespace EAM.Device.services
         /// </summary>
         /// <returns></returns>
 
-        public async Task<AjaxResult> GetStopListDetail(string ID)
+        public async Task<RUN_STOP> GetStopListDetail(string ID)
         {
             var qry = await _dbContext.QueryByKeyAsync<RUN_STOP>(ID);
-            return AjaxResult.Success(qry);
+            return qry;
         }
 
         /// <summary>
@@ -130,14 +130,13 @@ namespace EAM.Device.services
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> Submit(List<string> sids)
+        public async Task<int> Submit(List<string> sids)
         {
-            await _dbContext.UpdateAsync<RUN_STOP>(x => sids.Contains(x.RUN_STOP_ID),
+            return await _dbContext.UpdateAsync<RUN_STOP>(x => sids.Contains(x.RUN_STOP_ID),
                 x => new RUN_STOP
                 {
                     AUDITING = "1",
                 });
-            return AjaxResult.Success("成功");
         }
 
         /// <summary>

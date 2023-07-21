@@ -31,7 +31,7 @@
             detailWidth: 920,
             detailHeight: 450,
             handle: [{ "ID": "0", "TEXT": "否" }, { "ID": "1", "TEXT": "是" }],
-            scanresult: [ { "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }, { "ID": "正常", "TEXT": "正常" }],
+            scanresult: [{ "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }, { "ID": "正常", "TEXT": "正常" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -43,16 +43,16 @@
                     },
                     grid: {
                         columns: [
-                            { display: "已处理", name: "HANDLE", width: 100, type: "select",format: { data: me.handle } },
+                            { display: "已处理", name: "HANDLE", width: 100, type: "select", format: { data: me.handle } },
                             { display: "盘点结果", name: "SCAN_RESULT", width: 100, type: "select", editor: { type: 'select', data: me.scanresult } },
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text",},
-                            { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text",},
-                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text",},
-                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text",},
-                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text",},
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", },
+                            { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text", },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", },
                             { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
-                            { display: "当前管理状态", name: "STATUS", width: 100, type: "text",  },
-                            { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text",  },
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "text", },
+                            { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text", },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
 
                         ]
@@ -209,22 +209,39 @@
             },
             save: function () { //保存
                 var me = this;
-                if (me.auditing = "1") {
-                    LG.tip('已提交，无法操作!');
-                }
-                else {
-                    if (me.grid.endEdit() != false) {
-                        if (!me.grid.isDataChanged) {
-                            LG.showSuccess('无修改');
-                            return;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/InventoryTask/ManageScanDetail',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
                         }
-                        if (!me.grid.validChangeRows()) return false;
-                        var changeRow = me.grid.getChangedRows();
+                    });
+                }
+            },
+
+            submit: function () {    //提交盘点结果
+                var me = this;
+                $.ligerDialog.confirm('确定提交吗?', function (confirm) {
+                    if (confirm) {
                         LG.ajax({
                             jsToken: true,
-                            url: 'Device/InventoryTask/ManageScanDetail',
+                            url: 'Device/InventoryTask/SubmitScanDet',
                             loading: '正在保存中...',
-                            data: changeRow,
+                            data: { "sid": me.sid },
                             success: function () {
                                 LG.showSuccess('保存成功');
                                 me.grid.isDataChanged = false;
@@ -235,35 +252,8 @@
                             }
                         });
                     }
-                }
-            },
+                });
 
-            submit: function () {    //提交
-                var me = this;
-                if (me.auditing = "1") {
-                    LG.tip('已提交，无法操作!');
-                }
-                else {
-                    $.ligerDialog.confirm('确定提交吗?', function (confirm) {
-                        if (confirm) {
-                            LG.ajax({
-                                jsToken: true,
-                                url: 'Device/InventoryTask/SubmitScanDet',
-                                loading: '正在保存中...',
-                                data: { "sid": me.sid },
-                                success: function () {
-                                    LG.showSuccess('保存成功');
-                                    me.grid.isDataChanged = false;
-                                    me.reload();
-                                },
-                                error: function (message) {
-                                    LG.showError(message);
-                                }
-                            });
-                        }
-                    });
-                }
-                
             },
             reload: function () { //刷新
                 var me = this;

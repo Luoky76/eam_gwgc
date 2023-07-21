@@ -18,7 +18,7 @@ namespace EAM.Device.interfaces
         /// 提交委外维修确认
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> SubmitRepOutCheck(List<string> sids);
+        public Task<int> SubmitRepOutCheck(List<string> sids);
 
         /// <summary>
         /// 获取委外维修确认列表
@@ -36,13 +36,13 @@ namespace EAM.Device.interfaces
         /// 获取单条停机记录
         /// </summary>
         /// <returns></returns>
-        Task<AjaxResult> GetRepOutDetail(string ID);
+        Task<REP_OUT> GetRepOutDetail(string ID);
 
         /// <summary>
         /// 提交委外维修验收
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> SubmitRepOutAccept(List<string> sids);
+        public Task<int> SubmitRepOutAccept(List<string> sids);
 
         /// <summary>
         /// 获取委外维修验收列表

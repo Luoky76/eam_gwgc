@@ -28,7 +28,7 @@ namespace EAM.Device.interfaces
         /// 获取单条记录
         /// </summary>
         /// <returns></returns>
-        Task<AjaxResult> GetRunDetail(string ID);
+        Task<RUN_TRANS> GetRunDetail(string ID);
         /// <summary>
         /// 增删改
         /// </summary>
@@ -39,7 +39,7 @@ namespace EAM.Device.interfaces
         /// 提交
         /// </summary>
         /// <returns></returns>
-        public Task<AjaxResult> Submit(string sids);
+        public Task<int> Submit(string sids);
 
         /// <summary>
         /// 获取运行状态一览表
