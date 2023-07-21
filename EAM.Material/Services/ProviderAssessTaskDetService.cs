@@ -40,8 +40,8 @@ namespace EAM.Material.Services
         public async Task<GridData> GetAssessTaskAsync(string assessTaskId)
         {
             var query = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
+                .Where(a => a.ASSESS_TASK_ID == assessTaskId)
                 .LeftJoin<PROVIDER_ASSESS_BASE>((a, b) => a.ASSESS_BASE_ID == b.ASSESS_BASE_ID)
-                .Where((a, b) => a.ASSESS_TASK_ID == assessTaskId)
                 .Select((a, b) => new
                 {
                     a.ASSESS_TASK_DET_ID,

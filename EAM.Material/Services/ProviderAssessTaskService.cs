@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -94,7 +93,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID
-                , BeforeAdd, null, null, false, null, null);
+                , BeforeAdd, null, null, false, null, AfterSave, false);
         }
 
         /// <summary>
@@ -108,6 +107,27 @@ namespace EAM.Material.Services
             if (entity.ASSESS_TASK_ID.IsNullOrEmpty())
             {
                 entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            //设置任务编码
+            if (entity.ASSESS_TASK_CODE.IsNullOrEmpty())
+            {
+
+                var sysdate = await _dbContext.GetSysdate();
+                //var dateCode = sysdate.ToString("yyyyMMddHH");
+                var dateCode = sysdate.ToString();
+
+                var list = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
+                    .Select(a => new
+                    {
+                        MAX_ASSESS_TASK_CODE = Sql.Max(a.ASSESS_TASK_CODE)
+                    })
+                    .ToListAsync();
+                if (list.Any())
+                {
+                    string code = list[0].MAX_ASSESS_TASK_CODE;
+                    string last = code.Remove(3, code.Length - 3);
+
+                }
             }
             await Task.CompletedTask;
         }
@@ -137,6 +157,25 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task AfterSave(List<PROVIDER_ASSESS_TASK> added, List<PROVIDER_ASSESS_TASK> updated, List<PROVIDER_ASSESS_TASK> deleted)
         {
+            //级联删除评估任务明细
+            foreach (var entity in deleted)
+            {
+                var list = await _dbContext.Query<PROVIDER_ASSESS>()
+                    .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID)
+                    .Select(c => new
+                    {
+                        c.ASSESS_ID
+                    })
+                    .ToListAsync();
+                await _dbContext.DeleteAsync<PROVIDER_ASSESS_TASK_DET>(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID);
+                await _dbContext.DeleteAsync<PROVIDER_ASSESS>(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID);
+                
+                foreach (var assessEntity in list)
+                {
+                    await _dbContext.DeleteAsync<PROVIDER_ASSESS_DET>(c => c.ASSESS_ID == assessEntity.ASSESS_ID);
+                }
+            }
+            //级联删除
             await Task.CompletedTask;
         }
 
@@ -180,7 +219,6 @@ namespace EAM.Material.Services
                     a.PROVIDER_ID,
                     a.PROVIDER_NAME,
                     a.PROVIDER_PRODUCTION,
-                    b.AUDITING,
                     TOTAL_SCORE_SUM = Sql.Sum(b.TOTAL_SCORE),
                     AVERAGE_SCORE = Sql.Average(b.TOTAL_SCORE),
                     MAX_SCORE = Sql.Max(b.TOTAL_SCORE),

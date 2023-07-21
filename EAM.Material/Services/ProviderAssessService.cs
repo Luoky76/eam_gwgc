@@ -69,6 +69,7 @@ namespace EAM.Material.Services
 
         /// <summary>
         /// 连接评估任务表后返回列表
+        /// 仅返回已提交的评估任务
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -76,6 +77,7 @@ namespace EAM.Material.Services
         {
             var list = await _dbContext.Query<PROVIDER_ASSESS>()
                 .LeftJoin<PROVIDER_ASSESS_TASK>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .Where((a, b) => b.AUDITING == "1")
                 .Select((a, b) => new
                 {
                     a.ASSESS_ID,
@@ -143,7 +145,7 @@ namespace EAM.Material.Services
                     RESULT = a.RESULT,
                     PROVIDER_ID = b.PROVIDER_ID,
                     PROVIDER_NAME = b.PROVIDER_NAME,
-                    FORMULATER_ID = a.CREATE_USERID,
+                    FORMULATER_ID = b.CREATE_USERID,
                     BEGIN_TIME = b.BEGIN_TIME,
                     END_TIME = b.END_TIME,
                     PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION,

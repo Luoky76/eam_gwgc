@@ -96,8 +96,7 @@
                             { display: "备注", name: "REMARK", dbname: "REMARK", width: 1000, type: "textarea" },
                             //隐藏
                             { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
-                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "hidden" },
-                            { display: "任务制定人id", name: "FORMULATER_ID", dbname: "FORMULATER_ID", width: 300, type: "hidden" }
+                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "hidden" }
                         ]
                     },
                     grid: {
@@ -417,7 +416,7 @@
             //导入
             importTaskBase: function () {
                 var me = this;
-                var gridData = me.grid.getData();
+                /*var gridData = me.grid.getData();
                 var currentBaseIds = [];
                 for (var item of gridData) {
                     currentBaseIds.push(item.ASSESS_BASE_ID);
@@ -442,7 +441,48 @@
                         me.reloadTaskBase();
                     }
                 }
-                $.ligerDialog.open(options);
+                $.ligerDialog.open(options);*/
+                function callback(values, rows) {
+                    for (var i = 0; i < rows.length; i++) {
+                        rows[i]["ASSESS_TASK_ID"] = me.sid;
+                    }
+                    var changeRow = new Object();
+                    changeRow["added"] = rows;
+                    LG.ajax({
+                        url: 'Material/ProviderAssessTaskDet/Save',
+                        loading: '正在导入中...',
+                        data: { request: changeRow },
+                        success: function () {
+                            LG.showSuccess('导入成功');
+                            me.reloadTaskBase();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                $.ligerDialog.open({
+                    width: 800,
+                    height: 400,
+                    title: '[导入]评估任务基础',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [],
+                        options: {
+                            url: 'Material/ProviderAssessBase/ValidList', sortName: 'ASSESS_BASE_ID', rowKey: "ASSESS_BASE_ID",
+                            columns: [
+                                { display: "评价内容", name: "CONTENT", minWidth: 500, type: "text" },
+                                { display: "是否有效", name: "IS_VALID", type: "chk" }
+                            ]
+                        },
+                        fields: [
+                            { display: "评价内容", name: "CONTENT", width: 100, type: "text" }
+                        ],
+                        callback: callback
+                    }
+                });
             },
             //保存
             saveTaskBase: function () {
