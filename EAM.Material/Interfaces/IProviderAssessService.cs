@@ -43,6 +43,13 @@ namespace EAM.Material.Interfaces
         public Task<PROVIDER_ASSESS> GetAsync(string id);
 
         /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public string CreatePrimaryKey();
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>

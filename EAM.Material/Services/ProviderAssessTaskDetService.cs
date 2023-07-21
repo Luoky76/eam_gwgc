@@ -1,6 +1,7 @@
 ﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -11,13 +12,13 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
-        private readonly UserSession _userSession;
+        private readonly IUserService _userService;
 
-        public ProviderAssessTaskDet(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public ProviderAssessTaskDet(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
-            _userSession = userSession;
+            _userService = userService;
         }
 
         /// <summary>
@@ -38,17 +39,16 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> GetAssessTaskAsync(string assessTaskId)
         {
-            var query = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                .InnerJoin<PROVIDER_ASSESS_TASK_DET>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
-                .LeftJoin<PROVIDER_ASSESS_BASE>((a, b, c) => b.ASSESS_BASE_ID == c.ASSESS_BASE_ID)
-                .Where((a, b, c) => a.ASSESS_TASK_ID == assessTaskId)
-                .Select((a, b, c) => new
+            var query = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
+                .LeftJoin<PROVIDER_ASSESS_BASE>((a, b) => a.ASSESS_BASE_ID == b.ASSESS_BASE_ID)
+                .Where((a, b) => a.ASSESS_TASK_ID == assessTaskId)
+                .Select((a, b) => new
                 {
+                    a.ASSESS_TASK_DET_ID,
                     a.ASSESS_TASK_ID,
-                    b.ASSESS_TASK_DET_ID,
-                    c.ASSESS_BASE_ID,
-                    c.CONTENT,
-                    c.IS_VALID
+                    b.ASSESS_BASE_ID,
+                    b.CONTENT,
+                    b.IS_VALID
                 }).GetGridData(null);
             return query;
         }
@@ -80,25 +80,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS_TASK_DET> request)
         {
-            //去除重复的<ASSESS_TASK_ID, ASSESS_BASE_ID>
-            for (int i = request.Added.Count - 1; i >= 0; --i)
-            {
-                var entity = request.Added[i];
-                var list = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
-                .Select(c => new
-                {
-                    c.ASSESS_TASK_ID,
-                    c.ASSESS_BASE_ID
-                })
-                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.ASSESS_BASE_ID == entity.ASSESS_BASE_ID)
-                .GetGridData(null);
-                if (list.Total > 0)
-                {
-                    //有重复，删除该请求
-                    request.Added.RemoveAt(i);
-                }
-            }
-
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -111,7 +92,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.ASSESS_TASK_DET_ID == c.ASSESS_TASK_DET_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>
@@ -124,6 +105,18 @@ namespace EAM.Material.Services
             if (entity.ASSESS_TASK_DET_ID.IsNullOrEmpty())
             {
                 entity.ASSESS_TASK_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            var list = await _dbContext.Query<PROVIDER_ASSESS_TASK_DET>()
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.ASSESS_BASE_ID
+                })
+                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.ASSESS_BASE_ID == entity.ASSESS_BASE_ID)
+                .ToListAsync();
+            if (list.Any())
+            {
+                throw new MessageException("请勿重复添加评估内容！");
             }
             await Task.CompletedTask;
         }
@@ -167,10 +160,9 @@ namespace EAM.Material.Services
                 {
                     {"ProviderName", null },
                     {"AssessBaseContent", null},
-                    {"Auditing", null},
-                    {"User", null}
+                    {"Auditing", null}
                 });
-
+                data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);
             }
             catch (Exception e)

@@ -93,7 +93,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.ASSESS_BASE_ID == c.ASSESS_BASE_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>

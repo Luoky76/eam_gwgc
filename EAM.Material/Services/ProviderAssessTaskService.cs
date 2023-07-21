@@ -1,6 +1,7 @@
 ﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -12,13 +13,13 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
-        private readonly UserSession _userSession;
+        private readonly IUserService _userService;
 
-        public ProviderAssessTask(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public ProviderAssessTask(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
-            _userSession = userSession;
+            _userService = userService;
         }
 
         /// <summary>
@@ -93,7 +94,7 @@ namespace EAM.Material.Services
                     c.MODIFYDATE
                 },
                 c => a => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>
@@ -108,10 +109,6 @@ namespace EAM.Material.Services
             {
                 entity.ASSESS_TASK_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            //设置记录状态为已提交
-            entity.AUDITING = "1";
-            //设置任务制定人为当前登录者
-            //entity.FORMULATER_NAME = window.session.RealName;
             await Task.CompletedTask;
         }
 
@@ -133,8 +130,6 @@ namespace EAM.Material.Services
         private async Task BeforeDelete(PROVIDER_ASSESS_TASK entity)
         {
             await Task.CompletedTask;
-
-
         }
 
         /// <summary>
@@ -155,10 +150,9 @@ namespace EAM.Material.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     {"Auditing", null },
-                    {"ProviderName", null },
-                    {"User", null }
+                    {"ProviderName", null }
                 });
-
+                data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);
             }
             catch (Exception e)
@@ -176,47 +170,60 @@ namespace EAM.Material.Services
         [HttpPost]
         public async Task<GridData> ResultListAsync(GridRequest request)
         {
-            // 评估任务id 供应商id 供应商名 供应商产品 总分 平均分 最高分 最低分 实际评分人数 计划评分人数 任务制定人id 任务制定人
+            // 评估任务id 供应商id 供应商名 供应商产品 总分 平均分 最高分 最低分 实际评分人数 计划评分人数 任务制定人id
 
-            var pat = _dbContext.Query<PROVIDER_ASSESS_TASK>();
-            var pa = _dbContext.Query<PROVIDER_ASSESS>();
-            // 记录状态为已提交的有效实际评分
-            var g1 = pa.Where(a => a.AUDITING == "1")
-                .GroupBy(a => a.ASSESS_TASK_ID)
-                .Select(a => new
-                {
-                    a.ASSESS_TASK_ID,
-                    TOTAL_SCORE_SUM = Sql.Sum(a.TOTAL_SCORE),
-                    AVERAGE_SCORE = Sql.Average(a.TOTAL_SCORE),
-                    MAX_SCORE = Sql.Max(a.TOTAL_SCORE),
-                    MIN_SCORE = Sql.Min(a.TOTAL_SCORE),
-                    EXAMINER_CNT_ACTUAL = Sql.Count()
-                });
-            // 计划评分人数
-            var g2 = pa.GroupBy(a => a.ASSESS_TASK_ID)
-                .Select(a => new
-                {
-                    a.ASSESS_TASK_ID,
-                    EXMAINER_CNT = Sql.Count()
-                });
-            // 连接三表
-            var list = await pat.InnerJoin(g1, (a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
-                .InnerJoin(g2, (a, b, c) => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID)
-                .Select((a, b, c) => new
+            var query1 = _dbContext.Query<PROVIDER_ASSESS_TASK>()
+                .LeftJoin<PROVIDER_ASSESS>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .Select((a, b) => new
                 {
                     a.ASSESS_TASK_ID,
                     a.PROVIDER_ID,
                     a.PROVIDER_NAME,
                     a.PROVIDER_PRODUCTION,
-                    a.CREATE_USERID,
-                    b.TOTAL_SCORE_SUM,
-                    b.AVERAGE_SCORE,
-                    b.MAX_SCORE,
-                    b.MIN_SCORE,
-                    b.EXAMINER_CNT_ACTUAL,
-                    c.EXMAINER_CNT
+                    b.AUDITING,
+                    TOTAL_SCORE_SUM = Sql.Sum(b.TOTAL_SCORE),
+                    AVERAGE_SCORE = Sql.Average(b.TOTAL_SCORE),
+                    MAX_SCORE = Sql.Max(b.TOTAL_SCORE),
+                    MIN_SCORE = Sql.Min(b.TOTAL_SCORE),
+                    EXAMINER_CNT_ACTUAL = Sql.Count(b.AUDITING == "1"),
+                    EXMAINER_CNT = Sql.Count()
                 })
-                .GetGridData(request);
+                .GroupBy(c => c.ASSESS_TASK_ID)
+                .AndBy(c => c.PROVIDER_ID)
+                .AndBy(c => c.PROVIDER_NAME)
+                .AndBy(c => c.PROVIDER_PRODUCTION)
+                .Select(c => new {
+                    c.ASSESS_TASK_ID,
+                    c.PROVIDER_ID,
+                    c.PROVIDER_NAME,
+                    c.PROVIDER_PRODUCTION,
+                    c.TOTAL_SCORE_SUM,
+                    c.AVERAGE_SCORE,
+                    c.MAX_SCORE,
+                    c.MIN_SCORE,
+                    c.EXAMINER_CNT_ACTUAL,
+                    c.EXMAINER_CNT
+                });
+
+            /*var query2 = _dbContext.Query<PROVIDER_ASSESS_TASK>()
+                .LeftJoin<PROVIDER_ASSESS>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
+                .Select((a, b) => new
+                {
+                    a.ASSESS_TASK_ID,
+                    b.AUDITING,
+                    EXAMINER_CNT_ACTUAL = Sql.Count()
+                })
+                .GroupBy(c => c.ASSESS_TASK_ID)
+                .Having(c=> c.AUDITING == "1")
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_CNT_ACTUAL
+                });*/
+
+            
+
+            var list = await query1.GetGridData(request);
 
             return list;
         }

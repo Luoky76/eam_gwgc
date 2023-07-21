@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>供应商评估明细</title>
+    <title>供应商评估</title>
     <script src="../../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -42,41 +42,38 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", type: "select", options: {
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", type: "select", group: "评估任务信息总览", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }
                             },
-                            //实际为评分人id
+                            //实际为任务制定人id
                             {
-                                display: "评分人", name: "EXAMINER_ID", newline: false, type: "select", options: {
+                                display: "任务制定人", name: "FORMULATER_ID", dbname: "FORMULATER_ID", type: "select", options: {
                                     type: "select",
                                     data: me.user
                                 }
                             },
-                            { display: "考核说明", name: "REMARK", newline: false, type: "text" },
-                            { display: "评估总分", name: "TOTAL_SCORE", newline: false, type: "float" },
-                            { display: "评估结果", name: "RESULT", newline: false, type: "text" },
-                            { display: "供应商名", name: "PROVIDER_NAME", newline: false, type: "text" },
-                            //实际为任务制定人id
+                            //实际为评分人id
                             {
-                                display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", options: {
+                                display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", type: "select", options: {
                                     type: "select",
                                     data: me.user
                                 }
                             },
                             { display: "考核开始时间", name: "BEGIN_TIME", newline: false, type: "date" },
                             { display: "考核结束时间", name: "END_TIME", newline: false, type: "date" },
+                            { display: "供应商名", name: "PROVIDER_NAME", newline: false, type: "text" },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", newline: false, type: "text" },
+                            { display: "考核说明", name: "REMARK", newline: false, type: "text", group: "总体考核结果" },
+                            { display: "评估总分", name: "TOTAL_SCORE", newline: false, type: "float" },
+                            { display: "评估结果", name: "RESULT", newline: false, type: "text" },
                             //隐藏
                             { display: "主键", name: "ASSESS_ID", newline: false, type: "hidden" },
                             { display: "评估任务id", name: "ASSESS_TASK_ID", newline: false, type: "hidden" },
                             { display: "评分人", name: "EXAMINER_NAME", newline: false, type: "hidden" },
-                            { display: "供应商id", name: "PROVIDER_ID", newline: false, type: "hidden" },
-                            { display: "添加时间", name: "CREATEDATE", newline: false, type: "hidden" },
-                            { display: "修改人ID", name: "MODIFY_USERID", newline: false, type: "hidden" },
-                            { display: "修改时间", name: "MODIFYDATE", newline: false, type: "hidden" },
+                            { display: "供应商id", name: "PROVIDER_ID", newline: false, type: "hidden" }
                         ]
                     },
                     grid: {
@@ -92,12 +89,7 @@
                             { display: "分数", name: "SCORE", width: 100, type: "float", editor: { type: 'float' } },
                             { display: "分数等级", name: "SCORE_DESC", width: 100, type: "text", editor: { type: 'text' } },
                             //隐藏
-                            { display: "主键", name: "ASSESS_DET_ID", width: 100, type: "text", hide: true },
-                            { display: "评估主表id", name: "ASSESS_ID", width: 100, type: "text", hide: true },
-                            { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text", hide: true },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", hide: true }
+                            { display: "评估主表id", name: "ASSESS_ID", width: 100, type: "text", hide: true }
                         ]
                     }
                 };
@@ -146,9 +138,7 @@
             },
             save: function () { //保存
                 var me = this;
-                //子表有修改而未保存时，先保存子表
-                if (me.grid.isDataChanged) me.saveAssessDet();
-                else if ($.isEmptyObject(me.mainform.getChanges())) {
+                if ($.isEmptyObject(me.mainform.getChanges())) {
                     LG.showSuccess('无修改');
                     return;
                 }
@@ -160,8 +150,6 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                //设置记录状态为已提交
-                data.AUDITING = "1";
                 var original = handle(me.mainform.getOrginData());
                 var changeRow = new Object();
                 if (!me.sid) {
@@ -173,8 +161,7 @@
                 }
                 LG.ajax({
                     jsToken: true,
-                    //TODO not found
-                    url: 'Materail/ProviderAssess/Save',
+                    url: 'Material/ProviderAssess/Save',
                     loading: '正在保存中...',
                     data: changeRow,
                     success: function () {
@@ -228,7 +215,23 @@
                         me.close(false);
                     }.bind(me)
                 });
-                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+                if (!me.isView) buttons.push({
+                    text: '保存',
+                    icon: 'fa fa-save',
+                    onclick: function () {
+                        //子表有修改而未保存时，询问是否保存子表
+                        if (me.grid.isDataChanged) {
+                            $.ligerDialog.confirm("评分未保存，是否保存评分？", function (confirm) {
+                                if (confirm) {
+                                    me.saveAssessDet();
+                                }
+                                else {
+                                    me.save();
+                                }
+                            });
+                        }
+                    }.bind(me)
+                });
 
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
@@ -245,7 +248,7 @@
                     validate: true,
                     fields: me.config.form.fields,
                     labelWidth: 120,
-                    readonly: true,
+                    readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -384,7 +387,7 @@
                             me.mainform.setData({TOTAL_SCORE: sum});
 
                             //子表保存后同时保存主表
-                            //me.save();
+                            me.save();
                         }.bind(me),
                         error: function (message) {
                             LG.showError(message);

@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -41,7 +40,6 @@ namespace EAM.Material.Services
         {
             var list = await _dbContext.Query<PROVIDER_ASSESS_DET>().Select(c => new
             {
-                c.ASSESS_DET_ID,
                 c.ASSESS_ID,
                 c.ASSESS_BASE_ID,
                 c.SCORE,
@@ -61,20 +59,20 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> CertainAssessListAsync(string assessId)
         {
-            var list = await _dbContext.Query<PROVIDER_ASSESS_DET>().Select(c => new
-            {
-                c.ASSESS_DET_ID,
-                c.ASSESS_ID,
-                c.ASSESS_BASE_ID,
-                c.SCORE,
-                c.SCORE_DESC,
-                c.CREATE_USERID,
-                c.CREATEDATE,
-                c.MODIFY_USERID,
-                c.MODIFYDATE
-            })
-            .Where(c => c.ASSESS_ID == assessId)
-            .GetGridData(null);
+            var list = await _dbContext.Query<PROVIDER_ASSESS_DET>()
+                .Select(c => new
+                {
+                    c.ASSESS_ID,
+                    c.ASSESS_BASE_ID,
+                    c.SCORE,
+                    c.SCORE_DESC,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
+                })
+                .Where(c => c.ASSESS_ID == assessId)
+                .GetGridData(null);
             return list;
         }
 
@@ -88,7 +86,6 @@ namespace EAM.Material.Services
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
-                    c.ASSESS_DET_ID,
                     c.ASSESS_ID,
                     c.ASSESS_BASE_ID,
                     c.SCORE,
@@ -98,8 +95,8 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
-                c => a => a.ASSESS_DET_ID == c.ASSESS_DET_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                c => a => a.ASSESS_ID == c.ASSESS_ID && a.ASSESS_BASE_ID == c.ASSESS_BASE_ID
+                , null, null, null, false, null, null);
         }
 
         /// <summary>
@@ -109,10 +106,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(PROVIDER_ASSESS_DET entity)
         {
-            if (entity.ASSESS_DET_ID.IsNullOrEmpty())
-            {
-                entity.ASSESS_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            }
             await Task.CompletedTask;
         }
 

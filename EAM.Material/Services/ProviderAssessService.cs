@@ -1,12 +1,11 @@
 ﻿using EAM.Material.DTO;
 using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using System.Collections.Generic;
 
 namespace EAM.Material.Services
 {
@@ -14,13 +13,13 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
-        private readonly UserSession _userSession;
+        private readonly IUserService _userService;
 
-        public ProviderAssessService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public ProviderAssessService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
-            _userSession = userSession;
+            _userService = userService;
         }
 
         /// <summary>
@@ -32,6 +31,16 @@ namespace EAM.Material.Services
         {
             var query = await _dbContext.Query<PROVIDER_ASSESS>().Where(c => c.ASSESS_ID == id).FirstAsync();
             return query;
+        }
+
+        /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public string CreatePrimaryKey()
+        {
+            return GuidHelper.NewSnowflakeId().ToString();
         }
 
         /// <summary>
@@ -134,10 +143,10 @@ namespace EAM.Material.Services
                     RESULT = a.RESULT,
                     PROVIDER_ID = b.PROVIDER_ID,
                     PROVIDER_NAME = b.PROVIDER_NAME,
+                    FORMULATER_ID = a.CREATE_USERID,
                     BEGIN_TIME = b.BEGIN_TIME,
                     END_TIME = b.END_TIME,
                     PROVIDER_PRODUCTION = b.PROVIDER_PRODUCTION,
-                    CREATE_USERID = b.CREATE_USERID,
                 })
                 .Where(c => c.ASSESS_ID == assessId)
                 .FirstAsync();
@@ -151,25 +160,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PROVIDER_ASSESS> request)
         {
-            //去除重复的<ASSESS_TASK_ID, EXAMINER_ID>
-            for (int i = request.Added.Count - 1; i >= 0; --i)
-            {
-                var entity = request.Added[i];
-                var list = await _dbContext.Query<PROVIDER_ASSESS>()
-                .Select(c => new
-                {
-                    c.ASSESS_TASK_ID,
-                    c.EXAMINER_ID
-                })
-                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.EXAMINER_ID == entity.EXAMINER_ID)
-                .GetGridData(null);
-                if (list.Total > 0)
-                {
-                    //有重复，删除该请求
-                    request.Added.RemoveAt(i);
-                }
-            }
-
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -185,8 +175,8 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
-                c => a => a.ASSESS_TASK_ID == c.ASSESS_TASK_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                c => a => a.ASSESS_ID == c.ASSESS_ID
+                , BeforeAdd, null, null, false, null, null);
         }
 
         /// <summary>
@@ -205,6 +195,19 @@ namespace EAM.Material.Services
             {
                 entity.AUDITING = "0";
             }
+            var list = await _dbContext.Query<PROVIDER_ASSESS>()
+                .Select(c => new
+                {
+                    c.ASSESS_TASK_ID,
+                    c.EXAMINER_ID
+                })
+                .Where(c => c.ASSESS_TASK_ID == entity.ASSESS_TASK_ID && c.EXAMINER_ID == entity.EXAMINER_ID)
+                .ToListAsync();
+            if (list.Any())
+            {
+                throw new MessageException("请勿重复添加评分人！");
+            }
+
             await Task.CompletedTask;
         }
 
@@ -226,8 +229,6 @@ namespace EAM.Material.Services
         private async Task BeforeDelete(PROVIDER_ASSESS entity)
         {
             await Task.CompletedTask;
-
-
         }
 
         /// <summary>
@@ -248,10 +249,9 @@ namespace EAM.Material.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     {"Auditing", null },
-                    {"User", null },
                     {"AssessBaseContent", null }
                 });
-
+                data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);
             }
             catch (Exception e)

@@ -96,12 +96,9 @@
                             { display: "考核结束时间", name: "END_TIME", minWidth: 200, type: "date" },
                             { display: "备注", name: "REMARK", width: 100, type: "text", editor: { type: 'text' } },
                             //隐藏
-                            { display: "主键", name: "ASSESS_TASK_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text' }, hide: true },
-                            { display: "供应商id", name: "PROVIDER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "任务制定人id", name: "FORMULATER_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true }
+                            { display: "主键", name: "ASSESS_TASK_ID", width: 100, type: "text", hide: true },
+                            { display: "供应商id", name: "PROVIDER_ID", width: 100, type: "text", hide: true },
+                            { display: "任务制定人id", name: "FORMULATER_ID", width: 100, type: "int", hide: true }
                         ]
                     }
                 };
@@ -194,6 +191,13 @@
                             break;
                         case "save":
                             me.save();
+                            break;
+                        case "submit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.submit();
+                                }
+                            });
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -311,6 +315,48 @@
                     });
                 }
 
+            },
+            submit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    /*//提交确认
+                    var isConfirmed = false;
+                    $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                        isConfirmed = confirm;
+                    });
+                    //未确认，取消提交
+                    if (!isConfirmed) return;
+                    //继续提交*/
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/ProviderAssessTask/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
             },
             reload: function () { //刷新
                 var me = this;
