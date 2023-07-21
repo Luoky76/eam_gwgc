@@ -1,6 +1,7 @@
 ﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -11,13 +12,13 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
-        private readonly UserSession _userSession;
+        private readonly IUserService _userService;
 
-        public ProviderAssessTaskDet(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public ProviderAssessTaskDet(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
-            _userSession = userSession;
+            _userService = userService;
         }
 
         /// <summary>
@@ -159,10 +160,9 @@ namespace EAM.Material.Services
                 {
                     {"ProviderName", null },
                     {"AssessBaseContent", null},
-                    {"Auditing", null},
-                    {"User", null}
+                    {"Auditing", null}
                 });
-
+                data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);
             }
             catch (Exception e)
