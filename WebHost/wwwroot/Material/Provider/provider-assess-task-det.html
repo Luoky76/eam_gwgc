@@ -54,7 +54,7 @@
                         labelwidth: 220,
                         fields: [
                             { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 300, type: "select", editor: { type: 'select', data: me.auditing, disabled: true } },
-                            { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text" },
+                            { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text", options: { disabled: true } },
                             //实际为供应商id
                             {
                                 display: "供应商名", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "select", editor: {
@@ -90,6 +90,7 @@
                                     disabled: true
                                 }
                             },
+                            { display: "评估年度", name: "ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 300, type: "text" },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
@@ -203,6 +204,7 @@
                         me.isAddNew = false;
                         //保存后原始数据变为当前数据
                         me.orginData = data;
+                        me.loadData();
                     },
                     error: function (message) {
                         LG.showError(message);

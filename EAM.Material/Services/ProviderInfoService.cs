@@ -164,6 +164,41 @@ namespace EAM.Material.Services
                 entity.PROVIDER_ID = GuidHelper.NewSnowflakeId().ToString();
             }
 
+            //自动添加供应商编码
+            if (entity.PROVIDER_CODE.IsNullOrEmpty())
+            {
+                //示例PR2023072100001
+                var sysdate = await _dbContext.GetSysdate();
+                string dateCode = sysdate.Value.ToString("yyyyMMdd");
+                string newCode = "PR" + dateCode + "00001";
+
+                //查看编码是否已存在
+                var list1 = await _dbContext.Query<PROVIDER>()
+                    .Select(a => a.PROVIDER_CODE)
+                    .Where(a => a == newCode)
+                    .ToListAsync();
+
+                if (list1.Any())
+                {
+                    var list2 = await _dbContext.Query<PROVIDER>()
+                    .Select(a => new
+                    {
+                        MAX_PROVIDER_CODE = Sql.Max(a.PROVIDER_CODE)
+                    })
+                    .ToListAsync();
+                    if (list2.Any())
+                    {
+                        string lastCode = list2[0].MAX_PROVIDER_CODE;
+                        lastCode = lastCode.Substring(2);
+                        long cnt = long.Parse(lastCode);
+                        ++cnt;
+                        lastCode = cnt.ToString();
+                        newCode = "PR" + lastCode;
+                    }
+                }
+                entity.PROVIDER_CODE = newCode;
+            }
+
             await Task.CompletedTask;
         }
 

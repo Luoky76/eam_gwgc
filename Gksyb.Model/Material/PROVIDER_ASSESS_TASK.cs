@@ -54,6 +54,13 @@ namespace Gksyb.Model
         public string PROVIDER_NAME { get; set; }
 
         /// <summary>
+        /// 评估年度
+        /// </summary>
+        [Description("评估年度")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ASSESS_YEAR { get; set; }
+
+        /// <summary>
         /// 考核开始时间
         /// </summary>
         [Description("考核开始时间")]

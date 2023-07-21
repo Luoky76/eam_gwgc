@@ -56,6 +56,7 @@ namespace EAM.Material.Services
                 c.ASSESS_TASK_CODE,
                 c.PROVIDER_ID,
                 c.PROVIDER_NAME,
+                c.ASSESS_YEAR,
                 c.BEGIN_TIME,
                 c.END_TIME,
                 c.PROVIDER_PRODUCTION,
@@ -83,6 +84,7 @@ namespace EAM.Material.Services
                     c.ASSESS_TASK_CODE,
                     c.PROVIDER_ID,
                     c.PROVIDER_NAME,
+                    c.ASSESS_YEAR,
                     c.BEGIN_TIME,
                     c.END_TIME,
                     c.PROVIDER_PRODUCTION,
@@ -111,23 +113,36 @@ namespace EAM.Material.Services
             //设置任务编码
             if (entity.ASSESS_TASK_CODE.IsNullOrEmpty())
             {
-
+                //示例PAT2023072100001
                 var sysdate = await _dbContext.GetSysdate();
-                //var dateCode = sysdate.ToString("yyyyMMddHH");
-                var dateCode = sysdate.ToString();
+                string dateCode = sysdate.Value.ToString("yyyyMMdd");
+                string newCode = "PAT" + dateCode + "00001";
 
-                var list = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
+                //查看编码是否已存在
+                var list1 = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
+                    .Select(a => a.ASSESS_TASK_CODE)
+                    .Where(a => a == newCode)
+                    .ToListAsync();
+
+                if (list1.Any())
+                {
+                    var list2 = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
                     .Select(a => new
                     {
                         MAX_ASSESS_TASK_CODE = Sql.Max(a.ASSESS_TASK_CODE)
                     })
                     .ToListAsync();
-                if (list.Any())
-                {
-                    string code = list[0].MAX_ASSESS_TASK_CODE;
-                    string last = code.Remove(3, code.Length - 3);
-
+                    if (list2.Any())
+                    {
+                        string lastCode = list2[0].MAX_ASSESS_TASK_CODE;
+                        lastCode = lastCode.Substring(3);
+                        long cnt = long.Parse(lastCode);
+                        ++cnt;
+                        lastCode = cnt.ToString();
+                        newCode = "PAT" + lastCode;
+                    }
                 }
+                entity.ASSESS_TASK_CODE = newCode;
             }
             await Task.CompletedTask;
         }
@@ -209,7 +224,7 @@ namespace EAM.Material.Services
         [HttpPost]
         public async Task<GridData> ResultListAsync(GridRequest request)
         {
-            // 评估任务id 供应商id 供应商名 供应商产品 总分 平均分 最高分 最低分 实际评分人数 计划评分人数 任务制定人id
+            // 评估任务id 供应商id 供应商名 供应商产品 评估年度 总分 平均分 最高分 最低分 实际评分人数 计划评分人数
 
             var query1 = _dbContext.Query<PROVIDER_ASSESS_TASK>()
                 .LeftJoin<PROVIDER_ASSESS>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
@@ -219,22 +234,25 @@ namespace EAM.Material.Services
                     a.PROVIDER_ID,
                     a.PROVIDER_NAME,
                     a.PROVIDER_PRODUCTION,
+                    a.ASSESS_YEAR,
                     TOTAL_SCORE_SUM = Sql.Sum(b.TOTAL_SCORE),
                     AVERAGE_SCORE = Sql.Average(b.TOTAL_SCORE),
                     MAX_SCORE = Sql.Max(b.TOTAL_SCORE),
                     MIN_SCORE = Sql.Min(b.TOTAL_SCORE),
-                    EXAMINER_CNT_ACTUAL = Sql.Count(b.AUDITING == "1"),
+                    EXAMINER_CNT_ACTUAL = Sql.Sum(b.AUDITING == "1" ? 1 : 0),
                     EXMAINER_CNT = Sql.Count()
                 })
                 .GroupBy(c => c.ASSESS_TASK_ID)
                 .AndBy(c => c.PROVIDER_ID)
                 .AndBy(c => c.PROVIDER_NAME)
                 .AndBy(c => c.PROVIDER_PRODUCTION)
+                .AndBy(c => c.ASSESS_YEAR)
                 .Select(c => new {
                     c.ASSESS_TASK_ID,
                     c.PROVIDER_ID,
                     c.PROVIDER_NAME,
                     c.PROVIDER_PRODUCTION,
+                    c.ASSESS_YEAR,
                     c.TOTAL_SCORE_SUM,
                     c.AVERAGE_SCORE,
                     c.MAX_SCORE,
@@ -242,24 +260,6 @@ namespace EAM.Material.Services
                     c.EXAMINER_CNT_ACTUAL,
                     c.EXMAINER_CNT
                 });
-
-            /*var query2 = _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                .LeftJoin<PROVIDER_ASSESS>((a, b) => a.ASSESS_TASK_ID == b.ASSESS_TASK_ID)
-                .Select((a, b) => new
-                {
-                    a.ASSESS_TASK_ID,
-                    b.AUDITING,
-                    EXAMINER_CNT_ACTUAL = Sql.Count()
-                })
-                .GroupBy(c => c.ASSESS_TASK_ID)
-                .Having(c=> c.AUDITING == "1")
-                .Select(c => new
-                {
-                    c.ASSESS_TASK_ID,
-                    c.EXAMINER_CNT_ACTUAL
-                });*/
-
-            
 
             var list = await query1.GetGridData(request);
 

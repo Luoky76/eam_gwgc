@@ -66,6 +66,12 @@ namespace EAM.Material.DTO
         public long FORMULATER_ID { get; set; }
 
         /// <summary>
+        /// 评估年度
+        /// </summary>
+        [Description("评估年度")]
+        public string ASSESS_YEAR { get; set; }
+
+        /// <summary>
         /// 考核开始时间
         /// </summary>
         [Description("考核开始时间")]

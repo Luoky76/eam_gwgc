@@ -41,26 +41,13 @@
                                 }
                             },
                             { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", newline: false, type: "text" },
-                            {
-                                display: "任务制定人", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", newline: false, type: "select", op: "equal", vt: 'int', options: {
-                                    type: "select",
-                                    data: me.user
-                                }
-                            }
-
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "供应商", name: "PROVIDER_NAME", minWidth: 300, type: "text" },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", width: 300, type: "text" },
-                            //实际为任务制定人id
-                            {
-                                display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", editor: {
-                                    type: "select",
-                                    data: me.user
-                                }
-                            },
+                            { display: "评估年度", name: "ASSESS_YEAR", width: 300, type: "text" },
                             { display: "总分", name: "TOTAL_SCORE_SUM", width: 300, type: "text" },
                             { display: "平均分", name: "AVERAGE_SCORE", width: 300, type: "text" },
                             { display: "最高分", name: "MAX_SCORE", width: 300, type: "text" },
