@@ -158,6 +158,13 @@
                         case "modify":
                             me.modify();
                             break;
+                        case "submit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.submit();
+                                }
+                            });
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -218,6 +225,40 @@
                     onClosed: me.reload.bind(me),
                     data: { "sid": sid, "isView": false }
                 });
+            },
+            submit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/ProviderAssess/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
             },
             reload: function () { //刷新
                 var me = this;
