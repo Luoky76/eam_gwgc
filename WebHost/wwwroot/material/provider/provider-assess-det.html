@@ -52,20 +52,23 @@
                             {
                                 display: "任务制定人", name: "FORMULATER_ID", dbname: "FORMULATER_ID", type: "select", options: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.user,
+                                    disabled: true
                                 }
                             },
                             //实际为评分人id
                             {
                                 display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", type: "select", options: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.user,
+                                    disabled: true
                                 }
                             },
-                            { display: "考核开始时间", name: "BEGIN_TIME", newline: false, type: "date" },
-                            { display: "考核结束时间", name: "END_TIME", newline: false, type: "date" },
-                            { display: "供应商名", name: "PROVIDER_NAME", newline: false, type: "text" },
-                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", newline: false, type: "text" },
+                            { display: "评估年度", name: "ASSESS_YEAR", newline: false, type: "text", options: { disabled: true } },
+                            { display: "考核开始时间", name: "BEGIN_TIME", newline: false, type: "date", options: { disabled: true } },
+                            { display: "考核结束时间", name: "END_TIME", newline: false, type: "date", options: { disabled: true } },
+                            { display: "供应商名", name: "PROVIDER_NAME", newline: false, type: "text", options: { disabled: true } },
+                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", newline: false, type: "text", options: { disabled: true } },
                             { display: "考核说明", name: "REMARK", newline: false, type: "text", group: "总体考核结果" },
                             { display: "评估总分", name: "TOTAL_SCORE", newline: false, type: "float" },
                             { display: "评估结果", name: "RESULT", newline: false, type: "text" },

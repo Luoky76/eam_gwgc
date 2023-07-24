@@ -35,7 +35,7 @@
                     search: {
                         fields: [
                             {
-                                display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_ID", newline: false, op: "equal", type: "select", options: {
+                                display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_ID", newline: false, op: "equal", vt: "int", type: "select", options: {
                                     type: "select",
                                     data: me.user
                                 }
@@ -63,6 +63,7 @@
                                     data: me.user
                                 }
                             },
+                            { display: "评估年度", name: "ASSESS_YEAR", width: 100, type: "text" },
                             { display: "考核开始时间", name: "BEGIN_TIME", width: 100, type: "date" },
                             { display: "考核结束时间", name: "END_TIME", width: 100, type: "date" },
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", width: 100, type: "text" },
@@ -202,11 +203,23 @@
                     data: { "sid": sid, "isView": true }
                 });
             },
-            modify: function () { //修改
+            modify: function () { //修改（评分）
                 var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return;
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行");
+                    return;
+                }
                 var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
+                if (selected.AUDITING == "1") {
+                    LG.showError("该数据已提交,无法修改!");
+                    return;
+                }
+                if (selected.EXAMINER_ID != window.session.UserID) {
+                    LG.showError("您不是该任务的评分人！");
                     return;
                 }
                 var sid = selected.ASSESS_ID;
@@ -233,6 +246,10 @@
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
+                        if (selecteds[i].EXAMINER_ID != window.session.UserID) {
+                            LG.showError("您不是该任务的评分人！");
+                            return;
+                        }
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
                         upd.AUDITING = "1";
