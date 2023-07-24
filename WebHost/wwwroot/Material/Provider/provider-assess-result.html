@@ -35,12 +35,18 @@
                     search: {
                         fields: [
                             {
-                                display: "供应商", name: "_search_PROVIDER_ID", dbname: "PROVIDER_ID", newline: false, type: "select", op: "equal", options: {
+                                display: "供应商", name: "_search_PROVIDER_ID", dbname: "PROVIDER_ID", width: 200, type: "select", op: "equal", options: {
                                     type: "select",
                                     data: me.providerName
                                 }
                             },
-                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", newline: false, type: "text" },
+                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 200, type: "text" },
+                            {
+                                display: "评估年度", name: "_search_ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 200, type: "select", op: 'equal', options: {
+                                    type: "select",
+                                    data: me.assessYear
+                                }
+                            }
                         ]
                     },
                     grid: {
@@ -63,6 +69,9 @@
             },
             providerName: [],
             user: [],
+            thisYear: null,
+            lastYear: null,
+            assessYear: null,
             grid: null,
             searchForm: null,
             buttons: null,
@@ -80,6 +89,14 @@
                         LG.showError(message);
                     }
                 });
+            },
+            //加载评估年度下拉数据
+            loadYear: function () {
+                var me = this;
+                var date = new Date();
+                me.thisYear = date.getFullYear();
+                me.lastYear = me.thisYear - 1;
+                me.assessYear = [{ ID: me.thisYear, TEXT: "今年" }, { ID: me.lastYear, TEXT: "去年" }];
             },
             setGrid: function () {
                 var me = this;
@@ -213,6 +230,7 @@
             init: function () {
                 var me = this;
                 me.loadComboxData();
+                me.loadYear();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();

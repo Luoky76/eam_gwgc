@@ -35,11 +35,17 @@
                     search: {
                         fields: [
                             {
-                                display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_ID", newline: false, op: "equal", vt: "int", type: "select", options: {
+                                display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_ID", width: 200, op: "equal", vt: "int", type: "select", options: {
                                     type: "select",
                                     data: me.user
                                 }
-                            }
+                            },
+                            {
+                                display: "评估年度", name: "_search_ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 200, type: "select", op: 'equal', options: {
+                                    type: "select",
+                                    data: me.assessYear
+                                }
+                            },
                         ]
                     },
                     grid: {
@@ -84,6 +90,9 @@
                 me.detailWidth = window.innerWidth * 0.9;
                 me.detailHeight = window.innerHeight * 0.9;
             },
+            thisYear: null,
+            lastYear: null,
+            assessYear: null,
             menuNo: getQueryStringByName("MenuNo"),
             grid: null,
             searchForm: null,
@@ -102,6 +111,14 @@
                         LG.showError(message);
                     }
                 });
+            },
+            //加载评估年度下拉数据
+            loadYear: function () {
+                var me = this;
+                var date = new Date();
+                me.thisYear = date.getFullYear();
+                me.lastYear = me.thisYear - 1;
+                me.assessYear = [{ ID: me.thisYear, TEXT: "今年" }, { ID: me.lastYear, TEXT: "去年" }];
             },
             setGrid: function () {
                 var me = this;
@@ -351,6 +368,7 @@
             init: function () {
                 var me = this;
                 me.loadComboxData();
+                me.loadYear();
                 me.setConfig();
                 me.setDialogSize();
                 me.setForm();

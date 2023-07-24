@@ -40,13 +40,22 @@
                 me.detailWidth = window.innerWidth * 0.9;
                 me.detailHeight = window.innerHeight * 0.9;
             },
+            thisYear: null,
+            lastYear: null,
+            assessYear: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, newline: false, type: "text", options: {} },
-                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, newline: false, type: "text", options: {} },
+                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "text", options: {} },
+                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text", options: {} },
+                            {
+                                display: "评估年度", name: "_search_ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 300, type: "select", op: 'equal', options: {
+                                    type: "select",
+                                    data: me.assessYear
+                                }
+                            },
                             {
                                 display: "考核开始时间", name: "_search_BEGIN_TIME_FROM", dbname: "BEGIN_TIME", width: 300, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
@@ -116,6 +125,14 @@
                         LG.showError(message);
                     }
                 });
+            },
+            //加载评估年度下拉数据
+            loadYear: function () {
+                var me = this;
+                var date = new Date();
+                me.thisYear = date.getFullYear();
+                me.lastYear = me.thisYear - 1;
+                me.assessYear = [{ ID: me.thisYear, TEXT: "今年" }, { ID: me.lastYear, TEXT: "去年" }];
             },
             setGrid: function () {
                 var me = this;
@@ -453,6 +470,7 @@
                 var me = this;
                 me.setDialogSize();
                 me.loadComboxData();
+                me.loadYear();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();
