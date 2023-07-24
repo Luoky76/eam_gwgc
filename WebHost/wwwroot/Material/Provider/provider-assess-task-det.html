@@ -436,72 +436,48 @@
             //导入
             importTaskBase: function () {
                 var me = this;
-                /*var gridData = me.grid.getData();
+                var gridData = me.grid.getData();
                 var currentBaseIds = [];
                 for (var item of gridData) {
                     currentBaseIds.push(item.ASSESS_BASE_ID);
                 }
-                var options = {
-                    width: 800,
-                    height: 400,
-                    allowClose: true,
-                    title: '[导入]评估任务基础',
-                    url: "provider-assess-base-select.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    //传入当前已在评估任务中的任务基础，导入时将其排除
-                    currentBaseIds: currentBaseIds,
-                    //传入主键
-                    assessTaskId: me.sid,
-                    onClose: function () {
-                        me.reloadTaskBase();
-                    }
-                }
-                $.ligerDialog.open(options);*/
-                function callback(values, rows) {
-                    for (var i = 0; i < rows.length; i++) {
-                        rows[i]["ASSESS_TASK_ID"] = me.sid;
-                    }
-                    var changeRow = new Object();
-                    changeRow["added"] = rows;
-                    LG.ajax({
-                        url: 'Material/ProviderAssessTaskDet/Save',
-                        loading: '正在导入中...',
-                        data: { request: changeRow },
-                        success: function () {
-                            LG.showSuccess('导入成功');
-                            me.reloadTaskBase();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+                var dataOptions = {
+                    url: 'Material/ProviderAssessBase/ValidList',
+                    values: currentBaseIds,
+                    options: {
+                        sortName: 'ASSESS_BASE_ID',
+                        rowKey: "ASSESS_BASE_ID",
+                        columns: [
+                            { display: "评价内容", name: "CONTENT", minWidth: 500, type: "text" }
+                        ]
+                    },
+                    fields: [
+                        { display: "评价内容", name: "CONTENT", width: 200, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(currentBaseIds);
+                        var newSet = new Set(values);
+                        for (var i = 0; i < currentBaseIds.length; ++i) {
+                            if (!newSet.has(currentBaseIds[i])) {
+                                me.grid.deleteRow(i);
+                            }
                         }
-                    });
+                        for (let item of values) {
+                            if (!currentSet.has(item)) {
+                                me.grid.addEditRow({ ASSESS_BASE_ID: item, ASSESS_TASK_ID: me.sid }, true);
+                            }
+                        }
+                        me.saveTaskBase();
+                    }
                 }
                 $.ligerDialog.open({
-                    width: 800,
+                    width: 1300,
                     height: 400,
-                    title: '[导入]评估任务基础',
-                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    title: '挑选评估项目',
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
                     isResize: true,
                     slide: false,
-                    data: {
-                        values: [],
-                        options: {
-                            url: 'Material/ProviderAssessBase/ValidList', sortName: 'ASSESS_BASE_ID', rowKey: "ASSESS_BASE_ID",
-                            columns: [
-                                { display: "评价内容", name: "CONTENT", minWidth: 500, type: "text" },
-                                { display: "是否有效", name: "IS_VALID", type: "chk" }
-                            ]
-                        },
-                        fields: [
-                            { display: "评价内容", name: "CONTENT", width: 100, type: "text" }
-                        ],
-                        callback: callback
-                    }
+                    data: dataOptions
                 });
             },
             //保存
@@ -604,9 +580,7 @@
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
+                                me.grid.deleteSelectedRow();
                                 me.saveTaskBase();
                             }
                         });
@@ -726,7 +700,7 @@
                 me.examinerGrid.loadData();
             },
             //新增
-            addExaminer: function () {
+            addExaminer: function (examinerId = null) {
                 var me = this;
                 //获取新增行的主键ASSESS_ID，对应表PROVIDER_ASSESS
                 var assess_id = null;
@@ -743,7 +717,7 @@
                     }
                 });
                 //设置新增行的ASSESS_TASK_ID为主表主键，ASSESS_ID为新评估任务的主键
-                me.examinerGrid.addEditRow({ "ASSESS_ID": assess_id, "ASSESS_TASK_ID": me.sid }, true);
+                me.examinerGrid.addEditRow({ "ASSESS_ID": assess_id, "ASSESS_TASK_ID": me.sid, "EXAMINER_ID": examinerId }, true);
             },
             //删除
             deleteExaminer: function () {
@@ -753,9 +727,7 @@
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.examinerGrid.deleteRow(selected[i]);
-                                }
+                                me.examinerGrid.deleteSelectedRow();
                                 me.saveExaminer();
                             }
                         });
@@ -763,6 +735,55 @@
                         LG.tip('请选择行!');
                     }
                 }
+            },
+            //导入
+            importExaminer: function () {
+                var me = this;
+                var gridData = me.examinerGrid.getData();
+                var currentExaminers = [];
+                for (var item of gridData) {
+                    currentExaminers.push(item.EXAMINER_ID);
+                }
+                var dataOptions = {
+                    url: 'popup/users',
+                    values: currentExaminers,
+                    options: {
+                        sortName: 'Name',
+                        rowKey: "Id",
+                        columns: [
+                            { display: "姓名", name: "Name", type: "text" },
+                            { display: "公司岗位", name: "Station", type: "text" }
+                        ]
+                    },
+                    fields: [
+                        { display: "姓名", name: "Name", width: 100, type: "text" },
+                        { display: "公司岗位", name: "Station", width: 100, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(currentExaminers);
+                        var newSet = new Set(values);
+                        for (var i = 0; i < currentExaminers.length; ++i) {
+                            if (!newSet.has(currentExaminers[i])) {
+                                me.examinerGrid.deleteRow(i);
+                            }
+                        }
+                        for (let item of values) {
+                            if (!currentSet.has(item)) {
+                                me.addExaminer(item);
+                            }
+                        }
+                        me.saveExaminer();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1300,
+                    height: 400,
+                    title: '挑选评分人',
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
             },
             //保存
             saveExaminer: function () {
