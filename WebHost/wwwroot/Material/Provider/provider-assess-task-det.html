@@ -79,6 +79,7 @@
                                     }
                                 }
                             },
+                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
                             //实际为任务制定人id
                             {
                                 display: "任务制定人", name: "CREATE_USERID", width: 300, type: "select", editor: {
@@ -90,11 +91,10 @@
                                     disabled: true
                                 }
                             },
-                            { display: "评估年度", name: "ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 300, type: "text" },
+                            { display: "评估年度", name: "ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 300, type: "int" },
                             { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
-                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
-                            { display: "备注", name: "REMARK", dbname: "REMARK", width: 1000, type: "textarea" },
+                            { display: "备注", name: "REMARK", dbname: "REMARK", width: 1150, type: "textarea" },
                             //隐藏
                             { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
                             { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "hidden" }
@@ -169,9 +169,27 @@
                     }
                 }
             },
+            //保存前验证
+            vertifyBeforeSave: function () {
+                var me = this;
+                var data = me.mainform.getData();
+                //验证结束时间在开始时间之后
+                if (data.BEGIN_TIME && data.END_TIME && data.END_TIME <= data.BEGIN_TIME) {
+                    LG.showError("结束时间应在开始时间之后");
+                    return false;
+                }
+                //验证评估年度是否合理
+                if (data.ASSESS_YEAR && (data.ASSESS_YEAR >= 2099 || data.ASSESS_YEAR <= 1900)) {
+                    LG.showError("请检查评估年度是否有误");
+                    return false;
+                }
+                return true;
+            },
             //保存
             save: function () { //保存
                 var me = this;
+                //未通过验证时停止保存
+                if (!me.vertifyBeforeSave()) return;
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
