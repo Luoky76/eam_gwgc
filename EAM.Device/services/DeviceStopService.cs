@@ -113,10 +113,10 @@ namespace EAM.Device.services
 
         public async Task BeforeAdd(RUN_STOP entity)
         {
-            entity.SEC_DEPTID = _userSession.Corp.CorpID;
-            entity.SEC_DEPT = _userSession.Corp.CName;
-            //entity.DEPT_ID = _userSession.Corp.CorpID;
-            //entity.DEPT_NAME = _userSession.Corp.CName;
+            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            entity.DEPT_ID = _userSession.Corp.CorpID;
+            entity.DEPT_NAME = _userSession.Corp.CName;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_DATE = await _dbContext.GetSysdate();
             string aa = "TG" + DateTime.Now.ToString("yyyyMM");

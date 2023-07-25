@@ -57,7 +57,7 @@ namespace EAM.Device.services
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
                 .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1");
@@ -81,7 +81,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetRun(GridRequest request)
         {
             var qry = _dbContext.Query<RUN_TRANS>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .OrderByDesc(c => c.AUDITING)
                 .ThenByDesc(c => c.TRANS_DATE);
             return await qry.GetGridData(request);
@@ -123,8 +123,8 @@ namespace EAM.Device.services
 
         private async Task BeforeAdd(RUN_TRANS entity)
         {
-            entity.SEC_DEPTID = _userSession.Corp.CorpID;
-            entity.SEC_DEPT = _userSession.Corp.CName;
+            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
@@ -165,7 +165,7 @@ namespace EAM.Device.services
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
-                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                  .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)

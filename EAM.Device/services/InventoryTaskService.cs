@@ -55,7 +55,7 @@ namespace EAM.Device.services
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "ScanStatus",(Expression<Func<BC_CODE, bool>>)(c => "1" == "1")},
                 { "DeviceTypeName",(Expression<Func<BASE_DEVICETYPE, bool>>)(c => "1" == "1")},
-                { "DeptData",(Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.Corp.CorpID)},
+                { "DeptData",(Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.ParentCompany.CorpID)},
             });
         }
 
@@ -68,7 +68,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetDeviceScanList(GridRequest request)
         {
             return await _dbContext.Query<DEVICE_SCAN>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .OrderBy(c => c.STATUS)
                 .ThenByDesc(c => c.SCAN_CODE)
                 .GetGridData(request);
@@ -116,8 +116,8 @@ namespace EAM.Device.services
             entity.SCAN_CODE = aa + index.ToString("D4");
             entity.AUDITING = "0";
             entity.STATUS = "1";
-            entity.SEC_DEPTID = _userSession.Corp.CorpID;
-            entity.SEC_DEPT = _userSession.Corp.CName;
+            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -143,7 +143,7 @@ namespace EAM.Device.services
             var corpPath = _dbContext.Query<CF_CORP>().Where(a => a.CORPID==deptid)
                 .Select(c => c.CORP_PATH).ToList().Join();
             var qry = _dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .WhereIf(!string.IsNullOrWhiteSpace(typeid), c => c.TYPE_ID == typeid)
                 .LeftJoin<CF_CORP>((a, b) => a.SEC_DEPTID==b.CORPID)
                 .Where((a, b) => (","+b.CORP_PATH).Contains(","+corpPath));
@@ -254,7 +254,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetDeviceScanResult(GridRequest request)
         {
             return await _dbContext.Query<DEVICE_SCAN>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .Where(c => c.AUDITING == "1")
                 .OrderBy(c => c.STATUS)
                 .ThenByDesc(c => c.SCAN_CODE)
@@ -410,7 +410,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetUpDownList(GridRequest request)
         {
             return await _dbContext.Query<DEVICE_SCAN_RESULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .OrderBy(c => c.STATUS)
                 .ThenByDesc(c => c.SCAN_CODE)
                 .GetGridData(request);
