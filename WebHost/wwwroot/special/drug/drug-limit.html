@@ -44,10 +44,10 @@
                             { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
                             { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
                             { display: "计量单位", name: "UNIT", width: 200, type: "text" },
-                            { display: "港内限制数量(4月）", name: "INSIDE_APRIL", width: 200, type: "decimal", editor: { type: 'decimal' }, validate: { required: true } },
-                            { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", width: 200, type: "decimal", editor: { type: 'decimal' }, validate: { required: true } },
-                            { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", width: 200, type: "decimal", editor: { type: 'decimal' }, validate: { required: true } },
-                            { display: "港外限制数量(10月）", name: "OUTSIDE_OCTOBER", width: 200, type: "decimal", editor: { type: 'decimal' }, validate: { required: true } },
+                            { display: "港内限制数量(4月）", name: "INSIDE_APRIL", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            { display: "港外限制数量(10月）", name: "OUTSIDE_OCTOBER", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
                             //隐藏
                             { display: "主键", name: "LIMIT_ID", width: 200, type: "text", hide: true },
                             { display: "物资ID", name: "SP_ID", width: 200, type: "text", hide: true },
@@ -132,11 +132,8 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "add":
-                            me.add();
-                            break;
-                        case "modify":
-                            me.modify();
+                        case "import":
+                            me.import();
                             break;
                         case "delete":
                             me.delete();
@@ -159,49 +156,6 @@
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            add: function () { //新增
-                var me = this;
-                //$.ligerDialog.open({
-                //    width: me.detailWidth,
-                //    height: me.detailHeight,
-                //    allowClose: true,
-                //    title: '[新增]',
-                //    url: "view-detail.html",
-                //    isHidden: false,
-                //    showMax: false,
-                //    showToggle: false,
-                //    showMin: false,
-                //    isResize: true,
-                //    slide: false,
-                //    onClosed: me.reload.bind(me),
-                //    data: { "sid": null }
-                //});
-                me.grid.addEditRow({}, true);
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
-                }
-                var sid = selected.SID;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改]',
-                    url: "view-detail.html",
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
-                });
             },
             save: function () { //保存
                 var me = this;
@@ -231,7 +185,59 @@
             },
             reload: function () { //刷新
                 var me = this;
-                me.buttons[0].click();
+                me.grid.loadData();
+            },
+            add: function (row = {}) { //新增
+                var me = this;
+                //$.extend({} , row);
+                me.grid.addEditRow(row, true);
+            },
+            import: function () { //导入
+                var me = this;
+                var gridData = me.grid.getData();
+                var currentSpIds = [];
+                for (var item of gridData) {
+                    currentSpIds.push(item.SP_ID);
+                }
+                var dataOptions = {
+                    //TODO 实现导入
+                    url: 'Material/Base/',
+                    values: currentSpIds,
+                    options: {
+                        sortName: 'SP_ID',
+                        rowKey: "SP_ID",
+                        columns: [
+                            { display: "评价内容", name: "CONTENT", minWidth: 500, type: "text" }
+                        ]
+                    },
+                    fields: [
+                        { display: "评价内容", name: "CONTENT", width: 200, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(currentSpIds);
+                        var newSet = new Set(values);
+                        for (var i = 0; i < currentSpIds.length; ++i) {
+                            if (!newSet.has(currentSpIds[i])) {
+                                me.grid.deleteRow(i);
+                            }
+                        }
+                        for (let item of rows) {
+                            if (!currentSet.has(item.SP_ID)) {
+                                me.add(item);
+                            }
+                        }
+                        me.save();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1300,
+                    height: 400,
+                    title: '导入药品',
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
             },
             delete: function () { //删除
                 var me = this;
@@ -240,9 +246,7 @@
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
-                                for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
+                                me.grid.deleteSelectedRow();
                                 me.save();
                             }
                         });

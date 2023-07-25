@@ -247,7 +247,6 @@
                     onClosed: me.reload.bind(me),
                     data: { "sid": null, "isNew": true, "isView": false }
                 });
-                me.grid.addEditRow({}, true);
             },
             view: function () { //查看
                 var me = this;
@@ -333,14 +332,6 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 if (selecteds) {
-                    /*//提交确认
-                    var isConfirmed = false;
-                    $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                        isConfirmed = confirm;
-                    });
-                    //未确认，取消提交
-                    if (!isConfirmed) return;
-                    //继续提交*/
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {

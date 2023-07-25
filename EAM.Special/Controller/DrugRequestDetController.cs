@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "DrugLimit")]
-    public class DrugLimitController : AreaController
+    [GksybAuthorize(MenuNo = "DrugRequest")]
+    public class DrugRequestDetController : AreaController
     {
-        private readonly IDrugLimitService _service;
+        private readonly IDrugRequestDetService _service;
 
         /// <summary>
-        /// 药品数量配置
+        /// 药品需求明细表
         /// </summary>
         /// <param name="service"></param>
-        public DrugLimitController(IDrugLimitService service)
+        public DrugRequestDetController(IDrugRequestDetService service)
         {
             _service = service;
         }
@@ -38,10 +38,21 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_LIMIT>> GetAsync(string id)
+        public async Task<AjaxResult<DRUG_REQUEST_DET>> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_LIMIT>.Error("请传递参数");
-            return AjaxResult<DRUG_LIMIT>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_REQUEST_DET>.Error("请传递参数");
+            return AjaxResult<DRUG_REQUEST_DET>.Success(await _service.GetAsync(id), "成功");
+        }
+
+        /// <summary>
+        /// 根据药品需求ID REQUEST_ID 获取多行记录
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> GetCertainRequestAsync(string requestId)
+        {
+            return await _service.GetCertainRequestAsync(requestId);
         }
 
         /// <summary>
@@ -50,7 +61,7 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_LIMIT> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_REQUEST_DET> request)
         {
             return await _service.SaveAsync(request);
         }
