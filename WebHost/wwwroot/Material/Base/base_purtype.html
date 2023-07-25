@@ -8,53 +8,39 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>药品数量配置</title>
-    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 2px; height: 100%;">
-    <div id="layout">
-        <div position="center" title="">
-            <div id="mainsearch">
-                <form action="" id="formsearch" class="l-form">
-                </form>
-            </div>
-            <div id="iframeloading" class='l-loading' style="display:none;">
-            </div>
-            <form id="mainform">
-                <div id="maingrid" style="margin: 2px;"></div>
-            </form>
-        </div>
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
     </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
     <script type="text/javascript">
         'use strict';
         var business = {
+            rootPath:'Material/BasePurtype/',
+            MenuNo: 'BasePurtype',
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "物资名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "物资型号", name: "_search_SP_TYPE", dbname: "SP_TYPE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "采购分类编码", name: "_search_PURTYPE_CODE", dbname: "PURTYPE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "采购分类名称", name: "_search_PURTYPE_NAME", dbname: "PURTYPE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
-                            { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
-                            { display: "计量单位", name: "UNIT", width: 200, type: "text" },
-                            { display: "港内限制数量(4月）", name: "INSIDE_APRIL", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
-                            { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
-                            { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
-                            { display: "港外限制数量(10月）", name: "OUTSIDE_OCTOBER", width: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
-                            //隐藏
-                            { display: "主键", name: "LIMIT_ID", width: 200, type: "text", hide: true },
-                            { display: "物资ID", name: "SP_ID", width: 200, type: "text", hide: true },
-                            { display: "添加人ID", name: "CREATE_USERID", width: 200, type: "long", hide: true },
-                            { display: "添加时间", name: "CREATEDATE", width: 200, type: "date", hide: true },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 200, type: "long", hide: true },
-                            { display: "修改时间", name: "MODIFYDATE", width: 200, type: "date", hide: true }
+                            { display: "采购分类编码", name: "PURTYPE_CODE", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "采购分类名称", name: "PURTYPE_NAME", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
+                            { display: "主键", name: "PURTYPE_ID", dbname: "PURTYPE_ID", width: 100, type: "text", hide: true },
                         ]
                     }
                 };
@@ -64,17 +50,6 @@
             buttons: null,
             loadComboxData: function () {
                 var me = this;
-                LG.ajax({
-                    async: false,
-                    url: 'Special/DrugLimit/Comboxdata',
-                    loading: '正在获取中...',
-                    success: function (data) {
-                        me.dataCorp = data.corpData;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
             },
             setGrid: function () {
                 var me = this;
@@ -86,15 +61,15 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'Special/DrugLimit/list',
+                    url: me.rootPath + 'List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'LIMIT_ID',
-                    sortOrder: 'asc',
+                    sortName: 'CREATEDATE',
+                    sortOrder: 'DESC',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
@@ -132,8 +107,8 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "import":
-                            me.import();
+                        case "add":
+                            me.add();
                             break;
                         case "delete":
                             me.delete();
@@ -157,6 +132,10 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            add: function () { //新增
+                var me = this;
+                me.grid.addEditRow({}, true);
+            },
             save: function () { //保存
                 var me = this;
                 if (me.grid.endEdit() != false) {
@@ -168,7 +147,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Special/DrugLimit/save',
+                        url: me.rootPath + 'Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -185,59 +164,7 @@
             },
             reload: function () { //刷新
                 var me = this;
-                me.grid.loadData();
-            },
-            add: function (row = {}) { //新增
-                var me = this;
-                //$.extend({} , row);
-                me.grid.addEditRow(row, true);
-            },
-            import: function () { //导入
-                var me = this;
-                var gridData = me.grid.getData();
-                var currentSpIds = [];
-                for (var item of gridData) {
-                    currentSpIds.push(item.SP_ID);
-                }
-                var dataOptions = {
-                    //TODO 实现导入
-                    url: 'Material/Base/',
-                    values: currentSpIds,
-                    options: {
-                        sortName: 'SP_ID',
-                        rowKey: "SP_ID",
-                        columns: [
-                            { display: "评价内容", name: "CONTENT", minWidth: 500, type: "text" }
-                        ]
-                    },
-                    fields: [
-                        { display: "评价内容", name: "CONTENT", width: 200, type: "text" }
-                    ],
-                    callback: function (values, rows) {
-                        var currentSet = new Set(currentSpIds);
-                        var newSet = new Set(values);
-                        for (var i = 0; i < currentSpIds.length; ++i) {
-                            if (!newSet.has(currentSpIds[i])) {
-                                me.grid.deleteRow(i);
-                            }
-                        }
-                        for (let item of rows) {
-                            if (!currentSet.has(item.SP_ID)) {
-                                me.add(item);
-                            }
-                        }
-                        me.save();
-                    }
-                }
-                $.ligerDialog.open({
-                    width: 1300,
-                    height: 400,
-                    title: '导入药品',
-                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
-                    isResize: true,
-                    slide: false,
-                    data: dataOptions
-                });
+                me.buttons[0].click();
             },
             delete: function () { //删除
                 var me = this;
@@ -246,7 +173,9 @@
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
-                                me.grid.deleteSelectedRow();
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
                                 me.save();
                             }
                         });
@@ -332,9 +261,7 @@
                 return me;
             }
         };
-        $(function () {
-            business.init();
-        });
+        business.init();
     </script>
 </body>
 </html>

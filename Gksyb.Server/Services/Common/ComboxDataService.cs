@@ -365,6 +365,19 @@ namespace Gksyb.Server.Services.Common
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// 仓库货位
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpHouseName(Expression<Func<SP_HOUSE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<SP_HOUSE>().Where(predicate)
+                .Select(c => new ComboxData() { ID = c.HOUSE_CODE, TEXT = c.HOUSE_NAME, VALUE = c.HOUSE_ID })
+                .Distinct()
+               .ToListAsync();
+        }
 
         /// <summary>
         /// 评估基础下拉框
