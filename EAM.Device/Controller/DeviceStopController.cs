@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using EAM.Device.interfaces;
+﻿using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -31,7 +30,6 @@ namespace EAM.Device.controller
                 stopSource = comboxData["StopSource"],
                 deviceInfo = comboxData["DeviceInfo"],
                 malType = comboxData["MalType"],
-
             }, "成功");
         }
 
@@ -67,7 +65,6 @@ namespace EAM.Device.controller
             return await _service.ManageStop(request);
         }
 
-
         /// <summary>
         /// 提交
         /// </summary>
@@ -87,6 +84,7 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.GetStopTypeList(request), "成功");
         }
+
         /// <summary>
         /// 管理停机分类
         /// </summary>

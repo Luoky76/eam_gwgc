@@ -115,13 +115,15 @@ namespace EAM.Device.services
         {
             entity.SEC_DEPTID = _userSession.Corp.CorpID;
             entity.SEC_DEPT = _userSession.Corp.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
+            //entity.DEPT_ID = _userSession.Corp.CorpID;
+            //entity.DEPT_NAME = _userSession.Corp.CName;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_DATE = await _dbContext.GetSysdate();
-            var random = new Random();
-            var randomNumber = random.Next(1000, 10000);
-            entity.STOP_CODE = "TG" + DateTime.Now.Year + DateTime.Now.ToString("MM") + randomNumber;
+            string aa = "TG" + DateTime.Now.ToString("yyyyMM");
+            string def = aa + "0000";
+            var model = await _dbContext.Query<RUN_STOP>(x => x.STOP_CODE.Contains(aa)).Select(x => Sql.Max(x.STOP_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            entity.STOP_CODE = aa + index.ToString("D4");
             entity.AUDITING = "0";
             entity.RUN_STOP_ID = GuidHelper.NewSnowflakeId().ToString();
         }

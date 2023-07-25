@@ -37,6 +37,9 @@
         /// 扩展2
         /// </summary>
         public object EXTEND2 { get; set; }
-
+        /// <summary>
+        /// 扩展3
+        /// </summary>
+        public object EXTEND3 { get; set; }
     }
 }

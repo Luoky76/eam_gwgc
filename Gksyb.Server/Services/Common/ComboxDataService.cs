@@ -236,7 +236,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeviceInfo(Expression<Func<DEVICE_CARD, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            var qry = _dbContext.Query<DEVICE_CARD>()
+            var qry = dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID);
             return await qry.Where(predicate).Where(c => c.AUDITING=="1")
                 .Select(c => new ComboxData()
@@ -247,9 +247,33 @@ namespace Gksyb.Server.Services.Common
                     EXTEND =c.STATUS,
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,
+                    EXTEND3 =c.DEPT_NAME,
                 })
                .ToListAsync();
         }
+        /// <summary>
+        /// 获取船舶数据
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ShipInfo(Expression<Func<DEVICE_CARD, bool>> predicate)
+        {
+            //公司换成部门过滤
+            using var dbContext = _dbContext.Clone();
+            var qry = dbContext.Query<DEVICE_CARD>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.SEC_DEPTID);
+            return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_NAME=="船舶")
+                .Select(c => new ComboxData()
+                {
+                    ID = c.DEVICE_ID,
+                    TEXT = c.DEVICE_NAME,
+                    VALUE = c.DEVICE_NO,
+                    EXTEND =c.DEPT_NAME,
+                    EXTEND1 =c.WDEPT_NAME,
+                })
+               .ToListAsync();
+        }
+        
         /// <summary>
         /// 停机分类
         /// </summary>
@@ -332,9 +356,9 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeptData(Expression<Func<CF_CORP, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            var corpPath = _dbContext.Query<CF_CORP>().Where(predicate)
+            var corpPath = dbContext.Query<CF_CORP>().Where(predicate)
                 .Select(c => c.CORP_PATH).ToList().Join();
-            return await _dbContext.Query<CF_CORP>()
+            return await dbContext.Query<CF_CORP>()
                 .Where(a => (","+a.CORP_PATH).Contains(","+corpPath))
                 .Select(c => new ComboxData() { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.CNO })
                 .Distinct()
@@ -368,6 +392,91 @@ namespace Gksyb.Server.Services.Common
             return await dbContext.Query<CF_USER>()
                 .Where(predicate)
                 .Select(c => new ComboxData() { ID = c.USERID, TEXT = c.REALNAME, VALUE = c.REALNAME })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 处理方式
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DisposeType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "disposetype").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 设备状态
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DeviceStatus(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "devicestatus").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 异常处理
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> FaultDispose(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "faultdispose").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 异常来源
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> FaultSrc(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "faultsrc").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 故障状态
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> FaultStatus(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "faultstatus").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 故障分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> RepType(Expression<Func<REP_TYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<REP_TYPE>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.REP_TYPE_ID, TEXT = c.REP_TYPE_NAME, VALUE = c.REP_TYPE_NAME })
                 .Distinct()
                 .ToListAsync();
         }
