@@ -12,12 +12,12 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class BaseSpUnitService : BaseService, IBaseSpUnitService
+    public class BasePurtypeService : BaseService, IBasePurtypeService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
 
-        public BaseSpUnitService(IDbContext dbContext,  UserSession userSession)
+        public BasePurtypeService(IDbContext dbContext, UserSession userSession)
         {
             _dbContext = dbContext;
             _userSession = userSession;
@@ -31,7 +31,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_UNIT>().GetGridData(request);
+            return await _dbContext.Query<BASE_PURTYPE>().GetGridData(request);
         }
 
 
@@ -40,27 +40,25 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_UNIT> request)
+        public async Task<AjaxResult> Save(SaveRequest<BASE_PURTYPE> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
-                    c.UNIT,
+                    c.PURTYPE_CODE,
+                    c.PURTYPE_NAME,
                     c.MEMO,
-                    c.EDIT_USER,
-                    c.EDIT_USERID,
-                    c.EDIT_DATE,
-                    c.UNIT_ID,
+                    c.PURTYPE_ID,
                     c.CREATE_USERID,
-                    c.CREATE_DATE,
+                    c.CREATEDATE,
                     c.MODIFY_USERID,
-                    c.MODIFY_DATE
+                    c.MODIFYDATE
                 },
-                c => a => a.UNIT_ID == c.UNIT_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
+                c => a => a.PURTYPE_ID == c.PURTYPE_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
                 );
         }
 
-        private async Task AfterSave(List<SP_UNIT> adds, List<SP_UNIT> updates, List<SP_UNIT> deletes)
+        private async Task AfterSave(List<BASE_PURTYPE> adds, List<BASE_PURTYPE> updates, List<BASE_PURTYPE> deletes)
         {
             string operType = "计量单位";
             foreach (var entity in adds)
@@ -77,26 +75,23 @@ namespace EAM.Material.Services
             }
         }
 
-        private async Task BeforeAdd(SP_UNIT entity)
+        private async Task BeforeAdd(BASE_PURTYPE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.UNIT_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID;
-            entity.CREATE_DATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID;
-            entity.MODIFY_DATE = dt;
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
-            entity.EDIT_DATE = dt;
+            entity.PURTYPE_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.CREATE_USERID = _userSession.UserID.ToString();
+            entity.CREATEDATE = dt;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = dt;
         }
 
-        private async Task BeforeUpdate(SP_UNIT entity)
+        private async Task BeforeUpdate(BASE_PURTYPE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.MODIFY_USERID = _userSession.UserID;
-            entity.MODIFY_DATE = dt;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = dt;
 
         }
     }
