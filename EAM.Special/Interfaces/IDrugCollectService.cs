@@ -5,7 +5,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Special.Interfaces
 {
-    public interface IDrugRequestService : IService
+    public interface IDrugCollectService : IService
     {
         /// <summary>
         /// 获取列表
@@ -19,7 +19,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<DRUG_REQUEST> GetAsync(string id);
+        public Task<DRUG_COLLECT> GetAsync(string id);
 
         /// <summary>
         /// 生成主键
@@ -33,7 +33,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public Task<AjaxResult> SaveAsync(SaveRequest<DRUG_REQUEST> request);
+        public Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT> request);
 
         /// <summary>
         /// 获取下拉框数据

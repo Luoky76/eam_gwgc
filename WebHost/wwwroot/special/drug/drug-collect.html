@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>药品需求登记</title>
+    <title>药品采购登记</title>
     <script src="../../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -34,56 +34,29 @@
                 me.config = {
                     search: {
                         fields: [
-                            {
-                                display: "申请日期", name: "_search_REQUEST_DATE_FROM", dbname: "REQUEST_DATE", width: 200, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
-                                options: {
-                                    format: "yyyy-MM-dd"
-                                }
-                            },
-                            {
-                                display: "至", name: "_search_REQUEST_DATE_TO", dbname: "REQUEST_DATE", width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
-                                options: {
-                                    format: "yyyy-MM-dd"
-                                }
-                            },
-                            {
-                                display: "申请人", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", width: 200, newline: true, op: "equal", vt: "int", type: "select", options: {
-                                    type: "select",
-                                    data: me.user
-                                }
-                            },
-                            { display: "申请部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", width: 200, type: "text", options: {} },
-                            { display: "类别", name: "_search_REQUEST_TYPE", dbname: "REQUEST_TYPE", width: 200, type: "text", options: {} },
-                            { display: "需求分类", name: "_search_REQUEST_SPTYPE", dbname: "REQUEST_SPTYPE", width: 200, type: "text", options: {} },
+                            { display: "请购单号", name: "_search_COLLECT_CODE", dbname: "COLLECT_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "采购部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            { display: "需求计划单号", name: "REQUEST_CODE", width: 200, type: "text" },
-                            { display: "申请日期", name: "REQUEST_DATE", width: 200, type: "date" },
-                            { display: "所属月份", name: "REQUEST_MONTH", width: 100, type: "text" },
-                            { display: "所属年份", name: "REQUEST_YEAR", width: 100, type: "text" },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk" },
+                            { display: "请购单号", name: "COLLECT_CODE", width: 200, type: "text" },
+                            { display: "请购日期", name: "CREATEDATE", width: 200, type: "date" },
+                            { display: "采购部门", name: "DEPT_NAME", width: 200, type: "text" },
                             {
-                                display: "申请人", name: "CREATE_USERID", width: 100, type: "select", editor: {
+                                display: "采购人", name: "CREATE_USERID", width: 200, type: "select", editor: {
                                     type: "select",
-                                    data: me.user,
-                                    disabled: true
+                                    data: me.user
                                 }
                             },
-                            { display: "申请部门", name: "DEPT_NAME", width: 200, type: "text" },
-                            {
-                                display: "类别", name: "REQUEST_TYPE", width: 100, type: "select", editor: {
-                                    type: "select",
-                                    data: me.requestType,
-                                    disabled: true
-                                }
-                            },
-                            { display: "需求分类", name: "REQUEST_SPTYPE", width: 100, type: "text" },
+                            { display: "采购方式", name: "COLLECT_METHOD", width: 200, type: "text" },
+                            { display: "物资分类", name: "COLLECT_SPTYPE", width: 200, type: "text" },
+                            { display: "总金额", name: "COLLECT_PRICE", width: 200, type: "float" },
                             { display: "备注", name: "MEMO", width: 300, type: "text" },
                             //隐藏
-                            { display: "主键", name: "REQUEST_ID", width: 100, type: "text", hide: true },
-                            { display: "申请部门ID", name: "DEPT_ID", width: 100, type: "text", hide: true }
+                            { display: "主键", name: "COLLECT_ID", width: 100, type: "text" },
+                            { display: "采购部门ID", name: "DEPT_ID", width: 100, type: "text" }
                         ]
                     }
                 };
@@ -96,21 +69,17 @@
                 me.detailWidth = window.innerWidth * 0.9;
                 me.detailHeight = window.innerHeight * 0.9;
             },
-            menuNo: getQueryStringByName("MenuNo"),
             grid: null,
             searchForm: null,
             buttons: null,
-            user: [],
-            requestType: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Special/DrugRequest/Comboxdata',
+                    url: 'Special/DrugCollect/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.user = data.User;
-                        me.requestType = data.RequestType;
+                        me.dataCorp = data.corpData;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -125,16 +94,16 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
-                    dataAction: 'server',
+                    dataAction: 'local',
                     toolbar: {},
-                    url: 'Special/DrugRequest/List',
+                    url: 'Special/DrugCollect/list',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'REQUEST_ID',
+                    sortName: 'LIMIT_ID',
                     sortOrder: 'asc',
                     width: '98%',
                     height: '100%',
@@ -160,9 +129,6 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
-                    },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
@@ -179,14 +145,8 @@
                         case "add":
                             me.add();
                             break;
-                        case "modify":
-                            me.modify();
-                            break;
                         case "delete":
                             me.delete();
-                            break;
-                        case "save":
-                            me.save();
                             break;
                         case "submit":
                             $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
@@ -209,81 +169,7 @@
                             break;
                     }
                 }
-                //仅加载group为main的按钮
-                me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            add: function () { //新增
-                var me = this;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[新增]任务明细',
-                    url: "drug-request-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": null, "isNew": true, "isView": false }
-                });
-            },
-            view: function () { //查看
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
-                }
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[查看]任务明细',
-                    url: "drug-request-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": selected.REQUEST_ID, "isNew": false, "isView": true }
-                });
-            },
-            modify: function () { //修改
-                var me = this;
-                var rows = me.grid.getSelectedRows();
-                if (rows.length > 1) {
-                    LG.showError("不能选择多行");
-                    return;
-                } else if (rows.length == 0) {
-                    LG.showError("请选择一行");
-                    return;
-                }
-                var selected = me.grid.getSelectedRow();
-                if (selected.AUDITING == "1") {
-                    LG.showError("该数据已提交,无法修改!");
-                    return;
-                }
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改]任务明细',
-                    url: "drug-request-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": selected.REQUEST_ID, "isNew": false, "isView": false }
-                });
             },
             save: function () { //保存
                 var me = this;
@@ -296,7 +182,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Special/DrugRequest/Save',
+                        url: 'Special/DrugCollect/save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -308,6 +194,44 @@
                             LG.showError(message);
                         }
                     });
+                }
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            add: function (row = {}) { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]采购明细',
+                    url: "drug-collect-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null, "isNew": true, "isView": false }
+                });
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
                 }
             },
             submit: function () { //提交
@@ -328,7 +252,7 @@
                     changeRow["original"] = orginarr;
                     LG.ajax({
                         jsToken: true,
-                        url: 'Special/DrugRequest/Save',
+                        url: 'Special/DrugCollect/save',
                         loading: '正在提交中...',
                         data: changeRow,
                         success: function () {
@@ -342,32 +266,6 @@
                     });
                 } else {
                     LG.tip('请选择行!');
-                }
-            },
-            reload: function () { //刷新
-                var me = this;
-                me.grid.loadData();
-            },
-            delete: function () { //删除
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    for (var i = 0; i < selected.length; i++) {
-                        if (selected[i].AUDITING == "1") {
-                            LG.showError("选中数据有部分已提交,无法删除");
-                            return;
-                        }
-                    }
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                me.grid.deleteSelectedRow();
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
                 }
             },
             bindGridEvent: function () {
@@ -438,7 +336,6 @@
                 });
             },
             init: function () {
-                debugger
                 var me = this;
                 me.setDialogSize();
                 me.loadComboxData();

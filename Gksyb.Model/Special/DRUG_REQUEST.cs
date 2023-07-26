@@ -40,38 +40,16 @@ namespace Gksyb.Model
         public string REQUEST_CODE { get; set; }
 
         /// <summary>
-        /// 申请日期
-        /// </summary>
-        [Description("申请日期")]
-        public DateTime? REQUEST_DATE { get; set; }
-
-        /// <summary>
         /// 所属月份
         /// </summary>
         [Description("所属月份")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_MONTH { get; set; }
+        public int? REQUEST_MONTH { get; set; }
 
         /// <summary>
         /// 所属年份
         /// </summary>
         [Description("所属年份")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_YEAR { get; set; }
-
-        /// <summary>
-        /// 申请人ID
-        /// </summary>
-        [Description("申请人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_USERID { get; set; }
-
-        /// <summary>
-        /// 申请人
-        /// </summary>
-        [Description("申请人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_USER { get; set; }
+        public int? REQUEST_YEAR { get; set; }
 
         /// <summary>
         /// 申请部门ID
@@ -175,8 +153,7 @@ namespace Gksyb.Model
         /// 添加人ID
         /// </summary>
         [Description("添加人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
+        public long? CREATE_USERID { get; set; }
 
         /// <summary>
         /// 添加时间
@@ -188,8 +165,7 @@ namespace Gksyb.Model
         /// 修改人ID
         /// </summary>
         [Description("修改人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
+        public long? MODIFY_USERID { get; set; }
 
         /// <summary>
         /// 修改时间
