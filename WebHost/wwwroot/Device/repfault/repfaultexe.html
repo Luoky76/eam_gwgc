@@ -65,7 +65,7 @@
                             { display: "异常来源", name: "FAULT_SRC", width: 100, type: "select", format: { data: me.faultSrc } },
                             { display: "安装地点", name: "INSTALL_SITE", width: 100, type: "text", },
                             { display: "开工时间", name: "ORDER_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "来源单号", name: "SRC_CODE", width: 100, type: "text", },
+                            //{ display: "来源单号", name: "SRC_CODE", width: 100, type: "text", },
                             { display: "FAULT_ID", name: "FAULT_ID", hide: true },
                         ]
                     },
@@ -119,7 +119,7 @@
                     page: 1,
                     pageSize: 50,
                     //isSingleCheck: true,
-                    //usePager: false,
+                    usePager: false,
                     onBeforeEdit: function (editParm) {
 
                     },
@@ -187,17 +187,22 @@
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected) {
-                    var sid = selected.FAULT_ID;
-                    $.ligerDialog.open({
-                        width: 400,
-                        height: 300,
-                        allowClose: true,
-                        isHidden: false,
-                        //data: { "tableName": "LAW_SAFE_ATTACH", "dataId": sid, "dataMenuList": me.getAttachMenuList(sid) },
-                        url: '../../fileoper/uploadfile.html',
-                        title: '附件管理',
-                        onClose: function () {
-                            me.reload();
+                    var me = this;
+                    LG.showUpload({
+                        multiple: false,
+                        extensions: 'xls,xlsx',
+                        mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+                        compress: {
+                            width: 1920
+                        },
+                        showSuccess: false,
+                        //data: { folder: '../../Adv' },
+                        callback: function (status, data) {
+                            if (status) {
+                                LG.showSuccess("导入成功");
+                                me.reload();
+                            }
+                            else LG.showError(data.Message);
                         }
                     });
                 }

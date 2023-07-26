@@ -52,6 +52,7 @@
             repType: [],
             shipInfo: [],
             maintDept: [],
+            repairUser: [],
             start: null,
             setConfig: function () {
                 var me = this;
@@ -109,7 +110,7 @@
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                             $('#DEVICE_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
-                                            $('#FAULT_STATUS').val(g.selected.TEXT == null ? '' : g.selected.EXTEND);
+                                            $('#DEVICE_STATUS').val(g.selected.TEXT == null ? '' : g.selected.EXTEND);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
                                             $('#DEPT_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND3);
@@ -117,12 +118,14 @@
                                     }
                                 }
                             },
-                            { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "设备状态", name: "DEVICE_STATUS", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "异常来源", name: "FAULT_SRC", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultSrc } },
-                            { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            //{ display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修人", name: "REPAIR_USER", newline: false, upper: true, type: "text", options: {} },
+                            { display: "维修人ID", name: "REPAIR_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             //{ display: "使用部门", name: "DEPT_ID", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
 
@@ -688,6 +691,53 @@
                 }
             },
 
+            f_select_man: function () {
+                var me = this;
+                var userId = me.mainform.getData().REPAIR_USERID || "";
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 500,
+                    title: '人员挑选',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [userId],
+                        options: {
+                            url: 'popup/users', sortName: 'Name', rowKey: "Id", isSingleCheck: false,
+                            columns: [
+                                { display: "姓名", name: "Name", type: "text" },
+                                { display: "公司岗位", name: "Station", type: "text" }
+                            ]
+                        },
+                        fields: [
+                            { display: "姓名", name: "Name", width: 100, type: "text" },
+                            { display: "公司岗位", name: "Station", width: 100, type: "text" }
+                        ],
+                        callback: function (values, rows) {
+                            if (rows.length < 1) {
+                                me.mainform.setData({
+                                    "REPAIR_USER": null,
+                                    "REPAIR_USERID": null,
+                                });
+                                return;
+                            }
+                            var name = rows.map(function (rows) {
+                                return rows.Name;
+                            }).join(",");
+                            var id = rows.map(function (rows) {
+                                return rows.Id;
+                            }).join(",");
+                            me.repairUser = rows
+                            me.mainform.setData({
+                                "REPAIR_USER": name,
+                                "REPAIR_USERID": id,
+                            });
+                        }
+                    }
+                });
+
+            },
             init: function () {
                 var me = this;
                 if (frameElement && frameElement.dialog) {
@@ -709,6 +759,10 @@
                 //加载重大改造履历
                 me.setGrid();
                 me.setGrid2();
+                $('#REPAIR_USER').bind('click', function () {
+                    debugger
+                    me.f_select_man();
+                });
                 me.reloadPep();
                 me.reloadSp();
 
