@@ -238,15 +238,43 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<int> SubmitFaultCheck(List<string> sids)
         {
-            var query = _dbContext.Query<REP_FAULT>()
+            var querys = _dbContext.Query<REP_FAULT>()
                  .Where(c => sids.Contains(c.FAULT_ID)).Select(c =>
                      c.CHECK_RESULT
                  ).ToList();
-            if (query.Contains(null))
+            if (querys.Contains(null))
             {
                 throw new MessageException("必须处理所有验收结果！");
             }
             else {
+                var qrylists = _dbContext.Query<REP_FAULT>()
+                 .Where(c => sids.Contains(c.FAULT_ID)).ToList();
+                foreach (var qrylist in qrylists)
+                {
+                    string aa = "GZK" + DateTime.Now.ToString("yyyyMM");
+                    string def = aa + "0000";
+                    var model = await _dbContext.Query<REP_FRDB>(x => x.FRDB_CODE.Contains(aa)).Select(x => Sql.Max(x.FRDB_CODE) ?? def).FirstOrDefaultAsync();
+                    var index = model.SubStr(9, 4).CastTo<int>() + 1;
+                    var scandet = new REP_FRDB()
+                    {
+                        FRDB_ID = GuidHelper.NewSnowflakeId().ToString(),
+                        FRDB_CODE = aa + index.ToString("D4"),
+                        DEVICE_CODE = qrylist.SHIP_CODE,
+                        DEVICE_NAME = qrylist.SHIP_NAME,
+                        REP_DEVICE = qrylist.DEVICE_NAME,
+                        SRC_FUNCTION = qrylist.FAULT_SRC,
+                        SRC_CODE = qrylist.FAULT_CODE,
+                        FRDB_LEVEL = "10",
+                        FAULT_REASON = qrylist.FAULT_REASON,
+                        MEASURES = qrylist.MEASURES,
+                        AUDITING = "0",
+                        CREATE_USERID = _userSession.UserID.ToString(),
+                        EDIT_USERID = _userSession.UserID.ToString(),
+                        CREATEDATE = Sysdate,
+                        EDIT_DATE = Sysdate,
+                    };
+                    var insertScanId = await _dbContext.InsertAsync(scandet);
+                }
                 return await _dbContext.UpdateAsync<REP_FAULT>(x => sids.Contains(x.FAULT_ID),
                     x => new REP_FAULT
                     {

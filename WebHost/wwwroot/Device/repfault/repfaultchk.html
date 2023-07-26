@@ -36,6 +36,7 @@
             faultStatus: [],
             faultSrc: [],
             deviceStatus: [],
+            alreadySubmitted: false,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -123,7 +124,7 @@
                     page: 1,
                     pageSize: 50,
                     //isSingleCheck: true,
-                    //usePager: false,
+                    usePager: false,
                     onBeforeEdit: function (editParm) {
 
                     },
@@ -217,9 +218,16 @@
             submit: function () {    //提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
-                if (selected.length > 0) {
-                    if (selected[0].AUDITING_D != "0") {
+                for (var i = 0; i < selected.length; i++) {
+                    if (selected[i].AUDITING_D == "1") {
+                        me.alreadySubmitted = true;
+                        break;
+                    }
+                }
+                if (selected) {
+                    if (me.alreadySubmitted) {
                         LG.tip('已提交，无法再次提交!');
+                        me.alreadySubmitted = false;
                     }
                     else {
                         var sids = [];

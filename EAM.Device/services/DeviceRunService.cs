@@ -82,7 +82,7 @@ namespace EAM.Device.services
         {
             var qry = _dbContext.Query<RUN_TRANS>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
-                .OrderByDesc(c => c.AUDITING)
+                .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.TRANS_DATE);
             return await qry.GetGridData(request);
         }

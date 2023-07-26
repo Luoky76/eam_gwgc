@@ -224,9 +224,10 @@
                     LG.showError("请选择一行")
                     return
                 }
+                debugger
                 var selected = me.grid.getSelectedRows();
                 if (selected) {
-                    if (selected.AUDITING == "1") {
+                    if (selected[0].AUDITING == "1") {
                         LG.tip('已提交，无法再次提交!');
                     }
                     else {
