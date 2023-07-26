@@ -74,14 +74,14 @@
                                     textField: "TEXT",
                                     columns: [
                                         { header: '船舶名称', name: 'TEXT' },
-                                        { header: '设备编号', name: 'VALUE', width: 100 },
+                                        { header: '船舶编号', name: 'VALUE', width: 100 },
                                         { header: '使用部门', name: 'EXTEND', width: 100 },
                                         { header: '维保部门', name: 'EXTEND1', width: 100 },
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            $('#SHIP_CODE').val(g.selected.VALUE == null ? '' : g.selected.TEXT);
-                                            $('#SHIP_NAME').val(g.selected.TEXT == null ? '' : g.selected.VALUE);
+                                            $('#SHIP_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#SHIP_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                         }
                                     }
                                 }
@@ -385,7 +385,7 @@
                     dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: false,
+                    usePager: true,
                     columns: me.config.grid2.columns,
                     dataAction: 'local',
                     toolbar: {},
@@ -526,7 +526,7 @@
                     dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: false,
+                    usePager: true,
                     columns: me.config.grid.columns,
                     dataAction: 'local',
                     toolbar: {},
@@ -537,8 +537,8 @@
                             rules: [{ field: 'FAULT_ID', op: 'equal', value: $('#FAULT_ID').val() }]
                         })
                     },
-                    sortName: 'MODIFY_DATE',
-                    sortOrder: 'desc',
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
                     width: '99%',
                     height: '100%',
                     checkbox: true,

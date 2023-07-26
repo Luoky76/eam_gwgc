@@ -328,7 +328,7 @@
                     dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: false,
+                    usePager: true,
                     columns: me.config.grid2.columns,
                     dataAction: 'local',
                     toolbar: {},
@@ -370,7 +370,7 @@
                     dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: false,
+                    usePager: true,
                     columns: me.config.grid.columns,
                     dataAction: 'local',
                     toolbar: {},
@@ -381,8 +381,8 @@
                             rules: [{ field: 'FAULT_ID', op: 'equal', value: $('#FAULT_ID').val() }]
                         })
                     },
-                    sortName: 'MODIFY_DATE',
-                    sortOrder: 'desc',
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
                     width: '99%',
                     height: '100%',
                     checkbox: false,
