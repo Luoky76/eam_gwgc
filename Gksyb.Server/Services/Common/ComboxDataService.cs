@@ -229,6 +229,20 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 设备变动类型
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> VaryType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "vary_type").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
         /// 设备卡片
         /// </summary>
         /// <param name="predicate"></param>
