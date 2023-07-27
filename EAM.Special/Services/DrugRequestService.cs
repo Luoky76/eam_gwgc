@@ -107,20 +107,10 @@ namespace EAM.Special.Services
                 year = list[0].REQUEST_YEAR.Value;
                 month = list[0].REQUEST_MONTH.Value;
                 deptID = list[0].DEPT_ID;
+                //"1"港内，"2"港外
                 position = list[0].POSITION;
             }
             else return null;
-
-            var limitList = await _dbContext.Query<DRUG_LIMIT>()
-                .Select(a => new
-                {
-                    a.SP_ID,
-                    a.INSIDE_APRIL,
-                    a.OUTSIDE_APRIL,
-                    a.INSIDE_OCTOBER,
-                    a.OUTSIDE_OCTOBER
-                })
-                .ToListAsync();
 
             if (month >= 4 && month <= 9)
             {
@@ -138,6 +128,20 @@ namespace EAM.Special.Services
                         c.SUM_REQUEST_NUM
                     });
                 var sumList = await query.ToListAsync();
+
+                var limitList = await _dbContext.Query<DRUG_LIMIT>()
+                .Select(a => new
+                {
+                    a.SP_ID,
+                    a.INSIDE_APRIL,
+                    a.OUTSIDE_APRIL,
+                    LEFTOVER = position == "1" ? a.INSIDE_APRIL -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM) :
+                    a.OUTSIDE_APRIL -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM)
+                }).GetGridData(null);
+
+                return limitList;
             }
             else
             {
@@ -155,10 +159,21 @@ namespace EAM.Special.Services
                         c.SUM_REQUEST_NUM
                     });
                 var sumList = await query.ToListAsync();
+
+                var limitList = await _dbContext.Query<DRUG_LIMIT>()
+                .Select(a => new
+                {
+                    a.SP_ID,
+                    a.INSIDE_OCTOBER,
+                    a.OUTSIDE_OCTOBER,
+                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM) :
+                    a.OUTSIDE_OCTOBER -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM)
+                }).GetGridData(null);
+
+                return limitList;
             }
-            
-            //TODO
-            return null;
         }
 
         /// <summary>

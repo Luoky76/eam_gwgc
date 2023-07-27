@@ -33,6 +33,17 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 获取除特定需求单外，剩余药品数量列表
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> ExtendListAsync(string requestId)
+        {
+            return await _service.ExtendListAsync(requestId);
+        }
+
+        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>

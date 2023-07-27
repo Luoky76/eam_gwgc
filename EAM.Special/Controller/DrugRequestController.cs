@@ -1,4 +1,5 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -53,6 +54,18 @@ namespace EAM.Special.Controller
         public AjaxResult<string> CreatePrimaryKey()
         {
             return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
+        }
+
+        /// <summary>
+        /// 获取除特定需求单外，剩余药品数量列表
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetLeftoverDrugsAsync(string requestId)
+        {
+            var result = await _service.GetLeftoverDrugsAsync(requestId);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>

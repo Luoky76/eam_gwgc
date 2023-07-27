@@ -15,6 +15,13 @@ namespace EAM.Special.Interfaces
         public Task<GridData> ListAsync(GridRequest request);
 
         /// <summary>
+        /// 获取除特定需求单外，剩余药品数量列表
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        public Task<GridData> ExtendListAsync(string requestId);
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

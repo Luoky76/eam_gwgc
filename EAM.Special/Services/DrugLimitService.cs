@@ -49,6 +49,107 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 获取除特定需求单外，剩余药品数量列表
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        public async Task<GridData> ExtendListAsync(string requestId)
+        {
+            var list = await _dbContext.Query<DRUG_REQUEST>()
+                .Where(a => a.REQUEST_ID == requestId)
+                .Select(a => new
+                {
+                    a.REQUEST_YEAR,
+                    a.REQUEST_MONTH,
+                    a.DEPT_ID,
+                    a.POSITION
+                })
+                .ToListAsync();
+
+            int year = 0, month = 0;
+            string deptID = "";
+            string position = "";
+            if (list.Any())
+            {
+                year = list[0].REQUEST_YEAR.Value;
+                month = list[0].REQUEST_MONTH.Value;
+                deptID = list[0].DEPT_ID;
+                //"1"港内，"2"港外
+                position = list[0].POSITION;
+            }
+            else return null;
+
+            if (month >= 4 && month <= 9)
+            {
+                var query = _dbContext.Query<DRUG_REQUEST>()
+                    .Where(a => a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position && a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 4 && a.REQUEST_MONTH <= 9)
+                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                    .Select((a, b) => new {
+                        b.SP_ID,
+                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
+                    })
+                    .GroupBy(c => c.SP_ID)
+                    .Select(c => new
+                    {
+                        c.SP_ID,
+                        c.SUM_REQUEST_NUM
+                    });
+                var sumList = await query.ToListAsync();
+
+                var limitList = await _dbContext.Query<DRUG_LIMIT>()
+                .Select(a => new
+                {
+                    a.LIMIT_ID,
+                    a.SP_ID,
+                    a.SP_CODE,
+                    a.SP_NAME,
+                    a.SP_TYPE,
+                    a.UNIT,
+                    LEFTOVER = position == "1" ? a.INSIDE_APRIL -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM) :
+                    a.OUTSIDE_APRIL -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM)
+                }).GetGridData(null);
+
+                return limitList;
+            }
+            else
+            {
+                var query = _dbContext.Query<DRUG_REQUEST>()
+                    .Where(a => a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position && a.REQUEST_YEAR == year && (a.REQUEST_MONTH < 4 || a.REQUEST_MONTH > 9))
+                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                    .Select((a, b) => new {
+                        b.SP_ID,
+                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
+                    })
+                    .GroupBy(c => c.SP_ID)
+                    .Select(c => new
+                    {
+                        c.SP_ID,
+                        c.SUM_REQUEST_NUM
+                    });
+                var sumList = await query.ToListAsync();
+
+                var limitList = await _dbContext.Query<DRUG_LIMIT>()
+                .Select(a => new
+                {
+                    a.LIMIT_ID,
+                    a.SP_ID,
+                    a.SP_CODE,
+                    a.SP_NAME,
+                    a.SP_TYPE,
+                    a.UNIT,
+                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM) :
+                    a.OUTSIDE_OCTOBER -
+                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM)
+                }).GetGridData(null);
+
+                return limitList;
+            }
+        }
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>
