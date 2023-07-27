@@ -11,7 +11,14 @@ namespace EAM.Repair.interfaces
         Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
         Task<GridData> ListAsync(GridRequest request);
 
+        Task<AjaxResult> GetDetailAsync(string ID);
+
         Task<AjaxResult> Save(SaveRequest<REP_PLAN> request);
+
         Task<AjaxResult> ShipList();
+
+        Task<GridData> ItemListAsync(GridRequest request);
+
+        Task<GridData> GetDeviceAsync(GridRequest request);
     }
 }
