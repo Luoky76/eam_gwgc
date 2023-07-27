@@ -35,48 +35,80 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", width: 300, upper: true, type: "select", options: {
+                                display: "记录状态", name: "AUDITING", width: 300, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }
                             },
-                            { display: "需求计划单号", name: "REQUEST_CODE", width: 300, upper: true, type: "text", options: { disabled: true } },
-                            { display: "申请日期", name: "REQUEST_DATE", width: 300, upper: true, type: "date", options: { disabled: true } },
-                            { display: "所属月份", name: "REQUEST_MONTH", width: 300, upper: true, type: "text", options: {} },
-                            { display: "所属年份", name: "REQUEST_YEAR", width: 300, upper: true, type: "text", options: {} },
-                            { display: "申请人", name: "REQUEST_USER", width: 300, upper: true, type: "text", options: { disabled: true } },
-                            { display: "申请部门", name: "DEPT_NAME", width: 300, upper: true, type: "text", options: { disabled: true } },
-                            { display: "类别", name: "REQUEST_TYPE", width: 300, upper: true, type: "text", options: {} },
-                            { display: "需求分类", name: "REQUEST_SPTYPE", width: 300, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", width: 300, upper: true, type: "text", options: {} },
+                            { display: "需求计划单号", name: "REQUEST_CODE", width: 300, type: "text", options: { disabled: true } },
+                            { display: "申请日期", name: "CREATEDATE", width: 300, type: "date", format: "yyyy-MM-dd hh:mm:ss", options: { disabled: true } },
+                            {
+                                display: "所属月份", name: "REQUEST_MONTH", width: 300, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.month
+                                }
+                            },
+                            {
+                                display: "所属年份", name: "REQUEST_YEAR", width: 300, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.year
+                                }
+                            },
+                            {
+                                display: "申请人", name: "CREATE_USERID", width: 300, type: "select", options: {
+                                    type: "select",
+                                    data: me.user,
+                                    disabled: true
+                                }
+                            },
+                            { display: "申请部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
+                            {
+                                display: "港内/港外", name: "POSITION", width: 300, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.position
+                                }
+                            },
+                            {
+                                display: "类别", name: "REQUEST_TYPE", width: 300, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.requestType
+                                }
+                            },
+                            { display: "需求分类", name: "REQUEST_SPTYPE", width: 300, type: "text", options: { disabled: true } },
+                            { display: "备注", name: "MEMO", width: 300, type: "text", options: {} },
                             //隐藏
-                            { display: "主键", name: "REQUEST_ID", width: 300, upper: true, type: "hidden" },
-                            { display: "申请人ID", name: "REQUEST_USERID", width: 300, upper: true, type: "hidden" },
-                            { display: "申请部门ID", name: "DEPT_ID", width: 300, upper: true, type: "hidden" },
-                            { display: "申请部门编号", name: "DEPT_CODE", width: 300, upper: true, type: "hidden" },
-                            { display: "物资归属船舶ID", name: "SHIP_ID", width: 300, upper: true, type: "hidden" },
-                            { display: "物资归属船舶", name: "SHIP_NAME", width: 300, upper: true, type: "hidden" },
-                            { display: "物资归属船舶编码", name: "SHIP_CODE", width: 300, upper: true, type: "hidden" },
-                            { display: "二级单位ID", name: "SEC_DEPTID", width: 300, upper: true, type: "hidden" },
-                            { display: "二级单位", name: "SEC_DEPT", width: 300, upper: true, type: "hidden" },
-                            { display: "格式号", name: "FORM_ID", width: 300, upper: true, type: "hidden" },
-                            { display: "来源单号", name: "SRC_CODE", width: 300, upper: true, type: "hidden" },
-                            { display: "港内/港外", name: "POSITION", width: 300, upper: true, type: "hidden" },
-                            { display: "添加人ID", name: "CREATE_USERID", width: 300, upper: true, type: "hidden" },
-                            { display: "添加时间", name: "CREATEDATE", width: 300, upper: true, type: "hidden"},
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 300, upper: true, type: "hidden" },
-                            { display: "修改时间", name: "MODIFYDATE", width: 300, upper: true, type: "hidden" }
+                            { display: "主键", name: "REQUEST_ID", width: 300, type: "hidden" },
+                            { display: "申请部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
+                            { display: "申请部门编号", name: "DEPT_CODE", width: 300, type: "hidden" },
+                            { display: "物资归属船舶ID", name: "SHIP_ID", width: 300, type: "hidden" },
+                            { display: "物资归属船舶", name: "SHIP_NAME", width: 300, type: "hidden" },
+                            { display: "物资归属船舶编码", name: "SHIP_CODE", width: 300, type: "hidden" },
+                            { display: "二级单位ID", name: "SEC_DEPTID", width: 300, type: "hidden" },
+                            { display: "二级单位", name: "SEC_DEPT", width: 300, type: "hidden" },
+                            { display: "格式号", name: "FORM_ID", width: 300, type: "hidden" },
+                            { display: "来源单号", name: "SRC_CODE", width: 300, type: "hidden" },
+                            { display: "修改人ID", name: "MODIFY_USERID", width: 300, type: "hidden" },
+                            { display: "修改时间", name: "MODIFYDATE", width: 300, type: "hidden" }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "物资编码", name: "SP_CODE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "物资名称", name: "SP_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "物资型号", name: "SP_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "物资编码", name: "SP_CODE", width: 100, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", width: 100, type: "text" },
+                            { display: "物资型号", name: "SP_TYPE", width: 100, type: "text" },
                             { display: "制造厂", name: "FACTORY", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "申请数量", name: "REQUEST_NUM", width: 100, type: "decimal", editor: { type: 'decimal' } },
-                            { display: "计量单位", name: "UNIT", width: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "申请数量", name: "REQUEST_NUM", width: 100, type: "float", editor: {
+                                    type: 'float',
+                                    onChanged: function (record) {
+                                        if (record.value < 0) {
+                                            //TODO 不应小于0
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "计量单位", name: "UNIT", width: 100, type: "text" },
                             { display: "用途", name: "PURPOSE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
                             //隐藏
@@ -100,10 +132,28 @@
             buttons: null,
             //主表主键
             sid: null,
-            isAddNew: false,
+            isNew: false,
             isView: true,
             auditing: [],
             user: [],
+            requestType: [],
+            position: [{ ID: "1", TEXT: "港内" }, { ID: "2", TEXT: "港外" }],
+            month: [],
+            year: [],
+            loadMonth: function () {
+                var me = this;
+                for (var i = 1; i <= 12; ++i) {
+                    me.month.push({ ID: i, TEXT: i + "月" });
+                }
+            },
+            loadYear: function () {
+                var me = this;
+                var date = new Date();
+                var currentYear = date.getFullYear();
+                for (var i = 2019; i <= currentYear; ++i) {
+                    me.year.push({ ID: i, TEXT: i + "年" });
+                }
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -113,16 +163,41 @@
                     success: function (data) {
                         me.auditing = data.Auditing;
                         me.user = data.User;
+                        me.requestType = data.RequestType;
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
+
+                //加载其它下拉数据
+                me.loadMonth();
+                me.loadYear();
             },
             loadData: function () {
                 var me = this;
-                if (!me.sid) {
-                    me.mainform.setOrginData({});
+                if (me.isNew) {
+                    var originData = {};
+                    LG.ajax({
+                        async: false,
+                        url: 'Special/DrugRequest/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            me.sid = data;
+                            originData["REQUEST_ID"] = data;
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    $.extend(originData, {
+                        AUDITING: "0",
+                        DEPT_ID: window.session.Corp.CorpID,
+                        DEPT_NAME: window.session.Corp.CName,
+                        DEPT_CODE: window.session.Corp.CNO
+                    });
+                    me.mainform.setOrginData(originData);
                 }
                 else {
                     LG.ajax({
@@ -159,7 +234,7 @@
                 var data = handle(me.mainform.getData());
                 var original = handle(me.mainform.getOrginData());
                 var changeRow = new Object();
-                if (!me.sid) {
+                if (me.isNew) {
                     changeRow["added"] = [data];
                 }
                 else {
@@ -173,7 +248,10 @@
                     data: changeRow,
                     success: function () {
                         LG.showSuccess('保存成功', function () {
-                            location.reload(true);
+                            //location.reload(true);
+                            //主表保存过后变为修改模式
+                            me.isNew = false;
+                            me.loadData();
                         });
                     },
                     error: function (message) {
@@ -236,6 +314,9 @@
                                     me.save();
                                 }
                             });
+                        }
+                        else {
+                            me.save();
                         }
                     }.bind(me)
                 });
@@ -335,6 +416,9 @@
                         case "refresh":
                             me.reloadGrid();
                             break;
+                        case "import":
+                            me.importGrid();
+                            break;
                         case "save":
                             me.saveGrid();
                             break;
@@ -363,9 +447,78 @@
                 var me = this;
                 me.grid.loadData();
             },
+            //新增
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    REQUEST_ID: me.sid
+                });
+                me.grid.addEditRow(row, true);
+            },
+            //导入
+            importGrid: function () {
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.SP_ID);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Special/DrugLimit/List',
+                        sortName: 'SP_ID',
+                        rowKey: "SP_ID",
+                        columns: [
+                            { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
+                            { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
+                            { display: "计量单位", name: "UNIT", width: 200, type: "text" },
+                            { display: "港内限制数量(4月）", name: "INSIDE_APRIL", width: 200, type: "float" },
+                            { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", width: 200, type: "float" },
+                            { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", width: 200, type: "float" },
+                            { display: "港外限制数量(10月）", name: "OUTSIDE_OCTOBER", width: 200, type: "float" },
+                        ]
+                    },
+                    fields: [
+                        { display: "物资名称", name: "SP_NAME", width: 200, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item)) {
+                                me.addGrid({
+                                    SP_ID: item.SP_ID,
+                                    SP_CODE: item.SP_CODE,
+                                    SP_NAME: item.SP_NAME,
+                                    SP_TYPE: item.SP_TYPE,
+                                    UNIT: item.UNIT
+                                });
+                            }
+                        }
+                        me.saveGrid();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1300,
+                    height: 400,
+                    title: '挑选评估项目',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            vertifyBeforeSave: function () {
+                //TODO
+                return true;
+            },
             //保存
             saveGrid: function () {
                 var me = this;
+                //未通过验证时停止保存
+                if (!me.vertifyBeforeSave()) return;
+
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
                         LG.showSuccess('无修改');
@@ -402,6 +555,7 @@
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
                     if (me.dialogData.hasOwnProperty('isView')) me.isView = me.dialogData.isView;
+                    if (me.dialogData.hasOwnProperty('isNew')) me.isNew = me.dialogData.isNew;
                 }
                 me.loadComboxData();
                 me.setConfig();

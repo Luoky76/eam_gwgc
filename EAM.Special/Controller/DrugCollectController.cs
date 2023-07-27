@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "DrugRequest")]
-    public class DrugRequestController : AreaController
+    [GksybAuthorize(MenuNo = "DrugCollect")]
+    public class DrugCollectController : AreaController
     {
-        private readonly IDrugRequestService _service;
+        private readonly IDrugCollectService _service;
 
         /// <summary>
-        /// 药品需求主表
+        /// 药品采购登记
         /// </summary>
         /// <param name="service"></param>
-        public DrugRequestController(IDrugRequestService service)
+        public DrugCollectController(IDrugCollectService service)
         {
             _service = service;
         }
@@ -38,10 +38,10 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_REQUEST>> GetAsync(string id)
+        public async Task<AjaxResult<DRUG_COLLECT>> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_REQUEST>.Error("请传递参数");
-            return AjaxResult<DRUG_REQUEST>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_COLLECT>.Error("请传递参数");
+            return AjaxResult<DRUG_COLLECT>.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_REQUEST> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT> request)
         {
             return await _service.SaveAsync(request);
         }

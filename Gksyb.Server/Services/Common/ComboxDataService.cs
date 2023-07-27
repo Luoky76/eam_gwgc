@@ -410,6 +410,22 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 药品需求类别下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> RequestType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "requestType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 处理方式
         /// </summary>
         /// <param name="predicate"></param>
