@@ -88,9 +88,9 @@ namespace Gksyb.Model
         public string SEC_DEPT { get; set; }
 
         /// <summary>
-        /// 主键
+        /// 仓库ID
         /// </summary>
-        [Description("主键")]
+        [Description("仓库ID")]
         [Column(DbType = DbType.AnsiString)]
         public string HOUSE_ID { get; set; }
 

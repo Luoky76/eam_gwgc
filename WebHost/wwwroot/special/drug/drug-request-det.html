@@ -202,7 +202,6 @@
                         async: false,
                         url: 'Special/DrugRequest/CreatePrimaryKey',
                         loading: '正在获取中...',
-                        data: { id: me.sid },
                         success: function (data, message) {
                             me.sid = data;
                             originData["REQUEST_ID"] = data;
@@ -487,7 +486,7 @@
                     values: gridKeys,
                     options: {
                         url: 'Special/DrugLimit/ExtendList',
-                        data: { requestId: me.sid },
+                        parms: { requestId: me.sid },
                         sortName: 'SP_ID',
                         rowKey: "SP_ID",
                         columns: [

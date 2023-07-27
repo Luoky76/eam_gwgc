@@ -92,12 +92,12 @@ namespace EAM.Special.Services
                     .Select(c => new
                     {
                         c.SP_ID,
-                        c.SUM_REQUEST_NUM
+                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
                     });
-                var sumList = await query.ToListAsync();
 
                 var limitList = await _dbContext.Query<DRUG_LIMIT>()
-                .Select(a => new
+                .LeftJoin(query,(a,b)=>a.SP_ID==b.SP_ID)
+                .Select((a, b) => new
                 {
                     a.LIMIT_ID,
                     a.SP_ID,
@@ -105,10 +105,8 @@ namespace EAM.Special.Services
                     a.SP_NAME,
                     a.SP_TYPE,
                     a.UNIT,
-                    LEFTOVER = position == "1" ? a.INSIDE_APRIL -
-                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM) :
-                    a.OUTSIDE_APRIL -
-                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM)
+                    LEFTOVER = position == "1" ? a.INSIDE_APRIL - b.SUM_REQUEST_NUM:
+                    a.OUTSIDE_APRIL - b.SUM_REQUEST_NUM
                 }).GetGridData(null);
 
                 return limitList;
@@ -126,12 +124,12 @@ namespace EAM.Special.Services
                     .Select(c => new
                     {
                         c.SP_ID,
-                        c.SUM_REQUEST_NUM
+                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
                     });
-                var sumList = await query.ToListAsync();
 
                 var limitList = await _dbContext.Query<DRUG_LIMIT>()
-                .Select(a => new
+                .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
                 {
                     a.LIMIT_ID,
                     a.SP_ID,
@@ -139,10 +137,8 @@ namespace EAM.Special.Services
                     a.SP_NAME,
                     a.SP_TYPE,
                     a.UNIT,
-                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER -
-                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM) :
-                    a.OUTSIDE_OCTOBER -
-                    (sumList.Where(c => c.SP_ID == a.SP_ID).First() == null ? 0 : sumList.Where(c => c.SP_ID == a.SP_ID).First().SUM_REQUEST_NUM)
+                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - b.SUM_REQUEST_NUM :
+                    a.OUTSIDE_OCTOBER - b.SUM_REQUEST_NUM
                 }).GetGridData(null);
 
                 return limitList;

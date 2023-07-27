@@ -40,7 +40,18 @@
                     form: {
                         labelwidth: 220,
                         fields: [
-
+                            { display: "记录状态", name: "AUDITING", newline: false, type: "text", options: {} },
+                            { display: "请购单号", name: "COLLECT_CODE", newline: false, type: "text", options: {} },
+                            { display: "请购日期", name: "CREATEDATE", newline: false, type: "date", options: {} },
+                            { display: "采购人", name: "CREATE_USERID", newline: false, type: "long", options: {} },
+                            { display: "采购部门ID", name: "DEPT_ID", newline: false, type: "text", options: {} },
+                            { display: "采购部门", name: "DEPT_NAME", newline: false, type: "text", options: {} },
+                            { display: "采购方式", name: "COLLECT_METHOD", newline: false, type: "text", options: {} },
+                            { display: "物资分类", name: "COLLECT_SPTYPE", newline: false, type: "text", options: {} },
+                            { display: "总金额", name: "COLLECT_PRICE", newline: false, type: "decimal", options: {} },
+                            { display: "备注", name: "MEMO", newline: false, minWidth:900, type: "text", options: {} },
+                            //隐藏
+                            { display: "主键", name: "COLLECT_ID", newline: false, type: "hiden", validate: { required: true }, options: {} },
                         ]
                     },
                     collectGrid: {
