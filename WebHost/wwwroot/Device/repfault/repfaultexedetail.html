@@ -149,7 +149,7 @@
                             },
                             { display: "上报人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             //{ display: "上报人ID", name: "EDIT_USERID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: 775, validate: { required: true }, type: "textarea", options: {} },
 
                             { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.disposeType }, group: "故障处理" },
                             { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.repType } },
@@ -183,7 +183,7 @@
                             },
                             { display: "维修工时(H)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float", editor: { disabled: true }, options: {} },
                             { display: "故障及解决方法描述", name: "FAULT_REASON", newline: true, upper: true, validate: { required: true }, width: 775, type: "textarea", options: {} },
-                            { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: 775, validate: { required: true }, type: "textarea", options: {} },
                             { display: "故障处理备注", name: "FAULT_MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
 
 
