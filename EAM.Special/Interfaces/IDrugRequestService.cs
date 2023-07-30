@@ -29,13 +29,6 @@ namespace EAM.Special.Interfaces
         public string CreatePrimaryKey();
 
         /// <summary>
-        /// 获取除特定需求单外，剩余药品数量列表
-        /// </summary>
-        /// <param name="requestId"></param>
-        /// <returns></returns>
-        public Task<GridData> GetLeftoverDrugsAsync(string requestId);
-
-        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
