@@ -8,15 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 namespace EAM.Special.Controller
 {
     [GksybAuthorize(MenuNo = "DrugCollect")]
-    public class DrugCollectController : AreaController
+    public class DrugCollectDetController : AreaController
     {
-        private readonly IDrugCollectService _service;
+        private readonly IDrugCollectDetService _service;
 
         /// <summary>
-        /// 药品采购登记主表
+        /// 药品采购明细
         /// </summary>
         /// <param name="service"></param>
-        public DrugCollectController(IDrugCollectService service)
+        public DrugCollectDetController(IDrugCollectDetService service)
         {
             _service = service;
         }
@@ -38,21 +38,21 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_COLLECT>> GetAsync(string id)
+        public async Task<AjaxResult<DRUG_COLLECT_DET>> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_COLLECT>.Error("请传递参数");
-            return AjaxResult<DRUG_COLLECT>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_COLLECT_DET>.Error("请传递参数");
+            return AjaxResult<DRUG_COLLECT_DET>.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>
-        /// 生成主键
+        /// 根据COLLECT_ID获取列表
         /// </summary>
-        /// <param></param>
+        /// <param name="collectId"></param>
         /// <returns></returns>
         [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
+        public async Task<GridData> GetCertainCollectIdAsync(string collectId)
         {
-            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
+            return await _service.GetCertainCollectIdAsync(collectId);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT_DET> request)
         {
             return await _service.SaveAsync(request);
         }
