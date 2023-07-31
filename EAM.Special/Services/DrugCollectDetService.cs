@@ -98,7 +98,9 @@ namespace EAM.Special.Services
                     c.SP_TYPE,
                     c.FACTORY,
                     c.UNIT,
-                    c.SUM_REQUEST_NUM
+                    c.SUM_REQUEST_NUM,
+                    //生成主键COLLECT_DET_ID
+                    COLLECT_DET_ID = GuidHelper.NewSnowflakeId().ToString()
                 })
                 .GetGridData(request);
             return list;

@@ -153,7 +153,8 @@ namespace EAM.Special.Services
                 .Where(a => a.SP_ID == spId)
                 .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
                 .Where((a, b) => b.IS_FULLBUY == "0" || b.IS_FULLBUY == null)
-                .Select((a, b) => new DRUG_COLLECT_REQUEST
+                .LeftJoin<DRUG_REQUEST>((a, b, c) => a.REQUEST_ID == c.REQUEST_ID)
+                .Select((a, b, c) => new DRUG_COLLECT_REQUEST
                 {
                     REQUEST_DET_ID = a.REQUEST_DET_ID,
                     SP_ID = a.SP_ID,
@@ -168,7 +169,14 @@ namespace EAM.Special.Services
                     FACTORY = a.FACTORY,
                     UNIT = a.UNIT,
                     //申请数量为剩余未采购的申请数量
-                    REQUEST_NUM = a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM)
+                    REQUEST_NUM = a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM),
+                    REQUEST_CODE = c.REQUEST_CODE,
+                    REQUEST_USER = c.REQUEST_USER,
+                    REQUEST_USERID = c.CREATE_USERID,
+                    DEPT_NAME = c.DEPT_NAME,
+                    DEPT_ID = c.DEPT_ID,
+                    SEC_DEPT = c.SEC_DEPT,
+                    SEC_DEPTID = c.SEC_DEPTID,
                 })
                 .ToListAsync();
             return list;

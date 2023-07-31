@@ -52,6 +52,7 @@ namespace EAM.Special.Services
                 c.REQUEST_SPTYPE,
                 c.SRC_CODE,
                 c.POSITION,
+                c.REQUEST_USER,
                 c.CREATE_USERID,
                 c.CREATEDATE,
                 c.MODIFY_USERID,
@@ -110,13 +111,14 @@ namespace EAM.Special.Services
                     c.REQUEST_SPTYPE,
                     c.SRC_CODE,
                     c.POSITION,
+                    c.REQUEST_USER,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
                 c => a => a.REQUEST_ID == c.REQUEST_ID
-                , BeforeAdd, null, null, false, null, null);
+                , BeforeAdd, null, null, false, null, AfterSave);
         }
 
         /// <summary>

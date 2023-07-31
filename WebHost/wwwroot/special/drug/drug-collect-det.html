@@ -433,6 +433,8 @@
                             { display: "制造厂", name: "SP_FACTORY", width: 200, type: "text" },
                             { display: "采购数量", name: "SUM_REQUEST_NUM", width: 200, type: "float" },
                             { display: "计量单位", name: "UNIT", width: 200, type: "text" },
+                            //隐藏
+                            { display: "主键", name: "COLLECT_DET_ID", width: 200, type: "text" }
                         ]
                     },
                     fields: [
@@ -443,6 +445,7 @@
                         for (let item of rows) {
                             if (!currentSet.has(item.SP_ID)) {
                                 me.addCollect({
+                                    COLLECT_DET_ID: item.COLLECT_DET_ID,
                                     SP_ID: item.SP_ID,
                                     SP_CODE: item.SP_CODE,
                                     SP_NAME: item.SP_NAME,
@@ -451,10 +454,10 @@
                                     SUM_REQUEST_NUM: item.SUM_REQUEST_NUM,
                                     UNIT: item.UNIT
                                 });
-                                me.addRequest(item.SP_ID);
+                                me.addRequest(item.SP_ID, item.COLLECT_DET_ID);
                             }
                         }
-                        me.saveCollect();
+                        //me.saveCollect();
                     }
                 }
                 $.ligerDialog.open({
@@ -614,16 +617,27 @@
                 me.requestGrid.loadData();
             },
             //新增需求明细表
-            addRequest: function (spId) {
+            addRequest: function (spId, collectDetId) {
                 var me = this;
                 if (!spId) return;
+                var mainData = me.mainform.getData();
                 LG.ajax({
                     async: false,
-                    url: 'Special/DrugCollectRequest/AddCertainSpId',
+                    url: 'Special/DrugCollectRequest/GetCertainSpId',
                     loading: '正在添加中...',
-                    data: {spId: spId, collectId: me.sid},
+                    data: {spId: spId},
                     success: function (data, message) {
-                        me.reloadRequest();
+                        for (let row of data) {
+                            var newRow = $.extend({
+                                COLLECT_ID: me.sid,
+                                COLLECT_DET_ID: collectDetId,
+                                //采购数量预设为申请数量
+                                COLLECT_NUM: row.REQUEST_NUM,
+                                //默认全数购买
+                                IS_FULLBUY: "1"
+                            }, row);
+                            me.requestGrid.addEditRow(newRow, true);
+                        }
                     },
                     error: function (message) {
                         LG.showError(message);
