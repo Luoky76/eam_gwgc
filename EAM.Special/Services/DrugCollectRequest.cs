@@ -147,26 +147,31 @@ namespace EAM.Special.Services
         /// </summary>
         /// <param name="spId"></param>
         /// <returns></returns>
-        public async Task<DRUG_COLLECT_REQUEST> GetCertainSpIdAsync(string spId)
+        public async Task<List<DRUG_COLLECT_REQUEST>> GetCertainSpIdAsync(string spId)
         {
-            var row = await _dbContext.Query<DRUG_REQUEST_DET>()
+            var list = await _dbContext.Query<DRUG_REQUEST_DET>()
                 .Where(a => a.SP_ID == spId)
                 .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
                 .Where((a, b) => b.IS_FULLBUY == "0" || b.IS_FULLBUY == null)
                 .Select((a, b) => new DRUG_COLLECT_REQUEST
                 {
+                    REQUEST_DET_ID = a.REQUEST_DET_ID,
                     SP_ID = a.SP_ID,
                     SP_NAME = a.SP_NAME,
                     SP_CODE = a.SP_CODE,
                     SP_TYPE = a.SP_TYPE,
+                    SP_DAIMA = a.SP_DAIMA,
+                    SP_TUHAO = a.SP_TUHAO,
+                    SP_ENGNAME = a.SP_ENGNAME,
+                    BRAND = a.BRAND,
+                    OTHER_CODE = a.OTHER_CODE,
                     FACTORY = a.FACTORY,
                     UNIT = a.UNIT,
                     //申请数量为剩余未采购的申请数量
                     REQUEST_NUM = a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM)
-
                 })
-                .FirstAsync();
-            return row;
+                .ToListAsync();
+            return list;
         }
 
         /// <summary>

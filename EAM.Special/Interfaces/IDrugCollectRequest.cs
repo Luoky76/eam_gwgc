@@ -34,7 +34,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <param name="spId"></param>
         /// <returns></returns>
-        public Task<DRUG_COLLECT_REQUEST> GetCertainSpIdAsync(string spId);
+        public Task<List<DRUG_COLLECT_REQUEST>> GetCertainSpIdAsync(string spId);
 
         /// <summary>
         /// 保存

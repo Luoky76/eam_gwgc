@@ -61,9 +61,9 @@ namespace EAM.Special.Controller
         /// <param name="spId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_COLLECT_REQUEST>> GetCertainSpIdAsync(string spId)
+        public async Task<AjaxResult<List<DRUG_COLLECT_REQUEST>>> GetCertainSpIdAsync(string spId)
         {
-            return AjaxResult<DRUG_COLLECT_REQUEST>.Success(await _service.GetCertainSpIdAsync(spId));
+            return AjaxResult<List<DRUG_COLLECT_REQUEST>>.Success(await _service.GetCertainSpIdAsync(spId));
         }
 
         /// <summary>
