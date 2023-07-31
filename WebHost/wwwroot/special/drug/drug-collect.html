@@ -55,8 +55,8 @@
                             { display: "总金额", name: "COLLECT_PRICE", width: 200, type: "float" },
                             { display: "备注", name: "MEMO", width: 300, type: "text" },
                             //隐藏
-                            { display: "主键", name: "COLLECT_ID", width: 100, type: "text" },
-                            { display: "采购部门ID", name: "DEPT_ID", width: 100, type: "text" }
+                            { display: "主键", name: "COLLECT_ID", width: 100, type: "text", hide: true },
+                            { display: "采购部门ID", name: "DEPT_ID", width: 100, type: "text", hide: true }
                         ]
                     }
                 };
@@ -72,6 +72,7 @@
             grid: null,
             searchForm: null,
             buttons: null,
+            menuNo: getQueryStringByName("MenuNo"),
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -79,7 +80,7 @@
                     url: 'Special/DrugCollect/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.dataCorp = data.corpData;
+                        me.user = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -96,7 +97,7 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'Special/DrugCollect/list',
+                    url: 'Special/DrugCollect/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -129,6 +130,9 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
@@ -144,6 +148,9 @@
                             break;
                         case "add":
                             me.add();
+                            break;
+                        case "modify":
+                            me.modify();
                             break;
                         case "delete":
                             me.delete();
@@ -169,7 +176,28 @@
                             break;
                     }
                 }
+                //加载main按钮
+                me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function (rowid) { //查看
+                var me = this;
+                if (!rowid) return;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[查看]采购明细',
+                    url: "drug-collect-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": me.grid.getRow(rowid).COLLECT_ID, "isNew": false, "isView": true }
+                });
             },
             save: function () { //保存
                 var me = this;
@@ -216,6 +244,37 @@
                     slide: false,
                     onClosed: me.reload.bind(me),
                     data: { "sid": null, "isNew": true, "isView": false }
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return;
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行");
+                    return;
+                }
+                var selected = me.grid.getSelectedRow();
+                if (selected.AUDITING == "1") {
+                    LG.showError("该数据已提交,无法修改!");
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[修改]采购明细',
+                    url: "drug-collect-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.COLLECT_ID, "isNew": false, "isView": false }
                 });
             },
             delete: function () { //删除

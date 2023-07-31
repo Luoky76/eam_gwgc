@@ -2,6 +2,7 @@
 using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Interfaces
 {
@@ -27,6 +28,13 @@ namespace EAM.Special.Interfaces
         /// <param name="collectId"></param>
         /// <returns></returns>
         public Task<GridData> GetCertainCollectIdAsync(string collectId);
+
+        /// <summary>
+        /// 获取需要药品SP_ID的需求
+        /// </summary>
+        /// <param name="spId"></param>
+        /// <returns></returns>
+        public Task<DRUG_COLLECT_REQUEST> GetCertainSpIdAsync(string spId);
 
         /// <summary>
         /// 保存

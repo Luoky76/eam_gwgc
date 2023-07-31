@@ -56,6 +56,17 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 获取需要药品SP_ID的需求
+        /// </summary>
+        /// <param name="spId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<DRUG_COLLECT_REQUEST>> GetCertainSpIdAsync(string spId)
+        {
+            return AjaxResult<DRUG_COLLECT_REQUEST>.Success(await _service.GetCertainSpIdAsync(spId));
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>

@@ -64,6 +64,47 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 获取导入列表
+        /// 包含尚未采购的药品SP_ID及总计所需数量
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> ImportListAsync(GridRequest request)
+        {
+            var list = await _dbContext.Query<DRUG_REQUEST_DET>()
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
+                .Where((a, b) => b.IS_FULLBUY == "0" || b.IS_FULLBUY == null)
+                .Select((a, b) => new
+                {
+                    a.SP_ID,
+                    a.SP_NAME,
+                    a.SP_CODE,
+                    a.SP_TYPE,
+                    a.FACTORY,
+                    a.UNIT,
+                    SUM_REQUEST_NUM = Sql.Sum(a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM))
+                })
+                .GroupBy(c => c.SP_ID)
+                .AndBy(c => c.SP_NAME)
+                .AndBy(c => c.SP_CODE)
+                .AndBy(c => c.SP_TYPE)
+                .AndBy(c => c.FACTORY)
+                .AndBy(c => c.UNIT)
+                .Select(c => new
+                {
+                    c.SP_ID,
+                    c.SP_NAME,
+                    c.SP_CODE,
+                    c.SP_TYPE,
+                    c.FACTORY,
+                    c.UNIT,
+                    c.SUM_REQUEST_NUM
+                })
+                .GetGridData(request);
+            return list;
+        }
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

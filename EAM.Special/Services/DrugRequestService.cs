@@ -193,6 +193,11 @@ namespace EAM.Special.Services
         /// </summary>
         private async Task AfterSave(List<DRUG_REQUEST> added, List<DRUG_REQUEST> updated, List<DRUG_REQUEST> deleted)
         {
+            //级联删除药品需求明细DRUG_REQUEST_DET
+            foreach (var entity in deleted)
+            {
+                await _dbContext.DeleteAsync<DRUG_REQUEST_DET>(c => c.REQUEST_ID == entity.REQUEST_ID);
+            }
             await Task.CompletedTask;
         }
 

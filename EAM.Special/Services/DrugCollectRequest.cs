@@ -8,6 +8,7 @@ using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Services
 {
@@ -142,13 +143,30 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
-        /// 生成主键
+        /// 获取需要药品SP_ID的需求
         /// </summary>
-        /// <param></param>
+        /// <param name="spId"></param>
         /// <returns></returns>
-        public string CreatePrimaryKey()
+        public async Task<DRUG_COLLECT_REQUEST> GetCertainSpIdAsync(string spId)
         {
-            return GuidHelper.NewSnowflakeId().ToString();
+            var row = await _dbContext.Query<DRUG_REQUEST_DET>()
+                .Where(a => a.SP_ID == spId)
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
+                .Where((a, b) => b.IS_FULLBUY == "0" || b.IS_FULLBUY == null)
+                .Select((a, b) => new DRUG_COLLECT_REQUEST
+                {
+                    SP_ID = a.SP_ID,
+                    SP_NAME = a.SP_NAME,
+                    SP_CODE = a.SP_CODE,
+                    SP_TYPE = a.SP_TYPE,
+                    FACTORY = a.FACTORY,
+                    UNIT = a.UNIT,
+                    //申请数量为剩余未采购的申请数量
+                    REQUEST_NUM = a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM)
+
+                })
+                .FirstAsync();
+            return row;
         }
 
         /// <summary>
@@ -162,7 +180,40 @@ namespace EAM.Special.Services
                 c => new
                 {
                     c.COLLECT_REQUEST_ID,
-
+                    c.COLLECT_ID,
+                    c.COLLECT_DET_ID,
+                    c.REQUEST_DET_ID,
+                    c.SP_ID,
+                    c.REQUEST_CODE,
+                    c.COLLECT_NUM,
+                    c.REQUEST_USER,
+                    c.REQUEST_USERID,
+                    c.SP_CODE,
+                    c.SP_NAME,
+                    c.SP_TYPE,
+                    c.SP_DAIMA,
+                    c.SP_TUHAO,
+                    c.SP_ENGNAME,
+                    c.BRAND,
+                    c.OTHER_CODE,
+                    c.UNIT,
+                    c.FACTORY,
+                    c.REQUEST_NUM,
+                    c.CHECK_NUM,
+                    c.COLLECT_MONEY,
+                    c.DEPT_NAME,
+                    c.DEPT_ID,
+                    c.SEC_DEPT,
+                    c.SEC_DEPTID,
+                    c.MEMO,
+                    c.TYPE_CODE,
+                    c.TYPE_NAME,
+                    c.TYPE_ID,
+                    c.TAX_PRICE,
+                    c.TAX_MONEY,
+                    c.NOTAX_PRICE,
+                    c.NOTAX_MONEY,
+                    c.IS_FULLBUY,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
