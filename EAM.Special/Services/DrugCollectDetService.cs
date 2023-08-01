@@ -71,14 +71,22 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<GridData> ImportListAsync(GridRequest request)
         {
+            var query = _dbContext.Query<DRUG_COLLECT>()
+                .Where(a => a.AUDITING == "1")
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                .Select((a, b) => new
+                {
+                    b.REQUEST_DET_ID,
+                    b.IS_FULLBUY,
+                    b.COLLECT_NUM
+                });
+
             var list = await _dbContext.Query<DRUG_REQUEST>()
                 .Where(a => a.AUDITING == "1")
                 .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
+                .LeftJoin(query, (a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
                 .Where((a, b, c) => c.IS_FULLBUY == "0" || c.IS_FULLBUY == null)
-                .LeftJoin<DRUG_COLLECT>((a, b, c, d) => c.COLLECT_ID == d.COLLECT_ID)
-                .Where((a, b, c, d) => d.AUDITING == "1")
-                .Select((a, b, c, d) => new
+                .Select((a, b, c) => new
                 {
                     b.SP_ID,
                     b.SP_NAME,
