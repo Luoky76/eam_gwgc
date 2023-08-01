@@ -48,34 +48,34 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "text", options: {} },
-                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text", options: {} },
+                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", labelWidth: 98, width: 200, type: "text", options: {} },
+                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 200, type: "text", options: {} },
                             {
-                                display: "评估年度", name: "_search_ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 300, type: "select", op: 'equal', options: {
+                                display: "评估年度", name: "_search_ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 200, type: "select", op: 'equal', options: {
                                     type: "select",
                                     data: me.assessYear
                                 }
                             },
                             {
-                                display: "考核开始时间", name: "_search_BEGIN_TIME_FROM", dbname: "BEGIN_TIME", width: 300, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
+                                display: "考核开始时间", name: "_search_BEGIN_TIME_FROM", dbname: "BEGIN_TIME", width: 200, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
                             },
                             {
-                                display: "至", name: "_search_BEGIN_TIME_TO", dbname: "BEGIN_TIME", width: 300, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "至", name: "_search_BEGIN_TIME_TO", dbname: "BEGIN_TIME", labelWidth: 56, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
                             },
                             {
-                                display: "考核结束时间", name: "_search_END_TIME_FROM", dbname: "END_TIME", width: 300, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
+                                display: "考核结束时间", name: "_search_END_TIME_FROM", dbname: "END_TIME", width: 200, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
                             },
                             {
-                                display: "至", name: "_search_END_TIME_TO", dbname: "END_TIME", width: 300, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "至", name: "_search_END_TIME_TO", dbname: "END_TIME", labelWidth: 56, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }

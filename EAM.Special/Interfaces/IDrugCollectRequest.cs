@@ -2,10 +2,11 @@
 using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Interfaces
 {
-    public interface IDrugLimitService : IService
+    public interface IDrugCollectRequestService : IService
     {
         /// <summary>
         /// 获取列表
@@ -15,25 +16,32 @@ namespace EAM.Special.Interfaces
         public Task<GridData> ListAsync(GridRequest request);
 
         /// <summary>
-        /// 获取除特定需求单外，剩余药品数量列表
-        /// </summary>
-        /// <param name="requestId"></param>
-        /// <returns></returns>
-        public Task<GridData> ExtendListAsync(string requestId);
-
-        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<DRUG_LIMIT> GetAsync(string id);
+        public Task<DRUG_COLLECT_REQUEST> GetAsync(string id);
+
+        /// <summary>
+        /// 根据COLLECT_ID获取列表
+        /// </summary>
+        /// <param name="collectId"></param>
+        /// <returns></returns>
+        public Task<GridData> GetCertainCollectIdAsync(string collectId);
+
+        /// <summary>
+        /// 获取需要药品SP_ID的需求
+        /// </summary>
+        /// <param name="spId"></param>
+        /// <returns></returns>
+        public Task<List<DRUG_COLLECT_REQUEST>> GetCertainSpIdAsync(string spId);
 
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public Task<AjaxResult> SaveAsync(SaveRequest<DRUG_LIMIT> request);
+        public Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT_REQUEST> request);
 
         /// <summary>
         /// 获取下拉框数据

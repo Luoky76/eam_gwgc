@@ -76,36 +76,222 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<GridData> GetCertainRequestAsync(string requestId)
         {
-            var query = await _dbContext.Query<DRUG_REQUEST_DET>()
+            //获取剩余药品数量
+            var list = await _dbContext.Query<DRUG_REQUEST>()
                 .Where(a => a.REQUEST_ID == requestId)
-                .Select(c => new
+                .Select(a => new
                 {
-                    c.REQUEST_DET_ID,
-                    c.REQUEST_ID,
-                    c.SP_ID,
-                    c.SP_STATUS,
-                    c.SP_CODE,
-                    c.SP_DAIMA,
-                    c.SP_NAME,
-                    c.SP_ENGNAME,
-                    c.SP_TYPE,
-                    c.SP_TUHAO,
-                    c.OTHER_CODE,
-                    c.BRAND,
-                    c.UNIT,
-                    c.FACTORY,
-                    c.REQUEST_NUM,
-                    c.MEMO,
-                    c.TYPE_ID,
-                    c.TYPE_NAME,
-                    c.TYPE_CODE,
-                    c.PURPOSE,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE
+                    a.REQUEST_YEAR,
+                    a.REQUEST_MONTH,
+                    a.DEPT_ID,
+                    a.POSITION
+                })
+                .ToListAsync();
+
+            int year = 0, month = 0;
+            string deptID = "";
+            string position = "";
+            if (list.Any())
+            {
+                year = list[0].REQUEST_YEAR.Value;
+                month = list[0].REQUEST_MONTH.Value;
+                deptID = list[0].DEPT_ID;
+                //"1"港内，"2"港外
+                position = list[0].POSITION;
+            }
+            else
+            {
+                return await _dbContext.Query<DRUG_REQUEST_DET>()
+                .Where(a => a.REQUEST_ID == requestId)
+                .GetGridData(null);
+            }
+
+            if (month >= 4 && month <= 9)
+            {
+                var query = _dbContext.Query<DRUG_REQUEST>()
+                    //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 相同年份 4~9月
+                    .Where(a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
+                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
+                    && a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 4 && a.REQUEST_MONTH <= 9)
+                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                    .Select((a, b) => new
+                    {
+                        b.SP_ID,
+                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
+                    })
+                    .GroupBy(c => c.SP_ID)
+                    .Select(c => new
+                    {
+                        c.SP_ID,
+                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
+                    });
+
+                var limitList = _dbContext.Query<DRUG_LIMIT>()
+                .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.SP_ID,
+                    LEFTOVER = position == "1" ? a.INSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
+                    a.OUTSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
+                });
+
+                var requestDet = await _dbContext.Query<DRUG_REQUEST_DET>()
+                .Where(a => a.REQUEST_ID == requestId)
+                .LeftJoin(limitList, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.REQUEST_DET_ID,
+                    a.REQUEST_ID,
+                    a.SP_ID,
+                    a.SP_STATUS,
+                    a.SP_CODE,
+                    a.SP_DAIMA,
+                    a.SP_NAME,
+                    a.SP_ENGNAME,
+                    a.SP_TYPE,
+                    a.SP_TUHAO,
+                    a.OTHER_CODE,
+                    a.BRAND,
+                    a.UNIT,
+                    a.FACTORY,
+                    a.REQUEST_NUM,
+                    a.MEMO,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.PURPOSE,
+                    a.CREATE_USERID,
+                    a.CREATEDATE,
+                    a.MODIFY_USERID,
+                    a.MODIFYDATE,
+                    b.LEFTOVER
                 }).GetGridData(null);
-            return query;
+                return requestDet;
+            }
+            else if (month <= 3)
+            {
+                var query = _dbContext.Query<DRUG_REQUEST>()
+                    //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 同年1~3月或去年10~12月
+                    .Where(a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
+                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
+                    && (a.REQUEST_YEAR == year && a.REQUEST_MONTH <= 3 || a.REQUEST_YEAR == year - 1 && a.REQUEST_MONTH >= 10))
+                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                    .Select((a, b) => new
+                    {
+                        b.SP_ID,
+                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
+                    })
+                    .GroupBy(c => c.SP_ID)
+                    .Select(c => new
+                    {
+                        c.SP_ID,
+                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
+                    });
+
+                var limitList = _dbContext.Query<DRUG_LIMIT>()
+                .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.SP_ID,
+                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
+                    a.OUTSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
+                });
+
+                var requestDet = await _dbContext.Query<DRUG_REQUEST_DET>()
+                .Where(a => a.REQUEST_ID == requestId)
+                .LeftJoin(limitList, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.REQUEST_DET_ID,
+                    a.REQUEST_ID,
+                    a.SP_ID,
+                    a.SP_STATUS,
+                    a.SP_CODE,
+                    a.SP_DAIMA,
+                    a.SP_NAME,
+                    a.SP_ENGNAME,
+                    a.SP_TYPE,
+                    a.SP_TUHAO,
+                    a.OTHER_CODE,
+                    a.BRAND,
+                    a.UNIT,
+                    a.FACTORY,
+                    a.REQUEST_NUM,
+                    a.MEMO,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.PURPOSE,
+                    a.CREATE_USERID,
+                    a.CREATEDATE,
+                    a.MODIFY_USERID,
+                    a.MODIFYDATE,
+                    b.LEFTOVER
+                }).GetGridData(null);
+                return requestDet;
+            }
+            else
+            {
+                var query = _dbContext.Query<DRUG_REQUEST>()
+                    //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 同年10~12月或下一年1~3月
+                    .Where(a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
+                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
+                    && (a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 10 || a.REQUEST_YEAR == year + 1 && a.REQUEST_MONTH <= 3))
+                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                    .Select((a, b) => new
+                    {
+                        b.SP_ID,
+                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
+                    })
+                    .GroupBy(c => c.SP_ID)
+                    .Select(c => new
+                    {
+                        c.SP_ID,
+                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
+                    });
+
+                var limitList = _dbContext.Query<DRUG_LIMIT>()
+                .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.SP_ID,
+                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
+                    a.OUTSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
+                });
+
+                var requestDet = await _dbContext.Query<DRUG_REQUEST_DET>()
+                .Where(a => a.REQUEST_ID == requestId)
+                .LeftJoin(limitList, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.REQUEST_DET_ID,
+                    a.REQUEST_ID,
+                    a.SP_ID,
+                    a.SP_STATUS,
+                    a.SP_CODE,
+                    a.SP_DAIMA,
+                    a.SP_NAME,
+                    a.SP_ENGNAME,
+                    a.SP_TYPE,
+                    a.SP_TUHAO,
+                    a.OTHER_CODE,
+                    a.BRAND,
+                    a.UNIT,
+                    a.FACTORY,
+                    a.REQUEST_NUM,
+                    a.MEMO,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.PURPOSE,
+                    a.CREATE_USERID,
+                    a.CREATEDATE,
+                    a.MODIFY_USERID,
+                    a.MODIFYDATE,
+                    b.LEFTOVER
+                }).GetGridData(null);
+                return requestDet;
+            }
         }
 
         /// <summary>

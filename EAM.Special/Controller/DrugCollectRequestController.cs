@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "DrugLimit")]
-    public class DrugLimitController : AreaController
+    [GksybAuthorize(MenuNo = "DrugCollect")]
+    public class DrugCollectRequestController : AreaController
     {
-        private readonly IDrugLimitService _service;
+        private readonly IDrugCollectRequestService _service;
 
         /// <summary>
-        /// 药品数量配置
+        /// 药品采购-需求连接子表
         /// </summary>
         /// <param name="service"></param>
-        public DrugLimitController(IDrugLimitService service)
+        public DrugCollectRequestController(IDrugCollectRequestService service)
         {
             _service = service;
         }
@@ -33,26 +33,37 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
-        /// 获取除特定需求单外，剩余药品数量列表
-        /// </summary>
-        /// <param name="requestId"></param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<GridData> ExtendListAsync(string requestId)
-        {
-            return await _service.ExtendListAsync(requestId);
-        }
-
-        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_LIMIT>> GetAsync(string id)
+        public async Task<AjaxResult<DRUG_COLLECT_REQUEST>> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_LIMIT>.Error("请传递参数");
-            return AjaxResult<DRUG_LIMIT>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_COLLECT_REQUEST>.Error("请传递参数");
+            return AjaxResult<DRUG_COLLECT_REQUEST>.Success(await _service.GetAsync(id), "成功");
+        }
+
+        /// <summary>
+        /// 根据COLLECT_ID获取列表
+        /// </summary>
+        /// <param name="collectId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> GetCertainCollectIdAsync(string collectId)
+        {
+            return await _service.GetCertainCollectIdAsync(collectId);
+        }
+
+        /// <summary>
+        /// 获取需要药品SP_ID的需求
+        /// </summary>
+        /// <param name="spId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<List<DRUG_COLLECT_REQUEST>>> GetCertainSpIdAsync(string spId)
+        {
+            return AjaxResult<List<DRUG_COLLECT_REQUEST>>.Success(await _service.GetCertainSpIdAsync(spId));
         }
 
         /// <summary>
@@ -61,7 +72,7 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_LIMIT> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT_REQUEST> request)
         {
             return await _service.SaveAsync(request);
         }

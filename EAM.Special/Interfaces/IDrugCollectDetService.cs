@@ -5,7 +5,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Special.Interfaces
 {
-    public interface IDrugLimitService : IService
+    public interface IDrugCollectDetService : IService
     {
         /// <summary>
         /// 获取列表
@@ -15,25 +15,33 @@ namespace EAM.Special.Interfaces
         public Task<GridData> ListAsync(GridRequest request);
 
         /// <summary>
-        /// 获取除特定需求单外，剩余药品数量列表
+        /// 获取导入列表
+        /// 包含尚未采购的药品SP_ID及总计所需数量
         /// </summary>
-        /// <param name="requestId"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
-        public Task<GridData> ExtendListAsync(string requestId);
+        public Task<GridData> ImportListAsync(GridRequest request);
 
         /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<DRUG_LIMIT> GetAsync(string id);
+        public Task<DRUG_COLLECT_DET> GetAsync(string id);
+
+        /// <summary>
+        /// 根据COLLECT_ID获取列表
+        /// </summary>
+        /// <param name="collectId"></param>
+        /// <returns></returns>
+        public Task<GridData> GetCertainCollectIdAsync(string collectId);
 
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public Task<AjaxResult> SaveAsync(SaveRequest<DRUG_LIMIT> request);
+        public Task<AjaxResult> SaveAsync(SaveRequest<DRUG_COLLECT_DET> request);
 
         /// <summary>
         /// 获取下拉框数据

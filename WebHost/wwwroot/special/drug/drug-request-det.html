@@ -76,7 +76,7 @@
                                 }
                             },
                             { display: "需求分类", name: "REQUEST_SPTYPE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", width: 300, type: "text", options: {} },
+                            { display: "备注", name: "MEMO", width: 1146, newline: "true", type: "textarea", options: {} },
                             //隐藏
                             { display: "主键", name: "REQUEST_ID", width: 300, type: "hidden" },
                             { display: "申请部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
@@ -108,6 +108,7 @@
                                     }
                                 }
                             },
+                            { display: "剩余数量", name: "LEFTOVER", width: 100, type: "float" },
                             { display: "计量单位", name: "UNIT", width: 100, type: "text" },
                             { display: "用途", name: "PURPOSE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
@@ -131,7 +132,7 @@
             mainform: null,
             buttons: null,
             //主表主键
-            sid: null,
+            sid: "",
             isNew: false,
             isView: true,
             auditing: [],
@@ -182,7 +183,6 @@
                         async: false,
                         url: 'Special/DrugRequest/CreatePrimaryKey',
                         loading: '正在获取中...',
-                        data: { id: me.sid },
                         success: function (data, message) {
                             me.sid = data;
                             originData["REQUEST_ID"] = data;
@@ -360,7 +360,7 @@
                     parms: {
                         requestId: me.sid
                     },
-                    sortName: 'REQUEST_DET_ID',
+                    sortName: 'SP_NAME',
                     sortOrder: 'asc',
                     width: '99%',
                     height: '100%',
@@ -419,6 +419,9 @@
                         case "import":
                             me.importGrid();
                             break;
+                        case "delete":
+                            me.deleteGrid();
+                            break;
                         case "save":
                             me.saveGrid();
                             break;
@@ -466,18 +469,16 @@
                 var dataOptions = {
                     values: gridKeys,
                     options: {
-                        url: 'Special/DrugLimit/List',
-                        sortName: 'SP_ID',
+                        url: 'Special/DrugLimit/ExtendList',
+                        parms: { requestId: me.sid },
+                        sortName: 'SP_NAME',
                         rowKey: "SP_ID",
                         columns: [
                             { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
                             { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
                             { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
+                            { display: "剩余数量", name: "LEFTOVER", width: 200, type: "float" },
                             { display: "计量单位", name: "UNIT", width: 200, type: "text" },
-                            { display: "港内限制数量(4月）", name: "INSIDE_APRIL", width: 200, type: "float" },
-                            { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", width: 200, type: "float" },
-                            { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", width: 200, type: "float" },
-                            { display: "港外限制数量(10月）", name: "OUTSIDE_OCTOBER", width: 200, type: "float" },
                         ]
                     },
                     fields: [
@@ -486,12 +487,14 @@
                     callback: function (values, rows) {
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
-                            if (!currentSet.has(item)) {
+                            if (!currentSet.has(item.SP_ID)) {
                                 me.addGrid({
                                     SP_ID: item.SP_ID,
                                     SP_CODE: item.SP_CODE,
                                     SP_NAME: item.SP_NAME,
                                     SP_TYPE: item.SP_TYPE,
+                                    REQUEST_NUM: 0,
+                                    LEFTOVER: item.LEFTOVER,
                                     UNIT: item.UNIT
                                 });
                             }
@@ -502,15 +505,47 @@
                 $.ligerDialog.open({
                     width: 1300,
                     height: 400,
-                    title: '挑选评估项目',
+                    title: '挑选药品',
                     url: window.gksybConfigs.urlBase + "popup-select/common.html",
                     isResize: true,
                     slide: false,
                     data: dataOptions
                 });
             },
+            //删除
+            deleteGrid: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.saveGrid();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            //保存前验证
             vertifyBeforeSave: function () {
-                //TODO
+                var me = this;
+                var formData = me.mainform.getData();
+                var girdData = me.grid.getData();
+                for (let item of girdData) {
+                    //除临时需求外，不允许需求量超过剩余量
+                    if (formData.REQUEST_TYPE != "3" && item.REQUEST_NUM > item.LEFTOVER) {
+                        LG.showError('药品' + item.SP_NAME + '的需求量超过剩余量！');
+                        return false;
+                    }
+                    //不允许负数需求量
+                    if (item.REQUEST_NUM < 0) {
+                        LG.showError('药品' + item.SP_NAME + '的需求量小于零！');
+                        return false;
+                    }
+                }
                 return true;
             },
             //保存
@@ -529,16 +564,20 @@
                     LG.ajax({
                         jsToken: true,
                         url: 'Special/DrugRequestDet/Save',
+                        data: { requestId: me.sid },
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
                             var me = this;
-                            //LG.showSuccess('保存成功');
+                            //子表已保存，主表尚未保存时，保存主表
+                            if (!$.isEmptyObject(me.mainform.getChanges())) {
+                                me.save();
+                            }
+                            else {
+                                LG.showSuccess('保存成功');
+                            }
                             me.grid.isDataChanged = false;
                             me.reloadGrid();
-
-                            //子表保存后同时保存主表
-                            me.save();
                         }.bind(me),
                         error: function (message) {
                             LG.showError(message);
@@ -557,6 +596,7 @@
                     if (me.dialogData.hasOwnProperty('isView')) me.isView = me.dialogData.isView;
                     if (me.dialogData.hasOwnProperty('isNew')) me.isNew = me.dialogData.isNew;
                 }
+                
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

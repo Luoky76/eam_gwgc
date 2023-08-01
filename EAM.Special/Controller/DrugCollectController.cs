@@ -13,7 +13,7 @@ namespace EAM.Special.Controller
         private readonly IDrugCollectService _service;
 
         /// <summary>
-        /// 药品采购登记
+        /// 药品采购登记主表
         /// </summary>
         /// <param name="service"></param>
         public DrugCollectController(IDrugCollectService service)

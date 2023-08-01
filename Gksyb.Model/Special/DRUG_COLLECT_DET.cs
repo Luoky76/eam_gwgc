@@ -12,10 +12,10 @@ using System.Data;
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类DRUG_REQUEST
+    /// 实体类DRUG_COLLECT_DET
     /// </summary>
-    [Table("DRUG_REQUEST")]
-    public class DRUG_REQUEST
+    [Table("DRUG_COLLECT_DET")]
+    public class DRUG_COLLECT_DET
     {
 
         /// <summary>
@@ -23,89 +23,111 @@ namespace Gksyb.Model
         /// </summary>
         [Description("主键")]
         [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string REQUEST_ID { get; set; }
+        public string COLLECT_DET_ID { get; set; }
 
         /// <summary>
-        /// 记录状态
+        /// 物资请购单ID
         /// </summary>
-        [Description("记录状态")]
+        [Description("物资请购单ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string AUDITING { get; set; }
+        public string COLLECT_ID { get; set; }
 
         /// <summary>
-        /// 需求计划单号
+        /// 物资品种ID
         /// </summary>
-        [Description("需求计划单号")]
+        [Description("物资品种ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_CODE { get; set; }
+        public string SP_ID { get; set; }
 
         /// <summary>
-        /// 所属月份
+        /// 需求计划明细ID
         /// </summary>
-        [Description("所属月份")]
-        public int? REQUEST_MONTH { get; set; }
-
-        /// <summary>
-        /// 所属年份
-        /// </summary>
-        [Description("所属年份")]
-        public int? REQUEST_YEAR { get; set; }
-
-        /// <summary>
-        /// 申请部门ID
-        /// </summary>
-        [Description("申请部门ID")]
+        [Description("需求计划明细ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string DEPT_ID { get; set; }
+        public string REQUEST_DET_ID { get; set; }
 
         /// <summary>
-        /// 申请部门
+        /// 物资编码
         /// </summary>
-        [Description("申请部门")]
+        [Description("物资编码")]
         [Column(DbType = DbType.AnsiString)]
-        public string DEPT_NAME { get; set; }
+        public string SP_CODE { get; set; }
 
         /// <summary>
-        /// 申请部门编号
+        /// 物资名称
         /// </summary>
-        [Description("申请部门编号")]
+        [Description("物资名称")]
         [Column(DbType = DbType.AnsiString)]
-        public string DEPT_CODE { get; set; }
+        public string SP_NAME { get; set; }
 
         /// <summary>
-        /// 物资归属船舶ID
+        /// 物资型号
         /// </summary>
-        [Description("物资归属船舶ID")]
+        [Description("物资型号")]
         [Column(DbType = DbType.AnsiString)]
-        public string SHIP_ID { get; set; }
+        public string SP_TYPE { get; set; }
 
         /// <summary>
-        /// 物资归属船舶
+        /// 代码
         /// </summary>
-        [Description("物资归属船舶")]
+        [Description("代码")]
         [Column(DbType = DbType.AnsiString)]
-        public string SHIP_NAME { get; set; }
+        public string SP_DAIMA { get; set; }
 
         /// <summary>
-        /// 物资归属船舶编码
+        /// 图号/设备
         /// </summary>
-        [Description("物资归属船舶编码")]
+        [Description("图号/设备")]
         [Column(DbType = DbType.AnsiString)]
-        public string SHIP_CODE { get; set; }
+        public string SP_TUHAO { get; set; }
 
         /// <summary>
-        /// 二级单位ID
+        /// 英文名称
         /// </summary>
-        [Description("二级单位ID")]
+        [Description("英文名称")]
         [Column(DbType = DbType.AnsiString)]
-        public string SEC_DEPTID { get; set; }
+        public string SP_ENGNAME { get; set; }
 
         /// <summary>
-        /// 二级单位
+        /// 其他编号
         /// </summary>
-        [Description("二级单位")]
+        [Description("其他编号")]
         [Column(DbType = DbType.AnsiString)]
-        public string SEC_DEPT { get; set; }
+        public string OTHER_CODE { get; set; }
+
+        /// <summary>
+        /// 品牌
+        /// </summary>
+        [Description("品牌")]
+        [Column(DbType = DbType.AnsiString)]
+        public string BRAND { get; set; }
+
+        /// <summary>
+        /// 计量单位
+        /// </summary>
+        [Description("计量单位")]
+        [Column(DbType = DbType.AnsiString)]
+        public string UNIT { get; set; }
+
+        /// <summary>
+        /// 制造厂
+        /// </summary>
+        [Description("制造厂")]
+        [Column(DbType = DbType.AnsiString)]
+        public string FACTORY { get; set; }
+
+        /// <summary>
+        /// 采购数量
+        /// </summary>
+        [Description("采购数量")]
+        public decimal? COLLECT_NUM { get; set; }
+
+        /// <summary>
+        /// 库存数量
+        /// </summary>
+        [Description("库存数量")]
+        [Column(DbType = DbType.AnsiString)]
+        public string STORE_NUM { get; set; }
 
         /// <summary>
         /// 备注
@@ -115,46 +137,37 @@ namespace Gksyb.Model
         public string MEMO { get; set; }
 
         /// <summary>
-        /// 类别
+        /// 已质检数量
         /// </summary>
-        [Description("类别")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_TYPE { get; set; }
+        [Description("已质检数量")]
+        public decimal? ARRIVE_NUM { get; set; }
 
         /// <summary>
-        /// 格式号
+        /// 入库数量
         /// </summary>
-        [Description("格式号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string FORM_ID { get; set; }
+        [Description("入库数量")]
+        public decimal? IN_NUM { get; set; }
 
         /// <summary>
-        /// 需求分类
+        /// 物资类别编码
         /// </summary>
-        [Description("需求分类")]
+        [Description("物资类别编码")]
         [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_SPTYPE { get; set; }
+        public string TYPE_CODE { get; set; }
 
         /// <summary>
-        /// 来源单号
+        /// 物资类别名称
         /// </summary>
-        [Description("来源单号")]
+        [Description("物资类别名称")]
         [Column(DbType = DbType.AnsiString)]
-        public string SRC_CODE { get; set; }
+        public string TYPE_NAME { get; set; }
 
         /// <summary>
-        /// 港内/港外
+        /// 物资类别ID
         /// </summary>
-        [Description("港内/港外")]
+        [Description("物资类别ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string POSITION { get; set; }
-
-        /// <summary>
-        /// 申请人
-        /// </summary>
-        [Description("申请人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_USER { get; set; }
+        public string TYPE_ID { get; set; }
 
         /// <summary>
         /// 添加人ID

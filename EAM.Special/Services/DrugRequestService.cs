@@ -52,6 +52,7 @@ namespace EAM.Special.Services
                 c.REQUEST_SPTYPE,
                 c.SRC_CODE,
                 c.POSITION,
+                c.REQUEST_USER,
                 c.CREATE_USERID,
                 c.CREATEDATE,
                 c.MODIFY_USERID,
@@ -79,86 +80,6 @@ namespace EAM.Special.Services
         public string CreatePrimaryKey()
         {
             return GuidHelper.NewSnowflakeId().ToString();
-        }
-
-        /// <summary>
-        /// 获取除特定需求单外，剩余药品数量列表
-        /// </summary>
-        /// <param name="requestId"></param>
-        /// <returns></returns>
-        public async Task<GridData> GetLeftoverDrugsAsync(string requestId)
-        {
-            var list = await _dbContext.Query<DRUG_REQUEST>()
-                .Where(a => a.REQUEST_ID == requestId)
-                .Select(a => new
-                {
-                    a.REQUEST_YEAR,
-                    a.REQUEST_MONTH,
-                    a.DEPT_ID,
-                    a.POSITION
-                })
-                .ToListAsync();
-
-            int year = 0, month = 0;
-            string deptID = "";
-            string position = "";
-            if (list.Any())
-            {
-                year = list[0].REQUEST_YEAR.Value;
-                month = list[0].REQUEST_MONTH.Value;
-                deptID = list[0].DEPT_ID;
-                position = list[0].POSITION;
-            }
-            else return null;
-
-            var limitList = await _dbContext.Query<DRUG_LIMIT>()
-                .Select(a => new
-                {
-                    a.SP_ID,
-                    a.INSIDE_APRIL,
-                    a.OUTSIDE_APRIL,
-                    a.INSIDE_OCTOBER,
-                    a.OUTSIDE_OCTOBER
-                })
-                .ToListAsync();
-
-            if (month >= 4 && month <= 9)
-            {
-                var query = _dbContext.Query<DRUG_REQUEST>()
-                    .Where(a => a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position && a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 4 && a.REQUEST_MONTH <= 9)
-                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                    .Select((a, b) => new {
-                        b.SP_ID,
-                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
-                    })
-                    .GroupBy(c => c.SP_ID)
-                    .Select(c => new
-                    {
-                        c.SP_ID,
-                        c.SUM_REQUEST_NUM
-                    });
-                var sumList = await query.ToListAsync();
-            }
-            else
-            {
-                var query = _dbContext.Query<DRUG_REQUEST>()
-                    .Where(a => a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position && a.REQUEST_YEAR == year && (a.REQUEST_MONTH < 4 || a.REQUEST_MONTH > 9))
-                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                    .Select((a, b) => new {
-                        b.SP_ID,
-                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
-                    })
-                    .GroupBy(c => c.SP_ID)
-                    .Select(c => new
-                    {
-                        c.SP_ID,
-                        c.SUM_REQUEST_NUM
-                    });
-                var sumList = await query.ToListAsync();
-            }
-            
-            //TODO
-            return null;
         }
 
         /// <summary>
@@ -190,13 +111,14 @@ namespace EAM.Special.Services
                     c.REQUEST_SPTYPE,
                     c.SRC_CODE,
                     c.POSITION,
+                    c.REQUEST_USER,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
                 c => a => a.REQUEST_ID == c.REQUEST_ID
-                , BeforeAdd, null, null, false, null, null);
+                , BeforeAdd, null, null, false, null, AfterSave);
         }
 
         /// <summary>
@@ -273,6 +195,11 @@ namespace EAM.Special.Services
         /// </summary>
         private async Task AfterSave(List<DRUG_REQUEST> added, List<DRUG_REQUEST> updated, List<DRUG_REQUEST> deleted)
         {
+            //级联删除药品需求明细DRUG_REQUEST_DET
+            foreach (var entity in deleted)
+            {
+                await _dbContext.DeleteAsync<DRUG_REQUEST_DET>(c => c.REQUEST_ID == entity.REQUEST_ID);
+            }
             await Task.CompletedTask;
         }
 

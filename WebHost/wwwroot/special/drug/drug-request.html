@@ -61,7 +61,7 @@
                         columns: [
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "需求计划单号", name: "REQUEST_CODE", width: 200, type: "text" },
-                            { display: "申请日期", name: "REQUEST_DATE", width: 200, type: "date" },
+                            { display: "申请日期", name: "CREATEDATE", width: 200, type: "date" },
                             { display: "所属月份", name: "REQUEST_MONTH", width: 100, type: "text" },
                             { display: "所属年份", name: "REQUEST_YEAR", width: 100, type: "text" },
                             {
@@ -219,7 +219,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]任务明细',
+                    title: '[新增]药品需求',
                     url: "drug-request-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -242,7 +242,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[查看]任务明细',
+                    title: '[查看]药品需求',
                     url: "drug-request-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -273,7 +273,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[修改]任务明细',
+                    title: '[修改]药品需求',
                     url: "drug-request-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -424,6 +424,10 @@
                 me.searchForm = $formsearch.ligerForm({
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
+                    EnterMoveNextControl: true,
+                    space: 3,
+                    labelAlign: 'right',
+                    labelWidth: 82,
                     buttons: [{
                         text: '查询',
                         width: 60,
