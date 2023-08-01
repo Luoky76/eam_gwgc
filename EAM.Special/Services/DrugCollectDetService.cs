@@ -71,36 +71,38 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<GridData> ImportListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<DRUG_REQUEST_DET>()
-                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
-                .Where((a, b) => b.IS_FULLBUY == "0" || b.IS_FULLBUY == null)
-                .Select((a, b) => new
+            var list = await _dbContext.Query<DRUG_REQUEST>()
+                .Where(a => a.AUDITING == "1")
+                .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
+                .Where((a, b, c) => c.IS_FULLBUY == "0" || c.IS_FULLBUY == null)
+                .LeftJoin<DRUG_COLLECT>((a, b, c, d) => c.COLLECT_ID == d.COLLECT_ID)
+                .Where((a, b, c, d) => d.AUDITING == "1")
+                .Select((a, b, c, d) => new
                 {
-                    a.SP_ID,
-                    a.SP_NAME,
-                    a.SP_CODE,
-                    a.SP_TYPE,
-                    a.FACTORY,
-                    a.UNIT,
-                    SUM_REQUEST_NUM = Sql.Sum(a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM))
+                    b.SP_ID,
+                    b.SP_NAME,
+                    b.SP_CODE,
+                    b.SP_TYPE,
+                    b.FACTORY,
+                    b.UNIT,
+                    SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM - (c.COLLECT_NUM == null ? 0 : c.COLLECT_NUM))
                 })
-                .GroupBy(c => c.SP_ID)
-                .AndBy(c => c.SP_NAME)
-                .AndBy(c => c.SP_CODE)
-                .AndBy(c => c.SP_TYPE)
-                .AndBy(c => c.FACTORY)
-                .AndBy(c => c.UNIT)
-                .Select(c => new
+                .GroupBy(e => e.SP_ID)
+                .AndBy(e => e.SP_NAME)
+                .AndBy(e => e.SP_CODE)
+                .AndBy(e => e.SP_TYPE)
+                .AndBy(e => e.FACTORY)
+                .AndBy(e => e.UNIT)
+                .Select(e => new
                 {
-                    c.SP_ID,
-                    c.SP_NAME,
-                    c.SP_CODE,
-                    c.SP_TYPE,
-                    c.FACTORY,
-                    c.UNIT,
-                    c.SUM_REQUEST_NUM,
-                    //生成主键COLLECT_DET_ID
-                    COLLECT_DET_ID = GuidHelper.NewSnowflakeId().ToString()
+                    e.SP_ID,
+                    e.SP_NAME,
+                    e.SP_CODE,
+                    e.SP_TYPE,
+                    e.FACTORY,
+                    e.UNIT,
+                    e.SUM_REQUEST_NUM
                 })
                 .GetGridData(request);
             return list;

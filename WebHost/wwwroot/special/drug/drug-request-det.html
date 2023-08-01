@@ -88,6 +88,7 @@
                             { display: "二级单位", name: "SEC_DEPT", width: 300, type: "hidden" },
                             { display: "格式号", name: "FORM_ID", width: 300, type: "hidden" },
                             { display: "来源单号", name: "SRC_CODE", width: 300, type: "hidden" },
+                            { display: "申请人", name: "REQUEST_USER", width: 100, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 300, type: "hidden" },
                             { display: "修改时间", name: "MODIFYDATE", width: 300, type: "hidden" }
                         ]
@@ -195,7 +196,9 @@
                         AUDITING: "0",
                         DEPT_ID: window.session.Corp.CorpID,
                         DEPT_NAME: window.session.Corp.CName,
-                        DEPT_CODE: window.session.Corp.CNO
+                        DEPT_CODE: window.session.Corp.CNO,
+                        REQUEST_USER: window.session.RealName,
+                        CREATE_USERID: window.session.UserID
                     });
                     me.mainform.setOrginData(originData);
                 }

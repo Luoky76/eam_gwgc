@@ -119,7 +119,7 @@ namespace Gksyb.Model
         /// 总金额
         /// </summary>
         [Description("总金额")]
-        public decimal? COLLECT_PRICE { get; set; }
+        public decimal? COLLECT_MONEY { get; set; }
 
         /// <summary>
         /// 税率(%)
