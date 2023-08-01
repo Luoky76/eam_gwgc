@@ -56,25 +56,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFY_DATE
                 },
-                c => a => a.UNIT_ID == c.UNIT_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
-                );
-        }
-
-        private async Task AfterSave(List<SP_UNIT> adds, List<SP_UNIT> updates, List<SP_UNIT> deletes)
-        {
-            string operType = "计量单位";
-            foreach (var entity in adds)
-            {
-                await _dbContext.DBLog(operType + Oper.Add, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in updates)
-            {
-                await _dbContext.DBLog(operType + Oper.Modify, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in deletes)
-            {
-                await _dbContext.DBLog(operType + Oper.Delete, entity, null, _userSession.RealName);
-            }
+                c => a => a.UNIT_ID == c.UNIT_ID, BeforeAdd, BeforeUpdate);
         }
 
         private async Task BeforeAdd(SP_UNIT entity)

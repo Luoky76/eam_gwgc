@@ -539,6 +539,36 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 计量单位
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpUnit(Expression<Func<SP_UNIT, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<SP_UNIT>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.UNIT, TEXT = c.UNIT, VALUE = c.UNIT })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 物资分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> BaseSpType(Expression<Func<BASE_SPTYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_SPTYPE>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         static ComboxDataService()
