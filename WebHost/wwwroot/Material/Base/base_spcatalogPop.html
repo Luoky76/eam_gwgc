@@ -1,0 +1,335 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>挑选物料</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+ 
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form id="mainform">
+        <div id="maingrid" style="float: left">
+        </div>
+        <div id="maingrid2" style="float: right">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialog: (frameElement && frameElement.dialog) ? frameElement.dialog : null,
+            detailType: null,
+            dataValue: null,
+            isFirst: true,
+            typeData: [],
+            isCancel:"",
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: '物料编码', name: "_search_SP_CODE", upper: true, type: "text" },
+                            { display: '物料名称', name: "_search_SP_NAME", upper: true, type: "text" },
+                            { display: "是否禁用", name: "_search_IS_CANCEL", dbname: "IS_CANCEL", newline: false, type: "hidden" },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+
+                            { display: 'SP_ID', name: "SP_ID", hide: true, width: 80, type: "text", align: "left" },
+                            { display: '物料编码', name: "SP_CODE", width: 80, type: "text", align: "left" },
+                            { display: '物料名称', name: "SP_NAME", width: 80, type: "text", align: "left" },
+                            { display: '型号规格', name: "SP_SIZE",  width: 80, type: "text", align: "left" },
+                            { display: '品牌、厂家', name: "PRODUCE", width: 80, type: "text", align: "left" },
+                            { display: '计量单位', name: "UNIT", width: 80, type: "text", align: "left" },
+                            {
+                                display: '物料分类', name: "TYPE_ID", width: 80, type: "select",
+                                format: {
+                                    data: me.typeData
+                                }
+                                , align: "left"
+                            },
+                       
+                        
+                        ]
+                    },
+                    grid2: {
+                        columns: [
+ 
+                            { display: 'SP_ID', name: "SP_ID", hide: true, width: 80, type: "text", align: "left" },
+                            { display: "已选物料编码", name: "SP_CODE", width: 80, type: "string", align: "left" },
+                            { display: "已选物料", name: "SP_NAME", width: 80, type: "string", align: "left" },
+                            { display: '型号规格', name: "SP_SIZE", width: 80, type: "text", align: "left" },
+                            { display: '品牌、厂家', name: "PRODUCE", width: 80, type: "text", align: "left" },
+                            { display: '计量单位', name: "UNIT", width: 80, type: "text", align: "left" },
+                            {
+                                display: '物料分类', name: "TYPE_ID", width: 80, type: "select",
+                                format: {
+                                    data: me.typeData
+                                }
+                                , align: "left"
+                            },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpareApply/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.typeData = data.BaseSpType
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    title: "选择<span style='color:red'>[双击可加入]</span>",
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {
+                        items: [
+                            //{ id: 'add', text: '全部加入', click: me.addAll, img: "../lib/icons/silkicons/add.png" }
+                        ]
+                    },
+                    url: 'Material/SpareApply/SpcatalogList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'CREATEDATE',
+                    sortOrder: 'DESC',
+                    width: '48%',
+                    height: '100%',
+                    checkbox: false,
+                    onDblClickRow: function (data, id, row) {
+                       
+                        var g = this;
+                        var p = this.options;
+                        console.log(me.grid2.currentData);
+
+                        var gridData2 = me.grid2.currentData.Rows;
+
+                        if (gridData2.length==1) {
+                            LG.tip("物料仅能选择1个");
+                            return;
+                        }
+
+                        for (var i = 0, len = (gridData2 || []).length; i < len; i++) {
+                            if (gridData2[i].SP_ID == data.SP_ID) {
+                                LG.tip("<span style='color:red'>[" + data.SP_NAME + '</span>]已存在');
+                                return;
+                            }
+                        }
+                        me.grid2.addEditRow(data);
+                        g._removeData(g.getRow(id));
+                        row.remove();
+                    },
+                    onLoaded: function () {
+                        var gridData = this.currentData[this.options.root];
+                        var gridData2 = me.grid2.currentData[me.grid2.options.root];
+                        var dataValue = me.dataValue;
+                        var bolExist = false;
+                        for (var i = gridData.length - 1; i >= 0; i--) {
+                            bolExist = false;
+                            if (me.isFirst) {
+                                if (dataValue.indexOf("," + gridData[i].SP_ID + ",") >= 0) bolExist = true;
+                            }
+                            if (!bolExist) {
+                                for (var j = 0, len = (gridData2 || []).length; j < len; j++) {
+                                    if (gridData[i].SP_ID == gridData2[j].SP_ID) {
+                                        bolExist = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (bolExist) {
+                                if (me.isFirst) me.grid2._addData(gridData[i], null, null, false);
+                                me.grid._removeData(gridData[i]);
+                            }
+                        }
+                        if (me.isFirst) {
+                            me.isFirst = false;
+                            me.grid2.changeSort("SP_NAME", "desc");
+                            me.grid2.changeSort("SP_NAME", "asc");
+                        }
+
+                        this.toggleLoading.ligerDefer(this, 10, [false]);
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "style='user-select:none;'";
+                    }
+                });
+                me.grid.isValid = true;
+            },
+            setGrid2: function () {
+                var me = this;
+                me.config.grid2.columns.removeNull();
+                me.grid2 = $("#maingrid2").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: false,
+                    usePager: false,
+                    title: "已选<span style='color:red'>[双击可取消]</span>",
+                    columns: me.config.grid2.columns,
+                    dataAction: 'local',
+                    data: null,
+                    toolbar: {
+                        items: [
+                            { id: 'delete', text: '全部取消', click: me.deleteAll, img: "../lib/icons/silkicons/delete.png" }
+                        ]
+                    },
+                    width: '48%',
+                    height: '100%',
+                    checkbox: false,
+                    onDblClickRow: function (data, id, row) {
+                        var g = this;
+                        g.remove(id);
+                        me.reload();
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "style='user-select:none;'";
+                    }
+                });
+            },
+            addAll: function () {
+                var grid = business.grid;
+                var grid2 = business.grid2;
+                var gridData = grid.currentData[grid.options.root];
+                var gridData2 = grid2.currentData[grid2.options.root];
+                var bolExist = false;
+                for (var i = gridData.length - 1; i >= 0; i--) {
+                    bolExist = false;
+                    for (var j = 0, len = (gridData2 || []).length; j < len; j++) {
+                        if (gridData[i].SP_ID == gridData2[j].SP_ID) {
+                            bolExist = true;
+                            break;
+                        }
+                    }
+                    if (!bolExist) {
+                        grid2._addData(gridData[i], null, null, false);
+                    }
+                    grid._removeData(gridData[i]);
+                }
+                grid.reRender();
+                grid2.changeSort("SP_NAME", "desc");
+                grid2.changeSort("SP_NAME", "asc");
+            },
+            deleteAll: function () {
+                var grid = business.grid;
+                var grid2 = business.grid2;
+                var gridData2 = grid2.currentData[grid2.options.root];
+                for (var i = gridData2.length - 1; i >= 0; i--) {
+                    grid2._removeData(gridData2[i]);
+                }
+                grid2.reRender();
+                business.reload();
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                        me.searchForm.setData({ "_search_IS_CANCEL": me.isCancel });
+                    }
+                });
+            },
+            setFormButtons: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', onclick: function () { if (me.dialog) me.dialog.close(); } });
+                buttons.push({
+                    text: '确定', onclick: function () {
+                        var gridData2 = me.grid2.currentData;
+
+                        console.log(gridData2.Rows);
+                        if (me.callback) me.callback(gridData2.Rows)
+                        if (me.dialog) me.dialog.close();
+              
+                    }
+                });
+                LG.addFormButtons(buttons);
+            },
+            init: function () {
+                var me = this;
+                if (!me.dialog) return;
+                var dialogData = me.dialog.get('data'); //获取data参数
+                me.dataValue = "," + (dialogData.dataValue || "") + ",";
+                me.rowindex = dialogData.rowindex;
+                me.callback = dialogData.callback;
+                me.isCancel = dialogData.isCancel;
+
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid2();
+                me.setGrid();
+                me.setFormButtons();
+                me.reload();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>

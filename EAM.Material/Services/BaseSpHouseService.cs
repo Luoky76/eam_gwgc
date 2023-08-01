@@ -113,25 +113,7 @@ namespace EAM.Material.Services
                     c.SEC_DEPT,
                     c.PARENT_HOUSE_CODE
                 },
-                c => a => a.HOUSE_ID == c.HOUSE_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
-                );
-        }
-
-        private async Task AfterSave(List<SP_HOUSE> adds, List<SP_HOUSE> updates, List<SP_HOUSE> deletes)
-        {
-            string operType = "仓库货位";
-            foreach (var entity in adds)
-            {
-                await _dbContext.DBLog(operType + Oper.Add, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in updates)
-            {
-                await _dbContext.DBLog(operType + Oper.Modify, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in deletes)
-            {
-                await _dbContext.DBLog(operType + Oper.Delete, entity, null, _userSession.RealName);
-            }
+                c => a => a.HOUSE_ID == c.HOUSE_ID, BeforeAdd, BeforeUpdate);
         }
 
         private async Task BeforeAdd(SP_HOUSE entity)
