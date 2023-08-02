@@ -569,6 +569,21 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 采购分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> BasePurtype(Expression<Func<BASE_PURTYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_PURTYPE>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.PURTYPE_ID, TEXT = c.PURTYPE_NAME, VALUE = c.PURTYPE_CODE })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 初始化
         /// </summary>
         static ComboxDataService()
