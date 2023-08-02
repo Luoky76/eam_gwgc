@@ -11,5 +11,12 @@ namespace EAM.Device.Interfaces
         Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
 
         Task<GridData> ListAsync(GridRequest request);
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_VARY> request);
     }
 }
