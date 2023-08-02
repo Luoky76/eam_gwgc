@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <title> 明细</title>
-    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
 <body style="padding: 5px; height: 100%;">
@@ -24,52 +24,36 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "text", options: {} },
-                            { display: "变动单号", name: "VARY_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "登记人", name: "EIDT_USER", newline: false, upper: true, type: "text", options: {} },
-                            { display: "登记人ID", name: "EIDT_USERID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调出使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调出使用部门ID", name: "DEPT_ID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调出二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调出二级单位ID", name: "SEC_DEPTID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调入使用部门", name: "WDEPT_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调入使用部门ID", name: "WDEPT_ID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调入二级单位", name: "WSEC_DEPT", newline: false, upper: true, type: "text", options: {} },
-                            { display: "调入二级单位ID", name: "WSEC_DEPTID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "申请日期", name: "APPLY_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "变动完成日期", name: "VARY_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "计划启用日期", name: "PLAN_START_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "设备总原值(元)", name: "SUM_ORG_VALUE", newline: false, upper: true, type: "decimal", options: {} },
-                            { display: "设备总净值(元)", name: "SUM_NET_VALUE", newline: false, upper: true, type: "decimal", options: {} },
-                            { display: "总已提折旧(元)", name: "SUM_DEP_VALUE", newline: false, upper: true, type: "decimal", options: {} },
-                            { display: "变卖总金额(元)", name: "SUM_ALLOT_MONEY", newline: false, upper: true, type: "decimal", options: {} },
-                            { display: "变动原因", name: "REASONS", newline: false, upper: true, type: "text", options: {} },
-                            { display: "设备技术状态", name: "TECH_STATUS", newline: false, upper: true, type: "text", options: {} },
-                            { display: "鉴定人", name: "APPRAISER", newline: false, upper: true, type: "text", options: {} },
-                            { display: "鉴定人ID", name: "APPRAISER_ID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "接收单位", name: "RECEIVING", newline: false, upper: true, type: "text", options: {} },
-                            { display: "备注", name: "MEMO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "鉴定结果", name: "RESULT", newline: false, upper: true, type: "text", options: {} },
-                            { display: "主键", name: "VARY_ID", newline: false, upper: true, type: "text", validate: { required: true }, options: {} },
-                            { display: "变动类型", name: "VARY_TYPE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "添加人ID", name: "CREATE_USERID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "添加时间", name: "CREATEDATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "修改人ID", name: "MODIFY_USERID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "修改时间", name: "MODIFYDATE", newline: false, upper: true, type: "date", options: {} }
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "变动单号", name: "VARY_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "登记人", name: "EIDT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "调出使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", validate: { required: true }, options: {} },
+                            { display: "调入使用部门", name: "WDEPT_NAME", newline: false, upper: true, type: "text", validate: { required: true }, options: {} },
+                            { display: "申请日期", name: "APPLY_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
+                            { display: "变动完成日期", name: "VARY_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
+                            { display: "变动类型", name: "VARY_TYPE", newline: false, upper: true, type: "select", options: { data: me.varytype }, validate: { required: true } },
+                            { display: "设备总原值", name: "SUM_ORG_VALUE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "设备总净值", name: "SUM_NET_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "总已提折旧", name: "SUM_DEP_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "变动原因", name: "REASONS", newline: true, upper: true, width: 980, type: "textarea", options: { rows: "2" }, validate: { required: true } },
+                            { display: "设备技术状态", name: "TECH_STATUS", newline: true, upper: true, width: 980, type: "textarea", options: { rows: "2" } },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 980, type: "textarea", options: { rows: "2" } },
+                            { display: "主键", name: "VARY_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
                     }
                 };
-            },
+            },  
             mainform: null,
             buttons: null,
+            varytype: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'DeviceVary/ComboxData',
+                    url: 'Device/DeviceVary/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.dataCorp = data.corpData;
+                        me.varytype = data.VaryType;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -84,7 +68,7 @@
                 else {
                     LG.ajax({
                         async: false,
-                        url: 'DeviceVary/Get',
+                        url: 'Device/DeviceVary/list',
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
@@ -125,7 +109,7 @@
                 }
                 LG.ajax({
                     jsToken: true,
-                    url: 'DeviceVary/Save',
+                    url: 'Device/DeviceVary/Save',
                     loading: '正在保存中...',
                     data: changeRow,
                     success: function () {
@@ -199,7 +183,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 60,
+                    labelWidth: 120,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
