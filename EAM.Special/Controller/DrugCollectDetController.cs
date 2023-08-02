@@ -33,6 +33,17 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 获取导入列表
+        /// 包含尚未采购的药品SP_ID及总计所需数量
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> ImportListAsync(GridRequest request)
+        {
+            return await _service.ImportListAsync(request);
+        }
+
+        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>

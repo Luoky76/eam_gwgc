@@ -44,7 +44,7 @@ namespace EAM.Special.Services
                 c.HOUSE_NAME,
                 c.COLLECT_METHOD,
                 c.MEMO,
-                c.COLLECT_PRICE,
+                c.COLLECT_MONEY,
                 c.RATIO,
                 c.TAX_MONEY,
                 c.NOTAX_MONEY,
@@ -111,7 +111,7 @@ namespace EAM.Special.Services
                     c.HOUSE_NAME,
                     c.COLLECT_METHOD,
                     c.MEMO,
-                    c.COLLECT_PRICE,
+                    c.COLLECT_MONEY,
                     c.RATIO,
                     c.TAX_MONEY,
                     c.NOTAX_MONEY,
@@ -145,7 +145,41 @@ namespace EAM.Special.Services
             {
                 entity.COLLECT_ID = GuidHelper.NewSnowflakeId().ToString();
             }
+            //自动添加请购单号
+            if (entity.COLLECT_CODE.IsNullOrEmpty())
+            {
+                //示例DC2023072100001
+                var sysdate = await _dbContext.GetSysdate();
+                string dateCode = sysdate.Value.ToString("yyyyMMdd");
+                string headCode = "DC";
+                string newCode = headCode + dateCode + "00001";
 
+                //查看编码是否已存在
+                var list1 = await _dbContext.Query<DRUG_COLLECT>()
+                    .Select(a => a.COLLECT_CODE)
+                    .Where(a => a == newCode)
+                    .ToListAsync();
+
+                if (list1.Any())
+                {
+                    var list2 = await _dbContext.Query<DRUG_COLLECT>()
+                    .Select(a => new
+                    {
+                        MAX_COLLECT_CODE = Sql.Max(a.COLLECT_CODE)
+                    })
+                    .ToListAsync();
+                    if (list2.Any())
+                    {
+                        string lastCode = list2[0].MAX_COLLECT_CODE;
+                        lastCode = lastCode.Substring(headCode.Length);
+                        long cnt = long.Parse(lastCode);
+                        ++cnt;
+                        lastCode = cnt.ToString();
+                        newCode = headCode + lastCode;
+                    }
+                }
+                entity.COLLECT_CODE = newCode;
+            }
             await Task.CompletedTask;
         }
 

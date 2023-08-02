@@ -18,7 +18,7 @@
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <ul style="display: block; width: 100%;" id="ulGrid">
-                <li style="width: 100%">
+                <li style="width: 100%; height: 20%">
                     <div class="l-group" style="display: inline-block; width: 100%"><span>药品采购明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="drug-collect-grid">
                     </div>
@@ -48,7 +48,7 @@
                                 }
                             },
                             { display: "请购单号", name: "COLLECT_CODE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "请购日期", name: "CREATEDATE", width: 300, type: "date", options: { disabled: true } },
+                            { display: "请购日期", name: "CREATEDATE", width: 300, type: "string", options: { disabled: true } },
                             {
                                 display: "采购人", name: "CREATE_USERID", width: 300, type: "select", options: {
                                     type: "select",
@@ -59,8 +59,8 @@
                             { display: "采购部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
                             { display: "采购方式", name: "COLLECT_METHOD", width: 300, type: "text", validate: { required: true }, options: {} },
                             { display: "物资分类", name: "COLLECT_SPTYPE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "总金额", name: "COLLECT_PRICE", width: 300, type: "float", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, minWidth: 1147, type: "text", options: {} },
+                            { display: "总金额", name: "COLLECT_MONEY", width: 300, type: "float", options: { disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true, width: 1146, type: "textarea", options: {} },
                             //隐藏
                             { display: "主键", name: "COLLECT_ID", width: 300, type: "hidden" },
                             { display: "采购部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
@@ -68,57 +68,77 @@
                     },
                     collectGrid: {
                         columns: [
-                            { display: "物资编码", name: "SP_CODE", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "物资型号", name: "SP_TYPE", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "制造厂", name: "FACTORY", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
-                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", editor: { type: 'text' } }
+                            { display: "物资编码", name: "SP_CODE", minWidth: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
+                            { display: "物资型号", name: "SP_TYPE", minWidth: 200, type: "text" },
+                            { display: "制造厂", name: "FACTORY", minWidth: 200, type: "text" },
+                            { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
                             //隐藏
                             { display: "主键", name: "COLLECT_DET_ID", type: "text", hide: true },
                             { display: "物资请购单ID", name: "COLLECT_ID", type: "text", hide: true },
                             { display: "物资品种ID", name: "SP_ID", type: "text", hide: true },
-                            { display: "需求计划明细ID", name: "REQUEST_DET_ID", type: "text", hide: true }
+                            //{ display: "需求计划明细ID", name: "REQUEST_DET_ID", type: "text", hide: true }
                         ]
                     },
                     requestGrid: {
                         columns: [
-                            { display: "需求计划单号", name: "REQUEST_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "物资名称", name: "SP_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "物资型号", name: "SP_TYPE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "品牌", name: "BRAND", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "申请数量", name: "REQUEST_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "需求计划单号", name: "REQUEST_CODE", minWidth: 100, type: "text" },
+                            { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 100, type: "text" },
+                            { display: "物资型号", name: "SP_TYPE", minWidth: 100, type: "text" },
+                            { display: "品牌", name: "BRAND", minWidth: 100, type: "text" },
+                            { display: "申请数量", name: "REQUEST_NUM", minWidth: 100, type: "float" },
                             { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
-                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
                             { display: "采购金额", name: "COLLECT_MONEY", minWidth: 100, type: "float", editor: { type: 'float' } },
-                            { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "申请部门ID", name: "DEPT_ID", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "申请人", name: "REQUEST_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "申请人ID", name: "REQUEST_USERID", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
+                            { display: "申请人", name: "REQUEST_USER", minWidth: 100, type: "text" },
+                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
                             //隐藏
                             { display: "主键", name: "COLLECT_REQUEST_ID", minWidth: 100, type: "text", hide: true },
-                            { display: "备件请购单ID", name: "COLLECT_ID", minWidth: 100, type: "text", hide: true },
-                            { display: "备件请购明细ID", name: "COLLECT_DET_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "请购单ID", name: "COLLECT_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "请购明细ID", name: "COLLECT_DET_ID", minWidth: 100, type: "text", hide: true },
                             { display: "需求计划明细ID", name: "REQUEST_DET_ID", minWidth: 100, type: "text", hide: true },
                             { display: "物资ID", name: "SP_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "申请部门ID", name: "DEPT_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "申请人ID", name: "REQUEST_USERID", minWidth: 100, type: "text", hide: true },
                             { display: "含税单价(元)", name: "TAX_PRICE", minWidth: 100, type: "float", hide: true },
                             { display: "含税总金额(元)", name: "TAX_MONEY", minWidth: 100, type: "float", hide: true },
                             { display: "不含税单价(元)", name: "NOTAX_PRICE", minWidth: 100, type: "float", hide: true },
                             { display: "不含税总金额(元)", name: "NOTAX_MONEY", minWidth: 100, type: "float", hide: true },
-                            { display: "是否全数购买", name: "IS_FULLBUY", minWidth: 100, type: "text", hide: true },
+                            { display: "是否全数购买", name: "IS_FULLBUY", minWidth: 100, type: "text", hide: true }
                         ]
                     }
                 };
             },
             auditing: [],
             user: [],
+            dialog: null,
+            dialogData: null,
+            callback: null,
+            sid: null,
+            isNew: false,
+            isView: true,
+            mainform: null,
+            collectGrid: null,
+            requestGrid: null,
+            menuNo: getQueryStringByName("MenuNo"),
+            formButtons: [],
+            orginData: {},
+            //成功提示框，当已有提示框未关闭时不会重复弹出
+            showSuccessMessage: function (message = '成功') {
+                var me = this;
+                if (me.showSuccessMessage.isShown) return;
+                me.showSuccessMessage.isShown = true;
+                LG.showSuccess(message, function () {
+                    me.showSuccessMessage.isShown = false;
+                });
+            },
             //获取下拉框数据
             loadComboxData: function () {
                 var me = this;
-                var dataControl = [];
                 LG.ajax({
                     async: false,
                     url: 'Special/DrugCollect/ComboxData',
@@ -131,7 +151,661 @@
                         LG.showError(message);
                     }
                 });
-                return dataControl;
+            },
+            //表单初始化
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    //readonly: me.isView,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            //表单底部按钮
+            setFormDefaultBtn: function (cancelCallback, savedCallback) {
+                var me = this;
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', icon: 'fa fa-undo', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    me.loadData();
+                                }
+                            });
+                        }
+                    });
+                }
+                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            //关闭表单
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    if (updateFields || me.collectGrid.isDataChanged || me.requestGrid.isDataChanged) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
+                    }
+                });
+            },
+            //保存表单
+            save: function () {
+                var me = this;
+                //先保存子表
+                if (me.collectGrid.isDataChanged) me.saveCollect();
+                if (me.requestGrid.isDataChanged) me.saveRequest();
+
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    me.showSuccessMessage('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow = new Object();
+                if (me.isNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/DrugCollect/Save',
+                    loading: '正在保存中...',
+                    data: { request: changeRow },
+                    success: function (result) {
+                        me.showSuccessMessage('保存成功');
+                        //保存过一次后自动变为修改模式
+                        me.isNew = false;
+                        //保存后原始数据变为当前数据
+                        me.orginData = data;
+                        me.loadData();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            //表单数据
+            loadData: function () {
+                var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
+                if (me.isNew) {
+                    //设置记录状态的初值为未提交，设置主键，设置采购人为当前登录用户
+                    //设置采购部门为登录用户部门
+                    me.mainform.setData({
+                        AUDITING: "0",
+                        COLLECT_ID: me.sid,
+                        CREATE_USERID: window.session.UserID,
+                        DEPT_ID: window.session.Corp.CorpID,
+                        DEPT_NAME: window.session.Corp.CName
+                    });
+                    inner();
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Special/DrugCollect/Get',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setOrginData(data);
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+            },
+            //采购明细表
+            setCollectGrid: function () {
+                var me = this;
+                me.config.collectGrid.columns.removeNull();
+                me.collectGrid = $("#drug-collect-grid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    columns: me.config.collectGrid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Special/DrugCollectDet/GetCertainCollectId',
+                    parms: {
+                        collectId: me.sid
+                    },
+                    sortName: 'SP_CODE',
+                    sortOrder: 'dec',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: !me.isView,
+                    clickToEdit: true,
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                        me.collectGridOriginData = data.Rows;
+                    },
+                    async: false
+                });
+                me.collectGrid.isValid = true;
+                if (!me.isView) {
+                    me.loadCollectToolbar();
+                }
+                me.bindCollectGridEvent();
+            },
+            //采购明细按钮组
+            loadCollectToolbar: function () {
+                var me = this;
+                me.collectToolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadCollect();
+                            break;
+                        case "import":
+                            me.importCollect();
+                            break;
+                        case "delete":
+                            me.deleteCollect();
+                            break;
+                        case "save":
+                            me.saveCollect();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                //加载collect按钮
+                me.collectGrid.toolbarManager.options.group = 'collect';
+                LG.loadToolbar(me.collectGrid, me.collectToolbarBtnItemClick);
+            },
+            //采购明细列表事件
+            bindCollectGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.collectToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.collectToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.collectGrid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+            },
+            //刷新采购明细表
+            reloadCollect: function () {
+                var me = this;
+                me.collectGrid.loadData();
+            },
+            //新增采购明细表
+            addCollect: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    COLLECT_ID: me.sid
+                });
+                me.collectGrid.addEditRow(row, true);
+            },
+            //导入采购明细表
+            importCollect: function () {
+                var me = this;
+                var gridData = me.collectGrid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.SP_ID);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Special/DrugCollectDet/ImportList',
+                        sortName: 'SP_NAME',
+                        rowKey: "SP_ID",
+                        columns: [
+                            { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
+                            { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
+                            { display: "制造厂", name: "SP_FACTORY", width: 200, type: "text" },
+                            { display: "需求总量", name: "SUM_REQUEST_NUM", width: 200, type: "float" },
+                            { display: "计量单位", name: "UNIT", width: 200, type: "text" }
+                        ]
+                    },
+                    fields: [
+                        { display: "物资名称", name: "SP_NAME", width: 200, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        me.deleteAll();
+                        for (let item of rows) {
+                            me.addCollect({
+                                SP_ID: item.SP_ID,
+                                SP_CODE: item.SP_CODE,
+                                SP_NAME: item.SP_NAME,
+                                SP_TYPE: item.SP_TYPE,
+                                SP_FACTORY: item.SP_FACTORY,
+                                COLLECT_NUM: item.SUM_REQUEST_NUM,
+                                UNIT: item.UNIT
+                            });
+                        }
+                        me.saveCollect(false);
+                        //添加采购明细对应的需求明细
+                        var collectData = me.collectGrid.getData();
+                        for (let item of collectData) {
+                            me.addRequest(item.SP_ID, item.COLLECT_DET_ID);
+                        }
+                        me.saveRequest();
+                        me.save();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1300,
+                    height: 400,
+                    title: '挑选采购药品',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions,
+
+                });
+            },
+            //删除采购明细表
+            deleteCollect: function () {
+                var me = this;
+                if (me.collectGrid.endEdit() != false) {
+                    var selected = me.collectGrid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    //删除对应需求明细表
+                                    var collectDetId = selected[i].COLLECT_DET_ID;
+                                    me.deleteRequestRow(collectDetId);
+                                    me.collectGrid.deleteRow(selected[i]);
+                                }
+                                me.saveCollect();
+                                me.saveRequest();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            //删除明细表全部内容
+            deleteAll: function () {
+                var me = this;
+                for (let i = me.collectGrid.rows.length - 1; i >= 0; --i) {
+                    me.collectGrid.deleteRow(i);
+                }
+                for (let i = me.requestGrid.rows.length - 1; i >= 0; --i) {
+                    me.requestGrid.deleteRow(i);
+                }
+            },
+            //删除采购明细表的特定行以及与其关联的需求明细表的行
+            deleteCollectRow: function (rowId) {
+                var me = this;
+                if (rowId >= me.collectGrid.rows.length || rowId < 0) return;
+                var collectDetId = me.collectGrid.rows[rowId].COLLECT_DET_ID;
+                me.collectGrid.deleteRow(rowId);
+                me.deleteRequestRow(collectDetId);
+            },
+            //保存采购明细表
+            saveCollect: function (isAsync = true) {
+                var me = this;
+                if (me.collectGrid.endEdit() != false) {
+                    if (!me.collectGrid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.collectGrid.validChangeRows()) return false;
+                    var changeRow = me.collectGrid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/DrugCollectDet/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            me.showSuccessMessage('保存成功');
+                            me.collectGrid.isDataChanged = false;
+                            me.reloadCollect();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        },
+                        async: isAsync
+                    });
+                }
+            },
+            //需求明细表
+            setRequestGrid: function () {
+                var me = this;
+                me.config.requestGrid.columns.removeNull();
+                me.requestGrid = $("#drug-request-grid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    columns: me.config.requestGrid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Special/DrugCollectRequest/GetCertainCollectId',
+                    parms: {
+                        collectId: me.sid
+                    },
+                    sortName: 'SP_CODE',
+                    sortOrder: 'dec',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: !me.isView,
+                    clickToEdit: true,
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                        me.requestGridOriginData = data.Rows;
+                    },
+                    onAfterEdit: function (e) {
+                        if (e.record.COLLECT_NUM < 0) me.requestGrid.updateRow(e.rowindex, { COLLECT_NUM: 0 });
+                        if (e.record.COLLECT_NUM > e.record.REQUEST_NUM) me.requestGrid.updateRow(e.rowindex, { COLLECT_NUM: e.record.REQUEST_NUM });
+                        me.requestGrid.updateCell('TAX_MONEY', e.record.COLLECT_MONEY, e.record);
+                        var price = e.record.COLLECT_MONEY;
+                        if (e.record.COLLECT_NUM > 0) price /= e.record.COLLECT_NUM;
+                        me.requestGrid.updateCell('TAX_PRICE', price, e.record);
+                    }
+                });
+                me.requestGrid.isValid = true;
+                if (!me.isView) {
+                    me.loadRequestToolbar();
+                }
+                me.bindRequestGridEvent();
+            },
+            //需求明细按钮组
+            loadRequestToolbar: function () {
+                var me = this;
+                me.requestToolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadRequest();
+                            break;
+                        case "save":
+                            me.saveRequest();
+                            me.saveCollect();
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                //加载request按钮
+                me.requestGrid.toolbarManager.options.group = 'request';
+                LG.loadToolbar(me.requestGrid, me.requestToolbarBtnItemClick);
+            },
+            //需求明细列表事件
+            bindRequestGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.requestToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.requestToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.requestGrid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+            },
+            //刷新需求明细表
+            reloadRequest: function () {
+                var me = this;
+                me.requestGrid.loadData();
+            },
+            //新增需求明细表
+            addRequest: function (spId, collectDetId) {
+                var me = this;
+                if (!spId) return;
+                var mainData = me.mainform.getData();
+                LG.ajax({
+                    async: false,
+                    url: 'Special/DrugCollectRequest/GetCertainSpId',
+                    loading: '正在添加中...',
+                    data: {spId: spId},
+                    success: function (data, message) {
+                        for (let row of data) {
+                            var newRow = $.extend({
+                                COLLECT_ID: me.sid,
+                                COLLECT_DET_ID: collectDetId,
+                                //采购数量预设为申请数量
+                                COLLECT_NUM: row.REQUEST_NUM,
+                                //默认全数购买
+                                IS_FULLBUY: "1"
+                            }, row);
+                            me.requestGrid.addEditRow(newRow, true);
+                        }
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            //删除特定COLLECT_DET_ID对应的需求明细表的行
+            deleteRequestRow: function (collectDetId) {
+                var me = this;
+                for (let i = me.requestGrid.rows.length - 1; i >= 0; --i) {
+                    if (me.requestGrid.rows[i].COLLECT_DET_ID == collectDetId) {
+                        me.requestGrid.deleteRow(i);
+                    }
+                }
+            },
+            //保存需求明细表前验证
+            vertifyBeforeSaveRequest: function () {
+                var me = this;
+                //判断采购数量是否合理，是否全数购买
+                var data = me.requestGrid.getData();
+                for (let i = 0; i < data.length; ++i) {
+                    var collectNum = data[i].COLLECT_NUM;
+                    if (!collectNum || collectNum < 0) {
+                        me.requestGrid.updateRow(i, { COLLECT_NUM: 0 });
+                        collectNum = 0;
+                    }
+                    if (collectNum == data[i].REQUEST_NUM) {
+                        me.requestGrid.updateRow(i, { IS_FULLBUY: "1" });
+                    }
+                    else if (collectNum < data[i].REQUEST_NUM) {
+                        me.requestGrid.updateRow(i, { IS_FULLBUY: "0" });
+                    }
+                    else if (collectNum > data[i].REQUEST_NUM) {
+                        me.requestGrid.updateRow(i, {
+                            IS_FULLBUY: "1",
+                            COLLECT_NUM: data[i].REQUEST_NUM
+                        });
+                    }
+                }
+                //判断采购金额是否合理，并据此设置含税总金额和含税单价
+                data = me.requestGrid.getData();
+                for (let i = 0; i < data.length; ++i) {
+                    if (!data[i].COLLECT_MONEY || data[i].COLLECT_MONEY <= 0) {
+                        me.requestGrid.updateRow(i, {
+                            COLLECT_MONEY: 0,
+                            TAX_MONEY: 0,
+                            TAX_PRICE: 0
+                        });
+                    }
+                    else if (data[i].COLLECT_NUM <= 0) {
+                        me.requestGrid.updateRow(i, {
+                            COLLECT_MONEY: 0,
+                            TAX_MONEY: 0,
+                            TAX_PRICE: 0
+                        });
+                    }
+                    else {
+                        me.requestGrid.updateRow(i, {
+                            TAX_MONEY: data[i].COLLECT_MONEY,
+                            TAX_PRICE: data[i].COLLECT_MONEY / data[i].COLLECT_NUM
+                        });
+                    }
+                }
+                //统计采购数量和总金额，修改采购明细表和主表
+                data = me.requestGrid.getData();
+                var sumCollectNum = {};
+                var sumCollectMoney = 0;
+                for (let i = 0; i < data.length; ++i) {
+                    if (sumCollectNum.hasOwnProperty(data[i].COLLECT_DET_ID)) {
+                        sumCollectNum[data[i].COLLECT_DET_ID] += data[i].COLLECT_NUM;
+                    }
+                    else sumCollectNum[data[i].COLLECT_DET_ID] = data[i].COLLECT_NUM;
+
+                    sumCollectMoney += data[i].COLLECT_MONEY;
+                }
+                var collectData = me.collectGrid.getData();
+                for (let i = 0; i < collectData.length; ++i) {
+                    if (sumCollectNum.hasOwnProperty(collectData[i].COLLECT_DET_ID)) {
+                        me.collectGrid.updateRow(i, {
+                            COLLECT_NUM: sumCollectNum[collectData[i].COLLECT_DET_ID]
+                        });
+                    }
+                }
+                me.mainform.setData({ COLLECT_MONEY: sumCollectMoney });
+
+                return true;
+            },
+            //保存需求明细表
+            saveRequest: function () {
+                var me = this;
+                if (me.requestGrid.endEdit() != false) {
+                    if (!me.requestGrid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.requestGrid.validChangeRows()) return false;
+                    if (!me.vertifyBeforeSaveRequest()) return false;
+                    var changeRow = me.requestGrid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/DrugCollectRequest/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            me.showSuccessMessage('保存成功');
+                            me.requestGrid.isDataChanged = false;
+                            me.reloadRequest();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
             },
             //初始化
             init: function () {
@@ -149,7 +823,7 @@
                     if (me.isNew) {
                         LG.ajax({
                             async: false,
-                            url: 'Material/ProviderAssessTask/CreatePrimaryKey',
+                            url: 'Special/DrugCollect/CreatePrimaryKey',
                             loading: '正在获取中...',
                             data: {},
                             success: function (data, message) {

@@ -54,25 +54,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
-                c => a => a.PURTYPE_ID == c.PURTYPE_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
-                );
-        }
-
-        private async Task AfterSave(List<BASE_PURTYPE> adds, List<BASE_PURTYPE> updates, List<BASE_PURTYPE> deletes)
-        {
-            string operType = "计量单位";
-            foreach (var entity in adds)
-            {
-                await _dbContext.DBLog(operType + Oper.Add, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in updates)
-            {
-                await _dbContext.DBLog(operType + Oper.Modify, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in deletes)
-            {
-                await _dbContext.DBLog(operType + Oper.Delete, entity, null, _userSession.RealName);
-            }
+                c => a => a.PURTYPE_ID == c.PURTYPE_ID, BeforeAdd, BeforeUpdate);
         }
 
         private async Task BeforeAdd(BASE_PURTYPE entity)

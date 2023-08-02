@@ -120,9 +120,9 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserName;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
 
@@ -130,7 +130,7 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
         }

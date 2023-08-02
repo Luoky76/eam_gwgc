@@ -190,7 +190,6 @@ namespace EAM.Material.Services
                     await _dbContext.DeleteAsync<PROVIDER_ASSESS_DET>(c => c.ASSESS_ID == assessEntity.ASSESS_ID);
                 }
             }
-            //级联删除
             await Task.CompletedTask;
         }
 

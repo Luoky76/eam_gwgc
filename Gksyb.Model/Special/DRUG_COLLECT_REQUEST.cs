@@ -78,7 +78,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("申请人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_USERID { get; set; }
+        public long? REQUEST_USERID { get; set; }
 
         /// <summary>
         /// 物资编码

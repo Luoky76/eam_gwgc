@@ -262,8 +262,6 @@ namespace Gksyb.Server.Services.Common
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,
                     EXTEND3 =c.DEPT_NAME,
-                    EXTEND4 =c.ASSET_CODE,
-                    EXTEND5 =c.INSTALL_SITE,
                 })
                .ToListAsync();
         }
@@ -541,6 +539,51 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 计量单位
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpUnit(Expression<Func<SP_UNIT, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<SP_UNIT>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.UNIT, TEXT = c.UNIT, VALUE = c.UNIT })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 物资分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> BaseSpType(Expression<Func<BASE_SPTYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_SPTYPE>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 采购分类
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> BasePurtype(Expression<Func<BASE_PURTYPE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_PURTYPE>()
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.PURTYPE_ID, TEXT = c.PURTYPE_NAME, VALUE = c.PURTYPE_CODE })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 维护类别
         /// </summary>
         /// <param name="predicate"></param>
@@ -595,6 +638,7 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
+
 
         /// <summary>
         /// 初始化

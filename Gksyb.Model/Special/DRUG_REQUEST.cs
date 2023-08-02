@@ -150,6 +150,13 @@ namespace Gksyb.Model
         public string POSITION { get; set; }
 
         /// <summary>
+        /// 申请人
+        /// </summary>
+        [Description("申请人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REQUEST_USER { get; set; }
+
+        /// <summary>
         /// 添加人ID
         /// </summary>
         [Description("添加人ID")]

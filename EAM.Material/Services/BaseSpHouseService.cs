@@ -113,25 +113,7 @@ namespace EAM.Material.Services
                     c.SEC_DEPT,
                     c.PARENT_HOUSE_CODE
                 },
-                c => a => a.HOUSE_ID == c.HOUSE_ID, BeforeAdd, BeforeUpdate, null, false, null, AfterSave
-                );
-        }
-
-        private async Task AfterSave(List<SP_HOUSE> adds, List<SP_HOUSE> updates, List<SP_HOUSE> deletes)
-        {
-            string operType = "仓库货位";
-            foreach (var entity in adds)
-            {
-                await _dbContext.DBLog(operType + Oper.Add, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in updates)
-            {
-                await _dbContext.DBLog(operType + Oper.Modify, entity, null, _userSession.RealName);
-            }
-            foreach (var entity in deletes)
-            {
-                await _dbContext.DBLog(operType + Oper.Delete, entity, null, _userSession.RealName);
-            }
+                c => a => a.HOUSE_ID == c.HOUSE_ID, BeforeAdd, BeforeUpdate);
         }
 
         private async Task BeforeAdd(SP_HOUSE entity)
@@ -140,9 +122,9 @@ namespace EAM.Material.Services
 
             entity.HOUSE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.HOUSE_CODE = string.IsNullOrEmpty(entity.PARENT_HOUSE_CODE) ? entity.HOUSE_CODE : entity.PARENT_HOUSE_CODE + entity.HOUSE_CODE + "";
-            entity.CREATE_USERID = _userSession.UserName;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
 
@@ -150,7 +132,7 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
         }

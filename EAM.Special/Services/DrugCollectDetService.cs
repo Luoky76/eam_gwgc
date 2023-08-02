@@ -64,6 +64,59 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 获取导入列表
+        /// 包含尚未采购的药品SP_ID及总计所需数量
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> ImportListAsync(GridRequest request)
+        {
+            var query = _dbContext.Query<DRUG_COLLECT>()
+                .Where(a => a.AUDITING == "1")
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                .Select((a, b) => new
+                {
+                    b.REQUEST_DET_ID,
+                    b.IS_FULLBUY,
+                    b.COLLECT_NUM
+                });
+
+            var list = await _dbContext.Query<DRUG_REQUEST>()
+                .Where(a => a.AUDITING == "1")
+                .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                .LeftJoin(query, (a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
+                .Where((a, b, c) => c.IS_FULLBUY == "0" || c.IS_FULLBUY == null)
+                .Select((a, b, c) => new
+                {
+                    b.SP_ID,
+                    b.SP_NAME,
+                    b.SP_CODE,
+                    b.SP_TYPE,
+                    b.FACTORY,
+                    b.UNIT,
+                    SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM - (c.COLLECT_NUM == null ? 0 : c.COLLECT_NUM))
+                })
+                .GroupBy(e => e.SP_ID)
+                .AndBy(e => e.SP_NAME)
+                .AndBy(e => e.SP_CODE)
+                .AndBy(e => e.SP_TYPE)
+                .AndBy(e => e.FACTORY)
+                .AndBy(e => e.UNIT)
+                .Select(e => new
+                {
+                    e.SP_ID,
+                    e.SP_NAME,
+                    e.SP_CODE,
+                    e.SP_TYPE,
+                    e.FACTORY,
+                    e.UNIT,
+                    e.SUM_REQUEST_NUM
+                })
+                .GetGridData(request);
+            return list;
+        }
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

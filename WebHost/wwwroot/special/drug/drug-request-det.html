@@ -76,7 +76,7 @@
                                 }
                             },
                             { display: "需求分类", name: "REQUEST_SPTYPE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", width: 1147, newline: "true", type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", width: 1146, newline: "true", type: "textarea", options: {} },
                             //隐藏
                             { display: "主键", name: "REQUEST_ID", width: 300, type: "hidden" },
                             { display: "申请部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
@@ -88,6 +88,7 @@
                             { display: "二级单位", name: "SEC_DEPT", width: 300, type: "hidden" },
                             { display: "格式号", name: "FORM_ID", width: 300, type: "hidden" },
                             { display: "来源单号", name: "SRC_CODE", width: 300, type: "hidden" },
+                            { display: "申请人", name: "REQUEST_USER", width: 100, type: "hidden" },
                             { display: "修改人ID", name: "MODIFY_USERID", width: 300, type: "hidden" },
                             { display: "修改时间", name: "MODIFYDATE", width: 300, type: "hidden" }
                         ]
@@ -195,7 +196,9 @@
                         AUDITING: "0",
                         DEPT_ID: window.session.Corp.CorpID,
                         DEPT_NAME: window.session.Corp.CName,
-                        DEPT_CODE: window.session.Corp.CNO
+                        DEPT_CODE: window.session.Corp.CNO,
+                        REQUEST_USER: window.session.RealName,
+                        CREATE_USERID: window.session.UserID
                     });
                     me.mainform.setOrginData(originData);
                 }
@@ -229,6 +232,9 @@
                     return;
                 }
                 function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
                     return data;
                 }
                 var data = handle(me.mainform.getData());
