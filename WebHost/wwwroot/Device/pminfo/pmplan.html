@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>故障查询</title>
+    <title>维修计划</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 <body style="padding: 5px; height: 100%;">
@@ -31,11 +31,10 @@
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
-            checkResult: [{ "ID": "1", "TEXT": "合格" }, { "ID": "0", "TEXT": "不合格" }],
             disposeType: [],
             faultStatus: [],
             faultSrc: [],
-            deviceStatus: [],
+            alreadySubmitted: false,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -45,29 +44,25 @@
                                 display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                             {
-                                display: "故障单号", name: "_search_FAULT_CODE", dbname: "FAULT_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "保养计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "故障状态", name: "FAULT_STATUS", width: 100, type: "select", format: { data: me.faultStatus } },
-                            { display: "验收结果", name: "CHECK_RESULT", width: 100, type: "select", format: { data: me.checkResult } },
-                            { display: "故障单号", name: "FAULT_CODE", width: 100, type: "text", },
-                            { display: "故障发生时间", name: "FAULT_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", },
-                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", },
-                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text", },
-                            { display: "设备状态", name: "DEVICE_STATUS", width: 100, type: "select", format: { data: me.deviceStatus } },
-                            { display: "设备编号", name: "DEVICE_CODE", width: 100, type: "text", },
-                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
-                            { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "text", },
-                            { display: "维修人", name: "REPAIR_USER", width: 100, type: "text", },
-                            { display: "异常来源", name: "FAULT_SRC", width: 100, type: "select", format: { data: me.faultSrc } },
-                            { display: "安装地点", name: "INSTALL_SITE", width: 100, type: "text", },
-                            { display: "开工时间", name: "ORDER_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "来源单号", name: "SRC_CODE", width: 100, type: "text", },
-                            { display: "FAULT_ID", name: "FAULT_ID", hide: true },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
+                            { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "实施人员", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "计划维保完成时间", name: "PLAN_FINISH_TIME", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "计划编制人", name: "EDIT_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "计划编制日期", name: "EDIT_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "EXE_ID", name: "EXE_ID", hide: true },
                         ]
                     },
                 };
@@ -80,13 +75,12 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Device/RepFault/ComboxData',
+                    url: 'Device/PmInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.faultStatus = data.faultStatus;
                         me.disposeType = data.disposeType;
                         me.faultSrc = data.faultSrc;
-                        me.deviceStatus = data.deviceStatus;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -104,7 +98,7 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     toolbar: {},
-                    url: 'Device/RepFault/GetFaultCheckQryList',
+                    url: 'Device/PmInfo/GetPmPlanList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -150,6 +144,24 @@
                         case "refresh":
                             me.reload();
                             break;
+                        case "attach":
+                            me.attach();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "return":
+                            me.return();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "submit":
+                            me.submit();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
@@ -167,9 +179,76 @@
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            attach: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected) {
+                    var me = this;
+                    LG.showUpload({
+                        multiple: false,
+                        extensions: 'xls,xlsx',
+                        mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+                        compress: {
+                            width: 1920
+                        },
+                        showSuccess: false,
+                        //data: { folder: '../../Adv' },
+                        callback: function (status, data) {
+                            if (status) {
+                                LG.showSuccess("导入成功");
+                                me.reload();
+                            }
+                            else LG.showError(data.Message);
+                        }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
+            },
+            submit: function () {    //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                for (var i = 0; i < selected.length; i++) {
+                    if (selected[i].AUDITING == "1") {
+                        me.alreadySubmitted = true;
+                        break;
+                    }
+                }
+                if (selected) {
+                    if (me.alreadySubmitted) {
+                        LG.tip('已提交，无法再次提交!');
+                        me.alreadySubmitted = false;
+                    }
+                    else {
+                        var sids = [];
+                        selected.forEach((a) => {
+                            sids.push(a.EXE_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/PmInfo/SubmitPmPlan',
+                            loading: '正在保存中...',
+                            data: { "sids": sids },
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
             },
             bindGridEvent: function () {
                 var me = this;
@@ -240,6 +319,25 @@
                 LG.commonSearch($formsearch1, me.grid);
             },
 
+            add: function () {
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '新增故障处理',
+                    url: "pmplandet.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.buttons[0].click,
+                    data: { "sdid": null, "isNew": true }
+                });
+            },
+
             view: function (rowdata) { //查看
                 var me = this;
                 var selected = me.grid.getSelectedRow();
@@ -253,7 +351,7 @@
                         height: 620,
                         allowClose: true,
                         title: '查看故障处理',
-                        url: "repfaultexedetail.html?MenuNo=" + me.menuNo,
+                        url: "pmplandet.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
                         showToggle: false,
@@ -261,11 +359,83 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.FAULT_ID, "view": true }
+                        data: { "sid": selected.EXE_ID, "view": true }
                     });
                 } else {
                     LG.tip('请选择行!');
                 }
+            },
+
+            modify: function (rowdata) { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                var selected = me.grid.getSelectedRow();
+                if (selected.AUDITING == "1") {
+                    LG.tip('已提交，无法修改!');
+                }
+
+                else {
+                    if (rowdata) {
+                        selected = rowdata;
+                    }
+                    if (selected) {
+                        $.ligerDialog.open({
+                            width: 1100,
+                            height: 620,
+                            allowClose: true,
+                            title: '修改故障处理',
+                            url: "pmplandet.html?MenuNo=" + me.menuNo,
+                            isHidden: false,
+                            showMax: false,
+                            showToggle: false,
+                            showMin: false,
+                            isResize: true,
+                            slide: false,
+                            onClosed: me.buttons[0].click,
+                            data: { "sid": selected.EXE_ID }
+                        });
+
+
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+
+            },
+
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        for (var i = 0; i < selected.length; i++) {
+                            if (selected[i].AUDITING == "1") {
+                                LG.tip('已提交，无法删除!');
+                                break;
+                            }
+                            else {
+                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                    if (confirm) {
+                                        for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                            me.grid.deleteRow(selected[i]);
+                                        }
+                                        me.save();
+                                    }
+                                }); break;
+                            }
+                        }
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+
             },
             initSearchData: function () {
 

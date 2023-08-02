@@ -41,5 +41,13 @@
         /// 扩展3
         /// </summary>
         public object EXTEND3 { get; set; }
+        /// <summary>
+        /// 扩展4
+        /// </summary>
+        public object EXTEND4 { get; set; }
+        /// <summary>
+        /// 扩展5
+        /// </summary>
+        public object EXTEND5 { get; set; }
     }
 }

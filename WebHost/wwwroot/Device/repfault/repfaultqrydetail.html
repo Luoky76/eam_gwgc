@@ -436,7 +436,13 @@
                 me.setGrid2();
                 me.reloadPep();
                 me.reloadSp();
-
+                if (me.dialogData.view != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                    me.grid2.setOptions(commonGridOptions);
+                } 
                 return me;
             }
         };

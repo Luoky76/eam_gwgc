@@ -1,0 +1,428 @@
+﻿using Chloe;
+using EAM.Device.interfaces;
+using Flurl.Util;
+using Gksyb.Common;
+using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
+
+namespace EAM.Device.services
+{
+    public class PmInfoService : IPmInfoService
+    {
+        private readonly IDbContext _dbContext;
+        private readonly IComboxDataService _comboxService;
+        private readonly UserSession _userSession;
+        private DateTime? _Sysdate;
+
+        /// <summary>
+        /// 获取数据库时间
+        /// </summary>
+        private DateTime? Sysdate
+        {
+            get
+            {
+                if (!_Sysdate.HasValue)
+                {
+                    _Sysdate = _dbContext.GetSysdate().Result();
+                }
+                return _Sysdate;
+            }
+        }
+
+        public PmInfoService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        {
+            _dbContext = dbContext;
+            _comboxService = comboxService;
+            _userSession = userSession;
+        }
+
+        /// <summary>
+        /// 下拉
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        {
+            return await _comboxService.Get(new Dictionary<string, object>(){
+                { "PmType",null},
+                { "BySource",null},
+                { "MaintDept",null},
+                { "WorkState",null},
+                { "MaintCycle",null},
+                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => (c.TYPE_NAME == "设备"||c.TYPE_NAME == "船舶"))},
+            });
+        }
+
+        #region 维保计划
+
+        /// <summary>
+        /// 获取维保计划记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetPmPlanList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_PLAN_EXE>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .Where(c => c.PM_TYPE=="20")
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 获取单条维保计划记录
+        /// </summary>
+        /// <returns></returns>
+
+        public async Task<PM_PLAN_EXE> GetPmPlanListDetail(string ID)
+        {
+            var qry = await _dbContext.QueryByKeyAsync<PM_PLAN_EXE>(ID);
+            return qry;
+        }
+
+        /// <summary>
+        /// 管理维保计划记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManagePmPlan(SaveRequest<PM_PLAN_EXE> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.AUDITING,
+                    c.PLAN_CODE,
+                    c.SOURCE,
+                    c.DEVICE_NAME,
+                    c.DEVICE_ID,
+                    c.DEVICE_CODE,
+                    c.BEGIN_DATE,
+                    c.END_DATE,
+                    c.ASSET_CODE,
+                    c.INSTALL_SITE,
+                    c.DEPT_NAME,
+                    c.PM_TYPE,
+                    c.EDIT_DATE,
+                    c.PLAN_FINISH_TIME,
+                    c.EDIT_USER,
+                    c.SHIP_DEPT,
+                    c.EXE_USER,
+                    c.EXE_USERID,
+                    c.MEMO,
+                    c.EXE_ID,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE,
+                },
+                c => a => a.EXE_ID == c.EXE_ID, BeforeAdd);
+        }
+
+        public async Task BeforeAdd(PM_PLAN_EXE entity)
+        {
+            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            entity.DEPT_ID = _userSession.Corp.CorpID;
+            entity.DEPT_NAME = _userSession.Corp.CName;
+            entity.EDIT_USER = _userSession.UserName;
+            entity.EDIT_USERID = _userSession.UserID.ToString();
+            entity.EDIT_DATE = Sysdate;
+            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
+            string def = aa + "0000";
+            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(10, 4).CastTo<int>() + 1;
+            entity.PLAN_CODE = aa + index.ToString("D4");
+            entity.AUDITING = "0";
+            entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
+        }
+
+        /// <summary>
+        /// 提交维保计划
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> SubmitPmPlan(List<string> sids)
+        {
+            string aa = "BYSS" + DateTime.Now.ToString("yyyyMM");
+            string def = aa + "0000";
+            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(10, 4).CastTo<int>() + 1;
+            return await _dbContext.UpdateAsync<PM_PLAN_EXE>(x => sids.Contains(x.EXE_ID),
+                x => new PM_PLAN_EXE
+                {
+                    AUDITING = "1",
+                    AUDITING_EXE = "0",
+                    EXE_CODE = aa + index.ToString("D4"),
+        });
+        }
+        /// <summary>
+        /// 获取计划明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetPlandetList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_PLAN_DONEITEM>()
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 管理计划明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManagePlandet(SaveRequest<PM_PLAN_DONEITEM> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.MEMO,
+                    c.STD_CODE,
+                    c.EXE_USER,
+                    c.CHK_USER,
+                    c.OBJECT_NAME,
+                    c.CONTENT,
+                    c.STD_LEVEL,
+                    c.WORK_STATE,
+                    c.MAINT_CYCLE,
+                    c.PLAN_MONTH,
+                    c.LAST_COMP_DATE,
+                    c.NEXT_ENDDATE,
+                    c.EXECUTE_USER,
+                    c.CHECK_USER,
+                    c.DONEITEM_ID,
+                    c.COMPLETE,
+                    c.EXE_ID,
+                },
+                c => a => a.DONEITEM_ID == c.DONEITEM_ID, BeforeAddPlandet);
+        }
+
+        public async Task BeforeAddPlandet(PM_PLAN_DONEITEM entity)
+        {
+            entity.DONEITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
+        }
+
+
+        #endregion 维保计划
+
+        #region 维保实施
+        /// <summary>
+        /// 获取维保人员明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetPmPepList(GridRequest request, string exeId, string doneitemId)
+        {
+            return await _dbContext.Query<PM_PLAN_LABOR>(c => c.EXE_ID.Equals(exeId)&&c.DONEITEM_ID.Equals(doneitemId))
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 获取维保物资明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetPmSpList(GridRequest request,string exeId,string doneitemId)
+        {
+            return await _dbContext.Query<PM_PLAN_SP>(c => c.EXE_ID.Equals(exeId)&&c.DONEITEM_ID.Equals(doneitemId))
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 获取作业清单明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetWorkList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_SPECIAL_WORK>()
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 管理作业清单明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManageWork(SaveRequest<PM_SPECIAL_WORK> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.MEMO,
+                    c.WORK_NAME,
+                    c.WORK_DATE,
+                    c.BEGIN_TIME,
+                    c.END_TIME,
+                    c.WORK_HOUR,
+                    c.WORK_OIL,
+                    c.WORK_ID,
+                    c.EXE_ID,
+                },
+                c => a => a.WORK_ID == c.WORK_ID, BeforeAddWork);
+        }
+
+        public async Task BeforeAddWork(PM_SPECIAL_WORK entity)
+        {
+            entity.WORK_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 管理人员明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManagePmPep(SaveRequest<PM_PLAN_LABOR> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.MEMO,
+                    c.USER_NAME,
+                    c.PLAN_DATE,
+                    c.USER_ID,
+                    c.EXE_ID,
+                    c.DONEITEM_ID,
+                    c.PLAN_LABOR_ID,
+                },
+                c => a => a.PLAN_LABOR_ID == c.PLAN_LABOR_ID, BeforeAddLabor);
+        }
+
+        public async Task BeforeAddLabor(PM_PLAN_LABOR entity)
+        {
+            entity.PLAN_LABOR_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 管理维保物资明细
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManagePmSp(SaveRequest<PM_PLAN_SP> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.SP_SOURCE,
+                    c.SP_CODE,
+                    c.SP_TYPE,
+                    c.SP_NAME,
+                    c.OTHER_CODE,
+                    c.UNIT,
+                    c.FACTORY,
+                    c.HOUSE_NAME,
+                    c.STORE_NUM,
+                    c.FACT_NUM,
+                    c.APPLY_NUM,
+                    c.TAX_MONEY,
+                    c.NOTAX_MONEY,
+                    c.MEMO,
+                    c.SP_HOUSE_ID,
+                    c.HOUSE_ID,
+                    c.SP_ID,
+                    c.EXE_ID,
+                    c.STOCK_NAME,
+                    c.STOCK_ID,
+                    c.DONEITEM_ID,
+                    c.BRAND,
+                    c.PLAN_SP_ID,
+                },
+                c => a => a.PLAN_SP_ID == c.PLAN_SP_ID);
+        }
+
+
+        /// <summary>
+        /// 提交维保实施
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> SubmitPmExe(List<string> sids)
+        {
+            var querys = _dbContext.Query<PM_PLAN_EXE>()
+                 .Where(c => sids.Contains(c.EXE_ID)).Select(c =>
+                 new {
+                     c.IS_LOSE,
+                     c.EXE_ID
+                 }).ToList();
+            foreach (var query in querys)
+            {
+                if (query.IS_LOSE==null)
+                {
+                    throw new MessageException("是否有遗留问题没选！");
+                }
+                var qrydet = _dbContext.Query<PM_PLAN_DONEITEM>()
+                 .Where(c => c.EXE_ID == query.EXE_ID && (c.CHECK_USER == null || c.EXECUTE_USER == null|| c.COMPLETE == null))
+                 .Select(c =>
+                 new {
+                     c.CHECK_USER,
+                     c.EXECUTE_USER,
+                     c.COMPLETE,
+                 }).ToList();
+                if (qrydet.Count > 0)
+                {
+                    throw new MessageException("保养实施明细数据没填完整！");
+                }
+            }
+            return await _dbContext.UpdateAsync<PM_PLAN_EXE>(x => sids.Contains(x.EXE_ID),
+                        x => new PM_PLAN_EXE
+                        {
+                            AUDITING_EXE = "1",
+                            AUDIT_TIME = Sysdate,
+                        });
+
+        }
+
+        /// <summary>
+        /// 管理维保实施结果
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManagePmExe(SaveRequest<PM_PLAN_EXE> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.IS_LOSE,
+                    c.LEG_DESC,
+                    c.MEMO,
+                    c.BEGIN_DATE,
+                    c.END_DATE,
+                },
+                c => a => a.EXE_ID == c.EXE_ID,null, BeforeUpdateExe);
+        }
+
+        public async Task BeforeUpdateExe(PM_PLAN_EXE entity)
+        {
+            //entity.CHECK_USER = _userSession.UserName;
+            //entity.CHECK_USERID = _userSession.UserID.ToString();
+            //entity.CHECK_DATE = Sysdate;
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 获取维保实施记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetPmExeList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_PLAN_EXE>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .Where(c =>c.AUDITING=="1")
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.PLAN_CODE)
+                .GetGridData(request);
+        }
+
+        #endregion 维保实施
+
+        #region 维保实施查询
+
+        /// <summary>
+        /// 获取维保实施查询记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetPmExeQryList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_PLAN_EXE>()
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .OrderByDesc(c => c.PLAN_CODE)
+                .GetGridData(request);
+        }
+
+        #endregion 维保实施查询
+    }
+}

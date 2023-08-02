@@ -262,6 +262,8 @@ namespace Gksyb.Server.Services.Common
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,
                     EXTEND3 =c.DEPT_NAME,
+                    EXTEND4 =c.ASSET_CODE,
+                    EXTEND5 =c.INSTALL_SITE,
                 })
                .ToListAsync();
         }
@@ -536,6 +538,62 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.REP_TYPE_ID, TEXT = c.REP_TYPE_NAME, VALUE = c.REP_TYPE_NAME })
                 .Distinct()
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// 维护类别
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> PmType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "pm_type").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 保养来源
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> BySource(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "bysource").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 保养周期
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> MaintCycle(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "maint_cycle").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 作业时设备状态
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> WorkState(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "work_state").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
         }
 
         /// <summary>
