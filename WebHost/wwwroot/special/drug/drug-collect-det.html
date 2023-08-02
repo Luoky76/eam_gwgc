@@ -48,7 +48,7 @@
                                 }
                             },
                             { display: "请购单号", name: "COLLECT_CODE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "请购日期", name: "CREATEDATE", width: 300, type: "date", options: { disabled: true } },
+                            { display: "请购日期", name: "CREATEDATE", width: 300, type: "string", options: { disabled: true } },
                             {
                                 display: "采购人", name: "CREATE_USERID", width: 300, type: "select", options: {
                                     type: "select",
@@ -127,6 +127,15 @@
             menuNo: getQueryStringByName("MenuNo"),
             formButtons: [],
             orginData: {},
+            //成功提示框，当已有提示框未关闭时不会重复弹出
+            showSuccessMessage: function (message = '成功') {
+                var me = this;
+                if (me.showSuccessMessage.isShown) return;
+                me.showSuccessMessage.isShown = true;
+                LG.showSuccess(message, function () {
+                    me.showSuccessMessage.isShown = false;
+                });
+            },
             //获取下拉框数据
             loadComboxData: function () {
                 var me = this;
@@ -216,6 +225,14 @@
             //保存表单
             save: function () {
                 var me = this;
+                //先保存子表
+                if (me.collectGrid.isDataChanged) me.saveCollect();
+                if (me.requestGrid.isDataChanged) me.saveRequest();
+
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    me.showSuccessMessage('无修改');
+                    return;
+                }
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
@@ -243,7 +260,7 @@
                     loading: '正在保存中...',
                     data: { request: changeRow },
                     success: function (result) {
-                        LG.showSuccess('保存成功');
+                        me.showSuccessMessage('保存成功');
                         //保存过一次后自动变为修改模式
                         me.isNew = false;
                         //保存后原始数据变为当前数据
@@ -283,7 +300,7 @@
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
-                            me.mainform.setData(data);
+                            me.mainform.setOrginData(data);
                             inner();
                         },
                         error: function (message) {
@@ -321,7 +338,8 @@
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
                         me.collectGridOriginData = data.Rows;
-                    }
+                    },
+                    async: false
                 });
                 me.collectGrid.isValid = true;
                 if (!me.isView) {
@@ -451,13 +469,14 @@
                                 UNIT: item.UNIT
                             });
                         }
-                        me.saveCollect();
+                        me.saveCollect(false);
                         //添加采购明细对应的需求明细
                         var collectData = me.collectGrid.getData();
                         for (let item of collectData) {
                             me.addRequest(item.SP_ID, item.COLLECT_DET_ID);
                         }
                         me.saveRequest();
+                        me.save();
                     }
                 }
                 $.ligerDialog.open({
@@ -467,7 +486,8 @@
                     url: window.gksybConfigs.urlBase + "popup-select/common.html",
                     isResize: true,
                     slide: false,
-                    data: dataOptions
+                    data: dataOptions,
+
                 });
             },
             //删除采购明细表
@@ -485,6 +505,7 @@
                                     me.collectGrid.deleteRow(selected[i]);
                                 }
                                 me.saveCollect();
+                                me.saveRequest();
                             }
                         });
                     } else {
@@ -511,7 +532,7 @@
                 me.deleteRequestRow(collectDetId);
             },
             //保存采购明细表
-            saveCollect: function () {
+            saveCollect: function (isAsync = true) {
                 var me = this;
                 if (me.collectGrid.endEdit() != false) {
                     if (!me.collectGrid.isDataChanged) {
@@ -526,14 +547,14 @@
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
+                            me.showSuccessMessage('保存成功');
                             me.collectGrid.isDataChanged = false;
                             me.reloadCollect();
-                            //保存子表后同时保存主表（否则可能导致有子表而无主表的错误）
-                            me.save();
                         },
                         error: function (message) {
                             LG.showError(message);
-                        }
+                        },
+                        async: isAsync
                     });
                 }
             },
@@ -565,8 +586,8 @@
                         me.requestGridOriginData = data.Rows;
                     },
                     onAfterEdit: function (e) {
-                        if (e.record.COLLECT_NUM < 0) requestGrid.updateRow(e.rowindex, { COLLECT_NUM: 0 });
-                        if (e.record.COLLECT_NUM > e.record.REQUEST_NUM) requestGrid.updateRow(e.rowindex, { COLLECT_NUM: e.record.REQUEST_NUM });
+                        if (e.record.COLLECT_NUM < 0) me.requestGrid.updateRow(e.rowindex, { COLLECT_NUM: 0 });
+                        if (e.record.COLLECT_NUM > e.record.REQUEST_NUM) me.requestGrid.updateRow(e.rowindex, { COLLECT_NUM: e.record.REQUEST_NUM });
                         me.requestGrid.updateCell('TAX_MONEY', e.record.COLLECT_MONEY, e.record);
                         var price = e.record.COLLECT_MONEY;
                         if (e.record.COLLECT_NUM > 0) price /= e.record.COLLECT_NUM;
@@ -589,6 +610,8 @@
                             break;
                         case "save":
                             me.saveRequest();
+                            me.saveCollect();
+                            me.save();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -774,10 +797,9 @@
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
+                            me.showSuccessMessage('保存成功');
                             me.requestGrid.isDataChanged = false;
                             me.reloadRequest();
-                            //保存子表后同时保存主表（否则可能导致有子表而无主表的错误）
-                            me.save();
                         },
                         error: function (message) {
                             LG.showError(message);
