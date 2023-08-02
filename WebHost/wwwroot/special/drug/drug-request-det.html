@@ -232,6 +232,9 @@
                     return;
                 }
                 function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
                     return data;
                 }
                 var data = handle(me.mainform.getData());

@@ -149,34 +149,45 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<List<DRUG_COLLECT_REQUEST>> GetCertainSpIdAsync(string spId)
         {
-            var list = await _dbContext.Query<DRUG_REQUEST_DET>()
-                .Where(a => a.SP_ID == spId)
-                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
-                .Where((a, b) => b.IS_FULLBUY == "0" || b.IS_FULLBUY == null)
-                .LeftJoin<DRUG_REQUEST>((a, b, c) => a.REQUEST_ID == c.REQUEST_ID)
+            var query = _dbContext.Query<DRUG_COLLECT>()
+                .Where(a => a.AUDITING == "1")
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                .Select((a, b) => new
+                {
+                    b.REQUEST_DET_ID,
+                    b.IS_FULLBUY,
+                    b.COLLECT_NUM
+                });
+
+            var list = await _dbContext.Query<DRUG_REQUEST>()
+                .Where(a => a.AUDITING == "1")
+                .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                .Where((a, b) => b.SP_ID == spId)
+                .LeftJoin(query, (a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
+                .Where((a, b, c) => c.IS_FULLBUY == "0" || c.IS_FULLBUY == null)
                 .Select((a, b, c) => new DRUG_COLLECT_REQUEST
                 {
-                    REQUEST_DET_ID = a.REQUEST_DET_ID,
-                    SP_ID = a.SP_ID,
-                    SP_NAME = a.SP_NAME,
-                    SP_CODE = a.SP_CODE,
-                    SP_TYPE = a.SP_TYPE,
-                    SP_DAIMA = a.SP_DAIMA,
-                    SP_TUHAO = a.SP_TUHAO,
-                    SP_ENGNAME = a.SP_ENGNAME,
-                    BRAND = a.BRAND,
-                    OTHER_CODE = a.OTHER_CODE,
-                    FACTORY = a.FACTORY,
-                    UNIT = a.UNIT,
+                    REQUEST_DET_ID = b.REQUEST_DET_ID,
+                    SP_ID = b.SP_ID,
+                    SP_NAME = b.SP_NAME,
+                    SP_CODE = b.SP_CODE,
+                    SP_TYPE = b.SP_TYPE,
+                    SP_DAIMA = b.SP_DAIMA,
+                    SP_TUHAO = b.SP_TUHAO,
+                    SP_ENGNAME = b.SP_ENGNAME,
+                    BRAND = b.BRAND,
+                    OTHER_CODE = b.OTHER_CODE,
+                    FACTORY = b.FACTORY,
+                    UNIT = b.UNIT,
                     //申请数量为剩余未采购的申请数量
-                    REQUEST_NUM = a.REQUEST_NUM - (b.COLLECT_NUM == null ? 0 : b.COLLECT_NUM),
-                    REQUEST_CODE = c.REQUEST_CODE,
-                    REQUEST_USER = c.REQUEST_USER,
-                    REQUEST_USERID = c.CREATE_USERID,
-                    DEPT_NAME = c.DEPT_NAME,
-                    DEPT_ID = c.DEPT_ID,
-                    SEC_DEPT = c.SEC_DEPT,
-                    SEC_DEPTID = c.SEC_DEPTID,
+                    REQUEST_NUM = b.REQUEST_NUM - (c.COLLECT_NUM == null ? 0 : c.COLLECT_NUM),
+                    REQUEST_CODE = a.REQUEST_CODE,
+                    REQUEST_USER = a.REQUEST_USER,
+                    REQUEST_USERID = a.CREATE_USERID,
+                    DEPT_NAME = a.DEPT_NAME,
+                    DEPT_ID = a.DEPT_ID,
+                    SEC_DEPT = a.SEC_DEPT,
+                    SEC_DEPTID = a.SEC_DEPTID,
                 })
                 .ToListAsync();
             return list;
