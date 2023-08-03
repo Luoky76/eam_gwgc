@@ -67,20 +67,17 @@ namespace EAM.Special.Services
                 })
                 .ToListAsync();
 
-            int year = 0, month = 0;
-            string type = "";
-            string deptID = "";
-            string position = "";
-            if (list.Any())
+            if (!list.Any())
             {
-                type = list[0].REQUEST_TYPE;
-                year = list[0].REQUEST_YEAR.Value;
-                month = list[0].REQUEST_MONTH.Value;
-                deptID = list[0].DEPT_ID;
-                //"1"港内，"2"港外
-                position = list[0].POSITION;
+                return null;
             }
-            else return null;
+
+            string type = list[0].REQUEST_TYPE;
+            int year = list[0].REQUEST_YEAR.Value;
+            int month = list[0].REQUEST_MONTH.Value;
+            string deptID = list[0].DEPT_ID;
+            //"1"港内，"2"港外
+            string position = list[0].POSITION;
 
             if (month >= 4 && month <= 9)
             {
