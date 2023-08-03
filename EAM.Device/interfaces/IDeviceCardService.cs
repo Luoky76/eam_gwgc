@@ -20,6 +20,6 @@ namespace EAM.Device.Interfaces
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_VARY> request);
+        Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request);
     }
 }
