@@ -41,6 +41,7 @@ namespace EAM.Device.Services
                     c.DEVICE_NO,
                     c.DEVICE_NAME,
                     c.TYPE_NAME,
+                    c.TYPE_ID,
                     c.BOM_NAME,
                     c.DEVICE_TYPE,
                     c.SHIP_ID,
