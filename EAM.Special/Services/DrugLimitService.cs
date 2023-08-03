@@ -59,6 +59,7 @@ namespace EAM.Special.Services
                 .Where(a => a.REQUEST_ID == requestId)
                 .Select(a => new
                 {
+                    a.REQUEST_TYPE,
                     a.REQUEST_YEAR,
                     a.REQUEST_MONTH,
                     a.DEPT_ID,
@@ -67,10 +68,12 @@ namespace EAM.Special.Services
                 .ToListAsync();
 
             int year = 0, month = 0;
+            string type = "";
             string deptID = "";
             string position = "";
             if (list.Any())
             {
+                type = list[0].REQUEST_TYPE;
                 year = list[0].REQUEST_YEAR.Value;
                 month = list[0].REQUEST_MONTH.Value;
                 deptID = list[0].DEPT_ID;
@@ -110,7 +113,10 @@ namespace EAM.Special.Services
                     a.UNIT,
                     LEFTOVER = position == "1" ? a.INSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM):
                     a.OUTSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
-                }).GetGridData(null);
+                })
+                //对于临时需求，返回所有药品；其它需求，仅返回剩余可申请量>0的药品
+                .Where(c => c.LEFTOVER > 0 || type == "3")
+                .GetGridData(null);
 
                 return limitList;
             }
@@ -145,7 +151,10 @@ namespace EAM.Special.Services
                     a.UNIT,
                     LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
                     a.OUTSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
-                }).GetGridData(null);
+                })
+                //对于临时需求，返回所有药品；其它需求，仅返回剩余可申请量>0的药品
+                .Where(c => c.LEFTOVER > 0 || type == "3")
+                .GetGridData(null);
 
                 return limitList;
             }
@@ -180,7 +189,10 @@ namespace EAM.Special.Services
                     a.UNIT,
                     LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
                     a.OUTSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
-                }).GetGridData(null);
+                })
+                //对于临时需求，返回所有药品；其它需求，仅返回剩余可申请量>0的药品
+                .Where(c => c.LEFTOVER > 0 || type == "3")
+                .GetGridData(null);
 
                 return limitList;
             }
