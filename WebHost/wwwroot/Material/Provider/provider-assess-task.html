@@ -286,6 +286,10 @@
                     LG.showError("该数据已提交,无法修改!");
                     return;
                 }
+                if (selected.CREATE_USERID != window.session.UserID) {
+                    LG.showError("您不是该任务的制定人！");
+                    return;
+                }
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,

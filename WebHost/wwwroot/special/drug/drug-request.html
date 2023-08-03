@@ -270,6 +270,10 @@
                     LG.showError("该数据已提交,无法修改!");
                     return;
                 }
+                if (selected.CREATE_USERID != window.session.UserID) {
+                    LG.showError("您不是该需求登记的申请人！");
+                    return;
+                }
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,

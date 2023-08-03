@@ -31,6 +31,7 @@ namespace EAM.Repair.services
                     {"ShipList",null },
                     {"MaintDept", null},
                     {"RepairType",null },
+                    {"RepitemType",null },
                     {"RepairDealType",null }
             });
             return result;
@@ -204,6 +205,60 @@ namespace EAM.Repair.services
             }).GetGridData(request);
 
             return query;
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                a => new
+                {
+                    a.PLAN_ITEM_ID,
+                    a.BOM_NAME,
+                    a.REP_CONTENT,
+                    a.MEMO,
+                    a.DEAL_TYPE,
+                    a.REP_LEADER,
+                    a.REP_INDEX,
+                    a.IS_ASKBID,
+                    a.ITEM_TYPE,
+                    a.DEVICE_TYPE,
+                },
+                c => a => a.PLAN_ITEM_ID == c.PLAN_ITEM_ID, BeforeAddItem, BeforeUpdateItem, BeforeDeleteItem, false);
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        /// <returns></returns>
+        private async Task BeforeAddItem(REP_PLAN_ITEM entity)
+        {
+            entity.PLAN_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdateItem(REP_PLAN_ITEM request)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeDeleteItem(REP_PLAN_ITEM request)
+        {
+            await Task.CompletedTask;
         }
 
         public async Task<GridData> GetDeviceAsync(GridRequest request)

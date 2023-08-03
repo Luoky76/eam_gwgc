@@ -1,0 +1,200 @@
+﻿using EAM.Device.interfaces;
+using Gksyb.Common;
+using Gksyb.Core.Auth;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Mvc;
+
+namespace EAM.Device.controller
+{
+    [GksybAuthorize(true)]
+    public class PmInfoController : AreaController
+    {
+        private readonly IPmInfoService _service;
+
+        public PmInfoController(IPmInfoService service)
+        {
+            _service = service;
+        }
+
+        /// <summary>
+        /// 下拉
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ComboxData()
+        {
+            var comboxData = await _service.ComboxData();
+            return AjaxResult.Success(new
+            {
+                pmType = comboxData["PmType"],
+                bySource = comboxData["BySource"],
+                maintDept = comboxData["MaintDept"],
+                workState = comboxData["WorkState"],
+                maintCycle = comboxData["MaintCycle"],
+                deviceInfo = comboxData["DeviceInfo"],
+            }, "成功");
+        }
+
+        /// <summary>
+        /// 获取维保计划记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPmPlanListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetPmPlanList(request), "成功");
+        }
+
+        /// <summary>
+        /// 根据维保计划ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPmPlanListDetailAsync(string ID)
+        {
+            if (ID.IsNullOrEmpty()) return AjaxResult<PM_PLAN_EXE>.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetPmPlanListDetail(ID), "成功");
+        }
+
+        /// <summary>
+        /// 管理维保计划记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManagePmPlanAsync(SaveRequest<PM_PLAN_EXE> request)
+        {
+            return await _service.ManagePmPlan(request);
+        }
+
+        /// <summary>
+        /// 提交维保计划
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitPmPlanAsync(List<string> sids)
+        {
+            return AjaxResult.Success(await _service.SubmitPmPlan(sids), "成功");
+        }
+        /// <summary>
+        /// 获取计划明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPlandetListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetPlandetList(request), "成功");
+        }
+
+        /// <summary>
+        /// 管理计划明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManagePlandetAsync(SaveRequest<PM_PLAN_DONEITEM> request)
+        {
+            return await _service.ManagePlandet(request);
+        }
+
+        /// <summary>
+        /// 获取维保人员明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPmPepListAsync(GridRequest request, string exeId, string doneitemId)
+        {
+            return AjaxResult.Success(await _service.GetPmPepList(request,exeId,doneitemId), "成功");
+        }
+
+        /// <summary>
+        /// 获取维保物资明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPmSpListAsync(GridRequest request, string exeId, string doneitemId)
+        {
+            return AjaxResult.Success(await _service.GetPmSpList(request, exeId, doneitemId), "成功");
+        }
+
+        /// <summary>
+        /// 获取作业明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetWorkListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetWorkList(request), "成功");
+        }
+
+        /// <summary>
+        /// 管理作业明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManageWorkAsync(SaveRequest<PM_SPECIAL_WORK> request)
+        {
+            return await _service.ManageWork(request);
+        }
+
+        /// <summary>
+        /// 管理维保人员明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManagePmPepAsync(SaveRequest<PM_PLAN_LABOR> request)
+        {
+            return await _service.ManagePmPep(request);
+        }
+
+        /// <summary>
+        /// 管理维保物资明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManagePmSpAsync(SaveRequest<PM_PLAN_SP> request)
+        {
+            return await _service.ManagePmSp(request);
+        }
+
+        /// <summary>
+        /// 提交维保实施
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitPmExeAsync(List<string> sids)
+        {
+            return AjaxResult.Success(await _service.SubmitPmExe(sids), "成功");
+        }
+
+        /// <summary>
+        /// 管理维保实施结果
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManagePmExeAsync(SaveRequest<PM_PLAN_EXE> request)
+        {
+            return await _service.ManagePmExe(request);
+        }
+
+        /// <summary>
+        /// 获取维保实施记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPmExeListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetPmExeList(request), "成功");
+        }
+
+        /// <summary>
+        /// 获取维保查询记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPmExeQryListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetPmExeQryList(request), "成功");
+        }
+    }
+}

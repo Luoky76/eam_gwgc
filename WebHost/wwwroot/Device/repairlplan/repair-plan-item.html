@@ -31,33 +31,46 @@
                             { display: "维修内容", name: "_search_REP_CONTENT", dbname: "REP_CONTENT", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
-
                     grid: {
                         columns: [
-                            { display: "维修部位", name: "BOM_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维修设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维修内容", name: "REP_CONTENT", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
-                            { display: "维修方法", name: "REP_METHOD", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "使用工具", name: "USE_TOOL", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "人员数量", name: "LABOR_NUM", width: 100, type: "decimal", editor: { type: 'decimal' } },
-                            { display: "花费时间(分钟)", name: "TAKE_TIME", width: 100, type: "decimal", editor: { type: 'decimal' } },
+                            { display: "维修部位", name: "BOM_NAME", width: 100, type: "text" },
+                            { display: "维修设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
+                            { display: "维修内容", name: "REP_CONTENT", width: 300, type: "text", validate: { required: true },  editor: { type: 'text' } },
+                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
                             { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "外键", name: "PLAN_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "主键", name: "PLAN_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "维修部位ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "检修负责人", name: "REP_LEADER", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "序号", name: "REP_INDEX", width: 100, type: "decimal", editor: { type: 'decimal' } },
-                            { display: "是否月度询价", name: "IS_ASKBID", width: 100, type: "text", editor: { type: 'text' } },
-                            
-                            
+                            { display: "序号", name: "REP_INDEX", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "是否月度询价", name: "IS_ASKBID", width: 100, type: "select", editor: { type: 'select', data: me.isaskbid, selectBoxHeight: 100 } },
                         ]
                     }
                 };
             },
             grid: null,
+            repitemtype: [],
+            isaskbid: [
+                { ID: "0", TEXT: "是", VALUE: "0" },
+                { ID: "1", TEXT: "否", VALUE: "1" }
+            ],
             buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Repair/RepairPlan/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        debugger
+                        me.repitemtype = data.RepitemType;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
@@ -172,30 +185,6 @@
                 });
                 
             },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
-                }
-                var sid = selected.SID;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改]',
-                    url: "view-detail.html",
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
-                });
-            },
             save: function () { //保存
                 var me = this;
                 if (me.grid.endEdit() != false) {
@@ -207,7 +196,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'RepPlanItem/save',
+                        url: 'Repair/RepairPlan/SaveItem',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -314,6 +303,7 @@
 
             init: function () {
                 var me = this;
+                me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();

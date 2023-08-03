@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title></title>
+    <title>维保项目清单</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -21,42 +21,34 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            status: [],
-            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
-            scanresult: [{ "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }],
+            maintDept: [],
+            pmcycleUnit: [],
+            pmShippost: [],
+            isAttach: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
-                            { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "盘点日期", name: "_search_SCAN_DATE", dbname: "SCAN_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "盘点结果类型", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { data: me.scanresult } },
-                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "编号", name: "_search_STD_CODE", dbname: "STD_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "维保部位", name: "_search_PART_NAME", dbname: "PART_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "执行人", name: "_search_EXE_USER", dbname: "EXE_USER", newline: false, upper: true, type: "select", options: { data: me.pmShippost, } },
+                            { display: "检查人", name: "_search_CHK_USER", dbname: "CHK_USER", newline: false, upper: true, type: "select", options: { data: me.pmShippost, } },
+                            { display: "周期", name: "_search_CYCLE", dbname: "CYCLE", newline: false, upper: true, type: "select", options: { data: me.pmcycleUnit, } },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", format: { data: me.dataCheck } },
-                            { display: "盘点单号", name: "SCAN_CODE", width: 100, type: "text", },
-                            { display: "盘点日期", name: "SCAN_DATE", width: 100, type: "date", },
-                            { display: "盘点结果类型", name: "SCAN_TYPE", width: 100, type: "text" },
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text" },
-                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text" },
-                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text" },
-                            { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text" },
-                            /*{ display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
-                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text"},*/
-                            { display: "当前管理状态", name: "STATUS", width: 100, type: "select", format: { data: me.status } },
-                            {
-                                display: "结果说明", name: "RESULT_MEMO", minWidth: 200, type: "text",validate: { required: true },
-                                editor: {
-                                    type: 'text',
-                                }
-                            },
-                            { display: "备注", name: "MEMO", minWidth: 200, type: "text" },
+                            { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
+                            { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", },
+                            { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", },
+                            { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit } },
+                            { display: "部门", name: "DEPARTMENT", minWidth: 100, type: "select", format: { data: me.maintDept } },
+                            { display: "执行人", name: "EXE_USER", minWidth: 100, type: "select", format: { data: me.pmShippost } },
+                            { display: "检查人", name: "CHK_USER", minWidth: 100, type: "select", format: { data: me.pmShippost } },
+                            { display: "是否附件判断", name: "IS_ATTACH", minWidth: 100, type: "select", format: { data: me.isAttach } },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", },
+                            { display: "主键", name: "PM_STD_LIST_ID", minWidth: 100, hide: true },
                         ]
                     }
                 };
@@ -68,10 +60,12 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Device/InventoryTask/ComboxData',
+                    url: 'Device/PmList/comboxdata',
                     loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.status = data.status;
+                    success: function (data) {
+                        me.maintDept = data.maintDept;
+                        me.pmcycleUnit = data.pmcycleUnit;
+                        me.pmShippost = data.pmShippost;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -88,20 +82,20 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'Device/InventoryTask/GetUpDownList',
+                    url: 'Device/PmList/list',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    //sortName: 'AUDITING',
-                    //sortOrder: 'asc',
+                    sortName: 'STD_CODE',
+                    sortOrder: 'asc',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
+                    enabledEdit: false,
+                    clickToEdit: false,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -134,8 +128,17 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "submit":
-                            me.submit();
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -153,45 +156,95 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            submit: function () {    //提交
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1120,
+                    height: 420,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "pmstdlistdet.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null }
+                });
+            },
+            modify: function () { //修改
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    if (selected.AUDITING == "1") {
-                        LG.tip('已提交，无法再次提交!');
-                    }
-                    else {
-                        if (me.grid.endEdit() != false) {
-                            if (!me.grid.isDataChanged) {
-                                LG.showSuccess('请先填写结果说明！');
-                                return;
-                            }
-                            if (!me.grid.validChangeRows()) return false;
-                            var changeRow = me.grid.getChangedRows();
-                            LG.ajax({
-                                jsToken: true,
-                                url: 'Device/InventoryTask/ManageUpDown',
-                                loading: '正在保存中...',
-                                data: changeRow,
-                                success: function () {
-                                    LG.showSuccess('保存成功');
-                                    me.grid.isDataChanged = false;
-                                    me.reload();
-                                },
-                                error: function (message) {
-                                    LG.showError(message);
-                                }
-                            });
-                        }
-                    }
-                }
-                else {
+                if (!selected) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                var sid = selected.PM_STD_LIST_ID;
+                $.ligerDialog.open({
+                    width: 1120,
+                    height: 420,
+                    allowClose: true,
+                    title: '[修改]',
+                    url: "pmstdlistdet.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": sid }
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/PmList/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
             },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
             },
             bindGridEvent: function () {
                 var me = this;
@@ -270,7 +323,9 @@
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
 </html>

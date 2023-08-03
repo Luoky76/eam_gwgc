@@ -71,48 +71,64 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<GridData> ImportListAsync(GridRequest request)
         {
-            var query = _dbContext.Query<DRUG_COLLECT>()
+            var collectQuery = _dbContext.Query<DRUG_COLLECT>()
                 .Where(a => a.AUDITING == "1")
                 .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
                 .Select((a, b) => new
                 {
-                    b.REQUEST_DET_ID,
-                    b.IS_FULLBUY,
-                    b.COLLECT_NUM
+                    b.SP_ID,
+                    SUM_COLLECT_NUM = Sql.Sum(b.COLLECT_NUM)
+                })
+                .GroupBy(c => c.SP_ID)
+                .Select(c => new
+                {
+                    c.SP_ID,
+                    c.SUM_COLLECT_NUM
                 });
 
-            var list = await _dbContext.Query<DRUG_REQUEST>()
+            var requestQuery = _dbContext.Query<DRUG_REQUEST>()
                 .Where(a => a.AUDITING == "1")
                 .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                .LeftJoin(query, (a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
-                .Where((a, b, c) => c.IS_FULLBUY == "0" || c.IS_FULLBUY == null)
-                .Select((a, b, c) => new
-                {
+                .Select((a, b) => new {
                     b.SP_ID,
                     b.SP_NAME,
                     b.SP_CODE,
                     b.SP_TYPE,
                     b.FACTORY,
                     b.UNIT,
-                    SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM - (c.COLLECT_NUM == null ? 0 : c.COLLECT_NUM))
+                    SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
                 })
-                .GroupBy(e => e.SP_ID)
-                .AndBy(e => e.SP_NAME)
-                .AndBy(e => e.SP_CODE)
-                .AndBy(e => e.SP_TYPE)
-                .AndBy(e => e.FACTORY)
-                .AndBy(e => e.UNIT)
-                .Select(e => new
+                .GroupBy(c => c.SP_ID)
+                .AndBy(c => c.SP_NAME)
+                .AndBy(c => c.SP_CODE)
+                .AndBy(c => c.SP_TYPE)
+                .AndBy(c => c.FACTORY)
+                .AndBy(c => c.UNIT)
+                .Select(c => new
                 {
-                    e.SP_ID,
-                    e.SP_NAME,
-                    e.SP_CODE,
-                    e.SP_TYPE,
-                    e.FACTORY,
-                    e.UNIT,
-                    e.SUM_REQUEST_NUM
+                    c.SP_ID,
+                    c.SP_NAME,
+                    c.SP_CODE,
+                    c.SP_TYPE,
+                    c.FACTORY,
+                    c.UNIT,
+                    c.SUM_REQUEST_NUM
+                });
+
+            var list = await requestQuery.LeftJoin(collectQuery, (a, b) => a.SP_ID == b.SP_ID)
+                .Select((a, b) => new
+                {
+                    a.SP_ID,
+                    a.SP_NAME,
+                    a.SP_CODE,
+                    a.SP_TYPE,
+                    a.FACTORY,
+                    a.UNIT,
+                    SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - b.SUM_COLLECT_NUM
                 })
+                .Where(c => c.SUM_REQUEST_NUM > 0)
                 .GetGridData(request);
+
             return list;
         }
 
