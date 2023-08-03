@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Application;
@@ -7,6 +8,7 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EAM.Special.Services
 {
@@ -131,7 +133,7 @@ namespace EAM.Special.Services
                     c.MODIFYDATE
                 },
                 c => a => a.COLLECT_ID == c.COLLECT_ID
-                , BeforeAdd, null, null, false, null, null);
+                , BeforeAdd, BeforeUpdate, null, false, null, AfterSave);
         }
 
         /// <summary>
@@ -190,6 +192,36 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DRUG_COLLECT entity)
         {
+            //对于即将提交的数据进行验证
+            if (entity.AUDITING == "1")
+            {
+                var list = await _dbContext.Query<DRUG_COLLECT>()
+                .Where(a => a.AUDITING == "1" || a.COLLECT_ID == entity.COLLECT_ID)
+                .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                .LeftJoin<DRUG_REQUEST_DET>((a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
+                .Select((a, b, c) => new
+                {
+                    c.REQUEST_DET_ID,
+                    c.REQUEST_NUM,
+                    SUM_COLLECT_NUM = Sql.Sum(b.COLLECT_NUM)
+                })
+                .GroupBy(d => d.REQUEST_DET_ID)
+                .AndBy(d => d.REQUEST_NUM)
+                .Select(d => new
+                {
+                    d.REQUEST_DET_ID,
+                    d.REQUEST_NUM,
+                    d.SUM_COLLECT_NUM
+                })
+                .Where(d => d.SUM_COLLECT_NUM > d.REQUEST_NUM)
+                .ToListAsync();
+
+                //存在采购数量超过需求数量的采购计划，取消提交
+                if (list.Any())
+                {
+                    throw new MessageException("数据有误，请重新导入采购明细");
+                }
+            }
             await Task.CompletedTask;
         }
 
@@ -208,6 +240,12 @@ namespace EAM.Special.Services
         /// </summary>
         private async Task AfterSave(List<DRUG_COLLECT> added, List<DRUG_COLLECT> updated, List<DRUG_COLLECT> deleted)
         {
+            //级联删除
+            foreach (var entity in deleted)
+            {
+                await _dbContext.DeleteAsync<DRUG_COLLECT_DET>(c => c.COLLECT_ID == entity.COLLECT_ID);
+                await _dbContext.DeleteAsync<DRUG_COLLECT_REQUEST>(c => c.COLLECT_ID == entity.COLLECT_ID);
+            }
             await Task.CompletedTask;
         }
 
