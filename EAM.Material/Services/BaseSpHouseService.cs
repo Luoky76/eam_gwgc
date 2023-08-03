@@ -122,9 +122,9 @@ namespace EAM.Material.Services
 
             entity.HOUSE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.HOUSE_CODE = string.IsNullOrEmpty(entity.PARENT_HOUSE_CODE) ? entity.HOUSE_CODE : entity.PARENT_HOUSE_CODE + entity.HOUSE_CODE + "";
-            entity.CREATE_USERID = _userSession.UserName;
+            entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
 
@@ -132,7 +132,7 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
         }

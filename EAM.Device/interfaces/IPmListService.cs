@@ -1,11 +1,19 @@
 ﻿using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
+using System.Collections.Concurrent;
 
 namespace EAM.Device.Interfaces
 {
-    public interface IDeviceCardService : IService
+    public interface IPmListService : IService
     {
+        /// <summary>
+        /// 获取下拉
+        /// </summary>
+        /// <returns></returns>
+        public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
+
         /// <summary>
         /// 获取列表
         /// </summary>
@@ -13,13 +21,13 @@ namespace EAM.Device.Interfaces
         /// <returns></returns>
         Task<GridData> ListAsync(GridRequest request);
 
-        Task<DEVICE_CARD> GetAsync(string id);
+        Task<PM_STD_LIST> GetAsync(string id);
 
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_VARY> request);
+        Task<AjaxResult> SaveAsync(SaveRequest<PM_STD_LIST> request);
     }
 }

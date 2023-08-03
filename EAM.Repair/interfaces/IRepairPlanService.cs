@@ -15,6 +15,8 @@ namespace EAM.Repair.interfaces
 
         Task<AjaxResult> Save(SaveRequest<REP_PLAN> request);
 
+        Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request);
+
         Task<AjaxResult> ShipList();
 
         Task<GridData> ItemListAsync(GridRequest request);

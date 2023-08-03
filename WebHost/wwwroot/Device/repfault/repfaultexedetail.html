@@ -461,13 +461,16 @@
                 me.toolbarBtnItemClick2 = function (item) {
                     switch (item.id) {
                         case "refresh":
-                            me.reloadPep();
+                            me.reloadSp();
                             break;
                         case "import":
                             me.import();
                             break;
                         case "savesp":
                             me.savesp();
+                            break;
+                        case "deletesp":
+                            me.deletesp();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -510,6 +513,25 @@
                             LG.showError(message);
                         }
                     });
+                }
+            },
+            //删除
+            deletesp: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.savesp();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
                 }
             },
             //刷新
@@ -682,7 +704,7 @@
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.save();
+                                me.savePep();
                             }
                         });
                     } else {
@@ -765,7 +787,13 @@
                 });
                 me.reloadPep();
                 me.reloadSp();
-
+                if (me.dialogData.view != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                    me.grid2.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };
