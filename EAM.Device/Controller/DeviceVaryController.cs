@@ -31,5 +31,16 @@ namespace EAM.Device.Controller
             var result = await _service.ListAsync(request);
             return AjaxResult.Success(result);
         }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_VARY> request)
+        {
+            return await _service.SaveAsync(request);
+        }
     }
 }

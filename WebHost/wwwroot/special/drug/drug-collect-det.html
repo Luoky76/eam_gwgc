@@ -13,8 +13,8 @@
 </head>
 
 <body style="padding: 5px; height: 100%; overflow:auto;">
-    <div id="mainform" style="width:97%;">
-    </div>
+    <form id="mainform" style="width:97%;">
+    </form>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <ul style="display: block; width: 100%;" id="ulGrid">
@@ -189,7 +189,14 @@
                     });
                 }
                 buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+                if (!me.isView) buttons.push({
+                    text: '保存', icon: 'fa fa-save', onclick: function () {
+                        //先保存子表
+                        if (me.requestGrid.isDataChanged) me.saveRequest();
+                        if (me.collectGrid.isDataChanged) me.saveCollect();
+                        me.save();
+                    }.bind(me)
+                });
 
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
@@ -225,10 +232,6 @@
             //保存表单
             save: function () {
                 var me = this;
-                //先保存子表
-                if (me.collectGrid.isDataChanged) me.saveCollect();
-                if (me.requestGrid.isDataChanged) me.saveRequest();
-
                 if ($.isEmptyObject(me.mainform.getChanges())) {
                     me.showSuccessMessage('无修改');
                     return;
@@ -536,7 +539,7 @@
                 var me = this;
                 if (me.collectGrid.endEdit() != false) {
                     if (!me.collectGrid.isDataChanged) {
-                        LG.showSuccess('无修改');
+                        me.showSuccessMessage('无修改');
                         return;
                     }
                     if (!me.collectGrid.validChangeRows()) return false;
@@ -785,7 +788,7 @@
                 var me = this;
                 if (me.requestGrid.endEdit() != false) {
                     if (!me.requestGrid.isDataChanged) {
-                        LG.showSuccess('无修改');
+                        me.showSuccessMessage('无修改');
                         return;
                     }
                     if (!me.requestGrid.validChangeRows()) return false;

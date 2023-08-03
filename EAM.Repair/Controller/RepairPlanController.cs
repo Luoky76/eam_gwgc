@@ -23,7 +23,8 @@ namespace EAM.Repair.Controller
                 ShipList = comboxData["ShipList"],
                 MaintDept = comboxData["MaintDept"],
                 RepairType = comboxData["RepairType"],
-                RepairDealType = comboxData["RepairDealType"]
+                RepairDealType = comboxData["RepairDealType"],
+                RepitemType = comboxData["RepitemType"]
             }, "成功");
         }
         public async Task<AjaxResult> ListAsync(GridRequest request)
@@ -52,6 +53,11 @@ namespace EAM.Repair.Controller
         public async Task<AjaxResult> Save(SaveRequest<REP_PLAN> request)
         {
             return await _service.Save(request);
+        }
+
+        public async Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request)
+        {
+            return await _service.SaveItem(request);
         }
         public async Task<AjaxResult> ShipList()
         {

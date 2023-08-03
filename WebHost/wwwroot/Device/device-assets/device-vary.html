@@ -34,6 +34,7 @@
                     grid: {
                         columns: [
                             { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditingData, selectBoxHeight: 100 } },
+                            { display: "变动类型", name: "VARY_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.varytype, selectBoxHeight: 100 } },
                             { display: "变动单号", name: "VARY_CODE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "登记人", name: "EIDT_USER", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "调出使用部门", name: "DEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
@@ -54,11 +55,11 @@
                             { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "鉴定结果", name: "RESULT", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "主键", name: "VARY_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "变动类型", name: "VARY_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.auditingData, selectBoxHeight: 100 } },
+                            
                         ]
                     }
                 };
-            },
+            },  
             grid: null,
             searchForm: null,
             type: null,
@@ -174,7 +175,7 @@
                     height: 650,
                     allowClose: true,
                     title: '[新增]',
-                    url: "view-detail.html",
+                    url: "device-vary-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -199,7 +200,7 @@
                     height: 650,
                     allowClose: true,
                     title: '[修改]',
-                    url: "view-detail.html",
+                    url: "device-cary-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,

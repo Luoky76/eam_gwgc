@@ -152,11 +152,17 @@ namespace EAM.Special.Services
             var query = _dbContext.Query<DRUG_COLLECT>()
                 .Where(a => a.AUDITING == "1")
                 .LeftJoin<DRUG_COLLECT_REQUEST>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                .Where((a, b) => b.SP_ID == spId)
                 .Select((a, b) => new
                 {
                     b.REQUEST_DET_ID,
-                    b.IS_FULLBUY,
-                    b.COLLECT_NUM
+                    SUM_COLLECT_NUM = Sql.Sum(b.COLLECT_NUM)
+                })
+                .GroupBy(c => c.REQUEST_DET_ID)
+                .Select(c => new
+                {
+                    c.REQUEST_DET_ID,
+                    c.SUM_COLLECT_NUM
                 });
 
             var list = await _dbContext.Query<DRUG_REQUEST>()
@@ -164,7 +170,6 @@ namespace EAM.Special.Services
                 .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
                 .Where((a, b) => b.SP_ID == spId)
                 .LeftJoin(query, (a, b, c) => b.REQUEST_DET_ID == c.REQUEST_DET_ID)
-                .Where((a, b, c) => c.IS_FULLBUY == "0" || c.IS_FULLBUY == null)
                 .Select((a, b, c) => new DRUG_COLLECT_REQUEST
                 {
                     REQUEST_DET_ID = b.REQUEST_DET_ID,
@@ -180,7 +185,11 @@ namespace EAM.Special.Services
                     FACTORY = b.FACTORY,
                     UNIT = b.UNIT,
                     //申请数量为剩余未采购的申请数量
-                    REQUEST_NUM = b.REQUEST_NUM - (c.COLLECT_NUM == null ? 0 : c.COLLECT_NUM),
+                    REQUEST_NUM = b.REQUEST_NUM - (c.SUM_COLLECT_NUM == null ? 0 : c.SUM_COLLECT_NUM),
+                    //采购数量默认为全部未采购的申请数量
+                    COLLECT_NUM = b.REQUEST_NUM - (c.SUM_COLLECT_NUM == null ? 0 : c.SUM_COLLECT_NUM),
+                    //默认全数购买
+                    IS_FULLBUY = "1",
                     REQUEST_CODE = a.REQUEST_CODE,
                     REQUEST_USER = a.REQUEST_USER,
                     REQUEST_USERID = a.CREATE_USERID,
@@ -189,6 +198,7 @@ namespace EAM.Special.Services
                     SEC_DEPT = a.SEC_DEPT,
                     SEC_DEPTID = a.SEC_DEPTID,
                 })
+                .Where(d => d.REQUEST_NUM > 0)
                 .ToListAsync();
             return list;
         }
