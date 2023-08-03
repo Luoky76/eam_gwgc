@@ -140,6 +140,21 @@
                         case "save":
                             me.save();
                             break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "week":
+                            me.week();
+                            break;
+                        case "month":
+                            me.month();
+                            break;
+                        case "quarter":
+                            me.quarter();
+                            break;
+                        case "year":
+                            me.year();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls",
@@ -155,6 +170,24 @@
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            week: function () {    //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/PmList/WeekTimer',
+                    loading: '正在保存中...',
+                    //data: { "sids": sids },
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             add: function () { //新增
                 var me = this;

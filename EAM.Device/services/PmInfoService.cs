@@ -54,7 +54,7 @@ namespace EAM.Device.services
                 { "MaintDept",null},
                 { "WorkState",null},
                 { "MaintCycle",null},
-                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => (c.TYPE_NAME == "设备"||c.TYPE_NAME == "船舶"))},
+                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => (c.TYPE_ID == "1"))},
             });
         }
 

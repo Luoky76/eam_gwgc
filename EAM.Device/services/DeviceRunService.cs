@@ -60,7 +60,7 @@ namespace EAM.Device.services
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
-                .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1");
+                .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="1"&&c.AUDITING=="1");
             return await qry
                 .Select((a, b, c) => new ComboxData()
                 {
@@ -169,7 +169,7 @@ namespace EAM.Device.services
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                  .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)
-                 .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="在用"&&c.AUDITING=="1")
+                 .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="1"&&c.AUDITING=="1")
                  .Select((a, b, c, d) => new
                  {
                      NEW_RUN_STATUS = c.NEW_RUN_STATUS ?? "正常",

@@ -62,5 +62,18 @@ namespace EAM.Device.Controller
         {
             return await _service.SaveAsync(request);
         }
+
+        /// <summary>
+        /// 周期定时器
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> WeekTimerAsync()
+        {
+            
+             await _service.WeekTimer();
+            return AjaxResult.Success();
+            //return AjaxResult.Success(await _service.WeekTimer(), "成功");
+        }
     }
 }

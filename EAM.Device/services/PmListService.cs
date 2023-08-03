@@ -1,6 +1,7 @@
 ﻿using Chloe;
 using EAM.Device.Interfaces;
 using Gksyb.Common;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
@@ -14,11 +15,14 @@ namespace EAM.Device.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly UserSession _userSession;
+        private DateTime? _Sysdate;
 
-        public PmListService(IDbContext dbContext, IComboxDataService comboxService)
+        public PmListService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _userSession = userSession;
         }
 
         /// <summary>
@@ -89,6 +93,121 @@ namespace EAM.Device.Services
             entity.PM_STD_LIST_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
+
+        /// <summary>
+        /// 周期定时器
+        /// </summary>
+        /// <returns></returns>
+        public async Task WeekTimer()
+        {
+            //查维保项目清单的周期数据
+            var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="每周")
+                .ToListAsync();
+            //查设备卡片的数据
+            var qrycards = await _dbContext.Query<DEVICE_CARD>()
+                .Where(c => c.SEC_DEPTID==_userSession.ParentCompany.CorpID && c.STATUS == "1"&&c.TYPE_ID=="1")
+                .ToListAsync();
+            //保养计划的id
+            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
+            string def = aa + "0000";
+            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
+            //取当前月份
+            var currentMonth = DateTime.Now.Month;
+            //保养计划的临时数据
+            var cardPmList = new List<PM_PLAN_EXE>();
+            //保养计划明细的临时数据
+            var pmplandetList = new List<PM_PLAN_DONEITEM>();
+            if (qryPmlists != null && qrycards != null)
+            {
+                if (qryPmlists.Exists(c => c.DEPARTMENT=="机舱部"))
+                {
+                    foreach (var qrycard in qrycards)
+                    {
+                        var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
+                        var scandet = new PM_PLAN_EXE()
+                        {
+                            EXE_ID = GuidHelper.NewSnowflakeId().ToString(),
+                            PLAN_CODE = aa + index.ToString("D4"),
+                            AUDITING = "0",
+                            DEVICE_ID = qrycard.DEVICE_ID ?? "",
+                            DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                            DEVICE_CODE = qrycard.DEVICE_NO ?? "",
+                            ASSET_CODE = qrycard.ASSET_CODE ?? "",
+                            DEPT_NAME = qrycard.DEPT_NAME ?? "",
+                            DEPT_ID = qrycard.DEPT_ID ?? "",
+                            WDEPT_ID = qrycard.WDEPT_ID ?? "",
+                            SHIP_DEPT = "机舱部",
+                            EXE_USER = qrycard.CARD_USER ?? "",
+                            EXE_USERID = qrycard.CARD_USERID ?? "",
+                            SOURCE = "1",
+                            PM_TYPE = "20",
+                        };
+                        cardPmList.Add(scandet);
+                        foreach (var qryPmlist in qryPmlists)
+                        {
+                            var pmplandon = new PM_PLAN_DONEITEM()
+                            {
+                                DONEITEM_ID = GuidHelper.NewSnowflakeId().ToString(),
+                                STD_CODE = qryPmlist.STD_CODE ?? "",
+                                OBJECT_NAME = qryPmlist.PART_NAME ?? "",
+                                CONTENT = qryPmlist.CONTENT ?? "",
+                                STD_LEVEL = "定期保养",
+                                WORK_STATE = "20",
+                                MAINT_CYCLE = qryPmlist.CYCLE ?? "",
+                                PLAN_MONTH = currentMonth+"月",
+                                EXE_ID =scandet.EXE_ID,
+                            };
+                            pmplandetList.Add(pmplandon);
+                        }
+                    }
+                }
+                if (qryPmlists.Exists(c => c.DEPARTMENT=="甲板部"))
+                {
+                    foreach (var qrycard in qrycards)
+                    {
+                        var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
+                        var scandet = new PM_PLAN_EXE()
+                        {
+                            EXE_ID = GuidHelper.NewSnowflakeId().ToString(),
+                            PLAN_CODE = aa + index.ToString("D4"),
+                            AUDITING = "0",
+                            DEVICE_ID = qrycard.DEVICE_ID ?? "",
+                            DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                            DEVICE_CODE = qrycard.DEVICE_NO ?? "",
+                            ASSET_CODE = qrycard.ASSET_CODE ?? "",
+                            DEPT_NAME = qrycard.DEPT_NAME ?? "",
+                            DEPT_ID = qrycard.DEPT_ID ?? "",
+                            SHIP_DEPT = "甲板部",
+                            WDEPT_ID = qrycard.WDEPT_ID ?? "",
+                            EXE_USER = qrycard.CARD_USER ?? "",
+                            EXE_USERID = qrycard.CARD_USERID ?? "",
+                            SOURCE = "1",
+                            PM_TYPE = "20",
+                        };
+                        cardPmList.Add(scandet);
+                        foreach (var qryPmlist in qryPmlists)
+                        {
+                            var pmplandon = new PM_PLAN_DONEITEM()
+                            {
+                                DONEITEM_ID = GuidHelper.NewSnowflakeId().ToString(),
+                                STD_CODE = qryPmlist.STD_CODE ?? "",
+                                OBJECT_NAME = qryPmlist.PART_NAME ?? "",
+                                CONTENT = qryPmlist.CONTENT ?? "",
+                                STD_LEVEL = "定期保养",
+                                WORK_STATE = "20",
+                                MAINT_CYCLE = qryPmlist.CYCLE ?? "",
+                                PLAN_MONTH = currentMonth+"月",
+                                EXE_ID =scandet.EXE_ID,
+                            };
+                            pmplandetList.Add(pmplandon);
+                        }
+                    }
+                }
+            }
+            await _dbContext.InsertRangeAsync(cardPmList);
+            await _dbContext.InsertRangeAsync(pmplandetList);
+        }
+
 
     }
 }
