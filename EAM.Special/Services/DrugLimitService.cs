@@ -7,6 +7,7 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using System.Linq.Expressions;
 
 namespace EAM.Special.Services
 {
@@ -67,40 +68,58 @@ namespace EAM.Special.Services
                 })
                 .ToListAsync();
 
-            int year = 0, month = 0;
-            string type = "";
-            string deptID = "";
-            string position = "";
-            if (list.Any())
+            if (!list.Any())
             {
-                type = list[0].REQUEST_TYPE;
-                year = list[0].REQUEST_YEAR.Value;
-                month = list[0].REQUEST_MONTH.Value;
-                deptID = list[0].DEPT_ID;
-                //"1"港内，"2"港外
-                position = list[0].POSITION;
+                return null;
             }
-            else return null;
+
+            string type = list[0].REQUEST_TYPE;
+            int year = list[0].REQUEST_YEAR.Value;
+            int month = list[0].REQUEST_MONTH.Value;
+            string deptID = list[0].DEPT_ID;
+            //"1"港内，"2"港外
+            string position = list[0].POSITION;
+
+            Expression<Func<DRUG_REQUEST, bool>> whereCondition;
+            if (month >= 4 && month <= 9)
+            {
+                //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 相同年份 4~9月
+                whereCondition = a =>
+                    a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
+                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
+                    && a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 4 && a.REQUEST_MONTH <= 9;
+            }
+            else if (month <= 3)
+            {
+                //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 同年1~3月或去年10~12月
+                whereCondition = a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
+                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
+                    && (a.REQUEST_YEAR == year && a.REQUEST_MONTH <= 3 || a.REQUEST_YEAR == year - 1 && a.REQUEST_MONTH >= 10);
+            }
+            else
+            {
+                //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 同年10~12月或下一年1~3月
+                whereCondition = a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
+                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
+                    && (a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 10 || a.REQUEST_YEAR == year + 1 && a.REQUEST_MONTH <= 3);
+            }
+
+            var query = _dbContext.Query<DRUG_REQUEST>()
+                .Where(whereCondition)
+                .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
+                .Select((a, b) => new {
+                    b.SP_ID,
+                    SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
+                })
+                .GroupBy(c => c.SP_ID)
+                .Select(c => new
+                {
+                    c.SP_ID,
+                    SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
+                });
 
             if (month >= 4 && month <= 9)
             {
-                var query = _dbContext.Query<DRUG_REQUEST>()
-                    //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 相同年份 4~9月
-                    .Where(a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
-                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
-                    && a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 4 && a.REQUEST_MONTH <= 9)
-                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                    .Select((a, b) => new {
-                        b.SP_ID,
-                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
-                    })
-                    .GroupBy(c => c.SP_ID)
-                    .Select(c => new
-                    {
-                        c.SP_ID,
-                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
-                    });
-
                 var limitList = await _dbContext.Query<DRUG_LIMIT>()
                 .LeftJoin(query,(a,b)=>a.SP_ID==b.SP_ID)
                 .Select((a, b) => new
@@ -120,63 +139,8 @@ namespace EAM.Special.Services
 
                 return limitList;
             }
-            else if (month <= 3)
-            {
-                var query = _dbContext.Query<DRUG_REQUEST>()
-                    //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 同年1~3月或去年10~12月
-                    .Where(a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
-                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
-                    && (a.REQUEST_YEAR == year && a.REQUEST_MONTH <= 3 || a.REQUEST_YEAR == year - 1 && a.REQUEST_MONTH >= 10))
-                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                    .Select((a, b) => new {
-                        b.SP_ID,
-                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
-                    })
-                    .GroupBy(c => c.SP_ID)
-                    .Select(c => new
-                    {
-                        c.SP_ID,
-                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
-                    });
-
-                var limitList = await _dbContext.Query<DRUG_LIMIT>()
-                .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
-                .Select((a, b) => new
-                {
-                    a.LIMIT_ID,
-                    a.SP_ID,
-                    a.SP_CODE,
-                    a.SP_NAME,
-                    a.SP_TYPE,
-                    a.UNIT,
-                    LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
-                    a.OUTSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
-                })
-                //对于临时需求，返回所有药品；其它需求，仅返回剩余可申请量>0的药品
-                .Where(c => c.LEFTOVER > 0 || type == "3")
-                .GetGridData(null);
-
-                return limitList;
-            }
             else
             {
-                var query = _dbContext.Query<DRUG_REQUEST>()
-                    //已提交 需求类型为月度或厂修（不计入临时） 排除本需求单 相同部门 相同位置（港内或港外） 同年10~12月或下一年1~3月
-                    .Where(a => a.AUDITING == "1" && (a.REQUEST_TYPE == "1" || a.REQUEST_TYPE == "2")
-                    && a.REQUEST_ID != requestId && a.DEPT_ID == deptID && a.POSITION == position
-                    && (a.REQUEST_YEAR == year && a.REQUEST_MONTH >= 10 || a.REQUEST_YEAR == year + 1 && a.REQUEST_MONTH <= 3))
-                    .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                    .Select((a, b) => new {
-                        b.SP_ID,
-                        SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
-                    })
-                    .GroupBy(c => c.SP_ID)
-                    .Select(c => new
-                    {
-                        c.SP_ID,
-                        SUM_REQUEST_NUM = c.SUM_REQUEST_NUM == null ? 0 : c.SUM_REQUEST_NUM
-                    });
-
                 var limitList = await _dbContext.Query<DRUG_LIMIT>()
                 .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
                 .Select((a, b) => new

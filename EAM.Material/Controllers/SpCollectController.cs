@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace EAM.Material.Controllers
 {
     [GksybAuthorize(true)]
-    public class SpApplyController : AreaController
+    public class SpCollectController : AreaController
     {
-        private readonly ISpApplyService _service;
+        private readonly ISpCollectService _service;
 
-        public SpApplyController(ISpApplyService service)
+        public SpCollectController(ISpCollectService service)
         {
             _service = service;
         }
@@ -44,7 +44,7 @@ namespace EAM.Material.Controllers
         /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request)
+        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
@@ -69,11 +69,38 @@ namespace EAM.Material.Controllers
 
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_APPLY_DETAIL> request)
+        public async Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
             return await _service.DetailSave(request);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> RequestListAsync(string COLLECT_DET_ID, GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.RequestListAsync(COLLECT_DET_ID, request), "成功");
+        }
+
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> RequestSave(SaveRequest<SP_COLLECT_REQUEST> request)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.RequestSave(request);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> SpApplyListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.SpApplyListAsync(request), "成功");
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> SelectApplyAsync(List<string> SpdetID,string Cid)
+        {
+            return AjaxResult.Success(await _service.SelectApply(SpdetID, Cid), "成功");
         }
     }
 }

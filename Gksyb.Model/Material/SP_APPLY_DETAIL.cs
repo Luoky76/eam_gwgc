@@ -390,6 +390,13 @@ namespace Gksyb.Model
         [Description("其余库存数量")]
         public decimal? QYKCSL { get; set; }
 
+        /// <summary>
+        /// 物资状态(10计划,20待请购,30请购中,40采购中,50供货中,60质检待入库)
+        /// </summary>
+        [Description("物资状态(10计划,20待请购,30请购中,40采购中,50供货中,60质检待入库)")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SP_STATUS { get; set; }
+
     }
 
 }
