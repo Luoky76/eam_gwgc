@@ -81,6 +81,7 @@ namespace EAM.Special.Services
                 .Where(a => a.REQUEST_ID == requestId)
                 .Select(a => new
                 {
+                    a.REQUEST_TYPE,
                     a.REQUEST_YEAR,
                     a.REQUEST_MONTH,
                     a.DEPT_ID,
@@ -89,10 +90,12 @@ namespace EAM.Special.Services
                 .ToListAsync();
 
             int year = 0, month = 0;
+            string type = "";
             string deptID = "";
             string position = "";
             if (list.Any())
             {
+                type = list[0].REQUEST_TYPE;
                 year = list[0].REQUEST_YEAR.Value;
                 month = list[0].REQUEST_MONTH.Value;
                 deptID = list[0].DEPT_ID;
@@ -165,7 +168,8 @@ namespace EAM.Special.Services
                     a.MODIFY_USERID,
                     a.MODIFYDATE,
                     b.LEFTOVER
-                }).GetGridData(null);
+                })
+                .GetGridData(null);
                 return requestDet;
             }
             else if (month <= 3)
@@ -227,7 +231,8 @@ namespace EAM.Special.Services
                     a.MODIFY_USERID,
                     a.MODIFYDATE,
                     b.LEFTOVER
-                }).GetGridData(null);
+                })
+                .GetGridData(null);
                 return requestDet;
             }
             else
@@ -289,7 +294,8 @@ namespace EAM.Special.Services
                     a.MODIFY_USERID,
                     a.MODIFYDATE,
                     b.LEFTOVER
-                }).GetGridData(null);
+                })
+                .GetGridData(null);
                 return requestDet;
             }
         }
