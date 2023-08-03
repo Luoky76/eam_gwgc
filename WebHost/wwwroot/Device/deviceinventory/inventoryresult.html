@@ -45,12 +45,9 @@
                     grid: {
                         columns: [
                             {
-                                display: "记录状态", name: "AUDITING", labelWidth: 100, width: 300, newline: true, type: "select", format: { data: me.dataCheck }
-                            },
-                            { display: "盘点单号", name: "SCAN_CODE", minWidth: 120, type: "text" },
-                            {
                                 display: "盘点状态", name: "STATUS", minWidth: 100, type: "select", format: { data: me.scanStatus }
                             },
+                            { display: "盘点单号", name: "SCAN_CODE", minWidth: 120, type: "text" },
                             { display: "盘点部门", name: "DEPT_NAME", width: 100, type: "text" },
                             { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text" },
                             { display: "盘点人", name: "USER_NAME", width: 100, type: "text" },

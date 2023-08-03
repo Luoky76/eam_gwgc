@@ -39,6 +39,7 @@ namespace EAM.Device.controller
                 scanStatus = comboxData["ScanStatus"],
                 deviceType = comboxData["DeviceTypeName"],
                 deptData = comboxData["DeptData"],
+                status = comboxData["AssetStatus"],
             }, "成功");
         }
 
