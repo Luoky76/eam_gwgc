@@ -13,8 +13,8 @@
 </head>
 
 <body style="padding: 5px; height: 100%; overflow:auto;">
-    <div id="mainform" style="width:97%;">
-    </div>
+    <form id="mainform" style="width:97%;">
+    </form>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <div class="l-group" style="width: 100%;"><span>药品需求明细</span></div>
@@ -221,9 +221,9 @@
                 }
                 me.mainform.focus();
             },
-            save: function () { //保存
+            save: function (isAsync = true) { //保存
                 var me = this;
-                if ($.isEmptyObject(me.mainform.getChanges())) {
+                if (!me.isNew && $.isEmptyObject(me.mainform.getChanges())) {
                     LG.showSuccess('无修改');
                     return;
                 }
@@ -252,6 +252,7 @@
                     url: 'Special/DrugRequest/Save',
                     loading: '正在保存中...',
                     data: changeRow,
+                    async: isAsync,
                     success: function () {
                         LG.showSuccess('保存成功', function () {
                             //location.reload(true);
@@ -423,7 +424,15 @@
                             me.reloadGrid();
                             break;
                         case "import":
-                            me.importGrid();
+                            //导入前需要先保存主表
+                            if (me.isNew || !$.isEmptyObject(me.mainform.getChanges())) {
+                                $.ligerDialog.confirm("导入前需先保存主表，是否保存？", function (confirm) {
+                                    if (confirm) {
+                                        me.save();
+                                    }
+                                });
+                            }
+                            else me.importGrid();
                             break;
                         case "delete":
                             me.deleteGrid();
