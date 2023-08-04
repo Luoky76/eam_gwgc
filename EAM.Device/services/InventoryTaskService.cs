@@ -185,7 +185,7 @@ namespace EAM.Device.services
                     };
                     dsdList.Add(scandet);
                 }
-                await _dbContext.InsertRangeAsync<DEVICE_SCAN_DET>(dsdList);
+                await _dbContext.InsertRangeAsync(dsdList);
             }
 
             return "";
@@ -344,9 +344,11 @@ namespace EAM.Device.services
                     var scandetreList = new List<DEVICE_SCAN_RESULT>();
                     var scan_code = 0;
                     var scan_type = "";
+                    var pyk = "";
                     foreach (var queryup in queryups)
                     {
                         scan_type = queryup.SCAN_RESULT == "盘盈" ? "盘盈" : "盘亏";
+                        pyk = queryup.SCAN_RESULT == "盘盈" ? "PY" : "PK";
                         var scanTypeCount = scandetreList.Count(item => item.SCAN_TYPE == scan_type);
                         var scanQuery = _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa) && x.SCAN_TYPE == scan_type);
                         var maxScanCode = await scanQuery.Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
@@ -356,7 +358,7 @@ namespace EAM.Device.services
                             RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
                             AUDITING = "0",
                             SCAN_ID = sid,
-                            SCAN_CODE = "PY"+ aa + scan_code.ToString("D4"),
+                            SCAN_CODE = pyk+ aa + scan_code.ToString("D4"),
                             SCAN_DATE = Sysdate,
                             SCAN_TYPE = scan_type,
                             DEVICE_NO = queryup.DEVICE_NO,
@@ -373,7 +375,7 @@ namespace EAM.Device.services
                         };
                         scandetreList.Add(scandetre);
                     }
-                    await _dbContext.InsertRangeAsync<DEVICE_SCAN_RESULT>(scandetreList);
+                    await _dbContext.InsertRangeAsync(scandetreList);
                 }
                 return "";
             }

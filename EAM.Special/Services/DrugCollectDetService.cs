@@ -126,6 +126,7 @@ namespace EAM.Special.Services
                     a.UNIT,
                     SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - b.SUM_COLLECT_NUM
                 })
+                .Where(c => c.SUM_REQUEST_NUM > 0)
                 .GetGridData(request);
 
             return list;

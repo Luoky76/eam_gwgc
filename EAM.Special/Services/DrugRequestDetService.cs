@@ -81,6 +81,7 @@ namespace EAM.Special.Services
                 .Where(a => a.REQUEST_ID == requestId)
                 .Select(a => new
                 {
+                    a.REQUEST_TYPE,
                     a.REQUEST_YEAR,
                     a.REQUEST_MONTH,
                     a.DEPT_ID,
@@ -88,23 +89,19 @@ namespace EAM.Special.Services
                 })
                 .ToListAsync();
 
-            int year = 0, month = 0;
-            string deptID = "";
-            string position = "";
-            if (list.Any())
-            {
-                year = list[0].REQUEST_YEAR.Value;
-                month = list[0].REQUEST_MONTH.Value;
-                deptID = list[0].DEPT_ID;
-                //"1"港内，"2"港外
-                position = list[0].POSITION;
-            }
-            else
+            if (!list.Any())
             {
                 return await _dbContext.Query<DRUG_REQUEST_DET>()
                 .Where(a => a.REQUEST_ID == requestId)
                 .GetGridData(null);
             }
+
+            string type = list[0].REQUEST_TYPE;
+            int year = list[0].REQUEST_YEAR.Value;
+            int month = list[0].REQUEST_MONTH.Value;
+            string deptID = list[0].DEPT_ID;
+            //"1"港内，"2"港外
+            string position = list[0].POSITION;
 
             if (month >= 4 && month <= 9)
             {
@@ -165,7 +162,8 @@ namespace EAM.Special.Services
                     a.MODIFY_USERID,
                     a.MODIFYDATE,
                     b.LEFTOVER
-                }).GetGridData(null);
+                })
+                .GetGridData(null);
                 return requestDet;
             }
             else if (month <= 3)
@@ -227,7 +225,8 @@ namespace EAM.Special.Services
                     a.MODIFY_USERID,
                     a.MODIFYDATE,
                     b.LEFTOVER
-                }).GetGridData(null);
+                })
+                .GetGridData(null);
                 return requestDet;
             }
             else
@@ -289,7 +288,8 @@ namespace EAM.Special.Services
                     a.MODIFY_USERID,
                     a.MODIFYDATE,
                     b.LEFTOVER
-                }).GetGridData(null);
+                })
+                .GetGridData(null);
                 return requestDet;
             }
         }

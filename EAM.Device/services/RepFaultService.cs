@@ -53,7 +53,7 @@ namespace EAM.Device.services
                 { "FaultSrc",null},
                 { "FaultStatus",null},
                 { "MaintDept",null},
-                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => c.TYPE_NAME == "设备")},
+                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => c.TYPE_ID == "1")},
                 { "ShipInfo",null},
             });
         }

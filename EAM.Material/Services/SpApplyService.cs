@@ -16,6 +16,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Net.NetworkInformation;
 using System.Reflection.Emit;
 using WkHtmlToPdfDotNet;
 
@@ -66,6 +67,10 @@ namespace EAM.Material.Services
                     APPLY_DATE = c.APPLY_DATE,
                     CREATE_USERID = c.CREATE_USERID,
                     CREATEDATE = c.CREATEDATE,
+                    TYPE_ID2=c.TYPE_ID2,
+                    CGFS=c.CGFS,
+                    TYPE_CODE=c.TYPE_CODE,
+                    TYPE_NAME=c.TYPE_NAME,
                     MEMO = c.MEMO
                 })
                 .GetGridData(request);
@@ -75,18 +80,6 @@ namespace EAM.Material.Services
             }
             return res;
         }
-
-        /// <summary>
-        /// 获取单行数据
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> GetAsync(string id)
-        {
-            var row = await _dbContext.Query<SP_APPLY>().Where(c => c.APPLY_ID == id).FirstAsync();
-            return AjaxResult.Success(row);
-        }
-
 
 
         /// <summary>
@@ -102,6 +95,11 @@ namespace EAM.Material.Services
                     { "BCCode", "exig_dev" },
                     { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)null}
                 });
+                var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "BCCode", "CGtype" }
+                });
+                dic.TryAdd("CGFS", dic1["BCCode"]);
                 return AjaxResult.Success(dic);
             }
             catch (Exception e)
@@ -207,6 +205,11 @@ namespace EAM.Material.Services
                     {
                         AUDITING = "1"
                     });
+            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID),
+                   x => new SP_APPLY_DETAIL
+                   {
+                       SP_STATUS = "20"//待请购
+                   });
             return updatedevice;
         }
 
@@ -298,6 +301,7 @@ namespace EAM.Material.Services
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
+            entity.SP_STATUS = "10";//计划
         }
 
         private async Task BeforeUpdateDet(SP_APPLY_DETAIL entity)
@@ -311,7 +315,7 @@ namespace EAM.Material.Services
 
         private async Task AfterSaveDet(List<SP_APPLY_DETAIL> added, List<SP_APPLY_DETAIL> updated, List<SP_APPLY_DETAIL> deleted)
         {
-            var applyId = added == null? updated.Select(c => c.APPLY_ID).FirstOrDefault():added.Select(c => c.APPLY_ID).FirstOrDefault();
+            var applyId = added.Count == 0 ? updated.Count == 0 ? deleted.Select(c => c.APPLY_ID).FirstOrDefault() : updated.Select(c => c.APPLY_ID).FirstOrDefault() : added.Select(c => c.APPLY_ID).FirstOrDefault();
             await Task.CompletedTask;
             if (!string.IsNullOrEmpty(applyId))
             {
@@ -321,8 +325,6 @@ namespace EAM.Material.Services
                         SUM_MONEY = _dbContext.Query<SP_APPLY_DETAIL>().Where(t => t.APPLY_ID == applyId).Sum(t => t.YG_MONEY)
                     });
             }
-
-          
         }
         #endregion
     }

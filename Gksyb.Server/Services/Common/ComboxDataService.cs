@@ -101,7 +101,7 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         private async Task<List<ComboxData>> DeviceTypeName(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
         {
-            using var dbContext = _dbContext.Clone();
+            var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
                 .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
                 .Distinct()
@@ -306,7 +306,7 @@ namespace Gksyb.Server.Services.Common
             using var dbContext = _dbContext.Clone();
             var qry = dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID);
-            return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_NAME=="船舶")
+            return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_ID=="1")
                 .Select(c => new ComboxData()
                 {
                     ID = c.DEVICE_ID,
