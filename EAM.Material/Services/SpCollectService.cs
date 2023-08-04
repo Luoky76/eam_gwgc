@@ -17,6 +17,8 @@ using NPOI.Util;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Linq.Expressions;
 using System.Reflection.Emit;
 using WkHtmlToPdfDotNet;
@@ -209,6 +211,74 @@ namespace EAM.Material.Services
                   {
                       SP_STATUS = "40"//采购中
                   });
+
+            var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
+
+            if (list.Count > 0)
+            {
+                DateTime? dt = await _dbContext.GetSysdate();
+                var importDetail = new List<SP_ORDER_DETAIL>();
+                var importList = new List<SP_ORDER>();
+
+                foreach (var item in list)
+                {
+                    //形成物资询价方案
+                    var temp = new SP_ORDER
+                    {
+                        PURPLAN_ID = item.COLLECT_ID,
+                        ORDER_ID = GuidHelper.NewSnowflakeId().ToString(),
+                        ORDER_CODE = $"ORD{dt.Value.ToString("yyyyMMddHHmmss")}",
+                        ORDER_DATE = dt,
+                        ORDER_MONEY = item.COLLECT_PRICE,
+                        BUY_USERID = item.COLLECT_USERID,
+                        BUY_USER = item.COLLECT_USER,
+                        PROVIDER_ID= item.PROVIDER_ID,
+                        PROVIDER_NAME = item.PROVIDER_NAME,
+                        CREATE_USERID = _userSession.UserID.ToString(),
+                        CREATEDATE = dt,
+                        MODIFY_USERID = _userSession.UserID.ToString(),
+                        MODIFYDATE = dt
+                    };
+                    importList.Add(temp);
+                    await Task.CompletedTask;
+
+                    var data = _dbContext.Query<SP_COLLECT_REQUEST>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
+                    foreach (var det in data)
+                    {
+                        var apply = _dbContext.Query<SP_APPLY>()
+                            .LeftJoin<SP_APPLY_DETAIL>((a,b)=>a.APPLY_ID == b.APPLY_ID)
+                            .Where((a, b) =>b.SPDET_ID == det.REQUEST_DET_ID)
+                            .Select((a, b) => new { 
+                             a.APPLY_NO,
+                             a.USE_MEMO
+                            })
+                            .First();
+                        var req = det.MapTo<SP_ORDER_DETAIL>();
+                        req.APPLY_NO = apply?.APPLY_NO;
+                        req.USE_MEMO = apply?.USE_MEMO;
+                        req.APPLY_USERID = det.REQUEST_USERID;
+                        req.APPLY_USER = det.REQUEST_USER;
+                        req.SPDET_ID = det.REQUEST_DET_ID;
+
+                        req.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
+                        req.CREATE_USERID = _userSession.UserID.ToString();
+                        req.CREATEDATE = dt;
+                        req.MODIFY_USERID = _userSession.UserID.ToString();
+                        req.MODIFYDATE = dt;
+
+                        req.COUNT = det.CHECK_NUM;
+                        req.PRICE = det.TAX_PRICE;
+                        req.MONEY = det.COLLECT_MONEY;
+                        req.ORDER_ID = temp.ORDER_ID;
+                        importDetail.Add(req);
+                        await Task.CompletedTask;
+                    }
+                }
+
+                await _dbContext.InsertRangeAsync<SP_ORDER>(importList);
+                await _dbContext.InsertRangeAsync<SP_ORDER_DETAIL>(importDetail);
+            }
+
             return updatedevice;
         }
 
@@ -463,6 +533,23 @@ namespace EAM.Material.Services
             public string APPLY_NO;
 
             public string APPLY_USER;
+            public string APPLY_USERID;
+            public string DEPT_NAME { get; set; }
+
+            /// <summary>
+            /// 申请部门ID
+            /// </summary>
+            public string DEPT_ID { get; set; }
+
+            /// <summary>
+            /// 二级单位
+            /// </summary>
+            public string SEC_DEPT { get; set; }
+
+            /// <summary>
+            /// 二级单位ID
+            /// </summary>
+            public string SEC_DEPTID { get; set; }
         }
         /// <summary>
         /// 选中的采购申请明细
@@ -529,7 +616,12 @@ namespace EAM.Material.Services
                     ZKCS = a.ZKCS,
                     QYKCSL = a.QYKCSL,
                     APPLY_NO = b.APPLY_NO,
-                    APPLY_USER = b.APPLY_USER
+                    APPLY_USER = b.APPLY_USER,
+                    DEPT_NAME = b.DEPT_NAME,
+                    DEPT_ID = b.DEPT_ID,
+                    SEC_DEPT = b.SEC_DEPT,
+                    SEC_DEPTID= b.SEC_DEPTID,
+                    APPLY_USERID = b.APPLY_USERID
                 }).ToList();
 
             var spIds = appledet.Select(t => t.SP_ID).Distinct().ToList();
@@ -563,7 +655,7 @@ namespace EAM.Material.Services
                     req.REQUEST_DET_ID = item.SPDET_ID;
                     req.REQUEST_NUM = item.COUNT;
                     req.REQUEST_USER = item.APPLY_USER;
-                    req.REQUEST_USERID = item.CREATE_USERID;
+                    req.REQUEST_USERID = item.APPLY_USERID;
                     importRequest.Add(req);
                     await Task.CompletedTask;
                 }
