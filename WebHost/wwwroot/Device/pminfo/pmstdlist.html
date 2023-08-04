@@ -171,12 +171,66 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            week: function () {    //提交
+            week: function () {    //周期定时器
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 LG.ajax({
                     jsToken: true,
                     url: 'Device/PmList/WeekTimer',
+                    loading: '正在保存中...',
+                    //data: { "sids": sids },
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            month: function () {    //月定时器
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/PmList/MonthTimer',
+                    loading: '正在保存中...',
+                    //data: { "sids": sids },
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            quarter: function () {    //季度定时器
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/PmList/QuarterTimer',
+                    loading: '正在保存中...',
+                    //data: { "sids": sids },
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            year: function () {    //年度定时器
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/PmList/YearTimer',
                     loading: '正在保存中...',
                     //data: { "sids": sids },
                     success: function () {
