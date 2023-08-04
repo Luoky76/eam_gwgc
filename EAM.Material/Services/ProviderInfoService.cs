@@ -39,55 +39,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<PROVIDER>().Select(c => new
-            {
-                c.PROVIDER_ID,
-                c.AUDITING,
-                c.ORG_NAME,
-                c.DEPT_NAME,
-                c.PROVIDER_CODE,
-                c.PROVIDER_NAME,
-                c.ABBREVIATION,
-                c.REG_ADDRESS,
-                c.LEGAL_REPRESENT,
-                c.ENTITY_REG_FUND,
-                c.ENTER_NATURE,
-                c.LICENSE_CODE,
-                c.ENTER_QUALITY,
-                c.BUSINESS_LIC,
-                c.PROVIDER_CONTACT,
-                c.PROVIDER_PHONE,
-                c.FAX,
-                c.EMAIL,
-                c.WEBSITE,
-                c.AVERAGE_TAX,
-                c.BIZ_SCOPE,
-                c.PROVIDER_SRC,
-                c.PROVIDER_TYPE,
-                c.PROVIDER_STATUS,
-                c.COOPERATION,
-                c.CONCLUSION,
-                c.QUA_CONCLUSION,
-                c.COUNTY,
-                c.PROVINCE,
-                c.CITY,
-                c.BANK_NAME,
-                c.BANK_CODE,
-                c.TAX_REG_NO,
-                c.QUALITY,
-                c.DELIVERY,
-                c.ORDER_SIT,
-                c.CREDIT,
-                c.STRENGTH,
-                c.RESPONE_SPEED,
-                c.SERVICE_QUAL,
-                c.ORG_ID,
-                c.DEPT_ID,
-                c.CREATE_USERID,
-                c.CREATEDATE,
-                c.MODIFY_USERID,
-                c.MODIFYDATE
-            }).GetGridData(request);
+            var list = await _dbContext.Query<PROVIDER>()
+                .GetGridData(request);
             return list;
         }
 
