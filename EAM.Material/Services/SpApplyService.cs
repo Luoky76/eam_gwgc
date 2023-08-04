@@ -11,6 +11,7 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Magicodes.ExporterAndImporter.Core.Models;
 using NPOI.OpenXmlFormats.Dml.Diagram;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System;
@@ -210,6 +211,68 @@ namespace EAM.Material.Services
                    {
                        SP_STATUS = "20"//待请购
                    });
+
+            var list = _dbContext.Query<SP_APPLY>().Where(x => sids.Contains(x.APPLY_ID) && x.CGFS == "逐单采购").ToList();
+            //逐单采购模式订单直接生成询价方案
+            if (list.Count > 0)
+            {
+                DateTime? dt = await _dbContext.GetSysdate();
+                var importDetail = new List<SP_PURPLAN_DET>();
+                var importList = new List<SP_PURPLAN>();
+                
+                foreach (var item in list)
+                {
+                    //形成物资询价方案
+                    var temp = item.MapTo<SP_PURPLAN>();
+                    temp.PURPLAN_ID = GuidHelper.NewSnowflakeId().ToString();
+
+                    temp.PLAN_NO = $"XJ{dt.Value.ToString("yyyyMMddHHmmss")}";
+                    temp.PLAN_DATE = dt;
+                    temp.ID_URGENT_PURCHASE = item.EXIG_DEV == "1" ? "1" : "0";
+                    temp.CREATE_USERID = _userSession.UserID.ToString();
+                    temp.CREATEDATE = dt;
+                    temp.MODIFY_USERID = _userSession.UserID.ToString();
+                    temp.MODIFYDATE = dt;
+                    importList.Add(temp);
+                    await Task.CompletedTask;
+
+                    var data = _dbContext.Query<SP_APPLY_DETAIL>().Where(x => sids.Contains(x.APPLY_ID)).ToList();
+                    foreach (var det in data)
+                    {
+                        var req = det.MapTo<SP_PURPLAN_DET>();
+                        req.APPLY_ID = item.APPLY_ID;
+                        req.APPLY_NO = item.APPLY_NO;
+                        req.APPLY_DATE = item.APPLY_DATE;
+                        req.DEPT_ID = item.DEPT_ID;
+                        req.DEPT_CODE = item.DEPT_CODE;
+                        req.DEPT_NAME = item.DEPT_NAME;
+                        req.SEC_DEPTID = item.SEC_DEPTID;
+                        req.SEC_DEPT = item.SEC_DEPT;
+                        req.EXIG_DEV = item.EXIG_DEV;
+                        req.USE_MEMO = item.USE_MEMO;
+                        req.APPLY_USERID = item.APPLY_USERID;
+                        req.APPLY_USER = item.APPLY_USER;
+
+                        req.PURPLAN_ID = temp.PURPLAN_ID;
+
+                        req.PLAN_ID = GuidHelper.NewSnowflakeId().ToString();
+                        req.CREATE_USERID = _userSession.UserID.ToString();
+                        req.CREATEDATE = dt;
+                        req.MODIFY_USERID = _userSession.UserID.ToString();
+                        req.MODIFYDATE = dt;
+                        req.STATUS = "1";
+                        importDetail.Add(req);
+                        await Task.CompletedTask;
+
+                        det.SP_STATUS = "30";
+                        await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(det);
+                    }
+                }
+
+                await _dbContext.InsertRangeAsync<SP_PURPLAN>(importList);
+                await _dbContext.InsertRangeAsync<SP_PURPLAN_DET>(importDetail);
+            }
+
             return updatedevice;
         }
 

@@ -35,5 +35,20 @@ namespace EAM.Device.Interfaces
         /// </summary>
         /// <returns></returns>
         public Task WeekTimer();
+        /// <summary>
+        /// 月定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task MonthTimer();
+        /// <summary>
+        /// 季度定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task QuarterTimer();
+        /// <summary>
+        /// 年度定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task YearTimer();
     }
 }

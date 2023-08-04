@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title>维保项目清单</title>
+    <title></title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -21,34 +21,29 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            maintDept: [],
-            pmcycleUnit: [],
-            pmShippost: [],
-            isAttach: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "编号", name: "_search_STD_CODE", dbname: "STD_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "维保部位", name: "_search_PART_NAME", dbname: "PART_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "执行人", name: "_search_EXE_USER", dbname: "EXE_USER", newline: false, upper: true, type: "select", options: { data: me.pmShippost, } },
-                            { display: "检查人", name: "_search_CHK_USER", dbname: "CHK_USER", newline: false, upper: true, type: "select", options: { data: me.pmShippost, } },
-                            { display: "周期", name: "_search_CYCLE", dbname: "CYCLE", newline: false, upper: true, type: "select", options: { data: me.pmcycleUnit, } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text",options:{} },
+                            { display: "登记单号", name: "_search_RECEIVE_CODE", dbname: "RECEIVE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
-                            { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", },
-                            { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", },
-                            { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit } },
-                            { display: "部门", name: "DEPARTMENT", minWidth: 100, type: "select", format: { data: me.maintDept } },
-                            { display: "执行人", name: "EXE_USER", minWidth: 100, type: "select", format: { data: me.pmShippost } },
-                            { display: "检查人", name: "CHK_USER", minWidth: 100, type: "select", format: { data: me.pmShippost } },
-                            { display: "是否附件判断", name: "IS_ATTACH", minWidth: 100, type: "select", format: { data: me.isAttach } },
-                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", },
-                            { display: "主键", name: "PM_STD_LIST_ID", minWidth: 100, hide: true },
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "登记单号", name: "RECEIVE_CODE", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "收货日期", name: "RECEIVE_DATE", minWidth: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "收货人", name: "USER_NAME", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "供应商", name: "PROVIDER_NAME", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "验收部门", name: "DEPT_NAME", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "采购人", name: "PUR_USER", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "验收人", name: "CHK_USER", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "备注", name: "REG_MEMO", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "主键", name: "RECEIVE_ID", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text'} },
                         ]
                     }
                 };
@@ -58,19 +53,6 @@
             buttons: null,
             loadComboxData: function () {
                 var me = this;
-                LG.ajax({
-                    async: false,
-                    url: 'Device/PmList/comboxdata',
-                    loading: '正在获取中...',
-                    success: function (data) {
-                        me.maintDept = data.maintDept;
-                        me.pmcycleUnit = data.pmcycleUnit;
-                        me.pmShippost = data.pmShippost;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
             },
             setGrid: function () {
                 var me = this;
@@ -82,20 +64,20 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'Device/PmList/list',
+                    url: 'Material/SpRecive/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'STD_CODE',
-                    sortOrder: 'asc',
+                    sortName: '',
+                    sortOrder: '',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: false,
-                    clickToEdit: false,
+                    enabledEdit: true,
+                    clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -140,30 +122,15 @@
                         case "save":
                             me.save();
                             break;
-                        case "add":
-                            me.add();
-                            break;
-                        case "week":
-                            me.week();
-                            break;
-                        case "month":
-                            me.month();
-                            break;
-                        case "quarter":
-                            me.quarter();
-                            break;
-                        case "year":
-                            me.year();
-                            break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls",
+                                url: "../System/Export.html?exporttype=xls",
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc",
+                                url: "../System/Export.html?exporttype=doc",
                                 modal: true
                             });
                             break;
@@ -171,86 +138,14 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            week: function () {    //周期定时器
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                LG.ajax({
-                    jsToken: true,
-                    url: 'Device/PmList/WeekTimer',
-                    loading: '正在保存中...',
-                    //data: { "sids": sids },
-                    success: function () {
-                        LG.showSuccess('保存成功');
-                        me.grid.isDataChanged = false;
-                        me.reload();
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-            },
-            month: function () {    //月定时器
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                LG.ajax({
-                    jsToken: true,
-                    url: 'Device/PmList/MonthTimer',
-                    loading: '正在保存中...',
-                    //data: { "sids": sids },
-                    success: function () {
-                        LG.showSuccess('保存成功');
-                        me.grid.isDataChanged = false;
-                        me.reload();
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-            },
-            quarter: function () {    //季度定时器
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                LG.ajax({
-                    jsToken: true,
-                    url: 'Device/PmList/QuarterTimer',
-                    loading: '正在保存中...',
-                    //data: { "sids": sids },
-                    success: function () {
-                        LG.showSuccess('保存成功');
-                        me.grid.isDataChanged = false;
-                        me.reload();
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-            },
-            year: function () {    //年度定时器
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                LG.ajax({
-                    jsToken: true,
-                    url: 'Device/PmList/YearTimer',
-                    loading: '正在保存中...',
-                    //data: { "sids": sids },
-                    success: function () {
-                        LG.showSuccess('保存成功');
-                        me.grid.isDataChanged = false;
-                        me.reload();
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-            },
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: 1120,
-                    height: 420,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[新增]',
-                    url: "pmstdlistdet.html",
+                    url: "sp-receive-detail.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -260,6 +155,7 @@
                     onClosed: me.reload.bind(me),
                     data: { "sid": null }
                 });
+                //me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
@@ -268,13 +164,13 @@
                     LG.tip('请选择行!');
                     return;
                 }
-                var sid = selected.PM_STD_LIST_ID;
+                var sid = selected.RECEIVE_ID;
                 $.ligerDialog.open({
-                    width: 1120,
-                    height: 420,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[修改]',
-                    url: "pmstdlistdet.html",
+                    url: "sp-receive-detail.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -296,7 +192,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Device/PmList/save',
+                        url: 'Material/SpRecive/Save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
