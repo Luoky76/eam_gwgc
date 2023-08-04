@@ -110,15 +110,13 @@
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                             $('#DEVICE_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
-                                            $('#DEVICE_STATUS').val(g.selected.TEXT == null ? '' : g.selected.EXTEND);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
-                                            $('#DEPT_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND3);
+                                            $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
                                         }
                                     }
                                 }
                             },
-                            { display: "设备状态", name: "DEVICE_STATUS", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -208,16 +206,15 @@
                             { display: "备件品种编码", name: "SP_CODE", minWidth: 100, type: "text", },
                             { display: "备件品种名称", name: "SP_NAME", minWidth: 100, type: "text", },
                             { display: "备件型号", name: "SP_TYPE", minWidth: 100, type: "text", },
-
+                            { display: "物料ID", name: "SP_ID", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text", },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
                             { display: "库存数量", name: "CUR_NUM", minWidth: 100, type: "float", },
-                            { display: "实际消耗数量", name: "REAL_OUT_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "实际消耗数量", name: "REAL_OUT_NUM", validate: { required: true }, minWidth: 100, type: "float", editor: { type: 'float' } },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
-                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
+                            //{ display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "主键", name: "FAULT_SP_ID", minWidth: 100, hide: true },
                             { display: "外键", name: "FAULT_ID", minWidth: 100, hide: true },
-
                         ]
                     },
                 };
@@ -464,7 +461,11 @@
                             me.reloadSp();
                             break;
                         case "import":
-                            me.import();
+                            //导入前需要先保存主表
+                            if ($('#FAULT_ID').val() == '') {
+                                LG.showError("请先保存设备基础数据");
+                            }
+                            else me.import();
                             break;
                         case "savesp":
                             me.savesp();
@@ -489,6 +490,74 @@
                 me.grid2.toolbarManager.options.group = 'detail2';
                 LG.loadToolbar(me.grid2, me.toolbarBtnItemClick2);
             },
+            //新增
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    FAULT_ID: me.sid
+                });
+                me.grid2.addEditRow(row, true);
+            },
+            //导入
+            import: function () {
+                var me = this;
+                var gridData = me.grid2.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.SP_ID);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Device/RepFault/ImportList',
+                        rowKey: "SP_ID",
+                        columns: [
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text" },
+                            { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            { display: "图号", name: "DRAWING_NO", minWidth: 100, type: "text" },
+                            { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text" },
+                            { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
+                            { display: "库存数量", name: "NUM", minWidth: 100, type: "decimal" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+
+                        ]
+                    },
+                    fields: [
+                        { display: "物料名称", name: "SP_NAME", width: 100, type: "text" },
+                        { display: "物料编码", name: "SP_CODE", width: 200, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        debugger
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.SP_ID)) {
+                                debugger
+                                me.addGrid({
+                                    SP_CODE: item.SP_CODE,
+                                    SP_NAME: item.SP_NAME,
+                                    HOUSE_NAME: item.HOUSE_NAME,
+                                    SP_TYPE: item.SP_TYPE,
+                                    DRAWING_NO: item.DRAWING_NO,
+                                    STOCK_NAME: item.STOCK_NAME,
+                                    CUR_NUM: item.NUM,
+                                    UNIT: item.UNIT
+                                });
+                            }
+                        }
+                        me.savesp();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '挑选物资',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },	
             //保存
             savesp: function () { //保存
                 var me = this;
@@ -499,6 +568,12 @@
                     }
                     if (!me.grid2.validChangeRows()) return false;
                     var changeRow = me.grid2.getChangedRows();
+                    for(i = 0; changeRow.updated.length; i++)
+                    {
+                        if (changeRow.updated[i].CUR_NUM < changeRow.updated[i].REAL_OUT_NUM) {
+                            LG.showSuccess('实际消耗数量不可小于库存数量！');
+                        }
+                    }
                     LG.ajax({
                         jsToken: true,
                         url: 'Device/RepFault/ManageFaultSp',
@@ -517,14 +592,15 @@
             },
             //删除
             deletesp: function () { //删除
+                debugger
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
+                if (me.grid2.endEdit() != false) {
+                    var selected = me.grid2.getSelectedRows();
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
+                                    me.grid2.deleteRow(selected[i]);
                                 }
                                 me.savesp();
                             }

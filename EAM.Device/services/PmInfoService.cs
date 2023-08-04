@@ -61,6 +61,16 @@ namespace EAM.Device.services
         #region 维保计划
 
         /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ImportList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_STD_LIST>()
+                .GetGridData(request);
+        }
+
+        /// <summary>
         /// 获取维保计划记录
         /// </summary>
         /// <returns></returns>
@@ -185,6 +195,7 @@ namespace EAM.Device.services
                     c.WORK_STATE,
                     c.MAINT_CYCLE,
                     c.PLAN_MONTH,
+                    c.CYCLE,
                     c.LAST_COMP_DATE,
                     c.NEXT_ENDDATE,
                     c.EXECUTE_USER,

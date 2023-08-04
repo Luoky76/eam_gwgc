@@ -37,6 +37,16 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ImportList(request), "成功");
+        }
+
+        /// <summary>
         /// 获取维保计划记录
         /// </summary>
         /// <returns></returns>

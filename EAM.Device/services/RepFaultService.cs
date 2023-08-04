@@ -53,12 +53,24 @@ namespace EAM.Device.services
                 { "FaultSrc",null},
                 { "FaultStatus",null},
                 { "MaintDept",null},
-                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => c.TYPE_ID == "1")},
+                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => c.TYPE_ID == "2")},
                 { "ShipInfo",null},
             });
         }
 
         #region 故障处理
+
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ImportList(GridRequest request)
+        {
+            return await _dbContext.Query<SP_STORE>()
+                .Where(c => c.NUM>0)
+                .GetGridData(request);
+        }
+
         /// <summary>
         /// 获取故障处理记录
         /// </summary>
@@ -123,6 +135,7 @@ namespace EAM.Device.services
                     c.REP_TYPE_ID,
                     c.FRDB_CODE,
                     c.ORDER_DATE,
+                    c.DEVICE_ID,
                     c.COMPLETE_DATE,
                     c.REPAIR_HOURS,
                     c.FAULT_REASON,
@@ -228,7 +241,12 @@ namespace EAM.Device.services
                     c.REAL_OUT_NUM,
                     c.FAULT_SP_ID,
                 },
-                c => a => a.FAULT_SP_ID == c.FAULT_SP_ID);
+                c => a => a.FAULT_SP_ID == c.FAULT_SP_ID, BeforeAdd);
+        }
+        public async Task BeforeAdd(REP_FAULT_SP entity)
+        {
+            entity.FAULT_SP_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
         }
         #endregion
         #region 故障验收

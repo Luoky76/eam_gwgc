@@ -292,6 +292,9 @@ namespace Gksyb.Server.Services.Common
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,
                     EXTEND3 =c.DEPT_NAME,
+                    EXTEND4 =c.ASSET_CODE,
+                    EXTEND5 =c.INSTALL_SITE,
+                    EXTEND6 =c.WDEPT_NAME,
                 })
                .ToListAsync();
         }

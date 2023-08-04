@@ -8,6 +8,7 @@ using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
@@ -33,7 +34,7 @@ namespace EAM.Device.services
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "FaultSrc",null},
                 { "FrdbLevel",null},
-                { "ShipInfo",null},
+                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => c.TYPE_ID == "2")},
             });
         }
 
