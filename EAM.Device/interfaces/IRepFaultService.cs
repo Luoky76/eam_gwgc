@@ -15,6 +15,12 @@ namespace EAM.Device.interfaces
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
 
         /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> ImportList(GridRequest request);
+
+        /// <summary>
         /// 获取故障处理记录
         /// </summary>
         /// <returns></returns>
