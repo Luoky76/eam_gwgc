@@ -63,8 +63,7 @@ namespace Gksyb.Model
         /// 许可数量
         /// </summary>
         [Description("许可数量")]
-        [Column(DbType = DbType.AnsiString)]
-        public string LICENSE_NUM { get; set; }
+        public long? LICENSE_NUM { get; set; }
 
         /// <summary>
         /// 存放位置

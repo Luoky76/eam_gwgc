@@ -67,6 +67,17 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost]
+        public AjaxResult<string> CreatePrimaryKey()
+        {
+            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
