@@ -47,9 +47,14 @@
                             { display: "版本", name: "VERSION", minWidth: 100, type: "text" },
                             { display: "序列号", name: "SERIAL_NUM", minWidth: 100, type: "text" },
                             { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
-                            { display: "使用部门编码", name: "DEPT_CODE", minWidth: 100, type: "text" },
                             { display: "许可数量", name: "LICENSE_NUM", minWidth: 100, type: "text" },
-                            { display: "产品类型", name: "PRODUCT_TYPE", minWidth: 100, type: "text" },
+                            {
+                                display: "产品类型", name: "PRODUCT_TYPE", minWidth: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.assetProductType,
+                                    disabled: true
+                                }
+                            },
                             { display: "管理人", name: "MANAGER_USER", minWidth: 100, type: "text" },
                             {
                                 display: "修改人", name: "MODIFY_USERID", minWidth: 100, type: "select", editor: {
@@ -81,6 +86,7 @@
             searchForm: null,
             buttons: null,
             user: [],
+            assetProductType: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -89,6 +95,7 @@
                     loading: '正在获取中...',
                     success: function (data) {
                         me.user = data.User;
+                        me.assetProductType = data.AssetProductType;
                     },
                     error: function (message) {
                         LG.showError(message);

@@ -34,7 +34,7 @@
                             { display: "记录编码", name: "ASSET_CODE", width: 300, type: "text", options: { disabled: true } },
                             { display: "采购日期", name: "PUR_DATE", width: 300, type: "date", validate: { required: true }, options: {} },
                             { display: "资产名称", name: "ASSET_NAME", width: 300, type: "text", validate: { required: true }, options: {} },
-                            { display: "资产简称", name: "SHORT_NAME", width: 300, type: "text", options: {} },
+                            { display: "资产简称", name: "SHORT_NAME", width: 300, type: "text", validate: { required: true }, options: {} },
                             { display: "版本", name: "VERSION", width: 300, type: "text", options: {} },
                             { display: "序列号", name: "SERIAL_NUM", width: 300, type: "text", options: {} },
                             {
@@ -46,9 +46,7 @@
                                     textField: "TEXT",
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            $('DEPT_ID').val(g.selected.ID == null ? '' : g.selected.ID);
-                                            //TODO
-                                            //ADD DEPT_CODE
+                                            $('#DEPT_ID').val(g.selected.ID ?? '');
                                         }
                                     }
                                 }
@@ -69,7 +67,7 @@
                                     textField: "TEXT",
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            $('MANAGER_USERID').val(g.selected.ID == null ? '' : g.selected.ID);
+                                            $('#MANAGER_USERID').val(g.selected.ID ?? '');
                                         }
                                     }
                                 }
@@ -86,7 +84,6 @@
                             { display: "主键", name: "ASSET_ID", type: "hidden" },
                             { display: "是否有形资产", name: "IS_TANGIBLE", type: "hidden" },
                             { display: "使用部门ID", name: "DEPT_ID", type: "hidden" },
-                            { display: "使用部门编码", name: "DEPT_CODE", type: "hidden" },
                             { display: "管理人ID", name: "MANAGER_USERID", type: "hidden" }
                         ]
                     }
