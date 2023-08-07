@@ -193,7 +193,7 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
         }
@@ -233,6 +233,7 @@ namespace EAM.Material.Services
                     temp.CREATEDATE = dt;
                     temp.MODIFY_USERID = _userSession.UserID.ToString();
                     temp.MODIFYDATE = dt;
+                    temp.AUDITING = "0";
                     importList.Add(temp);
                     await Task.CompletedTask;
 

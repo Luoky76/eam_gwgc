@@ -237,7 +237,8 @@ namespace EAM.Material.Services
                         CREATE_USERID = _userSession.UserID.ToString(),
                         CREATEDATE = dt,
                         MODIFY_USERID = _userSession.UserID.ToString(),
-                        MODIFYDATE = dt
+                        MODIFYDATE = dt,
+                        AUDITING = "0"
                     };
                     importList.Add(temp);
                     await Task.CompletedTask;
