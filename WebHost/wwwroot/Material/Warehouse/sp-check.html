@@ -28,14 +28,14 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditingStatus } },
+                            { display: "记录状态", name: "_search_AUDITING_CHK", dbname: "AUDITING_CHK", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditingStatus } },
                             { display: "登记单号", name: "_search_RECEIVE_CODE", dbname: "RECEIVE_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditingStatus, selectBoxHeight: 100 } },
+                            { display: "记录状态", name: "AUDITING_CHK", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditingStatus, selectBoxHeight: 100 } },
                             { display: "登记单号", name: "RECEIVE_CODE", minWidth: 100, type: "text",  editor: { type: 'text'} },
                             { display: "收货日期", name: "RECEIVE_DATE", minWidth: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
                             { display: "收货人", name: "USER_NAME", minWidth: 100, type: "text",  editor: { type: 'text'} },
@@ -52,7 +52,8 @@
             },
             auditingStatus: [
                 { ID: "0", TEXT: "未提交", VALUE: "0" },
-                { ID: "1", TEXT: "已提交", VALUE: "1" }
+                { ID: "1", TEXT: "已提交", VALUE: "1" },
+                { ID: "6", TEXT: "退回编辑", VALUE: "6" },
             ],
             grid: null,
             searchForm: null,
