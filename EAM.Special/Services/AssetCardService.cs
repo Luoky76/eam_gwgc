@@ -89,6 +89,7 @@ namespace EAM.Special.Services
                     c.AUDITING,
                     c.IS_TANGIBLE,
                     c.ASSET_CODE,
+                    c.PUR_DATE,
                     c.ASSET_NAME,
                     c.TYPE_ID,
                     c.TYPE_NAME,
@@ -106,7 +107,6 @@ namespace EAM.Special.Services
                     c.INSTALL_SITE,
                     c.USE_STATE,
                     c.SERIAL_NUM,
-                    c.PUR_DATE,
                     c.PROVIDER_NAME,
                     c.MANAGER_USERID,
                     c.MANAGER_USER,
@@ -129,6 +129,16 @@ namespace EAM.Special.Services
                 .Where(c => c.ASSET_ID == id)
                 .FirstAsync();
             return query;
+        }
+
+        /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public string CreatePrimaryKey()
+        {
+            return GuidHelper.NewSnowflakeId().ToString();
         }
 
         /// <summary>
@@ -280,7 +290,9 @@ namespace EAM.Special.Services
                 {
                     { "Auditing", null },
                     { "User", null },
+                    //固定资产使用情况
                     { "AssetStatus", null },
+                    //无形资产产品类型
                     { "AssetProductType", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
