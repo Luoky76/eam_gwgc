@@ -42,5 +42,7 @@ namespace EAM.Material.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<AjaxResult> DetailSave(SaveRequest<SP_ORDER_DETAIL> request);
+
+        Task<GridData> OrderOverListAsync(GridRequest request);
     }
 }

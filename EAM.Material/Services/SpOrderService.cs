@@ -268,5 +268,33 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
+
+        public async Task<GridData> OrderOverListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_ORDER_DETAIL>()
+                .LeftJoin<SP_ORDER>((a, b) => a.ORDER_ID == b.ORDER_ID)
+                .Where((a, b) => a.OVERDUE == "1")
+                .Select((a, b) => new
+                {
+                    b.ORDER_CODE,
+                    b.ORDER_DATE,
+                    a.REQ_DATE,
+                    a.SP_ID,
+                    a.SP_CODE,
+                    a.SP_NAME,
+                    a.SP_SIZE,
+                    a.PRODUCE,
+                    a.UNIT,
+                    a.COUNT,
+                    a.INSTORE_COUNT,
+                    a.RECEIVE_COUNT,
+                    a.STOP_NUM,
+                    a.APPLY_USER,
+                    a.DEPT_NAME,
+                    a.USE_MEMO,
+                    a.ORDERDET_ID,
+                })
+                .GetGridData(request);
+        }
     }
 }

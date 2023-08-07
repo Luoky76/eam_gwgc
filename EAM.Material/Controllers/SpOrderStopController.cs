@@ -70,5 +70,15 @@ namespace EAM.Material.Controllers
             if (result.IsError) return result;
             return await _service.DetailSave(request);
         }
+        /// <summary>
+        /// 订单选择列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> SpOrderListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.SpOrderListAsync(request), "成功");
+        }
     }
 }

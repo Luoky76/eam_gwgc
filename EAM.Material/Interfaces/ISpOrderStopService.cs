@@ -35,5 +35,11 @@ namespace EAM.Material.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<AjaxResult> DetailSave(SaveRequest<SP_STOP_DET> request);
+        /// <summary>
+        /// 订单选择列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<GridData> SpOrderListAsync(GridRequest request);
     }
 }

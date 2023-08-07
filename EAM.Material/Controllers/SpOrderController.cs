@@ -81,5 +81,11 @@ namespace EAM.Material.Controllers
             if (result.IsError) return result;
             return await _service.DetailSave(request);
         }
+
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> OrderOverListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.OrderOverListAsync(request), "成功");
+        }
     }
 }
