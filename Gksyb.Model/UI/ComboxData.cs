@@ -49,5 +49,10 @@
         /// 扩展5
         /// </summary>
         public object EXTEND5 { get; set; }
+        /// <summary>
+        /// 扩展6
+        /// </summary>
+        public object EXTEND6 { get; set; }
+        
     }
 }

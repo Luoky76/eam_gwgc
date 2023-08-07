@@ -112,25 +112,24 @@ namespace EAM.Material.Services
             return AjaxResult.Success(result, "成功");
         }
 
+        /// <summary>
+        /// 订单物料列表
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ApplyList()
+        {
+            var result = await _dbContext.JoinQuery<SP_APPLY, SP_APPLY_DETAIL>((a, b) => new object[]
+               {
+                   JoinType.LeftJoin,a.APPLY_ID.Equals(b.APPLY_ID)
+               })
+               .Select((a, b) => new { a.APPLY_ID, b.SP_CODE, b.SP_NAME })
+               .ToListAsync();
+            return AjaxResult.Success(result, "成功");
+        }
+
         public async Task<GridData> DetListAsync(GridRequest request)
         {
-            var query = await _dbContext.JoinQuery<SP_RECEIVE, SP_RECEIVE_DET>((a, b) => new object[] {
-                JoinType.LeftJoin,a.RECEIVE_ID .Equals(b.RECEIVE_ID )
-            }).Select((a, b) => new
-            {
-                b.SP_CODE,
-                b.SP_NAME,
-                b.SP_SIZE,
-                b.PRODUCE,
-                b.UNIT,
-                b.COUNT,
-                b.PRICE,
-                b.MONEY,
-                b.APPLY_USER,
-                b.MEMO,
-                b.DELIVERY_CODE,
-                b.RECDET_ID,
-            }).GetGridData(request);
+            var query = await _dbContext.Query<SP_RECEIVE_DET>().GetGridData(request);
 
             return query;
         }
@@ -185,7 +184,7 @@ namespace EAM.Material.Services
         /// 删除
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns></returns> 
         private async Task BeforeDeleteItem(SP_RECEIVE_DET request)
         {
             await Task.CompletedTask;

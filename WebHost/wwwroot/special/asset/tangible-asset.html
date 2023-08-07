@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>IT资产登记（固定资产）</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="center" title="">
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <div id="iframeloading" class='l-loading' style="display:none;">
+            </div>
+            <form id="mainform">
+                <div id="maingrid" style="margin: 2px;"></div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "资产名称", name: "_search_ASSET_NAME", dbname: "ASSET_NAME", type: "text", options: {} },
+                            { display: "存放位置", name: "_search_INSTALL_SITE", dbname: "INSTALL_SITE", type: "text", options: {} },
+                            { display: "设备类型", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", type: "text", options: {} },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "chk" },
+                            { display: "资产名称", name: "ASSET_NAME", minWidth: 100, type: "text" },
+                            { display: "设备类型", name: "TYPE_NAME", minWidth: 100, type: "text" },
+                            { display: "记录编码", name: "ASSET_CODE", minWidth: 100, type: "text" },
+                            { display: "资产编号", name: "ASSETNO", minWidth: 100, type: "text" },
+                            { display: "品牌", name: "BRAND", minWidth: 100, type: "text" },
+                            { display: "型号", name: "ASSET_TYPE", minWidth: 100, type: "text" },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
+                            { display: "责任人", name: "PERSON", minWidth: 100, type: "text" },
+                            { display: "管理部门", name: "MDEPT_NAME", minWidth: 100, type: "text" },
+                            { display: "使用人", name: "CARD_USER", minWidth: 100, type: "text" },
+                            { display: "存放位置", name: "INSTALL_SITE", minWidth: 100, type: "text" },
+                            {
+                                display: "使用情况", name: "USE_STATE", minWidth: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.assetStatus,
+                                    disabled: true
+                                }
+                            },
+                            { display: "序列号", name: "SERIAL_NUM", minWidth: 100, type: "text" },
+                            { display: "管理人", name: "MANAGER_USER", minWidth: 100, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text" },
+                            //隐藏
+                            { display: "主键", name: "ASSET_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "记录编码", name: "ASSET_CODE", minWidth: 100, type: "text", hide: true },
+                            { display: "是否有形资产", name: "IS_TANGIBLE", minWidth: 100, type: "text", hide: true },
+                            { display: "资产类型ID", name: "TYPE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "使用部门ID", name: "DEPT_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "管理部门ID", name: "MDEPT_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "管理人ID", name: "MANAGER_USERID", minWidth: 100, type: "long", hide: true },
+                            { display: "采购日期", name: "PUR_DATE", minWidth: 100, type: "date", hide: true },
+                            { display: "供应商名", name: "PROVIDER_NAME", minWidth: 100, type: "text", hide: true },
+                            { display: "硬件配置信息", name: "CONFIG_INFO", minWidth: 100, type: "text", hide: true },
+                            { display: "修改人", name: "MODIFY_USERID", minWidth: 100, type: "select", hide: true },
+                        ]
+                    }
+                };
+            },
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
+            menuNo: getQueryStringByName("MenuNo"),
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            user: [],
+            assetStatus: [],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/AssetCard/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.user = data.User;
+                        me.assetStatus = data.AssetStatus;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Special/AssetCard/DeviceList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'ASSET_NAME',
+                    sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "submit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.submit();
+                                }
+                            });
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                //仅加载group为main的按钮
+                me.grid.toolbarManager.options.group = 'main';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]固定资产',
+                    url: "tangible-asset-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null, "isNew": true, "isView": false }
+                });
+            },
+            view: function () { //查看
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[查看]固定资产',
+                    url: "tangible-asset-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.ASSET_ID, "isNew": false, "isView": true }
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return;
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行");
+                    return;
+                }
+                var selected = me.grid.getSelectedRow();
+                if (selected.AUDITING == "1") {
+                    LG.showError("该数据已提交,无法修改!");
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[修改]固定资产',
+                    url: "tangible-asset-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.ASSET_ID, "isNew": false, "isView": false }
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/AssetCard/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            submit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/AssetCard/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    for (var i = 0; i < selected.length; i++) {
+                        if (selected[i].AUDITING == "1") {
+                            LG.showError("选中数据有部分已提交,无法删除");
+                            return;
+                        }
+                    }
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    EnterMoveNextControl: true,
+                    space: 3,
+                    labelAlign: 'right',
+                    labelWidth: 82,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                debugger
+                var me = this;
+                me.setDialogSize();
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

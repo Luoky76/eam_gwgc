@@ -121,7 +121,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="每周"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="0.03"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
                     foreach (var qrycard in qrycards)
@@ -196,7 +196,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="月度"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="0.1"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
                     foreach (var qrycard in qrycards)
@@ -271,7 +271,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="季度"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="0.3"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
 
@@ -347,7 +347,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="年度"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="1"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
                     foreach (var qrycard in qrycards)

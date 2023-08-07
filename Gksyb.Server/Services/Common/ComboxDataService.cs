@@ -191,6 +191,38 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 无形资产产品类型下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetProductType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "assetProductType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 固定资产设备类型下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetDeviceType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "assetDeviceType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.SID, TEXT = c.CODE_CN, VALUE = c.CODE_EN })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 维修类型
         /// </summary>
         /// <param name="predicate"></param>
@@ -292,6 +324,9 @@ namespace Gksyb.Server.Services.Common
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,
                     EXTEND3 =c.DEPT_NAME,
+                    EXTEND4 =c.ASSET_CODE,
+                    EXTEND5 =c.INSTALL_SITE,
+                    EXTEND6 =c.WDEPT_NAME,
                 })
                .ToListAsync();
         }
