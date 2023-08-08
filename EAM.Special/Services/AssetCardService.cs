@@ -62,7 +62,6 @@ namespace EAM.Special.Services
                     c.SERIAL_NUM,
                     c.DEPT_ID,
                     c.DEPT_NAME,
-                    c.DEPT_CODE,
                     c.LICENSE_NUM,
                     c.PRODUCT_TYPE,
                     c.MANAGER_USERID,
@@ -99,7 +98,6 @@ namespace EAM.Special.Services
                     c.ASSET_TYPE,
                     c.DEPT_ID,
                     c.DEPT_NAME,
-                    c.DEPT_CODE,
                     c.PERSON,
                     c.MDEPT_ID,
                     c.MDEPT_NAME,
@@ -180,7 +178,6 @@ namespace EAM.Special.Services
                     c.MDEPT_NAME,
                     c.DEPT_ID,
                     c.DEPT_NAME,
-                    c.DEPT_CODE,
                     c.SEC_DEPTID,
                     c.SEC_DEPT,
                     c.TYPE_ID,
@@ -203,6 +200,45 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 创建编码
+        /// </summary>
+        /// <param name="headCode"></param>
+        /// <returns></returns>
+        private async Task<string> CreateCode(string headCode)
+        {
+            //示例HEADCODE2023072100001
+            var sysdate = await _dbContext.GetSysdate();
+            string dateCode = sysdate.Value.ToString("yyyyMMdd");
+            string newCode = headCode + dateCode + "00001";
+
+            //查看编码是否已存在
+            var list1 = await _dbContext.Query<ASSET_CARD>()
+                .Select(a => a.ASSET_CODE)
+                .Where(a => a == newCode)
+                .ToListAsync();
+
+            if (list1.Any())
+            {
+                var list2 = await _dbContext.Query<ASSET_CARD>()
+                .Select(a => new
+                {
+                    MAX_ASSET_CODE = Sql.Max(a.ASSET_CODE)
+                })
+                .ToListAsync();
+                if (list2.Any())
+                {
+                    string lastCode = list2[0].MAX_ASSET_CODE;
+                    lastCode = lastCode.Substring(headCode.Length);
+                    long cnt = long.Parse(lastCode);
+                    ++cnt;
+                    lastCode = cnt.ToString();
+                    newCode = headCode + lastCode;
+                }
+            }
+            return newCode;
+        }
+
+        /// <summary>
         /// 添加前验证
         /// </summary>
         /// <param name="entity"></param>
@@ -216,37 +252,18 @@ namespace EAM.Special.Services
             //自动添加记录编码
             if (entity.ASSET_CODE.IsNullOrEmpty())
             {
-                //示例AC2023072100001
-                var sysdate = await _dbContext.GetSysdate();
-                string dateCode = sysdate.Value.ToString("yyyyMMdd");
-                string headCode = "AC";
-                string newCode = headCode + dateCode + "00001";
-
-                //查看编码是否已存在
-                var list1 = await _dbContext.Query<ASSET_CARD>()
-                    .Select(a => a.ASSET_CODE)
-                    .Where(a => a == newCode)
-                    .ToListAsync();
-
-                if (list1.Any())
+                if (entity.IS_TANGIBLE == "1")
                 {
-                    var list2 = await _dbContext.Query<ASSET_CARD>()
-                    .Select(a => new
-                    {
-                        MAX_ASSET_CODE = Sql.Max(a.ASSET_CODE)
-                    })
-                    .ToListAsync();
-                    if (list2.Any())
-                    {
-                        string lastCode = list2[0].MAX_ASSET_CODE;
-                        lastCode = lastCode.Substring(headCode.Length);
-                        long cnt = long.Parse(lastCode);
-                        ++cnt;
-                        lastCode = cnt.ToString();
-                        newCode = headCode + lastCode;
-                    }
+                    entity.ASSET_CODE = await CreateCode(entity.TYPE_CODE);
                 }
-                entity.ASSET_CODE = newCode;
+                else if (entity.IS_TANGIBLE == "0")
+                {
+                    entity.ASSET_CODE = await CreateCode("SF" + entity.SHORT_NAME);
+                }
+                else
+                {
+                    throw new MessageException("缺少字段ID_TANGIBLE，请确认为固定资产或无形资产");
+                }
             }
             await Task.CompletedTask;
         }
@@ -293,7 +310,9 @@ namespace EAM.Special.Services
                     //固定资产使用情况
                     { "AssetStatus", null },
                     //无形资产产品类型
-                    { "AssetProductType", null }
+                    { "AssetProductType", null },
+                    //固定资产设备类型
+                    { "AssetDeviceType", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());

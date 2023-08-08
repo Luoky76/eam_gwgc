@@ -207,6 +207,22 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 固定资产设备类型下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetDeviceType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "assetDeviceType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.SID, TEXT = c.CODE_CN, VALUE = c.CODE_EN })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 维修类型
         /// </summary>
         /// <param name="predicate"></param>
