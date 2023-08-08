@@ -48,7 +48,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task<ASSET_REPORT> GetAsync(string id);
+        public Task<ASSET_REPORT_AND_CARD> GetAsync(string id);
 
         /// <summary>
         /// 生成主键
