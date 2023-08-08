@@ -12,12 +12,12 @@ using System.Data;
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类ASSET_REPORT
+    /// 扩展DTO类ASSET_REPORT_AND_CARD
     /// </summary>
-    [Table("ASSET_REPORT")]
-    public class ASSET_REPORT
+    [Table("ASSET_REPORT_AND_CARD")]
+    public class ASSET_REPORT_AND_CARD
     {
-
+        #region ASSET_REPORT 部分
         /// <summary>
         /// 主键
         /// </summary>
@@ -286,5 +286,259 @@ namespace Gksyb.Model
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
 
+        #endregion ASSET_REPORT 部分
+
+        #region ASSET_CARD 部分
+
+        /// <summary>
+        /// 是否有形资产
+        /// </summary>
+        [Description("是否有形资产")]
+        [Column(DbType = DbType.AnsiString)]
+        public string IS_TANGIBLE { get; set; }
+
+        /// <summary>
+        /// 记录编码
+        /// </summary>
+        [Description("记录编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ASSET_CODE { get; set; }
+
+        /// <summary>
+        /// 资产名称
+        /// </summary>
+        [Description("资产名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ASSET_NAME { get; set; }
+
+        /// <summary>
+        /// 资产简称
+        /// </summary>
+        [Description("资产简称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SHORT_NAME { get; set; }
+
+        /// <summary>
+        /// 许可数量
+        /// </summary>
+        [Description("许可数量")]
+        public long? LICENSE_NUM { get; set; }
+
+        /// <summary>
+        /// 存放位置
+        /// </summary>
+        [Description("存放位置")]
+        [Column(DbType = DbType.AnsiString)]
+        public string INSTALL_SITE { get; set; }
+
+        /// <summary>
+        /// 设备类型
+        /// </summary>
+        [Description("设备类型")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_NAME { get; set; }
+
+        /// <summary>
+        /// 资产编号
+        /// </summary>
+        [Description("资产编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ASSETNO { get; set; }
+
+        /// <summary>
+        /// 品牌
+        /// </summary>
+        [Description("品牌")]
+        [Column(DbType = DbType.AnsiString)]
+        public string BRAND { get; set; }
+
+        /// <summary>
+        /// 型号
+        /// </summary>
+        [Description("型号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ASSET_TYPE { get; set; }
+
+        /// <summary>
+        /// 序列号
+        /// </summary>
+        [Description("序列号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SERIAL_NUM { get; set; }
+
+        /// <summary>
+        /// 硬件配置信息
+        /// </summary>
+        [Description("硬件配置信息")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CONFIG_INFO { get; set; }
+
+        /// <summary>
+        /// 使用情况
+        /// </summary>
+        [Description("使用情况")]
+        [Column(DbType = DbType.AnsiString)]
+        public string USE_STATE { get; set; }
+
+        /// <summary>
+        /// 所属域
+        /// </summary>
+        [Description("所属域")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DOMAIN { get; set; }
+
+        /// <summary>
+        /// 计算机名
+        /// </summary>
+        [Description("计算机名")]
+        [Column(DbType = DbType.AnsiString)]
+        public string COMPUTER_NAME { get; set; }
+
+        /// <summary>
+        /// IP地址
+        /// </summary>
+        [Description("IP地址")]
+        [Column(DbType = DbType.AnsiString)]
+        public string IP_ADDRESS { get; set; }
+
+        /// <summary>
+        /// MAC地址
+        /// </summary>
+        [Description("MAC地址")]
+        [Column(DbType = DbType.AnsiString)]
+        public string MAC_ADDRESS { get; set; }
+
+        /// <summary>
+        /// 外网权限
+        /// </summary>
+        [Description("外网权限")]
+        [Column(DbType = DbType.AnsiString)]
+        public string OUTER_NET { get; set; }
+
+        /// <summary>
+        /// 采购日期
+        /// </summary>
+        [Description("采购日期")]
+        public DateTime? PUR_DATE { get; set; }
+
+        /// <summary>
+        /// 版本
+        /// </summary>
+        [Description("版本")]
+        [Column(DbType = DbType.AnsiString)]
+        public string VERSION { get; set; }
+
+        /// <summary>
+        /// 资产类型编号
+        /// </summary>
+        [Description("资产类型编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_CODE { get; set; }
+
+        /// <summary>
+        /// 使用人
+        /// </summary>
+        [Description("使用人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CARD_USER { get; set; }
+
+        /// <summary>
+        /// 责任人
+        /// </summary>
+        [Description("责任人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PERSON { get; set; }
+
+        /// <summary>
+        /// 管理部门ID
+        /// </summary>
+        [Description("管理部门ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string MDEPT_ID { get; set; }
+
+        /// <summary>
+        /// 管理部门
+        /// </summary>
+        [Description("管理部门")]
+        [Column(DbType = DbType.AnsiString)]
+        public string MDEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 使用部门ID
+        /// </summary>
+        [Description("使用部门ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_ID { get; set; }
+
+        /// <summary>
+        /// 使用部门
+        /// </summary>
+        [Description("使用部门")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 资产类型ID
+        /// </summary>
+        [Description("资产类型ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_ID { get; set; }
+
+        /// <summary>
+        /// 管理人ID
+        /// </summary>
+        [Description("管理人ID")]
+        public long? MANAGER_USERID { get; set; }
+
+        /// <summary>
+        /// 管理人
+        /// </summary>
+        [Description("管理人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string MANAGER_USER { get; set; }
+
+        /// <summary>
+        /// 操作系统类型
+        /// </summary>
+        [Description("操作系统类型")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SYSTEM_TYPE { get; set; }
+
+        /// <summary>
+        /// 操作系统版权
+        /// </summary>
+        [Description("操作系统版权")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SYSTEM_COPYRIGHT { get; set; }
+
+        /// <summary>
+        /// 操作系统备份及存放位置
+        /// </summary>
+        [Description("操作系统备份及存放位置")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SYSTEM_BAK { get; set; }
+
+        /// <summary>
+        /// 远程连接工具
+        /// </summary>
+        [Description("远程连接工具")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REMOTE_TOOL { get; set; }
+
+        /// <summary>
+        /// 供应商名
+        /// </summary>
+        [Description("供应商名")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PROVIDER_NAME { get; set; }
+
+        /// <summary>
+        /// 产品类型
+        /// </summary>
+        [Description("产品类型")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PRODUCT_TYPE { get; set; }
+
+        #endregion ASSET_CARD 部分
     }
 }
