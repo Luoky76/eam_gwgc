@@ -7,8 +7,10 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace EAM.Material.Services
 {
@@ -36,7 +38,92 @@ namespace EAM.Material.Services
             return await _dbContext.Query<SP_ORDER>().GetGridData(request);
         }
 
-
+        class SpOrderRes : SP_ORDER
+        {
+            /// <summary>
+            /// 订单状态
+            /// </summary>
+            public string STATUS;
+        }
+        public async Task<GridData> OrderListAsync(GridRequest request)
+        {
+            // .LeftJoin<SP_ORDER_DETAIL>((a,b) =>a.ORDER_ID == b.ORDER_ID)
+            return await _dbContext.Query<SP_ORDER_DETAIL>()
+                .Select(b => new
+                {
+                    b.ORDER_ID,
+                    b.INVOICE_NUM,
+                    b.RECEIVE_COUNT,
+                    b.COUNT
+                })
+                .GroupBy(b => new
+                {
+                    b.ORDER_ID
+                })
+                .Select(b => new
+                {
+                    b.ORDER_ID,
+                    INVOICE_NUM = Sql.Sum(b.INVOICE_NUM),
+                    RECEIVE_COUNT = Sql.Sum(b.RECEIVE_COUNT),
+                    COUNT = Sql.Sum(b.COUNT)
+                })
+                .RightJoin<SP_ORDER>((b, c) => c.ORDER_ID == b.ORDER_ID)
+                .Select((b, c) => new SpOrderRes
+                {
+                    STATUS = c.IS_STOP == "1" ? "7" : b.RECEIVE_COUNT == 0 ? "1" : b.RECEIVE_COUNT < b.COUNT ? "2" : b.INVOICE_NUM == 0 ? "4" : b.INVOICE_NUM < b.COUNT ? "5" : "6",
+                    IS_DONE = c.IS_DONE,
+                    PURPLAN_ID = c.PURPLAN_ID,
+                    AUDITING = c.AUDITING,
+                    REF_PROCESS = c.REF_PROCESS,
+                    ORDER_CODE = c.ORDER_CODE,
+                    BUY_USERID = c.BUY_USERID,
+                    BUY_USER = c.BUY_USER,
+                    ORDER_DATE = c.ORDER_DATE,
+                    PROVIDER_ID = c.PROVIDER_ID,
+                    PROVIDER_NAME = c.PROVIDER_NAME,
+                    ORDER_MONEY = c.ORDER_MONEY,
+                    VALID_ENDDATE = c.VALID_ENDDATE,
+                    MEMO = c.MEMO,
+                    SEC_DEPTID = c.SEC_DEPTID,
+                    SEC_DEPT = c.SEC_DEPT,
+                    ORDER_ID = c.ORDER_ID,
+                    CREATE_USERID = c.CREATE_USERID,
+                    CREATEDATE = c.CREATEDATE,
+                    MODIFY_USERID = c.MODIFY_USERID,
+                    MODIFYDATE = c.MODIFYDATE,
+                    IS_CHK = c.IS_CHK,
+                    AUDIT_USERID = c.AUDIT_USERID,
+                    AUDIT_DATE = c.AUDIT_DATE,
+                    EDIT_USER = c.EDIT_USER,
+                    EDIT_USERID = c.EDIT_USERID,
+                    EDIT_DATE = c.EDIT_DATE,
+                    AUDIT_USER = c.AUDIT_USER,
+                    INVOICE_TYPE = c.INVOICE_TYPE,
+                    ORDER_TYPE = c.ORDER_TYPE,
+                    CHK_MEMO = c.CHK_MEMO,
+                    DONE_DATE = c.DONE_DATE,
+                    DEPT_ID = c.DEPT_ID,
+                    DEPT_NAME = c.DEPT_NAME,
+                    REQUEST_ID = c.REQUEST_ID,
+                    OA_DATE = c.OA_DATE,
+                    FP_DONE = c.FP_DONE,
+                    FP_DATE = c.FP_DATE,
+                    IS_OLD = c.IS_OLD,
+                    TAX_RATE = c.TAX_RATE,
+                    OLD_INV = c.OLD_INV,
+                    OVERDUE = c.OVERDUE,
+                    INVOICE_MONEY = c.INVOICE_MONEY,
+                    IS_STOP = c.IS_STOP,
+                    REF_REQUEST = c.REF_REQUEST,
+                    REQUEST_NAME = c.REQUEST_NAME,
+                    BUY_USERDEPTID = c.BUY_USERDEPTID,
+                    POSTADDRESS = c.POSTADDRESS,
+                    PHONE = c.PHONE,
+                    OACODE = c.OACODE,
+                    MOBILE = c.MOBILE
+                })
+                .GetGridData(request);
+        }
 
         /// <summary>
         /// 获取下拉框信息
@@ -48,8 +135,14 @@ namespace EAM.Material.Services
             {
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
+                     { "BCCode", "order_src" },
                      { "ProviderName", (Expression<Func<PROVIDER, bool>>)null},
                 });
+                var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "BCCode", "order_state" }
+                });
+                dic.TryAdd("OrderStatus", dic1["BCCode"]);
                 return AjaxResult.Success(dic);
             }
             catch (Exception e)

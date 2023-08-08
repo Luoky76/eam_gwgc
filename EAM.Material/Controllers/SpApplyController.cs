@@ -75,5 +75,30 @@ namespace EAM.Material.Controllers
             if (result.IsError) return result;
             return await _service.DetailSave(request);
         }
+
+        #region 采购进度跟踪
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> ApplyListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.ApplyListAsync(request), "成功");
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> ApplyComboxData()
+        {
+            return await _service.ApplyComboxData();
+        }
+
+        /// <summary>
+        /// 采购进度
+        /// </summary>
+        /// <param name="SPDET_ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ApplyDetFlowAsync(string SPDET_ID)
+        {
+            return await _service.ApplyDetFlowAsync(SPDET_ID);
+        }
+        #endregion
     }
 }

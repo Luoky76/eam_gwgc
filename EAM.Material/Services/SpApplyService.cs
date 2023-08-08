@@ -391,5 +391,186 @@ namespace EAM.Material.Services
             }
         }
         #endregion
+
+        #region 采购进度跟踪
+        public class SpApplyDetRes : SP_APPLY_DETAIL
+        {
+            /// <summary>
+            /// 紧急程度
+            /// </summary>
+            public string EXIG_DEV;
+
+            public string APPLY_USER;
+
+            public DateTime? APPLY_DATE;
+
+            public string DEPT_NAME;
+            public string SEC_DEPT;
+        }
+        public async Task<GridData> ApplyListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_APPLY_DETAIL>()
+                 .LeftJoin<SP_APPLY>((a,b)=>a.APPLY_ID == b.APPLY_ID)
+                 .Where((a, b) =>b.AUDITING == "1")
+                .Select((a, b) => new SpApplyDetRes
+                {
+                    SP_STATUS = a.SP_STATUS,
+                    SP_CODE = a.SP_CODE,
+                    SP_NAME = a.SP_NAME,
+                    SP_SIZE = a.SP_SIZE,
+                    PRODUCE = a.PRODUCE,
+                    UNIT = a.UNIT,
+                    TYPE_NAME = a.TYPE_NAME,
+                    IS_XY = a.IS_XY,
+                    EXIG_DEV = b.EXIG_DEV,
+                    APPLY_USER = b.APPLY_USER,
+                    APPLY_DATE = b.APPLY_DATE,
+                    DEPT_NAME = b.DEPT_NAME,
+                    SEC_DEPT = b.SEC_DEPT,
+                    MEMO = a.MEMO,
+                    SPDET_ID = a.SPDET_ID
+                })
+                .GetGridData(request);
+        }
+
+        public async Task<AjaxResult> ApplyComboxData()
+        {
+            try
+            {
+                var dic = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "BCCode", "exig_dev" },
+                });
+                var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "BCCode", "pur_state" }
+                });
+                dic.TryAdd("StatusData", dic1["BCCode"]);
+                return AjaxResult.Success(dic);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("获取下拉数据失败！原因：" + e.Message);
+            }
+        }
+
+        public class SpApplyDetFlowRes
+        {
+            public string SPDET_ID;
+            public string SP_STATUS;
+            public string SP_CODE;
+            public string SP_NAME;
+
+            public string SP_SIZE;
+            public string PRODUCE;
+            public string UNIT;
+            public string TYPE_NAME;
+            public string APPLY_NO;
+            public string COLLECT_CODE;
+            public string PLAN_NO; 
+            public string ORDER_CODE;
+            public string APPLY_USER; 
+            public decimal? APPLY_COUNT;
+            public string PROVIDER_NAME; 
+            public string DEPT_NAME;
+            public string XJDOWN_USER;
+            public string BUY_USER;
+            public string PERIOD;
+            public decimal? COUNT;
+            public decimal? INSTORE_COUNT;
+            public decimal? STOP_NUM;
+            public decimal? YG_PRICE;
+            public decimal? PRICE;
+
+
+            public DateTime? APPLY_DATE;
+            public DateTime? COLLECT_DATE;
+            public DateTime? PLAN_DATE;
+            public DateTime? ORDER_DATE;
+            public DateTime? STOP_DATE;
+            public string T_MEMO;
+        }
+        public async Task<AjaxResult> ApplyDetFlowAsync(string SPDET_ID)
+        {
+            var applydet = _dbContext.Query<SP_APPLY_DETAIL>()
+                 .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
+                 .Where((a, b) => a.SPDET_ID == SPDET_ID)
+                .Select((a, b) => new SpApplyDetFlowRes
+                {
+                    SP_STATUS = a.SP_STATUS,
+                    SP_CODE = a.SP_CODE,
+                    SP_NAME = a.SP_NAME,
+                    SP_SIZE = a.SP_SIZE,
+                    PRODUCE = a.PRODUCE,
+                    UNIT = a.UNIT,
+                    TYPE_NAME = a.TYPE_NAME,
+                    APPLY_COUNT = a.COUNT,
+                    APPLY_NO = b.APPLY_NO,
+                    APPLY_USER = b.APPLY_USER,
+                    APPLY_DATE = b.APPLY_DATE,
+                    SPDET_ID = a.SPDET_ID,
+                    YG_PRICE = a.YG_PRICE
+                }).First();
+
+            var col = _dbContext.Query<SP_COLLECT_REQUEST>()
+                .LeftJoin<SP_COLLECT>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                 .Where((a, b) => a.REQUEST_DET_ID == SPDET_ID)
+                 .Select((a, b) => new
+                 {
+                     b.COLLECT_CODE,
+                     b.COLLECT_DATE
+                 }).FirstOrDefault();
+
+            var pur = _dbContext.Query<SP_PURPLAN_DET>()
+             .LeftJoin<SP_PURPLAN>((a, b) => a.PURPLAN_ID == b.PURPLAN_ID)
+              .Where((a, b) => a.SPDET_ID == SPDET_ID)
+              .Select((a, b) => new
+              {
+                  b.PLAN_NO,
+                  b.PLAN_DATE,
+                  b.XJDOWN_USER,
+                  a.PERIOD
+              }).FirstOrDefault();
+
+            var order = await _dbContext.Query<SP_ORDER_DETAIL>()
+             .LeftJoin<SP_ORDER>((a, b) => a.ORDER_ID == b.ORDER_ID)
+              .Where((a, b) => a.SPDET_ID == SPDET_ID)
+              .Select((a, b) => new
+              {
+                  b.ORDER_CODE,
+                  b.ORDER_DATE,
+                  a.STOP_DATE,
+                  a.T_MEMO,
+                  b.PROVIDER_NAME,
+                  b.DEPT_NAME,
+                  b.BUY_USER,
+                  a.COUNT,
+                  a.PRICE,
+                  a.STOP_NUM,
+                  a.INSTORE_COUNT
+              }).FirstAsync();
+
+            applydet.COLLECT_CODE = col?.COLLECT_CODE;
+            applydet.COLLECT_DATE = col?.COLLECT_DATE;
+            applydet.PLAN_NO = pur?.PLAN_NO;
+            applydet.PLAN_DATE = pur?.PLAN_DATE;
+            applydet.XJDOWN_USER = pur?.XJDOWN_USER;
+            applydet.PERIOD = pur?.PERIOD;
+
+            applydet.ORDER_CODE = order?.ORDER_CODE;
+            applydet.ORDER_DATE = order?.ORDER_DATE;
+            applydet.STOP_DATE = order?.STOP_DATE;
+            applydet.T_MEMO = order?.T_MEMO;
+            applydet.PROVIDER_NAME = order?.PROVIDER_NAME;
+            applydet.DEPT_NAME = order?.DEPT_NAME;
+            applydet.BUY_USER = order?.BUY_USER;
+            applydet.COUNT = order?.COUNT;
+            applydet.PRICE = order?.PRICE;
+            applydet.STOP_NUM = order?.STOP_NUM;
+            applydet.INSTORE_COUNT = order?.INSTORE_COUNT;
+
+            return AjaxResult.Success(applydet);
+        }
+        #endregion
     }
 }

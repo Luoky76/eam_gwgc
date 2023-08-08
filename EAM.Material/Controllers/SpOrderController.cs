@@ -87,5 +87,16 @@ namespace EAM.Material.Controllers
         {
             return AjaxResult<GridData>.Success(await _service.OrderOverListAsync(request), "成功");
         }
+
+        /// <summary>
+        /// 订单完成情况
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> OrderListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.OrderListAsync(request), "成功");
+        }
     }
 }

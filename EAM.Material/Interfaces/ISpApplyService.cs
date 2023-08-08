@@ -28,5 +28,9 @@ namespace EAM.Material.Interfaces
         Task<int> Submit(List<string> sids);
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_APPLY_DETAIL> request);
+
+        Task<GridData> ApplyListAsync(GridRequest request);
+        Task<AjaxResult> ApplyComboxData();
+        Task<AjaxResult> ApplyDetFlowAsync(string SPDET_ID);
     }
 }
