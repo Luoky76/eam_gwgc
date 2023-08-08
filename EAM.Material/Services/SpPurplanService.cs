@@ -185,7 +185,8 @@ namespace EAM.Material.Services
                         CREATEDATE = dt,
                         MODIFY_USERID = _userSession.UserID.ToString(),
                         MODIFYDATE = dt,
-                        AUDITING = "0"
+                        AUDITING = "0",
+                        IS_STOP = "0"
                     };
                     importList.Add(temp);
                     await Task.CompletedTask;
@@ -301,7 +302,7 @@ namespace EAM.Material.Services
                     c.PRODUCE2,
                     c.UNIT2
                 },
-                c => a => a.PLAN_ID == c.PLAN_ID, DetBeforeAdd, DetBeforeUpdate);
+                c => a => a.PLAN_ID == c.PLAN_ID, DetBeforeAdd, DetBeforeUpdate, null, false, null, AfterSaveDet);
         }
 
         private async Task DetBeforeAdd(SP_PURPLAN_DET entity)
