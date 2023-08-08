@@ -219,13 +219,6 @@ namespace Gksyb.Model
         public string DEPT_NAME { get; set; }
 
         /// <summary>
-        /// 使用部门编码
-        /// </summary>
-        [Description("使用部门编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_CODE { get; set; }
-
-        /// <summary>
         /// 二级单位ID
         /// </summary>
         [Description("二级单位ID")]

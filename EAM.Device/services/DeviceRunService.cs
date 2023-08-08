@@ -59,15 +59,15 @@ namespace EAM.Device.services
             var qry = _dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
-                .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="1"&&c.AUDITING=="1");
+                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE && c.AUDITING=="1")
+                .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="1"&&a.TYPE_ID=="2");
             return await qry
                 .Select((a, b, c) => new ComboxData()
                 {
                     ID = a.DEVICE_ID,
                     TEXT = a.DEVICE_NAME,
                     VALUE = a.DEVICE_NO,
-                    EXTEND =c.NEW_RUN_STATUS,
+                    EXTEND =c.NEW_RUN_STATUS ?? "正常",
                     EXTEND1 =a.DEVICE_TYPE,
                     EXTEND2 =a.TYPE_NAME,
                 })
@@ -167,9 +167,9 @@ namespace EAM.Device.services
             var qry = _dbContext.Query<DEVICE_CARD>()
                  .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE)
+                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE &&c.AUDITING=="1")
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)
-                 .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="1"&&c.AUDITING=="1")
+                 .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="1"&&a.TYPE_ID=="2")
                  .Select((a, b, c, d) => new
                  {
                      NEW_RUN_STATUS = c.NEW_RUN_STATUS ?? "正常",
