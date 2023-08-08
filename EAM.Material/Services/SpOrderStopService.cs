@@ -20,7 +20,6 @@ namespace EAM.Material.Services
         public SpOrderStopService(IDbContext dbContext, UserSession userSession)
         {
             _dbContext = dbContext;
-            _comboxDataService = comboxDataService;
             _userSession = userSession;
         }
 
