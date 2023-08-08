@@ -82,10 +82,10 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<ASSET_REPORT>> GetAsync(string id)
+        public async Task<AjaxResult<ASSET_REPORT_AND_CARD>> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<ASSET_REPORT>.Error("请传递参数");
-            return AjaxResult<ASSET_REPORT>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult<ASSET_REPORT_AND_CARD>.Error("请传递参数");
+            return AjaxResult<ASSET_REPORT_AND_CARD>.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>

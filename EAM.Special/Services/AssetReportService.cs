@@ -53,6 +53,7 @@ namespace EAM.Special.Services
                 {
                     a.REPORT_ID,
                     a.AUDITING_APPLY,
+                    a.REPORT_STATE,
                     a.APPLY_CODE,
                     a.APPLY_DATE,
                     a.ASSET_ID,
@@ -63,7 +64,7 @@ namespace EAM.Special.Services
                     a.APPLY_DEPT,
                     a.FAILURE_TIME,
                     a.FAILURE_DESCRIBE,
-                    a.MEMO,
+                    a.APPLY_MEMO,
                     
                     b.ASSET_NAME,
                     b.ASSET_CODE,
@@ -90,9 +91,42 @@ namespace EAM.Special.Services
         {
             var list = await _dbContext.Query<ASSET_REPORT>()
                 .Where(c => c.AUDITING_APPLY == "1")
-                .Select(c => new
+                .LeftJoin<ASSET_CARD>((a, b) => a.ASSET_ID == b.ASSET_ID)
+                .Select((a, b) => new
                 {
-                    
+                    a.REPORT_ID,
+                    a.AUDITING_CHECK,
+                    a.REPORT_STATE,
+                    a.APPLY_CODE,
+                    a.APPLY_DATE,
+                    a.ASSET_ID,
+                    a.APPLY_USER_ID,
+                    a.APPLY_USER_NAME,
+                    a.APPLY_TEL,
+                    a.APPLY_DEPTID,
+                    a.APPLY_DEPT,
+                    a.FAILURE_TIME,
+                    a.FAILURE_DESCRIBE,
+                    a.APPLY_MEMO,
+
+                    b.ASSET_NAME,
+                    b.ASSET_CODE,
+                    b.TYPE_ID,
+                    b.TYPE_NAME,
+                    b.DEPT_ID,
+                    b.DEPT_NAME,
+                    b.PERSON,
+
+                    a.CHECK_USERID,
+                    a.CHECK_USER,
+                    a.CHECK_DEPTID,
+                    a.CHECK_DEPT,
+                    a.CHECK_DATE,
+                    a.CHECK_BEGIN,
+                    a.CHECK_END,
+                    a.FAILURE_CAUSE,
+                    a.CHECK_METH,
+                    a.CHECK_MEMO
                 })
                 .GetGridData(request);
             return list;
@@ -107,9 +141,39 @@ namespace EAM.Special.Services
         {
             var list = await _dbContext.Query<ASSET_REPORT>()
                 .Where(c => c.AUDITING_CHECK == "1" && c.REPORT_STATE == "4")
-                .Select(c => new
+                .LeftJoin<ASSET_CARD>((a, b) => a.ASSET_ID == b.ASSET_ID)
+                .Select((a, b) => new
                 {
+                    a.REPORT_ID,
+                    a.AUDITING_APPLY,
+                    a.REPORT_STATE,
+                    a.APPLY_CODE,
+                    a.CHECK_DATE,
+                    a.ASSET_ID,
+                    a.APPLY_USER_ID,
+                    a.APPLY_USER_NAME,
+                    a.APPLY_TEL,
+                    a.APPLY_DEPTID,
+                    a.APPLY_DEPT,
+                    a.FAILURE_DESCRIBE,
 
+                    b.ASSET_NAME,
+                    b.ASSET_CODE,
+                    b.ASSETNO,
+                    b.TYPE_ID,
+                    b.TYPE_NAME,
+                    b.DEPT_ID,
+                    b.DEPT_NAME,
+                    b.CARD_USER,
+                    b.PERSON,
+                    b.ASSET_TYPE,
+                    b.BRAND,
+                    b.SERIAL_NUM,
+                    b.INSTALL_SITE,
+                    
+                    a.PROVIDER,
+                    a.PROVIDER_TEL,
+                    a.OUTSOURCE_MEMO
                 })
                 .GetGridData(request);
             return list;
@@ -138,10 +202,66 @@ namespace EAM.Special.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<ASSET_REPORT> GetAsync(string id)
+        public async Task<ASSET_REPORT_AND_CARD> GetAsync(string id)
         {
             var query = await _dbContext.Query<ASSET_REPORT>()
                 .Where(c => c.REPORT_ID == id)
+                .LeftJoin<ASSET_CARD>((a, b) => a.ASSET_ID == b.ASSET_ID)
+                .Select((a, b) => new ASSET_REPORT_AND_CARD {
+                    REPORT_ID = a.REPORT_ID,
+                    AUDITING_APPLY = a.AUDITING_APPLY,
+                    AUDITING_CHECK = a.AUDITING_CHECK,
+                    AUDITING_ACCEPT = a.AUDITING_ACCEPT,
+                    AUDITING_OUTSOURCE = a.AUDITING_OUTSOURCE,
+                    REPORT_STATE = a.REPORT_STATE,
+                    ASSET_ID = a.ASSET_ID,
+                    APPLY_CODE = a.APPLY_CODE,
+                    APPLY_DATE = a.APPLY_DATE,
+                    APPLY_DEPTID = a.APPLY_DEPTID,
+                    APPLY_DEPT = a.APPLY_DEPT,
+                    APPLY_USER_ID = a.APPLY_USER_ID,
+                    APPLY_USER_NAME = a.APPLY_USER_NAME,
+                    APPLY_TEL = a.APPLY_TEL,
+                    CHECK_DATE = a.CHECK_DATE,
+                    ACCEPT_APPRAISE = a.ACCEPT_APPRAISE,
+                    SEC_DEPTID = a.SEC_DEPTID,
+                    SEC_DEPT = a.SEC_DEPT,
+                    FAILURE_TIME = a.FAILURE_TIME,
+                    FAILURE_DESCRIBE = a.FAILURE_DESCRIBE,
+                    FAILURE_CAUSE = a.FAILURE_CAUSE,
+                    APPLY_MEMO = a.APPLY_MEMO,
+                    CHECK_METH = a.CHECK_METH,
+                    CHECK_MEMO = a.CHECK_MEMO,
+                    ACCEPT_DATE = a.ACCEPT_DATE,
+                    ACCEPT_DESC = a.ACCEPT_DESC,
+                    CHECK_DEPTID = a.CHECK_DEPTID,
+                    CHECK_DEPT = a.CHECK_DEPT,
+                    CHECK_USERID = a.CHECK_USERID,
+                    CHECK_USER = a.CHECK_USER,
+                    CHECK_BEGIN = a.CHECK_BEGIN,
+                    CHECK_END = a.CHECK_END,
+                    IS_UNDER_WARRANTY = a.IS_UNDER_WARRANTY,
+                    PROVIDER = a.PROVIDER,
+                    PROVIDER_TEL = a.PROVIDER_TEL,
+                    CREATE_USERID = a.CREATE_USERID,
+                    CREATEDATE = a.CREATEDATE,
+                    MODIFY_USERID = a.MODIFY_USERID,
+                    MODIFYDATE = a.MODIFYDATE,
+
+                    ASSET_NAME = b.ASSET_NAME,
+                    ASSET_CODE = b.ASSET_CODE,
+                    ASSETNO = b.ASSETNO,
+                    TYPE_ID = b.TYPE_ID,
+                    TYPE_NAME = b.TYPE_NAME,
+                    DEPT_ID = b.DEPT_ID,
+                    DEPT_NAME = b.DEPT_NAME,
+                    CARD_USER = b.CARD_USER,
+                    PERSON = b.PERSON,
+                    ASSET_TYPE = b.ASSET_TYPE,
+                    BRAND = b.BRAND,
+                    SERIAL_NUM = b.SERIAL_NUM,
+                    INSTALL_SITE = b.INSTALL_SITE,
+                })
                 .FirstAsync();
             return query;
         }
@@ -166,10 +286,48 @@ namespace EAM.Special.Services
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
-                    
+                    c.REPORT_ID,
+                    c.AUDITING_APPLY,
+                    c.AUDITING_CHECK,
+                    c.AUDITING_ACCEPT,
+                    c.AUDITING_OUTSOURCE,
+                    c.REPORT_STATE,
+                    c.ASSET_ID,
+                    c.APPLY_CODE,
+                    c.APPLY_DATE,
+                    c.APPLY_DEPTID,
+                    c.APPLY_DEPT,
+                    c.APPLY_USER_ID,
+                    c.APPLY_USER_NAME,
+                    c.APPLY_TEL,
+                    c.CHECK_DATE,
+                    c.ACCEPT_APPRAISE,
+                    c.SEC_DEPTID,
+                    c.SEC_DEPT,
+                    c.FAILURE_TIME,
+                    c.FAILURE_DESCRIBE,
+                    c.FAILURE_CAUSE,
+                    c.APPLY_MEMO,
+                    c.CHECK_METH,
+                    c.CHECK_MEMO,
+                    c.ACCEPT_DATE,
+                    c.ACCEPT_DESC,
+                    c.CHECK_DEPTID,
+                    c.CHECK_DEPT,
+                    c.CHECK_USERID,
+                    c.CHECK_USER,
+                    c.CHECK_BEGIN,
+                    c.CHECK_END,
+                    c.IS_UNDER_WARRANTY,
+                    c.PROVIDER,
+                    c.PROVIDER_TEL,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
                 },
                 c => a => a.REPORT_ID == c.REPORT_ID
-                , BeforeAdd, null, null, false, null, null);
+                , BeforeAdd, BeforeUpdate, null, false, null, null);
         }
 
         /// <summary>
@@ -237,6 +395,7 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeUpdate(ASSET_REPORT entity)
         {
+
             await Task.CompletedTask;
         }
 
@@ -269,6 +428,8 @@ namespace EAM.Special.Services
                 {
                     { "Auditing", null },
                     { "User", null },
+                    { "AssetCard", null },
+                    { "ReportState", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());

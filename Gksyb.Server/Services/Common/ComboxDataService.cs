@@ -1,5 +1,6 @@
 ﻿#pragma warning disable IDE0051,IDE0052 // 删除未使用的私有成员
 
+using DocumentFormat.OpenXml.Spreadsheet;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -219,6 +220,49 @@ namespace Gksyb.Server.Services.Common
                 .Where(predicate)
                 .OrderBy(c => c.CODE_SEQ)
                 .Select(c => new ComboxData() { ID = c.SID, TEXT = c.CODE_CN, VALUE = c.CODE_EN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// IT固定资产设备信息下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetCard(Expression<Func<ASSET_CARD, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<ASSET_CARD>()
+                .Where(predicate)
+                .Where(c => c.AUDITING == "1" && c.IS_TANGIBLE == "1")
+                .OrderBy(c => c.ASSET_CODE)
+                .Select(c => new ComboxData() {
+                    ID = c.ASSET_ID,
+                    TEXT = c.ASSET_CODE,
+                    VALUE = c.ASSET_NAME,
+                    EXTEND = c.ASSETNO,
+                    EXTEND1 = c.TYPE_NAME,
+                    EXTEND2 = c.DEPT_NAME,
+                    EXTEND3 = c.CARD_USER,
+                    EXTEND4 = c.PERSON,
+                    EXTEND5 = c.ASSET_TYPE,
+                    EXTEND6 = c.BRAND
+                })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// IT资产修复状态下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ReportState(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "reportState")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                 .ToListAsync();
         }
 

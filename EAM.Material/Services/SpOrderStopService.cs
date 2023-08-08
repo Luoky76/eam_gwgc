@@ -150,16 +150,23 @@ namespace EAM.Material.Services
                 foreach (var det in dets)
                 {
                     var stop = list.Where(t => t.STOP_ID == det.STOP_ID).First();
-                    await _dbContext.UpdateAsync<SP_ORDER_DETAIL>(x => x.ORDERDET_ID == det.ORDERDET_ID,
-                        x => new SP_ORDER_DETAIL
-                        {
-                            IS_STOP = "1",
-                            T_MEMO = stop.MEMO,
-                            STOP_USERID = stop.USER_ID,
-                            STOP_USER = stop.USER_NAME,
-                            STOP_DATE = stop.EDIT_DATE,
-                            STOP_NUM = det.STOP_NUM
-                        });
+                    var orderDet = _dbContext.Query<SP_ORDER_DETAIL>().Where(x => x.ORDERDET_ID == det.ORDERDET_ID).FirstOrDefault();
+                    if (orderDet != null)
+                    {
+                        orderDet.IS_STOP = "1";
+                        orderDet.T_MEMO = stop.MEMO;
+                        orderDet.STOP_USERID = stop.USER_ID;
+                        orderDet.STOP_USER = stop.USER_NAME;
+                        orderDet.STOP_DATE = stop.EDIT_DATE;
+                        orderDet.STOP_NUM = det.STOP_NUM;
+                        await _dbContext.UpdateAsync<SP_ORDER_DETAIL>(orderDet);
+
+                        await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == orderDet.SPDET_ID,
+                          x => new SP_APPLY_DETAIL
+                          {
+                              SP_STATUS = "70"//订单终止
+                          });
+                    }
                 }
 
                 var orderIds = dets.Select(t => t.ORDER_ID).Distinct().ToList();
