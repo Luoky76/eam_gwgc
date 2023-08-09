@@ -17,7 +17,7 @@
             dialogData: {},
             maintDept: [],
             repSourceType: [],
-            repOutType: [],
+            RepDockConfirmType: [],
             isleave: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             status: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             isView: true,
@@ -28,49 +28,55 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.status, disabled: true } },
-                            { display: "委外单号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "委外状态", name: "OUT_STATUS", newline: false, upper: true, type: "select", options: {  data: me.repOutType, disabled: true } },
-                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "维修设备名称", name: "REP_DEVICE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "来源类型", name: "SRC_TYPE", newline: false, upper: true, type: "select", options: { disabled: true, date: me.repSourceType } },
-                            { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", options: { data: me.maintDept, disabled: true } },
-                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", options: { data: me.isleave } },
-                            { display: "确认人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: { }, validate: { required: true } },
+                            { display: "确认单状态", name: "AUDITING_CONFIRM", newline: false, upper: true, type: "select", options: { type: 'select', data: me.status, disabled: true }, group: "码头确认单详情" },
+                            { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
+
+                            { display: "维修项目", name: "REP_ITEM", newline: true, width: 780, upper: true, type: "text", options: { rows: "1", disabled: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "故障原因", name: "REASON", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "解决方法", name: "SOLUTION", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "委外维修内容", name: "OUT_REPAIR_MEMO", newline: true, width: 780, upper: true, validate: { required: true }, type: "textarea", options: { rows: "2" } },
-                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "备注", name: "MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "主键", name: "OUT_ID", newline: false, upper: true, type: "text", options: {} },
+                            { display: "故障原因", name: "REASON", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "解决方法", name: "SOLUTION", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "维修内容", name: "REP_CONTENT", newline: true, width: 780, upper: true, type: "textarea",  options: { rows: "2", disabled: true } },
+
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: true, upper: true,  type: "select", options: { data: me.isleave, disabled: true } },
+
+                            { display: "确认人", name: "CONFIRM_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+
+                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+
+
+                            { display: "合同编号", name: "PACT_CODE", newline: false, upper: true, type: "text", options: {},group: "码头维修合同详情" },
+                            { display: "合同名称", name: "PACT_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "签订日期", name: "PACT_DATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "承修方", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "合同金额(元)", name: "PACT_MONEY", newline: false, upper: true, type: "float", options: {} },
+                            //{ display: "维修费用(元)", name: "REP_MONEY", newline: false, upper: true, type: "float", options: { disabled: true } },
+                            { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {}, group: "码头维修验收" },
+                            { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: {} },
+                            { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
+                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
+                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: 780, upper: true, validate: { required: true }, type: "textarea", options: { rows: "2"} },
+
+                            { display: "主键", name: "CHECK_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
                     }
                 };
             },
             mainform: null,
-            buttons: null,
-            loadComboxData: function () {
-                var me = this;
-                LG.ajax({
-                    async: false,
-                    url: 'Device/RepOut/ComboxData',
-                    loading: '正在获取中...',
-                    success: function (data) {
-                        me.maintDept = data.maintDept;
-                        me.repSourceType = data.repSourceType;
-                        me.repOutType = data.repOutType;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-            },
+            buttons: null,/*
+                loadComboxData: function () {
+                    var me = this;
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/RepDockInfo/ComboxData',
+                        loading: '正在获取中...',
+                        success: function (data) {
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                },*/
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
@@ -79,7 +85,7 @@
                 else {
                     LG.ajax({
                         async: false,
-                        url: 'Device/RepOut/GetRepOutDetail',
+                        url: 'Device/RepDockInfo/GetRepDockConfirmDetail',
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
@@ -116,7 +122,7 @@
                 }
                 LG.ajax({
                     jsToken: true,
-                    url: 'Device/RepOut/ManageRepOut',
+                    url: 'Device/RepDockInfo/ManageRepDockCheck',
                     loading: '正在保存中...',
                     data: changeRow,
                     success: function () {
@@ -193,7 +199,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: 140,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -212,7 +218,7 @@
                     if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
                 }
                 me.isView = false;
-                me.loadComboxData();
+                //me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.loadData();

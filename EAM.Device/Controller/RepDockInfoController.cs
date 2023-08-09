@@ -168,16 +168,6 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
-        /// 提交码头维修确认
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<AjaxResult> SubmitRepDockConfirmAsync(List<string> sids)
-        {
-            return AjaxResult.Success(await _service.SubmitRepDockConfirm(sids), "成功");
-        }
-
-        /// <summary>
         /// 获取码头维修确认列表
         /// </summary>
         /// <returns></returns>
@@ -188,13 +178,13 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
-        /// 管理码头确认维修
+        /// 提交码头维修确认
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> ManageRepDockConfirmAsync(SaveRequest<REP_DOCK_CHECK> request)
+        public async Task<AjaxResult> SubmitRepDockConfirmAsync(List<string> sids)
         {
-            return await _service.ManageRepDockConfirm(request);
+            return AjaxResult.Success(await _service.SubmitRepDockConfirm(sids), "成功");
         }
 
         /// <summary>
@@ -230,7 +220,7 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
-        /// 管理码头验收维修
+        /// 管理码头验收维修，确认
         /// </summary>
         /// <returns></returns>
         [HttpPost]
