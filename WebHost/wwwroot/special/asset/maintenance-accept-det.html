@@ -68,12 +68,13 @@
                             { display: "处理方式", name: "CHECK_METH", width: 1146, type: "textarea", options: { disabled: true } },
                             { display: "处理备注", name: "CHECK_MEMO", width: 1146, type: "textarea", options: { disabled: true } },
 
+                            { display: "实施提交时间", name: "OUTSOURCE_DATE", width: 300, type: "text", options: { disabled: true }, group: "委外信息" },
                             {
                                 display: "是否在保修期内", name: "IS_UNDER_WARRANTY", width: 300, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.yesOrNo,
                                     disabled: true
-                                }, group: "委外信息"
+                                }
                             },
                             { display: "供应商", name: "PROVIDER", width: 300, type: "text", options: { disabled: true } },
                             { display: "供应商联系电话", name: "PROVIDER_TEL", width: 300, type: "text", options: { disabled: true } },
