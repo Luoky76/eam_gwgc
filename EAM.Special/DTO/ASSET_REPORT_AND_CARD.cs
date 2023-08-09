@@ -98,14 +98,14 @@ namespace Gksyb.Model
         /// 申请人ID
         /// </summary>
         [Description("申请人ID")]
-        public long? APPLY_USER_ID { get; set; }
+        public long? APPLY_USERID { get; set; }
 
         /// <summary>
         /// 申请人
         /// </summary>
         [Description("申请人")]
         [Column(DbType = DbType.AnsiString)]
-        public string APPLY_USER_NAME { get; set; }
+        public string APPLY_USER { get; set; }
 
         /// <summary>
         /// 申请人联系电话
