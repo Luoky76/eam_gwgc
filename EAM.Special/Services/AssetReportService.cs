@@ -145,8 +145,7 @@ namespace EAM.Special.Services
                 .Select((a, b) => new
                 {
                     a.REPORT_ID,
-                    a.AUDITING_APPLY,
-                    a.REPORT_STATE,
+                    a.AUDITING_OUTSOURCE,
                     a.APPLY_CODE,
                     a.CHECK_DATE,
                     a.ASSET_ID,
@@ -171,6 +170,7 @@ namespace EAM.Special.Services
                     b.SERIAL_NUM,
                     b.INSTALL_SITE,
                     
+                    a.IS_UNDER_WARRANTY,
                     a.PROVIDER,
                     a.PROVIDER_TEL,
                     a.OUTSOURCE_MEMO
@@ -189,9 +189,55 @@ namespace EAM.Special.Services
             var list = await _dbContext.Query<ASSET_REPORT>()
                 //维修实施已提交的非外修状态 或 委外维修已提交的外修状态
                 .Where(c => c.AUDITING_CHECK == "1" && c.REPORT_STATE != "4" || c.AUDITING_OUTSOURCE == "1" && c.REPORT_STATE == "4")
-                .Select(c => new
+                .LeftJoin<ASSET_CARD>((a, b) => a.ASSET_ID == b.ASSET_ID)
+                .Select((a, b) => new
                 {
+                    a.REPORT_ID,
+                    a.AUDITING_ACCEPT,
+                    a.REPORT_STATE,
+                    a.APPLY_CODE,
+                    a.APPLY_DATE,
+                    a.ASSET_ID,
+                    a.APPLY_USERID,
+                    a.APPLY_USER,
+                    a.APPLY_TEL,
+                    a.APPLY_DEPTID,
+                    a.APPLY_DEPT,
+                    a.FAILURE_TIME,
+                    a.FAILURE_DESCRIBE,
+                    a.APPLY_MEMO,
 
+                    a.CHECK_USERID,
+                    a.CHECK_USER,
+                    a.CHECK_DEPTID,
+                    a.CHECK_DEPT,
+                    a.CHECK_DATE,
+                    a.CHECK_BEGIN,
+                    a.CHECK_END,
+                    a.FAILURE_CAUSE,
+                    a.CHECK_METH,
+                    a.CHECK_MEMO,
+
+                    a.IS_UNDER_WARRANTY,
+                    a.PROVIDER,
+                    a.PROVIDER_TEL,
+                    a.OUTSOURCE_MEMO,
+
+                    a.ACCEPT_DATE,
+                    a.ACCEPT_DESC,
+                    a.ACCEPT_APPRAISE,
+
+                    b.ASSET_NAME,
+                    b.ASSET_CODE,
+                    b.ASSETNO,
+                    b.TYPE_ID,
+                    b.TYPE_NAME,
+                    b.DEPT_ID,
+                    b.DEPT_NAME,
+                    b.CARD_USER,
+                    b.PERSON,
+                    b.ASSET_TYPE,
+                    b.BRAND,
                 })
                 .GetGridData(request);
             return list;
@@ -243,6 +289,7 @@ namespace EAM.Special.Services
                     IS_UNDER_WARRANTY = a.IS_UNDER_WARRANTY,
                     PROVIDER = a.PROVIDER,
                     PROVIDER_TEL = a.PROVIDER_TEL,
+                    OUTSOURCE_MEMO = a.OUTSOURCE_MEMO,
                     CREATE_USERID = a.CREATE_USERID,
                     CREATEDATE = a.CREATEDATE,
                     MODIFY_USERID = a.MODIFY_USERID,
@@ -321,6 +368,7 @@ namespace EAM.Special.Services
                     c.IS_UNDER_WARRANTY,
                     c.PROVIDER,
                     c.PROVIDER_TEL,
+                    c.OUTSOURCE_MEMO,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
@@ -384,6 +432,23 @@ namespace EAM.Special.Services
             if (entity.APPLY_CODE.IsNullOrEmpty())
             {
                 entity.APPLY_CODE = await CreateCode("AM");
+            }
+            //设置记录状态初值为未提交
+            if (entity.AUDITING_APPLY.IsNullOrEmpty())
+            {
+                entity.AUDITING_APPLY = "0";
+            }
+            if (entity.AUDITING_CHECK.IsNullOrEmpty())
+            {
+                entity.AUDITING_CHECK = "0";
+            }
+            if (entity.AUDITING_OUTSOURCE.IsNullOrEmpty())
+            {
+                entity.AUDITING_OUTSOURCE = "0";
+            }
+            if (entity.AUDITING_ACCEPT.IsNullOrEmpty())
+            {
+                entity.AUDITING_ACCEPT = "0";
             }
             await Task.CompletedTask;
         }

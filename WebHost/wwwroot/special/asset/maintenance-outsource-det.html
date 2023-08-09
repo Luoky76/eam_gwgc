@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>维修实施明细</title>
+    <title>委外维修</title>
     <script src="../../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -25,21 +25,15 @@
                         labelwidth: 220,
                         fields: [
                             {
-                                display: "已提交", name: "AUDITING_CHECK", width: 300, type: "select", options: {
+                                display: "已提交", name: "AUDITING_OUTSOURCE", width: 300, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }, group: "基础信息"
                             },
                             { display: "维修申请单号", name: "APPLY_CODE", width: 300, type: "text", options: { disabled: true } },
-                            {
-                                display: "修复状态", name: "REPORT_STATE", width: 300, type: "select", validate: { required: true }, options: {
-                                    type: "select",
-                                    data: me.reportState,
-                                }
-                            },
-                            { display: "申请提交时间", name: "APPLY_DATE", width: 300, type: "date", options: { disabled: true } },
-                            { display: "实施提交时间", name: "CHECK_DATE", width: 300, type: "date", options: { disabled: true } },
+                            //委外时间即维修实施提交时间
+                            { display: "委外时间", name: "CHECK_DATE", width: 300, type: "date", options: { disabled: true } },
 
                             { display: "设备编码", name: "ASSET_CODE", width: 300, type: "text", options: { disabled: true }, group: "设备信息" },
                             { display: "设备名称", name: "ASSET_NAME", width: 300, type: "text", options: { disabled: true } },
@@ -50,6 +44,8 @@
                             { display: "资产编号", name: "ASSETNO", width: 300, type: "text", options: { disabled: true } },
                             { display: "型号", name: "ASSET_TYPE", width: 300, type: "text", options: { disabled: true } },
                             { display: "品牌", name: "BRAND", width: 300, type: "text", options: { disabled: true } },
+                            { display: "序列号", name: "SERIAL_NUM", width: 300, type: "text", options: { disabled: true } },
+                            { display: "存放位置", name: "INSTALL_SITE", width: 300, type: "text", options: { disabled: true } },
 
                             { display: "故障发生时间", name: "FAILURE_TIME", width: 300, type: "date", options: { disabled: true }, group: "故障信息" },
                             { display: "故障现象描述", name: "FAILURE_DESCRIBE", width: 1146, type: "textarea", options: { disabled: true } },
@@ -57,68 +53,25 @@
                             { display: "申请部门", name: "APPLY_DEPT", width: 300, type: "text", options: { disabled: true }, group: "申请信息" },
                             { display: "申请人", name: "APPLY_USER", width: 300, type: "text", options: { disabled: true } },
                             { display: "申请人联系电话", name: "APPLY_TEL", width: 300, type: "text", options: { disabled: true } },
-                            { display: "申请备注", name: "APPLY_MEMO", width: 1146, type: "textarea", options: { disabled: true } },
 
-                            //实际为处理部门ID
                             {
-                                display: "处理部门", name: "CHECK_DEPTID", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "是否在保修期内", name: "IS_UNDER_WARRANTY", width: 300, type: "select", validate: { required: true }, options: {
                                     type: "select",
-                                    data: me.corp,
-                                    autocomplete: true,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    onChangeValue: function (input, value, g) {
-                                        if (g.selected != undefined) {
-                                            $('#CHECK_DEPT').val(g.selected.TEXT ?? '');
-                                        }
-                                    }
-                                }, group: "实施信息"
+                                    data: me.yesOrNo
+                                }, group: "委外信息"
                             },
-                            //实际为处理人ID
-                            {
-                                display: "处理人", name: "CHECK_USERID", width: 300, type: "select", validate: { required: true }, options: {
-                                    type: "select",
-                                    data: me.user,
-                                    autocomplete: true,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    onChangeValue: function (input, value, g) {
-                                        if (g.selected != undefined) {
-                                            $('#CHECK_USER').val(g.selected.TEXT ?? '');
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                display: "开始处理时间", name: "CHECK_BEGIN", width: 300, type: "date", validate: { required: true }, format: "yyyy-MM-dd hh:mm ", options: {
-                                    format: "yyyy-MM-dd hh:mm ",
-                                    showTime: true
-                                }
-                            },
-                            {
-                                display: "结束处理时间", name: "CHECK_END", width: 300, type: "date", validate: { required: true }, format: "yyyy-MM-dd hh:mm ", options: {
-                                    format: "yyyy-MM-dd hh:mm ",
-                                    showTime: true
-                                }
-                            },
-                            { display: "故障原因", name: "FAILURE_CAUSE", width: 1146, type: "textarea" },
-                            { display: "处理方式", name: "CHECK_METH", width: 1146, type: "textarea" },
-                            { display: "处理备注", name: "CHECK_MEMO", width: 1146, type: "textarea" },
+                            { display: "供应商", name: "PROVIDER", width: 300, type: "text", options: {} },
+                            { display: "供应商联系电话", name: "PROVIDER_TEL", width: 300, type: "text", options: {} },
+                            { display: "备注", name: "OUTSOURCE_MEMO", width: 1146, type: "textarea", options: {} },
+
                             //隐藏
                             { display: "主键", name: "REPORT_ID", width: 300, type: "hidden" },
-                            { display: "IT设备ID", name: "ASSET_ID", width: 300, type: "hidden" },
-                            { display: "申请部门ID", name: "APPLY_DEPTID", width: 300, type: "hidden" },
-                            { display: "申请人ID", name: "APPLY_USERID", width: 300, type: "hidden" },
-                            { display: "处理部门", name: "CHECK_DEPT", minWidth: 100, type: "hidden" },
-                            { display: "处理人", name: "CHECK_USER", minWidth: 100, type: "hidden" },
                         ]
                     }
                 };
             },
             auditing: [],
-            user: [],
-            reportState: [],
-            corp: [],
+            yesOrNo: [{ ID: "0", TEXT: "否" }, { ID: "1", TEXT: "是" }],
             dialog: null,
             dialogData: null,
             callback: null,
@@ -146,9 +99,6 @@
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.auditing = data.Auditing;
-                        me.reportState = data.ReportState;
-                        me.user = data.User;
-                        me.corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -230,22 +180,9 @@
                     }
                 });
             },
-            //保存前验证
-            vertifyBeforeSave: function () {
-                var me = this;
-                var data = me.mainform.getData();
-                //验证结束时间在开始时间之后
-                if (data.CHECK_BEGIN && data.CHECK_END && data.CHECK_END <= data.CHECK_BEGIN) {
-                    LG.showError("结束时间应在开始时间之后");
-                    return false;
-                }
-                return true;
-            },
             //保存表单
             save: function () {
                 var me = this;
-                //未通过验证时停止保存
-                if (!me.vertifyBeforeSave()) return;
                 if ($.isEmptyObject(LG.getFormCombChanges(me.mainform.getData(), me.orginData, true))) {
                     me.showSuccessMessage('无修改');
                     return;
@@ -266,7 +203,7 @@
                 var changeRow = new Object();
                 changeRow["updated"] = [data];
                 changeRow["original"] = [original];
-                
+
                 LG.ajax({
                     jsToken: true,
                     url: 'Special/AssetReport/Save',
@@ -288,25 +225,14 @@
                     var data = me.mainform.getData();
                     me.orginData = data;
                 }
-                function initializeData(data) {
-                    me.mainform.setOrginData(data);
-                    inner();
-                    //对于修改模式，若处理人无值则设置处理人为当前登录用户，若处理部门无值处理部门为该用户部门
-                    if (!me.isView) {
-                        data.CHECK_USERID = data.CHECK_USERID ?? window.session.UserID;
-                        data.CHECK_USER = data.CHECK_USER ?? window.session.RealName;
-                        data.CHECK_DEPTID = data.CHECK_DEPTID ?? window.session.Corp.CorpID;
-                        data.CHECK_DEPT = data.CHECK_DEPT ?? window.session.Corp.CName;
-                    }
-                    me.mainform.setData(data);
-                }
                 LG.ajax({
                     async: false,
                     url: 'Special/AssetReport/Get',
                     loading: '正在获取中...',
                     data: { id: me.sid },
                     success: function (data, message) {
-                        initializeData(data);
+                        me.mainform.setOrginData(data);
+                        inner();
                     },
                     error: function (message) {
                         LG.showError(message);
