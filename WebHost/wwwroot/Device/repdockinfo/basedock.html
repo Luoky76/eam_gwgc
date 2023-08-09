@@ -230,20 +230,35 @@
             },
             delete: function () { //删除
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
+                var selected = me.grid.getSelectedRows();
+                for (var i = 0; i < selected.length; i++) {
+                    if (selected[i].AUDITING == "1") {
+                        me.alreadydeleteed = true;
+                        break;
                     }
+                }
+                if (selected.length > 0) {
+                    if (me.alreadydeleteed) {
+                        LG.tip('已提交的无法删除!');
+                        me.alreadydeleteed = false;
+                    }
+                    else {
+                        if (me.grid.endEdit() != false) {
+                            if (selected.length > 0) {
+                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                    if (confirm) {
+                                        for (var i = 0, len = selected.length; i < len; i++) {
+                                            me.grid.deleteRow(selected[i]);
+                                        }
+                                        me.save();
+                                    }
+                                });
+                            } 
+                        }
+                    }
+                }
+                else {
+                    LG.tip('请选择行!');
                 }
             },
 
@@ -256,7 +271,7 @@
                         break;
                     }
                 }
-                if (selected) {
+                if (selected.length > 0) {
                     if (me.alreadySubmitted) {
                         LG.tip('已提交，无法再次提交!');
                         me.alreadySubmitted = false;

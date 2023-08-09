@@ -20,8 +20,8 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            detailWidth: 1500,
-            detailHeight: 700,
+            detailWidth: 1100,
+            detailHeight: 730,
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             isleave: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             setConfig: function () {
@@ -38,7 +38,7 @@
                             { display: "验收单状态", name: "AUDITING_CHECK", width: 100, type: "select", format: { data: me.auditing } },
                             { display: "维修项目", name: "REP_ITEM", minWidth: 200, type: "text", },
                             { display: "承修方", name: "PROVIDER_NAME", minWidth: 100, type: "text", },
-                            //{ display: "维修费用(元)", name: "REP_MONEY", minWidth: 100, type: "float", },
+                            { display: "维修费用(元)", name: "REP_MONEY", minWidth: 100, type: "float", },
                             { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date" },
                             { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date" },
                             { display: "是否有遗留问题", name: "IS_LEAVE", minWidth: 100, type: "select", editor: { type: 'select', data: me.isleave } },
