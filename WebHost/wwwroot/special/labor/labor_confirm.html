@@ -5,8 +5,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title></title>
-    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+    <title>劳保采购确认</title>
+    <script src="../../lib/LGboot.js"  type="text/javascript"></script>
 </head>
 
 <body style="padding: 5px; height: 100%;">
@@ -21,28 +21,61 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "码头编号", name: "_search_DOCK_CODE", dbname: "DOCK_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "码头名称", name: "_search_DOCK_NAME", dbname: "DOCK_NAME", newline: false, upper: true, type: "text",options:{} },
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text",options:{} },
+                            { display: "确认单号", name: "_search_CONFIRM_CODE", dbname: "CONFIRM_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "确认日期", name: "_search_CONFIRM_DATE", dbname: "CONFIRM_DATE", newline: false, upper: true, type: "date",options:{} },
+                            { display: "确认人", name: "_search_CONFIRM_USER", dbname: "CONFIRM_USER", newline: false, upper: true, type: "text",options:{} },
+                            { display: "确认部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, upper: true, type: "text",options:{} },
+                            { display: "采购单号", name: "_search_COLLECT_CODE", dbname: "COLLECT_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "采购方式", name: "_search_COLLECT_METHOD", dbname: "COLLECT_METHOD", newline: false, upper: true, type: "text",options:{} },
+                            { display: "物资分类", name: "_search_COLLECT_SPTYPE", dbname: "COLLECT_SPTYPE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "税率(%)", name: "_search_RATIO", dbname: "RATIO", newline: false, upper: true, type: "decimal",options:{} },
+                            { display: "供应商编码", name: "_search_PROVIDER_CODE", dbname: "PROVIDER_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", newline: false, upper: true, type: "text",options:{} },
+                            { display: "含税总金额(元)", name: "_search_TAX_MONEY", dbname: "TAX_MONEY", newline: false, upper: true, type: "decimal",options:{} },
+                            { display: "不含税总金额(元)", name: "_search_NOTAX_MONEY", dbname: "NOTAX_MONEY", newline: false, upper: true, type: "decimal",options:{} },
+                            { display: "主键", name: "_search_CONFIRM_ID", dbname: "CONFIRM_ID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "采购单ID", name: "_search_COLLECT_ID", dbname: "COLLECT_ID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "确认人ID", name: "_search_CONFIRM_USERID", dbname: "CONFIRM_USERID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "确认部门ID", name: "_search_DEPT_ID", dbname: "DEPT_ID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "供应商ID", name: "_search_PROVIDER_ID", dbname: "PROVIDER_ID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "添加人ID", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "添加时间", name: "_search_CREATEDATE", dbname: "CREATEDATE", newline: false, upper: true, type: "date",options:{} },
+                            { display: "修改人ID", name: "_search_MODIFY_USERID", dbname: "MODIFY_USERID", newline: false, upper: true, type: "text",options:{} },
+                            { display: "修改时间", name: "_search_MODIFYDATE", dbname: "MODIFYDATE", newline: false, upper: true, type: "date",options:{} },
+                            { display: "备注", name: "_search_MEMO", dbname: "MEMO", newline: false, upper: true, type: "text",options:{} }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", format: { data: me.auditing } },
-                            { display: "码头名称", name: "DOCK_NAME", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "码头地址", name: "DOCK_ADDRESS", minWidth: 250, type: "text", editor: { type: 'text' } },
-                            { display: "码头编号", name: "DOCK_CODE", minWidth: 150, type: "text"},
-                            { display: "编辑人", name: "EDIT_USER", minWidth: 120, type: "text", },
-                            { display: "编辑日期", name: "EDIT_DATE", minWidth: 120, type: "date"},
-                            { display: "备注", name: "MEMO", minWidth: 400, type: "text",  editor: { type: 'text'} },
-                            { display: "主键", name: "DOCK_ID", minWidth: 100, type: "text", hide: true },
-                            
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "确认单号", name: "CONFIRM_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "确认日期", name: "CONFIRM_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "确认人", name: "CONFIRM_USER", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "确认部门", name: "DEPT_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "采购单号", name: "COLLECT_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "采购方式", name: "COLLECT_METHOD", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "物资分类", name: "COLLECT_SPTYPE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "税率(%)", name: "RATIO", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "供应商编码", name: "PROVIDER_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "供应商", name: "PROVIDER_NAME", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "含税总金额(元)", name: "TAX_MONEY", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "不含税总金额(元)", name: "NOTAX_MONEY", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "主键", name: "CONFIRM_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text'} },
+                            { display: "采购单ID", name: "COLLECT_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "确认人ID", name: "CONFIRM_USERID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "确认部门ID", name: "DEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "供应商ID", name: "PROVIDER_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "备注", name: "MEMO", width: 100, type: "text",  editor: { type: 'text'} }
                         ]
                     }
                 };
@@ -54,7 +87,7 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Device/RepDockInfo/comboxdata',
+                    url: 'LaborConfirm/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
                         me.dataCorp = data.corpData;
@@ -74,14 +107,14 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'Device/RepDockInfo/GetBaseDockList',
+                    url: 'LaborConfirm/list',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'DOCK_CODE',
+                    sortName: 'AUDITING',
                     sortOrder: 'asc',
                     width: '98%',
                     height: '100%',
@@ -89,10 +122,6 @@
                     enabledEdit: true,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.AUDITING == "1") return false;
-                            else return true;
-                        }
                         switch (editParm.column.name) {
                             case "":
                                 if (editParm.record.__status == "add") return true;
@@ -136,18 +165,15 @@
                         case "save":
                             me.save();
                             break;
-                        case "submit":
-                            me.submit();
-                            break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls",
+                                url: "../System/Export.html?exporttype=xls",
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc",
+                                url: "../System/Export.html?exporttype=doc",
                                 modal: true
                             });
                             break;
@@ -172,7 +198,7 @@
                 //    onClosed: me.reload.bind(me),
                 //    data: { "sid": null }
                 //});
-                me.grid.addEditRow({ "AUDITING": "0" }, true);
+                me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
@@ -181,7 +207,7 @@
                     LG.tip('请选择行!');
                     return;
                 }
-                var sid = selected.DOCK_ID;
+                var sid = selected.SID;
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
@@ -209,7 +235,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Device/RepDockInfo/ManageBaseDock',
+                        url: 'LaborConfirm/save',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -230,76 +256,20 @@
             },
             delete: function () { //删除
                 var me = this;
-                var selected = me.grid.getSelectedRows();
-                for (var i = 0; i < selected.length; i++) {
-                    if (selected[i].AUDITING == "1") {
-                        me.alreadydeleteed = true;
-                        break;
-                    }
-                }
-                if (selected.length > 0) {
-                    if (me.alreadydeleteed) {
-                        LG.tip('已提交的无法删除!');
-                        me.alreadydeleteed = false;
-                    }
-                    else {
-                        if (me.grid.endEdit() != false) {
-                            if (selected.length > 0) {
-                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                                    if (confirm) {
-                                        for (var i = 0, len = selected.length; i < len; i++) {
-                                            me.grid.deleteRow(selected[i]);
-                                        }
-                                        me.save();
-                                    }
-                                });
-                            } 
-                        }
-                    }
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
-            },
-
-            submit: function () {    //提交
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                for (var i = 0; i < selected.length; i++) {
-                    if (selected[i].AUDITING == "1") {
-                        me.alreadySubmitted = true;
-                        break;
-                    }
-                }
-                if (selected.length > 0) {
-                    if (me.alreadySubmitted) {
-                        LG.tip('已提交，无法再次提交!');
-                        me.alreadySubmitted = false;
-                    }
-                    else {
-                        var sids = [];
-                        selected.forEach((a) => {
-                            sids.push(a.DOCK_ID)
-                        })
-                        LG.ajax({
-                            jsToken: true,
-                            url: 'Device/RepDockInfo/Submit',
-                            loading: '正在保存中...',
-                            data: { "sids": sids },
-                            success: function () {
-                                LG.showSuccess('保存成功');
-                                me.grid.isDataChanged = false;
-                                me.reload();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
                             }
                         });
+                    } else {
+                        LG.tip('请选择行!');
                     }
-
-                }
-                else {
-                    LG.tip('请选择行!');
                 }
             },
             bindGridEvent: function () {
@@ -379,9 +349,7 @@
                 return me;
             }
         };
-        $(function () {
-            business.init();
-        });
+        business.init();
     </script>
 </body>
 </html>
