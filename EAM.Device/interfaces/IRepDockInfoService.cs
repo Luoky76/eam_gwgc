@@ -105,12 +105,6 @@ namespace EAM.Device.interfaces
         public Task<GridData> GetRepDockConfirmList(GridRequest request);
 
         /// <summary>
-        /// 管理码头维修确认
-        /// </summary>
-        /// <returns></returns>
-        public Task<AjaxResult> ManageRepDockConfirm(SaveRequest<REP_DOCK_CHECK> request);
-
-        /// <summary>
         /// 获取单条确认记录
         /// </summary>
         /// <returns></returns>

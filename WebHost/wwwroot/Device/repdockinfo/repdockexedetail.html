@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>维修计划明细</title>
+    <title>码头维修实施明细</title>
     <script src="../../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -19,7 +19,7 @@
     </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
-            <div class="l-group" style="width: 100%;"><span>计划维修项目</span></div>
+            <div class="l-group" style="width: 100%;"><span>实施维修项目</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style=" width: 100%;">
                     <div style="margin-bottom: 50px; width: 100%;" id="plandetgird">
@@ -38,9 +38,10 @@
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
             dockInfo: [],
-            pmShippost: [],
             start: null,
+            isLose: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -49,49 +50,77 @@
                         fields: [
                             //基础信息
                             { display: "记录状态", name: "AUDITING_PLAN", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
+                            { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             {
-                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: 180, type: "select", align: "left", editor: { disabled: true },
                                 options: {
                                     data: me.dockInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 500,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
-                                        { header: '码头编号', name: 'TEXT', width: 130 },
-                                        { header: '码头名称', name: 'VALUE' },
-                                        { header: '码头地址', name: 'EXTEND1' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
-                                        if (g.selected != undefined) {
-                                            $('#DOCK_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
-                                            $('#DOCK_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
-                                        }
-                                    }
                                 }
                             },
                             { display: "码头名称", name: "DOCK_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: 775, type: "textarea", options: {} },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: 775, type: "textarea", editor: { disabled: true }, options: {} },
+
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", editor: { disabled: true }, options: {} },
+
+                            {
+                                display: "实际开工时间", name: "EXE_BDATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.start = value
+                                    },
+                                }, group: "码头维修实施详情"
+                            },
+                            {
+                                display: "实际完工时间", name: "EXE_EDATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        if (me.start == null) {
+                                            LG.showError("请先选择开始时间,后选结束时间！");
+                                        }
+                                        var date1 = new Date(me.start);
+                                        var date2 = new Date(value);
+                                        // 计算时间差值（单位为毫秒）
+                                        var timeDiff = date2.getTime() - date1.getTime();
+                                        // 将时间差值转换为小时数
+                                        var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                                        $('#EXE_HOUR').val(minutesDiff);
+                                    },
+                                }
+                            },
+                            { display: "维修工时", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
+                            { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
+                            { display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' } },
+                            { display: "是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, editor: { type: 'select', data: me.isLose } },
+                            { display: "遗留问题描述", name: "LEAVE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "实施情况描述", name: "EXE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
 
                             //隐藏
                             { display: "主键", name: "PLAN_ID", newline: false, upper: true, type: "hidden", options: {} },]
                     },
                     grid: {
                         columns: [
-                            { display: "维修项目", name: "REP_ITEM", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
-                            { display: "维修内容", name: "REP_CONTENT", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
-                            { display: "维修方案", name: "REP_METHOD", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
-                            { display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float", editor: { type: 'float' } },
-                            { display: "检修负责人", name: "REP_LEADER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "是否完成", name: "IS_COMPLETE", minWidth: 100, type: "select", validate: { required: true }, editor: { type: 'select', data: me.complete } },
+                            { display: "维修项目", name: "REP_ITEM", minWidth: 200, validate: { required: true }, type: "text" },
+                            { display: "维修内容", name: "REP_CONTENT", minWidth: 200, validate: { required: true }, type: "text" },
+                            { display: "维修方案", name: "REP_METHOD", minWidth: 200, type: "text" },
+                            { display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float" },
+                            { display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float" },
+                            { display: "检修负责人", name: "REP_LEADER", minWidth: 100, type: "text" },
+                            { display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "实际人员数量", name: "EXE_LABOR_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "实际花费时间", name: "EXE_TAKE_TIME", minWidth: 100, type: "float", editor: { type: 'float' } },
+
+                            { display: "备注", name: "MEMO", minWidth: 200, type: "text", editor: { type: 'text' } },
+
                             { display: "主键", name: "PLAN_ITEM_ID", minWidth: 100, hide: true },
                             { display: "计划ID", name: "PLAN_ID", width: 100, hide: true },
-
                         ]
                     },
                 };
@@ -121,7 +150,7 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    me.mainform.setData({ AUDITING_PLAN: "0"});
+                    me.mainform.setData({});
                     inner();
                 }
                 else {
@@ -174,7 +203,7 @@
 
                 LG.ajax({
                     jsToken: true,
-                    url: 'Device/RepDockInfo/ManageRepDockPlan',
+                    url: 'Device/RepDockInfo/ManageRepDockExe',
                     loading: '正在保存中...',
                     data: { request: changeRow },
                     success: function (result) {
@@ -235,7 +264,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: 140,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -243,7 +272,7 @@
                 });
                 me.setFormDefaultBtn();
             },
-            //保养计划明细
+            //保养实施明细
             grid: null,
             setGrid: function () {
                 var me = this;
@@ -277,6 +306,10 @@
                                 else return false;
                                 break;
                         }
+                    },
+                    onSelectRow: function (rowdata, rowid) {
+                        me.PLAN_ID = rowdata.PLAN_ID;
+                        me.DONEITEM_ID = rowdata.DONEITEM_ID;
                     },
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
@@ -330,12 +363,6 @@
                         case "refresh":
                             me.reloadDet();
                             break;
-                        case "add":
-                            me.addDet();
-                            break;
-                        case "delete":
-                            me.deleteDet();
-                            break;
                         case "save":
                             me.saveDet();
                             break;
@@ -356,32 +383,10 @@
                 me.grid.toolbarManager.options.group = 'detail';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            //新增
-            addGrid: function (row = {}) {
-                var me = this;
-                $.extend(row, {
-                    PLAN_ID: me.sid
-                });
-                me.grid.addEditRow(row, true);
-            },
-            //刷新
-            reloadDet: function () {
-                var me = this;
-                me.grid.loadData();
-            },
-            //新增
-            addDet: function () {
-                var me = this;
-                if ($('#PLAN_ID').val() == '') {
-                    LG.showError("请先保存设备基础数据");
-                    return;
-                }
-                me.grid.addEditRow({ "PLAN_ID": $('#PLAN_ID').val() });
-                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
-            },
             //保存
             saveDet: function () { //保存
                 var me = this;
+                debugger
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
                         LG.showSuccess('无修改');
@@ -405,26 +410,10 @@
                     });
                 }
             },
-            //删除
-            deleteDet: function () { //删除
+            reloadDet: function () {
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.saveDet();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
+                me.grid.loadData();
             },
-
             init: function () {
                 var me = this;
                 if (frameElement && frameElement.dialog) {
@@ -433,20 +422,22 @@
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
                     if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
-                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                    if (me.dialogData.view != undefined) {
+                        me.isView = me.dialogData.view;
+                    }
                 }
-
-                //加在基础信息
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.loadData();
-
-
-                //加载重大改造履历
                 me.setGrid();
                 me.reloadDet();
-
+                if (me.dialogData.view != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

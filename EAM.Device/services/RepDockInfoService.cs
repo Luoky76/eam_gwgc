@@ -137,7 +137,8 @@ namespace EAM.Device.services
         public async Task<GridData> GetRepDockPlanList(GridRequest request)
         {
             return await _dbContext.Query<REP_DOCK_PLAN>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .OrderBy(c => c.AUDITING_PLAN)
+                .ThenByDesc(c => c.EDIT_DATE)
                 .GetGridData(request);
         }
 
@@ -202,7 +203,7 @@ namespace EAM.Device.services
         {
             string aa = "MTSS" + DateTime.Now.ToString("yyyyMM");
             string def = aa + "0000";
-            var model = await _dbContext.Query<REP_DOCK_PLAN>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
+            var model = await _dbContext.Query<REP_DOCK_PLAN>(x => x.EXE_CODE.Contains(aa)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
             var index = model.SubStr(10, 4).CastTo<int>() + 1;
             return await _dbContext.UpdateAsync<REP_DOCK_PLAN>(x => sids.Contains(x.PLAN_ID),
                 x => new REP_DOCK_PLAN
@@ -251,6 +252,7 @@ namespace EAM.Device.services
         public async Task BeforeAddPlandet(REP_DOCK_PLAN_ITEM entity)
         {
             entity.PLAN_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.IS_COMPLETE = "0";
             await Task.CompletedTask;
         }
 
@@ -265,15 +267,15 @@ namespace EAM.Device.services
         public async Task<int> SubmitRepDockExe(List<string> sids)
         {
             var querys = _dbContext.Query<REP_DOCK_PLAN>()
-                 .Where(c => sids.Contains(c.PLAN_ID)).Select(c =>
-                 new
+                 .Where(c => sids.Contains(c.PLAN_ID)).Select(c => new
                  {
                      c.IS_LEAVE,
                      c.EXE_EDATE,
                      c.EXE_BDATE,
                      c.EXE_CODE,
                      c.PLAN_ID,
-                     c.REP_DESC
+                     c.REP_DESC,
+                     c.EXE_COST,
                  }).ToList();
             foreach (var query in querys)
             {
@@ -311,6 +313,10 @@ namespace EAM.Device.services
                         REP_CONTENT = qrydet.REP_CONTENT,
                         REP_ITEM = qrydet.REP_ITEM,
                         PLAN_ID = query.PLAN_ID,
+                        EXE_BDATE = query.EXE_BDATE,
+                        EXE_EDATE = query.EXE_EDATE,
+                        IS_LEAVE = query.IS_LEAVE,
+                        PLAN_ITEM_ID = qrydet.PLAN_ITEM_ID,
                         CREATE_USERID = _userSession.UserID.ToString(),
                         CREATEDATE = Sysdate,
                     };
@@ -322,6 +328,7 @@ namespace EAM.Device.services
                         x => new REP_DOCK_PLAN
                         {
                             AUDITING_EXE = "1",
+                            EXE_DATE = Sysdate,
                         });
 
         }
@@ -365,12 +372,11 @@ namespace EAM.Device.services
         public async Task<GridData> GetRepDockExeList(GridRequest request)
         {
             return await _dbContext.Query<REP_DOCK_PLAN>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
-                .Where(c => c.AUDITING_EXE=="1")
+                .Where(c => c.AUDITING_PLAN=="1")
                 .OrderBy(c => c.AUDITING_EXE)
-                .ThenByDesc(c => c.PLAN_CODE)
+                .ThenByDesc(c => c.EXE_CODE)
                 .GetGridData(request);
-        } 
+        }
         #endregion
 
         #region 码头维修确认
@@ -398,32 +404,10 @@ namespace EAM.Device.services
             var updaterepout = await _dbContext.UpdateAsync<REP_DOCK_CHECK>(x => sids.Contains(x.CHECK_ID),
                  x => new REP_DOCK_CHECK
                  {
-                     //OUT_STATUS = "25",
+                     AUDITING_CHECK = "0",
                      AUDITING_CONFIRM = "1",
                  });
             return updaterepout;
-        }
-
-        /// <summary>
-        /// 管理码头维修确认
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> ManageRepDockConfirm(SaveRequest<REP_DOCK_CHECK> request)
-        {
-            return await _dbContext.SaveEntityAnsyc(request,
-                c => new
-                {
-                    c.REASON,
-                    c.SOLUTION,
-                    c.REP_CONTENT,
-                    c.IS_LEAVE,
-                    c.LEAVE_MEMO,
-                    c.CONFIRM_USERID,
-                    c.CONFIRM_USER,
-                    c.MEMO,
-                    c.CHECK_ID,
-                },
-                c => a => a.CHECK_ID == c.CHECK_ID);
         }
 
         /// <summary>
@@ -481,7 +465,7 @@ namespace EAM.Device.services
         }
 
         /// <summary>
-        /// 管理码头维修验收
+        /// 管理码头维修验收，确认
         /// </summary>
         /// <returns></returns>
         public async Task<AjaxResult> ManageRepDockCheck(SaveRequest<REP_DOCK_CHECK> request)
