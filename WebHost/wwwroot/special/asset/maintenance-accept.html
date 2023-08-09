@@ -1,10 +1,382 @@
 ﻿<!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
 
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>委外维修</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="center" title="">
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <div id="iframeloading" class='l-loading' style="display:none;">
+            </div>
+            <form id="mainform">
+                <div id="maingrid" style="margin: 2px;"></div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "申请人", name: "_search_APPLY_USER", dbname: "APPLY_USER", type: "text" },
+                            { display: "设备名称", name: "_search_ASSET_NAME", dbname: "ASSET_NAME", type: "text" },
+                            { display: "设备类型", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", type: "text" },
+                            {
+                                display: "申请提交时间", name: "_search_APPLY_DATE_FROM", dbname: "APPLY_DATE", labelWidth: 104, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_APPLY_DATE_TO", dbname: "APPLY_DATE", labelWidth: 60, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "已提交", name: "AUDITING_ACCEPT", minWidth: 100, type: "chk" },
+                            { display: "维修申请单号", name: "APPLY_CODE", minWidth: 100, type: "text" },
+                            {
+                                display: "修复状态", name: "REPORT_STATE", minWidth: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.reportState,
+                                    disabled: true
+                                }
+                            },
+                            { display: "设备编码", name: "ASSET_CODE", minWidth: 100, type: "text" },
+                            { display: "设备名称", name: "ASSET_NAME", minWidth: 100, type: "text" },
+                            { display: "设备类型", name: "TYPE_NAME", minWidth: 100, type: "text" },
+                            { display: "故障现象描述", name: "FAILURE_DESCRIBE", minWidth: 100, type: "text" },
+                            { display: "申请提交时间", name: "APPLY_DATE", minWidth: 100, type: "date" },
+                            { display: "申请人", name: "APPLY_USER", minWidth: 100, type: "text" },
+                            { display: "处理部门", name: "CHECK_DEPT", minWidth: 100, type: "text" },
+                            { display: "处理人", name: "CHECK_USER", minWidth: 100, type: "text" },
+                            { display: "实施提交时间", name: "CHECK_DATE", minWidth: 100, type: "date" },
+                            { display: "故障原因", name: "FAILURE_CAUSE", minWidth: 100, type: "text" },
+                            { display: "处理方式", name: "CHECK_METH", minWidth: 100, type: "text" },
+                            { display: "验收时间", name: "ACCEPT_DATE", minWidth: 100, type: "date" },
+                            { display: "验收情况", name: "ACCEPT_DESC", minWidth: 100, type: "text" },
+                            { display: "验收评价", name: "ACCEPT_APPRAISE", minWidth: 100, type: "text" },
+                            //隐藏
+                            { display: "主键", name: "REPORT_ID", minWidth: 100, type: "text", hide: true },
+                        ]
+                    }
+                };
+            },
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
+            menuNo: getQueryStringByName("MenuNo"),
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            reportState: [],
+
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/AssetReport/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.reportState = data.ReportState;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Special/AssetReport/AcceptList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'REPORT_ID',
+                    sortOrder: 'dsc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "submit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.submit();
+                                }
+                            });
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                //仅加载group为main的按钮
+                me.grid.toolbarManager.options.group = 'main';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function () { //查看
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[查看]维修验收',
+                    url: "maintenance-accept-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.REPORT_ID, "isNew": false, "isView": true }
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return;
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行");
+                    return;
+                }
+                var selected = me.grid.getSelectedRow();
+                if (selected.AUDITING_ACCEPT == "1") {
+                    LG.showError("该数据已提交,无法修改!");
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[修改]维修验收',
+                    url: "maintenance-accept-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.REPORT_ID, "isNew": false, "isView": false }
+                });
+            },
+            submit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        upd.AUDITING_ACCEPT = "1";
+                        //记录提交时间
+                        upd.ACCEPT_DATE = new Date().toJSON();
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/AssetReport/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    EnterMoveNextControl: true,
+                    space: 3,
+                    labelAlign: 'right',
+                    labelWidth: 82,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                debugger
+                var me = this;
+                me.setDialogSize();
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
 </body>
 </html>
