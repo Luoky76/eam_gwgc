@@ -312,7 +312,7 @@
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = ori;
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
                         if (ori.AUDITING == "1") {
                             LG.showError("有数据已提交，无法重复提交！");
                             return;
