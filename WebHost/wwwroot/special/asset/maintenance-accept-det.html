@@ -83,7 +83,7 @@
                             { display: "验收时间", name: "ACCEPT_DATE", width: 300, type: "text", options: { disabled: true }, group: "验收信息" },
                             { display: "验收情况", name: "ACCEPT_DESC", width: 300, type: "text", options: {} },
                             {
-                                display: "验收评价", name: "ACCEPT_APPRAISE", width: 300, type: "select", options: {
+                                display: "验收评价", name: "ACCEPT_APPRAISE", width: 300, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.appraise
                                 }
