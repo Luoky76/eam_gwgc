@@ -39,7 +39,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "chk" },
+                            { display: "已提交", name: "AUDITING", minWidth: 100, type: "chk" },
                             { display: "记录编码", name: "ASSET_CODE", minWidth: 100, type: "text" },
                             { display: "采购日期", name: "PUR_DATE", minWidth: 100, type: "date" },
                             { display: "资产名称", name: "ASSET_NAME", minWidth: 100, type: "text" },
@@ -304,6 +304,10 @@
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("有数据已提交，无法重复提交！");
+                            return;
+                        }
                         upd.AUDITING = "1";
                         orginarr.push(ori);
                         updatedarr.push(upd)

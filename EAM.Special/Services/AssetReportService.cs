@@ -36,6 +36,57 @@ namespace EAM.Special.Services
         public async Task<GridData> ListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<ASSET_REPORT>()
+                .LeftJoin<ASSET_CARD>((a, b) => a.ASSET_ID == b.ASSET_ID)
+                .Select((a, b) => new
+                {
+                    a.REPORT_ID,
+                    a.AUDITING_ACCEPT,
+                    a.REPORT_STATE,
+                    a.APPLY_CODE,
+                    a.APPLY_DATE,
+                    a.ASSET_ID,
+                    a.APPLY_USERID,
+                    a.APPLY_USER,
+                    a.APPLY_TEL,
+                    a.APPLY_DEPTID,
+                    a.APPLY_DEPT,
+                    a.FAILURE_TIME,
+                    a.FAILURE_DESCRIBE,
+                    a.APPLY_MEMO,
+
+                    a.CHECK_USERID,
+                    a.CHECK_USER,
+                    a.CHECK_DEPTID,
+                    a.CHECK_DEPT,
+                    a.CHECK_DATE,
+                    a.CHECK_BEGIN,
+                    a.CHECK_END,
+                    a.FAILURE_CAUSE,
+                    a.CHECK_METH,
+                    a.CHECK_MEMO,
+
+                    a.OUTSOURCE_DATE,
+                    a.IS_UNDER_WARRANTY,
+                    a.PROVIDER,
+                    a.PROVIDER_TEL,
+                    a.OUTSOURCE_MEMO,
+
+                    a.ACCEPT_DATE,
+                    a.ACCEPT_DESC,
+                    a.ACCEPT_APPRAISE,
+
+                    b.ASSET_NAME,
+                    b.ASSET_CODE,
+                    b.ASSETNO,
+                    b.TYPE_ID,
+                    b.TYPE_NAME,
+                    b.DEPT_ID,
+                    b.DEPT_NAME,
+                    b.CARD_USER,
+                    b.PERSON,
+                    b.ASSET_TYPE,
+                    b.BRAND
+                })
                 .GetGridData(request);
             return list;
         }
@@ -147,7 +198,7 @@ namespace EAM.Special.Services
                     a.REPORT_ID,
                     a.AUDITING_OUTSOURCE,
                     a.APPLY_CODE,
-                    a.CHECK_DATE,
+                    a.OUTSOURCE_DATE,
                     a.ASSET_ID,
                     a.APPLY_USERID,
                     a.APPLY_USER,
@@ -218,6 +269,7 @@ namespace EAM.Special.Services
                     a.CHECK_METH,
                     a.CHECK_MEMO,
 
+                    a.OUTSOURCE_DATE,
                     a.IS_UNDER_WARRANTY,
                     a.PROVIDER,
                     a.PROVIDER_TEL,
@@ -286,6 +338,7 @@ namespace EAM.Special.Services
                     CHECK_USER = a.CHECK_USER,
                     CHECK_BEGIN = a.CHECK_BEGIN,
                     CHECK_END = a.CHECK_END,
+                    OUTSOURCE_DATE = a.OUTSOURCE_DATE,
                     IS_UNDER_WARRANTY = a.IS_UNDER_WARRANTY,
                     PROVIDER = a.PROVIDER,
                     PROVIDER_TEL = a.PROVIDER_TEL,
@@ -365,6 +418,7 @@ namespace EAM.Special.Services
                     c.CHECK_USER,
                     c.CHECK_BEGIN,
                     c.CHECK_END,
+                    c.OUTSOURCE_DATE,
                     c.IS_UNDER_WARRANTY,
                     c.PROVIDER,
                     c.PROVIDER_TEL,
@@ -494,7 +548,8 @@ namespace EAM.Special.Services
                     { "Auditing", null },
                     { "User", null },
                     { "AssetCard", null },
-                    { "ReportState", null }
+                    { "ReportState", null },
+                    { "Appraise", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());

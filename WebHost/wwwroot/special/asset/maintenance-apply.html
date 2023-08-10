@@ -298,6 +298,10 @@
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING_APPLY == "1") {
+                            LG.showError("有数据已提交，无法重复提交！");
+                            return;
+                        }
                         upd.AUDITING_APPLY = "1";
                         //记录提交时间
                         upd.APPLY_DATE = new Date().toJSON();

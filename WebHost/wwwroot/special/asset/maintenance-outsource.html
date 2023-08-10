@@ -42,8 +42,7 @@
                         columns: [
                             { display: "已提交", name: "AUDITING_OUTSOURCE", minWidth: 100, type: "chk" },
                             { display: "维修申请单号", name: "APPLY_CODE", minWidth: 100, type: "text" },
-                            //委外时间即维修实施提交时间
-                            { display: "委外时间", name: "CHECK_DATE", minWidth: 100, type: "text" },
+                            { display: "委外提交时间", name: "OUTSOURCE_DATE", minWidth: 100, type: "text" },
                             { display: "设备编码", name: "ASSET_CODE", minWidth: 100, type: "text" },
                             { display: "设备名称", name: "ASSET_NAME", minWidth: 100, type: "text" },
                             { display: "设备类型", name: "TYPE_NAME", minWidth: 100, type: "text" },
@@ -70,7 +69,7 @@
                             { display: "型号", name: "ASSET_TYPE", minWidth: 100, type: "text", hide: true },
                             { display: "品牌", name: "BRAND", minWidth: 100, type: "text", hide: true },
                             { display: "申请备注", name: "APPLY_MEMO", minWidth: 100, type: "text", hide: true },
-                            { display: "故障发生时间", name: "FAILURE_TIME", minWidth: 100, type: "date", hide: true },
+                            { display: "故障发生时间", name: "FAILURE_TIME", minWidth: 100, type: "text", hide: true },
                             { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", hide: true },
                             { display: "使用人", name: "CARD_USER", minWidth: 100, type: "text", hide: true },
                             { display: "责任人", name: "PERSON", minWidth: 100, type: "text", hide: true },
@@ -256,7 +255,13 @@
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING_OUTSOURCE == "1") {
+                            LG.showError("有数据已提交，无法重复提交！");
+                            return;
+                        }
                         upd.AUDITING_OUTSOURCE = "1";
+                        //记录提交时间
+                        upd.OUTSOURCE_DATE = new Date().toJSON();
                         orginarr.push(ori);
                         updatedarr.push(upd)
                     }
