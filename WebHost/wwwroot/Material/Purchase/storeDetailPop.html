@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>挑选物料</title>
+    <title>挑选库存</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
  
@@ -30,55 +30,41 @@
             detailType: null,
             dataValue: null,
             isFirst: true,
-            typeData: [],
-            isCancel: "",
-            single: false,
+            isCancel:"",
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: '物料编码', name: "_search_SP_CODE", upper: true, type: "text" },
                             { display: '物料名称', name: "_search_SP_NAME", upper: true, type: "text" },
-                            { display: "是否禁用", name: "_search_IS_CANCEL", dbname: "IS_CANCEL", newline: false, type: "hidden" },
+                            { display: '物料编码', name: "_search_SP_CODE",  type: "text" },
+                            { display: '库位名称', name: "_search_STOCK_NAME", upper: true, type: "text" },
                         ]
                     },
                     grid: {
                         columns: [
-
                             { display: 'SP_ID', name: "SP_ID", hide: true, width: 80, type: "text", align: "left" },
+                            { display: 'STOCK_ID', name: "STOCK_ID", hide: true, width: 80, type: "text", align: "left" },
+                            { display: '库位名称', name: "STOCK_NAME", width: 80, type: "text", align: "left" },
                             { display: '物料编码', name: "SP_CODE", width: 80, type: "text", align: "left" },
                             { display: '物料名称', name: "SP_NAME", width: 80, type: "text", align: "left" },
                             { display: '型号规格', name: "SP_SIZE",  width: 80, type: "text", align: "left" },
                             { display: '品牌、厂家', name: "PRODUCE", width: 80, type: "text", align: "left" },
                             { display: '计量单位', name: "UNIT", width: 80, type: "text", align: "left" },
-                            {
-                                display: '物料分类', name: "TYPE_ID", width: 80, type: "select",
-                                format: {
-                                    data: me.typeData
-                                }
-                                , align: "left"
-                            },
-                       
-                        
+                            { display: '库存数量', name: "NUM", width: 80, type: "text", align: "left" },
                         ]
                     },
                     grid2: {
                         columns: [
- 
                             { display: 'SP_ID', name: "SP_ID", hide: true, width: 80, type: "text", align: "left" },
+                            { display: 'STOCK_ID', name: "STOCK_ID", hide: true, width: 80, type: "text", align: "left" },
+                            { display: '库位名称', name: "STOCK_NAME", width: 80, type: "text", align: "left" },
                             { display: "已选物料编码", name: "SP_CODE", width: 80, type: "string", align: "left" },
                             { display: "已选物料", name: "SP_NAME", width: 80, type: "string", align: "left" },
                             { display: '型号规格', name: "SP_SIZE", width: 80, type: "text", align: "left" },
                             { display: '品牌、厂家', name: "PRODUCE", width: 80, type: "text", align: "left" },
                             { display: '计量单位', name: "UNIT", width: 80, type: "text", align: "left" },
-                            {
-                                display: '物料分类', name: "TYPE_ID", width: 80, type: "select",
-                                format: {
-                                    data: me.typeData
-                                }
-                                , align: "left"
-                            },
+                            { display: '库存数量', name: "NUM", width: 80, type: "text", align: "left" },
                         ]
                     }
                 };
@@ -88,17 +74,6 @@
             buttons: null,
             loadComboxData: function () {
                 var me = this;
-                LG.ajax({
-                    async: false,
-                    url: 'Material/SpareApply/ComboxData',
-                    loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.typeData = data.BaseSpType
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
             },
             setGrid: function () {
                 var me = this;
@@ -115,14 +90,14 @@
                             //{ id: 'add', text: '全部加入', click: me.addAll, img: "../lib/icons/silkicons/add.png" }
                         ]
                     },
-                    url: 'Material/SpareApply/SpcatalogList',
+                    url: 'Material/SpStore/StoreSumList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'CREATEDATE',
+                    sortName: 'NUM',
                     sortOrder: 'DESC',
                     width: '48%',
                     height: '100%',
@@ -135,14 +110,14 @@
 
                         var gridData2 = me.grid2.currentData.Rows;
 
-                        if (me.single && gridData2.length == 1) {
-                            LG.tip("物料仅能选择1个");
-                            return;
-                        }
+                        //if (gridData2.length==1) {
+                        //    LG.tip("物料仅能选择1个");
+                        //    return;
+                        //}
 
                         for (var i = 0, len = (gridData2 || []).length; i < len; i++) {
-                            if (gridData2[i].SP_ID == data.SP_ID) {
-                                LG.tip("<span style='color:red'>[" + data.SP_NAME + '</span>]已存在');
+                            if (gridData2[i].SP_ID == data.SP_ID && gridData2[i].STOCK_ID == data.STOCK_ID) {
+                                LG.tip("<span style='color:red'>" + (data.STOCK_NAME == undefined || data.STOCK_NAME == null ? "" : data.STOCK_NAME) + "[" + data.SP_NAME + '</span>]已存在');
                                 return;
                             }
                         }
@@ -158,11 +133,11 @@
                         for (var i = gridData.length - 1; i >= 0; i--) {
                             bolExist = false;
                             if (me.isFirst) {
-                                if (dataValue.indexOf("," + gridData[i].SP_ID + ",") >= 0) bolExist = true;
+                                if (dataValue.indexOf("," + gridData[i].SP_ID + ",") >= 0 && dataValue.indexOf("," + gridData[i].STOCK_ID + ",") >= 0) bolExist = true;
                             }
                             if (!bolExist) {
                                 for (var j = 0, len = (gridData2 || []).length; j < len; j++) {
-                                    if (gridData[i].SP_ID == gridData2[j].SP_ID) {
+                                    if (gridData[i].SP_ID == gridData2[j].SP_ID && gridData[i].STOCK_ID == gridData2[j].STOCK_ID) {
                                         bolExist = true;
                                         break;
                                     }
@@ -225,7 +200,7 @@
                 for (var i = gridData.length - 1; i >= 0; i--) {
                     bolExist = false;
                     for (var j = 0, len = (gridData2 || []).length; j < len; j++) {
-                        if (gridData[i].SP_ID == gridData2[j].SP_ID) {
+                        if (gridData[i].SP_ID == gridData2[j].SP_ID && gridData[i].STOCK_ID == gridData2[j].STOCK_ID) {
                             bolExist = true;
                             break;
                         }
@@ -289,7 +264,6 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
-                        me.searchForm.setData({ "_search_IS_CANCEL": me.isCancel });
                     }
                 });
             },
@@ -318,8 +292,6 @@
                 me.rowindex = dialogData.rowindex;
                 me.callback = dialogData.callback;
                 me.isCancel = dialogData.isCancel;
-
-                me.single = dialogData.single || false;
 
                 me.loadComboxData();
                 me.setConfig();
