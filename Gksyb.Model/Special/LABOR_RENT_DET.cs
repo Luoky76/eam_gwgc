@@ -12,78 +12,87 @@ using System.Data;
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类labor_rent
+    /// 实体类labor_rent_det
     /// </summary>
-    [Table("labor_rent")]
-    public class LABOR_RENT
+    [Table("labor_rent_det")]
+    public class LABOR_RENT_DET
     {
 
         /// <summary>
-        /// 记录状态
+        /// 物资编码
         /// </summary>
-        [Description("记录状态")]
+        [Description("物资编码")]
         [Column(DbType = DbType.AnsiString)]
-        public string AUDITING { get; set; }
+        public string SP_CODE { get; set; }
 
         /// <summary>
-        /// 租借单号
+        /// 代码
         /// </summary>
-        [Description("租借单号")]
+        [Description("代码")]
         [Column(DbType = DbType.AnsiString)]
-        public string RENT_CODE { get; set; }
+        public string SP_DAIMA { get; set; }
 
         /// <summary>
-        /// 租借日期
+        /// 物资名称
         /// </summary>
-        [Description("租借日期")]
-        public DateTime? RENT_DATE { get; set; }
-
-        /// <summary>
-        /// 租借部门
-        /// </summary>
-        [Description("租借部门")]
+        [Description("物资名称")]
         [Column(DbType = DbType.AnsiString)]
-        public string RENT_DEPT { get; set; }
+        public string SP_NAME { get; set; }
 
         /// <summary>
-        /// 租借人
+        /// 物资型号
         /// </summary>
-        [Description("租借人")]
+        [Description("物资型号")]
         [Column(DbType = DbType.AnsiString)]
-        public string RENT_USER { get; set; }
+        public string SP_TYPE { get; set; }
 
         /// <summary>
-        /// 经办部门
+        /// 品牌
         /// </summary>
-        [Description("经办部门")]
+        [Description("品牌")]
         [Column(DbType = DbType.AnsiString)]
-        public string DEPT_NAME { get; set; }
+        public string BRAND { get; set; }
 
         /// <summary>
-        /// 经办人
+        /// 计量单位
         /// </summary>
-        [Description("经办人")]
+        [Description("计量单位")]
         [Column(DbType = DbType.AnsiString)]
-        public string USER_NAME { get; set; }
+        public string UNIT { get; set; }
 
         /// <summary>
-        /// 租借开始日期
+        /// 制造厂
         /// </summary>
-        [Description("租借开始日期")]
-        public DateTime? BEGIN_DATE { get; set; }
-
-        /// <summary>
-        /// 租借结束日期
-        /// </summary>
-        [Description("租借结束日期")]
-        public DateTime? END_DATE { get; set; }
-
-        /// <summary>
-        /// 租借原因
-        /// </summary>
-        [Description("租借原因")]
+        [Description("制造厂")]
         [Column(DbType = DbType.AnsiString)]
-        public string RENT_REASON { get; set; }
+        public string FACTORY { get; set; }
+
+        /// <summary>
+        /// 其他编号
+        /// </summary>
+        [Description("其他编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string OTHER_CODE { get; set; }
+
+        /// <summary>
+        /// 租借数量
+        /// </summary>
+        [Description("租借数量")]
+        public decimal? RENT_NUM { get; set; }
+
+        /// <summary>
+        /// 物资类别编码
+        /// </summary>
+        [Description("物资类别编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_CODE { get; set; }
+
+        /// <summary>
+        /// 物资类别名称
+        /// </summary>
+        [Description("物资类别名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_NAME { get; set; }
 
         /// <summary>
         /// 备注
@@ -97,35 +106,42 @@ namespace Gksyb.Model
         /// </summary>
         [Description("主键")]
         [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        public string RENT_DET_ID { get; set; }
+
+        /// <summary>
+        /// 租借单ID
+        /// </summary>
+        [Description("租借单ID")]
+        [Column(DbType = DbType.AnsiString)]
         public string RENT_ID { get; set; }
 
         /// <summary>
-        /// 租借部门ID
+        /// 物资类别ID
         /// </summary>
-        [Description("租借部门ID")]
+        [Description("物资类别ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string RENT_DEPTID { get; set; }
+        public string TYPE_ID { get; set; }
 
         /// <summary>
-        /// 租借人ID
+        /// 物资品种ID
         /// </summary>
-        [Description("租借人ID")]
+        [Description("物资品种ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string RENT_USERID { get; set; }
+        public string SP_ID { get; set; }
 
         /// <summary>
-        /// 经办部门ID
+        /// 库存ID
         /// </summary>
-        [Description("经办部门ID")]
+        [Description("库存ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string DEPT_ID { get; set; }
+        public string STORE_ID { get; set; }
 
         /// <summary>
-        /// 经办人ID
+        /// 仓库ID
         /// </summary>
-        [Description("经办人ID")]
+        [Description("仓库ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string USER_ID { get; set; }
+        public string HOUSE_ID { get; set; }
 
         /// <summary>
         /// 添加人ID
@@ -152,19 +168,6 @@ namespace Gksyb.Model
         /// </summary>
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
-
-        /// <summary>
-        /// 预计结束日期
-        /// </summary>
-        [Description("预计结束日期")]
-        public DateTime? EXPEND_DATE { get; set; }
-
-        /// <summary>
-        /// 租借状态
-        /// </summary>
-        [Description("租借状态")]
-        [Column(DbType = DbType.AnsiString)]
-        public string RENT_STATUS { get; set; }
 
     }
 }

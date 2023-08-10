@@ -201,17 +201,21 @@
                 }
                 var dataOptions = {
                     //TODO 实现导入
-                    url: 'Material/Base/',
+                    url: 'Special/DrugLimit/DrugList',
                     values: currentSpIds,
                     options: {
                         sortName: 'SP_ID',
                         rowKey: "SP_ID",
                         columns: [
-                            { display: "评价内容", name: "CONTENT", minWidth: 500, type: "text" }
+                            { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
+                            { display: "物资分类", name: "TYPE_NAME", width: 200, type: "text" },
+                            { display: "计量单位", name: "UNIT", width: 200, type: "text" },
                         ]
                     },
                     fields: [
-                        { display: "评价内容", name: "CONTENT", width: 200, type: "text" }
+                        { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
+                        { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
                     ],
                     callback: function (values, rows) {
                         var currentSet = new Set(currentSpIds);
@@ -223,10 +227,16 @@
                         }
                         for (let item of rows) {
                             if (!currentSet.has(item.SP_ID)) {
+                                //item.SP_TYPE = item.TYPE_NAME;
+                                //item.TYPE_NAME = null;
+                                item.INSIDE_APRIL = 0;
+                                item.OUTSIDE_APRIL = 0;
+                                item.INSIDE_OCTOBER = 0;
+                                item.OUTSIDE_OCTOBER = 0;
                                 me.add(item);
                             }
                         }
-                        me.save();
+                        //me.save();
                     }
                 }
                 $.ligerDialog.open({

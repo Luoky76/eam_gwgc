@@ -15,7 +15,7 @@ namespace Gksyb.Model
     /// 实体类labor_confirm
     /// </summary>
     [Table("labor_confirm")]
-    public class labor_confirm
+    public class LABOR_CONFIRM
     {
 
         /// <summary>

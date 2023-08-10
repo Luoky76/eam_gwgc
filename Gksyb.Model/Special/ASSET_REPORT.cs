@@ -115,19 +115,6 @@ namespace Gksyb.Model
         public string APPLY_TEL { get; set; }
 
         /// <summary>
-        /// 维修实施提交时间
-        /// </summary>
-        [Description("维修实施提交时间")]
-        public DateTime? CHECK_DATE { get; set; }
-
-        /// <summary>
-        /// 验收评价
-        /// </summary>
-        [Description("验收评价")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ACCEPT_APPRAISE { get; set; }
-
-        /// <summary>
         /// 二级单位ID
         /// </summary>
         [Description("二级单位ID")]
@@ -169,31 +156,10 @@ namespace Gksyb.Model
         public string APPLY_MEMO { get; set; }
 
         /// <summary>
-        /// 处理方式
+        /// 维修实施提交时间
         /// </summary>
-        [Description("处理方式")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CHECK_METH { get; set; }
-
-        /// <summary>
-        /// 处理备注
-        /// </summary>
-        [Description("处理备注")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CHECK_MEMO { get; set; }
-
-        /// <summary>
-        /// 验收时间
-        /// </summary>
-        [Description("验收时间")]
-        public DateTime? ACCEPT_DATE { get; set; }
-
-        /// <summary>
-        /// 验收情况
-        /// </summary>
-        [Description("验收情况")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ACCEPT_DESC { get; set; }
+        [Description("维修实施提交时间")]
+        public DateTime? CHECK_DATE { get; set; }
 
         /// <summary>
         /// 处理部门ID
@@ -235,6 +201,26 @@ namespace Gksyb.Model
         public DateTime? CHECK_END { get; set; }
 
         /// <summary>
+        /// 处理方式
+        /// </summary>
+        [Description("处理方式")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CHECK_METH { get; set; }
+
+        /// <summary>
+        /// 处理备注
+        /// </summary>
+        [Description("处理备注")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CHECK_MEMO { get; set; }
+
+        /// <summary>
+        /// 委外提交时间
+        /// </summary>
+        [Description("委外提交时间")]
+        public DateTime? OUTSOURCE_DATE { get; set; }
+
+        /// <summary>
         /// 是否在保修期内
         /// </summary>
         [Description("是否在保修期内")]
@@ -261,6 +247,26 @@ namespace Gksyb.Model
         [Description("委外备注")]
         [Column(DbType = DbType.AnsiString)]
         public string OUTSOURCE_MEMO { get; set; }
+
+        /// <summary>
+        /// 验收时间
+        /// </summary>
+        [Description("验收时间")]
+        public DateTime? ACCEPT_DATE { get; set; }
+
+        /// <summary>
+        /// 验收情况
+        /// </summary>
+        [Description("验收情况")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ACCEPT_DESC { get; set; }
+
+        /// <summary>
+        /// 验收评价
+        /// </summary>
+        [Description("验收评价")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ACCEPT_APPRAISE { get; set; }
 
         /// <summary>
         /// 添加人ID

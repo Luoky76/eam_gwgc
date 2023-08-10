@@ -163,6 +163,29 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 药品导入列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> DrugListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<BASE_SPCATALOG>()
+                .Where(a => a.TYPE_CODE == "2")
+                .Select(a => new
+                {
+                    a.SP_ID,
+                    a.SP_NAME,
+                    a.SP_CODE,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.UNIT,
+                    a.PRODUCE
+                })
+                .GetGridData(request);
+        }
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

@@ -13,5 +13,15 @@ namespace EAM.Special.Interfaces
 
         Task<AjaxResult> SaveAsync(SaveRequest<LABOR_USER> request);
 
+        #region 劳保用品租借
+
+        Task<GridData> LaborRentList(GridRequest request);
+
+        Task<GridData> GetLaborRentDetList(string rentId);
+
+        Task<AjaxResult> LaborRentGet(string rentId);
+        Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet);
+
+        #endregion
     }
 }
