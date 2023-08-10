@@ -1,10 +1,283 @@
 ﻿<!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
 
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            rootPath: 'Material/BaseSpCatalog/',
+            MenuNo: 'BaseSpCatalog',
+            dataCheck: [{ "ID": "0", "TEXT": "否" }, { "ID": "1", "TEXT": "是" }],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "型号规格", name: "_search_SP_SIZE", dbname: "SP_SIZE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "图号", name: "_search_DRAWING_NO", dbname: "DRAWING_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料分类", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料分类编码", name: "_search_TYPE_CODE", dbname: "TYPE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "ABC分类", name: "_search_ABC_TYPE", dbname: "ABC_TYPE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "材质", name: "_search_STUFF", dbname: "STUFF", newline: false, upper: true, type: "text", options: {} },
+                            { display: "是否专用件", name: "_search_IS_SPECIAL", dbname: "IS_SPECIAL", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "是否加工件", name: "_search_IS_WORK", dbname: "IS_WORK", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "是否标准件", name: "_search_IS_STANDARD", dbname: "IS_STANDARD", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "是否回收", name: "_search_IS_RECOVERY", dbname: "IS_RECOVERY", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "是否为备件", name: "_search_IS_PARTS", dbname: "IS_PARTS", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "是否为工索具", name: "_search_IS_RIGGING", dbname: "IS_RIGGING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "品牌、厂家", name: "_search_PRODUCE", dbname: "PRODUCE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "是否禁用", name: "_search_IS_CANCEL", dbname: "IS_CANCEL", newline: false, upper: true, type: "select", options: { data: me.dataCheck } }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { hide: true, display: "物料分类ID", name: "TYPE_ID", width: 100, type: "text" },
+                            { hide: true, display: "上次供应商ID", name: "LAST_PROVIDERID", width: 100, type: "text" },
+                            { hide: true, display: "注销人ID", name: "CANCEL_USERID", width: 100, type: "text" },
+                            { hide: true, display: "申请人ID", name: "EDIT_USERID", width: 100, type: "text" },
+                            { hide: true, display: "申请部门ID", name: "DEPT_ID", width: 100, type: "text" },
+                            { hide: true, display: "二级单位ID", name: "SEC_DEPTID", width: 100, type: "text" },
+                            { hide: true, display: "主键", name: "SP_ID", width: 100, type: "text" },
+                            { hide: true, display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text" },
+                            { hide: true, display: "添加时间", name: "CREATEDATE", width: 100, type: "date" },
+                            { hide: true, display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text" },
+                            { hide: true, display: "修改时间", name: "MODIFYDATE", width: 100, type: "date" },
+                            { hide: true, display: "采购分类ID", name: "PURTYPE_ID", width: 100, type: "text" },
+                            { hide: true, display: "上次入库库位ID", name: "LAST_STOCKID", width: 100, type: "text" },
+
+                            { display: "物料编码", name: "SP_CODE", width: 100, type: "text" },
+                            { display: "物料名称", name: "SP_NAME", width: 100, type: "text" },
+                            { display: "型号规格", name: "SP_SIZE", width: 100, type: "text" },
+                            { display: "图号", name: "DRAWING_NO", width: 100, type: "text" },
+                            { display: "物料分类", name: "TYPE_NAME", width: 100, type: "text" },
+                            { display: "物料分类编码", name: "TYPE_CODE", width: 100, type: "text" },
+                            { display: "ABC分类", name: "ABC_TYPE", width: 100, type: "text" },
+                            { display: "材质", name: "STUFF", width: 100, type: "text" },
+                            { display: "计量单位", name: "UNIT", width: 100, type: "text" },
+                            { display: "计划单价", name: "PLAN_PRICE", width: 100, type: "decimal" },
+                            { display: "最高储备量", name: "HIGH_NUM", width: 100, type: "decimal" },
+                            { display: "最低储备量", name: "LOW_NUM", width: 100, type: "decimal" },
+                            { display: "库存数量", name: "STORE_NUM", width: 100, type: "decimal" },
+                            { display: "库存单价", name: "STORE_PRICE", width: 100, type: "decimal" },
+                            { display: "库存金额", name: "STORE_MONEY", width: 100, type: "decimal" },
+                            { display: "是否专用件", name: "IS_SPECIAL", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否加工件", name: "IS_WORK", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否标准件", name: "IS_STANDARD", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否回收", name: "IS_RECOVERY", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否为备件", name: "IS_PARTS", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否为工索具", name: "IS_RIGGING", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "采购周期(天)", name: "PUR_PERIOD", width: 100, type: "decimal" },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 100, type: "text" },
+                            { display: "是否禁用", name: "IS_CANCEL", width: 100, type: "text" },
+                            { display: "上次入库单价", name: "LAST_PRICE", width: 100, type: "decimal" },
+                            { display: "上次供应商", name: "LAST_PROVIDER", width: 100, type: "text" },
+                            { display: "注销日期", name: "CANCEL_DATE", width: 100, type: "date" },
+                            { display: "申请人", name: "EDIT_USER", width: 100, type: "text" },
+                            { display: "申请部门", name: "DEPT_NAME", width: 100, type: "text" },
+                            { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text" },
+                            { display: "备注", name: "MEMO", width: 100, type: "text" },
+                            { display: "采购分类", name: "PURTYPE_NAME", width: 100, type: "text" },
+                            { display: "上次入库库位", name: "LAST_STOCK", width: 100, type: "text" },
+                            { display: "上次采购日期", name: "LAST_PUR_DATE", width: 100, type: "date" },
+                            { display: "质保期", name: "WARRANTY", width: 100, type: "decimal" }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: me.rootPath + 'Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: me.rootPath + 'List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'SP_CODE',
+                    sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
 </body>
 </html>
