@@ -15,7 +15,7 @@ namespace Gksyb.Model
     /// 实体类labor_in
     /// </summary>
     [Table("labor_in")]
-    public class labor_in
+    public class LABOR_IN
     {
 
         /// <summary>
