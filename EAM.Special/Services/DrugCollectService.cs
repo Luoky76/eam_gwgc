@@ -259,7 +259,8 @@ namespace EAM.Special.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "Auditing", null },
-                    { "User", null }
+                    { "User", null },
+                    { "DrugCollectMethod", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
 
