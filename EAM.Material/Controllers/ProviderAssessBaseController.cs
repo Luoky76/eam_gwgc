@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controller
 {
-    [GksybAuthorize(MenuNo = "ProviderAssessBase")]
+    [GksybAuthorize(MenuNo = "ProviderAssessBase,ProviderAssessTask")]
     public class ProviderAssessBaseController : AreaController
     {
         private readonly IProviderAssessBaseService _service;

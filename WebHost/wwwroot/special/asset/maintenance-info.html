@@ -38,13 +38,13 @@
                             { display: "设备名称", name: "_search_ASSET_NAME", dbname: "ASSET_NAME", type: "text" },
                             { display: "设备类型", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", type: "text" },
                             {
-                                display: "申请提交时间", name: "_search_APPLY_DATE_FROM", dbname: "APPLY_DATE", labelWidth: 104, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
+                                display: "申请提交时间", name: "_search_APPLY_DATE_FROM", dbname: "APPLY_DATE", newline: true, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
                             },
                             {
-                                display: "至", name: "_search_APPLY_DATE_TO", dbname: "APPLY_DATE", labelWidth: 60, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "至", name: "_search_APPLY_DATE_TO", dbname: "APPLY_DATE", type: "date", op: 'lessorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
@@ -53,7 +53,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING_ACCEPT", minWidth: 100, type: "chk" },
+                            { display: "已验收", name: "AUDITING_ACCEPT", minWidth: 100, type: "chk" },
                             { display: "维修申请单号", name: "APPLY_CODE", minWidth: 100, type: "text" },
                             {
                                 display: "修复状态", name: "REPORT_STATE", minWidth: 100, type: "select", editor: {
@@ -279,7 +279,7 @@
                     EnterMoveNextControl: true,
                     space: 3,
                     labelAlign: 'right',
-                    labelWidth: 82,
+                    labelWidth: 100,
                     buttons: [{
                         text: '查询',
                         width: 60,
