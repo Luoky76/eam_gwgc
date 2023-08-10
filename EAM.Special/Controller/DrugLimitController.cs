@@ -44,6 +44,17 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 药品导入列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> DrugListAsync(GridRequest request)
+        {
+            return await _service.DrugListAsync(request);
+        }
+
+        /// <summary>
         /// 获取单行数据
         /// </summary>
         /// <param name="id"></param>
