@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "DrugLimit")]
+    [GksybAuthorize(MenuNo = "DrugLimit,DrugRequest")]
     public class DrugLimitController : AreaController
     {
         private readonly IDrugLimitService _service;

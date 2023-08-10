@@ -134,10 +134,10 @@
 
                         var gridData2 = me.grid2.currentData.Rows;
 
-                        if (gridData2.length==1) {
-                            LG.tip("物料仅能选择1个");
-                            return;
-                        }
+                        //if (gridData2.length==1) {
+                        //    LG.tip("物料仅能选择1个");
+                        //    return;
+                        //}
 
                         for (var i = 0, len = (gridData2 || []).length; i < len; i++) {
                             if (gridData2[i].SP_ID == data.SP_ID) {

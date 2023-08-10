@@ -1,5 +1,6 @@
 ﻿#pragma warning disable IDE0051,IDE0052 // 删除未使用的私有成员
 
+using DocumentFormat.OpenXml.Spreadsheet;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -101,7 +102,7 @@ namespace Gksyb.Server.Services.Common
         /// <returns></returns>
         private async Task<List<ComboxData>> DeviceTypeName(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
         {
-            using var dbContext = _dbContext.Clone();
+            var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
                 .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
                 .Distinct()
@@ -175,6 +176,112 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
+
+        /// <summary>
+        /// 当前管理状态
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetStatus(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "assetStatus").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 无形资产产品类型下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetProductType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "assetProductType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 固定资产设备类型下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetDeviceType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "assetDeviceType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.SID, TEXT = c.CODE_CN, VALUE = c.CODE_EN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// IT固定资产设备信息下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> AssetCard(Expression<Func<ASSET_CARD, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<ASSET_CARD>()
+                .Where(predicate)
+                .Where(c => c.AUDITING == "1" && c.IS_TANGIBLE == "1")
+                .OrderBy(c => c.ASSET_CODE)
+                .Select(c => new ComboxData() {
+                    ID = c.ASSET_ID,
+                    TEXT = c.ASSET_CODE,
+                    VALUE = c.ASSET_NAME,
+                    EXTEND = c.ASSETNO,
+                    EXTEND1 = c.TYPE_NAME,
+                    EXTEND2 = c.DEPT_NAME,
+                    EXTEND3 = c.CARD_USER,
+                    EXTEND4 = c.PERSON,
+                    EXTEND5 = c.ASSET_TYPE,
+                    EXTEND6 = c.BRAND
+                })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// IT资产修复状态下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ReportState(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "reportState")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 评价下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> Appraise(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "appraise")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
         /// <summary>
         /// 维修类型
         /// </summary>
@@ -277,6 +384,9 @@ namespace Gksyb.Server.Services.Common
                     EXTEND1 =c.DEVICE_TYPE,
                     EXTEND2 =c.TYPE_NAME,
                     EXTEND3 =c.DEPT_NAME,
+                    EXTEND4 =c.ASSET_CODE,
+                    EXTEND5 =c.INSTALL_SITE,
+                    EXTEND6 =c.WDEPT_NAME,
                 })
                .ToListAsync();
         }
@@ -291,7 +401,7 @@ namespace Gksyb.Server.Services.Common
             using var dbContext = _dbContext.Clone();
             var qry = dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID);
-            return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_NAME=="船舶")
+            return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_ID=="1")
                 .Select(c => new ComboxData()
                 {
                     ID = c.DEVICE_ID,
@@ -448,6 +558,22 @@ namespace Gksyb.Server.Services.Common
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BC_CODE>()
                 .Where(a => a.CODE_TYPE == "requestType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 药品采购方式下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DrugCollectMethod(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "drugCollectMethod")
                 .Where(predicate)
                 .OrderBy(c => c.CODE_SEQ)
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
@@ -682,6 +808,21 @@ namespace Gksyb.Server.Services.Common
                .ToListAsync();
         }
 
+        /// <summary>
+        /// 码头信息
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DockInfo(Expression<Func<BASE_DOCK, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_DOCK>(c => c.AUDITING=="1")
+                .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.DOCK_ID, TEXT = c.DOCK_CODE, VALUE = c.DOCK_NAME, EXTEND1 = c.DOCK_ADDRESS })
+                .Distinct()
+                .ToListAsync();
+        }
+        
         /// <summary>
         /// 初始化
         /// </summary>

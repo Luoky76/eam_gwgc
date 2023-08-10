@@ -97,11 +97,6 @@
             },
             save: function () { //保存
                 var me = this;
-                debugger
-                if ($.isEmptyObject(me.mainform.getChanges())) {
-                    LG.showSuccess('请填写确认人和委外维修内容！');
-                    return;
-                }
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;

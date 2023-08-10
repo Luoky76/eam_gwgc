@@ -10,6 +10,7 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection.Metadata;
 
@@ -55,6 +56,7 @@ namespace EAM.Device.services
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "ScanStatus",(Expression<Func<BC_CODE, bool>>)(c => "1" == "1")},
                 { "DeviceTypeName",(Expression<Func<BASE_DEVICETYPE, bool>>)(c => "1" == "1")},
+                { "AssetStatus",(Expression<Func<BC_CODE, bool>>)(c => "1" == "1")},
                 { "DeptData",(Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.ParentCompany.CorpID)},
             });
         }
@@ -162,7 +164,7 @@ namespace EAM.Device.services
                     a.STATUS,
                 })
                 .ToList();
-
+                var dsdList = new List<DEVICE_SCAN_DET>();
                 foreach (var qrylist in qrylists)
                 {
                     var scandet = new DEVICE_SCAN_DET()
@@ -179,9 +181,11 @@ namespace EAM.Device.services
                         SEC_DEPT = qrylist.SEC_DEPT,
                         CREATE_USERID = _userSession.UserID.ToString(),
                         CREATEDATE = Sysdate,
+                        HANDLE ="0",
                     };
-                    var insertScanId = await _dbContext.InsertAsync(scandet);
+                    dsdList.Add(scandet);
                 }
+                await _dbContext.InsertRangeAsync(dsdList);
             }
 
             return "";
@@ -334,21 +338,29 @@ namespace EAM.Device.services
                 string aa = DateTime.Now.ToString("yyyyMM");
                 string def = aa + "0000";
                 var queryups = _dbContext.Query<DEVICE_SCAN_DET>()
-                 .Where(c => c.SCAN_ID==sid&&c.SCAN_RESULT=="盘盈").ToList();
+                 .Where(c => c.SCAN_ID==sid).ToList();
                 if (queryups!=null)
                 {
+                    var scandetreList = new List<DEVICE_SCAN_RESULT>();
+                    var scan_code = 0;
+                    var scan_type = "";
+                    var pyk = "";
                     foreach (var queryup in queryups)
                     {
-                        var py = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa)&&x.SCAN_TYPE=="盘盈").Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-                        var pyindex = py.SubStr(8, 4).CastTo<int>() + 1;
+                        scan_type = queryup.SCAN_RESULT == "盘盈" ? "盘盈" : "盘亏";
+                        pyk = queryup.SCAN_RESULT == "盘盈" ? "PY" : "PK";
+                        var scanTypeCount = scandetreList.Count(item => item.SCAN_TYPE == scan_type);
+                        var scanQuery = _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa) && x.SCAN_TYPE == scan_type);
+                        var maxScanCode = await scanQuery.Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
+                        scan_code = maxScanCode.SubStr(8, 4).CastTo<int>() + (scanTypeCount > 0 ? scanTypeCount + 1 : 1);
                         var scandetre = new DEVICE_SCAN_RESULT()
                         {
                             RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
                             AUDITING = "0",
                             SCAN_ID = sid,
-                            SCAN_CODE = "PY"+ aa + pyindex.ToString("D4"),
+                            SCAN_CODE = pyk+ aa + scan_code.ToString("D4"),
                             SCAN_DATE = Sysdate,
-                            SCAN_TYPE = "盘盈",
+                            SCAN_TYPE = scan_type,
                             DEVICE_NO = queryup.DEVICE_NO,
                             DEVICE_NAME = queryup.DEVICE_NAME,
                             DEPT_NAME = queryup.DEPT_NAME,
@@ -361,39 +373,9 @@ namespace EAM.Device.services
                             CREATE_USERID = _userSession.UserID.ToString(),
                             CREATEDATE = Sysdate,
                         };
-                        var insertScandetre = await _dbContext.InsertAsync(scandetre);
+                        scandetreList.Add(scandetre);
                     }
-                }
-                var querydowns = _dbContext.Query<DEVICE_SCAN_DET>()
-                 .Where(c => c.SCAN_ID==sid&&c.SCAN_RESULT=="盘亏").ToList();
-                if (querydowns != null)
-                {
-                    foreach (var querydown in querydowns)
-                    {
-                        var pk = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa)&&x.SCAN_TYPE=="盘亏").Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-                        var pkindex = pk.SubStr(8, 4).CastTo<int>() + 1;
-                        var scandetre = new DEVICE_SCAN_RESULT()
-                        {
-                            RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
-                            AUDITING = "0",
-                            SCAN_ID = sid,
-                            SCAN_CODE = "PK" + aa + pkindex.ToString("D4"),
-                            SCAN_DATE = Sysdate,
-                            SCAN_TYPE = "盘亏",
-                            DEVICE_NO = querydown.DEVICE_NO,
-                            DEVICE_NAME = querydown.DEVICE_NAME,
-                            DEPT_NAME = querydown.DEPT_NAME,
-                            DEPT_ID = querydown.DEPT_ID,
-                            STATUS = querydown.STATUS,
-                            SEC_DEPTID = querydown.SEC_DEPTID,
-                            SEC_DEPT = querydown.SEC_DEPT,
-                            DEVICE_ID = querydown.DEVICE_ID,
-                            MEMO = querydown.MEMO,
-                            CREATE_USERID = _userSession.UserID.ToString(),
-                            CREATEDATE = Sysdate,
-                        };
-                        var insertScandetre = await _dbContext.InsertAsync(scandetre);
-                    }
+                    await _dbContext.InsertRangeAsync(scandetreList);
                 }
                 return "";
             }

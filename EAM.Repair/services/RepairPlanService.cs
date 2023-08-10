@@ -263,7 +263,7 @@ namespace EAM.Repair.services
 
         public async Task<GridData> GetDeviceAsync(GridRequest request)
         {
-            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_NAME == "设备").GetGridData(request);
+            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "1").GetGridData(request);
             return query;
         }
     }

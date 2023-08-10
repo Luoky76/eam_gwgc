@@ -62,5 +62,50 @@ namespace EAM.Device.Controller
         {
             return await _service.SaveAsync(request);
         }
+
+        /// <summary>
+        /// 周期定时器
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> WeekTimerAsync()
+        {
+            
+             await _service.WeekTimer();
+            return AjaxResult.Success();
+        }
+        /// <summary>
+        /// 月定时器
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> MonthTimerAsync()
+        {
+
+            await _service.MonthTimer();
+            return AjaxResult.Success();
+        }
+        /// <summary>
+        /// 季度定时器
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> QuarterTimerAsync()
+        {
+
+            await _service.QuarterTimer();
+            return AjaxResult.Success();
+        }
+        /// <summary>
+        /// 年度定时器
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> YearTimerAsync()
+        {
+
+            await _service.YearTimer();
+            return AjaxResult.Success();
+        }
     }
 }

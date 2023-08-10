@@ -1,0 +1,457 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>维修计划明细</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%; overflow:auto;">
+    <form id="mainform" style="width:97%;">
+    </form>
+    <div style="margin-bottom: 5px; width: 98%;" id="paramform">
+    </div>
+    <div style="width: 94.5%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>计划维修项目</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="margin-bottom: 50px; width: 100%;" id="plandetgird">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            dialogData: {},
+            sid: getQueryStringByName("sid"),
+            isAddNew: false,
+            isView: false,
+            orginData: {},
+            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            dockInfo: [],
+            pmShippost: [],
+            start: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        labelwidth: 220,
+                        fields: [
+                            //基础信息
+                            { display: "记录状态", name: "AUDITING_PLAN", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
+                            { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
+                            { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            {
+                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                options: {
+                                    data: me.dockInfo,
+                                    autocomplete: true,
+                                    selectBoxWidth: 500,
+                                    valueField: "ID",
+                                    textField: "TEXT",
+                                    columns: [
+                                        { header: '码头编号', name: 'TEXT', width: 130 },
+                                        { header: '码头名称', name: 'VALUE' },
+                                        { header: '码头地址', name: 'EXTEND1' }
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#DOCK_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            $('#DOCK_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "码头名称", name: "DOCK_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
+                            { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+
+                            //隐藏
+                            { display: "主键", name: "PLAN_ID", newline: false, upper: true, type: "hidden", options: {} },]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "维修项目", name: "REP_ITEM", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
+                            { display: "维修内容", name: "REP_CONTENT", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
+                            { display: "维修方案", name: "REP_METHOD", minWidth: 200, type: "text", editor: { type: 'text' } },
+                            { display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "检修负责人", name: "REP_LEADER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主键", name: "PLAN_ITEM_ID", minWidth: 100, hide: true },
+                            { display: "计划ID", name: "PLAN_ID", width: 100, hide: true },
+
+                        ]
+                    },
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/RepDockInfo/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.dockInfo = data.dockInfo;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
+                if (me.isAddNew) {
+                    me.mainform.setData({ AUDITING_PLAN: "0"});
+                    inner();
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/RepDockInfo/GetRepDockPlanListDetail',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            data.OLDMODIFYDATE = data.MODIFYDATE;
+                            me.mainform.setData(data);
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                var input = me.mainform.getEditor(me.config.form.fields[0].name).inputText;
+                input.focus();
+                input.select();
+            },
+            //保存
+            save: function () { //保存
+                var me = this;
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow = new Object();
+                if (me.isAddNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/RepDockInfo/ManageRepDockPlan',
+                    loading: '正在保存中...',
+                    data: { request: changeRow },
+                    success: function (result) {
+                        LG.showSuccess('保存成功', function () {
+                            if (me.dialog) me.dialog.close();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    if (updateFields) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
+                    }
+                });
+            },
+            setFormDefaultBtn: function (cancleCallback, savedCallback) {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            //保养计划明细
+            grid: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#plandetgird").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.grid.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Device/RepDockInfo/GetPlandetList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'PLAN_ID', op: 'equal', value: $('#PLAN_ID').val() }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+                me.grid.isValid = true;
+                if (!me.isView) {
+                    me.loadToolbar();
+                }
+                me.bindGridEvent();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadDet();
+                            break;
+                        case "add":
+                            me.addDet();
+                            break;
+                        case "delete":
+                            me.deleteDet();
+                            break;
+                        case "save":
+                            me.saveDet();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid.toolbarManager.options.group = 'detail';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            //新增
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    PLAN_ID: me.sid
+                });
+                me.grid.addEditRow(row, true);
+            },
+            //刷新
+            reloadDet: function () {
+                var me = this;
+                me.grid.loadData();
+            },
+            //新增
+            addDet: function () {
+                var me = this;
+                if ($('#PLAN_ID').val() == '') {
+                    LG.showError("请先保存设备基础数据");
+                    return;
+                }
+                me.grid.addEditRow({ "PLAN_ID": $('#PLAN_ID').val() });
+                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
+            },
+            //保存
+            saveDet: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/RepDockInfo/ManagePlandet',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reloadDet();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            //删除
+            deleteDet: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.saveDet();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data');
+                    me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                }
+
+                //加在基础信息
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+
+
+                //加载重大改造履历
+                me.setGrid();
+                me.reloadDet();
+
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>

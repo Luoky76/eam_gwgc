@@ -5,7 +5,6 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
@@ -40,6 +39,7 @@ namespace EAM.Device.services
         }
 
         #region 委外维修确认
+
         /// <summary>
         /// 提交委外维修确认
         /// </summary>
@@ -61,14 +61,15 @@ namespace EAM.Device.services
                     throw new MessageException("核对委外维修确认单是否填写完成！");
                 }
             }
-           var updaterepout =  await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
-                x => new REP_OUT
-                {
-                    OUT_STATUS = "25",
-                    AUDITING = "1",
-                });
+            var updaterepout = await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
+                 x => new REP_OUT
+                 {
+                     OUT_STATUS = "25",
+                     AUDITING = "1",
+                 });
             return updaterepout;
         }
+
         /// <summary>
         /// 管理委外维修确认
         /// </summary>
@@ -90,6 +91,7 @@ namespace EAM.Device.services
                 },
                 c => a => a.OUT_ID == c.OUT_ID);
         }
+
         /// <summary>
         /// 获取委外维修确认列表
         /// </summary>
@@ -124,7 +126,7 @@ namespace EAM.Device.services
         }
 
         /// <summary>
-        /// 获取单条停机记录
+        /// 获取单条确认记录
         /// </summary>
         /// <returns></returns>
 
@@ -134,9 +136,10 @@ namespace EAM.Device.services
             return qry;
         }
 
-        #endregion
+        #endregion 委外维修确认
 
         #region 委外维修验收
+
         /// <summary>
         /// 提交委外维修验收
         /// </summary>
@@ -153,7 +156,7 @@ namespace EAM.Device.services
                     }).FirstAsync();
                 if (qry.CHECK_DESC == null)
                 {
-                    throw new MessageException("核对委外维修确认单是否填写完成！");
+                    throw new MessageException("核对委外维修验收单是否填写完成！");
                 }
             }
             var updaterepout = await _dbContext.UpdateAsync<REP_OUT>(x => sids.Contains(x.OUT_ID),
@@ -184,13 +187,15 @@ namespace EAM.Device.services
                     c.PROVIDER_ID,
                     c.OUT_ID,
                 },
-                c => a => a.OUT_ID == c.OUT_ID,null, BeforeUpdate);
+                c => a => a.OUT_ID == c.OUT_ID, null, BeforeUpdate);
         }
+
         public async Task BeforeUpdate(REP_OUT entity)
         {
             entity.EIDT_DATE = await _dbContext.GetSysdate();
             entity.EIDT_USER = _userSession.RealName;
         }
+
         /// <summary>
         /// 获取委外维修验收列表
         /// </summary>
@@ -238,6 +243,7 @@ namespace EAM.Device.services
                 .Where(c => c.AUDITING=="1")
                 .GetGridData(request);
         }
+
         /// <summary>
         /// 获取委外维修验收列表
         /// </summary>
@@ -247,6 +253,7 @@ namespace EAM.Device.services
             return await _dbContext.Query<REP_PLAN_SP>()
                 .GetGridData(request);
         }
-        #endregion
+
+        #endregion 委外维修验收
     }
 }

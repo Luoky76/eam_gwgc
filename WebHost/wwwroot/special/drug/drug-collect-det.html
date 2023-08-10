@@ -13,8 +13,8 @@
 </head>
 
 <body style="padding: 5px; height: 100%; overflow:auto;">
-    <div id="mainform" style="width:97%;">
-    </div>
+    <form id="mainform" style="width:97%;">
+    </form>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <ul style="display: block; width: 100%;" id="ulGrid">
@@ -57,7 +57,12 @@
                                 }
                             },
                             { display: "采购部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
-                            { display: "采购方式", name: "COLLECT_METHOD", width: 300, type: "text", validate: { required: true }, options: {} },
+                            {
+                                display: "采购方式", name: "COLLECT_METHOD", width: 300, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.drugCollectMethod
+                                }
+                            },
                             { display: "物资分类", name: "COLLECT_SPTYPE", width: 300, type: "text", options: { disabled: true } },
                             { display: "总金额", name: "COLLECT_MONEY", width: 300, type: "float", options: { disabled: true } },
                             { display: "备注", name: "MEMO", newline: true, width: 1146, type: "textarea", options: {} },
@@ -115,6 +120,7 @@
             },
             auditing: [],
             user: [],
+            drugCollectMethod: [],
             dialog: null,
             dialogData: null,
             callback: null,
@@ -141,11 +147,12 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Special/DrugCollect/ComboxData',
+                    url: 'Special/DrugCollectDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.auditing = data.Auditing;
                         me.user = data.User;
+                        me.drugCollectMethod = data.DrugCollectMethod;
                     },
                     error: function (message) {
                         LG.showError(message);

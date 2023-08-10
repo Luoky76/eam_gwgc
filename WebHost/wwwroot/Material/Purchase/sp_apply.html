@@ -28,7 +28,8 @@
             MenuNo: getQueryStringByName("MenuNo"),
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             typeData: [],
-            exigData:[],
+            exigData: [],
+            cgfsData: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -63,6 +64,25 @@
                                     },
                                 }
                             },
+                            {
+                                display: "采购方式", name: "TYPE_ID2", minWidth: 150, type: "select", validate: { required: true },
+                                editor: {
+                                    type: 'select',
+                                    data: me.cgfsData,
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.cgfsData.length; i++) {
+                                                if (rowdata.value == me.cgfsData[i].ID) {
+                                                    liger.get("maingrid").updateCell("CGFS", me.cgfsData[i].TEXT, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("CGFS", "", rowdata.record);
+                                        }
+                                    },
+                                }
+                            },
                             { display: "紧急程度", name: "EXIG_DEV", width: 120, type: "select", editor: { type: 'select', data: me.exigData }, validate: { required: true }, },
                             { display: "用途", name: "USE_MEMO", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true }, },
 
@@ -71,6 +91,7 @@
                             { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
                             { display: "申请日期", name: "APPLY_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
+                            { display: "采购方式名", name: "CGFS", width: 100, type: "text", hide: true },
                             { display: "采购分类名", name: "TYPE_NAME", width: 100, type: "text", hide: true },
                             { display: "采购分类编码", name: "TYPE_CODE", width: 100, type: "text", hide: true },
                             { display: "主键", name: "APPLY_ID", dbname: "APPLY_ID", width: 100, type: "text", hide: true },
@@ -90,6 +111,7 @@
                     success: function (data, message) {
                         me.typeData = data.BasePurtype
                         me.exigData = data.BCCode;
+                        me.cgfsData = data.CGFS;
                     },
                     error: function (message) {
                         LG.showError(message);

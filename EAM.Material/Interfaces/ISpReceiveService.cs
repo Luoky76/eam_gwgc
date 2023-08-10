@@ -1,0 +1,25 @@
+﻿using Gksyb.Model.Grid;
+using Gksyb.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EAM.Material.Interfaces
+{
+    public interface ISpReceiveService : IService
+    {
+        Task<GridData> ListAsync(GridRequest request);
+
+        Task<AjaxResult> GetAsync(string ID);
+
+        Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request);
+
+        Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request);
+
+        Task<AjaxResult> OrderList();
+
+        Task<GridData> DetListAsync(GridRequest request);
+    }
+}

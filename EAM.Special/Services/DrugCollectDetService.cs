@@ -126,6 +126,7 @@ namespace EAM.Special.Services
                     a.UNIT,
                     SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - b.SUM_COLLECT_NUM
                 })
+                .Where(c => c.SUM_REQUEST_NUM > 0)
                 .GetGridData(request);
 
             return list;
@@ -285,7 +286,9 @@ namespace EAM.Special.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-                    { "User", null }
+                    { "Auditing", null },
+                    { "User", null },
+                    { "DrugCollectMethod", null },
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);

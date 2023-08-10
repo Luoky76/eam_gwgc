@@ -29,5 +29,26 @@ namespace EAM.Device.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<AjaxResult> SaveAsync(SaveRequest<PM_STD_LIST> request);
+
+        /// <summary>
+        /// 周期定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task WeekTimer();
+        /// <summary>
+        /// 月定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task MonthTimer();
+        /// <summary>
+        /// 季度定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task QuarterTimer();
+        /// <summary>
+        /// 年度定时器
+        /// </summary>
+        /// <returns></returns>
+        public Task YearTimer();
     }
 }

@@ -269,6 +269,10 @@
                         }
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("有数据已提交，无法重复提交！");
+                            return;
+                        }
                         upd.AUDITING = "1";
                         orginarr.push(ori);
                         updatedarr.push(upd)

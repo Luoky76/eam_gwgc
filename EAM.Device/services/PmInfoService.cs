@@ -54,11 +54,21 @@ namespace EAM.Device.services
                 { "MaintDept",null},
                 { "WorkState",null},
                 { "MaintCycle",null},
-                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => (c.TYPE_NAME == "设备"||c.TYPE_NAME == "船舶"))},
+                { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => (c.TYPE_ID == "1"))},
             });
         }
 
         #region 维保计划
+
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ImportList(GridRequest request)
+        {
+            return await _dbContext.Query<PM_STD_LIST>()
+                .GetGridData(request);
+        }
 
         /// <summary>
         /// 获取维保计划记录
@@ -185,6 +195,7 @@ namespace EAM.Device.services
                     c.WORK_STATE,
                     c.MAINT_CYCLE,
                     c.PLAN_MONTH,
+                    c.CYCLE,
                     c.LAST_COMP_DATE,
                     c.NEXT_ENDDATE,
                     c.EXECUTE_USER,
