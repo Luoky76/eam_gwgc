@@ -486,6 +486,7 @@ namespace EAM.Special.Services
             {
                 var sysDate = await _dbContext.GetSysdate();
                 _rentID = entity.EXCHANGE_ID;
+                entity.AUDITING = "1";
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }
