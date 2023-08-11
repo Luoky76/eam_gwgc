@@ -1,5 +1,7 @@
 ﻿(function ($) {
-    $.fn.ligerForm = function () {
+    $.fn.ligerForm = function (p) {
+        p = p || {};
+        if (p.EnterMoveNextControl !== undefined && p.enterMoveNextControl === undefined) p.enterMoveNextControl = p.EnterMoveNextControl;
         return $.ligerui.run.call(this, "ligerForm", arguments);
     };
 

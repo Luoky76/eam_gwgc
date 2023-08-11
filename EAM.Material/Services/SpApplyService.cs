@@ -172,7 +172,12 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.APPLY_NO = $"SQ{dt.Value.ToString("yyyyMMddHHmmss")}";
+
+            string type = $"SQ{DateTime.Now.ToString("yyyyMM")}";
+            string def = type + "0000";
+            var model = await _dbContext.Query<SP_APPLY>(x => x.APPLY_NO.Contains(type)).Select(x => Sql.Max(x.APPLY_NO) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            entity.APPLY_NO = type + index.ToString("D4");
 
             entity.APPLY_DATE = dt;
             entity.APPLY_USERID = _userSession.UserID.ToString();
@@ -219,14 +224,20 @@ namespace EAM.Material.Services
                 DateTime? dt = await _dbContext.GetSysdate();
                 var importDetail = new List<SP_PURPLAN_DET>();
                 var importList = new List<SP_PURPLAN>();
-                
+                //单号
+                string type = $"XJ{dt.Value.ToString("yyyyMM")}";
+                string def = type + "0000";
+                var model = await _dbContext.Query<SP_PURPLAN>(x => x.PLAN_NO.Contains(type)).Select(x => Sql.Max(x.PLAN_NO) ?? def).FirstOrDefaultAsync();
+               
+                var i = 1;
                 foreach (var item in list)
                 {
+                    var index = model.SubStr(8, 4).CastTo<int>() + i;
                     //形成物资询价方案
                     var temp = item.MapTo<SP_PURPLAN>();
                     temp.PURPLAN_ID = GuidHelper.NewSnowflakeId().ToString();
 
-                    temp.PLAN_NO = $"XJ{dt.Value.ToString("yyyyMMddHHmmss")}";
+                    temp.PLAN_NO = type + index.ToString("D4");
                     temp.PLAN_DATE = dt;
                     temp.ID_URGENT_PURCHASE = item.EXIG_DEV == "1" ? "1" : "0";
                     temp.CREATE_USERID = _userSession.UserID.ToString();
@@ -235,9 +246,10 @@ namespace EAM.Material.Services
                     temp.MODIFYDATE = dt;
                     temp.AUDITING = "0";
                     importList.Add(temp);
+                    i++;
                     await Task.CompletedTask;
 
-                    var data = _dbContext.Query<SP_APPLY_DETAIL>().Where(x => sids.Contains(x.APPLY_ID)).ToList();
+                    var data = _dbContext.Query<SP_APPLY_DETAIL>().Where(x => x.APPLY_ID == item.APPLY_ID).ToList();
                     foreach (var det in data)
                     {
                         var req = det.MapTo<SP_PURPLAN_DET>();
@@ -267,7 +279,7 @@ namespace EAM.Material.Services
 
                         det.SP_STATUS = "30";
                         await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(det);
-                    }
+                    }                 
                 }
 
                 await _dbContext.InsertRangeAsync<SP_PURPLAN>(importList);

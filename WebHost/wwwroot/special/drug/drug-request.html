@@ -53,34 +53,37 @@
                                 }
                             },
                             { display: "申请部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", width: 200, type: "text", options: {} },
-                            { display: "类别", name: "_search_REQUEST_TYPE", dbname: "REQUEST_TYPE", width: 200, type: "text", options: {} },
-                            { display: "需求分类", name: "_search_REQUEST_SPTYPE", dbname: "REQUEST_SPTYPE", width: 200, type: "text", options: {} },
+                            {
+                                display: "类别", name: "_search_REQUEST_TYPE", dbname: "REQUEST_TYPE", width: 200, type: "select", options: {
+                                    type: "select",
+                                    data: me.requestType
+                                }
+                            },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            { display: "需求计划单号", name: "REQUEST_CODE", width: 200, type: "text" },
-                            { display: "申请日期", name: "CREATEDATE", width: 200, type: "date" },
-                            { display: "所属月份", name: "REQUEST_MONTH", width: 100, type: "text" },
-                            { display: "所属年份", name: "REQUEST_YEAR", width: 100, type: "text" },
+                            { display: "已提交", name: "AUDITING", minWidth: 100, type: "chk" },
+                            { display: "需求计划单号", name: "REQUEST_CODE", minWidth: 200, type: "text" },
+                            { display: "申请日期", name: "CREATEDATE", minWidth: 200, type: "date" },
+                            { display: "所属月份", name: "REQUEST_MONTH", minWidth: 100, type: "text" },
+                            { display: "所属年份", name: "REQUEST_YEAR", minWidth: 100, type: "text" },
                             {
-                                display: "申请人", name: "CREATE_USERID", width: 100, type: "select", editor: {
+                                display: "申请人", name: "CREATE_USERID", minWidth: 100, type: "select", editor: {
                                     type: "select",
                                     data: me.user,
                                     disabled: true
                                 }
                             },
-                            { display: "申请部门", name: "DEPT_NAME", width: 200, type: "text" },
+                            { display: "申请部门", name: "DEPT_NAME", minWidth: 200, type: "text" },
                             {
-                                display: "类别", name: "REQUEST_TYPE", width: 100, type: "select", editor: {
+                                display: "类别", name: "REQUEST_TYPE", minWidth: 100, type: "select", editor: {
                                     type: "select",
                                     data: me.requestType,
                                     disabled: true
                                 }
                             },
-                            { display: "需求分类", name: "REQUEST_SPTYPE", width: 100, type: "text" },
-                            { display: "备注", name: "MEMO", width: 300, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text" },
                             //隐藏
                             { display: "主键", name: "REQUEST_ID", width: 100, type: "text", hide: true },
                             { display: "申请部门ID", name: "DEPT_ID", width: 100, type: "text", hide: true },

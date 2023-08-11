@@ -193,7 +193,11 @@ namespace Gksyb.Core.Auth
         {
             var ip = request.GetRealIP();
             var userAgent = request.GetUserAgent();
-            if (IP == ip && UserAgent == userAgent) return true;
+            var times = 0;
+            if (IP == ip) times += 1;
+            if (UserAgent == userAgent) times += 1;
+            if (times > 0 && Token == request.HttpContext.GetUID(false)) times += 1;
+            if (times > 1) return true;
             distributedCache ??= request.HttpContext.RequestServices.GetService<IDistributedCache>();
             distributedCache.Remove(Token);
             return false;

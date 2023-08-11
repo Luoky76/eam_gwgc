@@ -50,7 +50,6 @@ namespace EAM.Special.Services
                 c.MEMO,
                 c.REQUEST_TYPE,
                 c.FORM_ID,
-                c.REQUEST_SPTYPE,
                 c.SRC_CODE,
                 c.POSITION,
                 c.REQUEST_USER,
@@ -109,7 +108,6 @@ namespace EAM.Special.Services
                     c.MEMO,
                     c.REQUEST_TYPE,
                     c.FORM_ID,
-                    c.REQUEST_SPTYPE,
                     c.SRC_CODE,
                     c.POSITION,
                     c.REQUEST_USER,
@@ -136,37 +134,14 @@ namespace EAM.Special.Services
             //自动添加需求计划单号
             if (entity.REQUEST_CODE.IsNullOrEmpty())
             {
-                //示例DR2023072100001
-                var sysdate = await _dbContext.GetSysdate();
-                string dateCode = sysdate.Value.ToString("yyyyMMdd");
+                //示例DR2023070001
                 string headCode = "DR";
-                string newCode = headCode + dateCode + "00001";
-
-                //查看编码是否已存在
-                var list1 = await _dbContext.Query<DRUG_REQUEST>()
-                    .Select(a => a.REQUEST_CODE)
-                    .Where(a => a == newCode)
-                    .ToListAsync();
-
-                if (list1.Any())
-                {
-                    var list2 = await _dbContext.Query<DRUG_REQUEST>()
-                    .Select(a => new
-                    {
-                        MAX_REQUEST_CODE = Sql.Max(a.REQUEST_CODE)
-                    })
-                    .ToListAsync();
-                    if (list2.Any())
-                    {
-                        string lastCode = list2[0].MAX_REQUEST_CODE;
-                        lastCode = lastCode.Substring(headCode.Length);
-                        long cnt = long.Parse(lastCode);
-                        ++cnt;
-                        lastCode = cnt.ToString();
-                        newCode = headCode + lastCode;
-                    }
-                }
-                entity.REQUEST_CODE = newCode;
+                var sysdate = await _dbContext.GetSysdate();
+                string dateCode = sysdate.Value.ToString("yyyyMM");
+                string newCode = headCode + dateCode + "0000";
+                string model = await _dbContext.Query<DRUG_REQUEST>(a => a.REQUEST_CODE.Contains(headCode))
+                    .Select(a => Sql.Max(a.REQUEST_CODE) ?? newCode).FirstOrDefaultAsync();
+                entity.REQUEST_CODE = headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
             }
             await Task.CompletedTask;
         }

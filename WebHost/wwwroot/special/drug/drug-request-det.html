@@ -75,7 +75,6 @@
                                     data: me.requestType
                                 }
                             },
-                            { display: "需求分类", name: "REQUEST_SPTYPE", width: 300, type: "text", options: { disabled: true } },
                             { display: "备注", name: "MEMO", width: 1146, newline: "true", type: "textarea", options: {} },
                             //隐藏
                             { display: "主键", name: "REQUEST_ID", width: 300, type: "hidden" },
@@ -95,34 +94,28 @@
                     },
                     grid: {
                         columns: [
-                            { display: "物资编码", name: "SP_CODE", width: 100, type: "text" },
-                            { display: "物资名称", name: "SP_NAME", width: 100, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", width: 100, type: "text" },
-                            { display: "制造厂", name: "FACTORY", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "物资编号", name: "SP_CODE", minWidth: 100, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 100, type: "text" },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text" },
                             {
-                                display: "申请数量", name: "REQUEST_NUM", width: 100, type: "float", editor: {
+                                display: "申请数量", name: "REQUEST_NUM", minWidth: 100, type: "float", editor: {
                                     type: 'float',
                                     onChanged: function (record) {
                                         if (record.value < 0) {
-                                            //TODO 不应小于0
+                                            $('#REQUEST_NUM').val(0);
                                         }
                                     }
                                 }
                             },
-                            { display: "剩余数量", name: "LEFTOVER", width: 100, type: "float" },
-                            { display: "计量单位", name: "UNIT", width: 100, type: "text" },
-                            { display: "用途", name: "PURPOSE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "剩余数量", name: "LEFTOVER", minWidth: 100, type: "float" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            { display: "用途", name: "PURPOSE", minWidth: 200, type: "text", editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", minWidth: 200, type: "text", editor: { type: 'text' } },
                             //隐藏
                             { display: "主键", name: "REQUEST_DET_ID", width: 100, type: "text", hide: true },
                             { display: "物资需求ID", name: "REQUEST_ID", width: 100, type: "text", hide: true },
                             { display: "物资品种ID", name: "SP_ID", width: 100, type: "text", hide: true },
-                            { display: "物资状态", name: "SP_STATUS", width: 100, type: "text", hide: true },
-                            { display: "代码", name: "SP_DAIMA", width: 100, type: "text", hide: true },
-                            { display: "物资英文名称", name: "SP_ENGNAME", width: 100, type: "text", hide: true },
-                            { display: "图号/设备", name: "SP_TUHAO", width: 100, type: "text", hide: true },
-                            { display: "其他编号", name: "OTHER_CODE", width: 100, type: "text", hide: true },
-                            { display: "品牌", name: "BRAND", width: 100, type: "text", hide: true },
                             { display: "物资类别ID", name: "TYPE_ID", width: 100, type: "text", hide: true },
                             { display: "物资类别名称", name: "TYPE_NAME", width: 100, type: "text", hide: true },
                             { display: "物资类别编码", name: "TYPE_CODE", width: 100, type: "text", hide: true }
@@ -491,9 +484,9 @@
                         columns: [
                             { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
                             { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
                             { display: "剩余数量", name: "LEFTOVER", width: 200, type: "float" },
                             { display: "计量单位", name: "UNIT", width: 200, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", width: 200, type: "text" },
                         ]
                     },
                     fields: [
@@ -503,15 +496,8 @@
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
                             if (!currentSet.has(item.SP_ID)) {
-                                me.addGrid({
-                                    SP_ID: item.SP_ID,
-                                    SP_CODE: item.SP_CODE,
-                                    SP_NAME: item.SP_NAME,
-                                    SP_TYPE: item.SP_TYPE,
-                                    REQUEST_NUM: 0,
-                                    LEFTOVER: item.LEFTOVER,
-                                    UNIT: item.UNIT
-                                });
+                                item.REQUEST_NUM = 0;
+                                me.addGrid(item);
                             }
                         }
                         me.saveGrid();

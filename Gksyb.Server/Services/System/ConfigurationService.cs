@@ -42,9 +42,15 @@ namespace Gksyb.Server.Services.System
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
+            var ids = new List<long?>();
+            var menus = await _dbContext.Query<SYS_MENU>().Where(menu => _dbContext.Query<CF_CONFIGURATION>().Where(config => config.VIEWS == menu.MENUNO).Any()).ToListAsync();
+            menus.GroupBy(c => c.MENUNO).ForEach(c =>
+            {
+                ids.Add((c.FirstOrDefault(a => a.APPNAME == _appName) ?? c.FirstOrDefault()).MENUID);
+            });
             return await _dbContext.Query<CF_CONFIGURATION>()
                 .Where(c => c.APPNAME == _appName)
-                .LeftJoin<SYS_MENU>((config, menu) => config.VIEWS == menu.MENUNO && config.APPNAME == menu.APPNAME)
+                .LeftJoin<SYS_MENU>((config, menu) => config.VIEWS == menu.MENUNO && ids.Contains(menu.MENUID))
                 .LeftJoin<SYS_MENU>((config, menu, menuParent) => menu.MENUPARENTNO == menuParent.MENUNO && menu.APPNAME == menuParent.APPNAME)
                 .Select((config, menu, menuParent) => new
                 {

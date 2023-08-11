@@ -33,9 +33,13 @@ namespace EAM.Special.Services
             {
                 c.LIMIT_ID,
                 c.SP_ID,
-                c.SP_CODE,
                 c.SP_NAME,
-                c.SP_TYPE,
+                c.SP_CODE,
+                c.SP_SIZE,
+                c.TYPE_ID,
+                c.TYPE_NAME,
+                c.TYPE_CODE,
+                c.PRODUCE,
                 c.UNIT,
                 c.INSIDE_APRIL,
                 c.OUTSIDE_APRIL,
@@ -126,9 +130,13 @@ namespace EAM.Special.Services
                 {
                     a.LIMIT_ID,
                     a.SP_ID,
-                    a.SP_CODE,
                     a.SP_NAME,
-                    a.SP_TYPE,
+                    a.SP_CODE,
+                    a.SP_SIZE,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.PRODUCE,
                     a.UNIT,
                     LEFTOVER = position == "1" ? a.INSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM):
                     a.OUTSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
@@ -147,9 +155,13 @@ namespace EAM.Special.Services
                 {
                     a.LIMIT_ID,
                     a.SP_ID,
-                    a.SP_CODE,
                     a.SP_NAME,
-                    a.SP_TYPE,
+                    a.SP_CODE,
+                    a.SP_SIZE,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.PRODUCE,
                     a.UNIT,
                     LEFTOVER = position == "1" ? a.INSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
                     a.OUTSIDE_OCTOBER - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
@@ -176,11 +188,12 @@ namespace EAM.Special.Services
                     a.SP_ID,
                     a.SP_NAME,
                     a.SP_CODE,
+                    a.SP_SIZE,
                     a.TYPE_ID,
                     a.TYPE_NAME,
                     a.TYPE_CODE,
+                    a.PRODUCE,
                     a.UNIT,
-                    a.PRODUCE
                 })
                 .GetGridData(request);
         }
@@ -208,9 +221,13 @@ namespace EAM.Special.Services
                 {
                     c.LIMIT_ID,
                     c.SP_ID,
-                    c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
+                    c.SP_CODE,
+                    c.SP_SIZE,
+                    c.TYPE_ID,
+                    c.TYPE_NAME,
+                    c.TYPE_CODE,
+                    c.PRODUCE,
                     c.UNIT,
                     c.INSIDE_APRIL,
                     c.OUTSIDE_APRIL,

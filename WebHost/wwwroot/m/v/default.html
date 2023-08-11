@@ -35,8 +35,9 @@
         </div>
     </div>
     <script type="text/javascript" src="../dist/Framework7/mobile.js?v=1"></script>
-    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
-    <script type="text/javascript" src="../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" src="../dist/Framework7/app.js?cache=1&v=1"></script>
+    <script type="text/javascript" defer src="../../lib/echarts/echarts.js?ver=1"></script>
+    <script type="text/javascript" defer src="../../lib/echarts/echarts.expand.js?cache=1&ver=1"></script>
     <script type="text/javascript">
         'use strict';
         var business = {
@@ -74,8 +75,10 @@
             //菜单数据标准化
             customMenuData: function (menus) {
                 var firstRoute = app.routes.length > 0 ? app.routes[0] : null;
+                var hasTabHome = false, homeMenu = null;
                 for (var i = 0, l = menus.length; i < l; i++) {
                     var menu = menus[i];
+                    menu.MENUURL = menu.MENUURL || "";
                     menu.MENUCSS = menu.MENUICON || "";
                     var array = menu.MENUCSS.split(" ");
                     if (array.length > 1) {
@@ -83,15 +86,22 @@
                     }
                     menu.Extend = "";
                     menu.Path = "/" + menu.MENUNO + "/";
+                    menu.isTabHome = menu.MENUCSS.indexOf("tab-home") >= 0;
+                    if (!menu.MENUPARENTNO) {
+                        if (menu.isTabHome && !hasTabHome) {
+                            homeMenu = menu;
+                            hasTabHome = true;
+                        }
+                        if (!homeMenu) homeMenu = menu;
+                    }
                     if (menu.MENUURL.length < 2) continue;
                     if (menu.MENUURL.indexOf("javascript:") >= 0 || menu.MENUURL.indexOf("http") === 0) {
                         menu.Path = menu.MENUURL;
                         menu.Extend = "external";
                         continue;
                     }
-                    menu.isTabHome = menu.MENUCSS.indexOf("tab-home") >= 0;
                     menu.isComponent = menu.MENUCSS.indexOf("component") >= 0;
-                    menu.MENUURL = (menu.MENUURL || "").replace(/.aspx/i, ".html");
+                    menu.MENUURL = menu.MENUURL.replace(/.aspx/i, ".html");
                     menu.MENUURL = gksybConfigs.urlBase + menu.MENUURL;
                     var bolContinue = true;
                     var route = {
@@ -99,14 +109,11 @@
                         name: menu.MENUNO,
                         path: menu.Path,
                         url: menu.isComponent ? undefined : menu.MENUURL,
-                        componentUrl: menu.isComponent ? menu.MENUURL :undefined,
+                        componentUrl: menu.isComponent ? menu.MENUURL : undefined,
                         title: menu.MENUNAME,
                         on: {}
                     };
                     if (!menu.MENUPARENTNO && firstRoute.tabs) {
-                        if (menu.isTabHome) {
-                            menu.Path = route.path = "/";
-                        }
                         firstRoute.tabs.push(route);
                         continue;
                     }
@@ -120,6 +127,17 @@
                     }
                     if (!bolContinue) continue;
                     app.routes.push(route); //加入路由
+                }
+                if (!homeMenu) return;
+                homeMenu.isTabHome = true;
+                homeMenu.Path = "/";
+                if (!firstRoute.tabs) return;
+                for (var i = 0, l = firstRoute.tabs.length; i < l; i++) {
+                    var tab = firstRoute.tabs[i];
+                    if (tab.id === homeMenu.MENUNO) {
+                        tab.path = homeMenu.Path;
+                        break;
+                    }
                 }
             },
             //填充菜单
