@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <title>劳保用品退换</title>
-    <script src="../../lib/LGboot.js"  type="text/javascript"></script>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
 <body style="padding: 5px; height: 100%;">
@@ -21,25 +21,45 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            exchangeType: [
+                {
+                    "ID": "1",
+                    "TEXT": "换货",
+                    "VALUE": "1",
+                },
+                {
+                    "ID": "2",
+                    "TEXT": "退货",
+                    "VALUE": "2",
+                },
+                {
+                    "ID": "3",
+                    "TEXT": "退库",
+                    "VALUE": "3",
+                }
+            ],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
                             { display: "退换单号", name: "_search_EXCHANGE_CODE", dbname: "EXCHANGE_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: {} },
-                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: {} },
-                            { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: { data: me.dataCorp } },
+                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: { data: me.user } },
+                            { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "select", options: { data: me.exchangeType } },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "退换单号", name: "EXCHANGE_CODE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "退换日期", name: "EXCHANGE_DATE", width: 100, type: "date",  editor: { type: 'date',format: "yyyy-MM-dd hh:mm"} },
-                            { display: "申请部门", name: "EXCHANGE_DEPT", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "申请人", name: "EXCHANGE_USER", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "退换类型", name: "EXCHANGE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditing } },
+                            { display: "主键", name: "EXCHANGE_ID", width: 100, type: "text", hide:true,editor: { type: 'text' } },
+                            { display: "退换单号", name: "EXCHANGE_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "退换日期", name: "EXCHANGE_DATE", width: 100, type: "date", editor: { type: 'date', format: "yyyy-MM-dd hh:mm" } },
+                            { display: "申请部门", name: "EXCHANGE_DEPT", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp } },
+                            { display: "申请人", name: "EXCHANGE_USER", width: 100, type: "select", editor: { type: 'select', data: me.user } },
+                            { display: "退换类型", name: "EXCHANGE_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.exchangeType } },
                             { display: "退换原因", name: "EXCHANGE_REASON", width: 100, type: "text", editor: { type: 'text' } }
                         ]
                     }
@@ -52,10 +72,13 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'LaborExchange/comboxdata',
+                    url: 'special/labor/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.dataCorp = data.corpData;
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.rentstate = data.RentState
+                        me.dataCorp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -71,8 +94,8 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'local',
-                    toolbar: {},
-                    url: 'LaborExchange/list',
+                    toolbar: { group: "main" },
+                    url: 'special/labor/LaborExchangeList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -84,8 +107,8 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
+                    enabledEdit: false,
+                    clickToEdit: false,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -127,6 +150,12 @@
                         case "delete":
                             me.delete();
                             break;
+                        case "submit":
+                            me.submit();
+                            break;
+                        case "rentend":
+                            me.rentend();
+                            break;
                         case "save":
                             me.save();
                             break;
@@ -148,22 +177,22 @@
             },
             add: function () { //新增
                 var me = this;
-                //$.ligerDialog.open({
-                //    width: me.detailWidth,
-                //    height: me.detailHeight,
-                //    allowClose: true,
-                //    title: '[新增]',
-                //    url: "view-detail.html",
-                //    isHidden: false,
-                //    showMax: false,
-                //    showToggle: false,
-                //    showMin: false,
-                //    isResize: true,
-                //    slide: false,
-                //    onClosed: me.reload.bind(me),
-                //    data: { "sid": null }
-                //});
-                me.grid.addEditRow({}, true);
+                $.ligerDialog.open({
+                    width: 1400,
+                    height: 800,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "labor-exchange-edit.html?MenuNo=labor_exchange",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null }
+                });
+                //me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
@@ -172,13 +201,13 @@
                     LG.tip('请选择行!');
                     return;
                 }
-                var sid = selected.SID;
+                var sid = selected.EXCHANGE_ID;
                 $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
+                    width: 1400,
+                    height: 800,
                     allowClose: true,
                     title: '[修改]',
-                    url: "view-detail.html",
+                    url: "labor-exchange-edit.html?MenuNo=labor_exchange",
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -200,9 +229,9 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'LaborExchange/save',
+                        url: 'special/labor/LaborExchangeSave',
                         loading: '正在保存中...',
-                        data: changeRow,
+                        data: { request: changeRow, requestdet: null },
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
@@ -210,6 +239,7 @@
                         },
                         error: function (message) {
                             LG.showError(message);
+                            me.reload();
                         }
                     });
                 }
@@ -237,6 +267,20 @@
                     }
                 }
             },
+            submit: function () {  //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                var dateSysDate = {};
+                LG.getSysdate({ DateFormat: "yyyy-MM-dd HH:mm:ss" }, dateSysDate);
+                selected.forEach(x => {
+                    if (x.AUDITING == "0" && x.RENT_STATUS == "0") {
+                        me.grid.updateCell("AUDITING", "1", x.__index);
+                        me.grid.updateCell("EXCHANGE_DATE", dateSysDate.ID.format("yyyy-MM-dd HH:mm:ss"), x.__index)
+                    }
+                });
+                me.save();
+            },
+   
             bindGridEvent: function () {
                 var me = this;
                 var menu = $.ligerMenu({

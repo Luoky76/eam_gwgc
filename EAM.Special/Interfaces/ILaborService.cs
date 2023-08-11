@@ -32,10 +32,12 @@ namespace EAM.Special.Interfaces
         #endregion
 
         #region 劳保用品退换
-        Task<GridData> laborExchangeListAsync(GridRequest request);
+        Task<GridData> LaborExchangeListAsync(GridRequest request);
 
-        Task<AjaxResult> SaveAsync(SaveRequest<LABOR_EXCHANGE> request);
+        Task<GridData> GetLaborExchangeAppDetList(string id);
 
+        Task<AjaxResult> LaboExchangeGet(string id);
+        Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet);
         #endregion
 
 

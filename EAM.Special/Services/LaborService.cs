@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -7,6 +8,10 @@ using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.CodeAnalysis;
+using NPOI.OpenXmlFormats.Dml.Diagram;
+using System;
+using WkHtmlToPdfDotNet;
 
 namespace EAM.Special.Services
 {
@@ -17,6 +22,7 @@ namespace EAM.Special.Services
         private readonly IComboxDataService _comboxDataService;
         private readonly IUserService _userService;
         private readonly ICorpService _corpService;
+        private readonly UserSession _userSession;
         private string _rentID = string.Empty, errMsg = string.Empty;
 
         public LaborService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
@@ -37,7 +43,9 @@ namespace EAM.Special.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-
+                    { "Auditing", null },
+                    { "User", null },
+                    { "RentState", null }
                 });
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());
 
@@ -357,68 +365,171 @@ namespace EAM.Special.Services
 
 
         #region 劳保用品退换
-        public async Task<GridData> laborExchangeListAsync(GridRequest request)
+        public async Task<GridData> LaborExchangeListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_EXCHANGE>().GetGridData(request);
             return list;
         }
-
-        public async Task<AjaxResult> SaveAsync(SaveRequest<LABOR_EXCHANGE> request)
+        public async Task<GridData> GetLaborExchangeAppDetList(string id)
         {
-            return await _dbContext.SaveEntityAnsyc(request,
-                c => new
+            var result = await _dbContext.Query<LABOR_EXCHANGE_APPDET>(x => x.EXCHANGE_ID.Equals(id)).ToListAsync();
+            GridData data = new GridData
+            {
+                Rows = result,
+                Total = result.Count
+            };
+            return data;
+        }
+        public async Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet)
+        {
+            //从表保存的主表ID通过公共变量 _rendID 来传递给从表
+
+            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            {
+                bool mainSuccess = false, detSuccess = false;
+                var execResult = await _dbContext.SaveEntityAnsyc(request,
+                     c => new
+                     {
+                         c.AUDITING,
+                         c.EXCHANGE_CODE,
+                         c.EXCHANGE_DATE,
+                         c.EXCHANGE_TYPE,
+                         c.EXCHANGE_USER,
+                         c.EXCHANGE_DEPT,
+                         c.MEMO,
+                         c.EXCHANGE_ID,
+                         c.EXCHANGE_USERID,
+                         c.EXCHANGE_DEPTID,
+                         c.AUDIT_USERID,
+                         c.AUDIT_DEPTID,
+                         c.CREATE_USERID,
+                         c.CREATEDATE,
+                         c.MODIFY_USERID,
+                         c.MODIFYDATE,
+                         c.EXCHANGE_REASON,
+                     },
+                     c => a => a.EXCHANGE_ID == c.EXCHANGE_ID
+                     , LaborExchangeBeforAdd, LaborExchangeBeforUpdate, LaborExchangeBeforDelete, false, null, null);
+
+                mainSuccess = !execResult.IsError;
+                if (mainSuccess)  //主表是否保存成功
                 {
-                    c.AUDITING,
-                    c.EXCHANGE_CODE,
-                    c.EXCHANGE_DATE,
-                    c.EXCHANGE_TYPE,
-                    c.EXCHANGE_USER,
-                    c.EXCHANGE_DEPT,
-                    c.MEMO,
-                    c.EXCHANGE_ID,
-                    c.EXCHANGE_USERID,
-                    c.EXCHANGE_DEPTID,
-                    c.AUDIT_USERID,
-                    c.AUDIT_DEPTID,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE,
-                    c.EXCHANGE_REASON,
-                },
-                c => a => a.EXCHANGE_ID == c.EXCHANGE_ID
-                , BeforeAdd, null, null, false, null, null);
+                    requestdet = requestdet ?? new SaveRequest<LABOR_EXCHANGE_APPDET>();
+
+                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                         c => new
+                         {
+                             c.SP_CODE,
+                             c.SP_DAIMA,
+                             c.SP_NAME,
+                             c.SP_TYPE,
+                             c.BRAND,
+                             c.UNIT,
+                             c.FACTORY,
+                             c.OTHER_CODE,
+                             c.EXCHANGE_NUM,
+                             c.TYPE_CODE,
+                             c.TYPE_NAME,
+                             c.PURPOSE,
+                             c.MEMO,
+                             c.EXCHANGE_APPDET_ID,
+                             c.EXCHANGE_ID,
+                             c.TYPE_ID,
+                             c.SP_ID,
+                             c.CREATE_USERID,
+                             c.CREATEDATE,
+                             c.MODIFY_USERID,
+                             c.MODIFYDATE,
+                             c.STORE_ID,
+                             c.OUT_DET_ID
+                         },
+                         c => a => a.EXCHANGE_APPDET_ID == c.EXCHANGE_APPDET_ID
+                         , LaborExchangeAppDetBeforAdd, LaborExchangeAppDetBeforUpdate, null, false, null, null);
+
+                    detSuccess = !execResult.IsError;  //明细表是否保存成功
+                }
+                if (mainSuccess && detSuccess)
+                    trans.Commit();
+                else
+                {
+                    trans.Rollback();
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    return AjaxResult.Error(errMsg);
+                }
+            }
+            return AjaxResult.Success("保存成功");
+        }
+        private async Task LaborExchangeBeforAdd(LABOR_EXCHANGE entity)
+        {
+            var sysDate = await _dbContext.GetSysdate();
+
+            string rentCode = "LBZJ" + sysDate.Value.ToString("yyyyMM");
+            string sn = "0001";
+            var lastCode = await _dbContext.Query<LABOR_EXCHANGE>(x => x.EXCHANGE_CODE.Contains(rentCode)).Select(x => Sql.Max(x.EXCHANGE_CODE)).FirstOrDefaultAsync();
+            if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
+            else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
+
+            entity.EXCHANGE_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            entity.AUDITING = "0";
+            entity.EXCHANGE_CODE = rentCode;
+            entity.EXCHANGE_USERID = _userSession.UserID.ToString();
+            entity.EXCHANGE_USER = _userSession.RealName;
+            entity.EXCHANGE_DEPTID = _userSession.Corp.CorpID;
+            entity.EXCHANGE_DEPT = _userSession.Corp.CName;
+            entity.EXCHANGE_TYPE = "0";
+            entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.CREATEDATE = entity.MODIFYDATE = sysDate;
+        }
+        private async Task LaborExchangeBeforUpdate(LABOR_EXCHANGE entity)
+        {
+            if (entity.AUDITING.Equals("0"))
+            {
+                var sysDate = await _dbContext.GetSysdate();
+                _rentID = entity.EXCHANGE_ID;
+                entity.MODIFY_USERID = _userSession.UserID.ToString();
+                entity.MODIFYDATE = sysDate;
+            }
+            else
+            {
+                errMsg = "未提交的状态下才能修改";
+                throw new MessageException("未提交的状态下才能修改");
+            }
+        }
+        private async Task LaborExchangeBeforDelete(LABOR_EXCHANGE entity)
+        {
+            if (entity.AUDITING.Equals("0"))
+                await _dbContext.DeleteAsync<LABOR_RENT_DET>(x => x.RENT_ID.Equals(entity.EXCHANGE_ID));
+            else
+            {
+                errMsg = "未提交的状态下才能删除";
+                throw new MessageException("未提交的状态下才能删除");
+            }
+        }
+        private async Task LaborExchangeAppDetBeforAdd(LABOR_EXCHANGE_APPDET entity)
+        {
+            var sysDate = await _dbContext.GetSysdate();
+            entity.EXCHANGE_APPDET_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.EXCHANGE_ID = _rentID;
+            entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.CREATEDATE = entity.MODIFYDATE = sysDate;
+        }
+        private async Task LaborExchangeAppDetBeforUpdate(LABOR_EXCHANGE_APPDET entity)
+        {
+            var sysDate = await _dbContext.GetSysdate();
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = sysDate;
         }
 
-        /// <summary>
-        /// 添加前验证
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        private async Task BeforeAdd(LABOR_EXCHANGE entity)
+        public async Task<AjaxResult> LaboExchangeGet(string id)
         {
-            entity.EXCHANGE_ID = GuidHelper.NewSnowflakeId().ToString();
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 更新前验证
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        private async Task BeforeUpdate(LABOR_EXCHANGE entity)
-        {
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 删除前验证
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        private async Task BeforeDelete(LABOR_EXCHANGE entity)
-        {
-            await Task.CompletedTask;
+            var mainData = await _dbContext.QueryByKeyAsync<LABOR_EXCHANGE>(id);
+            var detData = await _dbContext.Query<LABOR_EXCHANGE_APPDET>(x => x.EXCHANGE_ID.Equals(id)).ToListAsync();
+            var result = new
+            {
+                maindata = mainData,
+                detdata = new GridData { Rows = detData, Total = detData.Count }
+            };
+            return AjaxResult.Success(result);
         }
 
         #endregion

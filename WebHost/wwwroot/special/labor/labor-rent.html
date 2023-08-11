@@ -27,15 +27,10 @@
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
-                            { display: "租借单号", name: "_search_RENT_CODE", dbname: "RENT_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "租借日期", name: "_search_RENT_DATE", dbname: "RENT_DATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "租借部门", name: "_search_RENT_DEPT", dbname: "RENT_DEPT", newline: false, upper: true, type: "select", options: { data: me.dataCorp } },
-                            { display: "租借人", name: "_search_RENT_USER", dbname: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user } },
-                            { display: "经办部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, upper: true, type: "text",options:{} },
-                            { display: "经办人", name: "_search_USER_NAME", dbname: "USER_NAME", newline: false, upper: true, type: "text",options:{} },
-                            { display: "添加时间", name: "_search_CREATEDATE", dbname: "CREATEDATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "修改时间", name: "_search_MODIFYDATE", dbname: "MODIFYDATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "租借状态", name: "_search_RENT_STATUS", dbname: "RENT_STATUS", newline: false, upper: true, type: "select", options: { data: me.rentstate } }
+                            { display: "退换单号", name: "_search_EXCHANGE_CODE", dbname: "EXCHANGE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: { data: me.dataCorp } },
+                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: { data: me.user } },
+                            { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {

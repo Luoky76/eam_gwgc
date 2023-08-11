@@ -104,5 +104,29 @@ namespace EAM.Special.Controller
         }
         #endregion
 
+        #region 劳动用品退换
+        [HttpPost]
+        public async Task<AjaxResult> LaborExchangeListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.LaborExchangeListAsync(request));
+        }
+        [HttpPost]
+        public async Task<AjaxResult> GetLaborExchangeAppDetList(string id)
+        {
+            return AjaxResult.Success(await _service.GetLaborExchangeAppDetList(id));
+        }
+        [HttpPost]
+        public async Task<AjaxResult> LaboExchangeGet(string id)
+        {
+            return await _service.LaboExchangeGet(id);
+        }
+     
+        [HttpPost]
+        public async Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet)
+        {
+            return await _service.LaborExchangeSave(request, requestdet);
+        }
+        #endregion
+
     }
 }
