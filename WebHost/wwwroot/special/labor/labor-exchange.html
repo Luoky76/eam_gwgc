@@ -274,6 +274,7 @@
                 LG.getSysdate({ DateFormat: "yyyy-MM-dd HH:mm:ss" }, dateSysDate);
                 selected.forEach(x => {
                     if (x.AUDITING == "0" ) {
+                        me.grid.updateCell("AUDITING", "1", x.__index);
                         me.grid.updateCell("EXCHANGE_DATE", dateSysDate.ID.format("yyyy-MM-dd HH:mm:ss"), x.__index)
                     }
                 });

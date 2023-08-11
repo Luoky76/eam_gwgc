@@ -472,21 +472,17 @@ namespace EAM.Special.Services
             entity.EXCHANGE_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
             entity.AUDITING = "0";
             entity.EXCHANGE_CODE = rentCode;
-            entity.EXCHANGE_USERID = _userSession.UserID.ToString();
-            entity.EXCHANGE_USER = _userSession.RealName;
-            entity.EXCHANGE_DEPTID = _userSession.Corp.CorpID;
-            entity.EXCHANGE_DEPT = _userSession.Corp.CName;
-            entity.EXCHANGE_TYPE = "0";
+
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
         private async Task LaborExchangeBeforUpdate(LABOR_EXCHANGE entity)
         {
-            if (entity.AUDITING.Equals("0"))
+            var olddata = _dbContext.QueryByKey<LABOR_EXCHANGE>(entity.EXCHANGE_ID);
+            if (olddata.AUDITING.Equals("0"))
             {
                 var sysDate = await _dbContext.GetSysdate();
                 _rentID = entity.EXCHANGE_ID;
-                entity.AUDITING = "1";
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }
