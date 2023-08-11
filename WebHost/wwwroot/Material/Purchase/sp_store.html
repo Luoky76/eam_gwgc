@@ -287,6 +287,11 @@
                         }
                     },{
                         text: "确定", type: "info", onClick: function () {
+                            if (!me.viewForm.valid()) {
+                                me.viewForm.showInvalid();
+                                return;
+                            }
+
                             var data = me.viewForm.getData();
                             var changeRow = new Object();
                             changeRow["added"] = [data];
