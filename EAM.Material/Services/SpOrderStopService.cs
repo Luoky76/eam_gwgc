@@ -103,7 +103,12 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.STOP_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.STOP_CODE = $"ZZ{dt.Value.ToString("yyyyMMddHHmmss")}";
+            //单号
+            string type = $"ZZ{dt.Value.ToString("yyyyMM")}";
+            string def = type + "0000";
+            var model = await _dbContext.Query<SP_ORDER_STOP>(x => x.STOP_CODE.Contains(type)).Select(x => Sql.Max(x.STOP_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            entity.STOP_CODE = type + index.ToString("D4");
 
             entity.EDIT_DATE = dt;
             entity.USER_ID = _userSession.UserID.ToString();

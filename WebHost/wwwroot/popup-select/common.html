@@ -39,7 +39,7 @@
                     enabledEdit: false,
                     clickToEdit: false,
                     isChecked: function (item) {
-                        if (me._storageSelect && me._storageSelect[me.data.options.rowKey] === true) return true;
+                        if (me._storageSelect && me._storageSelect[item[me.data.options.rowKey]] === true) return true;
                         return false;
                     }
                 }, me.data.options);

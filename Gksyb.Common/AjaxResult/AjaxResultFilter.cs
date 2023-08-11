@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                         _logger.LogError(_logPath, message);
                     }
-                    context.Result = new OkObjectResult(AjaxResult.Error(context.Exception.Message));
+                    context.Result = new ObjectResult(AjaxResult.Error(context.Exception.Message));
                     return;
                 }
                 if (context.Result != null && context.Result is ObjectResult objectResult)

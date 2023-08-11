@@ -138,7 +138,13 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.APPLY_CODE =$"SQ{dt.Value.ToString("yyyyMMddHHmmss")}";
+            //单号
+            string type = $"SQ{dt.Value.ToString("yyyyMM")}";
+            string def = type + "0000";
+            var model = await _dbContext.Query<SPARE_APPLY>(x => x.APPLY_CODE.Contains(type)).Select(x => Sql.Max(x.APPLY_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+
+            entity.APPLY_CODE = type + index.ToString("D4");
             entity.APPLY_DATE = dt;
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
@@ -376,7 +382,13 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.DISABLE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.DISABLE_CODE = $"JY{dt.Value.ToString("yyyyMMddHHmmss")}";
+            //单号
+            string type = $"JY{dt.Value.ToString("yyyyMM")}";
+            string def = type + "0000";
+            var model = await _dbContext.Query<SP_DISABLE>(x => x.DISABLE_CODE.Contains(type)).Select(x => Sql.Max(x.DISABLE_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+
+            entity.DISABLE_CODE = type + index.ToString("D4");
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
@@ -556,7 +568,13 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.ENABLE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.ENABLE_CODE = $"QY{dt.Value.ToString("yyyyMMddHHmmss")}";
+            //单号
+            string type = $"QY{dt.Value.ToString("yyyyMM")}";
+            string def = type + "0000";
+            var model = await _dbContext.Query<SP_ENABLE>(x => x.ENABLE_CODE.Contains(type)).Select(x => Sql.Max(x.ENABLE_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+
+            entity.ENABLE_CODE = type + index.ToString("D4");
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
