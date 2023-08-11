@@ -166,15 +166,21 @@ namespace EAM.Material.Services
             {
                 var importDetail = new List<SP_ORDER_DETAIL>();
                 var importList = new List<SP_ORDER>();
+                //单号
+                string type = $"DD{dt.Value.ToString("yyyyMM")}";
+                string def = type + "0000";
+                var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
 
+                var i = 1;
                 foreach (var item in list)
                 {
+                    var index = model.SubStr(8, 4).CastTo<int>() + i;
                     //形成物资询价方案
                     var temp = new SP_ORDER
                     {
                         PURPLAN_ID = item.PURPLAN_ID,
                         ORDER_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        ORDER_CODE = $"ORD{dt.Value.ToString("yyyyMMddHHmmss")}",
+                        ORDER_CODE = type + index.ToString("D4"),
                         ORDER_DATE = dt,
                         ORDER_MONEY = item.SUM_MONEY,
                         BUY_USERID = item.PUR_USERID,
@@ -189,9 +195,10 @@ namespace EAM.Material.Services
                         IS_STOP = "0"
                     };
                     importList.Add(temp);
+                    i++;
                     await Task.CompletedTask;
 
-                    var data = _dbContext.Query<SP_PURPLAN_DET>().Where(x => sids.Contains(x.PURPLAN_ID)).ToList();
+                    var data = _dbContext.Query<SP_PURPLAN_DET>().Where(x => x.PURPLAN_ID == item.PURPLAN_ID).ToList();
 
                     var appledetId = data.Select(t => t.SPDET_ID).ToList();
                     await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
