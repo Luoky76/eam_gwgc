@@ -27,29 +27,32 @@
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
-                            { display: "退换单号", name: "_search_EXCHANGE_CODE", dbname: "EXCHANGE_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: { data: me.dataCorp } },
-                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: { data: me.user } },
-                            { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "租借单号", name: "_search_RENT_CODE", dbname: "RENT_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "租借日期", name: "_search_RENT_DATE", dbname: "RENT_DATE", newline: false, upper: true, type: "date",options:{} },
+                            { display: "租借部门", name: "_search_RENT_DEPT", dbname: "RENT_DEPT", newline: false, upper: true, type: "select", options: { data: me.dataCorp } },
+                            { display: "租借人", name: "_search_RENT_USER", dbname: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user } },
+                            { display: "经办部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, upper: true, type: "text",options:{} },
+                            { display: "经办人", name: "_search_USER_NAME", dbname: "USER_NAME", newline: false, upper: true, type: "text",options:{} },
+                            { display: "租借状态", name: "_search_RENT_STATUS", dbname: "RENT_STATUS", newline: false, upper: true, type: "select", options: { data: me.rentstate } }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditing } },
-                            { display: "租借单号", name: "RENT_CODE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "租借日期", name: "RENT_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "租借部门", name: "RENT_DEPT", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp } },
-                            { display: "租借人", name: "RENT_USER", width: 100, type: "select", editor: { type: 'select', data: me.user } },
-                            { display: "经办部门", name: "DEPT_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "经办人", name: "USER_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "租借开始日期", name: "BEGIN_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "租借结束日期", name: "END_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "预计结束日期", name: "EXPEND_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "租借原因", name: "RENT_REASON", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "租借状态", name: "RENT_STATUS", width: 100, type: "select", editor: { type: 'select', data: me.rentstate } },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { data: me.auditing } },
+                            { display: "租借单号", name: "RENT_CODE", width: 100, type: "text" },
+                            { display: "租借日期", name: "RENT_DATE", width: 100, type: "date" },
+                            { display: "租借部门", name: "RENT_DEPT", width: 100, type: "select", editor: { data: me.dataCorp } },
+                            { display: "租借人", name: "RENT_USER", width: 100, type: "select", editor: { data: me.user } },
+                            { display: "经办部门", name: "DEPT_NAME", width: 100, type: "text" },
+                            { display: "经办人", name: "USER_NAME", width: 100, type: "text" },
+                            { display: "租借开始日期", name: "BEGIN_DATE", width: 100, type: "date" },
+                            { display: "租借结束日期", name: "END_DATE", width: 100, type: "date" },
+                            { display: "预计结束日期", name: "EXPEND_DATE", width: 100, type: "date" },
+                            { display: "租借原因", name: "RENT_REASON", width: 100, type: "text" },
+                            { display: "备注", name: "MEMO", width: 100, type: "text" },
+                            { display: "租借状态", name: "RENT_STATUS", width: 100, type: "select", editor: { data: me.rentstate } },
+                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date" },
+                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date" },
                         ]
                     }
                 };

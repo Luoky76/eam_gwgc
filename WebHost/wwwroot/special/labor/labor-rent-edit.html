@@ -52,7 +52,7 @@
                             { display: "制造厂", name: "FACTORY", width: 60, minWidth: 60, type: "text" },
                             { display: "其他编号", name: "OTHER_CODE", width: 100, minWidth: 100, type: "text" },
                             { display: "物资类别名称", name: "TYPE_NAME", width: 120, minWidth: 120, type: "text" },
-                            { display: "备注", name: "MEMO", width: 200, minWidth: 200, type: "text" }
+                            { display: "备注", name: "MEMO", width: 150, minWidth: 150, type: "text" }
                         ]
                     },
                 };
@@ -184,7 +184,7 @@
                 var gridData = me.grid.getData();
                 var gridKeys = [];
                 for (var item of gridData) {
-                    gridKeys.push(item.STD_CODE);
+                    gridKeys.push(item.SP_CODE);
                 }
                 var dataOptions = {
                     values: gridKeys,
@@ -212,7 +212,7 @@
                     callback: function (values, rows) {
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
-                            if (!currentSet.has(item.STORE_ID)) {
+                            if (!currentSet.has(item.SP_CODE)) {
                                 me.grid.addEditRow({
                                     SP_CODE: item.SP_CODE,
                                     SP_NAME: item.SP_NAME,

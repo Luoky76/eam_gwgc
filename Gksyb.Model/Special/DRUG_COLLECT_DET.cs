@@ -33,13 +33,6 @@ namespace Gksyb.Model
         public string COLLECT_ID { get; set; }
 
         /// <summary>
-        /// 需求计划明细ID
-        /// </summary>
-        [Description("需求计划明细ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_DET_ID { get; set; }
-
-        /// <summary>
         /// 物资品种ID
         /// </summary>
         [Description("物资品种ID")]
