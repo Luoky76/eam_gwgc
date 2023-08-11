@@ -21,6 +21,7 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -61,7 +62,7 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'LaborRequest/comboxdata',
+                    url: 'special/Labor/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
                         me.dataCorp = data.corpData;
@@ -81,7 +82,7 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'LaborRequest/list',
+                    url: 'special/Labor/laborrequestList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -157,22 +158,22 @@
             },
             add: function () { //新增
                 var me = this;
-                //$.ligerDialog.open({
-                //    width: me.detailWidth,
-                //    height: me.detailHeight,
-                //    allowClose: true,
-                //    title: '[新增]',
-                //    url: "view-detail.html",
-                //    isHidden: false,
-                //    showMax: false,
-                //    showToggle: false,
-                //    showMin: false,
-                //    isResize: true,
-                //    slide: false,
-                //    onClosed: me.reload.bind(me),
-                //    data: { "sid": null }
-                //});
-                me.grid.addEditRow({}, true);
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 900,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "../labor/labor-request-edit.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null }
+                });
+                //me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
@@ -183,11 +184,11 @@
                 }
                 var sid = selected.SID;
                 $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
+                    width: 1100,
+                    height: 900,
                     allowClose: true,
                     title: '[修改]',
-                    url: "view-detail.html",
+                    url: "../labor/labor-request-edit.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
