@@ -664,7 +664,8 @@ namespace EAM.Special.Services
         }
         private async Task LaborRentBeforUpdate(LABOR_RENT entity)
         {
-            if (entity.AUDITING.Equals("0"))
+            var model = await _dbContext.QueryByKeyAsync<LABOR_RENT>(entity.RENT_ID);
+            if (model.AUDITING.Equals("0"))
             {
                 var sysDate = await _dbContext.GetSysdate();
                 _rentID = entity.RENT_ID;
