@@ -27,32 +27,32 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { disabled: true, data: me.auditing, value: "0" } },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { disabled: true, data: me.auditing } },
                             { display: "租借单号", name: "RENT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "租借状态", name: "RENT_STATUS", newline: false, upper: true, type: "select", options: { disabled: true } },
+                            { display: "租借状态", name: "RENT_STATUS", newline: false, upper: true, type: "select", options: { disabled: true, data: me.rentstate } },
                             { display: "租借提交日期", name: "RENT_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
-                            { display: "租借开始日期", name: "BEGIN_DATE", newline: true, upper: true, type: "date", options: {} },
+                            { display: "租借开始日期", name: "BEGIN_DATE", newline: true, upper: true, type: "date", options: {}, validate: { required: true } },
                             { display: "租借结束日期", name: "END_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
-                            { display: "经办部门", name: "DEPT_NAME", newline: false, upper: true, type: "select", options: { disabled: true } },
+                            { display: "经办部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "经办人", name: "USER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "租借部门", name: "RENT_DEPT", newline: true, upper: true, type: "select", options: { data: me.dataCorp } },
-                            { display: "租借人", name: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user } },
-                            { display: "租借原因", name: "RENT_REASON", newline: true, upper: true, type: "textarea", width: 1250, options: {} },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, type: "textarea", width: 1250, options: {} }
+                            { display: "租借部门", name: "RENT_DEPT", newline: true, upper: true, type: "select", options: { data: me.dataCorp }, validate: { required: true } },
+                            { display: "租借人", name: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user }, validate: { required: true } },
+                            { display: "租借原因", name: "RENT_REASON", newline: true, upper: true, type: "textarea", width: 1100, options: {} },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, type: "textarea", width: 1100, options: {} }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text", editor: { type: "text" } },
-                            { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text", editor: { type: "text" } },
-                            { display: "物资型号", name: "SP_TYPE", minWidth: 100, type: "text", editor: { type: "text" } },
-                            { display: "品牌", name: "BRAND", minWidth: 100, type: "text", editor: { type: "text" } },
-                            { display: "租借数量", name: "RENT_NUM", minWidth: 60, type: "float", editor: { type: "float" } },
-                            { display: "计量单位", name: "UNIT", minWidth: 60, type: "text", editor: { type: "text" } },
-                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text", editor: { type: "text" } },
-                            { display: "其他编号", name: "OTHER_CODE", minWidth: 100, type: "text", editor: { type: "text" } },
-                            { display: "物资类别名称", name: "TYPE_NAME", minWidth: 80, type: "text", editor: { type: "text" } },
-                            { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: "text" } }
+                            { display: "物资编码", name: "SP_CODE", width: 150, minWidth: 150, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", width: 400, minWidth: 400, type: "text" },
+                            { display: "物资型号", name: "SP_TYPE", width: 150, minWidth: 150, type: "text" },
+                            { display: "品牌", name: "BRAND", width: 60, minWidth: 60, type: "text" },
+                            { display: "租借数量", name: "RENT_NUM", width: 60, minWidth: 60, type: "float", editor: { type: "float" }, validate: { required: true } },
+                            { display: "计量单位", name: "UNIT", width: 60, minWidth: 60, type: "text" },
+                            { display: "制造厂", name: "FACTORY", width: 60, minWidth: 60, type: "text" },
+                            { display: "其他编号", name: "OTHER_CODE", width: 100, minWidth: 100, type: "text" },
+                            { display: "物资类别名称", name: "TYPE_NAME", width: 120, minWidth: 120, type: "text" },
+                            { display: "备注", name: "MEMO", width: 200, minWidth: 200, type: "text" }
                         ]
                     },
                 };
@@ -71,6 +71,7 @@
                     success: function (data) {
                         me.auditing = data.Auditing;
                         me.user = data.User;
+                        me.rentstate = data.RentState
                         me.dataCorp = data.Corp;
                     },
                     error: function (message) {
@@ -105,46 +106,137 @@
             },
             save: function () { //保存
                 var me = this;
+                var formEdit = false, gridEdit = false;
                 if ($.isEmptyObject(me.mainform.getChanges())) {
-                    LG.showSuccess('无修改');
-                    return;
+                    formEdit = false;
                 }
+                else formEdit = true;
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
                 }
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        gridEdit = false;
+                    }
+                    else gridEdit = true;
+                }
+                if (!me.grid.validChangeRows()) return false;
                 function handle(data) {
                     return data;
                 }
-                var data = handle(me.mainform.getData());
-                var original = handle(me.mainform.getOrginData());
-                var changeRow = new Object();
-                if (!me.sid) {
-                    changeRow["added"] = [data];
-                }
-                else {
-                    changeRow["updated"] = [data];
-                    changeRow["original"] = [original];
-                }
-                var changeRowDet = me.grid.getChangedRows();
 
-                debugger;
-
-                LG.ajax({
-                    jsToken: true,
-                    url: 'special/labor/LaborRentSave',
-                    loading: '正在保存中...',
-                    data: { request: changeRow, requestdet: changeRowDet },
-                    success: function () {
-                        LG.showSuccess('保存成功', function () {
-                            location.reload(true);
-                        });
-                    },
-                    error: function (message) {
-                        LG.showError(message);
+                if (formEdit || gridEdit) {
+                    var data = handle(me.mainform.getData());
+                    var original = handle(me.mainform.getOrginData());
+                    var changeRow = new Object();
+                    if (!me.sid) {
+                        changeRow["added"] = [data];
                     }
-                });
+                    else {
+                        changeRow["updated"] = [data];
+                        changeRow["original"] = [original];
+                    }
+                    var changeRowDet = me.grid.getChangedRows();
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'special/labor/LaborRentSave',
+                        loading: '正在保存中...',
+                        data: { request: changeRow, requestdet: changeRowDet },
+                        success: function () {
+                            LG.showSuccess('保存成功', function () {
+                                location.reload(true);
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                else { LG.showSuccess('无修改'); }
             },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    for (var i = 0; i < selected.length; i++) {
+                        if (selected[i].AUDITING_APPLY == "1") {
+                            LG.showError("选中数据有部分已提交,无法删除");
+                            return;
+                        }
+                    }
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            //导入库存
+            import: function () {
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.STD_CODE);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'special/labor/LaborStoreList',
+                        rowKey: "STORE_ID",
+                        columns: [
+                            { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text", },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 300, type: "text", },
+                            { display: "规格/型号", name: "SP_SIZE", minWidth: 200, type: "text", },
+                            { display: "库存数量", name: "NUM", minWidth: 100, type: "text" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text" },
+                            { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
+                            { display: "入库日期", name: "IN_DATE", minWidth: 100, type: "date", editor: { format: "yyyy-MM-dd" } },
+                            { display: "入库批次号", name: "STORE_CODE", minWidth: 100, type: "text" },
+                            { display: "类别名称", name: "TYPE_NAME", minWidth: 100, type: "text" },
+                            { display: "来源类型", name: "SRC_TYPE", minWidth: 100, type: "text" }
+                        ]
+                    },
+                    fields: [
+                        { display: "物资编码", name: "SP_CODE", width: 100, type: "text" },
+                        { display: "物资名称", name: "SP_NAME", width: 300, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.STORE_ID)) {
+                                me.grid.addEditRow({
+                                    SP_CODE: item.SP_CODE,
+                                    SP_NAME: item.SP_NAME,
+                                    SP_TYPE: item.SP_TYPE,
+                                    RENT_NUM: 1,
+                                    UNIT: item.UNIT,
+                                    OTHER_CODE: item.OTHER_CODE,
+                                    TYPE_NAME: item.TYPE_NAME,
+                                    MEMO: item.MEMO,
+                                }, true);
+                            }
+                        }
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '选择维保项目清单',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },	
             close: function (skipConfirm) {
                 var me = this;
                 function inner(callback) {
@@ -206,7 +298,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 100,
+                    labelWidth: 120,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -223,6 +315,7 @@
                     autoWidth: true,
                     delayLoad: true,
                     usePager: false,
+                    validate: true,
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: { group: "detlist" },
@@ -255,12 +348,10 @@
                             break;
                         case "import":
                             me.import();
+                            //me.grid.addEditRow({}, true);
                             break;
                         case "delete":
                             me.delete();
-                            break;
-                        case "detadd":
-                            me.grid.addEditRow({}, true);
                             break;
                         default:
                             break;

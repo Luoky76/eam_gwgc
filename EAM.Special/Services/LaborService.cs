@@ -19,7 +19,7 @@ namespace EAM.Special.Services
         private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
 
-        private string _rentID = string.Empty;
+        private string _rentID = string.Empty, errMsg = string.Empty;
 
         public LaborService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
         {
@@ -40,7 +40,8 @@ namespace EAM.Special.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "Auditing", null },
-                    { "User", null }
+                    { "User", null },
+                    { "RentState", null }
                 });
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());
 
@@ -142,13 +143,18 @@ namespace EAM.Special.Services
             };
             return AjaxResult.Success(result);
         }
+        public async Task<GridData> LaborStoreList(GridRequest request)
+        {
+            var result = await _dbContext.Query<SP_STORE>().GetGridData(request);
+            return result;
+        }
         public async Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet)
         {
             //从表保存的主表ID通过公共变量 _rendID 来传递给从表
 
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
-                bool mainSuccess = true, detSuccess = true;
+                bool mainSuccess = false, detSuccess = false;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
                      {
@@ -172,43 +178,47 @@ namespace EAM.Special.Services
                          c.RENT_STATUS
                      },
                      c => a => a.RENT_ID == c.RENT_ID
-                     , LaborRentBeforAdd, LaborRentBeforUpdate, null, false, null, null);
+                     , LaborRentBeforAdd, LaborRentBeforUpdate, LaborRentBeforDelete, false, null, null);
 
-                if (execResult.IsError) mainSuccess = false;  //主表是否保存成功
+                mainSuccess = !execResult.IsError;
+                if (mainSuccess)  //主表是否保存成功
+                {
+                    requestdet = requestdet ?? new SaveRequest<LABOR_RENT_DET>();
 
-                execResult = await _dbContext.SaveEntityAnsyc(requestdet,
-                     c => new
-                     {
-                         c.SP_CODE,
-                         c.SP_DAIMA,
-                         c.SP_NAME,
-                         c.SP_TYPE,
-                         c.BRAND,
-                         c.UNIT,
-                         c.FACTORY,
-                         c.OTHER_CODE,
-                         c.RENT_NUM,
-                         c.TYPE_CODE,
-                         c.TYPE_NAME,
-                         c.MEMO,
-                         c.RENT_DET_ID,
-                         c.RENT_ID,
-                         c.TYPE_ID,
-                         c.SP_ID,
-                         c.STORE_ID,
-                         c.HOUSE_ID
-                     },
-                     c => a => a.RENT_DET_ID == c.RENT_DET_ID
-                     , LaborRentDetBeforAdd, LaborRentDetBeforUpdate, null, false, null, null);
+                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                         c => new
+                         {
+                             c.SP_CODE,
+                             c.SP_DAIMA,
+                             c.SP_NAME,
+                             c.SP_TYPE,
+                             c.BRAND,
+                             c.UNIT,
+                             c.FACTORY,
+                             c.OTHER_CODE,
+                             c.RENT_NUM,
+                             c.TYPE_CODE,
+                             c.TYPE_NAME,
+                             c.MEMO,
+                             c.RENT_DET_ID,
+                             c.RENT_ID,
+                             c.TYPE_ID,
+                             c.SP_ID,
+                             c.STORE_ID,
+                             c.HOUSE_ID
+                         },
+                         c => a => a.RENT_DET_ID == c.RENT_DET_ID
+                         , LaborRentDetBeforAdd, LaborRentDetBeforUpdate, null, false, null, null);
 
-                if (execResult.IsError) detSuccess = false;  //明细表是否保存成功
-
+                    detSuccess = !execResult.IsError;  //明细表是否保存成功
+                }
                 if (mainSuccess && detSuccess)
                     trans.Commit();
                 else
                 {
                     trans.Rollback();
-                    return AjaxResult.Error("保存失败");
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    return AjaxResult.Error(errMsg);
                 }
             }
             return AjaxResult.Success("保存成功");
@@ -216,17 +226,49 @@ namespace EAM.Special.Services
         private async Task LaborRentBeforAdd(LABOR_RENT entity)
         {
             var sysDate = await _dbContext.GetSysdate();
+
+            string rentCode = "LBZJ" + sysDate.Value.ToString("yyyyMM");
+            string sn = "0001";
+            var lastCode = await _dbContext.Query<LABOR_RENT>(x => x.RENT_CODE.Contains(rentCode)).Select(x => Sql.Max(x.RENT_CODE)).FirstOrDefaultAsync();
+            if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
+            else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
+
             entity.RENT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            entity.AUDITING = "0";
+            entity.RENT_CODE = rentCode;
+            entity.USER_ID = _userSession.UserID.ToString();
+            entity.USER_NAME = _userSession.RealName;
+            entity.DEPT_ID = _userSession.Corp.CorpID;
+            entity.DEPT_NAME = _userSession.Corp.CName;
+            entity.RENT_STATUS = "0";
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
         private async Task LaborRentBeforUpdate(LABOR_RENT entity)
         {
-            var sysDate = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = sysDate;
+            if (entity.AUDITING.Equals("0"))
+            {
+                var sysDate = await _dbContext.GetSysdate();
+                _rentID = entity.RENT_ID;
+                entity.MODIFY_USERID = _userSession.UserID.ToString();
+                entity.MODIFYDATE = sysDate;
+            }
+            else
+            {
+                errMsg = "未提交的状态下才能修改";
+                throw new MessageException("未提交的状态下才能修改");
+            }
         }
-
+        private async Task LaborRentBeforDelete(LABOR_RENT entity)
+        {
+            if (entity.AUDITING.Equals("0"))
+                await _dbContext.DeleteAsync<LABOR_RENT_DET>(x => x.RENT_ID.Equals(entity.RENT_ID));
+            else
+            {
+                errMsg = "未提交的状态下才能删除";
+                throw new MessageException("未提交的状态下才能删除");
+            }
+        }
         private async Task LaborRentDetBeforAdd(LABOR_RENT_DET entity)
         {
             var sysDate = await _dbContext.GetSysdate();

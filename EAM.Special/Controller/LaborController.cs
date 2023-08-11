@@ -56,6 +56,11 @@ namespace EAM.Special.Controller
             return await _service.LaborRentGet(rentId);
         }
         [HttpPost]
+        public async Task<AjaxResult> LaborStoreList(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.LaborStoreList(request));
+        }
+        [HttpPost]
         public async Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet)
         {
             return await _service.LaborRentSave(request, requestdet);
