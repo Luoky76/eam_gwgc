@@ -74,10 +74,10 @@
                         columns: [
                             { display: "物资编号", name: "SP_CODE", minWidth: 200, type: "text" },
                             { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
-                            { display: "物资型号", name: "SP_SIZE", minWidth: 200, type: "text" },
                             { display: "品牌、厂家", name: "PRODUCE", minWidth: 200, type: "text" },
                             { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", minWidth: 200, type: "text" },
                             //隐藏
                             { display: "主键", name: "COLLECT_DET_ID", type: "text", hide: true },
                             { display: "物资请购单ID", name: "COLLECT_ID", type: "text", hide: true },
@@ -91,14 +91,14 @@
                     requestGrid: {
                         columns: [
                             { display: "需求计划单号", name: "REQUEST_CODE", minWidth: 100, type: "text" },
-                            { display: "物资编号", name: "SP_CODE", minWidth: 200, type: "text" },
-                            { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
-                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 200, type: "text" },
+                            { display: "物资编号", name: "SP_CODE", minWidth: 100, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 100, type: "text" },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text" },
                             { display: "申请数量", name: "REQUEST_NUM", minWidth: 100, type: "float" },
-                            { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float", validate: { required: true }, editor: { type: 'float' } },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
-                            { display: "物资型号", name: "SP_SIZE", minWidth: 200, type: "text" },
-                            { display: "采购金额", name: "COLLECT_MONEY", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "物资型号", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            { display: "采购金额", name: "COLLECT_MONEY", minWidth: 100, type: "float", validate: { required: true }, editor: { type: 'float' } },
                             { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
                             { display: "申请人", name: "REQUEST_USER", minWidth: 100, type: "text" },
                             { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
