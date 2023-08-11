@@ -64,7 +64,8 @@
             pmType: [],
             deviceInfo: [],
             maintDept: [],
-            workState: [],
+            storeSou: [],
+            workState: [], 
             btime: null,
             etime: null,
             maintCycle: [],
@@ -149,10 +150,10 @@
                             { display: "标准编号", name: "STD_CODE", minWidth: 100, type: "text", },
                             { display: "保养项目", name: "OBJECT_NAME", minWidth: 150, type: "text", },
                             { display: "保养内容", name: "CONTENT", minWidth: 250, type: "text", },
-                            { display: "保养类型", name: "STD_LEVEL", minWidth: 100, type: "select", },
-                            { display: "作业时设备状态", name: "WORK_STATE", minWidth: 140, type: "select", },
-                            { display: "保养周期", name: "MAINT_CYCLE", minWidth: 100, type: "select", },
-                            { display: "计划保养月份", name: "PLAN_MONTH", minWidth: 100, type: "text", type: "select", },
+                            { display: "保养类型", name: "STD_LEVEL", minWidth: 100, type: "select", format: { data: me.stdLevel } },
+                            { display: "作业时设备状态", name: "WORK_STATE", minWidth: 140, type: "select", format: { data: me.workState } },
+                            { display: "保养周期", name: "MAINT_CYCLE", minWidth: 100, type: "select", format: { data: me.maintCycle } },
+                            { display: "计划保养月份", name: "PLAN_MONTH", minWidth: 100, type: "select", format: { data: me.planMonth } },
                             { display: "上次完成时间", name: "LAST_COMP_DATE", minWidth: 100, type: "date", },
                             { display: "下次保养截止日期", name: "NEXT_ENDDATE", minWidth: 100, type: "date", },
                             { display: "执行岗位", name: "EXE_USER", minWidth: 100, type: "text", },
@@ -167,19 +168,23 @@
                     },
                     grid2: {
                         columns: [
-                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "text", },
+                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "select", format: { data: me.storeSou }  },
                             { display: "备件品种编码", name: "SP_CODE", minWidth: 100, type: "text", },
                             { display: "备件品种名称", name: "SP_NAME", minWidth: 100, type: "text", },
                             { display: "备件型号", name: "SP_TYPE", minWidth: 100, type: "text", },
 
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text", },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
-                            { display: "库存数量", name: "CUR_NUM", minWidth: 100, type: "float", },
-                            { display: "实际消耗数量", name: "REAL_OUT_NUM", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
+                            { display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", },
+                            { display: "实际消耗数量", name: "FACT_NUM", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
-                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
+                            { display: "含税金额(元)", name: "TAX_MONEY", minWidth: 100, type: "float" },
+                            { display: "不含税金额(元)", name: "UNTAX_MONEY", minWidth: 100, type: "float" },
                             { display: "主键", name: "FAULT_SP_ID", minWidth: 100, hide: true },
                             { display: "外键", name: "EXE_ID", minWidth: 100, hide: true },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "外键", name: "DONEITEM_ID", width: 100, hide: true },
+
 
                         ]
                     },
@@ -275,7 +280,7 @@
                             { display: "作业耗油/吨", name: "WORK_OIL", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
                             { display: "主键", name: "WORK_ID", minWidth: 100, type: "text", hide: true },
-                            { display: "实施单ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true }
+                            { display: "实施单ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },
 
                         ]
                     },
@@ -296,7 +301,7 @@
                         me.bySource = data.bySource;
                         me.workState = data.workState;
                         me.maintCycle = data.maintCycle;
-
+                        me.storeSou = data.storeSou;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -476,7 +481,7 @@
                         me.grid3.options.parms = { exeId: me.EXE_ID, doneitemId: me.DONEITEM_ID }
                         me.grid2.loadData();
                         me.grid3.loadData();
-                    }, 
+                    },
                     onSuccess: function (data, g) {
                         //me.iframeloading.hide();
                     }
@@ -668,7 +673,7 @@
                         case "delete":
                             me.deletesp();
                             break;
-                        case "savesp":
+                        case "save":
                             me.savesp();
                             break;
                         case "Excel":
@@ -688,7 +693,86 @@
                 me.grid2.toolbarManager.options.group = 'detail1';
                 LG.loadToolbar(me.grid2, me.toolbarBtnItemClick2);
             },
+            //新增
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    EXE_ID: me.EXE_ID,
+                    DONEITEM_ID: me.DONEITEM_ID,
+                });
+                me.grid2.addEditRow(row, true);
+            },
+            //导入
+            import: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected == null) {
+                    LG.tip('先选择保养实施明细的一条数据!');
+                }
+                else {
+                     
+                    var gridData = me.grid2.getData();
+                    var gridKeys = [];
+                    for (var item of gridData) {
+                        gridKeys.push(item.SP_CODE);
+                    }
+                    var dataOptions = {
+                        values: gridKeys,
+                        options: {
+                            url: 'Device/PmInfo/ImportSpList',
+                            rowKey: "SP_CODE",
+                            columns: [
+                                { display: "来源类型", name: "SRC_TYPE", minWidth: 100, type: "select", format: { data: me.storeSou } },
+                                { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
+                                { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text" },
+                                { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text" },
+                                { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                                { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
+                                { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text" },
 
+                                { display: "库存数量", name: "NUM", minWidth: 100, type: "float" },
+                                { display: "含税金额(元)", name: "TAX_MONEY", minWidth: 100, type: "float" },
+                                { display: "不含税金额(元)", name: "UNTAX_MONEY", minWidth: 100, type: "float" },
+
+                            ]
+                        },
+                        fields: [
+                            { display: "物料编码", name: "SP_CODE", width: 100, type: "text" },
+                            { display: "物料名称", name: "SP_NAME", width: 100, type: "text" },
+                        ],
+                        callback: function (values, rows) {
+                            var currentSet = new Set(gridKeys);
+                            for (let item of rows) {
+                                if (!currentSet.has(item.SP_CODE)) {
+                                    me.addGrid({
+                                        SP_SOURCE: item.SRC_TYPE,
+                                        SP_CODE: item.SP_CODE,
+                                        SP_NAME: item.SP_NAME,
+                                        SP_TYPE: item.SP_SIZE,
+                                        HOUSE_NAME: item.HOUSE_NAME,
+                                        STOCK_NAME: item.STOCK_NAME,
+                                        STORE_NUM: item.NUM,
+                                        UNIT: item.UNIT,
+                                        TAX_MONEY: item.TAX_MONEY,
+                                        NOTAX_MONEY: item.NOTAX_MONEY,
+                                        MEMO: item.MEMO,
+                                    });
+                                }
+                            }
+                            me.savesp();
+                        }
+                    }
+                    $.ligerDialog.open({
+                        width: 1000,
+                        height: 400,
+                        title: '选择物料',
+                        url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                        isResize: true,
+                        slide: false,
+                        data: dataOptions
+                    });
+                }
+            },
             //删除
             deletesp: function () { //删除
                 var me = this;
@@ -725,7 +809,7 @@
                         data: changeRow,
                         success: function () {
                             LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
+                            me.grid2.isDataChanged = false;
                             me.reloadSp();
                         },
                         error: function (message) {
@@ -1105,7 +1189,7 @@
                     if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
                     if (me.dialogData.view != undefined) {
                         me.isView = me.dialogData.view;
-                    } 
+                    }
                 }
 
                 //加在基础信息
@@ -1119,13 +1203,12 @@
                 me.setGrid();
                 me.setGrid2();
                 me.setGrid3();
-                debugger
                 if (me.dialogData.qry == undefined) {
                     me.setGrid4();
                 }
                 else {
-                    $("#workgird").hide();  
-                    $("#work").hide();  
+                    $("#workgird").hide();
+                    $("#work").hide();
                 }
                 me.reloadWork();
                 me.reloadPep();
@@ -1139,7 +1222,7 @@
                     me.grid2.setOptions(commonGridOptions);
                     me.grid3.setOptions(commonGridOptions);
                     me.grid4.setOptions(commonGridOptions);
-                } 
+                }
                 return me;
             }
         };

@@ -25,7 +25,7 @@
         'use strict';
         var business = {
             rootPath:'Material/BaseSptype/',
-            MenuNo: 'BaseSptype',
+            MenuNo: getQueryStringByName("MenuNo"),
             setConfig: function () {
                 var me = this;
                 me.config = {

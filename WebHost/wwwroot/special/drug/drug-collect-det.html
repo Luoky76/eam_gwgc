@@ -57,8 +57,12 @@
                                 }
                             },
                             { display: "采购部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
-                            { display: "采购方式", name: "COLLECT_METHOD", width: 300, type: "text", validate: { required: true }, options: {} },
-                            { display: "物资分类", name: "COLLECT_SPTYPE", width: 300, type: "text", options: { disabled: true } },
+                            {
+                                display: "采购方式", name: "COLLECT_METHOD", width: 300, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.drugCollectMethod
+                                }
+                            },
                             { display: "总金额", name: "COLLECT_MONEY", width: 300, type: "float", options: { disabled: true } },
                             { display: "备注", name: "MEMO", newline: true, width: 1146, type: "textarea", options: {} },
                             //隐藏
@@ -68,33 +72,35 @@
                     },
                     collectGrid: {
                         columns: [
-                            { display: "物资编码", name: "SP_CODE", minWidth: 200, type: "text" },
+                            { display: "物资编号", name: "SP_CODE", minWidth: 200, type: "text" },
                             { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", minWidth: 200, type: "text" },
-                            { display: "制造厂", name: "FACTORY", minWidth: 200, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", minWidth: 200, type: "text" },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 200, type: "text" },
                             { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
                             //隐藏
                             { display: "主键", name: "COLLECT_DET_ID", type: "text", hide: true },
                             { display: "物资请购单ID", name: "COLLECT_ID", type: "text", hide: true },
-                            { display: "物资品种ID", name: "SP_ID", type: "text", hide: true },
+                            { display: "物资ID", name: "SP_ID", type: "text", hide: true },
+                            { display: "物资类别ID", name: "TYPE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别", name: "TYPE_NAME", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别编码", name: "TYPE_CODE", minWidth: 100, type: "text", hide: true },
                             //{ display: "需求计划明细ID", name: "REQUEST_DET_ID", type: "text", hide: true }
                         ]
                     },
                     requestGrid: {
                         columns: [
                             { display: "需求计划单号", name: "REQUEST_CODE", minWidth: 100, type: "text" },
-                            { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text" },
-                            { display: "物资名称", name: "SP_NAME", minWidth: 100, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", minWidth: 100, type: "text" },
-                            { display: "品牌", name: "BRAND", minWidth: 100, type: "text" },
+                            { display: "物资编号", name: "SP_CODE", minWidth: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 200, type: "text" },
                             { display: "申请数量", name: "REQUEST_NUM", minWidth: 100, type: "float" },
                             { display: "采购数量", name: "COLLECT_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", minWidth: 200, type: "text" },
                             { display: "采购金额", name: "COLLECT_MONEY", minWidth: 100, type: "float", editor: { type: 'float' } },
                             { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
                             { display: "申请人", name: "REQUEST_USER", minWidth: 100, type: "text" },
-                            { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
                             //隐藏
                             { display: "主键", name: "COLLECT_REQUEST_ID", minWidth: 100, type: "text", hide: true },
@@ -102,6 +108,9 @@
                             { display: "请购明细ID", name: "COLLECT_DET_ID", minWidth: 100, type: "text", hide: true },
                             { display: "需求计划明细ID", name: "REQUEST_DET_ID", minWidth: 100, type: "text", hide: true },
                             { display: "物资ID", name: "SP_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别ID", name: "TYPE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别", name: "TYPE_NAME", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别编码", name: "TYPE_CODE", minWidth: 100, type: "text", hide: true },
                             { display: "申请部门ID", name: "DEPT_ID", minWidth: 100, type: "text", hide: true },
                             { display: "申请人ID", name: "REQUEST_USERID", minWidth: 100, type: "text", hide: true },
                             { display: "含税单价(元)", name: "TAX_PRICE", minWidth: 100, type: "float", hide: true },
@@ -115,6 +124,7 @@
             },
             auditing: [],
             user: [],
+            drugCollectMethod: [],
             dialog: null,
             dialogData: null,
             callback: null,
@@ -141,11 +151,12 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Special/DrugCollect/ComboxData',
+                    url: 'Special/DrugCollectDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.auditing = data.Auditing;
                         me.user = data.User;
+                        me.drugCollectMethod = data.DrugCollectMethod;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -450,10 +461,10 @@
                         columns: [
                             { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
                             { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
-                            { display: "制造厂", name: "SP_FACTORY", width: 200, type: "text" },
+                            { display: "制造厂", name: "PRODUCE", width: 200, type: "text" },
                             { display: "需求总量", name: "SUM_REQUEST_NUM", width: 200, type: "float" },
-                            { display: "计量单位", name: "UNIT", width: 200, type: "text" }
+                            { display: "计量单位", name: "UNIT", width: 200, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", width: 200, type: "text" },
                         ]
                     },
                     fields: [
@@ -462,15 +473,8 @@
                     callback: function (values, rows) {
                         me.deleteAll();
                         for (let item of rows) {
-                            me.addCollect({
-                                SP_ID: item.SP_ID,
-                                SP_CODE: item.SP_CODE,
-                                SP_NAME: item.SP_NAME,
-                                SP_TYPE: item.SP_TYPE,
-                                SP_FACTORY: item.SP_FACTORY,
-                                COLLECT_NUM: item.SUM_REQUEST_NUM,
-                                UNIT: item.UNIT
-                            });
+                            item.COLLECT_NUM = item.SUM_REQUEST_NUM;
+                            me.addCollect(item);
                         }
                         me.saveCollect(false);
                         //添加采购明细对应的需求明细

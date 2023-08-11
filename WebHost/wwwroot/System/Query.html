@@ -67,7 +67,7 @@
 
         $.extend($.ligerDefaults.Grid, {
             delayLoad: true,
-            AutoWidth: true,
+            autoWidth: true,
             checkbox: false,
             usePager: false,
             pageSize: 100,
@@ -97,7 +97,7 @@
                 var column = config.Grid.columns[i];
                 if (column.display.indexOf("隐藏") >= 0) {
                     config.Grid.columns.splice(i, 1);
-                    return;
+                    continue;
                 }
                 if (config.Grid.columnsAppend) {
                     for (var j = config.Grid.columnsAppend.length - 1; j >= 0; j--) {
@@ -116,7 +116,7 @@
         var buttons = [{ text: '查询', newline: false, width: 60, click: function () { LG.commonSearch($("#formsearch"), grid, config.Form.limit); } }];
 
         $.extend($.ligerDefaults.Form, {
-            EnterMoveNextControl: true,
+            enterMoveNextControl: true,
             validate: true,
             SearchClick: false,
             buttons: buttons,

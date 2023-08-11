@@ -129,13 +129,6 @@ namespace Gksyb.Model
         public string FORM_ID { get; set; }
 
         /// <summary>
-        /// 需求分类
-        /// </summary>
-        [Description("需求分类")]
-        [Column(DbType = DbType.AnsiString)]
-        public string REQUEST_SPTYPE { get; set; }
-
-        /// <summary>
         /// 来源单号
         /// </summary>
         [Description("来源单号")]

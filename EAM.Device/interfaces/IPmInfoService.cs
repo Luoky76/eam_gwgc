@@ -14,7 +14,6 @@ namespace EAM.Device.interfaces
         /// <returns></returns>
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
 
-
         /// <summary>
         /// 导入功能
         /// </summary>
@@ -56,6 +55,12 @@ namespace EAM.Device.interfaces
         /// </summary>
         /// <returns></returns>
         public Task<AjaxResult> ManagePlandet(SaveRequest<PM_PLAN_DONEITEM> request);
+
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> ImportSpList(GridRequest request);
 
         /// <summary>
         /// 获取维保人员明细

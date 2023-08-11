@@ -39,5 +39,18 @@ namespace EAM.Special.Interfaces
         #endregion
 
 
+        #region 劳保用品租借
+
+        Task<GridData> LaborRentList(GridRequest request);
+
+        Task<GridData> GetLaborRentDetList(string rentId);
+
+        Task<AjaxResult> LaborRentGet(string rentId);
+
+        Task<GridData> LaborStoreList(GridRequest request);
+
+        Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet);
+
+        #endregion
     }
 }

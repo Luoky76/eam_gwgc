@@ -12,7 +12,7 @@ using System.Data;
 namespace Gksyb.Model
 {
     /// <summary>
-    /// DRUG_LIMIT
+    /// 实体类DRUG_LIMIT
     /// </summary>
     [Table("DRUG_LIMIT")]
     public class DRUG_LIMIT
@@ -33,13 +33,6 @@ namespace Gksyb.Model
         public string SP_ID { get; set; }
 
         /// <summary>
-        /// 物资编号
-        /// </summary>
-        [Description("物资编号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SP_CODE { get; set; }
-
-        /// <summary>
         /// 物资名称
         /// </summary>
         [Description("物资名称")]
@@ -47,11 +40,46 @@ namespace Gksyb.Model
         public string SP_NAME { get; set; }
 
         /// <summary>
+        /// 物资编号
+        /// </summary>
+        [Description("物资编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SP_CODE { get; set; }
+
+        /// <summary>
         /// 物资型号
         /// </summary>
         [Description("物资型号")]
         [Column(DbType = DbType.AnsiString)]
-        public string SP_TYPE { get; set; }
+        public string SP_SIZE { get; set; }
+
+        /// <summary>
+        /// 物资类别ID
+        /// </summary>
+        [Description("物资类别ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_ID { get; set; }
+
+        /// <summary>
+        /// 物资类别
+        /// </summary>
+        [Description("物资类别")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_NAME { get; set; }
+
+        /// <summary>
+        /// 物资类别编码
+        /// </summary>
+        [Description("物资类别编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_CODE { get; set; }
+
+        /// <summary>
+        /// 品牌、厂家
+        /// </summary>
+        [Description("品牌、厂家")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PRODUCE { get; set; }
 
         /// <summary>
         /// 计量单位

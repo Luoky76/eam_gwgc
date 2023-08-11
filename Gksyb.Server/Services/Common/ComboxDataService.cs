@@ -565,6 +565,22 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 药品采购方式下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> DrugCollectMethod(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "drugCollectMethod")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 处理方式
         /// </summary>
         /// <param name="predicate"></param>
@@ -806,7 +822,36 @@ namespace Gksyb.Server.Services.Common
                 .Distinct()
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// 申请类型
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpapplyType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "spapply_type").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
         
+        /// <summary>
+        /// 劳保租借状态
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> RentState(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "laborRentState")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
         /// <summary>
         /// 初始化
         /// </summary>

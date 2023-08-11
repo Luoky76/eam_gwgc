@@ -622,7 +622,7 @@
         },
         //初始化微信服务JSSDK
         initWX: function (callback) {
-            function f_inner(model) {
+            var inner = function(model) {
                 wx.config({
                     debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
                     appId: model.AppId, // 必填，公众号的唯一标识
@@ -674,7 +674,7 @@
             var signUrl = (location.href || "");
             var index = signUrl.indexOf("#");
             if (index >= 0) {
-                signUrl = signUrl.substr(0, index);
+                signUrl = signUrl.substring(0, index);
             }
             if (app.WXSignUrl !== signUrl) {
                 Framework7.ajax({
@@ -684,11 +684,11 @@
                     success: function (data) {
                         app.WXSignUrl = signUrl;
                         app.WXJSSDK = data;
-                        f_inner(app.WXJSSDK);
+                        inner(app.WXJSSDK);
                     }
                 });
             } else {
-                f_inner(app.WXJSSDK);
+                inner(app.WXJSSDK);
             }
         },
         //初始化主页
@@ -753,6 +753,10 @@
                     var name = 'app.methods["router_' + (page.router.currentRoute.name || page.router.currentRoute.path.replace(/\//g, '')) + '"]';
                     script = ";try{" + name + " = function(page){" + script + "};" + name + "(app._params.page);" + name + " = null;delete " + name + ";}catch (e) {console.log(JSON.stringify(e));}";
                     window.eval(script);
+                    //scriptEl = document.createElement('script');
+                    //scriptEl.innerHTML = script;
+                    //$('head').append(scriptEl);
+                    //$(scriptEl).remove();
                 }
             } else {
                 document.title = page.route.route.title || $el.find("title").html() || document.title;

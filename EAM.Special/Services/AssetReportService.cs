@@ -439,36 +439,13 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task<string> CreateCode(string headCode)
         {
-            //示例HEADCODE2023072100001
+            //示例HEADCODE2023070001
             var sysdate = await _dbContext.GetSysdate();
-            string dateCode = sysdate.Value.ToString("yyyyMMdd");
-            string newCode = headCode + dateCode + "00001";
-
-            //查看编码是否已存在
-            var list1 = await _dbContext.Query<ASSET_REPORT>()
-                .Select(a => a.APPLY_CODE)
-                .Where(a => a == newCode)
-                .ToListAsync();
-
-            if (list1.Any())
-            {
-                var list2 = await _dbContext.Query<ASSET_REPORT>()
-                .Select(a => new
-                {
-                    MAX_APPLY_CODE = Sql.Max(a.APPLY_CODE)
-                })
-                .ToListAsync();
-                if (list2.Any())
-                {
-                    string lastCode = list2[0].MAX_APPLY_CODE;
-                    lastCode = lastCode.Substring(headCode.Length);
-                    long cnt = long.Parse(lastCode);
-                    ++cnt;
-                    lastCode = cnt.ToString();
-                    newCode = headCode + lastCode;
-                }
-            }
-            return newCode;
+            string dateCode = sysdate.Value.ToString("yyyyMM");
+            string newCode = headCode + dateCode + "0000";
+            string model = await _dbContext.Query<ASSET_REPORT>(a => a.APPLY_CODE.Contains(headCode))
+                .Select(a => Sql.Max(a.APPLY_CODE) ?? newCode).FirstOrDefaultAsync();
+            return headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
         }
 
         /// <summary>

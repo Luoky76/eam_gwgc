@@ -37,24 +37,16 @@ namespace EAM.Special.Services
                 c.COLLECT_ID,
                 c.SP_ID,
                 c.REQUEST_DET_ID,
-                c.SP_CODE,
                 c.SP_NAME,
-                c.SP_TYPE,
-                c.SP_DAIMA,
-                c.SP_TUHAO,
-                c.SP_ENGNAME,
-                c.OTHER_CODE,
-                c.BRAND,
-                c.UNIT,
-                c.FACTORY,
-                c.COLLECT_NUM,
-                c.STORE_NUM,
-                c.MEMO,
-                c.ARRIVE_NUM,
-                c.IN_NUM,
-                c.TYPE_CODE,
-                c.TYPE_NAME,
+                c.SP_CODE,
+                c.SP_SIZE,
                 c.TYPE_ID,
+                c.TYPE_NAME,
+                c.TYPE_CODE,
+                c.PRODUCE,
+                c.UNIT,
+                c.COLLECT_NUM,
+                c.MEMO,
                 c.CREATE_USERID,
                 c.CREATEDATE,
                 c.MODIFY_USERID,
@@ -93,24 +85,33 @@ namespace EAM.Special.Services
                     b.SP_ID,
                     b.SP_NAME,
                     b.SP_CODE,
-                    b.SP_TYPE,
-                    b.FACTORY,
+                    b.SP_SIZE,
+                    b.TYPE_ID,
+                    b.TYPE_NAME,
+                    b.TYPE_CODE,
+                    b.PRODUCE,
                     b.UNIT,
                     SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
                 })
                 .GroupBy(c => c.SP_ID)
                 .AndBy(c => c.SP_NAME)
                 .AndBy(c => c.SP_CODE)
-                .AndBy(c => c.SP_TYPE)
-                .AndBy(c => c.FACTORY)
+                .AndBy(c => c.SP_SIZE)
+                .AndBy(c => c.TYPE_ID)
+                .AndBy(c => c.TYPE_NAME)
+                .AndBy(c => c.TYPE_CODE)
+                .AndBy(c => c.PRODUCE)
                 .AndBy(c => c.UNIT)
                 .Select(c => new
                 {
                     c.SP_ID,
                     c.SP_NAME,
                     c.SP_CODE,
-                    c.SP_TYPE,
-                    c.FACTORY,
+                    c.SP_SIZE,
+                    c.TYPE_ID,
+                    c.TYPE_NAME,
+                    c.TYPE_CODE,
+                    c.PRODUCE,
                     c.UNIT,
                     c.SUM_REQUEST_NUM
                 });
@@ -121,10 +122,13 @@ namespace EAM.Special.Services
                     a.SP_ID,
                     a.SP_NAME,
                     a.SP_CODE,
-                    a.SP_TYPE,
-                    a.FACTORY,
+                    a.SP_SIZE,
+                    a.TYPE_ID,
+                    a.TYPE_NAME,
+                    a.TYPE_CODE,
+                    a.PRODUCE,
                     a.UNIT,
-                    SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - b.SUM_COLLECT_NUM
+                    SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - (b.SUM_COLLECT_NUM ?? 0)
                 })
                 .Where(c => c.SUM_REQUEST_NUM > 0)
                 .GetGridData(request);
@@ -158,24 +162,16 @@ namespace EAM.Special.Services
                     c.COLLECT_ID,
                     c.SP_ID,
                     c.REQUEST_DET_ID,
-                    c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
-                    c.SP_DAIMA,
-                    c.SP_TUHAO,
-                    c.SP_ENGNAME,
-                    c.OTHER_CODE,
-                    c.BRAND,
-                    c.UNIT,
-                    c.FACTORY,
-                    c.COLLECT_NUM,
-                    c.STORE_NUM,
-                    c.MEMO,
-                    c.ARRIVE_NUM,
-                    c.IN_NUM,
-                    c.TYPE_CODE,
-                    c.TYPE_NAME,
+                    c.SP_CODE,
+                    c.SP_SIZE,
                     c.TYPE_ID,
+                    c.TYPE_NAME,
+                    c.TYPE_CODE,
+                    c.PRODUCE,
+                    c.UNIT,
+                    c.COLLECT_NUM,
+                    c.MEMO,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
@@ -208,24 +204,16 @@ namespace EAM.Special.Services
                     c.COLLECT_ID,
                     c.SP_ID,
                     c.REQUEST_DET_ID,
-                    c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
-                    c.SP_DAIMA,
-                    c.SP_TUHAO,
-                    c.SP_ENGNAME,
-                    c.OTHER_CODE,
-                    c.BRAND,
-                    c.UNIT,
-                    c.FACTORY,
-                    c.COLLECT_NUM,
-                    c.STORE_NUM,
-                    c.MEMO,
-                    c.ARRIVE_NUM,
-                    c.IN_NUM,
-                    c.TYPE_CODE,
-                    c.TYPE_NAME,
+                    c.SP_CODE,
+                    c.SP_SIZE,
                     c.TYPE_ID,
+                    c.TYPE_NAME,
+                    c.TYPE_CODE,
+                    c.PRODUCE,
+                    c.UNIT,
+                    c.COLLECT_NUM,
+                    c.MEMO,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
@@ -286,7 +274,9 @@ namespace EAM.Special.Services
             {
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-                    { "User", null }
+                    { "Auditing", null },
+                    { "User", null },
+                    { "DrugCollectMethod", null },
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);

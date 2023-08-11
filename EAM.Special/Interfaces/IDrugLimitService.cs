@@ -22,6 +22,13 @@ namespace EAM.Special.Interfaces
         public Task<GridData> ExtendListAsync(string requestId);
 
         /// <summary>
+        /// 药品导入列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public Task<GridData> DrugListAsync(GridRequest request);
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>

@@ -47,7 +47,6 @@ namespace EAM.Material.Services
         }
         public async Task<GridData> OrderListAsync(GridRequest request)
         {
-            // .LeftJoin<SP_ORDER_DETAIL>((a,b) =>a.ORDER_ID == b.ORDER_ID)
             return await _dbContext.Query<SP_ORDER_DETAIL>()
                 .Select(b => new
                 {
@@ -63,9 +62,9 @@ namespace EAM.Material.Services
                 .Select(b => new
                 {
                     b.ORDER_ID,
-                    INVOICE_NUM = Sql.Sum(b.INVOICE_NUM),
-                    RECEIVE_COUNT = Sql.Sum(b.RECEIVE_COUNT),
-                    COUNT = Sql.Sum(b.COUNT)
+                    INVOICE_NUM = Sql.Sum(b.INVOICE_NUM) ?? 0,
+                    RECEIVE_COUNT = Sql.Sum(b.RECEIVE_COUNT) ?? 0,
+                    COUNT = Sql.Sum(b.COUNT) ?? 0
                 })
                 .RightJoin<SP_ORDER>((b, c) => c.ORDER_ID == b.ORDER_ID)
                 .Select((b, c) => new SpOrderRes

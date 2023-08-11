@@ -167,7 +167,13 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.COLLECT_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.COLLECT_CODE = $"QG{dt.Value.ToString("yyyyMMddHHmmss")}";
+            //单号
+            string type = $"QG{dt.Value.ToString("yyyyMM")}";
+            string def = type + "0000";
+            var model = await _dbContext.Query<SP_COLLECT>(x => x.COLLECT_CODE.Contains(type)).Select(x => Sql.Max(x.COLLECT_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+
+            entity.COLLECT_CODE = type + index.ToString("D4");
 
             entity.COLLECT_DATE = dt;
             entity.COLLECT_USERID = _userSession.UserID.ToString();
@@ -219,15 +225,20 @@ namespace EAM.Material.Services
                 DateTime? dt = await _dbContext.GetSysdate();
                 var importDetail = new List<SP_ORDER_DETAIL>();
                 var importList = new List<SP_ORDER>();
-
+                string type = $"DD{dt.Value.ToString("yyyyMM")}";
+                string def = type + "0000";
+                var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
+                var i = 1;
+ 
                 foreach (var item in list)
                 {
+                    var index = model.SubStr(8, 4).CastTo<int>() + i;
                     //形成物资询价方案
                     var temp = new SP_ORDER
                     {
                         PURPLAN_ID = item.COLLECT_ID,
                         ORDER_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        ORDER_CODE = $"ORD{dt.Value.ToString("yyyyMMddHHmmss")}",
+                        ORDER_CODE = type + index.ToString("D4"),
                         ORDER_DATE = dt,
                         ORDER_MONEY = item.COLLECT_PRICE,
                         BUY_USERID = item.COLLECT_USERID,
@@ -241,10 +252,11 @@ namespace EAM.Material.Services
                         AUDITING = "0",
                         IS_STOP = "0"
                     };
+                    i++;
                     importList.Add(temp);
                     await Task.CompletedTask;
 
-                    var data = _dbContext.Query<SP_COLLECT_REQUEST>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
+                    var data = _dbContext.Query<SP_COLLECT_REQUEST>().Where(x => x.COLLECT_ID == item.COLLECT_ID).ToList();
                     foreach (var det in data)
                     {
                         var apply = _dbContext.Query<SP_APPLY>()

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Collections;
 using System.Reflection;
 
@@ -56,6 +57,7 @@ namespace Gksyb.Common.Mvc.ModelBinding
             foreach (var param in _context.ActionDescriptor.Parameters.Cast<ControllerParameterDescriptor>())
             {
                 if (typeof(IFormFile).IsAssignableFrom(param.ParameterType)) continue;
+                if (param.BindingInfo != null && param.BindingInfo.BindingSource == BindingSource.Services) continue;
                 if (!_context.ActionArguments.TryGetValue(param.Name, out object value) || value == null) continue;//空值不处理
                 var paramHandles = GetAttributes(param.ParameterInfo, methodHandles);
                 isHandle = HandleValue(param.ParameterType, paramHandles, () => value, newValue =>

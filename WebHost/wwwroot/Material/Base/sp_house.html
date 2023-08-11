@@ -22,8 +22,6 @@
                 <form action="" id="formsearch" class="l-form">
                 </form>
             </div>
-            <div id="iframeloading" class='l-loading'>
-            </div>
             <form id="mainform">
                 <div id="maingrid" style="margin: 2px;"></div>
             </form>
@@ -32,10 +30,8 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
-            MenuNo: 'BaseSptype',
+            MenuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
-            iframeloading: $("#iframeloading"),
             tree: null,
             currentNode: null,
             deptData: [],
@@ -161,9 +157,6 @@
                                 break;
                         }
                     },
-                    onSuccess: function (data, g) {
-                        me.iframeloading.hide();
-                    },
                     rowAttrRender: function (rowdata, rowid) {
                         if (rowdata && rowdata.IS_NOVALID && rowdata.IS_NOVALID == "1") {
                             return "style='color:red;'";
@@ -196,13 +189,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.MenuNo,
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.MenuNo,
                                 modal: true
                             });
                             break;
@@ -377,11 +370,10 @@
                             var text = $this.text();
                             $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
                         });
-                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.TYPE_ID);
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.HOUSE_CODE);
                         else me.tree.selectNode(rootValue);
                     },
                     onSelect: function (node) {
-                        me.iframeloading.show();
                         var nodeData = node.data;
                         me.currentNode = node;
                         var where = {};
@@ -431,7 +423,6 @@
             init: function () {
                 var me = this;
                 $("#layout").ligerLayout({ leftWidth: 240 });
-                me.iframeloading.show();
                 me.loadComboxData();
                 me.setConfig();
                 me.setGrid();

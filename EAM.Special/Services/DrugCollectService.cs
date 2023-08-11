@@ -150,37 +150,14 @@ namespace EAM.Special.Services
             //自动添加请购单号
             if (entity.COLLECT_CODE.IsNullOrEmpty())
             {
-                //示例DC2023072100001
-                var sysdate = await _dbContext.GetSysdate();
-                string dateCode = sysdate.Value.ToString("yyyyMMdd");
+                //示例DC2023070001
                 string headCode = "DC";
-                string newCode = headCode + dateCode + "00001";
-
-                //查看编码是否已存在
-                var list1 = await _dbContext.Query<DRUG_COLLECT>()
-                    .Select(a => a.COLLECT_CODE)
-                    .Where(a => a == newCode)
-                    .ToListAsync();
-
-                if (list1.Any())
-                {
-                    var list2 = await _dbContext.Query<DRUG_COLLECT>()
-                    .Select(a => new
-                    {
-                        MAX_COLLECT_CODE = Sql.Max(a.COLLECT_CODE)
-                    })
-                    .ToListAsync();
-                    if (list2.Any())
-                    {
-                        string lastCode = list2[0].MAX_COLLECT_CODE;
-                        lastCode = lastCode.Substring(headCode.Length);
-                        long cnt = long.Parse(lastCode);
-                        ++cnt;
-                        lastCode = cnt.ToString();
-                        newCode = headCode + lastCode;
-                    }
-                }
-                entity.COLLECT_CODE = newCode;
+                var sysdate = await _dbContext.GetSysdate();
+                string dateCode = sysdate.Value.ToString("yyyyMM");
+                string newCode = headCode + dateCode + "0000";
+                string model = await _dbContext.Query<DRUG_COLLECT>(a => a.COLLECT_CODE.Contains(headCode))
+                    .Select(a => Sql.Max(a.COLLECT_CODE) ?? newCode).FirstOrDefaultAsync();
+                entity.COLLECT_CODE = headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
             }
             await Task.CompletedTask;
         }
@@ -259,7 +236,8 @@ namespace EAM.Special.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "Auditing", null },
-                    { "User", null }
+                    { "User", null },
+                    { "DrugCollectMethod", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
 

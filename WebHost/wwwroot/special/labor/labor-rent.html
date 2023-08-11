@@ -26,54 +26,35 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text",options:{} },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
                             { display: "租借单号", name: "_search_RENT_CODE", dbname: "RENT_CODE", newline: false, upper: true, type: "text",options:{} },
                             { display: "租借日期", name: "_search_RENT_DATE", dbname: "RENT_DATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "租借部门", name: "_search_RENT_DEPT", dbname: "RENT_DEPT", newline: false, upper: true, type: "text",options:{} },
-                            { display: "租借人", name: "_search_RENT_USER", dbname: "RENT_USER", newline: false, upper: true, type: "text",options:{} },
+                            { display: "租借部门", name: "_search_RENT_DEPT", dbname: "RENT_DEPT", newline: false, upper: true, type: "select", options: { data: me.dataCorp } },
+                            { display: "租借人", name: "_search_RENT_USER", dbname: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user } },
                             { display: "经办部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, upper: true, type: "text",options:{} },
                             { display: "经办人", name: "_search_USER_NAME", dbname: "USER_NAME", newline: false, upper: true, type: "text",options:{} },
-                            { display: "租借开始日期", name: "_search_BEGIN_DATE", dbname: "BEGIN_DATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "租借结束日期", name: "_search_END_DATE", dbname: "END_DATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "租借原因", name: "_search_RENT_REASON", dbname: "RENT_REASON", newline: false, upper: true, type: "text",options:{} },
-                            { display: "备注", name: "_search_MEMO", dbname: "MEMO", newline: false, upper: true, type: "text",options:{} },
-                            { display: "主键", name: "_search_RENT_ID", dbname: "RENT_ID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "租借部门ID", name: "_search_RENT_DEPTID", dbname: "RENT_DEPTID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "租借人ID", name: "_search_RENT_USERID", dbname: "RENT_USERID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "经办部门ID", name: "_search_DEPT_ID", dbname: "DEPT_ID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "经办人ID", name: "_search_USER_ID", dbname: "USER_ID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "添加人ID", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", newline: false, upper: true, type: "text",options:{} },
                             { display: "添加时间", name: "_search_CREATEDATE", dbname: "CREATEDATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "修改人ID", name: "_search_MODIFY_USERID", dbname: "MODIFY_USERID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "修改时间", name: "_search_MODIFYDATE", dbname: "MODIFYDATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "预计结束日期", name: "_search_EXPEND_DATE", dbname: "EXPEND_DATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "租借状态", name: "_search_RENT_STATUS", dbname: "RENT_STATUS", newline: false, upper: true, type: "text",options:{} }
+                            { display: "修改时间", name: "_search_MODIFYDATE", dbname: "MODIFYDATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "租借状态", name: "_search_RENT_STATUS", dbname: "RENT_STATUS", newline: false, upper: true, type: "select", options: { data: me.rentstate } }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditing } },
                             { display: "租借单号", name: "RENT_CODE", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "租借日期", name: "RENT_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "租借部门", name: "RENT_DEPT", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "租借人", name: "RENT_USER", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "租借部门", name: "RENT_DEPT", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp } },
+                            { display: "租借人", name: "RENT_USER", width: 100, type: "select", editor: { type: 'select', data: me.user } },
                             { display: "经办部门", name: "DEPT_NAME", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "经办人", name: "USER_NAME", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "租借开始日期", name: "BEGIN_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "租借结束日期", name: "END_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
+                            { display: "租借结束日期", name: "END_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "预计结束日期", name: "EXPEND_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "租借原因", name: "RENT_REASON", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "备注", name: "MEMO", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "主键", name: "RENT_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text'} },
-                            { display: "租借部门ID", name: "RENT_DEPTID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "租借人ID", name: "RENT_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "经办部门ID", name: "DEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "经办人ID", name: "USER_ID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "预计结束日期", name: "EXPEND_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "租借状态", name: "RENT_STATUS", width: 100, type: "text",  editor: { type: 'text'} }
+                            { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "租借状态", name: "RENT_STATUS", width: 100, type: "select", editor: { type: 'select', data: me.rentstate } },
+                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                         ]
                     }
                 };
@@ -85,10 +66,13 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'LaborRent/comboxdata',
+                    url: 'special/labor/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.dataCorp = data.corpData;
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.rentstate = data.RentState
+                        me.dataCorp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -104,8 +88,8 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'local',
-                    toolbar: {},
-                    url: 'LaborRent/list',
+                    toolbar: { group: "main" },
+                    url: 'special/labor/LaborRentList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -160,6 +144,12 @@
                         case "delete":
                             me.delete();
                             break;
+                        case "submit":
+                            me.submit();
+                            break;
+                        case "rentend":
+                            me.rentend();
+                            break;
                         case "save":
                             me.save();
                             break;
@@ -181,22 +171,22 @@
             },
             add: function () { //新增
                 var me = this;
-                //$.ligerDialog.open({
-                //    width: me.detailWidth,
-                //    height: me.detailHeight,
-                //    allowClose: true,
-                //    title: '[新增]',
-                //    url: "view-detail.html",
-                //    isHidden: false,
-                //    showMax: false,
-                //    showToggle: false,
-                //    showMin: false,
-                //    isResize: true,
-                //    slide: false,
-                //    onClosed: me.reload.bind(me),
-                //    data: { "sid": null }
-                //});
-                me.grid.addEditRow({}, true);
+                $.ligerDialog.open({
+                    width: 1400,
+                    height: 800,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "labor-rent-edit.html?MenuNo=labor_rent",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null }
+                });
+                //me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
@@ -205,13 +195,13 @@
                     LG.tip('请选择行!');
                     return;
                 }
-                var sid = selected.SID;
+                var sid = selected.RENT_ID;
                 $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
+                    width: 1400,
+                    height: 800,
                     allowClose: true,
                     title: '[修改]',
-                    url: "view-detail.html",
+                    url: "labor-rent-edit.html?MenuNo=labor_rent",
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -233,9 +223,9 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'LaborRent/save',
+                        url: 'special/labor/LaborRentSave',
                         loading: '正在保存中...',
-                        data: changeRow,
+                        data: { request: changeRow, requestdet: null },
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
@@ -243,6 +233,7 @@
                         },
                         error: function (message) {
                             LG.showError(message);
+                            me.reload();
                         }
                     });
                 }
@@ -269,6 +260,33 @@
                         LG.tip('请选择行!');
                     }
                 }
+            },
+            submit: function () {  //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                var dateSysDate = {};
+                LG.getSysdate({ DateFormat: "yyyy-MM-dd HH:mm:ss" }, dateSysDate);
+                selected.forEach(x => {
+                    if (x.AUDITING == "0" && x.RENT_STATUS == "0") {
+                        me.grid.updateCell("AUDITING", "1", x.__index);
+                        me.grid.updateCell("RENT_STATUS", "1", x.__index);
+                        me.grid.updateCell("RENT_DATE", dateSysDate.ID.format("yyyy-MM-dd HH:mm:ss"), x.__index)
+                    }
+                });
+                me.save();
+            },
+            rentend: function () {  //终止租借
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                var dateSysDate = {};
+                LG.getSysdate({ DateFormat: "yyyy-MM-dd HH:mm:ss" }, dateSysDate);
+                selected.forEach(x => {
+                    if (x.AUDITING == "1" && x.RENT_STATUS == "1") {
+                        me.grid.updateCell("RENT_STATUS", "2", x.__index);
+                        me.grid.updateCell("END_DATE", dateSysDate.ID.format("yyyy-MM-dd HH:mm:ss"), x.__index)
+                    }
+                });
+                me.save();
             },
             bindGridEvent: function () {
                 var me = this;

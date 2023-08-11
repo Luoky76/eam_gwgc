@@ -4,6 +4,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
+using System.Formats.Asn1;
 
 namespace EAM.Special.Controller
 {
@@ -63,6 +64,33 @@ namespace EAM.Special.Controller
 
         #endregion
 
+        #region 劳保用品租借
+        [HttpPost]
+        public async Task<AjaxResult> LaborRentList(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.LaborRentList(request));
+        }
+        [HttpPost]
+        public async Task<AjaxResult> GetLaborRentDetList(string rentId)
+        {
+            return AjaxResult.Success(await _service.GetLaborRentDetList(rentId));
+        }
+        [HttpPost]
+        public async Task<AjaxResult> LaborRentGet(string rentId)
+        {
+            return await _service.LaborRentGet(rentId);
+        }
+        [HttpPost]
+        public async Task<AjaxResult> LaborStoreList(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.LaborStoreList(request));
+        }
+        [HttpPost]
+        public async Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet)
+        {
+            return await _service.LaborRentSave(request, requestdet);
+        }
+        #endregion
         #region 劳保采购计划
         [HttpPost]
         public async Task<GridData> laborcollectListAsync(GridRequest request)

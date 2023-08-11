@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "DrugLimit")]
+    [GksybAuthorize(MenuNo = "DrugLimit,DrugRequest")]
     public class DrugLimitController : AreaController
     {
         private readonly IDrugLimitService _service;
@@ -41,6 +41,17 @@ namespace EAM.Special.Controller
         public async Task<GridData> ExtendListAsync(string requestId)
         {
             return await _service.ExtendListAsync(requestId);
+        }
+
+        /// <summary>
+        /// 药品导入列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> DrugListAsync(GridRequest request)
+        {
+            return await _service.DrugListAsync(request);
         }
 
         /// <summary>
