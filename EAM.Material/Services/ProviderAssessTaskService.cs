@@ -113,36 +113,14 @@ namespace EAM.Material.Services
             //设置任务编码
             if (entity.ASSESS_TASK_CODE.IsNullOrEmpty())
             {
-                //示例PAT2023072100001
+                //示例PAT2023070001
+                string headCode = "PAT";
                 var sysdate = await _dbContext.GetSysdate();
-                string dateCode = sysdate.Value.ToString("yyyyMMdd");
-                string newCode = "PAT" + dateCode + "00001";
-
-                //查看编码是否已存在
-                var list1 = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                    .Select(a => a.ASSESS_TASK_CODE)
-                    .Where(a => a == newCode)
-                    .ToListAsync();
-
-                if (list1.Any())
-                {
-                    var list2 = await _dbContext.Query<PROVIDER_ASSESS_TASK>()
-                    .Select(a => new
-                    {
-                        MAX_ASSESS_TASK_CODE = Sql.Max(a.ASSESS_TASK_CODE)
-                    })
-                    .ToListAsync();
-                    if (list2.Any())
-                    {
-                        string lastCode = list2[0].MAX_ASSESS_TASK_CODE;
-                        lastCode = lastCode.Substring(3);
-                        long cnt = long.Parse(lastCode);
-                        ++cnt;
-                        lastCode = cnt.ToString();
-                        newCode = "PAT" + lastCode;
-                    }
-                }
-                entity.ASSESS_TASK_CODE = newCode;
+                string dateCode = sysdate.Value.ToString("yyyyMM");
+                string newCode = headCode + dateCode + "0000";
+                string model = await _dbContext.Query<PROVIDER_ASSESS_TASK>(a => a.ASSESS_TASK_CODE.Contains(headCode))
+                    .Select(a => Sql.Max(a.ASSESS_TASK_CODE) ?? newCode).FirstOrDefaultAsync();
+                entity.ASSESS_TASK_CODE = headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
             }
             await Task.CompletedTask;
         }

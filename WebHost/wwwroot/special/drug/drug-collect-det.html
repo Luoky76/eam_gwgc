@@ -63,7 +63,6 @@
                                     data: me.drugCollectMethod
                                 }
                             },
-                            { display: "物资分类", name: "COLLECT_SPTYPE", width: 300, type: "text", options: { disabled: true } },
                             { display: "总金额", name: "COLLECT_MONEY", width: 300, type: "float", options: { disabled: true } },
                             { display: "备注", name: "MEMO", newline: true, width: 1146, type: "textarea", options: {} },
                             //隐藏
@@ -462,10 +461,10 @@
                         columns: [
                             { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
                             { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
-                            { display: "物资型号", name: "SP_TYPE", width: 200, type: "text" },
-                            { display: "制造厂", name: "SP_FACTORY", width: 200, type: "text" },
+                            { display: "制造厂", name: "PRODUCE", width: 200, type: "text" },
                             { display: "需求总量", name: "SUM_REQUEST_NUM", width: 200, type: "float" },
-                            { display: "计量单位", name: "UNIT", width: 200, type: "text" }
+                            { display: "计量单位", name: "UNIT", width: 200, type: "text" },
+                            { display: "物资型号", name: "SP_SIZE", width: 200, type: "text" },
                         ]
                     },
                     fields: [
@@ -474,15 +473,8 @@
                     callback: function (values, rows) {
                         me.deleteAll();
                         for (let item of rows) {
-                            me.addCollect({
-                                SP_ID: item.SP_ID,
-                                SP_CODE: item.SP_CODE,
-                                SP_NAME: item.SP_NAME,
-                                SP_TYPE: item.SP_TYPE,
-                                SP_FACTORY: item.SP_FACTORY,
-                                COLLECT_NUM: item.SUM_REQUEST_NUM,
-                                UNIT: item.UNIT
-                            });
+                            item.COLLECT_NUM = item.SUM_REQUEST_NUM;
+                            me.addCollect(item);
                         }
                         me.saveCollect(false);
                         //添加采购明细对应的需求明细
