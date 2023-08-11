@@ -366,5 +366,73 @@ namespace EAM.Special.Services
 
 
         #endregion
+
+
+        #region 劳保用品退换
+        public async Task<GridData> laborExchangeListAsync(GridRequest request)
+        {
+            var list = await _dbContext.Query<LABOR_EXCHANGE>().GetGridData(request);
+            return list;
+        }
+
+        public async Task<AjaxResult> SaveAsync(SaveRequest<LABOR_EXCHANGE> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.AUDITING,
+                    c.EXCHANGE_CODE,
+                    c.EXCHANGE_DATE,
+                    c.EXCHANGE_TYPE,
+                    c.EXCHANGE_USER,
+                    c.EXCHANGE_DEPT,
+                    c.MEMO,
+                    c.EXCHANGE_ID,
+                    c.EXCHANGE_USERID,
+                    c.EXCHANGE_DEPTID,
+                    c.AUDIT_USERID,
+                    c.AUDIT_DEPTID,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE,
+                    c.EXCHANGE_REASON,
+                },
+                c => a => a.EXCHANGE_ID == c.EXCHANGE_ID
+                , BeforeAdd, null, null, false, null, null);
+        }
+
+        /// <summary>
+        /// 添加前验证
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private async Task BeforeAdd(LABOR_EXCHANGE entity)
+        {
+            entity.EXCHANGE_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新前验证
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdate(LABOR_EXCHANGE entity)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 删除前验证
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private async Task BeforeDelete(LABOR_EXCHANGE entity)
+        {
+            await Task.CompletedTask;
+        }
+
+        #endregion
     }
 }
