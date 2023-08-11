@@ -26,44 +26,21 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text",options:{} },
-                            { display: "退换单号", name: "_search_EXCHANGE_CODE", dbname: "EXCHANGE_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "退换日期", name: "_search_EXCHANGE_DATE", dbname: "EXCHANGE_DATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text",options:{} },
-                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text",options:{} },
-                            { display: "备注", name: "_search_MEMO", dbname: "MEMO", newline: false, upper: true, type: "text",options:{} },
-                            { display: "主键", name: "_search_EXCHANGE_ID", dbname: "EXCHANGE_ID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "申请人ID", name: "_search_EXCHANGE_USERID", dbname: "EXCHANGE_USERID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "申请部门ID", name: "_search_EXCHANGE_DEPTID", dbname: "EXCHANGE_DEPTID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "提交人ID", name: "_search_AUDIT_USERID", dbname: "AUDIT_USERID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "提交部门ID", name: "_search_AUDIT_DEPTID", dbname: "AUDIT_DEPTID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "添加人ID", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "添加时间", name: "_search_CREATEDATE", dbname: "CREATEDATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "修改人ID", name: "_search_MODIFY_USERID", dbname: "MODIFY_USERID", newline: false, upper: true, type: "text",options:{} },
-                            { display: "修改时间", name: "_search_MODIFYDATE", dbname: "MODIFYDATE", newline: false, upper: true, type: "date",options:{} },
-                            { display: "退换原因", name: "_search_EXCHANGE_REASON", dbname: "EXCHANGE_REASON", newline: false, upper: true, type: "text",options:{} }
+                            { display: "退换单号", name: "_search_EXCHANGE_CODE", dbname: "EXCHANGE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: {} },
+                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: {} },
+                            { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "记录状态", name: "AUDITING", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "退换单号", name: "EXCHANGE_CODE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "退换日期", name: "EXCHANGE_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "退换类型", name: "EXCHANGE_TYPE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "申请人", name: "EXCHANGE_USER", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "申请部门", name: "EXCHANGE_DEPT", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "备注", name: "MEMO", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "主键", name: "EXCHANGE_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text'} },
-                            { display: "申请人ID", name: "EXCHANGE_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "申请部门ID", name: "EXCHANGE_DEPTID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "提交人ID", name: "AUDIT_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "提交部门ID", name: "AUDIT_DEPTID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "添加人ID", name: "CREATE_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "添加时间", name: "CREATEDATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "修改时间", name: "MODIFYDATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "退换原因", name: "EXCHANGE_REASON", width: 100, type: "text",  editor: { type: 'text'} }
+                            { display: "退换日期", name: "EXCHANGE_DATE", width: 100, type: "date",  editor: { type: 'date',format: "yyyy-MM-dd hh:mm"} },
+                            { display: "申请部门", name: "EXCHANGE_DEPT", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "申请人", name: "EXCHANGE_USER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "退换类型", name: "EXCHANGE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "退换原因", name: "EXCHANGE_REASON", width: 100, type: "text", editor: { type: 'text' } }
                         ]
                     }
                 };
