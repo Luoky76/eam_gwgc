@@ -1,10 +1,16 @@
 ﻿(function ($) {
-    var l = $.ligerui;
-
-    $.fn.ligerGrid = function (options) {
-        var usePager = (options && options.usePager !== undefined) ? options.usePager : $.ligerDefaults.Grid.usePager;
+    $.fn.ligerGrid = function (p) {
+        p = p || {};
+        //命名纠正
+        if (p.AutoWidth !== undefined && p.autoWidth === undefined) p.autoWidth = p.AutoWidth;
+        if (p.AppendSelectColumns !== undefined && p.appendSelectColumns === undefined) p.appendSelectColumns = p.AppendSelectColumns;
+        if (p.AppendGroupByColumns !== undefined && p.appendGroupByColumns === undefined) p.appendGroupByColumns = p.AppendGroupByColumns;
+        if (p.DataPrivilege !== undefined && p.dataPrivilege === undefined) p.dataPrivilege = p.DataPrivilege;
+        if (p.EnterMoveNextControl !== undefined && p.enterMoveNextControl === undefined) p.enterMoveNextControl = p.EnterMoveNextControl;
+        //不分页本地处理数据
+        var usePager = (p.usePager !== undefined) ? p.usePager : $.ligerDefaults.Grid.usePager;
         if (usePager === false) {
-            options.dataAction = "local";//不分页本地处理数据
+            p.dataAction = "local";
         }
         return $.ligerui.run.call(this, "ligerGrid", arguments);
     };
@@ -46,7 +52,7 @@
         scrollWidth: 20,//滚动条宽度，用于计算宽度
         scrollHeight: 16,//滚动条高度，用于计算锁定高度
         dateFormat: 'yyyy-MM-dd', //默认时间显示格式
-        inWindow: true, //是否以窗口的高度为准 height设置为百分比时可用
+        inWindow: true, //是否以窗口的高度为准 height设置为百分比时可用，为对象时根据对象的高度处理
         statusName: '__status', //状态名
         method: 'post', //获取数据http方式
         async: true,
@@ -90,8 +96,9 @@
         clickToEdit: true, //是否点击单元格的时候就编辑
         detailToEdit: false, //是否点击明细的时候进入编辑
         onEndEdit: null,
-        minColumnWidth: 80,
+        minColumnWidth: null,//列最小宽度
         tree: null, //treeGrid模式
+        crosstab: false,//交叉表模式
         rowKey: null,//行主键，指定后保留上次选择
         isChecked: null, //复选框 初始化函数
         isSelected: null, //选择 初始化函数
@@ -159,6 +166,7 @@
         onTreeCollapsed: null, //树收缩事件
         onLoadData: null, //加载数据前事件
         onHeaderCellBuild: null,
+        onHeaderMenuBuild: null,//表头菜单创建时，拦截用于加入自定义功能
         onlySelectColumns: false, //是否只查询grid.columns的内容
         appendSelectColumns: null, //onlySelectColumns为true时起作用,追加查询列
         appendGroupByColumns: null, //追加group by 列
@@ -196,7 +204,7 @@
         isAllowHide: true,
         isSort: false,
         type: null,
-        columns: null,
+        columns: null,//多级表头
         width: 120,
         minWidth: 80, //最小宽度
         maxWidth: null, //最大宽度
@@ -209,6 +217,8 @@
         editor: null,
         render: null,
         mergeColumn: null, //合并单元格
+        crosstab: false,//交叉列 设定后会根据值生成列
+        values: null,//交叉列对应的统计值,列名或者函数function (rows, name)
         textField: null //真正显示的字段名,如果设置了，在编辑状态时,会调用创建编辑器的setText和getText方法
     };
     $.ligerDefaults.Grid_editor = {
