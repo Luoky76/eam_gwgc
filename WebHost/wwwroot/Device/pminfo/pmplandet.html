@@ -635,7 +635,12 @@
                     me.f_select_man();
                 });
                 me.reloadDet();
-
+                if (me.dialogData.view != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };
