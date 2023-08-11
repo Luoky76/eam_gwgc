@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>统计图表</title>
+</head>
+<body>
+    <div class="page" data-name="common-chart">
+        <div class="toolbar toolbar-bottom-md">
+            <div class="toolbar-inner">
+                <a href='javascript:app.methods.toUrl("back")' class="link external">
+                    <i class="f7-icons">arrow_left</i>
+                    <span class="ios-only">返回</span>
+                </a>
+                <a href='javascript:app.methods.toUrl("/")' class="link external">
+                    <i class="f7-icons">home</i>
+                    <span class="ios-only">主页</span>
+                </a>
+            </div>
+        </div>
+        <div class="panel-setting panel panel-right panel-cover panel-resizable panel-init">
+        </div>
+        <div class="fab-setting fab fab-right-top display-none">
+            <a><i class="icon material-icons">add</i></a>
+        </div>
+        <div class="page-content">
+        </div>
+    </div>
+    <script id="scriptBlock" type="text/javascript">
+        'use strict';
+        var business = {
+            rows: null,
+            columns: null,
+            chartOpt: {},
+            charTypes: [{ name: "bar", display: "柱状图" }, { name: "stack", display: "堆叠柱状图" }, { name: "line", display: "折线图" }, { name: "pie", display: "饼图" }, { name: "scatter", display: "散点图" }],
+            handleColumns: function () {
+                var me = this;
+                var columns = me.columns || [], categoryColumns = [], numberColumns = [{ name: "数量", display: "数量", type: "string" }];
+                for (var i = 0, l = columns.length; i < l; i++) {
+                    var column = columns[i];
+                    var type = column.type;
+                    var item = { name: column.name, display: column.display, type: type };
+                    if (type === "float" || type === "int") {
+                        numberColumns.push(item)
+                    }
+                    else {
+                        categoryColumns.push(item)
+                    }
+                }
+                return { numberColumns: numberColumns, categoryColumns: categoryColumns };
+            },
+            setChartForm: function () {
+                var me = this, chartOpt = me.chartOpt;
+                var obj = me.handleColumns();
+                me.numberColumns = obj.numberColumns;
+                me.categoryColumns = obj.categoryColumns;
+                var formData = chartOpt.data || {};
+                if (formData.x !== undefined) formData.category = formData.x;
+                if (formData.y !== undefined) formData.values = formData.y;
+                if (formData.category === undefined && me.categoryColumns.length === 1) formData.category = me.categoryColumns[0].name;
+                if (formData.values === undefined && me.numberColumns.length === 2) formData.values = me.numberColumns[1].name;
+                if (!formData.type) formData.type = "bar";
+                var htmls = [];
+                htmls.push('<form id="char-form"><div class="list no-margin"><ul>');
+                htmls.push('<li class="item-divider">类型</li>');
+                htmls.push(me._getHtml(me.charTypes, "radio", "type", formData.type));
+                htmls.push('<li class="item-divider">组</li>');
+                htmls.push(me._getHtml(me.categoryColumns, "checkbox", "category", formData.category));
+                htmls.push('<li class="item-divider">值</li>');
+                htmls.push(me._getHtml(me.numberColumns, "checkbox", "values", formData.values));
+                htmls.push('</ul></div></form>');
+                me.panel.$el.html(htmls.join(''));
+                if (chartOpt.show !== false) me.setting.removeClass("display-none");
+                me.chartForm = me.page.find("#char-form");
+            },
+            getFormData: function () {
+                var me = this;
+                var formData = app.form.convertToData(me.chartForm);
+                formData["category"] = me.getRows(me.categoryColumns, formData.category);
+                formData["values"] = me.getRows(me.numberColumns, formData.values);
+                formData.type = [formData.type];
+                return formData;
+            },
+            reload: function () {
+                var me = this, chartOpt = me.chartOpt;
+                if (!me.rows) return;
+                var formData = me.getFormData();
+                var options = echarts.getOptionsFromData(me.rows, formData);
+                if (chartOpt.options) {
+                    if (typeof chartOpt.options === "function") {
+                        options = chartOpt.options(options, me) || options;
+                    }
+                    else {
+                        $.extend(true, options, chartOpt.options);
+                    }
+                }
+                me.chart.setOption(options, true);
+            },
+            loadData: function (formData) {
+                var me = this;
+                app.ajax({
+                    url: 'common/jsonvalue',
+                    data: {
+                        ViewName: me.view,
+                        Param: formData
+                    },
+                    success: function (data) {
+                        me.rows = data;
+                        me.reload();
+                    }
+                });
+            },
+            _getHtml: function (items, type, name, values) {
+                var htmls = [], values = values || [];
+                if (typeof values === "string") values = values.split(",");
+                for (var i = 0, l = items.length; i < l; i++) {
+                    var item = items[i];
+                    var checked = "";
+                    for (var j = 0, l2 = values.length; j < l2; j++) {
+                        var value = values[j];
+                        if (item.name === value) {
+                            checked = "checked";
+                            break;
+                        }
+                    }
+                    htmls.push('<li><label class="item-' + type + ' item-content">');
+                    htmls.push('<input type="' + type + '" name="' + name + '" value="' + item.name + '"' + checked + '>');
+                    htmls.push('<i class="icon icon-' + type + '"></i>');
+                    htmls.push('<div class="item-inner"><div class="item-title">' + item.display + '</div></div>');
+                    htmls.push('</label></li>');
+                }
+                return htmls.join('');
+            },
+            getRows: function (data, values) {
+                values = values || [];
+                if (typeof values === "string") values = values.split(",");
+                if (values.length < 1) return [];
+                var items = [];
+                for (var i = 0, l = values.length; i < l; i++) {
+                    var value = values[i];
+                    for (var j = 0, l2 = data.length; j < l2; j++) {
+                        var item = data[j];
+                        if (item.name === value) {
+                            items.push(item);
+                            break;
+                        }
+                    }
+                }
+                return items;
+            },
+            searchInner: function () {
+                var me = this, form = me.page.find("#my-form");
+                if (!app.methods.validateInputs(form)) {
+                    return;
+                }
+                var formData = app.form.convertToData(form);
+                if (me.limit) {
+                    if (me.limit(formData) === false) return false;
+                }
+                me.loadData(formData);
+            },
+            search: function () {
+                var me = this;
+                me.chartOpt = me.chartOptions || me.chartOpt;
+                setTimeout(function () {
+                    me.searchInner();
+                }, 10);
+            },
+            loadConfig: function () {
+                var me = this;
+                app.ajax({
+                    url: 'common/queryconfig',
+                    async: false,
+                    data: { viewName: me.view },
+                    success: function (data) {
+                        var fields = data.Fields || [];
+                        var html = data.GRID || "";
+                        if (html.indexOf('id="main"') < 0) {
+                            html += '<div id="main"></div>';
+                        }
+                        var columns = [];
+                        for (var i = 0, l = fields.length; i < l; i++) {
+                            var item = fields[i];
+                            columns.push({ display: item.Key, name: item.Key, type: item.Value });
+                        }
+                        me.columns = columns;
+                        me.pageContent.html(html);
+                        if (!data.FORM) {
+                            me.search();
+                            return;
+                        }
+                        eval(data.FORM);
+                        me.chartOpt = me.chartOptions || me.chartOpt;
+                    }
+                });
+            },
+            initLayout: function () {
+                var me = this;
+                me.panel = app.panel.get(me.page.find('.panel-setting'));
+                me.setting = me.page.find(".fab-setting");
+                var mainChart = me.page.find("#main");
+                var top = mainChart.offset().top;
+                var height = me.pageContent.height() - parseInt(me.pageContent.css("padding-bottom")) - parseInt(me.pageContent.css("padding-bottom")) - top;
+                mainChart.css({ width: "100%", height: height + "px" });
+                me.setting.css({ top: top + "px" }).off('click').on('click', function () {
+                    me.panel.toggle();
+                });
+                me.panel.on('closed', function () {
+                    me.reload();
+                });
+                me.chart = echarts.init(mainChart[0], null, { renderer: (me.chartOpt.renderer || 'svg') });
+                me.setChartForm();
+            },
+            init: function (route) {
+                var me = this;
+                me.page = $$(".page-current");
+                me.pageContent = me.page.find(".page-content");
+                var pageParm = app.utils.parseUrlQuery(page.router.currentRoute.route.url);
+                me.view = getQueryStringByName("v") || pageParm.v || page.router.currentRoute.name;
+                if (!me.view) {
+                    app.dialog.error("请传递参数");
+                    return;
+                }
+                me.loadConfig();
+                me.initLayout();
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>
