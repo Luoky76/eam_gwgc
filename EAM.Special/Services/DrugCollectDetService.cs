@@ -128,7 +128,7 @@ namespace EAM.Special.Services
                     a.TYPE_CODE,
                     a.PRODUCE,
                     a.UNIT,
-                    SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - b.SUM_COLLECT_NUM
+                    SUM_REQUEST_NUM = a.SUM_REQUEST_NUM - (b.SUM_COLLECT_NUM ?? 0)
                 })
                 .Where(c => c.SUM_REQUEST_NUM > 0)
                 .GetGridData(request);
@@ -170,6 +170,8 @@ namespace EAM.Special.Services
                     c.TYPE_CODE,
                     c.PRODUCE,
                     c.UNIT,
+                    c.COLLECT_NUM,
+                    c.MEMO,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
