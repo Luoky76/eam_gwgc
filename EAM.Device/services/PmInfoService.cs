@@ -54,6 +54,7 @@ namespace EAM.Device.services
                 { "MaintDept",null},
                 { "WorkState",null},
                 { "MaintCycle",null},
+                { "BCCode", "store_src" },
                 { "DeviceInfo",(Expression<Func<DEVICE_CARD, bool>>)(c => (c.TYPE_ID == "1"))},
             });
         }
@@ -218,6 +219,15 @@ namespace EAM.Device.services
 
         #region 维保实施
         /// <summary>
+        /// 导入物资功能
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ImportSpList(GridRequest request)
+        {
+            return await _dbContext.Query<SP_STORE>(c => c.NUM>0)
+                .GetGridData(request);
+        }
+        /// <summary>
         /// 获取维保人员明细
         /// </summary>
         /// <returns></returns>
@@ -331,10 +341,15 @@ namespace EAM.Device.services
                     c.STOCK_NAME,
                     c.STOCK_ID,
                     c.DONEITEM_ID,
-                    c.BRAND,
                     c.PLAN_SP_ID,
                 },
-                c => a => a.PLAN_SP_ID == c.PLAN_SP_ID);
+                c => a => a.PLAN_SP_ID == c.PLAN_SP_ID, BeforeAddSp);
+        }
+
+        public async Task BeforeAddSp(PM_PLAN_SP entity)
+        {
+            entity.PLAN_SP_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
         }
 
 

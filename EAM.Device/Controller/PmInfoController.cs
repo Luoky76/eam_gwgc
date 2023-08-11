@@ -32,6 +32,7 @@ namespace EAM.Device.controller
                 maintDept = comboxData["MaintDept"],
                 workState = comboxData["WorkState"],
                 maintCycle = comboxData["MaintCycle"],
+                storeSou = comboxData["BCCode"],
                 deviceInfo = comboxData["DeviceInfo"],
             }, "成功");
         }
@@ -145,6 +146,16 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> ManageWorkAsync(SaveRequest<PM_SPECIAL_WORK> request)
         {
             return await _service.ManageWork(request);
+        }
+
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportSpListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ImportSpList(request), "成功");
         }
 
         /// <summary>
