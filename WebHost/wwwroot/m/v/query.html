@@ -1,40 +1,26 @@
 ﻿<!DOCTYPE html>
 <html>
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#2196f3">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>通用查询</title>
-    <link rel="stylesheet" href="../dist/Framework7/mobile.css" />
+    <title>统计报表</title>
 </head>
 
-<body class="color-theme-blue">
-    <div id="app">
-        <!-- Your main view, should have "view-main" class -->
-        <div class="view view-main">
-            <div class="page" data-name="driver-binding">
-                <div class="toolbar toolbar-bottom-md">
-                    <div class="toolbar-inner">
-                        <a href='javascript:app.methods.toUrl("back")' class="link external">
-                            <i class="f7-icons">arrow_left</i>
-                            <span class="ios-only">返回</span>
-                        </a>
-                        <a href='javascript:app.methods.toUrl("/")' class="link external">
-                            <i class="f7-icons">home</i>
-                            <span class="ios-only">主页</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="page-content">
-                </div>
+<body>
+    <div class="page" data-name="common-query">
+        <div class="toolbar toolbar-bottom-md">
+            <div class="toolbar-inner">
+                <a href='javascript:app.methods.toUrl("back")' class="link external">
+                    <i class="f7-icons">arrow_left</i>
+                    <span class="ios-only">返回</span>
+                </a>
+                <a href='javascript:app.methods.toUrl("/")' class="link external">
+                    <i class="f7-icons">home</i>
+                    <span class="ios-only">主页</span>
+                </a>
             </div>
         </div>
+        <div class="page-content">
+        </div>
     </div>
-    <script type="text/javascript" src="../dist/Framework7/mobile.js"></script>
-    <script type="text/javascript" src="../dist/Framework7/app.js?v=1"></script>
     <script id="scriptBlock" type="text/javascript">
         'use strict';
         var business = {

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Builder
                 if (ctx.Context.Request.Headers["Passport"] == Passport) return;//有通行证的不验证权限
                 if (Valid(ctx.Context, ctx.File)) return;
                 ctx.Context.Response.ClearWithStatusCode();
-            });
+            }, noCache: false);
             return app;
         }
 

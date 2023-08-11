@@ -2690,7 +2690,7 @@ var App = function () {
     var handleTabs = function () {
         //activate tab if tab id provided in the URL
         if (location.hash) {
-            var tabid = encodeURI(location.hash.substr(1));
+            var tabid = encodeURI(location.hash.substring(1));
             $('a[href="#' + tabid + '"]').parents('.tab-pane:hidden').each(function () {
                 var tabid = $(this).attr("id");
                 $('a[href="#' + tabid + '"]').click();

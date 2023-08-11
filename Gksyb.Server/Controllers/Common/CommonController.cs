@@ -27,24 +27,6 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(url, formFile.Name);
         }
 
-        [AllowAnonymous]
-        public FileResult Export([ModelEncrypt, SqlFilter(Skip = true)] string htmlContent, string exportType)
-        {
-            var content = Encoding.UTF8.GetBytes(htmlContent);
-            var fileDownloadName = $"{DateTime.Now:yyyyMMddHHmmss}.xls";
-            var contentType = "application/ms-excel";
-            if (exportType == "doc")
-            {
-                fileDownloadName = $"{DateTime.Now:yyyyMMddHHmmss}.doc";
-                contentType = "application/ms-word";
-            }
-            var result = new FileContentResult(content, contentType)
-            {
-                FileDownloadName = fileDownloadName
-            };
-            return result;
-        }
-
         /// <summary>
         /// 获取系统时间
         /// </summary>

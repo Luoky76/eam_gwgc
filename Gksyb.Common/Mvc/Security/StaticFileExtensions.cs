@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Builder
         /// 安全响应头
         /// </summary>
         /// <returns></returns>
-        public static IApplicationBuilder UseSafeStaticFiles(this IApplicationBuilder app, StaticFileOptions options = null, Action<StaticFileResponseContext> action = null)
+        public static IApplicationBuilder UseSafeStaticFiles(this IApplicationBuilder app, StaticFileOptions options = null, Action<StaticFileResponseContext> action = null, bool noCache = true)
         {
             options ??= new StaticFileOptions();
             options.ContentTypeProvider ??= new WebFileContentTypeProvider();
@@ -25,9 +26,26 @@ namespace Microsoft.AspNetCore.Builder
                     return;
                 }
                 action?.Invoke(ctx);
+                if (!noCache) return;
+                var noHtml = response.ContentType != "text/html";
+                if (noHtml && response.ContentType != "text/javascript") return;
+                var cache = request.QueryString.HasValue ? request.QueryString.Value.GetParm("cache") : "";
+                if (cache == "1") return;
+                if (cache != "0" && noHtml && ((response.ContentLength ?? long.MaxValue) > _cacheSize || request.Path.StartsWithSegments("/lib"))) return;
+                response.Headers[HeaderNames.CacheControl] = _cacheControl;
             };
             return app.UseStaticFiles(options);
         }
+
+        /// <summary>
+        /// 不缓存
+        /// </summary>
+        private static string _cacheControl = "no-cache, no-store, must-revalidate, max-age=0";
+
+        /// <summary>
+        /// 最小不缓存大小
+        /// </summary>
+        private static long _cacheSize = 100 * 1024;
 
         private static string _domin = null;
 

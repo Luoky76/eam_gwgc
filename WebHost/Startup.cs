@@ -99,15 +99,6 @@ namespace WebHost
             app.UseSafeStaticFiles(new StaticFileOptions()
             {
                 ContentTypeProvider = new WebFileContentTypeProvider(_configuration.GetSection(OptionName.FileContentType).Get<Dictionary<string, string>>())
-            }, ctx =>
-            {
-                var resuest = ctx.Context.Request;
-                var response = ctx.Context.Response;
-                if (response.ContentType == "text/html" || (response.ContentType == "text/javascript" && !resuest.Path.StartsWithSegments("/lib")))//html²»»º´æ
-                {
-                    if (resuest.QueryString.HasValue && resuest.QueryString.Value.Contains("cache=1")) return;
-                    response.Headers[HeaderNames.CacheControl] = "no-cache, no-store, must-revalidate, max-age=0";
-                }
             });
             app.UseSerilogRequestLogging(options =>
             {

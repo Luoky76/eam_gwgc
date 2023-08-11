@@ -5,16 +5,32 @@
     });
 
     $.extend($.ligerDefaults.Grid, {
-        toolbarShowInLeft: true
+        toolbarShowInLeft: true,
+        onHeaderMenuBuild: function (menu, column) {
+            var g = this;
+            var charMenu = $('<li class="l-grid-header-menu-chart"><i class="fa fa-bar-chart-o"></i> 图表</li>').insertBefore($(".l-grid-header-menu-columns", menu));
+            charMenu.bind('mouseup', function (e) {
+                if (e.button !== 0) return false;
+                var data = {}, type = g.getColumnRealType(column);
+                data[(type === "float" || type === "int") ? "y" : "x"] = column.name;
+                $.ligerDialog.open({
+                    url: window.gksybConfigs.getUrl("System/grid-chart.html", window.gksybConfigs.urlBase),
+                    showMax: true,
+                    isResize: true,
+                    show: false,
+                    data: {
+                        gridid: g.id, chartOptions: { data: data }
+                    }
+                });
+                g._hideHeaderMenu();
+            });
+        }
     });
 
     $.extend($.ligerui.controls.Grid.prototype, {
         getChangedRows: function (trim) {
-            var g = this,
-                changedRows = new Object();
-            if (trim === undefined) {
-                trim = false;
-            }
+            var g = this, changedRows = {};
+            if (trim === undefined) trim = false;
             var added = g.getAdded();
             var updated = g.getUpdated();
             var deleted = g.getDeleted();
@@ -424,21 +440,42 @@
                     grid._onResize(); //2014年9月19日 加入防止toolbar还没生成就有高度
                     return;
                 };
-                var items = [];
+                var items = [], groups = {};
                 for (var i = 0, l = data.length; i < l; i++) {
                     var o = data[i];
-                    items[items.length] = {
+                    o.BTNCLASS = o.BTNCLASS || "";
+                    o.BTNNAME = o.BTNNAME || "";
+                    var child = items;
+                    if (toolbarOptions.child === true && o.INITSTATUS) {
+                        var group = groups[o.INITSTATUS];
+                        if (group === undefined) {
+                            group = {
+                                parentGrid: grid,
+                                type: "info",
+                                text: o.INITSTATUS,
+                                popup:"click",
+                                menu: {
+                                    items: []
+                                }
+                            };
+                            if (o.BTNCLASS.indexOf("mouseenter") >= 0) delete group.popup;
+                            if (o.BTNCLASS.indexOf("fa-") >= 0) group.icon = o.BTNCLASS;
+                            groups[o.INITSTATUS] = group;
+                            items.push(group);
+                        }
+                        child = group.menu.items;
+                        if (isLine) child.push({ line: true });
+                    }
+                    child.push({
                         parentGrid: grid,
                         type: "info",
-                        cls: o.BTNCLASS || "",
+                        cls: o.BTNCLASS,
                         click: toolbarBtnItemClick,
-                        text: (o.BTNNAME || "").split("_")[0],
+                        text: o.BTNNAME.split("_")[0],
                         icon: o.BTNICON,
                         id: o.BTNNO
-                    };
-                    if (isLine) items[items.length] = {
-                        line: true
-                    };
+                    });
+                    if (isLine) child.push({ line: true });
                 }
                 grid.set({
                     "toolbar": {
@@ -614,7 +651,7 @@
                     LG.showError("文件名获取失败");
                     return;
                 }
-                saveAs(data, decodeURIComponent(match[1]));
+                liger.saveAs(data, decodeURIComponent(match[1]));
             }
         }, p));
     }

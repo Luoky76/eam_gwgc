@@ -15,7 +15,7 @@ namespace Gksyb.Server.Services.Auth
                 ID = c.CORPID,
                 TEXT = c.CNAME,
                 VALUE = c.CORP_SNAME,
-                FLAG = c.VALIDFLAG
+                FLAG = c.CNO
             }).ToListAsync();
             return data.OrderBy(c => c.TEXT).ToList();
         }
