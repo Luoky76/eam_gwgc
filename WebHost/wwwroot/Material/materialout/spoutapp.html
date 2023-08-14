@@ -51,7 +51,13 @@
                         columns: [
                             { display: "记录状态", name: "AUDITING_A", dbname: "AUDITING_A", width: 100, type: "select", format: { data: me.auditing } },
 
-                            { display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text",
+                                editor: { type: 'text' },
+                                render: function (rowdata, rowindex, value, column) {
+                                    return "<a href='javascript:;'>" + rowdata.APPLY_CODE + "</a>";
+                                },
+                            },
                             { display: "申请日期", name: "APPLY_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "用途", name: "PURTYPE_NAME", minWidth: 100, type: "select", editor: { type: 'select', data: me.purtypeName } },
                             { display: "领用人", name: "USER_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -182,7 +188,6 @@
             submit: function () {    //提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
-                debugger
                 if (selected.length !== 1) {
                     LG.tip('请选择且仅选择一行！');
                 }
@@ -299,9 +304,8 @@
             view: function (rowdata) { //查看
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-
                 if (rowdata) {
-                    selected = rowdata;
+                    selected = rowdata.OUT_ID;
                 }
                 if (selected) {
                     $.ligerDialog.open({
@@ -317,7 +321,7 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.OUT_ID, "view": true }
+                        data: { "sid": selected, "view": true }
                     });
                 } else {
                     LG.tip('请选择行!');
