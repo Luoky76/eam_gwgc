@@ -155,7 +155,7 @@
             },
             add: function () { //新增
                 var me = this;
-                $.ligerDialog.open({
+                me.dialog = $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
@@ -177,7 +177,7 @@
                 else selected = me.grid.getSelectedRow();
                 if (selected) {
                     var sid = selected.ID;
-                    $.ligerDialog.open({
+                    me.dialog = $.ligerDialog.open({
                         width: me.detailWidth,
                         height: me.detailHeight,
                         allowClose: true,
@@ -386,6 +386,10 @@
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
                 return me;
             }
         };

@@ -7,19 +7,22 @@
     $.extend($.ligerDefaults.Grid, {
         toolbarShowInLeft: true,
         onHeaderMenuBuild: function (menu, column) {
-            var g = this;
+            var g = this, p = g.options;
+            var chartOpt = p.chartOptions;
+            if (!chartOpt) return;
             var charMenu = $('<li class="l-grid-header-menu-chart"><i class="fa fa-bar-chart-o"></i> 图表</li>').insertBefore($(".l-grid-header-menu-columns", menu));
             charMenu.bind('mouseup', function (e) {
                 if (e.button !== 0) return false;
                 var data = {}, type = g.getColumnRealType(column);
                 data[(type === "float" || type === "int") ? "y" : "x"] = column.name;
+                chartOpt.data = data;
                 $.ligerDialog.open({
                     url: window.gksybConfigs.getUrl("System/grid-chart.html", window.gksybConfigs.urlBase),
                     showMax: true,
                     isResize: true,
                     show: false,
                     data: {
-                        gridid: g.id, chartOptions: { data: data }
+                        gridid: g.id, chartOptions: chartOpt
                     }
                 });
                 g._hideHeaderMenu();
@@ -453,7 +456,7 @@
                                 parentGrid: grid,
                                 type: "info",
                                 text: o.INITSTATUS,
-                                popup:"click",
+                                popup: "click",
                                 menu: {
                                     items: []
                                 }

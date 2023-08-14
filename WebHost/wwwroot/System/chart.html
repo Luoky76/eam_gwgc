@@ -107,7 +107,7 @@
                     if (chartOpt.data.y !== undefined) formData.values = chartOpt.data.y;
                     me.chartForm.setOrginData(formData, false);
                 }
-                if (chartOpt.show === false) me.chartForm.form.hide();
+                if (chartOpt.show !== true) me.chartForm.form.hide();
             },
             getFormData: function () {
                 var me = this;

@@ -162,7 +162,7 @@
             },
             add: function () { //新增
                 var me = this;
-                $.ligerDialog.open({
+                me.dialog = $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
@@ -185,7 +185,7 @@
                     LG.tip('请选择行!');
                     return;
                 }
-                $.ligerDialog.open({
+                me.dialog = $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
@@ -374,6 +374,10 @@
                 me.setConfig();
                 me.setGrid();
                 me.setTree();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
                 return me;
             }
         };

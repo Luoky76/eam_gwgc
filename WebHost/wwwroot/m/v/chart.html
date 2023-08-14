@@ -69,7 +69,7 @@
                 htmls.push(me._getHtml(me.numberColumns, "checkbox", "values", formData.values));
                 htmls.push('</ul></div></form>');
                 me.panel.$el.html(htmls.join(''));
-                if (chartOpt.show !== false) me.setting.removeClass("display-none");
+                if (chartOpt.show === true) me.setting.removeClass("display-none");
                 me.chartForm = me.page.find("#char-form");
             },
             getFormData: function () {
