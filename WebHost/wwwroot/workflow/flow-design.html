@@ -259,7 +259,7 @@
             form: function () {
                 var me = this;
                 var data = me.mainForm.getData();;
-                $.ligerDialog.open({
+                me.formDialog = $.ligerDialog.open({
                     width: 900,
                     height: 600,
                     allowClose: true,
@@ -309,7 +309,7 @@
                     allowClose: true,
                     title: "查看流程数据",
                     target: me.viewForm.form,
-                    contentCls:"l-dialog-content-nopadding l-overflow-hidden",
+                    contentCls: "l-dialog-content-nopadding l-overflow-hidden",
                     isHidden: true,
                     showMax: false,
                     showToggle: false,
@@ -409,32 +409,30 @@
                     }
                 });
             },
-            close: function () {
+            closeQuery: function (callback) {
                 var me = this;
-                function inner(callback) {
-                    var data = me.flowForm.getChanges();
-                    if (!$.isEmptyObject(data)) {
-                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
-                            if (confirm) {
-                                if (callback) callback(2);
-                            }
-                            else {
-                                if (callback) callback(0);
-                            }
-                        });
-                        if (callback) return callback(-1);
-                        return false;
-                    }
-                    if (callback) return callback(1);
-                    return true;
+                if (me._skipConfirm === true || ($.isEmptyObject(me.flowForm.getChanges()) && $.isEmptyObject(me.mainForm.getChanges()))) {
+                    delete me._skipConfirm;
+                    if (me.formDialog) return me.formDialog.frame.business.closeQuery(callback);
+                    callback();
+                    return;
                 }
-                inner(function (status) {
-                    if (status > 0) {
-                        if (me.dialog) me.dialog.close();
-                        var win = parent || window;
-                        if (win.closeCurrentTab) win.closeCurrentTab();
-                        else win.close();
-                    }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                if (me.dialog) {
+                    me.dialog.close();
+                    return;
+                }
+                me.closeQuery(function () {
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
                 });
             },
             setTitle: function () {
@@ -460,6 +458,7 @@
                 var me = this;
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
+                    if (me.closeQuery) me.dialog.options.closeQuery = me.closeQuery.bind(me);
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
@@ -471,6 +470,9 @@
                 me.initFlowForm();
                 me.initMainForm();
                 me.loadData();
+                window.closeQuery = function (callback) {
+                    return me.closeQuery(callback);
+                };
                 return me;
             }
         };
