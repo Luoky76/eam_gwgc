@@ -130,7 +130,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFY_DATE
                 },
-                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
         private async Task BeforeAdd(SPARE_APPLY entity)
@@ -166,6 +166,11 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFY_DATE = dt;
 
+        }
+
+        private async Task BeforeDelete(SPARE_APPLY entity)
+        {
+            await _dbContext.DeleteAsync<SPARE_APPLY_DET>(x => x.APPLY_ID == entity.APPLY_ID);
         }
 
         public async Task<int> Submit(List<string> sids)

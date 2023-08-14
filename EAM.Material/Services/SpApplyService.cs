@@ -158,7 +158,7 @@ namespace EAM.Material.Services
                     c.SSZTID,
                     c.BD_NAME
                 },
-                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
 
             var id = "";
             if (request.Added?.Count > 0)
@@ -202,7 +202,10 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
 
         }
-
+        private async Task BeforeDelete(SP_APPLY entity)
+        {
+            await _dbContext.DeleteAsync<SP_APPLY_DETAIL>(x => x.APPLY_ID == entity.APPLY_ID);
+        }
 
         public async Task<int> Submit(List<string> sids)
         {

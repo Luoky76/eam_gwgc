@@ -122,7 +122,7 @@ namespace EAM.Material.Services
                     c.JJ_JSON3,
                     c.ID_URGENT_PURCHASE
                 },
-                c => a => a.PURPLAN_ID == c.PURPLAN_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.PURPLAN_ID == c.PURPLAN_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
         private async Task BeforeAdd(SP_PURPLAN entity)
@@ -145,6 +145,10 @@ namespace EAM.Material.Services
 
         }
 
+        private async Task BeforeDelete(SP_PURPLAN entity)
+        {
+            await _dbContext.DeleteAsync<SP_PURPLAN_DET>(x => x.PURPLAN_ID == entity.PURPLAN_ID);
+        }
 
         public async Task<int> Submit(List<string> sids)
         {

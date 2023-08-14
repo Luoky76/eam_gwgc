@@ -90,7 +90,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 },
-                c => a => a.STOP_ID == c.STOP_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.STOP_ID == c.STOP_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
             var id = "";
             if (request.Added?.Count > 0)
                 id = request.Added[0].STOP_ID;
@@ -131,6 +131,11 @@ namespace EAM.Material.Services
 
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
+        }
+
+        private async Task BeforeDelete(SP_ORDER_STOP entity)
+        {
+            await _dbContext.DeleteAsync<SP_STOP_DET>(x => x.STOP_ID == entity.STOP_ID);
         }
 
         /// <summary>

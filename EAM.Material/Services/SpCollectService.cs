@@ -153,7 +153,7 @@ namespace EAM.Material.Services
                     c.CONSULT_PROVIDER,
                     c.BD_NO
                 },
-                c => a => a.COLLECT_ID == c.COLLECT_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.COLLECT_ID == c.COLLECT_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
 
             var id = "";
             if (request.Added?.Count > 0)
@@ -197,6 +197,12 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserName;
             entity.MODIFYDATE = dt;
 
+        }
+
+        private async Task BeforeDelete(SP_COLLECT entity)
+        {
+            await _dbContext.DeleteAsync<SP_COLLECT_DET>(x => x.COLLECT_ID == entity.COLLECT_ID);
+            await _dbContext.DeleteAsync<SP_COLLECT_REQUEST>(x => x.COLLECT_ID == entity.COLLECT_ID);
         }
 
         /// <summary>

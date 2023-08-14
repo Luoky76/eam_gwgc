@@ -212,7 +212,7 @@ namespace EAM.Material.Services
                     c.OACODE,
                     c.MOBILE
                 },
-                c => a => a.ORDER_ID == c.ORDER_ID, BeforeAdd, BeforeUpdate);
+                c => a => a.ORDER_ID == c.ORDER_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
         private async Task BeforeAdd(SP_ORDER entity)
@@ -234,6 +234,11 @@ namespace EAM.Material.Services
 
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
+        }
+
+        private async Task BeforeDelete(SP_ORDER entity)
+        {
+            await _dbContext.DeleteAsync<SP_ORDER_DETAIL>(x => x.ORDER_ID == entity.ORDER_ID);
         }
 
         public async Task<int> Submit(List<string> sids)
