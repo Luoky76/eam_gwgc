@@ -74,19 +74,42 @@
                             { display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", },
                             {
                                 display: "申请数量", name: "APPLY_NUM", minWidth: 100, type: "float",
+                                totalSummary: {
+                                    render: function (suminf, column) {
+                                        return "<span style='color:blue'>" + (suminf.sum) + "</span>";
+                                    }
+                                },
                                 editor: {
                                     type: 'float',
                                     onChange: function (rowdata, rowIndex) {
-                                        var price = rowdata.record["PRICE"]
+                                        var price = rowdata.record["PRICE"];
                                         var applyMoney = rowdata.value * price;
                                         liger.get("detgird").updateCell("APPLY_MONEY", applyMoney, rowdata.record);
+                                        liger.get("detgird").updateCell("APPLY_NUM", rowdata.value, rowdata.record);
+                                        var tol = 0;
+                                        for (var i = 0; i < business.grid.rows.length; i++) {
+                                            tol += business.grid.rows[i].APPLY_NUM * business.grid.rows[i].PRICE
+                                        };
+                                        me.mainform.setData({ 'SUM_MONEY': tol });
+                                        business.grid.updateTotalSummary();
                                     },
                                 }
                             },
                             { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
                             { display: "库存单价(元)", name: "PRICE", minWidth: 100, type: "float" },
-                            { display: "金额(元)", name: "APPLY_MONEY", minWidth: 100, type: "float" },
+                            {
+                                display: "金额(元)", name: "APPLY_MONEY", minWidth: 100,
+                                type: "float",
+                                onChange: {
+                                    
+                                },
+                                totalSummary: {
+                                    render: function (suminf, column) {
+                                        return "<span style='color:blue'>" + (suminf.sum) + "</span>";
+                                    }
+                                }
+                            },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
                             { display: "库存归属", name: "DEPT_NAME", minWidth: 100, type: "text", },
                             { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text" },
