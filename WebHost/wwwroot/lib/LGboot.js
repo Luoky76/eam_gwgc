@@ -38,7 +38,7 @@ try {
 } catch (err) {
 }
 var jsPath = __CreateJSPath("LGboot.js", parentWindow.document) || __CreateJSPath("LGboot.js", window.document);
-var JsVersion = jsPath.jsVersion || 1;
+var JsVersion = window.localStorage.getItem("_jsVersion") || jsPath.jsVersion || (new Date().toJSON()).substring(0, 10).replace(/-/g, "");
 var bootPATH = jsPath.path;
 //head
 document.write('<link href="' + bootPATH + 'dist/css/normalize.css" rel="stylesheet" type="text/css" />');

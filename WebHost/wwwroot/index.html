@@ -143,7 +143,7 @@
                                     旧密码
                                 </label>
                                 <div class="col-sm-8">
-                                    <input type="password" class="form-control" id="OldPassword" placeholder="请输入旧密码">
+                                    <input type="password" class="form-control" id="OldPassword" autocomplete="off" placeholder="请输入旧密码" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -151,7 +151,7 @@
                                     新密码
                                 </label>
                                 <div class="col-sm-8">
-                                    <input type="password" class="form-control" id="NewPassword" placeholder="请输入新密码">
+                                    <input type="password" class="form-control" id="NewPassword" autocomplete="off" placeholder="请输入新密码" />
                                 </div>
                             </div>
                             <div class="form-group">
@@ -159,7 +159,7 @@
                                     确认密码
                                 </label>
                                 <div class="col-sm-8">
-                                    <input type="password" class="form-control" id="equalPassword" placeholder="再次输入新密码">
+                                    <input type="password" class="form-control" id="equalPassword" autocomplete="off" placeholder="再次输入新密码" />
                                 </div>
                             </div>
                         </form>
@@ -205,7 +205,10 @@
             </div>
         </div>
     </div>
-    <script src="lib/LGboot.js?ver=1.0" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.localStorage.setItem("_jsVersion", "3.0");
+    </script>
+    <script src="lib/LGboot.js" type="text/javascript"></script>
     <script src="lib/dist/js/bootstrap.js" type="text/javascript"></script>
     <script src="lib/dist/js/bootstrap-treeview.js" type="text/javascript"></script>
     <script src="lib/dist/js/app-frame.js" type="text/javascript"></script>
@@ -318,9 +321,23 @@
                     var ifr = $("iframe", tabPanel)[0];
                     if (ifr) {
                         var win = ifr.window || ifr.contentWindow; // 考虑兼容性问题
-                        if (win && win.onClose) {
-                            if (win.onClose(pageId, title) == false) return false;
+                        if (!win) return;
+                        if (win.onClose && win.onClose(pageId, title) == false) return false;
+                        if (win.closeQuery && win._skipClose !== true) {
+                            var pwin = window;
+                            var closeQuery = $.isFunction(win.closeQuery) ? win.closeQuery : function (callback) {
+                                $.ligerDialog.confirm(win.closeQuery, function (confirm) {
+                                    if (!confirm) return;
+                                    callback();
+                                });
+                            };
+                            closeQuery(function () {
+                                win._skipClose = true;
+                                pwin.closeCurrentTab();
+                            });
+                            return false;
                         }
+                        delete win._skipClose;
                     }
                 } catch (err) { }
             };

@@ -117,31 +117,29 @@
                     }
                 });
             },
-            close: function () {
+            closeQuery: function (callback) {
                 var me = this;
-                function inner(callback) {
-                    var data = me.mainform.getChanges();
-                    if (!$.isEmptyObject(data)) {
-                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
-                            if (confirm) {
-                                if (callback) callback(2);
-                            }
-                            else {
-                                if (callback) callback(0);
-                            }
-                        });
-                        if (callback) return callback(-1);
-                        return false;
-                    }
-                    if (callback) return callback(1);
-                    return true;
+                if (me._skipConfirm === true || $.isEmptyObject(me.mainform.getChanges())) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
                 }
-                inner(function (status) {
-                    if (status > 0) {
-                        var win = parent || window;
-                        if (win.closeCurrentTab) win.closeCurrentTab()
-                        else win.close();
-                    }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                if (me.dialog) {
+                    me.dialog.close();
+                    return;
+                }
+                me.closeQuery(function () {
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
                 });
             },
             setFormDefaultBtn: function () {
@@ -159,8 +157,8 @@
                         }
                     });
                 }
-                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '保存', onclick: me.save.bind(me) });
+                buttons.push({ text: '关闭', onclick: function () { me.close(); } });
+                if (!me.isView) buttons.push({ text: '保存', onclick: function () { me.save() } });
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
             },
@@ -187,6 +185,7 @@
                 var me = this;
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
+                    if (me.closeQuery) me.dialog.options.closeQuery = me.closeQuery.bind(me);
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid
