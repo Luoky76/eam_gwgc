@@ -98,7 +98,7 @@
                     fields: [
                         { display: "流程标题", name: "Title", width: 300, newline: true, type: "text", options: { readonly: true } },
                         { display: "发起人", name: "Creator", width: 160, newline: true, type: "text", options: { readonly: true } },
-                        { display: "发起时间", name: "CreateDate", labelWidth: 70, newline: false, type: "date", options: { readonly: true } },
+                        { display: "发起时间", name: "CreateDate", labelWidth: 70, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } },
                         {
                             display: "处理意见", name: "CommonReason", width: 250, newline: true, type: "select", options: {
                                 url: "workflow/query/reasonData", triggerToLoad: true,
@@ -132,7 +132,7 @@
                             }
                         }]
                 });
-                me.auditForm.setData(me.data);
+                me.auditForm.setOrginData(me.data);
             },
             initFormUrl: function () {
                 var me = this;
@@ -186,6 +186,9 @@
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
                 if (me.nid) {
                     me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")));
+                }
+                else {
+                    if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
                 if (!isOper) me.mainForm._setDisabled(true);
             },
@@ -316,7 +319,7 @@
                 }
                 inner();
             },
-            share: function (url,isClose) {
+            share: function (url, isClose) {
                 var me = this;
                 url = url || 'workflow/task/share';
                 this.selectUser(function (values) {
@@ -340,7 +343,7 @@
             },
             transfer: function () {
                 var me = this;
-                me.share('workflow/task/transfer',true);
+                me.share('workflow/task/transfer', true);
             },
             selectUser: function (callback) {
                 var me = this;
@@ -410,34 +413,29 @@
                 }
                 inner();
             },
+            closeQuery: function (callback) {
+                var me = this;
+                if (me._skipConfirm === true || ((!me.mainForm || $.isEmptyObject(me.mainForm.getChanges())) && (!me.auditForm || $.isEmptyObject(me.auditForm.getChanges())))) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
             close: function (skipConfirm) {
                 var me = this;
-                function inner(callback) {
-                    if (!skipConfirm && !$.isEmptyObject(me.mainForm.getChanges())) {
-                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
-                            if (confirm) {
-                                if (callback) callback(2);
-                            }
-                            else {
-                                if (callback) callback(0);
-                            }
-                        });
-                        if (callback) return callback(-1);
-                        return false;
-                    }
-                    if (callback) return callback(1);
-                    return true;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                if (me.dialog) {
+                    me.dialog.close();
+                    return;
                 }
-                inner(function (status) {
-                    if (status > 0) {
-                        if (me.dialog) {
-                            me.dialog.close();
-                            return;
-                        }
-                        var win = parent || window;
-                        if (win.closeCurrentTab) win.closeCurrentTab();
-                        else win.close();
-                    }
+                me.closeQuery(function () {
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
                 });
             },
             initLayout: function () {
@@ -477,6 +475,7 @@
                 var me = this;
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
+                    if (me.closeQuery) me.dialog.options.closeQuery = me.closeQuery.bind(me);
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
@@ -492,6 +491,9 @@
                 me.initForm();
                 me.initFlow();
                 me.initTimeline();
+                window.closeQuery = function (callback) {
+                    return me.closeQuery(callback);
+                };
                 return me;
             }
         };

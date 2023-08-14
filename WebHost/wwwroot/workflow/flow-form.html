@@ -95,44 +95,37 @@
                 }
                 me.close(true);
             },
+            closeQuery: function (callback) {
+                var me = this;
+                if (me._skipConfirm === true || $.isEmptyObject(me.mainform.getChanges())) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
             close: function (skipConfirm) {
                 var me = this;
-                function inner(callback) {
-                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
-                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
-                            if (confirm) {
-                                if (callback) callback(2);
-                            }
-                            else {
-                                if (callback) callback(0);
-                            }
-                        });
-                        if (callback) return callback(-1);
-                        return false;
-                    }
-                    if (callback) return callback(1);
-                    return true;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                if (me.dialog) {
+                    me.dialog.close();
+                    return;
                 }
-                inner(function (status) {
-                    if (status > 0) {
-                        var data = me.mainform.getData();
-                        if (me.callback) me.callback(data);
-                        if (me.dialog) {
-                            me.dialog.close();
-                            return;
-                        }
-                        var win = parent || window;
-                        if (win.closeCurrentTab) win.closeCurrentTab();
-                        else win.close();
-                    }
+                me.closeQuery(function () {
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
                 });
             },
             setFormDefaultBtn: function () {
                 var me = this;
                 //表单底部按钮
                 var buttons = [];
-                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '确定', onclick: me.confirm.bind(me) });
+                buttons.push({ text: '关闭', onclick: function () { me.close(); } });
+                if (!me.isView) buttons.push({ text: '保存', onclick: function () { me.save() } });
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
             },
@@ -169,6 +162,7 @@
                 var me = this;
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
+                    if (me.closeQuery) me.dialog.options.closeQuery = me.closeQuery.bind(me);
                     me.dialogData = me.dialog.get('data') || {};
                     me.callback = me.dialogData.callback;
                 }
