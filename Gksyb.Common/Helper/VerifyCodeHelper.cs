@@ -81,7 +81,7 @@ namespace Gksyb.Common
             {
                 for (int i = 0; i < text.Length; i++)
                 {
-                    ctx.DrawLines(new Pen(color[random.Next(color.Length)], 1), new Point(random.Next(codeW), random.Next(codeH)), new Point(random.Next(codeW), random.Next(codeH)));
+                    ctx.DrawLine(new SolidPen(color[random.Next(color.Length)], 1), new Point(random.Next(codeW), random.Next(codeH)), new Point(random.Next(codeW), random.Next(codeH)));
                     ctx.DrawText(text[i].ToString(), font, color[random.Next(color.Length)], new Point(i * 18, y));
                 }
             });
