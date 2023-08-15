@@ -44,7 +44,7 @@
 	<!--自定义生成-->
 	<PropertyGroup>
 		<PluginTarget>Build</PluginTarget>
-		<PluginProperties>WarningsAsErrors=false;Configuration=$(Configuration); Platform=$(Platform);TargetFramework=$(TargetFramework);</PluginProperties>
+		<PluginProperties>WarningsAsErrors=false;SatelliteResourceLanguages=zh-Hans;Configuration=$(Configuration); Platform=$(Platform);TargetFramework=$(TargetFramework);</PluginProperties>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<PluginTarget>Rebuild</PluginTarget>
