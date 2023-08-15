@@ -49,7 +49,7 @@
                         labelwidth: 220,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "基础信息" },
+                            { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "物料领用申请" },
                             { display: "申请单号", name: "APPLY_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "申请日期", name: "APPLY_DATE", validate: { required: true }, newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "项目编号", name: "PROJECT_CODE", newline: false, upper: true, type: "text", editor: { type: 'text' } },
@@ -71,9 +71,11 @@
                             { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text", },
                             { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text", },
                             { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text", },
+                            //{ display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
                             { display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", },
                             {
-                                display: "申请数量", name: "APPLY_NUM", minWidth: 100, type: "float",
+                                display: "申请数量", name: "APPLY_NUM", validate: { required: true }, minWidth: 100, type: "float",
                                 totalSummary: {
                                     render: function (suminf, column) {
                                         return "<span style='color:blue'>" + (suminf.sum) + "</span>";
@@ -81,7 +83,11 @@
                                 },
                                 editor: {
                                     type: 'float',
-                                    onChange: function (rowdata, rowIndex) {
+                                    onChange: function (rowdata) {
+                                        if (rowdata.record["STORE_NUM"] < rowdata.value)
+                                        {
+                                            LG.showError("申请数量不可大于库存数量！");
+                                        }
                                         var price = rowdata.record["PRICE"];
                                         var applyMoney = rowdata.value * price;
                                         liger.get("detgird").updateCell("APPLY_MONEY", applyMoney, rowdata.record);
@@ -95,27 +101,10 @@
                                     },
                                 }
                             },
-                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text" },
-                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
-                            { display: "库存单价(元)", name: "PRICE", minWidth: 100, type: "float" },
-                            {
-                                display: "金额(元)", name: "APPLY_MONEY", minWidth: 100,
-                                type: "float",
-                                onChange: {
-                                    
-                                },
-                                totalSummary: {
-                                    render: function (suminf, column) {
-                                        return "<span style='color:blue'>" + (suminf.sum) + "</span>";
-                                    }
-                                }
-                            },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
-                            { display: "库存归属", name: "DEPT_NAME", minWidth: 100, type: "text", },
-                            { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text" },
-                            { display: "入库日期", name: "IN_DATE", minWidth: 100, type: "date" },
-                            { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "主键", name: "OUTDET_ID", minWidth: 100, hide: true },
+                            //{ display: "库存归属", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "主键", name: "OUTDET_ID", minWidth: 200, hide: true },
                             { display: "外键", name: "OUT_ID", minWidth: 100, hide: true },
                             { display: "外键", name: "SP_ID", minWidth: 100, hide: true },
                         ]
@@ -413,7 +402,7 @@
                 var dataOptions = {
                     values: gridKeys,
                     options: {
-                        url: 'Device/PmInfo/ImportSpList',
+                        url: 'Material/SpOut/ImportSpList',
                         rowKey: "SP_CODE",
                         columns: [
                             { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
@@ -421,14 +410,10 @@
                             { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
-                            { display: "供应商", name: "PRODUCE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "库存数量", name: "NUM", minWidth: 100, type: "float" },
                             { display: "含税金额(元)", name: "TAX_MONEY", minWidth: 100, type: "float" },
-                            { display: "不含税金额(元)", name: "UNTAX_MONEY", minWidth: 100, type: "float" },
-                            { display: "入库日期", name: "IN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-
-                            { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-
+                            { display: "不含税金额(元)", name: "NOTAX_MONEY", minWidth: 100, type: "float" },
+                            { display: "主键", name: "STORE_ID", minWidth: 100, hide: true },
                         ]
                     },
                     fields: [
@@ -447,12 +432,10 @@
                                     STOCK_NAME: item.STOCK_NAME,
                                     STORE_NUM: item.NUM,
                                     UNIT: item.UNIT,
-                                    PRODUCE: item.PRODUCE,
                                     PRICE: item.PRICE,
                                     APPLY_MONEY: item.PRICE,
-                                    IN_DATE: item.IN_DATE,
-                                    STORE_CODE: item.STORE_CODE,
                                     SP_ID: item.SP_ID,
+                                    STORE_ID: item.STORE_ID,
                                 });
                             }
                         }

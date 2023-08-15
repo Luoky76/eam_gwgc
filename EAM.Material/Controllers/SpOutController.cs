@@ -35,6 +35,17 @@ namespace EAM.Material.Controllers
                 auditing = comboxData["Auditing"],
             }, "成功");
         }
+
+        /// <summary>
+        /// 导入物料功能
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportSpListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ImportSpList(request), "成功");
+        }
+
         /// <summary>
         /// 获取物料领用申请记录
         /// </summary>
@@ -85,5 +96,68 @@ namespace EAM.Material.Controllers
         {
             return AjaxResult.Success(await _service.GetSpOutAppdetList(request), "成功");
         }
+
+        /// <summary>
+        /// 获取物料领用出库记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutStoreListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetSpOutStoreList(request), "成功");
+        }
+
+        /// <summary>
+        /// 根据物料领用出库ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutStoreListDetailAsync(string ID)
+        {
+            if (ID.IsNullOrEmpty()) return AjaxResult<SP_OUTSTORE>.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetSpOutStoreListDetail(ID), "成功");
+        }
+
+        /// <summary>
+        /// 管理物料领用出库记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManageSpOutStoreAsync(SaveRequest<SP_OUTSTORE> request, SaveRequest<SP_OUTSTORE_DET> requestdet)
+        {
+            return await _service.ManageSpOutStore(request, requestdet);
+        }
+
+        /// <summary>
+        /// 提交物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitSpOutStoreAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.SubmitSpOutStore(sid), "成功");
+        }
+
+        /// <summary>
+        /// 注销物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitSpOutStoreAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitSpOutStore(sid), "成功");
+        }
+
+        /// <summary>
+        /// 获取物料领用出库明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutStoredetListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetSpOutStoredetList(request), "成功");
+        }
+
     }
 }

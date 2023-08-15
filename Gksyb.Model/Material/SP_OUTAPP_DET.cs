@@ -365,7 +365,7 @@ namespace Gksyb.Model
         /// 不含税金额(元)
         /// </summary>
         [Description("不含税金额(元)")]
-        public decimal? UNTAX_MONEY { get; set; }
+        public decimal? NOTAX_MONEY { get; set; }
 
         /// <summary>
         /// 税率

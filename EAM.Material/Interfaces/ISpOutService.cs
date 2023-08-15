@@ -19,6 +19,12 @@ namespace EAM.Material.Interfaces
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
 
         /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> ImportSpList(GridRequest request);
+
+        /// <summary>
         /// 获取物料领用申请记录
         /// </summary>
         /// <returns></returns>
@@ -47,5 +53,43 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <returns></returns>
         public Task<GridData> GetSpOutAppdetList(GridRequest request);
+
+        /// <summary>
+        /// 获取物料领用出库记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetSpOutStoreList(GridRequest request);
+
+        /// <summary>
+        /// 获取单条物料领用出库记录
+        /// </summary>
+        /// <returns></returns>
+        Task<SP_OUTSTORE> GetSpOutStoreListDetail(string ID);
+
+        /// <summary>
+        /// 管理物料领用出库记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> ManageSpOutStore(SaveRequest<SP_OUTSTORE> request, SaveRequest<SP_OUTSTORE_DET> requestdet);
+
+        /// <summary>
+        /// 提交物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> SubmitSpOutStore(string sid);
+
+        /// <summary>
+        /// 注销物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitSpOutStore(string sid);
+
+        /// <summary>
+        /// 获取出库明细
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetSpOutStoredetList(GridRequest request);
+
+
     }
 }
