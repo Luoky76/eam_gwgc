@@ -97,5 +97,36 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(await _service.SetTopLower(LIMITID, TOP, LOWER), "成功");
         }
         #endregion
+
+        #region 库存报表
+        [HttpPost]
+        public async Task<AjaxResult> ReportComboxData()
+        {
+            return await _service.ReportComboxData();
+        }
+
+        /// <summary>
+        /// 物资查询
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> StoreSearchListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.StoreSearchListAsync(request), "成功");
+        }
+
+        /// <summary>
+        /// 收发存报表
+        /// </summary>
+        /// <param name="CREATEDATE"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> StoreInOutListAsync(DateTime? CREATEDATE, GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.StoreInOutListAsync(CREATEDATE,request), "成功");
+        }
+        #endregion
     }
 }
