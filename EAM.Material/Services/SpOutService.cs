@@ -1,23 +1,13 @@
-﻿using Chloe;
-using DocumentFormat.OpenXml.Wordprocessing;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.CodeAnalysis;
-using NPOI.OpenXmlFormats.Dml.Diagram;
-using NPOI.OpenXmlFormats.Wordprocessing;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.Formula.PTG;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using System;
 using System.Collections.Concurrent;
-using System.Reflection.Emit;
-using WkHtmlToPdfDotNet;
+using System.Linq;
 
 namespace EAM.Material.Services
 {
@@ -29,6 +19,7 @@ namespace EAM.Material.Services
         private DateTime? _Sysdate;
         private string _rentID = string.Empty, errMsg = string.Empty;
         private string _outID = string.Empty, errMsg2 = string.Empty;
+        private Dictionary<string, string> outDic = new();
         /// <summary>
         /// 获取数据库时间
         /// </summary>
@@ -215,7 +206,7 @@ namespace EAM.Material.Services
             string aa = "LY" + DateTime.Now.ToString("yyyyMM");
             string def = aa + "0000";
             var model = await _dbContext.Query<SP_OUT_APP>(x => x.APPLY_CODE.Contains(aa)).Select(x => Sql.Max(x.APPLY_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
             entity.APPLY_CODE = aa + index.ToString("D4");
             entity.OUT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
         }
@@ -262,7 +253,7 @@ namespace EAM.Material.Services
             string aa = "CK" + DateTime.Now.ToString("yyyyMM");
             string def = aa + "0000";
             var model = await _dbContext.Query<SP_OUTSTORE>(x => x.OUT_CODE.Contains(aa)).Select(x => Sql.Max(x.OUT_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
             //取物资申请表数据
             var qryoutapps = await _dbContext.Query<SP_OUT_APP>()
                  .Where(c => sid == c.OUT_ID)
@@ -338,7 +329,7 @@ namespace EAM.Material.Services
                 var spoutstoredet = new List<SP_OUTSTORE_DET>();
                 foreach (var qryoutappdet in qryoutappdets)
                 {
-                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.SP_ID == qryoutappdet.SP_ID)
+                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.SP_ID == qryoutappdet.SP_ID && c.NUM>0)
                         .OrderBy(c => c.IN_DATE)
                         .ToListAsync();
                     //取总数量
@@ -360,6 +351,7 @@ namespace EAM.Material.Services
                         outstdet3.APPLY_MONEY = qrypc.PRICE * applyNumToUse;
                         outstdet3.CREATE_USERID = _userSession.UserID.ToString();
                         outstdet3.CREATEDATE = Sysdate;
+                        //outst.SUM_MONEY += outstdet3.MONEY;
 
                         spoutstoredet.Add(outstdet3);
 
@@ -514,7 +506,7 @@ namespace EAM.Material.Services
                      c.STORE_ID,
                  })
                  .ToListAsync();
-            //获取出库明细对应的数据
+            //获取出库对应的数据
             var qryoutst = await _dbContext.Query<SP_OUTSTORE>()
                  .Where(c => sid == c.OUT_ID)
                  .Select(c => new
@@ -536,16 +528,16 @@ namespace EAM.Material.Services
                 {
                     //获取库存数据
                     var qrystore = qryStores.FirstOrDefault(s =>
-                        s.STORE_ID == qryoutstdet.STORE_ID && qryoutstdet.STORE_CODE == s.STORE_CODE);
+                        s.STORE_ID == qryoutstdet.STORE_ID);
                     if (qrystore.NUM < qryoutstdet.COUNT)
                     {
                         throw new MessageException("当前批次库存已经没这么多，请重新选择出库数量！");
                     }
                     if (qrystore != null)
                     {
-                        //期初库存
+                        //期初库存数量
                         var bnum = qrystore.NUM;
-                        //期初库存
+                        //期初库存金额
                         var bmoney = qrystore.TAX_MONEY;
                         //剩余库存数量
                         var surnum = qrystore.NUM - qryoutstdet.COUNT;
@@ -554,7 +546,7 @@ namespace EAM.Material.Services
                         //剩余不含税金额
                         var surnomoney = surnum * qrystore.NOTAX_PRICE;
                         //更新库存表
-                        var updatedevice = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
+                        var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
                              x => new SP_STORE
                              {
                                  NUM = surnum,
@@ -577,6 +569,7 @@ namespace EAM.Material.Services
                         waterdata.IN_MONEY = qryoutstdet.COUNT * qrystore.PRICE;
                         waterdata.CUR_NUM = surnum;
                         waterdata.CUR_MONEY = surmoney;
+                        waterdata.IS_BACK = "0";
 
                         waterdata.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
                         waterdata.CREATE_USERID = _userSession.UserID.ToString();
@@ -625,6 +618,240 @@ namespace EAM.Material.Services
 
         #endregion 物料领用出库
 
+        #region 物料出库冲红
 
+        /// <summary>
+        /// 获取冲红记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetSpOutBackList(GridRequest request)
+        {
+            return await _dbContext.Query<SP_OUT_BACK>()
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.BACK_CODE)
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 获取单条冲红记录
+        /// </summary>
+        /// <returns></returns>
+
+        public async Task<SP_OUT_BACK> GetSpOutBackListDetail(string ID)
+        {
+            var qry = await _dbContext.QueryByKeyAsync<SP_OUT_BACK>(ID);
+            return qry;
+        }
+
+        /// <summary>
+        /// 管理冲红记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request)
+        {
+            using var trans = _dbContext.BeginTransaction(); // 事务保证保存数据的一致性
+            try
+            {
+                var outlist = request.Select(x => x.OUT_ID).ToList();
+                var outBackDets = _dbContext.Query<SP_OUTSTORE>().ToList();
+                var request2 = outBackDets
+                .Where(x => outlist.Contains(x.OUT_ID))
+                .Select(x =>
+                {
+                    return x.MapTo<SP_OUT_BACK>();
+                })
+                .ToList();
+
+                int index = 0; // 初始化 index
+
+                foreach (var request1 in request2)
+                {
+                    request1.BACK_DATE = Sysdate;
+                    string aa = "CH" + DateTime.Now.ToString("yyyyMM");
+                    string def = aa + "0000";
+
+                    var model = await _dbContext.Query<SP_OUT_BACK>(x => x.BACK_CODE.Contains(aa))
+                        .Select(x => Sql.Max(x.BACK_CODE) ?? def)
+                        .FirstOrDefaultAsync();
+
+                    index++; // 增加 index
+                    request1.BACK_CODE = aa + (model.SubStr(8, 4).CastTo<int>() + index).ToString("D4");
+                    request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                await _dbContext.InsertRangeAsync(request2);
+                if (request2.Count > 0)
+                {
+                    var keylist = request2.Select(x => x.OUT_ID).ToList();
+                    var outstoreDets = _dbContext.Query<SP_OUTSTORE_DET>().ToList();
+
+                    var spoutbackdet = outstoreDets
+                        .Where(x => keylist.Contains(x.OUT_ID))
+                        .Select(x =>
+                        {
+                            if (outDic.ContainsKey(x.OUT_ID))
+                            {
+                                x.OUT_ID = outDic[x.OUT_ID];
+                            }
+                            return x.MapTo<SP_OUTBACK_DET>();
+                        })
+                        .ToList();
+
+                    await _dbContext.InsertRangeAsync(spoutbackdet); // 插入明细数据
+                }
+
+                trans.Commit();
+                return AjaxResult.Success("保存成功");
+            }
+            catch (Exception ex)
+            {
+                trans.Rollback();
+                return AjaxResult.Error("保存失败：" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 提交
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> SubmitSpOutBack(string sid)
+        {
+            //查冲红的出库单号
+            var qryback = await _dbContext.Query<SP_OUT_BACK>(c => c.OUT_ID == sid)
+                .FirstOrDefaultAsync();
+            //查明细id的数据
+            var qrybackdets = await _dbContext.Query<SP_OUTBACK_DET>(c => c.OUT_BACK_ID == sid)
+                .ToListAsync();
+            //获取明细库存id
+            var backstoreDetIds = qrybackdets.Select(q => q.STORE_ID).ToList();
+            //获取出库明细的库存数据
+            var qryStores = await _dbContext.Query<SP_STORE>()
+                .Where(s => backstoreDetIds.Contains(s.STORE_ID))
+                .ToListAsync();
+            //获取流水表的库存数据
+            var qryWaters = await _dbContext.Query<STORE_WATER>()
+                .Where(s => backstoreDetIds.Contains(s.STORE_ID))
+                .ToListAsync();
+            foreach (var qrybackdet in qrybackdets)
+            {
+                //获取库存数据
+                var qrystore = qryStores.FirstOrDefault(s =>
+                    s.STORE_ID == qrybackdet.STORE_ID);
+                if (qrystore != null)
+                {
+                    //期初库存数量
+                    var bnum = qrystore.NUM;
+                    //期初库存金额
+                    var bmoney = qrystore.TAX_MONEY;
+                    //冲红库存数量
+                    var chnum = qrystore.NUM + qrybackdet.COUNT;
+                    //冲红库存金额
+                    var chmoney = chnum * qrystore.PRICE;
+                    //冲红不含税金额
+                    var chnomoney = chnum * qrystore.NOTAX_PRICE;
+                    //更新库存表
+                    var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qrybackdet.STORE_ID,
+                         x => new SP_STORE
+                         {
+                             NUM = chnum,
+                             MONEY = chmoney,
+                             TAX_MONEY = chmoney,
+                             NOTAX_MONEY = chnomoney,
+                         });
+
+                    //获取流水数据
+                    var qryWater = qryWaters.FirstOrDefault(s =>
+                        s.STORE_ID == qrybackdet.STORE_ID && s.SRC_CODE == qryback.OUT_CODE);
+                    if (qryWater != null)
+                    {
+                        //更新出库表
+                        var updatespout = await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_CODE == qryback.OUT_CODE,
+                             x => new SP_OUTSTORE
+                             {
+                                 IS_RED = "1",
+                             });
+                        //更新流水表
+                        var updatespwater = await _dbContext.UpdateAsync<STORE_WATER>(x => x.WATER_ID == qryWater.WATER_ID,
+                             x => new STORE_WATER
+                             {
+                                 IS_BACK = "1",
+                             });
+                    }
+                }
+            }
+
+            return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_ID,
+                      x => new SP_OUT_BACK
+                      {
+                          AUDITING = "1",
+                      });
+        }
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ImportList(GridRequest request)
+        {
+            return await _dbContext.Query<SP_OUTSTORE>()
+                .Where(c => c.AUDITING_A =="1")
+                .GetGridData(request);
+        }
+        #endregion
+        /// <summary>
+        /// 获取物料出库明细记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetSpOutStoreDetailList(GridRequest request)
+        {
+            return await _dbContext.Query<SP_OUTSTORE_DET>()
+                .InnerJoin<SP_OUTSTORE>((a, b) => a.OUT_ID == b.OUT_ID)
+                .Where((a, b) => b.AUDITING_A=="1")
+                .Select((a, b) => new
+                {
+                    b.OUT_CODE,
+                    b.APPLY_CODE,
+                    b.OUT_DATE,
+                    b.USER_NAME,
+                    b.DEPT_NAME,
+                    b.M_USER,
+                    a.SP_NAME,
+                    a.SP_CODE,
+                    a.SP_SIZE,
+                    a.PRODUCE,
+                    a.UNIT,
+                    a.TYPE_CODE,
+                    a.TYPE_NAME,
+                    a.APPLY_NUM,
+                    a.COUNT,
+                    a.PRICE,
+                    a.DEVICE_NO,
+                    a.MONEY,
+                    a.HOUSE_NAME,
+                    a.STOCK_NAME,
+                    a.STORE_CODE,
+                    a.IN_DATE,
+                    a.IS_RECOVERY,
+                    b.PROJECT_CODE,
+                    b.PROJECT_NAME,
+                    a.TAX_RATE,
+                    a.NOTAX_PRICE,
+                    a.NOTAX_MONEY,
+                    b.SEC_DEPT,
+                    a.MEMO,
+                    a.STORE_ID,
+                    a.OUTDET_ID,
+                    a.OUT_ID,
+                    a.DEPT_ID,
+                })
+               .GetGridData(request);
+        }
+        /// <summary>
+        /// 获取物料冲红明细记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> GetSpOutBackDetailList(GridRequest request)
+        {
+            return await _dbContext.Query<SP_OUTBACK_DET>()
+                .GetGridData(request);
+        }
     }
 }

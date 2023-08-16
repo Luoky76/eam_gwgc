@@ -1,10 +1,372 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
 
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>物料出库冲红</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            auditing: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text", options: { data: me.auditing } },
+                            { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "出库单号", name: "_search_OUT_CODE", dbname: "OUT_CODE", newline: false, upper: true, type: "text", options: {} },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", },
+                            { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", },
+                            { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "date", },
+                            { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", },
+                            { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            { display: "领用人", name: "OUT_USER", minWidth: 100, type: "text", },
+                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "float", },
+                            { display: "备注", name: "MEMO", minWidth: 450, type: "text", },
+                            { display: "主键", name: "OUT_BACK_ID", hide: true },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            /*loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpOut/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },*/
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Material/SpOut/GetSpOutBackList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    //sortName: 'AUDITING',
+                    //sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "submit":
+                            me.submit();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            submit: function () {    //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING != "0") {
+                        LG.tip('无法提交！');
+                    } else {
+                        var sid = selected[0].OUT_BACK_ID;
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/SubmitSpOutBack',
+                            loading: '正在保存中...',
+                            data: { "sid": sid },
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
+            //导入
+            add: function () {
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.OUT_CODE);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Material/SpOut/ImportList',
+                        rowKey: "OUT_CODE",
+                        columns: [
+                            { display: "记录状态", name: "AUDITING_A", dbname: "AUDITING_A", width: 100, type: "select", format: { data: me.auditing } },
+                            {
+                                display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text",
+                                render: function (rowdata, rowindex, value, column) {
+                                    return "<a href='javascript:;'>" + rowdata.OUT_CODE + "</a>";
+                                },
+                            },
+                            {
+                                display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text",
+                            },
+                            { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "date", },
+                            { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            { display: "二级单位", name: "SEC_DEPT", minWidth: 100, type: "text", },
+                            { display: "申请人", name: "USER_NAME", minWidth: 100, type: "text", },
+                            { display: "仓管员", name: "M_USER", minWidth: 100, type: "text", },
+                            { display: "项目编号", name: "PROJECT_CODE", minWidth: 100, type: "text", },
+                            { display: "项目名称", name: "PROJECT_NAME", minWidth: 100, type: "text", },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", },
+                            { display: "OUT_ID", name: "OUT_ID", hide: true },
+                        ]
+                    },
+                    fields: [
+                        { display: "申请单号", name: "APPLY_CODE", width: 100, type: "text" },
+                        { display: "出库单号", name: "OUT_CODE", width: 100, type: "text" },
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        var hasDataRed = false;
+
+                        for (var i = 0; i < rows.length; i++) {
+                            if (currentSet.has(rows[i].OUT_CODE)) {
+                                hasDataRed = true;
+                                LG.tip('已经有数据被冲红!');
+                                break;
+                            }
+                        }
+
+                        if (!hasDataRed) {
+                            var changeRow = [];
+                            changeRow = rows;
+                            LG.ajax({
+                                jsToken: true,
+                                url: 'Material/SpOut/ManageSpOutBack',
+                                loading: '正在保存中...',
+                                data: { request: changeRow },
+                                success: function () {
+                                    LG.showSuccess('保存成功', function () {
+                                        me.reload();
+                                        me.dialog.close();
+                                    });
+                                },
+                                error: function (message) {
+                                    LG.showError(message);
+                                }
+                            });
+                        }
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '选择出库单',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                var sid = selected.OUT_BACK_ID;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '[修改]',
+                    url: "spoutbackdet.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": sid }
+                });
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                //me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
 </body>
 </html>
