@@ -52,7 +52,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "来源类型", name: "SRC_TYPE", dbname: "HOUSE_CODE", width: 100, type: "select", format: { data: me.storeSou } },
+                            { display: "来源类型", name: "SRC_TYPE", dbname: "SRC_TYPE", width: 100, type: "select", format: { data: me.storeSou } },
                             { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", width: 120, type: "text", },
                             { display: "物料名称", name: "SP_NAME", dbname: "SP_NAME", width: 150, type: "text", },
                             { display: "规格型号", name: "SP_SIZE", dbname: "SP_SIZE", width: 150, type: "text", },
@@ -217,7 +217,7 @@
                                 }
                             }
                         },
-                        { display: "申请单号", name: "申请单号", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' } },
+                        { display: "申请单号", name: "APPLY_NO", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' } },
                         //隐藏
                         { display: "SP_ID", name: "SP_ID", dbname: "SP_ID", width: 180, type: "hidden" },
                         { display: "TYPE_ID", name: "TYPE_ID", dbname: "TYPE_ID", width: 180, type: "hidden" },

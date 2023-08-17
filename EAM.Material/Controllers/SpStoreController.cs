@@ -43,7 +43,6 @@ namespace EAM.Material.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        [JsToken]
         public async Task<AjaxResult> Save(SaveRequest<SP_STORE> request)
         {
             var result = await ValidSaveAsync(request);
