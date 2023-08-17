@@ -48,17 +48,18 @@
                     form: {
                         labelwidth: 220,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "出库冲红" },
-                            { display: "冲红日期", name: "BACK_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing, disabled: true }, group: "出库冲红" },
+                            { display: "冲红日期", name: "BACK_DATE", newline: false, upper: true, type: "date", options: { } },
                             { display: "冲红单号", name: "BACK_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "出库单号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "出库日期", name: "OUT_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
-                            { display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            //{ display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "申请部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "领用人", name: "OUT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "冲红金额", name: "SUM_MONEY", newline: false, upper: true, type: "float", options: { disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: 775, type: "textarea", options: { disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true,  upper: true, width: 775, type: "textarea", options: { } },
+                            { display: "外键", name: "OUT_ID", newline: false, upper: true, type: "hidden", options: { disabled: true } },
                             { display: "主键", name: "OUT_BACK_ID", newline: false, upper: true, type: "hidden", options: { disabled: true } },]
                     },
                     grid: {
@@ -78,17 +79,6 @@
                             },
                             {
                                 display: "出库数量", name: "COUNT", validate: { required: true }, minWidth: 100, type: "float",
-                                totalSummary: {
-                                    render: function (suminf, column) {
-                                        return "<span style='color:blue'>" + (suminf.sum) + "</span>";
-                                    }
-                                },
-                                editor: {
-                                    type: 'float',
-                                }
-                            },
-                            {
-                                display: "当前批次库存", name: "STORE_NUM", minWidth: 100, type: "float",
                                 totalSummary: {
                                     render: function (suminf, column) {
                                         return "<span style='color:blue'>" + (suminf.sum) + "</span>";
@@ -170,7 +160,6 @@
                 input.focus();
                 input.select();
             },
-
             save: function () { //保存
                 var me = this;
                 var formEdit = false, gridEdit = false;
@@ -208,7 +197,7 @@
 
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/SpOut/ManageSpOutStore',
+                        url: 'Material/SpOut/SaveSpBack',
                         loading: '正在保存中...',
                         data: { request: changeRow, requestdet: changeRowDet },
                         success: function () {
@@ -296,7 +285,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'OUT_BACK_ID', op: 'equal', value: $('#OUT_BACK_ID').val() }]
+                            rules: [{ field: 'OUT_ID', op: 'equal', value: $('#OUT_ID').val() }]
                         })
                     },
                     //sortName: 'MODIFY_DATE',

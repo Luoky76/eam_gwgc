@@ -7,6 +7,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System;
 using System.Collections.Concurrent;
+using System.Data.SqlTypes;
 using System.Linq;
 
 namespace EAM.Material.Services
@@ -62,7 +63,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> ImportSpList(GridRequest request)
         {
-            return await _dbContext.Query<SP_STORE>(c => c.NUM>0)
+            return await _dbContext.Query<SP_STORE>()
+                .Where(c => c.NUM > 0 && c.SP_NAME != null && c.SP_CODE != null)
                 .GroupBy(t => new
                 {
                     t.SP_ID,
@@ -320,6 +322,7 @@ namespace EAM.Material.Services
 
                 outst.OUT_ID = GuidHelper.NewSnowflakeId().ToString();
                 outst.OUT_CODE = aa + index.ToString("D4");
+                outst.OUT_DATE = Sysdate;
                 outst.IS_RED = "0";
                 outst.AUDITING_A = "0";
                 outst.CREATE_USERID = _userSession.UserID.ToString();
@@ -327,9 +330,13 @@ namespace EAM.Material.Services
                 await _dbContext.InsertAsync(outst);
 
                 var spoutstoredet = new List<SP_OUTSTORE_DET>();
+                //申请金额
+                var appmoney = 0m;
                 foreach (var qryoutappdet in qryoutappdets)
                 {
-                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.SP_ID == qryoutappdet.SP_ID && c.NUM>0)
+                    var qrypcs = await _dbContext.Query<SP_STORE>(c=>c.NUM>0)
+                        .Where(c=>c.SP_CODE==qryoutappdet.SP_CODE&&c.SP_ID == qryoutappdet.SP_ID&&c.STOCK_ID == qryoutappdet.STOCK_ID
+                             &&c.SP_SIZE == qryoutappdet.SP_SIZE&&c.UNIT == qryoutappdet.UNIT&&c.SP_NAME == qryoutappdet.SP_NAME&&c.STOCK_NAME == qryoutappdet.STOCK_NAME)
                         .OrderBy(c => c.IN_DATE)
                         .ToListAsync();
                     //取总数量
@@ -351,8 +358,10 @@ namespace EAM.Material.Services
                         outstdet3.APPLY_MONEY = qrypc.PRICE * applyNumToUse;
                         outstdet3.CREATE_USERID = _userSession.UserID.ToString();
                         outstdet3.CREATEDATE = Sysdate;
-                        //outst.SUM_MONEY += outstdet3.MONEY;
-
+                        if (outstdet3.MONEY.HasValue)
+                        {
+                            appmoney += outstdet3.MONEY.Value;
+                        }
                         spoutstoredet.Add(outstdet3);
 
                         if (applyNumToUse == res)
@@ -363,6 +372,11 @@ namespace EAM.Material.Services
                         res -= applyNumToUse;
                     }
                 }
+                await _dbContext.UpdateAsync<SP_OUTSTORE>(x => outst.OUT_ID == x.OUT_ID,
+                  x => new SP_OUTSTORE
+                  {
+                      SUM_MONEY = appmoney,
+                  });
                 await _dbContext.InsertRangeAsync(spoutstoredet);
                 return await _dbContext.UpdateAsync<SP_OUT_APP>(x => sid == x.OUT_ID,
                       x => new SP_OUT_APP
@@ -504,6 +518,7 @@ namespace EAM.Material.Services
                      c.COUNT,
                      c.STORE_CODE,
                      c.STORE_ID,
+                     c.WATER_ID,
                  })
                  .ToListAsync();
             //获取出库对应的数据
@@ -576,9 +591,16 @@ namespace EAM.Material.Services
                         waterdata.CREATEDATE = Sysdate;
                         waterdata.WATER_DATE = Sysdate;
                         stwater.Add(waterdata);
+
+                        await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
+                                  x => new SP_OUTSTORE_DET
+                                  {
+                                      WATER_ID = waterdata.WATER_ID,
+                                  });
                     }
                 }
                 await _dbContext.InsertRangeAsync(stwater);
+                
                 transaction.Commit();
             }
             catch (Exception)
@@ -644,7 +666,7 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 管理冲红记录
+        /// 管理导入冲红记录
         /// </summary>
         /// <returns></returns>
         public async Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request)
@@ -662,14 +684,12 @@ namespace EAM.Material.Services
                 })
                 .ToList();
 
-                int index = 0; // 初始化 index
-
+                int index = 0; 
                 foreach (var request1 in request2)
                 {
                     request1.BACK_DATE = Sysdate;
                     string aa = "CH" + DateTime.Now.ToString("yyyyMM");
                     string def = aa + "0000";
-
                     var model = await _dbContext.Query<SP_OUT_BACK>(x => x.BACK_CODE.Contains(aa))
                         .Select(x => Sql.Max(x.BACK_CODE) ?? def)
                         .FirstOrDefaultAsync();
@@ -677,6 +697,7 @@ namespace EAM.Material.Services
                     index++; // 增加 index
                     request1.BACK_CODE = aa + (model.SubStr(8, 4).CastTo<int>() + index).ToString("D4");
                     request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
+                    outDic[request1.OUT_ID] =  request1.OUT_BACK_ID;
                 }
                 await _dbContext.InsertRangeAsync(request2);
                 if (request2.Count > 0)
@@ -684,19 +705,19 @@ namespace EAM.Material.Services
                     var keylist = request2.Select(x => x.OUT_ID).ToList();
                     var outstoreDets = _dbContext.Query<SP_OUTSTORE_DET>().ToList();
 
-                    var spoutbackdet = outstoreDets
+                    var spoutbackdets = outstoreDets
                         .Where(x => keylist.Contains(x.OUT_ID))
                         .Select(x =>
                         {
-                            if (outDic.ContainsKey(x.OUT_ID))
-                            {
-                                x.OUT_ID = outDic[x.OUT_ID];
-                            }
                             return x.MapTo<SP_OUTBACK_DET>();
                         })
                         .ToList();
-
-                    await _dbContext.InsertRangeAsync(spoutbackdet); // 插入明细数据
+                    foreach (var spoutbackdet in spoutbackdets)
+                    {
+                        spoutbackdet.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
+                        spoutbackdet.OUT_BACK_ID = outDic[spoutbackdet.OUT_ID];
+                    }
+                    await _dbContext.InsertRangeAsync(spoutbackdets); // 插入明细数据
                 }
 
                 trans.Commit();
@@ -716,7 +737,7 @@ namespace EAM.Material.Services
         public async Task<int> SubmitSpOutBack(string sid)
         {
             //查冲红的出库单号
-            var qryback = await _dbContext.Query<SP_OUT_BACK>(c => c.OUT_ID == sid)
+            var qryback = await _dbContext.Query<SP_OUT_BACK>(c => c.OUT_BACK_ID == sid)
                 .FirstOrDefaultAsync();
             //查明细id的数据
             var qrybackdets = await _dbContext.Query<SP_OUTBACK_DET>(c => c.OUT_BACK_ID == sid)
@@ -779,7 +800,7 @@ namespace EAM.Material.Services
                 }
             }
 
-            return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_ID,
+            return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_BACK_ID,
                       x => new SP_OUT_BACK
                       {
                           AUDITING = "1",
@@ -795,6 +816,23 @@ namespace EAM.Material.Services
                 .Where(c => c.AUDITING_A =="1")
                 .GetGridData(request);
         }
+
+        /// <summary>
+        /// 保存冲红
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveSpBack(SaveRequest<SP_OUT_BACK> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.BACK_DATE,
+                    c.MEMO,
+                    c.OUT_BACK_ID,
+                },
+                c => a => a.OUT_BACK_ID == c.OUT_BACK_ID);
+        }
+
         #endregion
         /// <summary>
         /// 获取物料出库明细记录

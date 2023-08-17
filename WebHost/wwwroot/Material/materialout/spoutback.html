@@ -38,9 +38,9 @@
                             { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", },
                             { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", },
                             { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "date", },
-                            { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", },
+                            //{ display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
-                            { display: "领用人", name: "OUT_USER", minWidth: 100, type: "text", },
+                            { display: "领用人", name: "USER_NAME", minWidth: 100, type: "text", },
                             { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "float", },
                             { display: "备注", name: "MEMO", minWidth: 450, type: "text", },
                             { display: "主键", name: "OUT_BACK_ID", hide: true },
@@ -176,6 +176,59 @@
                         });
                     }
                 }
+            },
+
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpOut/SaveSpBack',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        for (var i = 0; i < selected.length; i++) {
+                            if (selected[i].AUDITING == "1") {
+                                LG.tip('已提交，无法删除!');
+                                break;
+                            }
+                            else {
+                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                    if (confirm) {
+                                        for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                            me.grid.deleteRow(selected[i]);
+                                        }
+                                        me.save();
+                                    }
+                                }); break;
+                            }
+                        }
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+
             },
             //导入
             add: function () {
