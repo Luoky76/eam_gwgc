@@ -28,6 +28,7 @@ namespace EAM.Material.Controllers
             {
                 spapplyType = comboxData["SpapplyType"],
                 auditing = comboxData["Auditing"],
+                purtypeName = comboxData["BCCode"],
             }, "成功");
         }
 
