@@ -52,21 +52,21 @@
                             { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "申请信息" },
                             { display: "申请单号", name: "APPLY_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "申请日期", name: "APPLY_DATE", newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "项目编号", name: "PROJECT_CODE", newline: false, upper: true, type: "text", editor: {  disabled: true } },
-                            { display: "项目名称", name: "PROJECT_NAME", newline: false, upper: true, type: "text", editor: {  disabled: true } },
-                            { display: "申请部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: {  disabled: true } },
+                            { display: "项目编号", name: "PROJECT_CODE", newline: false, upper: true, type: "text", editor: { disabled: true } },
+                            { display: "项目名称", name: "PROJECT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true } },
+                            { display: "申请部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true } },
                             { display: "申请人ID", name: "USER_ID", newline: false, upper: true, type: "hidden", options: { disabled: true } },
                             { display: "申请人ID", name: "USER_ID", newline: false, upper: true, type: "hidden", options: { disabled: true } },
                             { display: "申请类型", name: "APPLY_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.spapplyType, } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "用途", name: "PURTYPE_NAME", newline: false, upper: true, type: "select", options: { data: me.purtypeName, disabled: true } },
                             { display: "申请总金额(元)", name: "SUM_MONEY", newline: false, upper: true, type: "float", options: { disabled: true } },
-                            
+
                             { display: "出库单号", name: "OUT_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {}, group: "出库信息" },
                             { display: "仓库员ID", name: "M_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "仓管员", name: "M_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
                             { display: "出库日期", name: "OUT_DATE", validate: { required: true }, minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: { } },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
                             //隐藏
                             { display: "主键", name: "OUT_ID", newline: false, upper: true, type: "hidden", options: {} },]
                     },
@@ -92,13 +92,16 @@
                                         return "<span style='color:blue'>" + (suminf.sum) + "</span>";
                                     }
                                 },
-                                onChange: function (rowdata) {
-                                    if (rowdata.record["STORE_NUM"] < rowdata.value) {
-                                        LG.showError("出库数量不可大于库存数量！");
-                                    }
-                                },
                                 editor: {
                                     type: 'float',
+                                    onChange: function (rowdata) {
+                                        var tol = 0;
+                                        for (var i = 0; i < business.grid.rows.length; i++) {
+                                            tol += business.grid.rows[i].COUNT * business.grid.rows[i].PRICE
+                                        };
+                                        me.mainform.setData({ 'SUM_MONEY': tol });
+                                        business.grid.updateTotalSummary();
+                                    },
                                 }
                             },
                             {
@@ -113,9 +116,6 @@
                             {
                                 display: "金额(元)", name: "APPLY_MONEY", minWidth: 100,
                                 type: "float",
-                                onChange: {
-
-                                },
                                 totalSummary: {
                                     render: function (suminf, column) {
                                         return "<span style='color:blue'>" + (suminf.sum) + "</span>";
@@ -161,7 +161,7 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    me.mainform.setData({ AUDITING_A: "0" });
+                    me.mainform.setData({ AUDITING_A: "0",});
                     inner();
                 }
                 else {
@@ -222,21 +222,29 @@
                         changeRow["original"] = [original];
                     }
                     var changeRowDet = me.grid.getChangedRows();
-
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/SpOut/ManageSpOutStore',
-                        loading: '正在保存中...',
-                        data: { request: changeRow, requestdet: changeRowDet },
-                        success: function () {
-                            LG.showSuccess('保存成功', function () {
-                                if (me.dialog) me.dialog.close();
-                            });
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+                    var isSave = true
+                    for (var i = 0; i < changeRowDet.added.length; i++) {
+                        if (changeRowDet.added[i].COUNT > changeRowDet.added[i].STORE_NUM) {
+                            LG.showSuccess('出库数量不可大于库存数量！')
+                            isSave = false;
                         }
-                    });
+                    }
+                    if (isSave) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/ManageSpOutStore',
+                            loading: '正在保存中...',
+                            data: { request: changeRow, requestdet: changeRowDet },
+                            success: function () {
+                                LG.showSuccess('保存成功', function () {
+                                    if (me.dialog) me.dialog.close();
+                                });
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
                 }
                 else { LG.showSuccess('无修改'); }
             },
@@ -462,21 +470,18 @@
                 me.setConfig();
                 me.setForm();
                 me.loadData();
-
                 //加载重大改造履历
                 me.setGrid();
                 $('#M_USER').bind('click', function () {
                     me.f_select_man();
                 });
                 me.reloadDet();
-
                 if (me.dialogData.view != undefined) {
                     const commonGridOptions = {
                         enabledEdit: false,
                     };
                     me.grid.setOptions(commonGridOptions);
                 }
-                return me;
             }
         };
         business.init();

@@ -208,6 +208,16 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 保存冲红
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveSpBackAsync(SaveRequest<SP_OUT_BACK> request)
+        {
+            return await _service.SaveSpBack(request);
+        }
+
+        /// <summary>
         /// 获取物料出库明细记录
         /// </summary>
         /// <returns></returns>

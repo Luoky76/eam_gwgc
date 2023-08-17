@@ -119,6 +119,12 @@ namespace EAM.Material.Interfaces
         public Task<GridData> ImportList(GridRequest request);
 
         /// <summary>
+        /// 保存冲红
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> SaveSpBack(SaveRequest<SP_OUT_BACK> request);
+
+        /// <summary>
         /// 获取物料出库明细记录
         /// </summary>
         /// <returns></returns>
