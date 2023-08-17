@@ -36,7 +36,7 @@ namespace Gksyb.Common.Quartz
             try
             {
                 if (!_quartzTask.IsExcuted) return;
-                _quartzTask.LastRunTime = Convert.ToDateTime(context.FireTimeUtc.ToString());
+                _quartzTask.LastRunTime = context.FireTimeUtc.ToLocalTime().DateTime;
                 _quartzTask.ElapsedTime = context.JobRunTime.TotalMilliseconds.CastTo<int>();
                 if (jobException == null)
                 {
