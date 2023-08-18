@@ -32,6 +32,12 @@ namespace EAM.Device.Services
             return list;
         }
 
+        public async Task<GridData> DeviceListAsync(GridRequest request)
+        {
+            var list = await _dbContext.Query<DEVICE_CARD>(x=> "1,3".Contains(x.AUDITING)).GetGridData(request);
+            return list;
+        }
+
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -136,19 +142,5 @@ namespace EAM.Device.Services
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 获取数据库时间
-        /// </summary>
-        private DateTime? Sysdate
-        {
-            get
-            {
-                if (!_Sysdate.HasValue)
-                {
-                    _Sysdate = _dbContext.GetSysdate().Result();
-                }
-                return _Sysdate;
-            }
-        }
     }
 }

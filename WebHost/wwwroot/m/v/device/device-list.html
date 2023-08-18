@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>设备台账</title>
+    <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">设备台账</div>
+
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search"  id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <ul id="danger_reform_list">
+                    </ul>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <button class="button" id="refresh">
+                            刷新
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script type="text/javascript" src="../../dist/Framework7/app.js?v=1"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" id="scriptBlock">
+'use strict';
+var business = {
+            plan: null,
+            plan_card: null,
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/DeviceCard/DeviceList',
+                    success: function (data) {
+                        me.list = data.Rows;
+                        var str = '';
+                        for (var i = 0; i < me.list.length; i++) {
+                            var sid = me.list[i].DEVICE_ID;
+
+                            str += `
+                                            <li id="list-` + sid + `">
+                                                <a href="#" class="item-link item-content">
+                                                    <div class="item-inner item-cell">
+                                                        <div class="item-row">`;
+                            str += `<div class="item-cell">
+                                                                <div class="row no-gap">
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">设备编号</div>`;
+                            str += `<div class="col-65" style="color: RGB(255,99,99); white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEVICE_NO == null ? '' : me.list[i].DEVICE_NO) + `</div>`;
+
+                            str += `<div class="col-10"></div>
+                                                                </div>
+                                                                <div class="row no-gap">
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">设备名称</div>
+                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEVICE_NAME == null ? '' : me.list[i].DEVICE_NAME) + `</div>
+                                                                    <div class="col-10"></div>
+                                                                </div>
+                                                                <div class="row no-gap">
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">设备型号</div>
+                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEPT_TYPE == null ? '' : me.list[i].DEPT_TYPE) + `</div>
+                                                                    <div class="col-10"></div>
+                                                                </div>
+                                                                <div class="row no-gap">
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">管理状态</div>`;
+                            if (me.list[i].STATUS == "1") str += `<div class="col-65" style = "color: green; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 在用</div>`;
+                            if (me.list[i].STATUS == "2") str += `<div class="col-65" style = "color: blue; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 停用</div> `;
+                            if (me.list[i].STATUS == "3") str += `<div class="col-65" style = "color: red; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 封存</div> `;
+                            if (me.list[i].STATUS == "4") str += `<div class="col-65" style = "color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 闲置</div> `;
+                            if (me.list[i].STATUS == "5") str += `<div class="col-65" style = "color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 出租</div> `;
+                            if (me.list[i].STATUS == "6") str += `<div class="col-65" style = "color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 报废</div> `;
+                            if (me.list[i].STATUS == "7") str += `<div class="col-65" style = "color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 变卖</div> `;
+                            if (me.list[i].STATUS == "8") str += `<div class="col-65" style = "color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;" > 盘亏</div> `;
+                            str += `<div class="col-10"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </li>`;
+
+
+                        }
+
+                        $("#danger_reform_list").html(str);
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.DEVICE_ID).click(function () {
+                                //debugger
+                                var param = { "ID": a.DEVICE_ID }
+                                app.methods.toUrl('/CardListDetail/' + JSON2.stringify(param))
+                            })
+                        })
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.initDetailRoute();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                })
+            },
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+            initDetailRoute: function () {
+                var detailRoute = {
+                    title: "设备详情",
+                    name: "CardListDetail",
+                    path: "/CardListDetail/:params",
+                    url: "./m/v/device/device-list-detail.html"
+                }
+                app.routes.push(detailRoute);
+            }
+
+};
+business.init();
+
+    </script>
+</body>
+
+</html>

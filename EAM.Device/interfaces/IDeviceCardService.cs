@@ -13,6 +13,8 @@ namespace EAM.Device.Interfaces
         /// <returns></returns>
         Task<GridData> ListAsync(GridRequest request);
 
+        Task<GridData> DeviceListAsync(GridRequest request);
+
         Task<DEVICE_CARD> GetAsync(string id);
 
         /// <summary>

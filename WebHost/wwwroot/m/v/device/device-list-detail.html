@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>设备详情</title>
+    <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
+</head>
+<body class="color-theme-blue">
+    <div id="app">
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home" style="background-color: RGB(236,235,235);">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="col-80 title" id="title">设备详情</div>
+                    </div>
+                    <button class="button col-1" id="detail-refresh" style="display:none">
+                    </button>
+                </div>
+
+                <div class="page-content" style="padding-bottom:70px;margin-top:-20px">
+
+                    <div class="list inline-labels no-hairlines-md">
+                        <form class="list" id="my-form">
+                            <ul>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">记录状态</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="AUDITING" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">设备编号</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_CODE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">设备名称</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">设备类别</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="TYPE_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">规格型号</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_SIZE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">设备型号</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_TYPE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">立卡日期</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="CARD_DATE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">启用日期</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="REV_DATE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">ABC分类</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="ABC_TYPE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">使用部门</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEPT_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">使用二级部门</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="SEC_DEPT" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">维保部门</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="WDEPT_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">维保二级部门</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="WSEC_DEPT" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">管理状态</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="STATUS" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">状态变动日期</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="STATUS_DATE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                            </ul>
+                        </form>
+                    </div>
+
+
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a class="link external" id="backUrl">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script type="text/javascript" src="../../dist/Framework7/app.js?v=1"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var img_baseurl = "../../";
+        //debugger
+        var myPhotoBrowserPopup = null;
+        var originalData = eval('(' + page.route.params.params + ')');
+        var id = originalData.ID
+        //var id = 'wl-046';
+        var dangerCorpId = originalData.DANGER_CORP_ID
+        var photos = [];
+
+        var business = {
+            detail: null,
+            deptList:[],
+            userList: [],
+            orginData:null,
+            getCombox: function () {
+                var me = this;
+            },
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async:false,
+                    type: 'post',
+                    url: 'Device/DeviceCard/Get',
+                    data: {
+                        "id": id
+                    },
+                    success: function (data) {
+                        me.detail = data;
+                        //me.orginData = data.Data.info;
+                        app.form.fillFromData('#my-form', me.detail);
+
+                        if (data.AUDITING == "0") {
+                            $('#AUDITING').val("未提交");
+                        } else if (data.AUDITING == "1") {
+                            $('#AUDITING').val("已提交");
+                        } 
+
+                        if (data.STATUS == "1") {
+                            $('#STATUS').val("在用");
+                        } else if (data.STATUS == "2") {
+                            $('#STATUS').val("停用");
+                        } else if (data.STATUS == "3") {
+                            $('#STATUS').val("封存");
+                        } else if (data.STATUS == "4") {
+                            $('#STATUS').val("闲置");
+                        } else if (data.STATUS == "5") {
+                            $('#STATUS').val("出租");
+                        } else if (data.STATUS == "6") {
+                            $('#STATUS').val("报废");
+                        } else if (data.STATUS == "7") {
+                            $('#STATUS').val("变卖");
+                        } else {
+                            $('#STATUS').val("盘亏");
+                        }
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            initButton: function () {
+                var me = this
+                $('#backUrl').on('click', function (e) {
+                    $('#refresh', parent.document).click();
+                    app.methods.toUrl("back")
+                })
+            },
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#detail-refresh').on('click', function (e) {
+                    me.getData();
+                })
+            },
+            submitAttach: function (id) {
+                var requestObj = new Object;
+                var param = new Object;
+
+                if (attachList.length != 0) {
+
+                    attachList.forEach((a) => {
+                        requestObj.formFile = a.formFile
+                        a.paramObj.dataId = id
+                        param = a.paramObj
+
+                        var formData = new FormData();
+                        formData.append("formFile", requestObj.formFile);
+                        formData.append("fileName", param.fileName);
+                        formData.append("dataId", param.dataId);
+                        formData.append("tableName", param.tableName);
+                        formData.append("attachField", param.attachField);
+
+                        app.ajax({
+                            //type: 'post',
+                            contentType: "multipart/form-data",
+                            url: 'attach/WXUpload',
+                            data: formData,
+                            success: function (data) {
+                                console.log("上传情况" + data)
+                            }
+                        })
+                    })
+
+                    //requestObj.parms = JSON2.stringify(param)
+
+
+
+                    //for (var i = 0; i < attachList.length; i++) {
+
+                    //}
+
+                    ////请求批量附件接口
+                    //var requestObj = new Object;
+                    //requestObj.attachList = attachList;
+                    //app.ajax({
+                    //    type: 'post',
+                    //    url: 'attach/UploadBatch',
+                    //    data: { "attachRequest": requestObj },
+                    //    success: function (data) {
+
+                    //    }
+                    //})
+
+                } else {
+                    //alert("没有附件")
+                }
+            },
+            init: function () {
+                var me = this;
+                me.initButton();
+                me.getData();
+                me.initFreshButton();
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>
