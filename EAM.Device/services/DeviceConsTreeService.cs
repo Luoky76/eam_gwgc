@@ -180,21 +180,24 @@ namespace EAM.Device.services
         /// <returns></returns>
         private async Task BeforeUpdate(BASE_DEVICE_COMPOSE entity)
         {
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
-                .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
-                .FirstOrDefaultAsync();
-            if (query != null)
+            if (entity.PRE_COMPOSEID != "")
             {
-                throw new MessageException("上级节点只能为父节点！");
-            }
-            else
-            {
-                var queryType = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
-                    .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID).FirstOrDefaultAsync();
-                entity.TYPE_ID = queryType.TYPE_ID;
+                entity.MODIFYDATE = Sysdate;
+                entity.MODIFY_USERID = _userSession.UserID.ToString();
+                var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
+                    .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
+                    .FirstOrDefaultAsync();
+                if (query != null)
+                {
+                    throw new MessageException("上级节点只能为父节点！");
+                }
+                else
+                {
+                    var queryType = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
+                        .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID).FirstOrDefaultAsync();
+                    entity.TYPE_ID = queryType.TYPE_ID;
 
+                }
             }
 
             await Task.CompletedTask;

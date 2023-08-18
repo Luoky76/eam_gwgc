@@ -118,6 +118,12 @@ namespace Gksyb.Model
         /// </summary>
         [Description("失效日期")]
         public DateTime? NOVALID_DATE { get; set; }
-        
+
+        /// <summary>
+        /// 上级节点ID
+        /// </summary>
+        [Description("上级节点ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PRE_TYPEID { get; set; }
     }
 }
