@@ -52,6 +52,7 @@ namespace EAM.Material.Services
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "SpapplyType",null},
                 { "Auditing",null},
+                { "BCCode", "purtypeName" },
             });
         }
 

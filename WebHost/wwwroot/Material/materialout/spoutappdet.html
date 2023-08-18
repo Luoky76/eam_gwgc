@@ -39,9 +39,7 @@
             orginData: {},
             auditing: [],
             spapplyType: [],
-            purtypeName: [{ "ID": "0", "TEXT": "材料（零星维修）" }, { "ID": "1", "TEXT": "材料（维修项目）" }, { "ID": "2", "TEXT": "材料（资本性支出）" },
-            { "ID": "3", "TEXT": "劳保" }, { "ID": "4", "TEXT": "办公" }, { "ID": "5", "TEXT": "IT" }, { "ID": "5", "TEXT": "安全及消防" }
-                , { "ID": "6", "TEXT": "润料" }, { "ID": "7", "TEXT": "燃料" }],
+            purtypeName: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -106,6 +104,7 @@
                     success: function (data, message) {
                         me.auditing = data.auditing;
                         me.spapplyType = data.spapplyType;
+                        me.purtypeName = data.purtypeName;
                     },
                     error: function (message) {
                         LG.showError(message);
