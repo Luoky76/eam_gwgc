@@ -15,7 +15,7 @@
         'use strict';
         var business = {
             dialogData: {},
-            isView: true,
+            isView: false,
             sid: getQueryStringByName("sid"),
             dataCorp: [],
             rootPath : "../",
@@ -42,7 +42,7 @@
                                     autocomplete: true,
                                     selectBoxWidth: 400,
                                     valueField: "ID",
-                                    textField: "TEXT",
+                                    textField: "VALUE",
                                     columns: [
                                         { header: '设备编号', name: 'VALUE', width: 100 },
                                         { header: '设备名称', name: 'TEXT' }
@@ -235,9 +235,8 @@
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
+                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
                 }
-                me.isView = false;
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

@@ -43,7 +43,7 @@ namespace EAM.Device.services
         public async Task<List<ComboxData>> DeviceData()
         {
             //取设备运行状态分组第一条
-            var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
+            var detail = _dbContext.Query<RUN_TRANS>(a => a.AUDITING=="1").Select(x => new
             {
                 x.DEVICE_ID,
                 x.CREATEDATE,
@@ -151,7 +151,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetAllRun(GridRequest request)
         {
-            var detail = _dbContext.Query<RUN_TRANS>().Select(x => new
+            var detail = _dbContext.Query<RUN_TRANS>(a=>a.AUDITING=="1").Select(x => new
             {
                 x.DEVICE_ID,
                 x.CREATEDATE,
