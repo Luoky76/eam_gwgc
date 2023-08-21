@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Device.Controller
@@ -32,6 +33,17 @@ namespace EAM.Device.Controller
                 pmcycleUnit = comboxData["PmcycleUnit"],
                 pmShippost = comboxData["PmShippost"],
             }, "成功");
+        }
+
+        /// <summary>
+        /// 设备数据导入
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportPmAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile)
+        {
+            return await _service.ImportPmAsync(formFile);
         }
 
         /// <summary>

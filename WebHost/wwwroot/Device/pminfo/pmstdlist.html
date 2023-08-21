@@ -140,8 +140,8 @@
                         case "save":
                             me.save();
                             break;
-                        case "add":
-                            me.add();
+                        case "import":
+                            me.import();
                             break;
                         case "week":
                             me.week();
@@ -240,6 +240,32 @@
                     },
                     error: function (message) {
                         LG.showError(message);
+                    }
+                });
+            },
+            import: function () {
+                var me = this;
+                LG.showUpload({
+                    title: "维保项目导入",
+                    server: "Device/PmList/ImportPm",
+                    //mouldFileName: "contract/ExportExcelHeader",
+                    mouldFileName: function () {
+                        window.open(gksybConfigs.urlBase + "eam/basexlsx/维保项目导入模板.xlsx");
+                    },
+                    multiple: false,
+                    extensions: 'xls,xlsx',
+                    mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+                    compress: {
+                        width: 1920
+                    },
+                    showSuccess: false,
+                    data: { folder: '../../Adv' },
+                    callback: function (status, data) {
+                        if (status) {
+                            LG.showSuccess("导入成功");
+                            me.reload();
+                        }
+                        else LG.showError(data.Message);
                     }
                 });
             },
