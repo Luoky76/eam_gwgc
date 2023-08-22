@@ -58,7 +58,7 @@
                                     autocomplete: true,
                                     selectBoxWidth: 500,
                                     valueField: "ID",
-                                    textField: "TEXT",
+                                    textField: "VALUE",
                                     columns: [
                                         { header: '码头编号', name: 'TEXT', width: 130 },
                                         { header: '码头名称', name: 'VALUE' },
@@ -86,8 +86,28 @@
                             { display: "维修项目", name: "REP_ITEM", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
                             { display: "维修内容", name: "REP_CONTENT", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
                             { display: "维修方案", name: "REP_METHOD", minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float", editor: { type: 'float' } },
-                            { display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float", editor: { type: 'float' } },
+                            {
+                                display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float",
+                                editor: {
+                                    type: 'float',
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value < 0) {
+                                            LG.showError("预计人员数量不能为负数！");
+                                        }
+                                    },
+                                }
+                            },
+                            {
+                                display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float",
+                                editor: {
+                                    type: 'float',
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value < 0) {
+                                            LG.showError("预计花费时间不能为负数！");
+                                        }
+                                    },
+                                },
+                            },
                             { display: "检修负责人", name: "REP_LEADER", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "主键", name: "PLAN_ITEM_ID", minWidth: 100, hide: true },
                             { display: "计划ID", name: "PLAN_ID", width: 100, hide: true },
@@ -446,7 +466,12 @@
                 //加载重大改造履历
                 me.setGrid();
                 me.reloadDet();
-
+                if (me.dialogData.view != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

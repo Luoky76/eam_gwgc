@@ -90,7 +90,7 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
-                .Select(c => new ComboxData() { ID = c.TYPE_CODE, TEXT = c.TYPE_CODE, VALUE = c.TYPE_CODE })
+                .Select(c => new ComboxData() { ID = c.TYPE_CODE, TEXT = c.TYPE_CODE, VALUE = c.PRE_TYPEID })
                 .Distinct()
                .ToListAsync();
         }

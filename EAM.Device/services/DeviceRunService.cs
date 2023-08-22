@@ -17,7 +17,22 @@ namespace EAM.Device.services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
+        private DateTime? _Sysdate;
 
+        /// <summary>
+        /// 获取数据库时间
+        /// </summary>
+        private DateTime? Sysdate
+        {
+            get
+            {
+                if (!_Sysdate.HasValue)
+                {
+                    _Sysdate = _dbContext.GetSysdate().Result();
+                }
+                return _Sysdate;
+            }
+        }
         public DeviceRunService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
         {
             _dbContext = dbContext;
@@ -46,20 +61,20 @@ namespace EAM.Device.services
             var detail = _dbContext.Query<RUN_TRANS>(a => a.AUDITING=="1").Select(x => new
             {
                 x.DEVICE_ID,
-                x.CREATEDATE,
+                x.SUBMITDATE,
             }).GroupBy(x => new
             {
                 x.DEVICE_ID,
             }).Select(x => new
             {
                 x.DEVICE_ID,
-                CREATEDATE = Sql.Max(x.CREATEDATE),
+                SUBMITDATE = Sql.Max(x.SUBMITDATE),
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE && c.AUDITING=="1")
+                .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING=="1")
                 .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="1"&&a.TYPE_ID=="2");
             return await qry
                 .Select((a, b, c) => new ComboxData()
@@ -142,6 +157,7 @@ namespace EAM.Device.services
                 x => new RUN_TRANS
                 {
                     AUDITING = "1",
+                    SUBMITDATE =Sysdate,
                 });
         }
 
@@ -154,20 +170,20 @@ namespace EAM.Device.services
             var detail = _dbContext.Query<RUN_TRANS>(a=>a.AUDITING=="1").Select(x => new
             {
                 x.DEVICE_ID,
-                x.CREATEDATE,
+                x.SUBMITDATE,
             }).GroupBy(x => new
             {
                 x.DEVICE_ID,
             }).Select(x => new
             {
                 x.DEVICE_ID,
-                CREATEDATE = Sql.Max(x.CREATEDATE),
+                SUBMITDATE = Sql.Max(x.SUBMITDATE),
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
                  .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.CREATEDATE == c.CREATEDATE &&c.AUDITING=="1")
+                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE &&c.AUDITING=="1")
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)
                  .Where((a, b, c, d) => a.AUDITING=="1"&&a.STATUS=="1"&&a.TYPE_ID=="2")
                  .Select((a, b, c, d) => new
@@ -178,7 +194,7 @@ namespace EAM.Device.services
                      a.TYPE_NAME,
                      a.SEC_DEPT,
                      a.DEPT_NAME,
-                     b.CREATEDATE,
+                     b.SUBMITDATE,
                      c.TRANS_MEMO,
                      CODE_SEQ = d.CODE_SEQ ?? 10,
                  })

@@ -176,6 +176,10 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string SEC_DEPT { get; set; }
 
-
+        /// <summary>
+        /// 提交时间
+        /// </summary>
+        [Description("提交时间")]
+        public DateTime? SUBMITDATE { get; set; }
     }
 }

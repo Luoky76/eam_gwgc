@@ -38,13 +38,13 @@
                             { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                             { display: "委外状态", name: "_search_OUT_STATUS", dbname: "OUT_STATUS", newline: false, upper: true, type: "select", options: { type: 'select', data: me.repOutType } },
                             {
-                                display: "实际开工时间", name: "_search_ACT_START_DATE", dbname: "ACT_START_DATE", width: 120, newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                display: "实际开工时间", name: "_search_ACT_START_DATE", dbname: "ACT_START_DATE",  newline: false, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
                             },
                             {
-                                display: "实际完工时间", name: "_search_ACT_END_DATE", dbname: "ACT_END_DATE", width: 120, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "实际完工时间", name: "_search_ACT_END_DATE", dbname: "ACT_END_DATE",  newline: false, type: "date", op: 'lessorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
@@ -318,7 +318,7 @@
                     validate: true,
                     buttons: [{
                         text: '查询',
-                        width: 60,
+                        width: 100,
                         click: function () {
                             LG.commonSearch($formsearch, me.grid);
                         }

@@ -246,16 +246,25 @@ namespace EAM.Device.services
                     c.EXE_LABOR_NUM,
                     c.EXE_TAKE_TIME,
                 },
-                c => a => a.PLAN_ITEM_ID == c.PLAN_ITEM_ID, BeforeAddPlandet);
+                c => a => a.PLAN_ITEM_ID == c.PLAN_ITEM_ID, BeforeAddPlandet, UpdateAddPlandet);
         }
 
         public async Task BeforeAddPlandet(REP_DOCK_PLAN_ITEM entity)
         {
+            if (entity.LABOR_NUM<0||entity.TAKE_TIME<0) {
+                throw new MessageException("预计人员数量或预计花费时间不可为负数！");
+            }
             entity.PLAN_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.IS_COMPLETE = "0";
             await Task.CompletedTask;
         }
-
+        public async Task UpdateAddPlandet(REP_DOCK_PLAN_ITEM entity)
+        {
+            if (entity.LABOR_NUM<0||entity.TAKE_TIME<0)
+            {
+                throw new MessageException("预计人员数量或预计花费时间不可为负数！");
+            }
+        }
 
         #endregion 码头维修计划
 

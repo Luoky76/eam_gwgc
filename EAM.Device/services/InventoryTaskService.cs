@@ -10,9 +10,8 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.ComponentModel;
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
 
 namespace EAM.Device.services
 {
@@ -82,6 +81,16 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> ManageDeviceScan(SaveRequest<DEVICE_SCAN> request)
         {
+            //查询盘点任务明细是否有数据
+            if ((request.Updated?.Count ?? 0) > 0 || (request.Deleted?.Count ?? 0) > 0)
+            {
+                var scanIds = request.Updated?.Select(c => c.SCAN_ID).ToList();
+
+                if (scanIds?.Count > 0)
+                {
+                    var deleteRows = await _dbContext.DeleteAsync<DEVICE_SCAN_DET>(a => scanIds.Contains(a.SCAN_ID));
+                }
+            }
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -122,6 +131,34 @@ namespace EAM.Device.services
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }
+        // 递归获取分类及其子分类的ID集合
+        private List<string> GetChildTypeIds(string pretypeid)
+        {
+            var childTypeIds = new List<string>
+            {
+                // 添加当前分类的ID到childTypeIds
+                pretypeid
+            };
+            // 查询所有子分类的ID并将它们添加到 childTypeIds
+            void GetChildren(string parentId)
+            {
+                var children = _dbContext.Query<BASE_DEVICETYPE>()
+                    .Where(c => c.PRE_TYPEID == parentId)
+                    .Select(c => c.TYPE_ID)
+                    .ToList();
+
+                childTypeIds.AddRange(children);
+
+                foreach (var child in children)
+                {
+                    GetChildren(child);
+                }
+            }
+
+            GetChildren(pretypeid);
+
+            return childTypeIds;
+        }
 
         /// <summary>
         /// 生成盘点清单
@@ -144,11 +181,13 @@ namespace EAM.Device.services
             //根据部门,类型 获取设备卡片
             var corpPath = _dbContext.Query<CF_CORP>().Where(a => a.CORPID==deptid)
                 .Select(c => c.CORP_PATH).ToList().Join();
+            //获取分类及其子分类的ID集合
+            var typeIds = GetChildTypeIds(typeid);
             var qry = _dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
-                .WhereIf(!string.IsNullOrWhiteSpace(typeid), c => c.TYPE_ID == typeid)
+                .WhereIf(!string.IsNullOrWhiteSpace(typeid), c => typeIds.Contains(c.TYPE_ID))
                 .LeftJoin<CF_CORP>((a, b) => a.SEC_DEPTID==b.CORPID)
-                .Where((a, b) => (","+b.CORP_PATH).Contains(","+corpPath));
+                .Where((a, b) => b.CORP_PATH.StartsWith(corpPath));
             if (qry != null)
             {
                 var qrylists = qry
@@ -271,17 +310,6 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> ManageScanDetail(SaveRequest<DEVICE_SCAN_DET> request)
         {
-            if (request.Updated[0].SCAN_ID != null)
-            {
-                var query = _dbContext.Query<DEVICE_SCAN_DET>()
-                     .Where(c => c.SCAN_ID==request.Updated[0].SCAN_ID).Select(c =>
-                         c.HANDLE
-                     ).ToList();
-                if (!query.Contains("0"))
-                {
-                    throw new MessageException("已经全部处理完成！");
-                }
-            }
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
@@ -300,7 +328,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_SCAN_DET entity)
         {
-            if (entity.HANDLE=="0")
+            if (entity.SCAN_RESULT!=null)
             {
                 entity.HANDLE = "1";
             }
@@ -313,71 +341,78 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<string> SubmitScanDet(string sid)
         {
-            var queryScan = _dbContext.Query<DEVICE_SCAN>()
-                 .Where(c => c.SCAN_ID==sid).Select(c => c.STATUS).First();
-            if (queryScan=="3")
+            try
             {
-                throw new MessageException("已经盘点完成，无法再次提交！");
-            }
-            var query = _dbContext.Query<DEVICE_SCAN_DET>()
-                 .Where(c => c.SCAN_ID==sid).Select(c =>
-                     c.HANDLE
-                 ).ToList();
-            if (query.Contains("0"))
-            {
-                throw new MessageException("必须处理所有盘点结果！");
-            }
-            else
-            {
-                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==sid,
-                   x => new DEVICE_SCAN
-                   {
-                       STATUS = "3",
-                   });
-
-                string aa = DateTime.Now.ToString("yyyyMM");
-                string def = aa + "0000";
-                var queryups = _dbContext.Query<DEVICE_SCAN_DET>()
-                 .Where(c => c.SCAN_ID==sid).ToList();
-                if (queryups!=null)
+                var queryScan = _dbContext.Query<DEVICE_SCAN>()
+                     .Where(c => c.SCAN_ID==sid).Select(c => c.STATUS).First();
+                if (queryScan=="3")
                 {
-                    var scandetreList = new List<DEVICE_SCAN_RESULT>();
-                    var scan_code = 0;
-                    var scan_type = "";
-                    var pyk = "";
-                    foreach (var queryup in queryups)
-                    {
-                        scan_type = queryup.SCAN_RESULT == "盘盈" ? "盘盈" : "盘亏";
-                        pyk = queryup.SCAN_RESULT == "盘盈" ? "PY" : "PK";
-                        var scanTypeCount = scandetreList.Count(item => item.SCAN_TYPE == scan_type);
-                        var scanQuery = _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa) && x.SCAN_TYPE == scan_type);
-                        var maxScanCode = await scanQuery.Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-                        scan_code = maxScanCode.SubStr(8, 4).CastTo<int>() + (scanTypeCount > 0 ? scanTypeCount + 1 : 1);
-                        var scandetre = new DEVICE_SCAN_RESULT()
-                        {
-                            RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
-                            AUDITING = "0",
-                            SCAN_ID = sid,
-                            SCAN_CODE = pyk+ aa + scan_code.ToString("D4"),
-                            SCAN_DATE = Sysdate,
-                            SCAN_TYPE = scan_type,
-                            DEVICE_NO = queryup.DEVICE_NO,
-                            DEVICE_NAME = queryup.DEVICE_NAME,
-                            DEPT_NAME = queryup.DEPT_NAME,
-                            DEPT_ID = queryup.DEPT_ID,
-                            STATUS = queryup.STATUS,
-                            SEC_DEPTID = queryup.SEC_DEPTID,
-                            SEC_DEPT = queryup.SEC_DEPT,
-                            DEVICE_ID = queryup.DEVICE_ID,
-                            MEMO = queryup.MEMO,
-                            CREATE_USERID = _userSession.UserID.ToString(),
-                            CREATEDATE = Sysdate,
-                        };
-                        scandetreList.Add(scandetre);
-                    }
-                    await _dbContext.InsertRangeAsync(scandetreList);
+                    throw new MessageException("已经盘点完成，无法再次提交！");
                 }
-                return "";
+                var query = _dbContext.Query<DEVICE_SCAN_DET>()
+                     .Where(c => c.SCAN_ID==sid).Select(c =>
+                         c.HANDLE
+                     ).ToList();
+                if (query.Contains("0"))
+                {
+                    throw new MessageException("必须处理所有盘点结果！");
+                }
+                else
+                {
+                    await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==sid,
+                       x => new DEVICE_SCAN
+                       {
+                           STATUS = "3",
+                       });
+
+                    string aa = DateTime.Now.ToString("yyyyMM");
+                    string def = aa + "0000";
+                    var queryups = _dbContext.Query<DEVICE_SCAN_DET>()
+                     .Where(c => c.SCAN_ID==sid && c.SCAN_RESULT!="正常").ToList();
+                    if (queryups!=null)
+                    {
+                        var scandetreList = new List<DEVICE_SCAN_RESULT>();
+                        var scan_code = 0;
+                        var scan_type = "";
+                        var pyk = "";
+                        foreach (var queryup in queryups)
+                        {
+                            scan_type = queryup.SCAN_RESULT == "盘盈" ? "盘盈" : "盘亏";
+                            pyk = queryup.SCAN_RESULT == "盘盈" ? "PY" : "PK";
+                            var scanTypeCount = scandetreList.Count(item => item.SCAN_TYPE == scan_type);
+                            var scanQuery = _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa) && x.SCAN_TYPE == scan_type);
+                            var maxScanCode = await scanQuery.Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
+                            scan_code = maxScanCode.SubStr(8, 4).CastTo<int>() + (scanTypeCount > 0 ? scanTypeCount + 1 : 1);
+                            var scandetre = new DEVICE_SCAN_RESULT()
+                            {
+                                RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
+                                AUDITING = "0",
+                                SCAN_ID = sid,
+                                SCAN_CODE = pyk+ aa + scan_code.ToString("D4"),
+                                SCAN_DATE = Sysdate,
+                                SCAN_TYPE = scan_type,
+                                DEVICE_NO = queryup.DEVICE_NO,
+                                DEVICE_NAME = queryup.DEVICE_NAME,
+                                DEPT_NAME = queryup.DEPT_NAME,
+                                DEPT_ID = queryup.DEPT_ID,
+                                STATUS = queryup.STATUS,
+                                SEC_DEPTID = queryup.SEC_DEPTID,
+                                SEC_DEPT = queryup.SEC_DEPT,
+                                DEVICE_ID = queryup.DEVICE_ID,
+                                MEMO = queryup.MEMO,
+                                CREATE_USERID = _userSession.UserID.ToString(),
+                                CREATEDATE = Sysdate,
+                            };
+                            scandetreList.Add(scandetre);
+                        }
+                        await _dbContext.InsertRangeAsync(scandetreList);
+                    }
+                    return "";
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("原因：" + e.Message);
             }
         }
 
@@ -393,7 +428,8 @@ namespace EAM.Device.services
         {
             return await _dbContext.Query<DEVICE_SCAN_RESULT>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
-                .OrderBy(c => c.STATUS)
+                .OrderBy(c => c.AUDITING)
+                .ThenBy(c => c.STATUS)
                 .ThenByDesc(c => c.SCAN_CODE)
                 .GetGridData(request);
         }

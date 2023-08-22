@@ -80,11 +80,22 @@
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
+                                        debugger
                                         if (me.start == null) {
                                             LG.showError("请先选择开始时间,后选结束时间！");
                                         }
                                         var date1 = new Date(me.start);
                                         var date2 = new Date(value);
+                                        if (me.start > value) {
+                                            $('#EXE_BDATE').val("");
+                                            $('#EXE_EDATE').val("");
+                                            $('#EXE_HOUR').val("");
+                                            LG.showError("实际完工时间应在实际开工时间之后！请重新选择！");
+                                        }
+                                        if (date2.getTime() > Date.now()) {
+                                            $('#EXE_BDATE').val("");
+                                            LG.showError("实际完工时间不能大于当前时间！");
+                                        }
                                         // 计算时间差值（单位为毫秒）
                                         var timeDiff = date2.getTime() - date1.getTime();
                                         // 将时间差值转换为小时数

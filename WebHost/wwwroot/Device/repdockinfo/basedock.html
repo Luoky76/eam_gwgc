@@ -272,7 +272,10 @@
                     }
                 }
                 if (selected.length > 0) {
-                    if (me.alreadySubmitted) {
+                    if (selected[0].DOCK_ID == null) {
+                        LG.tip('请先保存!');
+                    }
+                    else if (me.alreadySubmitted) {
                         LG.tip('已提交，无法再次提交!');
                         me.alreadySubmitted = false;
                     }

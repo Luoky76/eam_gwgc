@@ -104,10 +104,6 @@
                     clickToEdit: true,
                     usePager: false,
                     onBeforeEdit: function (editParm) {
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.HANDLE == "1") return false;
-                            else return true;
-                        }
                     },
                 });
                 me.grid.isValid = true;

@@ -31,7 +31,18 @@
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
                             { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "盘点日期", name: "_search_SCAN_DATE", dbname: "SCAN_DATE", newline: false, upper: true, type: "date", options: {} },
+                            {
+                                display: "盘点日期", name: "_search_SCAN_DATE", dbname: "SCAN_DATE", width: 120, newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_SCAN_DATE", dbname: "SCAN_DATE", width: 120, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
                             { display: "盘点结果类型", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { data: me.scanresult } },
                             { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                             { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
@@ -103,6 +114,10 @@
                     enabledEdit: true,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
+                        if (editParm.record.__status == "nochanged") {
+                            if (editParm.record.AUDITING == "1") return false;
+                            else return true;
+                        }
                         switch (editParm.column.name) {
                             case "":
                                 if (editParm.record.__status == "add") return true;
@@ -155,12 +170,14 @@
             },
             submit: function () {    //提交
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    if (selected.AUDITING == "1") {
-                        LG.tip('已提交，无法再次提交!');
-                    }
-                    else {
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING != "0") {
+                        LG.tip('无法提交！');
+                    } else {
                         if (me.grid.endEdit() != false) {
                             if (!me.grid.isDataChanged) {
                                 LG.showSuccess('请先填写结果说明！');
@@ -185,10 +202,8 @@
                         }
                     }
                 }
-                else {
-                    LG.tip('请选择行!');
-                }
             },
+
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
