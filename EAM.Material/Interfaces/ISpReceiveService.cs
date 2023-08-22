@@ -14,7 +14,7 @@ namespace EAM.Material.Interfaces
 
         Task<AjaxResult> GetAsync(string ID);
 
-        Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request);
+        Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet);
 
         Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request);
 

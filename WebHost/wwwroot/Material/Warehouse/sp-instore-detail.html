@@ -19,7 +19,7 @@
     </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
-            <div class="l-group" style="width: 100%;"><span>收货物料明细</span></div>
+            <div class="l-group" style="width: 100%;"><span>采购入库明细</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style=" width: 100%;">
                     <div style="margin-bottom: 50px; width: 100%;" id="maingrid">
@@ -37,7 +37,7 @@
             isAddNew: false,
             isView: false,
             orginData: {},
-            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }, { "ID": "7", "TEXT": "已注销" }],
             bySource: [],
             pmType: [],
             deviceInfo: [],
@@ -55,46 +55,23 @@
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
-                                }, group: "收货登记"
+                                }, editor: { disabled: true }, group: "物料采购入库"
                             },
-                            { display: "登记单号", name: "RECEIVE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "入库单号", name: "IN_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "入库日期", name: "IN_DATE", newline: false, upper: true, type: "date", options: {}, validate: { required: true } },
+                            
+                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             {
-                                display: "订单号", name: "ORDER_ID", newline: false, upper: true, type: "select", options: {
-                                    data: me.order,
-                                    autocomplete: true,
-                                    selectBoxWidth: 400,
-                                    valueField: "ORDER_ID",
-                                    textField: "ORDER_CODE",
-                                    columns: [
-                                        { header: "订单号", name: "ORDER_CODE", width: 100 },
-                                        { header: "物料编码", name: "SP_CODE", width: 100 },
-                                        { header: "物料名称", name: "SP_NAME", width: 100 },
-                                        { header: "规格型号", name: "SP_SIZE", width: 100 },
-                                        { header: "申请人", name: "APPLY_USER", width: 100 },
-                                        { header: "申请部门", name: "DEPT_NAME", width: 100 },
-                                        { header: "供应商", name: "PROVIDER_NAME", width: 100 },
-                                    ],
-                                    onChangeValue: function (input, value, g) {
-                                        if (g.selected != undefined) {
-                                            $("#ORDER_ID").val(g.selected.ORDER_ID);
-                                            $("#ORDER_CODE").val(g.selected.ORDER_CODE);
-                                            $("#CHK_USER").val(g.selected.APPLY_USER);
-                                            $("#PROVIDER_NAME").val(g.selected.PROVIDER_NAME);
-                                            $("#DEPT_NAME").val(g.selected.DEPT_NAME);
-                                            $("#PUR_USER").val(g.selected.BUY_USER);
-                                        }
-                                    }
-                                }
+                                display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }
                             },
-                            { display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "验收人", name: "CHK_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "收货人", name: "USER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "收货日期", name: "RECEIVE_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "申请部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "REG_MEMO", newline: true, width: 880, type: "textarea", options: {} },
-                            { display: "主键", name: "RECEIVE_ID", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "验收部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "仓管员", name: "USER_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "验收人", name: "CHK_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "验收日期", name: "CHK_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "入库总金额", name: "INSTORE_MONEY", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true, width: 880, upper: true, type: "textarea", options: {} },
+                            { display: "主键", name: "IN_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
                     },
                     grid: {
@@ -108,38 +85,32 @@
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             {
-                                display: "数量", name: "COUNT", width: 150, type: "int", editor: { type: 'int' }, validate: { required: true }, totalSummary:
-                                {
-                                    type: 'sum',
-                                    align: 'center'
-                                },
-                                render: function (rowdata, index, value) {
-                                    if (value) {
-                                        rowdata.MONEY = rowdata.PRICE * value;
-                                        return value;
-                                    } else {
-                                        return value;
-                                    }
-                                }
-                            },
-                            { display: "送货单号", name: "DELIVERY_CODE", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "收货库位", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, validate: { required: true } },
-                            {
-                                display: "成交单价", name: "PRICE", width: 120, type: "text", totalSummary:
+                                display: "入库数量", name: "COUNT", width: 150, type: "text", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 }
                             },
+                            { display: "送货单号", name: "DELIVERY_CODE", width: 100, type: "text", editor: { type: 'text' } },
                             {
-                                display: "成交金额", name: "MONEY", width: 100, type: "text", totalSummary:
+                                display: "收货库位", name: "MEMO", width: 120, type: "text"
+                            },
+                            { display: "成交单价", name: "PRICE", width: 150, type: "text", },
+                            {
+                                display: "成交金额", name: "MONEY", type: "text", width: 80, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
-                                } },
-                            { display: "申请人", name: "APPLY_USER", width: 100, type: "text" },
-                            { display: "申请单号", name: "APPLY_NO", width: 100, type: "text" },
-                            { display: "用途", name: "USE_MEMO", width: 100, type: "text" },
+                                }
+                            },
+                            { display: "税率", name: "TAX_RATE", width: 120, type: "text" },
+                            { display: "不含税单价", name: "NOTAX_PRICE", width: 100, type: "text" },
+                            { display: "不含税金额", name: "UNTAX_MONEY", width: 100, type: "text" },
+                            { display: "申请人", name: "APPLY_USER", width: 120, type: "text" },
+                            { display: "申请部门", name: "DEPT_NAME", width: 120, type: "text" },
+                            { display: "申请单号", name: "APPLY_NO", width: 120, type: "text" },
+                            { display: "用途", name: "USE_MEMO", width: 120, type: "text" },
+                            { display: "INDET_ID", name: "INDET_ID", width: 120, type: "text", hide: true },
                         ]
                     }
                 };
@@ -176,7 +147,7 @@
                 else {
                     LG.ajax({
                         async: false,
-                        url: 'Material/SpReceive/Get',
+                        url: 'Material/SpInstore/Get',
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
@@ -219,7 +190,7 @@
                 var changeRowDet = me.grid.getChangedRows();
                 LG.ajax({
                     jsToken: true,
-                    url: 'Material/SpReceive/Save',
+                    url: 'Material/SpInstore/Save',
                     loading: '正在保存中...',
                     data: { request: changeRow, requestdet: changeRowDet },
                     success: function (result) {
@@ -300,12 +271,12 @@
                     usePager: true,
                     columns: me.config.grid.columns,
                     dataAction: 'local',
-                    toolbar: { group: "det" },
-                    url: 'Material/SpReceive/DetList',
+                    toolbar: { group: 'det' },
+                    url: 'Material/SpInstore/DetList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'RECEIVE_ID', op: 'equal', value: $('#RECEIVE_ID').val() }]
+                            rules: [{ field: 'IN_ID', op: 'equal', value: $('#IN_ID').val() }]
                         })
                     },
                     //sortName: 'MODIFY_DATE',
@@ -372,12 +343,6 @@
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
-                        case "add":
-                            me.add();
-                            break;
-                        case "delete":
-                            me.delete();
-                            break;
                         case "save":
                             me.save();
                             break;
@@ -402,61 +367,43 @@
                 var me = this;
                 me.grid.loadData();
             },
-            //导入
-            add: function () {
+            //保存
+            save: function () { //保存
                 var me = this;
-                $.ligerDialog.open({
-                    width: 860,
-                    height: 450,
-                    allowClose: true,
-                    title: '导入',
-                    url: "sp-receive-det-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    data: { "sid": $("#ORDER_ID").val(), "callback": me.f_callback }
-                });
-            },
-            f_callback: function (id, data) {
-                var me = this;
-                data.forEach((a) => {
-                    business.grid.addEditRow({
-                        "SP_CODE": a.SP_CODE,
-                        "SP_NAME": a.SP_NAME,
-                        "SP_SIZE": a.SP_SIZE,
-                        "PRODUCE": a.PRODUCE,
-                        "UNIT": a.UNIT,
-                        "COUNT": "",
-                        "DELIVERY_CODE": "",
-                        "MEMO": "",
-                        "PRICE": a.PRICE,
-                        "MONEY": 0,
-                        "APPLY_USER": a.APPLY_USER,
-                        "APPLY_NO": a.APPLY_NO
-                    });
-                });
-            },
-            //删除
-            delete: function () { //删除
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
                 }
+                function handle(data) {
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow = new Object();
+                if (!me.sid) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                var changeRowDet = me.grid.getChangedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpInstore/Save',
+                    loading: '正在保存中...',
+                    data: { request: changeRow, requestdet: changeRowDet },
+                    success: function (result) {
+                        LG.showSuccess('保存成功', function () {
+                            me.isAddNew = false;
+                            if (me.dialog) me.dialog.close();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             init: function () {
                 var me = this;

@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 namespace EAM.Material.Controllers
 {
     [GksybAuthorize(true)]
-    public class SpReceiveController : AreaController
+    public class SpInstoreController : AreaController
     {
-        private readonly ISpReceiveService _service;
-        public SpReceiveController(ISpReceiveService service)
+        private readonly ISpInstoreService _service;
+        public SpInstoreController(ISpInstoreService service)
         {
             _service = service;
         }
@@ -32,23 +32,25 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(result);
         }
 
+        public async Task<AjaxResult> DetailListAsync(GridRequest request)
+        {
+            var result = await _service.DetailListAsync(request);
+            return AjaxResult.Success(result);
+        }
+
         public async Task<AjaxResult> GetAsync(string ID)
         {
             return await _service.GetAsync(ID);
         }
 
-        public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
+        public async Task<AjaxResult> Save(SaveRequest<SP_INSTORE> request, SaveRequest<SP_INSTORE_DET> requestdet)
         {
-            return await _service.Save(request,requestdet);
+            return await _service.Save(request, requestdet);
         }
 
-        public async Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request)
+        public async Task<AjaxResult> HouseList()
         {
-            return await _service.SaveDet(request);
-        }
-        public async Task<AjaxResult> OrderList()
-        {
-            return await _service.OrderList();
+            return await _service.HouseList();
         }
     }
 }

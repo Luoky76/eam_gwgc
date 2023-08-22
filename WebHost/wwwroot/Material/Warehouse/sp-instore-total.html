@@ -14,7 +14,6 @@
         <form action="" id="formsearch" class="l-form">
         </form>
     </div>
-
     <form action="" id="mainform">
         <div id="maingrid">
         </div>
@@ -22,56 +21,48 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
-            dialogData: {},
-            sid: getQueryStringByName("sid"),
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "维修部位", name: "_search_BOM_NAME", dbname: "BOM_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "维修内容", name: "_search_REP_CONTENT", dbname: "REP_CONTENT", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text",options:{} },
+                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text",options:{} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "维修部位", name: "BOM_NAME", width: 100, type: "text" },
-                            { display: "维修设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
-                            { display: "维修内容", name: "REP_CONTENT", width: 300, type: "text", validate: { required: true },  editor: { type: 'text' } },
-                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
-                            { display: "备注", name: "MEMO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "外键", name: "PLAN_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "主键", name: "PLAN_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "维修部位ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "检修负责人", name: "REP_LEADER", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "序号", name: "REP_INDEX", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "是否月度询价", name: "IS_ASKBID", width: 100, type: "select", editor: { type: 'select', data: me.isaskbid, selectBoxHeight: 100 } },
+                            { display: "订单号", name: "IN_CODE", minWidth: 100, type: "text", },
+                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", },
+                            { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", },
+                            { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text", },
+                            { display: "入库日期", name: "IN_DATE", minWidth: 100, type: "text", },
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text",    },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text",    },
+                            { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text",    },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text",    },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text",    },
+                            { display: "入库数量", name: "COUNT", minWidth: 100, type: "decimal"  },
+                            { display: "入库单价(元)", name: "PRICE", minWidth: 100, type: "decimal"  },
+                            { display: "入库金额(元)", name: "MONEY", minWidth: 100, type: "decimal"  },
+                            { display: "货位名称", name: "STOCK_NAME", minWidth: 100, type: "text",    },
+                            { display: "申请人", name: "APPLY_USER", minWidth: 100, type: "text",    },
+                            { display: "申请单号", name: "APPLY_NO", minWidth: 100, type: "text",    },
+                            { display: "说明", name: "MEMO", minWidth: 100, type: "text",    },
+                            { display: "需求备注", name: "APPLY_MEMO", minWidth: 100, type: "text",    },
+                            { display: "用途", name: "USE_MEMO", minWidth: 100, type: "text",    },
+                            { display: "不含税单价(元)", name: "NOTAX_PRICE", minWidth: 100, type: "decimal"  },
+                            { display: "不含税金额(元)", name: "UNTAX_MONEY", minWidth: 100, type: "decimal"  },
+                            { display: "税率", name: "TAX_RATE", minWidth: 100, type: "decimal"  },
                         ]
                     }
                 };
             },
             grid: null,
-            repitemtype: [],
-            isaskbid: [
-                { ID: "0", TEXT: "是", VALUE: "0" },
-                { ID: "1", TEXT: "否", VALUE: "1" }
-            ],
+            searchForm: null,
             buttons: null,
             loadComboxData: function () {
                 var me = this;
-                LG.ajax({
-                    async: false,
-                    url: 'Repair/RepairPlan/ComboxData',
-                    loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.repitemtype = data.RepitemType;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
             },
             setGrid: function () {
                 var me = this;
@@ -82,8 +73,8 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'local',
-                    toolbar: { group: 'item' },
-                    url: 'Repair/RepairPlan/ItemList',
+                    toolbar: {},
+                    url: 'Material/SpInstore/DetailList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -95,8 +86,6 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -157,83 +146,9 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
-                var me = this;
-                $.ligerDialog.open({
-                    width: 860,
-                    height: 500,
-                    allowClose: true,
-                    title: '导入设备',
-                    url: "repair-plan-item-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    data: { "sid": null, "callback": me.f_callback }
-                });
-
-            },
-            f_callback: function (id, data) {
-                var me = this;
-                data.forEach((a) => {
-                    business.grid.addEditRow({
-                        "PLAN_ID": business.sid,
-                       "BOM_ID":a.DEVICE_ID,
-                       "BOM_NAME": a.DEVICE_NAME,
-                       "DEVICE_TYPE": a.DEVICE_TYPE,
-                   });
-                });
-                
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Repair/RepairPlan/SaveItem',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
-
-            },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
-            },
-            delete: function () { //删除
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
             },
             bindGridEvent: function () {
                 var me = this;
@@ -302,16 +217,8 @@
                     }
                 });
             },
-
             init: function () {
                 var me = this;
-                if (frameElement && frameElement.dialog) {
-                    me.dialog = frameElement.dialog;
-                    me.dialogData = me.dialog.get('data');
-                    me.callback = me.dialogData.callback;
-                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                }
-
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
