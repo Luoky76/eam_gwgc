@@ -138,6 +138,13 @@
                         case "delete":
                             me.delete();
                             break;
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: rootPath + "System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
@@ -157,8 +164,8 @@
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: innerWidth - 50,
-                    height: innerHeight - 50,
+                    width: 1200,
+                    height: 650,
                     allowClose: true,
                     title: '[维修计划新增]',
                     url: "repair-plan-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
@@ -199,13 +206,50 @@
                 }
 
             },
+            sumbit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
             detail: function () { //维修项目
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1100,
+                        width: 1200,
                         height: 650,
                         allowClose: true,
                         title: '维修项目',
@@ -244,14 +288,13 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.PLAN_ID, "view": "1" }
+                        data: { "sid": selected.PLAN_ID, "isView": true }
                     });
                 } else {
                     LG.tip('请选择行!');
                 }
             },
             modify: function (rowdata) { //修改
-                debugger
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected.length > 1) {
@@ -289,21 +332,6 @@
                         LG.tip('请选择行!');
                     }
                 }
-            },
-            loadRecord: function () { //保存
-                var me = this;
-                LG.ajax({
-                        jsToken: true,
-                    url: 'Attendance/AttendanceDaily/LoadRecord',
-                        loading: '正在同步中...',
-                        success: function () {
-                            LG.showSuccess('同步成功');
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
             },
             reload: function () { //刷新
                 var me = this;

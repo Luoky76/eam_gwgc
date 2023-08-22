@@ -32,19 +32,18 @@
                     },
                     grid: {
                         columns: [
-                            { display: "PLAN_ID", name: "PLAN_ID", width: 100, type: "text", hide: true },
+                            { display: "EXE_ID", name: "EXE_ID", width: 100, type: "text", hide: true },
                             { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditingStatus, selectBoxHeight: 100 }},
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
                             { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "text", },
-                            { display: "计划提交日期", name: "AUDIT_TIME", width: 100, type: "text", },
                             { display: "实际开工时间", name: "PLAN_START_DATE", width: 100, type: "text", },
                             { display: "实际完工时间", name: "PLAN_END_DATE", width: 100, type: "text", },
-                            { display: "维修实施单号", name: "PLAN_END_DATE", width: 100, type: "text", },
+                            { display: "维修实施单号", name: "EXE_CODE", width: 100, type: "text", },
+                            { display: "计划单号", name: "PLAN_CODE", width: 100, type: "text", },
                             { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", },
                             { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
-                            { display: "计划单号", name: "PLAN_CODE", width: 100, type: "text", },
                             { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
                             { display: "负责人", name: "CHARGE_USER", width: 100, type: "text", },
                             { display: "备注", name: "PLAN_MEMO", width: 100, type: "text", }
@@ -75,15 +74,15 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: { group: 'list' },
-                    url: 'Repair/RepairPlan/List',
+                    url: 'Repair/RepairPlan/ExeList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'AUDITINGSORT ASC,EIDT_DATE',
-                    sortOrder: 'DESC',
+                    sortName: '',
+                    sortOrder: '',
                     width: '100%',
                     height: '100%',
                     dateFormat: 'yyyy-MM-dd HH:mm',
@@ -158,11 +157,11 @@
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: innerWidth - 50,
-                    height: innerHeight - 50,
+                    width: 1200,
+                    height: 640,
                     allowClose: true,
-                    title: '[维修计划新增]',
-                    url: "repair-plan-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    title: '[新增]',
+                    url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: true,
                     showToggle: false,
@@ -185,7 +184,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Repair/RepairPlan/Save',
+                        url: 'Repair/RepairPlan/SaveExe',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -200,25 +199,39 @@
                 }
 
             },
-            detail: function () { //维修项目
+            sumbit: function () { //提交
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: 1100,
-                        height: 650,
-                        allowClose: true,
-                        title: '维修项目',
-                        url: "repair-plan-item.html?MenuNo=" + me.menuNo,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.buttons[0].click,
-                        data: { "sid": selected.PLAN_ID }
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/SaveExe',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -233,11 +246,11 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1100,
-                        height: 650,
+                        width: 1200,
+                        height: 640,
                         allowClose: true,
                         title: '查看',
-                        url: "repair-plan-detail.html?MenuNo=" + me.menuNo,
+                        url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
                         showToggle: false,
@@ -245,14 +258,13 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.PLAN_ID, "view": "1" }
+                        data: { "sid": selected.EXE_ID, "isView": true }
                     });
                 } else {
                     LG.tip('请选择行!');
                 }
             },
             modify: function (rowdata) { //修改
-                debugger
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected.length > 1) {
@@ -269,13 +281,13 @@
                         selected = rowdata;
                     }
                     if (selected) {
-                        var sid = selected.PLAN_ID;
+                        var sid = selected.EXE_ID;
                         $.ligerDialog.open({
                             width: 1200,
-                            height: 650,
+                            height: 640,
                             allowClose: true,
                             title: '[修改]',
-                            url: "repair-plan-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                            url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                             isHidden: false,
                             showMax: false,
                             showToggle: false,
@@ -291,21 +303,6 @@
                     }
                 }
             },
-            loadRecord: function () { //保存
-                var me = this;
-                LG.ajax({
-                        jsToken: true,
-                    url: 'Attendance/AttendanceDaily/LoadRecord',
-                        loading: '正在同步中...',
-                        success: function () {
-                            LG.showSuccess('同步成功');
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-            },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
@@ -314,6 +311,12 @@
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
+                    for (var i = 0; i < selected.length; i++) {
+                        if (selected[i].AUDITING == "1") {
+                            LG.showError("选中数据有部分已提交,无法删除");
+                            return;
+                        }
+                    }
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {

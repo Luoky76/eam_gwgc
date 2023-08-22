@@ -19,7 +19,7 @@
     </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
-            <div class="l-group" style="width: 100%;"><span>收货物料明细</span></div>
+            <div class="l-group" style="width: 100%;"><span>验收物料明细</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style=" width: 100%;">
                     <div style="margin-bottom: 50px; width: 100%;" id="maingrid">
@@ -37,7 +37,7 @@
             isAddNew: false,
             isView: false,
             orginData: {},
-            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }, { "ID": "6", "TEXT": "退回编辑" }],
             bySource: [],
             pmType: [],
             deviceInfo: [],
@@ -51,49 +51,25 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: {
+                                display: "记录状态", name: "AUDITING_CHK", newline: false, upper: true, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
-                                }, group: "收货登记"
-                            },
-                            { display: "登记单号", name: "RECEIVE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                                }, editor: { disabled: true }, group: "到货验收" },
+                            { display: "登记单号", name: "RECEIVE_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "收货日期", name: "RECEIVE_DATE", newline: false, upper: true, type: "date", options: {}, editor: { disabled: true } },
+                            { display: "收货人", name: "USER_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             {
-                                display: "订单号", name: "ORDER_ID", newline: false, upper: true, type: "select", options: {
-                                    data: me.order,
-                                    autocomplete: true,
-                                    selectBoxWidth: 400,
-                                    valueField: "ORDER_ID",
-                                    textField: "ORDER_CODE",
-                                    columns: [
-                                        { header: "订单号", name: "ORDER_CODE", width: 100 },
-                                        { header: "物料编码", name: "SP_CODE", width: 100 },
-                                        { header: "物料名称", name: "SP_NAME", width: 100 },
-                                        { header: "规格型号", name: "SP_SIZE", width: 100 },
-                                        { header: "申请人", name: "APPLY_USER", width: 100 },
-                                        { header: "申请部门", name: "DEPT_NAME", width: 100 },
-                                        { header: "供应商", name: "PROVIDER_NAME", width: 100 },
-                                    ],
-                                    onChangeValue: function (input, value, g) {
-                                        if (g.selected != undefined) {
-                                            $("#ORDER_ID").val(g.selected.ORDER_ID);
-                                            $("#ORDER_CODE").val(g.selected.ORDER_CODE);
-                                            $("#CHK_USER").val(g.selected.APPLY_USER);
-                                            $("#PROVIDER_NAME").val(g.selected.PROVIDER_NAME);
-                                            $("#DEPT_NAME").val(g.selected.DEPT_NAME);
-                                            $("#PUR_USER").val(g.selected.BUY_USER);
-                                        }
-                                    }
-                                }
+                                display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }
                             },
-                            { display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "验收人", name: "CHK_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "收货人", name: "USER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "收货日期", name: "RECEIVE_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "申请部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "REG_MEMO", newline: true, width: 880, type: "textarea", options: {} },
+                            { display: "验收部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "申请人", name: "CHK_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "验收人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "验收日期", name: "CHK_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "收货备注", name: "REG_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: {}, editor: { disabled: true } },
+                            { display: "验收意见", name: "MEMO", newline: true, width: 880, upper: true, type: "textarea", options: {}, validate: { required: true } },
                             { display: "主键", name: "RECEIVE_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
                     },
@@ -108,38 +84,47 @@
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             {
-                                display: "数量", name: "COUNT", width: 150, type: "int", editor: { type: 'int' }, validate: { required: true }, totalSummary:
+                                display: "登记数量", name: "COUNT", width: 150, type: "text", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            { display: "送货单号", name: "DELIVERY_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "收货库位", name: "STOCK_NAME", width: 120, type: "text"
+                            },
+                            {
+                                display: "验收数量", name: "CHK_COUNT", width: 150, type: "int", editor: { type: 'int' }, validate: { required: true }, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 },
                                 render: function (rowdata, index, value) {
                                     if (value) {
-                                        rowdata.MONEY = rowdata.PRICE * value;
+                                        rowdata.CHK_MONEY = rowdata.PRICE * value;
                                         return value;
                                     } else {
                                         return value;
                                     }
                                 }
                             },
-                            { display: "送货单号", name: "DELIVERY_CODE", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "收货库位", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, validate: { required: true } },
+                            { display: "成交单价", name: "PRICE", width: 150, type: "text", },
                             {
-                                display: "成交单价", name: "PRICE", width: 120, type: "text", totalSummary:
-                                {
-                                    type: 'sum',
-                                    align: 'center'
-                                }
-                            },
-                            {
-                                display: "成交金额", name: "MONEY", width: 100, type: "text", totalSummary:
+                                display: "成交金额", name: "CHK_MONEY", type: "text", width: 80, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 } },
-                            { display: "申请人", name: "APPLY_USER", width: 100, type: "text" },
-                            { display: "申请单号", name: "APPLY_NO", width: 100, type: "text" },
-                            { display: "用途", name: "USE_MEMO", width: 100, type: "text" },
+                            { display: "税率", name: "TAX_RATE", width: 120, type: "text" },
+                            { display: "不含税单价", name: "NOTAX_PRICE", width: 100, type: "text" },
+                            { display: "不含税金额", name: "UNTAX_MONEY", width: 100, type: "text" },
+                            { display: "退回说明", name: "RETURN_MEMO", width: 250, type: "text", editor: { type: 'text' } },
+                            { display: "申请人", name: "APPLY_USER", width: 120, type: "text" },
+                            { display: "申请部门", name: "DEPT_NAME", width: 120, type: "text" },
+                            { display: "申请单号", name: "APPLY_ID", width: 120, type: "text" },
+                            { display: "用途", name: "USE_MEMO", width: 120, type: "text" },
+                            { display: "RECDET_ID", name: "RECDET_ID", width: 120, type: "text", hide: true },
                         ]
                     }
                 };

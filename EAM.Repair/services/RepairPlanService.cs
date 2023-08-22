@@ -36,6 +36,7 @@ namespace EAM.Repair.services
             });
             return result;
         }
+        #region 维修计划
 
         public async Task<GridData> ListAsync(GridRequest request)
         {
@@ -138,11 +139,11 @@ namespace EAM.Repair.services
         {
             entity.PLAN_ID = GuidHelper.NewSnowflakeId().ToString();
 
-            string type = "WXJH" + DateTime.Now.ToString("yyMM");
-            string def = type + "000000";
+            string type = "WXJH" + DateTime.Now.ToString("yyyyMM");
+            string def = type + "0000";
             var model = await _dbContext.Query<REP_PLAN>(x => x.PLAN_CODE.Contains(type)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 6).CastTo<int>() + 1;
-            entity.PLAN_CODE = type + index.ToString("D6");
+            var index = model.SubStr(10, 4).CastTo<int>() + 1;
+            entity.PLAN_CODE = type + index.ToString("D4");
 
             await Task.CompletedTask;
         }
@@ -154,6 +155,32 @@ namespace EAM.Repair.services
         /// <returns></returns>
         private async Task BeforeUpdate(REP_PLAN request)
         {
+            if (request.AUDITING == "1")
+            {
+                REP_PLAN_EXE exe = new();
+                exe.AUDITING = "0";
+                exe.PLAN_CODE = request.PLAN_CODE;
+                exe.DEVICE_ID = request.DEVICE_ID;
+                exe.MAINT_TYPE = request.MAINT_TYPE;
+                exe.DEAL_TYPE = request.DEAL_TYPE;
+                exe.REP_LEVEL = request.REP_LEVEL;
+                exe.FAULT_DESCRIBE = request.FAULT_DESCRIBE;
+                exe.PLAN_START_DATE = request.PLAN_START_DATE;
+                exe.PLAN_END_DATE = request.PLAN_END_DATE;
+                exe.CHARGE_USER = request.CHARGE_USER;
+                exe.REPAIR_MEMO = request.REPAIR_MEMO;
+                exe.PLAN_MEMO = request.PLAN_MEMO;
+                exe.PLAN_ID = request.PLAN_ID;
+                exe.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
+
+                string type = "WXSS" + DateTime.Now.ToString("yyyyMM");
+                string def = type + "0000";
+                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.EXE_CODE.Contains(type)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
+                var index = model.SubStr(10, 4).CastTo<int>() + 1;
+                exe.EXE_CODE = type + index.ToString("D4");
+
+                await _dbContext.InsertAsync<REP_PLAN_EXE>(exe);
+            }
             await Task.CompletedTask;
         }
 
@@ -173,7 +200,7 @@ namespace EAM.Repair.services
         /// <returns></returns>
         public async Task<AjaxResult> ShipList()
         {
-            var result = await _dbContext.Query<DEVICE_CARD>(a=> a.TYPE_NAME == "1")//设备类别为船舶
+            var result = await _dbContext.Query<DEVICE_CARD>(a=> a.TYPE_ID == "1")//设备类别为船舶
                 .OrderBy(c => c.DEVICE_ID)
                 .Select(c => new DEVICE_CARD { AUDITING = c.AUDITING, DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_NO = c.DEVICE_NO, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT, DEVICE_TYPE = c.DEVICE_TYPE })
                .ToListAsync();
@@ -238,6 +265,21 @@ namespace EAM.Repair.services
         {
             entity.PLAN_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
 
+            REP_PLAN_EXE_ITEM exe = new();
+            exe.BOM_NAME = entity.BOM_NAME;
+            exe.REP_INDEX = entity.REP_INDEX;
+            exe.REP_CONTENT = entity.REP_CONTENT;
+            exe.DEAL_TYPE = entity.DEAL_TYPE;
+            exe.ITEM_TYPE = entity.ITEM_TYPE;
+            exe.IS_ASKBID = entity.IS_ASKBID;
+            exe.REP_LEADER = entity.REP_LEADER;
+            exe.PLAN_ID = entity.PLAN_ID;
+            exe.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            exe.PLAN_ITEM_ID = entity.PLAN_ITEM_ID;
+            exe.BOM_ID = entity.BOM_ID;
+
+            await _dbContext.InsertAsync<REP_PLAN_EXE_ITEM>(exe);
+
             await Task.CompletedTask;
         }
 
@@ -266,5 +308,115 @@ namespace EAM.Repair.services
             var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "1").GetGridData(request);
             return query;
         }
+        #endregion
+
+        #region 维修计划实施
+
+        public async Task<GridData> ExeListAsync(GridRequest request)
+        {
+            var query = await _dbContext.JoinQuery<REP_PLAN_EXE, DEVICE_CARD>((a, b) => new object[]
+            {
+                JoinType.LeftJoin,a.DEVICE_ID.Equals(b.DEVICE_ID)
+            })
+            .Select((a, b) => new
+            {
+                a.PLAN_ID,
+                a.AUDITING,
+                a.EXE_CODE,
+                a.WSEC_DEPT,
+                a.MAINT_TYPE,
+                a.DEAL_TYPE,
+                a.PLAN_START_DATE,
+                a.PLAN_END_DATE,
+                a.ACT_START_DATE,
+                a.ACT_END_DATE,
+                a.ACT_STOP_TIME,
+                a.EXE_USER,
+                a.ASSIST_USER,
+                a.IS_LEAVE,
+                a.EXE_DESC,
+                a.LEAVE_MEMO,
+                a.FAULT_DESCRIBE,
+                a.REP_LEVEL,
+                a.PLAN_CODE,
+                a.PLAN_MEMO,
+                a.DEPT_NAME,
+                a.CHARGE_USER,
+                a.REPAIR_MEMO,
+                a.EIDT_DATE,
+                b.DEVICE_ID,
+                b.DEVICE_NAME,
+                b.DEVICE_TYPE,
+                b.DEVICE_NO,
+                b.ASSET_CODE,
+                a.EXE_ID
+            }).GetGridData(request);
+
+            return query;
+        }
+
+        public async Task<AjaxResult> GetExeDetailAsync(string ID)
+        {
+            var query = await _dbContext.JoinQuery<REP_PLAN_EXE, DEVICE_CARD>((a, b) => new object[]
+            {
+                JoinType.LeftJoin,a.DEVICE_ID.Equals(b.DEVICE_ID)
+            })
+            .Select((a, b) => new
+            {
+                a.PLAN_ID,
+                a.AUDITING,
+                a.WSEC_DEPT,
+                a.MAINT_TYPE,
+                a.DEAL_TYPE,
+                a.PLAN_START_DATE,
+                a.PLAN_END_DATE,
+                a.FAULT_DESCRIBE,
+                a.REP_LEVEL,
+                a.PLAN_CODE,
+                a.PLAN_MEMO,
+                a.DEPT_NAME,
+                a.CHARGE_USER,
+                a.REPAIR_MEMO,
+                a.EIDT_DATE,
+                b.DEVICE_ID,
+                b.DEVICE_NAME,
+                b.DEVICE_TYPE,
+                b.DEVICE_NO,
+                b.ASSET_CODE,
+                a.EXE_ID
+            }).Where(x => x.EXE_ID == ID).ToListAsync();
+
+            return AjaxResult.Success(query);
+        }
+
+        public async Task<GridData> ExeItemListAsync(GridRequest request)
+        {
+            var query = await _dbContext.JoinQuery<REP_PLAN_EXE_ITEM, REP_PLAN_EXE>((a, b) => new object[] {
+                JoinType.LeftJoin,a.EXE_ID.Equals(b.EXE_ID)
+            }).Select((a, b) => new
+            {
+                a.EXE_ITEM_ID,
+                a.EXE_ID,
+                a.PLAN_ITEM_ID,
+                a.BOM_ID,
+                a.PLAN_ID,
+                a.BOM_NAME,
+                a.REP_CONTENT,
+                a.IS_COMPLETE,
+                a.USE_TOOL,
+                a.LABOR_NUM,
+                a.TAKE_TIME,
+                a.MEMO,
+                a.DEAL_TYPE,
+                a.REP_LEADER,
+                a.REP_INDEX,
+                a.IS_ASKBID,
+                a.ITEM_TYPE,
+            }).GetGridData(request);
+
+            return query;
+        }
+
+        #endregion
     }
 }

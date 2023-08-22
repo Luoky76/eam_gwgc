@@ -1,14 +1,11 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <meta http-equiv="Expires" content="0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Cache" content="no-cache">
-    <title>设备卡片</title>
+    <title></title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -23,88 +20,78 @@
     </form>
     <script type="text/javascript">
         'use strict';
-        var rootPath = "../";
-        window["encryptUrl"] = ["/Apis/"];
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
-            ver: getQueryStringByName("ver"),
-            detailWidth:1220,
-            detailHeight:650,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
-                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text",options:{} }
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditingStatus } },
+                            { display: "冲红日期", name: "_search_BACK_DATE", dbname: "BACK_DATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "入库日期", name: "_search_IN_DATE", dbname: "IN_DATE", newline: false, upper: true, type: "date", options: {} }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
-                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "船舶识别号", name: "SHIP_ID", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "船长", name: "SHIP_LENGTH", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "型宽", name: "SHIP_WIDTH", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "型深", name: "SHIP_DEPTH", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "吃水", name: "SHIP_DRAFT", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "船舶类型", name: "SHIP_TYPE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "主机功率", name: "MAIN_POWER", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "副机功率", name: "SECOND_POWER", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "航速", name: "SPEED", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "拖力", name: "DRAG_FORCE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "总吨", name: "TOTAL_TON", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "净吨", name: "PURE_TON", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "启用日期", name: "REV_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditingData, selectBoxHeight: 100 }},
-                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "立卡日期", name: "CARD_DATE", width: 100, type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "当前管理状态", name: "STATUS", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "负责人", name: "CARD_USER", width: 100, type: "text", editor: { type: 'text' } }
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditingStatus, selectBoxHeight: 100 } },
+                            { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text", hide: true },
+                            { display: "主键", name: "IN_BACK_ID", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入库ID", name: "IN_ID", minWidth: 100, type: "text",  hide: true },
+                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", editor: { type: 'text' } }
                         ]
                     }
                 };
             },
+            auditingStatus: [
+                { ID: "0", TEXT: "未提交", VALUE: "0" },
+                { ID: "1", TEXT: "已提交", VALUE: "1" },
+                { ID: "6", TEXT: "退回编辑", VALUE: "6" },
+            ],
             grid: null,
             searchForm: null,
             buttons: null,
-            auditingData: [
-                { ID: "0", TEXT: "未提交", VALUE: "0" },
-                { ID: "1", TEXT: "已提交", VALUE: "1" }
-            ],
-            devicetype: [
-                { ID: "1", TEXT: "船舶", VALUE: "1" },
-                { ID: "2", TEXT: "设备", VALUE: "2" }
-            ],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpInBack/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
             setGrid: function () {
                 var me = this;
-                var columns = me.config.grid.columns;
-                for (var i = columns.length - 1; i >= 0; i--) {
-                    if (!columns[i]) columns.splice(i, 1);
-                }
+                me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
-                    dataAction: 'server',
+                    usePager: false,
+                    dataAction: 'local',
                     toolbar: {},
-                    url: 'Device/DeviceCard/List',
+                    url: 'Material/SpInBack/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'DEVICE_NO',
-                    sortOrder: 'desc',
-                    width: '100%',
+                    sortName: 'AUDITING',
+                    sortOrder: 'asc',
+                    width: '98%',
                     height: '100%',
-                    dateFormat: 'yyyy-MM-dd HH:mm',
                     checkbox: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
@@ -116,10 +103,10 @@
                     },
                     onSuccess: function (data, g) {
                         if (data && data.Rows) {
-                            var rows = data.Rows;
-                            for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDDEVICE_ID = rows[i].DEVICE_ID;
-                                rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
                             }
                         }
                     },
@@ -152,13 +139,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../System/Export.html?exporttype=xls",
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../System/Export.html?exporttype=doc",
                                 modal: true
                             });
                             break;
@@ -166,14 +153,14 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            add: function () { //导入
                 var me = this;
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]',
-                    url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    title: '[导入]',
+                    url: "sp-in-back-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,   
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -181,7 +168,48 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": null}
+                    data: { "sid": null, "callback": me.f_callback }
+                });
+                //me.grid.addEditRow({}, true);
+            },
+            f_callback: function (id, data) {
+                var me = this;
+                data.forEach((a) => {
+                    business.grid.addEditRow({
+                        "IN_CODE": a.IN_CODE,
+                        "IN_DATE": a.IN_DATE,
+                        "ORDER_CODE": a.ORDER_CODE,
+                        "PROVIDER_NAME": a.PROVIDER_NAME,
+                        "PUR_USER": a.PUR_USER,
+                        "USER_NAME": a.USER_NAME,
+                        "DEPT_NAME": a.DEPT_NAME,
+                        "MEMO": a.MEMO,
+                        "IN_ID": a.IN_ID,
+                    });
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                var sid = selected.IN_BACK_ID;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[修改]',
+                    url: "view-detail.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": sid }
                 });
             },
             save: function () { //保存
@@ -195,7 +223,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url:'Device/DeviceCard/Save',
+                        url: 'Material/SpInBack/Comboxdata',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -210,32 +238,6 @@
                 }
 
             },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var sid = selected.DEVICE_ID;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]',
-                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": sid }
-                    });
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
-            },
-
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
@@ -247,7 +249,7 @@
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
                                 me.save();
@@ -306,10 +308,7 @@
             },
             setForm: function () {
                 var me = this;
-                var columns = me.config.search.fields;
-                for (var i = columns.length - 1; i >= 0; i--) {
-                    if (!columns[i]) columns.splice(i, 1);
-                }
+                me.config.search.fields.removeNull();
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
@@ -327,18 +326,20 @@
                         me.buttons = g.options.buttons;
                     }
                 });
-                me.buttons[0].click(); //查询
             },
             init: function () {
                 var me = this;
+                me.loadComboxData();
                 me.setConfig();
-                me.setGrid();
                 me.setForm();
+                me.setGrid();
+                me.reload();
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
-
 </html>
