@@ -22,5 +22,9 @@ namespace EAM.Repair.interfaces
         Task<GridData> ItemListAsync(GridRequest request);
 
         Task<GridData> GetDeviceAsync(GridRequest request);
+
+        Task<GridData> ExeListAsync(GridRequest request);
+
+        Task<AjaxResult> GetExeDetailAsync(string ID);
     }
 }

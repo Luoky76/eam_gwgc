@@ -63,5 +63,17 @@ namespace EAM.Repair.Controller
         {
             return await _service.ShipList();
         }
+
+
+        public async Task<AjaxResult> ExeListAsync(GridRequest request)
+        {
+            var result = await _service.ExeListAsync(request);
+            return AjaxResult.Success(result);
+        }
+
+        public async Task<AjaxResult> GetExeDetailAsync(string ID)
+        {
+            return await _service.GetExeDetailAsync(ID);
+        }
     }
 }

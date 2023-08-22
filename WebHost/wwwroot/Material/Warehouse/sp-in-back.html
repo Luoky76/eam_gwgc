@@ -1,0 +1,413 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditingStatus } },
+                            { display: "冲红日期", name: "_search_BACK_DATE", dbname: "BACK_DATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "入库日期", name: "_search_IN_DATE", dbname: "IN_DATE", newline: false, upper: true, type: "date", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditingStatus, selectBoxHeight: 100 } },
+                            { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "text", editor: { type: 'decimal' } },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text" },
+                            { display: "主键", name: "IN_BACK_ID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' }},
+                            { display: "入库ID", name: "IN_ID", minWidth: 100, type: "text",  hide: true },
+                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", editor: { type: 'text' } }
+                        ]
+                    }
+                };
+            },
+            auditingStatus: [
+                { ID: "0", TEXT: "未提交", VALUE: "0" },
+                { ID: "1", TEXT: "已提交", VALUE: "1" },
+            ],
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpInBack/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Material/SpInBack/List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //导入
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 520,
+                    allowClose: true,
+                    title: '[导入]',
+                    url: "sp-in-back-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,   
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null, "callback": me.f_callback }
+                });
+                //me.grid.addEditRow({}, true);
+            },
+            f_callback: function (id, data) {
+                var me = this;
+                debugger
+                var changeRow = new Object();
+                var changeRowdet = new Object();
+
+                var add = {
+                    AUDITING: "0",
+                    DELIVERY_CODE: data[0].DELIVERY_CODE,
+                    IN_CODE: data[0].IN_CODE,
+                    IN_DATE: data[0].IN_DATE,
+                    SUM_MONEY: data[0].MONEY,
+                    ORDER_CODE: data[0].ORDER_CODE,
+                    PROVIDER_NAME: data[0].PROVIDER_NAME,
+                    PUR_USER: data[0].PUR_USER,
+                    EDIT_USER: data[0].EDIT_USER,
+                    CHK_USER: data[0].CHK_USER,
+                    MEMO: data[0].MEMO,
+                }
+
+                var addet = {
+                    SP_CODE: data[0].SP_CODE,
+                    SP_NAME: data[0].SP_NAME,
+                    UNIT: data[0].UNIT,
+                    SP_SIZE: data[0].SP_SIZE,
+                    PRODUCE: data[0].PRODUCE,
+                    COUNT: data[0].COUNT,
+                    DELIVERY_CODE: data[0].DELIVERY_CODE,
+                    STOCK_NAME: data[0].STOCK_NAME,
+                    PRICE: data[0].PRICE,
+                    MONEY: data[0].MONEY,
+                    APPLY_USER: data[0].APPLY_USER,
+                    APPLY_NO: data[0].APPLY_NO,
+                }
+
+                changeRow["Added"] = [add];
+                changeRowdet["Added"] = [addet];
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpInBack/Save',
+                    loading: '正在导入中...',
+                    data: { request: changeRow, requestdet: changeRowdet },
+                    success: function () {
+                        LG.showSuccess('导入成功');
+                        business.grid.isDataChanged = false;
+                        business.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                        business.reload();
+                    }
+                });
+            },
+            view: function (rowid) { //查看
+                var me = this;
+                if (!rowid) return;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 520,
+                    allowClose: true,
+                    title: '[查看]',
+                    url: "sp-inback-detail.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": me.grid.getRow(rowid).IN_BACK_ID, "isNew": false, "isView": true }
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+
+                if (selected.AUDITING == "1") {
+                    LG.tip('已提交，无法修改!');
+                }else {
+                    if (selected) {
+                        var sid = selected.IN_BACK_ID;
+                        $.ligerDialog.open({
+                            width: 1100,
+                            height: 520,
+                            allowClose: true,
+                            title: '[修改]',
+                            url: "sp-inback-detail.html?MenuNo=" + me.menuNo,
+                            isHidden: false,
+                            showMax: false,
+                            showToggle: false,
+                            showMin: false,
+                            isResize: true,
+                            slide: false,
+                            onClosed: me.reload.bind(me),
+                            data: { "sid": sid }
+                        });
+                    }
+                }
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpInBack/Comboxdata',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                //me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

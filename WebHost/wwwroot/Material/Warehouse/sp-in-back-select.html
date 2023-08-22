@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>挑选</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form id="mainform">
+        <div id="maingrid" style="float: left">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var rootPath = "../";
+        var business = {
+            dialog: (frameElement && frameElement.dialog) ? frameElement.dialog : null,
+            detailType: null,
+            sid: "",
+            dataValue: null,
+            isFirst: true,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "入库单号", name: "_search_IN_CODE", dbname: "IN_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入库日期", name: "IN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "供应商", name: "PROVIDER_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入库金额", name: "INSTORE_MONEY", minWidth: 100, type: "text", editor: { type: 'decimal' } },
+                            { display: "采购人", name: "PUR_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "仓管员", name: "USER_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "验收人", name: "CHK_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "验收日期", name: "CHK_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "公司名称", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    title: "物料采购入库列表",
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/SpInBack/InList',
+                    parms: {
+                        ORDER_ID: me.sid,
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '100%',
+                    height: '100%',
+                    whenRClickToSelect: true,
+                    checkbox: true,
+                    enabledEdit: false
+                });
+                me.grid.isValid = true;
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.buttons[0].click(); //查询
+            },
+            setFormButtons: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', onclick: function () { if (me.dialog) me.dialog.close(); } });
+                buttons.push({
+                    text: '确定', onclick: function () {
+                        var selected = me.grid.getSelectedRows();
+                        if (selected.length < 1) {
+                            LG.showError("请选择需要导入的数据!");
+                            return
+                        }
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(selected[0].ID, selected)
+                    }
+                });
+                LG.addFormButtons(buttons);
+            },
+            init: function () {
+                var me = this;
+                if (!me.dialog) return;
+                var dialogData = me.dialog.get('data'); //获取data参数
+                me.detailType = dialogData.detailType;
+                me.dataValue = "," + (dialogData.dataValue || "") + ",";
+                me.callback = dialogData.callback;
+                me.sid = dialogData.sid;
+                me.setConfig();
+                me.setGrid();
+                me.setForm();
+                me.setFormButtons();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>

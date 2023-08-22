@@ -74,7 +74,6 @@
                             onChangeValue: function (input, value, g) {
                                 if (value) {
                                     for (var i = 0; i < devicetype.length; i++) {
-                                        debugger
                                         if (value == devicetype[i].ID) {
                                             $("#TYPE_ID").val(devicetype[i].VALUE);
                                         }
@@ -255,7 +254,6 @@
 
             //保存
             function f_save() {
-                debugger
                 if (!mainform.valid()) {
                     mainform.showInvalid();
                     return;

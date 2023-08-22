@@ -27,7 +27,7 @@
         var business = {
             dialog: (frameElement && frameElement.dialog) ? frameElement.dialog : null,
             detailType: null,
-            select_id: "",
+            sid: "",
             dataValue: null,
             isFirst: true,
             setConfig: function () {
@@ -41,12 +41,51 @@
                     },
                     grid: {
                         columns: [
-                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
-                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "申请单号", name: "APPLY_NO", width: 150, type: "text",
+                                totalSummary:
+                                {
+                                    render: function (suminf, column, cell) {
+                                        return '<div>合计</div>';
+                                    },
+                                    align: 'center'
+                                }
+                            },
+                            { display: "申请人", name: "APPLY_USER", width: 150, type: "text", },
+                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
+                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
+                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
+                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
+                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
+                            { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
+                            {
+                                display: "订单数量", name: "COUNT", width: 150, type: "decimal", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            { display: "终止数量", name: "STOP_NUM", width: 150, type: "decimal", },
+                            {
+                                display: "含税单价(元)", name: "PRICE", width: 150, type: "text", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            {
+                                display: "总金额(元)", name: "MONEY", width: 150, type: "text", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            { display: "要求交货日期", name: "REQ_DATE", type: "date", format: "yyyy-MM-dd", width: 120, editor: { format: "yyyy-MM-dd", type: 'date' }, },
+                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
+                            { display: "ORDER_ID", name: "ORDER_ID", dbname: "ORDER_ID", width: 100, type: "text", hide: true },
+                            { display: "主键", name: "ORDERDET_ID", dbname: "ORDERDET_ID", width: 100, type: "text", hide: true },
                         ]
                     }
                 };
@@ -65,8 +104,9 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/SpApply/List',
+                    url: 'Material/SpOrder/DetailList',
                     parms: {
+                        ORDER_ID: me.sid,
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
@@ -133,7 +173,7 @@
                 me.detailType = dialogData.detailType;
                 me.dataValue = "," + (dialogData.dataValue || "") + ",";
                 me.callback = dialogData.callback;
-                me.select_id = dialogData.data;
+                me.sid = dialogData.sid;
                 me.setConfig();
                 me.setGrid();
                 me.setForm();

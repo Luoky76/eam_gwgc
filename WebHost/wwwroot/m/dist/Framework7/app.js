@@ -811,9 +811,19 @@
         var ul = document.createElement('ul');
         for (var i = 0; i < dict.length; i++) {
 
-            if (dict[i].isPrimaryKey || dict[i].isShow == false) {
+            if (dict[i].isPrimaryKey) {
                 continue;
             }
+
+            if (dict[i].isShow == false) {
+                var input = document.createElement('input');
+                input.type = "hidden"
+                input.name = dict[i].name || "";
+                input.id = dict[i].name || "";
+                ul.appendChild(input);
+                continue;
+            }
+
             var li = document.createElement('li');
             var iteminner = document.createElement('div');
             var itemtitle = document.createElement('div');
@@ -824,6 +834,7 @@
             var iselect = null;
             if (dict[i].hasOwnProperty("Option")) {
                 select.name = dict[i].name || "";
+                select.id = dict[i].name || "";
 
                 select.disabled = dict[i].readOnly;
                 select.options.add(new Option("请选择", "-99")); //这个兼容IE与firefox
@@ -833,7 +844,12 @@
                 select.setAttribute("type", "select");
                 itemsmart.href = "#";
                 itemsmart.className = "item-link smart-select smart-select-init " + dict[i].name;
-                itemsmart.setAttribute("data-open-in", "sheet");
+                if (dict[i].Searched) {
+                    itemsmart.setAttribute("data-open-in", "popup");
+                    itemsmart.setAttribute("data-searchbar", "true");
+                } else {
+                    itemsmart.setAttribute("data-open-in", "sheet");
+                }
                 itemsmart.setAttribute("data-virtual-list", "true");
                 itemsmart.setAttribute("data-page-back-link-text", "Go back");
                 iselect = true;
@@ -853,6 +869,11 @@
             itemtitle.className = "item-title";
             itemtitle.setAttribute("style", "color: #666666");
             itemtitle.textContent = dict[i].display || "";
+
+            if (dict[i].hasOwnProperty("validate") && dict[i].validate.required) {
+                var $span = $('<span style="color:red">*</span>');
+                $(itemtitle).append($span);
+            }
 
             iteminner.appendChild(itemtitle);
 

@@ -43,7 +43,7 @@
                             { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text",  editor: { type: 'text'} },
                             { display: "验收部门", name: "DEPT_NAME", minWidth: 100, type: "text",  editor: { type: 'text'} },
                             { display: "采购人", name: "PUR_USER", minWidth: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "验收人", name: "CHK_USER", minWidth: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "申请人", name: "CHK_USER", minWidth: 100, type: "text",  editor: { type: 'text'} },
                             { display: "备注", name: "REG_MEMO", minWidth: 100, type: "text",  editor: { type: 'text'} },
                             { display: "主键", name: "RECEIVE_ID", minWidth: 100, type: "text", hide: true },
                         ]
@@ -60,7 +60,6 @@
             buttons: null,
             loadComboxData: function () {
                 var me = this;
-                console.log(me.menuNo);
             },
             setGrid: function () {
                 var me = this;
@@ -71,12 +70,12 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'local',
-                    toolbar: { group: 'list' },
+                    toolbar: { },
                     url: 'Material/SpReceive/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'AUDITING', value: "1", op: 'equal' }]
                         })
                     },
                     sortName: '',
@@ -84,8 +83,6 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -105,6 +102,9 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
@@ -118,17 +118,15 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "add":
-                            me.add();
-                            break;
                         case "modify":
                             me.modify();
                             break;
-                        case "delete":
-                            me.delete();
-                            break;
-                        case "save":
-                            me.save();
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -146,14 +144,15 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            view: function (rowid) { //查看
                 var me = this;
+                if (!rowid) return;
                 $.ligerDialog.open({
                     width: 1100,
                     height: 520,
                     allowClose: true,
-                    title: '[新增]',
-                    url: "sp-receive-detail.html?MenuNo=" + me.menuNo,
+                    title: '[查看]',
+                    url: "sp-check-detail.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -161,50 +160,70 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": null }
+                    data: { "sid": me.grid.getRow(rowid).RECEIVE_ID, "isNew": false, "isView": true }
                 });
-                //me.grid.addEditRow({}, true);
             },
             modify: function () { //修改
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
                 }
-                var sid = selected.RECEIVE_ID;
-                $.ligerDialog.open({
-                    width: 1100,
-                    height: 520,
-                    allowClose: true,
-                    title: '[修改]',
-                    url: "sp-receive-detail.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
-                });
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
+
+                if (selected.AUDITING_CHK == "1") {
+                    LG.tip('已提交，无法修改!');
+                } else {
+                    if (selected) {
+                        var sid = selected.RECEIVE_ID;
+                        $.ligerDialog.open({
+                            width: 1100,
+                            height: 520,
+                            allowClose: true,
+                            title: '[修改]',
+                            url: "sp-check-detail.html?MenuNo=" + me.menuNo,
+                            isHidden: false,
+                            showMax: false,
+                            showToggle: false,
+                            showMin: false,
+                            isResize: true,
+                            slide: false,
+                            onClosed: me.reload.bind(me),
+                            data: { "sid": sid }
+                        });
                     }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
+                }
+            },
+            sumbit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING_CHK == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING_CHK = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/SpRecive/Save',
-                        loading: '正在保存中...',
-                        data: changeRow,
+                        url: 'Material/SpReceive/Save',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
                         success: function () {
-                            LG.showSuccess('保存成功');
+                            LG.showSuccess('提交成功');
                             me.grid.isDataChanged = false;
                             me.reload();
                         },
@@ -212,8 +231,9 @@
                             LG.showError(message);
                         }
                     });
+                } else {
+                    LG.tip('请选择行!');
                 }
-
             },
             reload: function () { //刷新
                 var me = this;

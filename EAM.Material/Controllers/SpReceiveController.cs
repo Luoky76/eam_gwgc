@@ -37,9 +37,9 @@ namespace EAM.Material.Controllers
             return await _service.GetAsync(ID);
         }
 
-        public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request)
+        public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
         {
-            return await _service.Save(request);
+            return await _service.Save(request,requestdet);
         }
 
         public async Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request)
