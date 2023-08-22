@@ -38,10 +38,10 @@
                             { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
-                            { display: "备注", name: "MEMO", minWidth: 100, type: "text", hide: true },
-                            { display: "主键", name: "IN_BACK_ID", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "text", editor: { type: 'decimal' } },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text" },
+                            { display: "主键", name: "IN_BACK_ID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' }},
                             { display: "入库ID", name: "IN_ID", minWidth: 100, type: "text",  hide: true },
                             { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", editor: { type: 'text' } }
@@ -52,7 +52,6 @@
             auditingStatus: [
                 { ID: "0", TEXT: "未提交", VALUE: "0" },
                 { ID: "1", TEXT: "已提交", VALUE: "1" },
-                { ID: "6", TEXT: "退回编辑", VALUE: "6" },
             ],
             grid: null,
             searchForm: null,
@@ -88,8 +87,8 @@
                             rules: []
                         })
                     },
-                    sortName: 'AUDITING',
-                    sortOrder: 'asc',
+                    sortName: '',
+                    sortOrder: '',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
@@ -112,6 +111,9 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
@@ -156,8 +158,8 @@
             add: function () { //导入
                 var me = this;
                 $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
+                    width: 1100,
+                    height: 520,
                     allowClose: true,
                     title: '[导入]',
                     url: "sp-in-back-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,   
@@ -174,34 +176,66 @@
             },
             f_callback: function (id, data) {
                 var me = this;
-                data.forEach((a) => {
-                    business.grid.addEditRow({
-                        "IN_CODE": a.IN_CODE,
-                        "IN_DATE": a.IN_DATE,
-                        "ORDER_CODE": a.ORDER_CODE,
-                        "PROVIDER_NAME": a.PROVIDER_NAME,
-                        "PUR_USER": a.PUR_USER,
-                        "USER_NAME": a.USER_NAME,
-                        "DEPT_NAME": a.DEPT_NAME,
-                        "MEMO": a.MEMO,
-                        "IN_ID": a.IN_ID,
-                    });
+                debugger
+                var changeRow = new Object();
+                var changeRowdet = new Object();
+
+                var add = {
+                    AUDITING: "0",
+                    DELIVERY_CODE: data[0].DELIVERY_CODE,
+                    IN_CODE: data[0].IN_CODE,
+                    IN_DATE: data[0].IN_DATE,
+                    SUM_MONEY: data[0].MONEY,
+                    ORDER_CODE: data[0].ORDER_CODE,
+                    PROVIDER_NAME: data[0].PROVIDER_NAME,
+                    PUR_USER: data[0].PUR_USER,
+                    EDIT_USER: data[0].EDIT_USER,
+                    CHK_USER: data[0].CHK_USER,
+                    MEMO: data[0].MEMO,
+                }
+
+                var addet = {
+                    SP_CODE: data[0].SP_CODE,
+                    SP_NAME: data[0].SP_NAME,
+                    UNIT: data[0].UNIT,
+                    SP_SIZE: data[0].SP_SIZE,
+                    PRODUCE: data[0].PRODUCE,
+                    COUNT: data[0].COUNT,
+                    DELIVERY_CODE: data[0].DELIVERY_CODE,
+                    STOCK_NAME: data[0].STOCK_NAME,
+                    PRICE: data[0].PRICE,
+                    MONEY: data[0].MONEY,
+                    APPLY_USER: data[0].APPLY_USER,
+                    APPLY_NO: data[0].APPLY_NO,
+                }
+
+                changeRow["Added"] = [add];
+                changeRowdet["Added"] = [addet];
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpInBack/Save',
+                    loading: '正在导入中...',
+                    data: { request: changeRow, requestdet: changeRowdet },
+                    success: function () {
+                        LG.showSuccess('导入成功');
+                        business.grid.isDataChanged = false;
+                        business.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                        business.reload();
+                    }
                 });
             },
-            modify: function () { //修改
+            view: function (rowid) { //查看
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
-                }
-                var sid = selected.IN_BACK_ID;
+                if (!rowid) return;
                 $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
+                    width: 1100,
+                    height: 520,
                     allowClose: true,
-                    title: '[修改]',
-                    url: "view-detail.html",
+                    title: '[查看]',
+                    url: "sp-inback-detail.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -209,8 +243,42 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
+                    data: { "sid": me.grid.getRow(rowid).IN_BACK_ID, "isNew": false, "isView": true }
                 });
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+
+                if (selected.AUDITING == "1") {
+                    LG.tip('已提交，无法修改!');
+                }else {
+                    if (selected) {
+                        var sid = selected.IN_BACK_ID;
+                        $.ligerDialog.open({
+                            width: 1100,
+                            height: 520,
+                            allowClose: true,
+                            title: '[修改]',
+                            url: "sp-inback-detail.html?MenuNo=" + me.menuNo,
+                            isHidden: false,
+                            showMax: false,
+                            showToggle: false,
+                            showMin: false,
+                            isResize: true,
+                            slide: false,
+                            onClosed: me.reload.bind(me),
+                            data: { "sid": sid }
+                        });
+                    }
+                }
             },
             save: function () { //保存
                 var me = this;
@@ -329,7 +397,7 @@
             },
             init: function () {
                 var me = this;
-                me.loadComboxData();
+                //me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();
