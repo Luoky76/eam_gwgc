@@ -1,13 +1,16 @@
 ﻿using Chloe;
 using DocumentFormat.OpenXml.Bibliography;
 using EAM.Device.Interfaces;
+using EAM.Device.services.Dto;
 using Gksyb.Common;
+using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Concurrent;
 
 namespace EAM.Device.Services
@@ -18,6 +21,22 @@ namespace EAM.Device.Services
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
+
+        /// <summary>
+        /// 获取数据库时间
+        /// </summary>
+        private DateTime? Sysdate
+        {
+            get
+            {
+                if (!_Sysdate.HasValue)
+                {
+                    _Sysdate = _dbContext.GetSysdate().Result();
+                }
+                return _Sysdate;
+            }
+        }
+
 
         public PmListService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
         {
@@ -37,6 +56,56 @@ namespace EAM.Device.Services
                 { "PmcycleUnit",null},
                 { "PmShippost",null},
             });
+        }
+
+
+        public async Task<AjaxResult> ImportPmAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile)
+        {
+            //获取导入数据
+            _=await formFile.Import<PmImportDto>(async c =>
+            {
+                var zhouqi = "";
+                var is_fj = "";
+                if (c.CYCLE != null)
+                {
+                    zhouqi = c.CYCLE switch
+                    {
+                        "每周" => "0.03",
+                        "月度" => "0.1",
+                        "季度" => "0.3",
+                        "半年" => "0.5",
+                        "年度" => "1",
+                        "2.5年" => "2.5",
+                        "5年" => "2.5",
+                        _ => throw new MessageException($"序号为 {c.ID} 的周期数据异常"),
+                    };
+                }
+                if (c.IS_ATTACH != null)
+                {
+                    is_fj = c.IS_ATTACH switch
+                    {
+                        "是" => "1",
+                        "否" => "0",
+                        _ => throw new MessageException($"序号为 {c.ID} 的是否附件判断数据异常"),
+                    };
+                }
+                if (c.DEPARTMENT != "甲板部" && c.DEPARTMENT != "机舱部")
+                {
+                    throw new MessageException($"序号为 {c.ID} 的部门数据异常");
+                }
+                //主键生成
+                //var mainKey = GuidHelper.NewSnowflakeId().ToString();
+                var pmlists = c.MapTo<PM_STD_LIST>();
+                pmlists.CYCLE = zhouqi;
+                pmlists.IS_ATTACH = is_fj;
+                pmlists.PM_STD_LIST_ID = GuidHelper.NewSnowflakeId().ToString();
+                pmlists.CREATE_USERID = _userSession.UserID.ToString();
+                pmlists.CREATEDATE = Sysdate;
+                pmlists.MODIFY_USERID = _userSession.UserID.ToString();
+                pmlists.MODIFYDATE = Sysdate;
+                await _dbContext.InsertAsync(pmlists);
+            });
+            return AjaxResult.Success(1);
         }
 
         /// <summary>

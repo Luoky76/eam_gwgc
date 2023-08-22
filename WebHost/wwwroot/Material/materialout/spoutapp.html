@@ -31,9 +31,7 @@
             voyagecodedata: null,
             auditing: [],
             disposeType: [],
-            purtypeName: [{ "ID": "0", "TEXT": "材料（零星维修）" }, { "ID": "1", "TEXT": "材料（维修项目）" }, { "ID": "2", "TEXT": "材料（资本性支出）" },
-            { "ID": "3", "TEXT": "劳保" }, { "ID": "4", "TEXT": "办公" }, { "ID": "5", "TEXT": "IT" }, { "ID": "5", "TEXT": "安全及消防" }
-                , { "ID": "6", "TEXT": "润料" }, { "ID": "7", "TEXT": "燃料" }],
+            purtypeName: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -62,7 +60,7 @@
                             { display: "用途", name: "PURTYPE_NAME", minWidth: 100, type: "select", editor: { type: 'select', data: me.purtypeName } },
                             { display: "领用人", name: "USER_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "领用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "领用总金额(元)", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
+                            //{ display: "领用总金额(元)", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
 
                             //{ display: "审核人", name: "CHK_MAN", minWidth: 100, type: "text", editor: { type: 'text' } },
                             //{ display: "退回原因", name: "RETURN_MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -86,6 +84,7 @@
                     success: function (data, message) {
                         me.auditing = data.auditing;
                         me.spapplyType = data.spapplyType;
+                        me.purtypeName = data.purtypeName;
                     },
                     error: function (message) {
                         LG.showError(message);

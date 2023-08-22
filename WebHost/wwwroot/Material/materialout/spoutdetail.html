@@ -1,0 +1,241 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "申请单号", name: "_search_APPLY_NO", dbname: "APPLY_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "批次号", name: "_search_STORE_CODE", dbname: "STORE_CODE", newline: false, upper: true, type: "text", options: {} },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text", },
+                            { display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text", },
+                            { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "text", },
+                            { display: "领用人", name: "USER_NAME", minWidth: 100, type: "text", },
+                            { display: "领用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            { display: "仓管员", name: "M_USER", minWidth: 100, type: "text", },
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text", },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text", },
+                            { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text", },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text", },
+                            //{ display: "标准编号", name: "COMP_CODE", minWidth: 100, type: "text", },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
+                            { display: "申请数量", name: "APPLY_NUM", minWidth: 100, type: "float", },
+                            { display: "出库数量", name: "COUNT", minWidth: 100, type: "float", },
+                            { display: "参考单价(元)", name: "PRICE", minWidth: 100, type: "float", },
+                            { display: "金额(元)", name: "MONEY", minWidth: 100, type: "float", },
+                            { display: "税率", name: "TAX_RATE", minWidth: 100, type: "float", },
+                            { display: "不含税单价(元)", name: "NOTAX_PRICE", minWidth: 100, type: "float", },
+                            { display: "不含税金额(元)", name: "NOTAX_MONEY", minWidth: 100, type: "float", },
+                            { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
+                            { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text", },
+                            { display: "项目编号", name: "PROJECT_CODE", minWidth: 130, type: "text", },
+                            { display: "项目名称", name: "PROJECT_NAME", minWidth: 130, type: "text", },
+                            { display: "说明", name: "MEMO", minWidth: 250, type: "text", },
+                            { display: "主键", name: "OUTDET_ID", minWidth: 100, type: "text", hide: true },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpOut/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.auditing = data.auditing;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Material/SpOut/GetSpOutStoreDetailList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'INVOICE_CODE',
+                    sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

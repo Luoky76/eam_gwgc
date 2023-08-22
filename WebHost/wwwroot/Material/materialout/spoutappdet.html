@@ -39,9 +39,7 @@
             orginData: {},
             auditing: [],
             spapplyType: [],
-            purtypeName: [{ "ID": "0", "TEXT": "材料（零星维修）" }, { "ID": "1", "TEXT": "材料（维修项目）" }, { "ID": "2", "TEXT": "材料（资本性支出）" },
-            { "ID": "3", "TEXT": "劳保" }, { "ID": "4", "TEXT": "办公" }, { "ID": "5", "TEXT": "IT" }, { "ID": "5", "TEXT": "安全及消防" }
-                , { "ID": "6", "TEXT": "润料" }, { "ID": "7", "TEXT": "燃料" }],
+            purtypeName: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -83,22 +81,6 @@
                                 },
                                 editor: {
                                     type: 'float',
-                                    onChange: function (rowdata) {
-                                        if (rowdata.record["STORE_NUM"] < rowdata.value)
-                                        {
-                                            LG.showError("申请数量不可大于库存数量！");
-                                        }
-                                        var price = rowdata.record["PRICE"];
-                                        var applyMoney = rowdata.value * price;
-                                        liger.get("detgird").updateCell("APPLY_MONEY", applyMoney, rowdata.record);
-                                        liger.get("detgird").updateCell("APPLY_NUM", rowdata.value, rowdata.record);
-                                        var tol = 0;
-                                        for (var i = 0; i < business.grid.rows.length; i++) {
-                                            tol += business.grid.rows[i].APPLY_NUM * business.grid.rows[i].PRICE
-                                        };
-                                        me.mainform.setData({ 'SUM_MONEY': tol });
-                                        business.grid.updateTotalSummary();
-                                    },
                                 }
                             },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
@@ -122,6 +104,7 @@
                     success: function (data, message) {
                         me.auditing = data.auditing;
                         me.spapplyType = data.spapplyType;
+                        me.purtypeName = data.purtypeName;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -198,21 +181,29 @@
                         changeRow["original"] = [original];
                     }
                     var changeRowDet = me.grid.getChangedRows();
-
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/SpOut/ManageSpOutApp',
-                        loading: '正在保存中...',
-                        data: { request: changeRow, requestdet: changeRowDet },
-                        success: function () {
-                            LG.showSuccess('保存成功', function () {
-                                if (me.dialog) me.dialog.close();
-                            });
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+                    var isSave = true
+                    for (var i = 0; i < changeRowDet.added.length; i++) {
+                        if (changeRowDet.added[i].APPLY_NUM > changeRowDet.added[i].STORE_NUM) {
+                            LG.showSuccess('申请数量不可大于库存数量！')
+                            isSave = false;
                         }
-                    });
+                    }
+                    if (isSave) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/ManageSpOutApp',
+                            loading: '正在保存中...',
+                            data: { request: changeRow, requestdet: changeRowDet },
+                            success: function () {
+                                LG.showSuccess('保存成功', function () {
+                                    if (me.dialog) me.dialog.close();
+                                });
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
                 }
                 else { LG.showSuccess('无修改'); }
             },

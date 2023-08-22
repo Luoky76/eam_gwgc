@@ -37,5 +37,11 @@ namespace EAM.Material.Interfaces
         Task<GridData> StoreLimitListAsync(GridRequest request);
         Task<AjaxResult> LimitSave(SaveRequest<SP_LIMIT> request);
         Task<int> SetTopLower(string LIMITID, int? TOP, int? LOWER);
+
+        #region 库存报表
+        Task<AjaxResult> ReportComboxData();
+        Task<GridData> StoreSearchListAsync(GridRequest request);
+        Task<GridData> StoreInOutListAsync(DateTime? CREATEDATE, GridRequest request);
+        #endregion
     }
 }

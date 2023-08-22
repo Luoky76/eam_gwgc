@@ -6,31 +6,37 @@ namespace EAM.Material.Interfaces
     public interface IBaseSptypeService : IService
     {
         /// <summary>
-        /// 获取列表信息
+        /// 下拉框数据
         /// </summary>
-        /// <param name="request"></param>
         /// <returns></returns>
-        Task<GridData> ListAsync(GridRequest request);
+        Task<AjaxResult> ComboxData();
+        /// <summary>
+        /// 获取树形结构
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> TreeAsync();
+
 
         /// <summary>
-        /// 获取单行数据
+        /// 根据ID获取记录
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<AjaxResult> GetAsync(string id);
+        public Task<BASE_SPTYPE> GetAsync(object id);
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public Task<GridData> ListAsync(GridRequest request);
 
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> Save(SaveRequest<BASE_SPTYPE> request);
+        public Task<AjaxResult> SaveAsync(SaveRequest<BASE_SPTYPE> request);
 
-        /// <summary>
-        /// 获取下拉框数据
-        /// </summary>
-        /// <returns></returns>
-        Task<AjaxResult> ComboxData();
     }
 }

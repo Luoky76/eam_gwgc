@@ -340,6 +340,13 @@ namespace Gksyb.Model
         /// </summary>
         [Description("质保期")]
         public decimal? WARRANTY { get; set; }
-        
+
+        /// <summary>
+        /// 上级节点ID
+        /// </summary>
+        [Description("上级节点ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PRE_CATALOGID { get; set; }
+
     }
 }

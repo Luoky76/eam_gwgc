@@ -68,7 +68,7 @@
                             { display: "仓管员", name: "M_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "项目编号", name: "PROJECT_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "项目名称", name: "PROJECT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "领用总金额(元)", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
+                            //{ display: "领用总金额(元)", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
 
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
 
@@ -231,7 +231,7 @@
                 }
                 else {
                     if (selected[0].AUDITING_A === "7" || selected[0].AUDITING_A === "1") {
-                        LG.tip('已经注销！');
+                        LG.tip('无法操作！');
                     } else {
                         var sid = selected[0].OUT_ID;
                         LG.ajax({

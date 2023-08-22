@@ -103,7 +103,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeviceTypeName(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
         {
             var dbContext = _dbContext.Clone();
-            return await dbContext.Query<BASE_DEVICETYPE>().Where(predicate)
+            return await dbContext.Query<BASE_DEVICETYPE>(c =>c.STATUS!="0").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
                 .Distinct()
                .ToListAsync();
@@ -132,6 +132,34 @@ namespace Gksyb.Server.Services.Common
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICE_COMPOSE>().Where(predicate)
                 .Select(c => new ComboxData() { ID = c.COMPOSE_ID, TEXT = c.COMPOSE_NAME, VALUE = c.COMPOSE_NAME })
+                .Distinct()
+               .ToListAsync();
+        }
+
+        /// <summary>
+        /// 物资分类名称下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpTypeName(Expression<Func<BASE_SPTYPE, bool>> predicate)
+        {
+            var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_SPTYPE>(c => c.IS_CANCEL!="1").Where(predicate)
+                .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+                .Distinct()
+               .ToListAsync();
+        }
+        
+        /// <summary>
+        /// 物资目录名称下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpCatalogName(Expression<Func<BASE_SPCATALOG, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_SPCATALOG>(c => c.IS_CANCEL != "1"&&c.IS_RECOVERY != "1").Where(predicate)
+                .Select(c => new ComboxData() { ID = c.SP_ID, TEXT = c.SP_NAME, VALUE = c.SP_NAME })
                 .Distinct()
                .ToListAsync();
         }

@@ -15,7 +15,7 @@
         'use strict';
         var business = {
             dialogData: {},
-            isView: true,
+            isView: false,
             sid: getQueryStringByName("sid"),
             dataCorp: [],
             rootPath: "../",
@@ -80,10 +80,20 @@
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
                                         if (me.start == null) {
+                                            $('#RUN_END').val("");
                                             LG.showError("请先选择开始时间,后选结束时间！");
                                         }
                                         var date1 = new Date(me.start);
                                         var date2 = new Date(value);
+                                        if (me.start > value) {
+                                            $('#RUN_END').val("");
+                                            $('#RUN_START').val("");
+                                            LG.showError("停机结束时间应在停机开始时间之后！请重新选择！");
+                                        }
+                                        if (date2.getTime() > Date.now()) {
+                                            $('#RUN_END').val("");
+                                            LG.showError("停机结束时间不能大于当前时间！");
+                                        }
                                         // 计算时间差值（单位为毫秒）
                                         var timeDiff = date2.getTime() - date1.getTime();
                                         // 将时间差值转换为小时数
@@ -328,9 +338,8 @@
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
+                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
                 }
-                me.isView = false;
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

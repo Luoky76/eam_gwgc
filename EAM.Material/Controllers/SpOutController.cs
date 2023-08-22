@@ -1,13 +1,8 @@
 ﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
-using Gksyb.Model.Grid;
 using Gksyb.Model;
+using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAM.Material.Controllers
 {
@@ -33,6 +28,7 @@ namespace EAM.Material.Controllers
             {
                 spapplyType = comboxData["SpapplyType"],
                 auditing = comboxData["Auditing"],
+                purtypeName = comboxData["BCCode"],
             }, "成功");
         }
 
@@ -87,6 +83,7 @@ namespace EAM.Material.Controllers
         {
             return AjaxResult.Success(await _service.SubmitSpOutApp(sid), "成功");
         }
+
         /// <summary>
         /// 获取物料领用申请明细
         /// </summary>
@@ -159,5 +156,86 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(await _service.GetSpOutStoredetList(request), "成功");
         }
 
+        /// <summary>
+        /// 获取出库冲红记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutBackListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetSpOutBackList(request), "成功");
+        }
+
+        /// <summary>
+        /// 根据ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutBackListDetailAsync(string ID)
+        {
+            if (ID.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetSpOutBackListDetail(ID), "成功");
+        }
+
+        /// <summary>
+        /// 管理出库冲红记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ManageSpOutBackAsync(List<SP_OUTSTORE> request)
+        {
+            return await _service.ManageSpOutBack(request);
+        }
+
+        /// <summary>
+        /// 提交
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitSpOutBackAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.SubmitSpOutBack(sid), "成功");
+        }
+
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ImportList(request), "成功");
+        }
+
+        /// <summary>
+        /// 保存冲红
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveSpBackAsync(SaveRequest<SP_OUT_BACK> request)
+        {
+            return await _service.SaveSpBack(request);
+        }
+
+        /// <summary>
+        /// 获取物料出库明细记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutStoreDetailListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetSpOutStoreDetailList(request), "成功");
+        }
+
+        /// <summary>
+        /// 获取物料冲红明细记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetSpOutBackDetailListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetSpOutBackDetailList(request), "成功");
+        }
     }
 }

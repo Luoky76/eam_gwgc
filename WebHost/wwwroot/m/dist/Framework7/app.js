@@ -807,6 +807,164 @@
         return formData;
     };
 
+    app.CreatePopupContentHtml = function (dict) {
+        var ul = document.createElement('ul');
+        for (var i = 0; i < dict.length; i++) {
+
+            if (dict[i].isPrimaryKey || dict[i].isShow == false) {
+                continue;
+            }
+            var li = document.createElement('li');
+            var iteminner = document.createElement('div');
+            var itemtitle = document.createElement('div');
+            var itemafter = document.createElement('div');
+            var input = document.createElement('input');
+            var select = document.createElement('select');
+            var itemsmart = document.createElement('a');
+            var iselect = null;
+            if (dict[i].hasOwnProperty("Option")) {
+                select.name = dict[i].name || "";
+
+                select.disabled = dict[i].readOnly;
+                select.options.add(new Option("请选择", "-99")); //这个兼容IE与firefox
+                dict[i].Option.forEach(x => {
+                    select.options.add(new Option(x.TEXT, x.ID));
+                });
+                select.setAttribute("type", "select");
+                itemsmart.href = "#";
+                itemsmart.className = "item-link smart-select smart-select-init " + dict[i].name;
+                itemsmart.setAttribute("data-open-in", "sheet");
+                itemsmart.setAttribute("data-virtual-list", "true");
+                itemsmart.setAttribute("data-page-back-link-text", "Go back");
+                iselect = true;
+            }
+            else {
+                input.setAttribute("style", "text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)");
+                input.type = "text"
+                input.name = dict[i].name || "";
+                input.id = dict[i].name || "";
+                input.readOnly = dict[i].readOnly;
+                itemafter.appendChild(input);
+                itemafter.className = "item-after";
+                itemafter.setAttribute("style", "text-align:right;");
+            }
+
+
+            itemtitle.className = "item-title";
+            itemtitle.setAttribute("style", "color: #666666");
+            itemtitle.textContent = dict[i].display || "";
+
+            iteminner.appendChild(itemtitle);
+
+            iteminner.className = "item-inner";
+            if (iselect) {
+                var itemContent = document.createElement('div');
+                itemContent.className = "item-content";
+                itemsmart.appendChild(select);
+
+                itemContent.appendChild(iteminner);
+                itemsmart.appendChild(itemContent);
+
+                li.appendChild(itemsmart);
+
+            }
+            else {
+                iteminner.appendChild(itemafter);
+                iteminner.setAttribute("style", "padding: 0px;padding-left: 16px;padding-right:16px;");
+
+                li.appendChild(iteminner)
+
+            }
+
+
+            ul.appendChild(li);
+
+        }
+
+        return ul.outerHTML;
+    };
+    app.CreateListContentHtml = function (data, dict, iCheckBox) {
+        var ul = document.createElement('ul');
+        for (var i = 0; i < data.length; i++) {
+            var li = document.createElement('li');
+            var aitem = document.createElement('a');
+            var iteminner = document.createElement('div');
+            var itemrowList = document.createElement('div');
+            var itemcell = document.createElement('div');
+
+            //复选框
+            var checkLabel = document.createElement('label');
+            var checkinput = document.createElement('input');
+            var checki = document.createElement('i');
+            checkinput.type = "checkbox";
+            checki.className = "icon icon-checkbox";
+            checkLabel.className = "item-checkbox item-checkbox-icon-start item-content";
+
+            aitem.className = "item-link item-content";
+            aitem.href = "#";
+            iteminner.className = "item-inner item-cell";
+            itemrowList.className = "item-row";
+            itemcell.className = "item-cell";
+            for (var j = 0; j < dict.length; j++) {
+                if (dict[j].isPrimaryKey) {
+                    itemrowList.setAttribute("id", `list-${data[i][dict[j].PrimaryKey]}`);
+                    if (iCheckBox) {
+                        checkinput.value = data[i][dict[j].PrimaryKey]
+                    }
+                    continue;
+                }
+                if (dict[j].isShow == false)
+                    continue;
+                var itemnogap = document.createElement('div');
+                var itemcoltitle = document.createElement('div');
+                var itemcoldata = document.createElement('div');
+                var itemcol10 = document.createElement('div');
+                itemnogap.className = "row no-gap";
+                itemcoltitle.className = "col-33";
+                itemcoldata.className = "col-65";
+                itemcol10.className = "col-10";
+                itemcoltitle.setAttribute("style", "color: rgb(192,192,192)");
+                itemcoltitle.textContent = dict[j].display;
+                if (dict[j].hasOwnProperty("Option") && dict[j].Option) {
+                    let option = dict[j].Option.find(x => x.ID == data[i][(dict[j].name).toUpperCase()]);
+                    itemcoldata.textContent = option ? option.TEXT : "";
+                    let optionStyle = option ? option.style : "";
+                    itemcoldata.setAttribute("style", optionStyle || "white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left: 30px;");
+                }
+                else {
+                    itemcoldata.textContent = data[i][dict[j].name] || "";
+                    itemcoldata.setAttribute("style", "white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;");
+
+                }
+                itemnogap.appendChild(itemcoltitle);
+                itemnogap.appendChild(itemcoldata);
+                itemnogap.appendChild(itemcol10);
+                itemcell.appendChild(itemnogap);
+
+                itemrowList.appendChild(itemcell);
+
+
+                iteminner.appendChild(itemrowList)
+                if (iCheckBox) {
+                    checkLabel.appendChild(checkinput);
+                    checkLabel.appendChild(checki);
+                    checkLabel.appendChild(iteminner);
+                    li.appendChild(checkLabel);
+                }
+                else {
+                    li.appendChild(iteminner);
+                }
+                //aitem.appendChild(iteminner);
+
+                //li.appendChild(aitem);
+            }
+            ul.appendChild(li);
+
+
+        }
+        return ul.outerHTML;
+    };
+
     //导出
     window.app = app;
     window.show404 = function () {

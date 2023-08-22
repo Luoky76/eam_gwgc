@@ -9,6 +9,7 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using NPOI.OpenXmlFormats.Dml.Diagram;
+using NPOI.OpenXmlFormats.Wordprocessing;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -430,6 +431,183 @@ namespace EAM.Material.Services
                         MODIFYDATE = dt
                     });
             return updatedevice;
+        }
+        #endregion
+
+        #region 库存报表
+        public async Task<AjaxResult> ReportComboxData()
+        {
+            try
+            {
+                var dic = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "BaseSpType",(Expression<Func<BASE_SPTYPE, bool>>)null }, //物资
+                    { "BasePurtype",(Expression<Func<BASE_PURTYPE, bool>>)null },//采购
+                    { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)null}//库位
+                });
+                return AjaxResult.Success(dic);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("获取下拉数据失败！原因：" + e.Message);
+            }
+        }
+        /// <summary>
+        ///库存定期查询 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> StoreSearchListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<STORE_WATER>()
+                 .Select(t => new
+                 {
+                     t.STORE_ID,
+                     IN_NUM = t.IN_NUM ?? 0,
+                     OUT_NUM = t.OUT_NUM ?? 0
+                 })
+                .GroupBy(t => new { t.STORE_ID })
+                .Select(t => new
+                {
+                    t.STORE_ID,
+                    NUM = Sql.Sum(t.IN_NUM) - Sql.Sum(t.OUT_NUM)
+                })
+                .LeftJoin<SP_STORE>((a, b) => a.STORE_ID == b.STORE_ID)
+                .Select((a, b) => new SP_STORE
+                {
+                    STORE_ID = a.STORE_ID,
+                    NUM = a.NUM,
+                    STOCK_NAME = b.STOCK_NAME,
+                    STOCK_ID = b.STOCK_ID,
+                    STOCK_CODE = b.STOCK_CODE,
+                    PURTYPE_NAME = b.PURTYPE_NAME,
+                    PURTYPE_ID = b.PURTYPE_ID,
+                    PRODUCE = b.PRODUCE,
+                    TYPE_NAME = b.TYPE_NAME,
+                    TYPE_ID = b.TYPE_ID,
+                    UNIT = b.UNIT,
+                    SP_SIZE = b.SP_SIZE,
+                    SP_NAME = b.SP_NAME,
+                    SP_CODE = b.SP_CODE,
+                    DELIVERY_CODE = b.DELIVERY_CODE,
+                    APPLY_NO = b.APPLY_NO,
+                    STORE_MONTH = b.STORE_MONTH,
+                    IN_DATE = b.IN_DATE,
+                    CREATEDATE = b.CREATEDATE,
+                    NOTAX_PRICE = b.NOTAX_PRICE,
+                    PRICE = b.PRICE,
+                    NOTAX_MONEY = a.NUM * b.NOTAX_PRICE,
+                    MONEY = a.NUM * b.PRICE
+                })
+                .GetGridData(request);
+        }
+
+        public class StoreInOutReq: SP_STORE
+        {
+            /// <summary>
+            /// 期初
+            /// </summary>
+            public decimal? BEG_NUM { get; set; }
+            public decimal? BEG_MONEY { get; set; }
+            public decimal? BEG_NOTAX_MONEY { get; set; }
+
+
+            /// <summary>
+            /// 期末
+            /// </summary>
+            public decimal? END_NUM { get; set; }
+            public decimal? END_MONEY { get; set; }
+            public decimal? END_NOTAX_MONEY { get; set; }
+
+            /// <summary>
+            /// 入库
+            /// </summary>
+            public decimal? IN_MONEY { get; set; }
+            public decimal? IN_NOTAX_MONEY { get; set; }
+
+            /// <summary>
+            /// 出库
+            /// </summary>
+            public decimal? OUT_MONEY { get; set; }
+            public decimal? OUT_NOTAX_MONEY { get; set; }
+        }
+        /// <summary>
+        /// 收发存报表
+        /// </summary>
+        /// <param name="CREATEDATE"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> StoreInOutListAsync(DateTime? CREATEDATE, GridRequest request)
+        {
+            var res = await _dbContext.Query<STORE_WATER>()
+                 .Select(t => new
+                 {
+                     t.STORE_ID,
+                     IN_NUM = t.IN_NUM ?? 0,
+                     OUT_NUM = t.OUT_NUM ?? 0
+                 })
+                .GroupBy(t => new { t.STORE_ID })
+                .Select(t => new
+                {
+                    t.STORE_ID,
+                    IN_NUM = Sql.Sum(t.IN_NUM),
+                    OUT_NUM = Sql.Sum(t.OUT_NUM)
+                })
+                .LeftJoin<SP_STORE>((a, b) => a.STORE_ID == b.STORE_ID)
+                .Select((a, b) => new StoreInOutReq
+                {
+                    STORE_ID = a.STORE_ID,
+                    IN_NUM = a.IN_NUM,
+                    OUT_NUM = a.OUT_NUM,
+                    STOCK_NAME = b.STOCK_NAME,
+                    STOCK_ID = b.STOCK_ID,
+                    STOCK_CODE = b.STOCK_CODE,
+                    PURTYPE_NAME = b.PURTYPE_NAME,
+                    PURTYPE_ID = b.PURTYPE_ID,
+                    PRODUCE = b.PRODUCE,
+                    TYPE_NAME = b.TYPE_NAME,
+                    TYPE_ID = b.TYPE_ID,
+                    UNIT = b.UNIT,
+                    SP_SIZE = b.SP_SIZE,
+                    SP_NAME = b.SP_NAME,
+                    SP_CODE = b.SP_CODE,
+                    DELIVERY_CODE = b.DELIVERY_CODE,
+                    APPLY_NO = b.APPLY_NO,
+                    STORE_MONTH = b.STORE_MONTH,
+                    IN_DATE = b.IN_DATE,
+                    CREATEDATE = b.CREATEDATE,
+                    NOTAX_PRICE = b.NOTAX_PRICE,
+                    PRICE = b.PRICE,
+                    IN_MONEY = a.IN_NUM * b.PRICE,
+                    IN_NOTAX_MONEY = a.IN_NUM * b.NOTAX_PRICE,
+                    OUT_MONEY = a.OUT_NUM * b.PRICE,
+                    OUT_NOTAX_MONEY = a.OUT_NUM * b.NOTAX_PRICE
+                })
+                .GetGridData(request);
+            foreach (var item in (List<StoreInOutReq>)res.Rows)
+            {
+                decimal? sum = 0;
+                if (CREATEDATE.HasValue)
+                {
+                    sum = _dbContext.Query<STORE_WATER>().Where(t => t.STORE_ID == item.STORE_ID && t.CREATEDATE < CREATEDATE)
+                        .Select(t => new
+                        {
+                            IN_NUM = t.IN_NUM ?? 0,
+                            OUT_NUM = t.OUT_NUM ?? 0
+                        }).
+                        Sum(t => Sql.Sum(t.IN_NUM) - Sql.Sum(t.OUT_NUM));
+                }
+
+                item.BEG_NUM = sum ?? 0;
+                item.BEG_MONEY = item.PRICE * item.BEG_NUM;
+                item.BEG_NOTAX_MONEY = item.NOTAX_PRICE * item.BEG_NUM;
+
+                item.END_NUM = (item.BEG_NUM + item.IN_NUM - item.OUT_NUM) ?? 0;
+                item.END_MONEY = item.PRICE * item.END_NUM;
+                item.END_NOTAX_MONEY = item.NOTAX_PRICE * item.END_NUM;
+
+            }
+            return res;
         }
         #endregion
     }

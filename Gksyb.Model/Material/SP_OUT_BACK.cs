@@ -91,14 +91,14 @@ namespace Gksyb.Model
         /// </summary>
         [Description("领用人ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string OUT_USERID { get; set; }
+        public string USER_ID { get; set; }
 
         /// <summary>
         /// 领用人
         /// </summary>
         [Description("领用人")]
         [Column(DbType = DbType.AnsiString)]
-        public string OUT_USER { get; set; }
+        public string USER_NAME { get; set; }
 
         /// <summary>
         /// 冲红金额

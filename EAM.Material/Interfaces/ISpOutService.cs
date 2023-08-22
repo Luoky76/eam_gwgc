@@ -90,6 +90,50 @@ namespace EAM.Material.Interfaces
         /// <returns></returns>
         public Task<GridData> GetSpOutStoredetList(GridRequest request);
 
+        /// <summary>
+        /// 获取出库冲红记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetSpOutBackList(GridRequest request);
 
+        /// <summary>
+        /// 获取单条出库冲红记录
+        /// </summary>
+        /// <returns></returns>
+        Task<SP_OUT_BACK> GetSpOutBackListDetail(string ID);
+        /// <summary>
+        /// 管理出库冲红记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request);
+        /// <summary>
+        /// 提交
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> SubmitSpOutBack(string sid);
+
+        /// <summary>
+        /// 导入功能
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> ImportList(GridRequest request);
+
+        /// <summary>
+        /// 保存冲红
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> SaveSpBack(SaveRequest<SP_OUT_BACK> request);
+
+        /// <summary>
+        /// 获取物料出库明细记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetSpOutStoreDetailList(GridRequest request);
+
+        /// <summary>
+        /// 获取物料冲红明细记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetSpOutBackDetailList(GridRequest request);
     }
 }

@@ -1,6 +1,9 @@
 ﻿using Gksyb.Common.Quartz;
 using Gksyb.Common.Quartz.Dtos;
+using Gksyb.Common.Static;
 using Gksyb.Model.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Gksyb.Server.Services.System
 {
@@ -58,10 +61,10 @@ namespace Gksyb.Server.Services.System
         public async Task SetTaskInfo(QuartzTask task)
         {
             var status = task.LastRunResult.SubStr(0, 4000, true);
-            var lastRunIp = Gksyb.Common.Static.HttpContext.AddressList.ToStr(",").SubStr(0, 500, true);
+            var lastRunIp = HttpContext.AddressList.ToStr(",").SubStr(0, 500, true);
             await _dbContext.NotSqlLog(async () =>
             {
-                await _dbContext.UpdateAsync<SYS_TASK>(c => c.ID == task.TaskID, c => new SYS_TASK
+                var row = await _dbContext.UpdateAsync<SYS_TASK>(c => c.ID == task.TaskID, c => new SYS_TASK
                 {
                     TASK_RUNSTATUS = task.RunStatus,
                     TASK_LAST_RUNDATE = task.LastRunTime,
@@ -70,6 +73,11 @@ namespace Gksyb.Server.Services.System
                     TASK_ELAPSED_TIME = task.ElapsedTime,
                     TASK_LAST_RESULT = status
                 });
+                if (row < 1)
+                {
+                    var log = HttpContext.RequestServices.GetService<ILogger<QuartzStore>>();
+                    log.LogError(new LogPath(nameof(QuartzStore)), task.ToJson());
+                }
             });
         }
     }

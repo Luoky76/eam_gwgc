@@ -2,6 +2,7 @@
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Concurrent;
 
 namespace EAM.Device.Interfaces
@@ -13,6 +14,13 @@ namespace EAM.Device.Interfaces
         /// </summary>
         /// <returns></returns>
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
+
+        /// <summary>
+        /// 设备数据导入
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <returns></returns>
+        Task<AjaxResult> ImportPmAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile);
 
         /// <summary>
         /// 获取列表

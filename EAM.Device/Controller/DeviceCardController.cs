@@ -23,9 +23,17 @@ namespace EAM.Device.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return await _service.ListAsync(request);
+            var result = await _service.ListAsync(request);
+            return AjaxResult<GridData>.Success(result);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> DeviceListAsync(GridRequest request)
+        {
+            var result = await _service.DeviceListAsync(request);
+            return AjaxResult<GridData>.Success(result);
         }
 
         [HttpPost]
