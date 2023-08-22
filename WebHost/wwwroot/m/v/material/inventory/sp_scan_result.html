@@ -63,7 +63,7 @@
         'use strict';
         var formdata;
         var formDataDetail;
-        debugger
+        
         var busResult = {
             scanResult: [{ "ID": "正常", "TEXT": "正常" }, { "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }],
             scanType: [],
@@ -81,10 +81,10 @@
                     display: "盘点单号", name: "SCAN_CODE",
                 },
                 {
-                    display: "盘点类型", name: "SCAN_TYPE", Option: busResult.scanType, 
+                    display: "盘点类型", name: "SCAN_TYPE_NAME",  
                 },
                 {
-                    display: "来源类型", name: "SRC_TYPE", Option: busResult.storeSou, 
+                    display: "来源类型", name: "SRC_TYPE_NAME",
                 },
                 {
                     display: "物料名称", name: "SP_NAME",
@@ -93,11 +93,10 @@
                     display: "盘点数量", name: "SCAN_NUM",
                 },
                 {
-                    display: "盘点结果", name: "SCAN_RESULT", Option: busResult.scanResult, 
+                    display: "盘点结果", name: "SCAN_RESULT", 
                 }
             ],
             getData: function () {
-                debugger
                 var me = this;
                 var where = JSON.stringify({
                     op: 'and',
@@ -110,7 +109,12 @@
                     data: { "where": where },
                     success: function (data) {
                         me.list = data.Rows;
-                        debugger
+                        
+                        data.Rows.forEach((a) => {
+                            a.SCAN_TYPE_NAME = busResult.scanType.find((v) => v.ID == a.SCAN_TYPE).TEXT;
+                            a.SRC_TYPE_NAME = busResult.storeSou.find((v) => v.ID == a.SRC_TYPE).TEXT;
+                        });
+                        
                         var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
                         $("#sp_scan_list").html(str);
 
@@ -128,7 +132,6 @@
                 });
             },
             getCombox: function () {
-                debugger
                 var me = this;
                 app.ajax({
                     async: false,
@@ -156,7 +159,6 @@
                 });
             },
             init: function () {
-                debugger
                 var me = this;
                 
                 me.getCombox();
@@ -253,7 +255,7 @@
         };
         busResult.init();
 
-        明细信息
+        //明细信息
         var outAppDetailInfo = [
             {
                 display: " 主键",
