@@ -1,0 +1,238 @@
+﻿using Chloe;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
+using EAM.Special.Interfaces;
+using Gksyb.Common;
+using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
+using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model;
+using Gksyb.Model.Core;
+using Gksyb.Model.Grid;
+using System.Linq.Expressions;
+
+namespace EAM.Special.Services
+{
+    /// <summary>
+    /// 低值品入账
+    /// </summary>
+    public class LowspareInService : ILowspareInService
+    {
+        private readonly IDbContext _dbContext;
+        private readonly UserSession _userSession;
+        private readonly IComboxDataService _comboxDataService;
+        private DateTime? _Sysdate;
+
+        /// <summary>
+        /// 低值品入账
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="comboxDataService"></param>
+        /// <param name="userSession"></param>
+
+        public LowspareInService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        {
+            _dbContext = dbContext;
+            _comboxDataService = comboxDataService;
+            _userSession = userSession;
+
+        }
+
+        /// <summary>
+        /// 获取数据库时间
+        /// </summary>
+        private DateTime? Sysdate
+        {
+            get
+            {
+                if (!_Sysdate.HasValue)
+                {
+                    _Sysdate = _dbContext.GetSysdate().Result();
+                }
+                return _Sysdate;
+            }
+        }
+
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
+        public async Task<AjaxResult> ComboxData()
+        {
+            try
+            {
+                var data = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "Auditing", null },
+                    { "UserDept", null },
+                    { "SpcatalogCard", null },
+                    { "LowType", null }
+                });
+
+                return AjaxResult.Success(data);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("获取下拉数据失败！原因：" + e.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// 列表
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ListAsync(GridRequest request)
+        {
+            //return await _dbContext.Query<SPEC_LOWSPARE_IN>().GetGridData(request);
+            var list = await _dbContext.Query<SPEC_LOWSPARE_IN>()
+            .Select(c => new {
+                c.AUDITING,
+                c.IN_CODE,
+                c.IN_DATE,
+                c.SP_CODE,
+                c.SP_NAME,
+                c.SP_TYPE,
+                c.BRAND,
+                c.UNIT,
+                c.TYPE_NAME,
+                c.LOW_TYPE,
+                c.USER_NAME,
+                c.DEPT_NAME,
+                c.IN_NUM,
+                c.LOCATION,
+                c.MEMO,
+                c.HANDLE_USER,
+                c.HANDLE_USERID,
+                c.USER_ID,
+                c.DEPT_ID,
+                c.IN_ID,
+                c.SP_ID,
+                c.ADD_DATE,
+                c.ADD_USERID,
+                c.MODIFY_DATE,
+                c.MODIFY_USERID,
+                attach_id = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.IN_ID.ToString() && a.table_name == "SPEC_LOWSPARE_IN").Count(),
+            }).GetGridData(request);
+
+            return list;
+        }
+
+        /// <summary>
+        /// 通过ID查询记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<SPEC_LOWSPARE_IN> GetAsync(string sdid)
+        {
+            return await _dbContext.Query<SPEC_LOWSPARE_IN>().Where(c => c.IN_ID == sdid).FirstOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SPEC_LOWSPARE_IN> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.AUDITING,
+                    c.IN_CODE,
+                    c.IN_DATE,
+                    c.SP_CODE,
+                    c.SP_NAME,
+                    c.SP_TYPE,
+                    c.BRAND,
+                    c.UNIT,
+                    c.TYPE_NAME,
+                    c.LOW_TYPE,
+                    c.USER_NAME,
+                    c.DEPT_NAME,
+                    c.IN_NUM,
+                    c.LOCATION,
+                    c.MEMO,
+                    c.HANDLE_USER,
+                    c.HANDLE_USERID,
+                    c.USER_ID,
+                    c.DEPT_ID,
+                    c.IN_ID,
+                    c.SP_ID,
+                    c.ADD_DATE,
+                    c.ADD_USERID,
+                    c.MODIFY_DATE,
+                    c.MODIFY_USERID
+                },
+                c => a => a.IN_ID == c.IN_ID
+                , BeforeAdd, BeforeUpdate, null, false, null, AfterSave); ;
+        }
+
+        /// <summary>
+        /// 添加前验证
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private async Task BeforeAdd(SPEC_LOWSPARE_IN entity)
+        {
+            entity.IN_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.IN_DATE = Sysdate;
+            entity.ADD_USERID = _userSession.UserID.ToString();
+            entity.ADD_DATE = Sysdate;
+            entity.MODIFY_USERID =_userSession.UserID.ToString();
+            entity.MODIFY_DATE = Sysdate;
+
+            string aa = "RZ" + DateTime.Now.ToString("yyyyMM");
+            string def = aa + "0000";
+            var model = await _dbContext.Query<SPEC_LOWSPARE_IN>(x => x.IN_CODE.Contains(aa)).Select(x => Sql.Max(x.IN_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            entity.IN_CODE = aa + index.ToString("D4");
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新前验证
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdate(SPEC_LOWSPARE_IN entity)
+        {
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.MODIFY_DATE = Sysdate;
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 保存后验证
+        /// </summary>
+        private async Task AfterSave(List<SPEC_LOWSPARE_IN> added, List<SPEC_LOWSPARE_IN> updated, List<SPEC_LOWSPARE_IN> deleted)
+        {
+
+            foreach (var add in added)
+            {
+                var tz = new SPEC_LOWSPARE()
+                {
+                    SP_CODE = add.SP_CODE,
+                    SP_NAME = add.SP_NAME,
+                    SP_TYPE = add.SP_TYPE,
+                    BRAND = add.BRAND,
+                    LOWSPARE_NUM = add.IN_NUM,
+                    USER_NAME = add.USER_NAME,
+                    TYPE_NAME = add.TYPE_NAME,
+                    DEPT_NAME = add.DEPT_NAME,
+                    LOW_TYPE = add.LOW_TYPE,
+                    LOCATION = add.LOCATION,
+                    UNIT = add.UNIT,
+                    DEPT_ID = add.DEPT_ID,
+                    USER_ID = add.USER_ID,
+                    SP_ID = add.SP_ID,
+                    LOWSPARE_ID = GuidHelper.NewSnowflakeId().ToString(),
+                    ADD_USERID = add.ADD_USERID,
+                    ADD_DATE =add.ADD_DATE,
+                    MODIFY_DATE =add.MODIFY_DATE,
+                    MODIFY_USERID = add.MODIFY_USERID
+                };
+            }
+            await Task.CompletedTask;
+        }
+    }
+}
