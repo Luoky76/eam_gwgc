@@ -212,10 +212,11 @@ namespace EAM.Material.Services
             var index = model.SubStr(8, 4).CastTo<int>() + 1;
             entity.APPLY_CODE = aa + index.ToString("D4");
             entity.OUT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            entity.AUDITING_A = "0";
         }
         private async Task BeforeAddSpOutAppdet(SP_OUTAPP_DET entity)
         {
-            entity.OUT_ID = _rentID;
+            entity.OUT_ID = entity.OUT_ID ?? _rentID;
             entity.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
