@@ -549,6 +549,21 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 用户及部门下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> UserDept(Expression<Func<CF_USER, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<CF_USER>()
+                .LeftJoin<CF_DEPT>((a,c)=>a.DEPARTCODE==c.DEPT_CODE)
+                .Select((a,c) => new ComboxData() { ID = a.USERID, TEXT = a.REALNAME, VALUE = c.DEPT_ID, EXTEND=c.DEPT_NAME})
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 药品需求类别下拉框
         /// </summary>
         /// <param name="predicate"></param>
@@ -722,6 +737,45 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.PURTYPE_ID, TEXT = c.PURTYPE_NAME, VALUE = c.PURTYPE_CODE })
                 .Distinct()
                 .ToListAsync();
+        }
+
+        /// <summary>
+        /// 物资信息框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> SpcatalogCard(Expression<Func<BASE_SPCATALOG, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_SPCATALOG>()
+                .Where(predicate)
+                .OrderBy(c => c.SP_CODE)
+                .Select(c => new ComboxData()
+                {
+                    ID = c.SP_ID,
+                    TEXT = c.SP_CODE,
+                    VALUE = c.SP_NAME,
+                    EXTEND = c.SP_SIZE,
+                    EXTEND1 = c.TYPE_NAME,
+                    EXTEND2 = c.PRODUCE,
+                    EXTEND3 = c.UNIT,
+                    EXTEND4 =  c.STORE_NUM
+                })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 低值类别
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> LowType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "LowType").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
         }
 
         /// <summary>

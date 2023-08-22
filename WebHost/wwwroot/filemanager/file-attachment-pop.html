@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <script src="../lib/LGboot.js?ver=<%=SystemService.JsVersion %>" type="text/javascript"></script>
+    <script src="../lib/Ueditorboot.js?ver=20171103" type="text/javascript"></script>
+    <title>附件资源</title>
+    <style type="text/css">
+        .l-panel td.l-grid-row-cell-editing {
+            padding-bottom: 2px;
+            padding-top: 2px;
+        }
+
+        .l-layout-left .l-layout-header-inner {
+            position: relative;
+        }
+
+            .l-layout-left .l-layout-header-inner a {
+                position: absolute;
+                right: 10px;
+                color: blue;
+                cursor: pointer;
+            }
+    </style>
+</head>
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="分类" id="mainmenu" style="height: 95%; overflow-x: scroll; overflow-y: scroll">
+            <ul id="maintree">
+            </ul>
+        </div>
+        <div id="titlename" position="center" title="附件">
+            <form id="mainform" style="height: 100%;">
+                <div id="maingrid" style="margin: 2px; height: 100%;">
+                    <iframe name="content" frameborder="no" style="height: 100%; width: 100%; text-align: center;"></iframe>
+                </div>
+            </form>
+        </div>
+    </div>
+    <ul class="iconlist">
+    </ul>
+
+    <script type="text/javascript">
+
+        var dialog;
+        var dialogData;
+        var callback;
+        var MenuNo;
+        var tableKey;
+        var projectNo;
+        var fileMark;
+        var readOnly;
+        var isDataView;
+
+        var tableName;
+        var dataId;
+        var dataMenuList;
+        var isView;
+        var curNode;
+
+        if (frameElement && frameElement.dialog) dialog = frameElement.dialog;
+        if (dialog) {
+            dialogData = dialog.get('data');
+            callback = dialogData.callback;
+            MenuNo = dialogData.MenuNo || "";
+            HTSNO = dialogData.HTSNO || "";
+            isDataView = dialogData.isDataView || false;
+
+            tableName = dialogData.tableName;
+            dataId = dialogData.dataId;
+            dataMenuList = dialogData.dataMenuList;
+            isView = dialogData.isView;
+        }
+
+        var ver = getQueryStringByName("ver");
+        //禁止和隐藏的字段
+        var forbidFields = [];
+        //按钮
+        var IsAdmin = "<%= gksyyb.Common.SysContext.IsAdmin %>".toUpperCase() == "TRUE" ? true : false;
+        var rootPath = "../";
+        var isValid = true;
+
+        //设置分类菜单
+        var menuList = [{ ID: 0, TEXT: "附件资源", VALUE: 0 }];
+        if (dataMenuList) {
+            menuList[0].children = dataMenuList;
+        }
+
+
+        var tree = $("#maintree").ligerTree({
+            data: menuList,
+            nodeWidth: 330,
+            checkbox: false,
+            isExpand: 3,
+            onSelect: function (node) {
+                curNode = node;
+                var title = node.data.TEXT;
+                var contentHeader = node.data.MEMO ? node.data.MEMO : title;
+                $("#titlename").attr("title", title);
+                $('#titlename').prev('.l-layout-header').text(contentHeader);
+                fileMark = node.data.ID;
+
+                if (node.data.children) {
+                    $('#maingrid>iframe').attr('src', '');
+                }
+                else if (!$('#maingrid>iframe').attr('src')) {
+                    $('#maingrid>iframe').attr('src', 'file-attachment-content.html');
+                }
+                else {
+                    window.frames["content"].loadData();
+                }
+            }
+        });
+
+        var layout = $("#layout").ligerLayout({ leftWidth: 240 });
+
+        //编辑前事件
+        function f_onBeforeEdit(editParm) {
+            switch (editParm.column.name) {
+                case "":
+                    if (editParm.record.__status == "add") return true;
+                    else return false;
+                    break;
+            }
+        }
+
+        //默认选择第一个
+        if (menuList[0].children) {
+            $("#maintree li").eq(1).click();
+        } else {
+            $("#maintree li").eq(0).click();
+        }
+    </script>
+</body>
+</html>
