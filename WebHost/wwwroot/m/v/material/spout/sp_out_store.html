@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>物资领用申请</title>
+    <title>领用出库</title>
     <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
 </head>
 
@@ -20,7 +20,7 @@
                 <div class="navbar">
                     <div class="navbar-bg"></div>
                     <div class="navbar-inner sliding">
-                        <div class="title">领用申请</div>
+                        <div class="title">领用出库</div>
 
                         <div class="subnavbar">
                             <form class="searchbar" id="searchbar-autocomplete">
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
-                    <div id="spout_list">
+                    <div id="spout_store_list">
                     </div>
                 </div>
 
@@ -51,10 +51,10 @@
                         <!--<button class="button" id="refresh">
                             刷新
                         </button>-->
-                        <button class="button" id="add">
-                            新增
+                        <button class="button" id="sumbit">
+                            提交
                         </button>
-                        <button class="button button-large button-fill" id="Del" style="background-color: red">删除</button>
+                        <button class="button button-large button-fill" id="unsubmit" style="background-color: orange">退回</button>
                     </div>
                 </div>
             </div>
@@ -67,8 +67,6 @@
         var formdata;
         var formDataDetail;
         var userList = [];//人员
-        var SpList = []; //物资
-        var SpOrList = []; //物资原始数据
         var business = {
             auditingData: [],
             purtypeName: [],
@@ -86,16 +84,19 @@
                     display: "记录状态 ", name: "AUDITING_TEXT",
                 },
                 {
+                    display: "出库单号", name: "OUT_CODE",
+                },
+                {
                     display: "申请单号", name: "APPLY_CODE",
                 },
                 {
-                    display: "领用人", name: "USER_NAME",
+                    display: "出库日期", name: "OUT_DATE"
                 },
                 {
-                    display: "领用部门", name: "DEPT_NAME"
+                    display: "申请人", name: "USER_NAME"
                 },
                 {
-                    display: "申请日期", name: "APPLY_DATE"
+                    display: "申请部门", name: "DEPT_NAME"
                 }
             ],
             getData: function () {
@@ -103,7 +104,7 @@
                 app.ajax({
                     async: false,
                     type: 'post',
-                    url: 'Material/SpOut/GetSpOutAppList',
+                    url: 'Material/SpOut/GetSpOutStoreList',
                     success: function (data) {
                         me.list = data.Rows;
                         data.Rows.forEach((a) => {
@@ -111,11 +112,12 @@
                         });
 
                         var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
-                        $("#spout_list").html(str);
+                        $("#spout_store_list").html(str);
 
                         data.Rows.forEach((a) => {
                             $("#list-" + a.OUT_ID).click(function () {
-                                popupOpen(a.OUT_ID);
+                                Info_popup.params = { "OUT_ID": a.OUT_ID };
+                                Info_popup.open();
                             });
                         });
                     },
@@ -141,7 +143,7 @@
                         return;
                     }
                 });
-               
+
                 app.ajax({
                     async: false,
                     type: 'post',
@@ -151,26 +153,6 @@
                             var station = a.Station.length > 0 ? '(' + a.Station + ')' : "";
                             userList.push({ "ID": a.Id, "TEXT": a.Name + station, "VALUE": a.Name });
                         });
-                    },
-                    error: function (message, data) {
-                        app.dialog.error(message, function () { });
-                        return;
-                    }
-                });
-
-                app.ajax({
-                    async: false,
-                    type: 'post',
-                    url: 'Material/SpOut/ImportSpList',
-                    success: function (data) {
-                        data.Rows.forEach((a) => {
-                            var text = a.NUM ? '(库存数量:' + a.NUM + ')' : "";
-                            var id = a.NUM ? '_' + a.NUM : "";
-                            SpList.push({ "ID": a.SP_NAME + id, "TEXT": a.SP_NAME + text, "VALUE": a.SP_CODE });
-                            a.TEXT_ID = a.SP_NAME + id;
-                        });
-
-                        SpOrList = data.Rows;
                     },
                     error: function (message, data) {
                         app.dialog.error(message, function () { });
@@ -208,20 +190,21 @@
                     me.initSearchbar();
                 });
 
-                //新增
-                $('#add').on('click', function (e) {
-                    popupOpen('');
-                });
-
-                $("#Del").click(function () {
-                    var checkDom = $("#spout_list input:checked");
+                //提交
+                $("#sumbit").click(function () {
+                    var checkDom = $("#spout_store_list input:checked");
                     var checkedIDList = [];
                     checkDom.forEach(x => {
-                        checkedIDList.push({ OUT_ID: x.value, AUDITING_A: "0" });
+                        checkedIDList.push({ OUT_ID: x.value });
                     });
 
                     if (checkedIDList.length <= 0) {
-                        app.dialog.error("请勾选后在点删除", function () { });
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList.length > 1) {
+                        app.dialog.error("仅选择一行", function () { });
                         return false;
                     }
 
@@ -229,26 +212,74 @@
                     checkedIDList.forEach((a) => {
                         var aut = me.list.find((v) => v.OUT_ID == a.OUT_ID).AUDITING_A;
                         if (aut == "1") {
-                            app.dialog.error("已提交不能删除", function () { });
+                            app.dialog.error("已提交不能再提交", function () { });
+                            flag = false;
+                            return false;
+                        }
+                    });
+
+                    if (flag) {
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Material/SpOut/SubmitSpOutStore',
+                                data: {
+                                    "sid": checkedIDList[0].OUT_ID
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("提交成功", function () {
+                                        business.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    }
+                });
+                //退回
+                $("#unsubmit").click(function () {
+                    var checkDom = $("#spout_store_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ OUT_ID: x.value });
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点退回", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList.length > 1) {
+                        app.dialog.error("仅选择一行", function () { });
+                        return false;
+                    }
+
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        var aut = me.list.find((v) => v.OUT_ID == a.OUT_ID).AUDITING_A;
+                        if (aut == "1") {
+                            app.dialog.error("已提交不能退回", function () { });
                             flag = false;
                             return false;
                         }
                     });
                     if (flag) {
-                        app.dialog.confirm('确定要删除？', '删除', function () {
-
-                            var deleteRow = {};
-                            deleteRow["Deleted"] = checkedIDList;
+                        app.dialog.confirm('确定要退回？', '退回', function () {
 
                             app.ajax({
                                 async: false,
                                 type: 'post',
-                                url: 'Material/SpOut/ManageSpOutApp',
+                                url: 'Material/SpOut/UnSubmitSpOutStore',
                                 data: {
-                                    "request": deleteRow
+                                    "sid": checkedIDList[0].OUT_ID
                                 },
                                 success: function (data) {
-                                    app.dialog.alert("删除成功", function () {
+                                    app.dialog.alert("退回成功", function () {
                                         business.getData();
                                     });
                                 },
@@ -264,14 +295,6 @@
 
         };
         business.init();
-       
-        function popupOpen(id) {
-            Info_popup.params = { "OUT_ID": id };
-            Info_popup.open();
-            $("#popup-close").click(function () {
-                Info_popup.close();
-            });
-        }
 
         var outAppInfo = [
             {
@@ -282,37 +305,24 @@
                 isPrimaryKey: true,
                 isShow: false
             },
-            { display: "记录状态", name: "AUDITING_TEXT", readOnly: true, },
             { display: "申请单号", name: "APPLY_CODE", readOnly: true, },
             { display: "申请日期", name: "APPLY_DATE", readOnly: true, },
-            { display: "项目编号", name: "PROJECT_CODE", },
-            { display: "项目名称", name: "PROJECT_NAME", },
-            { display: "领用部门", name: "DEPT_NAME", readOnly: true, },
-            { display: "领用人", name: "USER_ID", validate: { required: true }, Option: userList, Searched: true },
-            { display: "申请类型", name: "APPLY_TYPE", readOnly: true, Option: business.spapplyType, Searched: true },
+            { display: "项目编号", name: "PROJECT_CODE", readOnly: true, },
+            { display: "项目名称", name: "PROJECT_NAME", readOnly: true, },
+            { display: "申请部门", name: "DEPT_NAME", readOnly: true, },
+            { display: "申请人", name: "USER_NAME", readOnly: true, },
+            { display: "申请类型", name: "APPLY_TYPE", Option: business.spapplyType, readOnly: true,  },
             { display: "二级单位", name: "SEC_DEPT", readOnly: true, },
-            { display: "用途", name: "PURTYPE_NAME", validate: { required: true }, Option: business.purtypeName, Searched: true },
-            { display: "领用总金额(元)", name: "SUM_MONEY", readOnly: true, },
-            { display: "备注", name: "MEMO", validate: { required: true } },
+            { display: "用途", name: "PURTYPE_NAME", Option: business.purtypeName, readOnly: true, },
+            { display: "申请总金额(元)", name: "SUM_MONEY", readOnly: true, },
 
-        ];
-        var outAppInfoEdit = [
-            {
-                display: " 主键",
-                name: "OUT_ID",
-                PrimaryKey: "OUT_ID",
-                readOnly: false,
-                isPrimaryKey: true,
-                isShow: false
-            },
-            { display: "项目编号", name: "PROJECT_CODE", },
-            { display: "项目名称", name: "PROJECT_NAME", },
-            { display: "领用人", name: "USER_ID", validate: { required: true }, Option: userList, Searched: true },
-            { display: "申请类型", name: "APPLY_TYPE", Option: business.spapplyType, Searched: true },
-            { display: "用途", name: "PURTYPE_NAME", validate: { required: true }, Option: business.purtypeName, Searched: true },
-            { display: "备注", name: "MEMO", validate: { required: true } },
-        ];
-        //申请信息
+            { display: "出库单号", name: "OUT_CODE", readOnly: true, },
+            { display: "仓库员", name: "M_USERID", Option: userList, Searched: true },
+            { display: "仓管员", name: "M_USER", isShow: false },
+            { display: "出库日期", name: "OUT_DATE", validate: { required: true }, },
+            { display: "备注", name: "MEMO", },
+        ]; 
+        //出库信息
         var Info_popup = app.popup.create({
             content: `
                                                                 <div class="popup answersheet">
@@ -323,7 +333,7 @@
                                                                                     <div class="left link popup-close">
                                                                                         <i class="f7-icons">arrow_left</i>
                                                                                     </div>
-                                                                                    <div class="title">领用申请</div>
+                                                                                    <div class="title">领用出库</div>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="toolbar tabbar toolbar-top">
@@ -334,8 +344,8 @@
                                                                                     --f7-tabbar-link-inactive-color: black;
                                                                                     background-color: rgb(236, 235, 235);
                                                                              ">
-                                                                                    <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">申请详情</a>
-                                                                                    <a href="#tab-2" class="tab-link" id="modify_list">申请清单</a>
+                                                                                    <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">出库详情</a>
+                                                                                    <a href="#tab-2" class="tab-link" id="modify_list">出库清单</a>
                                                                                 </div>
                                                                             </div>
                                                                             <div class="tabs">
@@ -343,11 +353,8 @@
                                                                                 <div class="list inline-labels no-hairlines-md">
                                                                                     <form class="list" id="detail_bg"></form>
                                                                                 </div>
-
                                                                               </div>
-                                                                              
                                                                               <div id="tab-2" class="page-content tab">
-
                                                                                     <div class="list" id="modify_bg">
                                                                                     </div>
                                                                               </div>
@@ -358,12 +365,6 @@
                                                                                     <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
                                                                                 </div>
                                                                             </div>
-                                                                            <div class="toolbar toolbar-bottom " id="menu2" style="display: none;">
-                                                                                <div class="toolbar-inner">
-                                                                                    <button class="col button button-large button-fill" id="AddDetail" >新增</button>
-                                                                                    <button class="col button button-large button-fill" id="DeleteDetail" style="background-color: red">删除</button>
-                                                                                </div>
-                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>`
@@ -372,34 +373,30 @@
                 open: function () {
                     var me = this;
                     var ID = me.params.OUT_ID;
+                    $("#popup-close").click(function () {
+                        Info_popup.close();
+                    });
+
                     //保存事件
                     $("#save").off('click').click(function () {
                         let data = app.form.convertToData("#detail_bg");
                         data.OUT_ID = ID;
 
-                        if (data.USER_ID == null || data.USER_ID == '') {
-                            app.dialog.error("请选择领用人");
+                        if (data.M_USERID != null && data.M_USERID != '') {
+                            var da = userList.find((va) => va.ID == data.M_USERID);
+                            if (da != null) {
+                                data.M_USER = da.TEXT;
+                            }
+                        }              
+
+                        if (data.OUT_DATE == null || data.OUT_DATE == '') {
+                            app.dialog.error("出库日期不能为空");
                             return
                         }
-
-                        var da = userList.find((va) => va.ID == data.USER_ID);
-                        if (da != null) {
-                            data.USER_NAME = da.TEXT;
-                        }
-
-                        if (data.PURTYPE_NAME == null || data.PURTYPE_NAME == '') {
-                            app.dialog.error("请选择用途");
-                            return
-                        }
-
-                        if (data.MEMO == null || data.MEMO == '') {
-                            app.dialog.error("备注不能为空");
-                            return
-                        }
+                        data.AUDITING_A = "0";
 
                         var AddRow = new Object();
                         if (ID) {
-                            data.AUDITING_A = "0";
                             AddRow["Updated"] = [data];
                         }
                         else {
@@ -412,7 +409,7 @@
                             data: {
                                 "request": AddRow
                             },
-                            url: 'Material/SpOut/ManageSpOutApp',
+                            url: 'Material/SpOut/ManageSpOutStore',
                             success: function (data) {
                                 if (ID) {
                                     $("#modify_list").click();
@@ -444,7 +441,7 @@
                                 data: {
                                     "sid": ID
                                 },
-                                url: 'Material/SpOut/SubmitSpOutApp',
+                                url: 'Material/SpOut/SubmitSpOutStore',
                                 success: function () {
                                     Info_popup.close();
                                     business.getData();
@@ -453,53 +450,13 @@
                         });
                     });
 
-                    $("#DeleteDetail").off('click').click(function () {
-                        app.dialog.confirm('确定要删除？', '删除', function () {
-
-                            var checkDom = $("#modify_bg input:checked");
-                            var checkedIDList = [];
-                            checkDom.forEach(x => { checkedIDList.push({ OUTDET_ID: x.value }) });
-                            if (checkedIDList.length <= 0) {
-                                app.dialog.error("请勾选后在点删除", function () { });
-                                return false;
-                            }
-
-                            var deleteRow = {};
-                            deleteRow["Deleted"] = checkedIDList;
-                            
-                            app.ajax({
-                                async: false,
-                                type: 'post',
-                                url: 'Material/SpOut/ManageSpOutApp',
-                                data: {
-                                    "requestdet": deleteRow
-                                },
-                                success: function (data) {
-                                    app.dialog.alert("删除成功", function () {
-                                        CreateApplyDetail(ID);
-                                    });
-                                },
-                                error: function (message, data) {
-                                    app.dialog.error(message, function () { });
-                                    return;
-                                }
-                            });
-                        })
-                    });
-
-                    $("#AddDetail").click(function () {
-                        //明细弹窗
-                        detail_popup.params = { "OUTDET_ID": "", "OUT_ID": ID };
-                        detail_popup.open();
-                    });
-
                     if (ID) {
                         app.ajax({
                             type: 'post',
                             data: {
-                                "ID": ID
+                                "id": ID
                             },
-                            url: 'Material/SpOut/GetSpOutAppListDetail',
+                            url: 'Material/SpOut/GetSpOutStoreListDetail',
                             success: function (data) {
                                 var str = "";
                                 str = app.CreatePopupContentHtml(outAppInfo);
@@ -512,7 +469,7 @@
                                 showBtn(data.AUDITING_A == "0");
 
                                 app.smartSelect.create({
-                                    el: '.USER_ID',
+                                    el: '.M_USERID',
                                     searchbar: true
                                 });
                                 app.smartSelect.create({
@@ -523,49 +480,38 @@
                                     el: '.PURTYPE_NAME',
                                     searchbar: true
                                 });
+
+                                app.calendar.create({
+                                    inputEl: '#OUT_DATE',
+                                    timePicker: true,
+                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                });
+
+                                //明细数据
+                                CreateApplyDetail(ID, me.detail.AUDITING_A);
                             }
                         });
-
-                        //明细数据
-                        $("#sumbit").show();
-                        $("#modify_list").show();
-                        CreateApplyDetail(ID);
-                    }
-                    else {
-                        //新增清空数据
-                        $("#detail_bg").html(app.CreatePopupContentHtml(outAppInfoEdit));
-                       /* app.form.fillFromData('#detail_bg');*/
-                        $("#modify_list").hide();
-                        $("#modify_bg").html('');
-                        $("#sumbit").hide();
-                        $("#menu").show();
                     }
                 }
             }
         });
-
-        //按钮
+        //按钮显示隐藏
         function showBtn(isEdit) {
             if (isEdit) {
                 $("#menu").show();
                 $("#dg_list").click(function () {
                     $("#menu").show();
-                    $("#menu2").hide();
                 })
                 $("#modify_list").click(function () {
                     $("#menu").hide();
-                    $("#menu2").show();
                 });
             } else {
                 $("#menu").hide();
-                $("#menu2").hide();
                 $("#dg_list").click(function () {
                     $("#menu").hide();
-                    $("#menu2").hide();
                 })
                 $("#modify_list").click(function () {
                     $("#menu").hide();
-                    $("#menu2").hide();
                 });
             }
         }
@@ -582,14 +528,14 @@
             { display: "物料编码", name: "SP_CODE", },
             { display: "物料名称", name: "SP_NAME",  },
             { display: "规格型号", name: "SP_SIZE",  },
-            { display: "计量单位", name: "UNIT",  },
+            { display: "计量单位", name: "UNIT", },
+            { display: "库位名称", name: "STOCK_NAME", },
             { display: "库存数量", name: "STORE_NUM",  },
             { display: "申请数量", name: "APPLY_NUM", },
-            { display: "库位名称", name: "STOCK_NAME",  }
+            { display: "出库数量", name: "COUNT", },
         ];    
         //明细列表
-        function CreateApplyDetail(ID) {
-
+        function CreateApplyDetail(ID, AUDITING_A) {
            var where = JSON.stringify({
                 op: 'and',
                rules: [{ field: 'OUT_ID', op: 'equal', value: ID }]
@@ -598,7 +544,7 @@
             app.ajax({
                 type: 'post',
                 data: { "where": where },
-                url: 'Material/SpOut/GetSpOutAppdetList',
+                url: 'Material/SpOut/GetSpOutStoredetList',
                 success: function (data) {
                     formDataDetail = data.Rows;
                     // 清单
@@ -606,11 +552,9 @@
                     $("#modify_bg").html(str);
                     data.Rows.forEach((a) => {
                         $("#list-" + a.OUTDET_ID).click(function () {
-                            detail_popup.params = { "OUTDET_ID": a.OUTDET_ID, "OUT_ID": a.OUT_ID, };
+                            detail_popup.params = { "OUTDET_ID": a.OUTDET_ID, "OUT_ID": a.OUT_ID, "AUDITING_A": AUDITING_A };
                             detail_popup.open();
-                            $("#popup-close").click(function () {
-                                detail_popup.close();
-                            })
+                            
                         })
                     });
                 }
@@ -628,37 +572,21 @@
                 isPrimaryKey: true,
                 isShow: false
             },
-            { display: "物料名称", name: "SP_NAME", validate: { required: true }, Option: SpList, Searched: true },
-            { display: "物料编码", name: "SP_CODE", readOnly: true, },
-            { display: "规格型号", name: "SP_SIZE", readOnly: true, },
-            { display: "计量单位", name: "UNIT", readOnly: true, },
-            { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
-            { display: "库存数量", name: "STORE_NUM", readOnly: true, },
-            
-            { display: "申请数量", name: "APPLY_NUM", validate: { required: true }, },
-            { display: "备注", name: "MEMO",},
-            { display: "外键", name: "OUT_ID", isShow: false },
-            { display: "外键", name: "SP_ID", isShow: false },
-        ];
-        var outAppDetailInfoEdit = [
-            {
-                display: " 主键",
-                name: "OUTDET_ID",
-                PrimaryKey: "OUTDET_ID",
-                readOnly: true,
-                isPrimaryKey: true,
-                isShow: false
-            },
             { display: "物料名称", name: "SP_NAME", readOnly: true, },
             { display: "物料编码", name: "SP_CODE", readOnly: true, },
             { display: "规格型号", name: "SP_SIZE", readOnly: true, },
             { display: "计量单位", name: "UNIT", readOnly: true, },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
+            { display: "批次号", name: "STORE_CODE", readOnly: true, },
+            { display: "入库日期", name: "IN_DATE", readOnly: true, },
+            { display: "参考单价(元)", name: "PRICE", readOnly: true, },
+ 
             { display: "库存数量", name: "STORE_NUM", readOnly: true, },
-
-            { display: "申请数量", name: "APPLY_NUM", validate: { required: true }, },
-            { display: "备注", name: "MEMO", },
+            { display: "申请数量", name: "APPLY_NUM", readOnly: true, },
+            { display: "出库数量", name: "COUNT", validate: { required: true } },
+            { display: "备注", name: "MEMO", readOnly: true, },
             { display: "外键", name: "OUT_ID", isShow: false },
+            { display: "外键", name: "SP_ID", isShow: false },
             { display: "外键", name: "SP_ID", isShow: false },
         ];
         var detail_popup = app.popup.create({
@@ -693,37 +621,24 @@
             on: {
                 open: function () {
                     var me = this;
+                    me.AUDITING_A = me.params.AUDITING_A;
+                    $("#popup-close").click(function () {
+                        detail_popup.close();
+                    })
 
                     $("#saveDetail").off('click').click(function () {
-                        var ID = me.params.OUTDET_ID;
+
                         let data = app.form.convertToData("#detail_bg_detail");
                         data.OUT_ID = me.params.OUT_ID;
-                        data.OUTDET_ID = ID;
-                        
-                        if (data.OUT_ID == null || data.OUT_ID == '') {
-                            app.dialog.error("参数错误");
-                            return
-                        }
+                        data.OUTDET_ID = me.params.OUTDET_ID;
 
-                        if (data.SP_CODE == null || data.SP_CODE == '') {
-                            app.dialog.error("请选择物料");
-                            return
-                        }
-
-                        if (data.SP_NAME == null || data.SP_NAME == '') {
-                            var da = SpOrList.find((va) => va.SP_CODE == data.SP_CODE && va.NUM == data.STORE_NUM);
-                            if (da != null) {
-                                data.SP_NAME = da.SP_NAME;
-                            }
-                        }
-
-                        if (data.APPLY_NUM == null || data.APPLY_NUM == '') {
+                        if (data.COUNT == null || data.COUNT == '') {
                             app.dialog.error("申请数量不可为空");
                             return
                         }
                        
-                        if (parseInt(data.APPLY_NUM) > parseInt(data.STORE_NUM)) {
-                            app.dialog.error("申请数量不可大于库存数量");
+                        if (parseInt(data.COUNT) > parseInt(data.STORE_NUM)) {
+                            app.dialog.error("出库数量不可大于库存数量");
                             return
                         }
                         
@@ -742,10 +657,10 @@
                             data: {
                                 "requestdet": AddRow
                             },
-                            url: 'Material/SpOut/ManageSpOutApp',
+                            url: 'Material/SpOut/ManageSpOutStore',
                             success: function () {
                                 detail_popup.close();
-                                CreateApplyDetail(data.OUT_ID);
+                                CreateApplyDetail(data.OUT_ID, me.params.AUDITING_A);
                             }
                         });
                     });
@@ -763,32 +678,22 @@
                             data: {
                                 "where": where
                             },
-                            url: 'Material/SpOut/GetSpOutAppdetList',
+                            url: 'Material/SpOut/GetSpOutStoredetList',
                             success: function (data) {
-                                var str = app.CreatePopupContentHtml(outAppDetailInfoEdit);
+                                var str = app.CreatePopupContentHtml(outAppDetailInfo);
                                 $("#detail_bg_detail").html(str);
                                 if (data.Rows.length > 0) {
                                     formDataDetail = data.Rows[0];
                                     app.form.fillFromData('#detail_bg_detail', formDataDetail);
                                 }
+                                if (me.AUDITING_A == "1") {
+                                    $("#menuDetail").hide();
+                                } else {
+                                    $("#menuDetail").show();
+                                }
                             }
                         });
-                    } else {
-                        var str = app.CreatePopupContentHtml(outAppDetailInfo);
-                        $("#detail_bg_detail").html(str);
                     }
-
-                    $('#SP_NAME').on('change', function (e) {
-                        var value = e.target.value;
-                        if (value != null && value.length > 0) {
-                            var split = value.split('_');
-                            var da = SpOrList.find((va) => va.SP_NAME == split[0] && va.NUM == split[1]);
-                            if (da != null) {
-                                da.STORE_NUM = da.NUM;
-                                app.form.fillFromData('#detail_bg_detail', da);
-                            }
-                        }
-                    });
                 }
             }
         });
