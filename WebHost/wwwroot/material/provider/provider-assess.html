@@ -166,6 +166,38 @@
                 me.loadToolbar();
                 me.bindGridEvent();
             },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAudited: function () {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING == "1") {
+                        LG.tip("有数据已提交，无法变更！");
+                        return true;
+                    }
+                }
+                return false;
+            },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
@@ -174,9 +206,11 @@
                             me.reload();
                             break;
                         case "modify":
+                            if (!me.isSelectSingleRow() || me.isAudited()) break;
                             me.modify();
                             break;
                         case "submit":
+                            if (!me.isSelectRow() || me.isAudited()) break;
                             $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
                                 if (confirm) {
                                     me.submit();
@@ -222,19 +256,7 @@
             },
             modify: function () { //修改（评分）
                 var me = this;
-                var rows = me.grid.getSelectedRows();
-                if (rows.length > 1) {
-                    LG.tip("不能选择多行");
-                    return;
-                } else if (rows.length == 0) {
-                    LG.tip("请选择一行");
-                    return;
-                }
                 var selected = me.grid.getSelectedRow();
-                if (selected.AUDITING == "1") {
-                    LG.tip("该数据已提交,无法修改!");
-                    return;
-                }
                 if (selected.EXAMINER_ID != window.session.UserID) {
                     LG.tip("您不是该任务的评分人！");
                     return;
@@ -269,10 +291,6 @@
                         }
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        if (ori.AUDITING == "1") {
-                            LG.tip("有数据已提交，无法重复提交！");
-                            return;
-                        }
                         upd.AUDITING = "1";
                         orginarr.push(ori);
                         updatedarr.push(upd)
