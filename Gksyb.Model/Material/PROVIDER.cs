@@ -84,8 +84,7 @@ namespace Gksyb.Model
         /// 注册资金
         /// </summary>
         [Description("注册资金")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ENTITY_REG_FUND { get; set; }
+        public decimal ENTITY_REG_FUND { get; set; }
 
         /// <summary>
         /// 企业性质
