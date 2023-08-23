@@ -28,7 +28,8 @@
         var business = {
             dialog: (frameElement && frameElement.dialog) ? frameElement.dialog : null,
             detailType: null,
-            dataValue: null,
+            dataValue: null,//已选择
+            filterData: null,//过滤
             isFirst: true,
             isCancel:"",
             setConfig: function () {
@@ -125,6 +126,19 @@
                         g._removeData(g.getRow(id));
                         row.remove();
                     },
+                    onBeforeShowData: function (data) {
+                        if (me.filterData) {
+                            var newData = [];
+                            data.Rows.forEach((a, i) => {
+                                var exData = me.filterData.find(t => t.SP_ID == a.SP_ID && t.STOCK_ID == a.STOCK_ID);
+                                if (!exData) {
+                                    newData.push(a);
+                                }
+                            });
+                            data.Rows = newData;
+                            data.Total = newData.length;
+                        }
+                    },
                     onLoaded: function () {
                         var gridData = this.currentData[this.options.root];
                         var gridData2 = me.grid2.currentData[me.grid2.options.root];
@@ -133,7 +147,10 @@
                         for (var i = gridData.length - 1; i >= 0; i--) {
                             bolExist = false;
                             if (me.isFirst) {
-                                if (dataValue.indexOf("," + gridData[i].SP_ID + ",") >= 0 && dataValue.indexOf("," + gridData[i].STOCK_ID + ",") >= 0) bolExist = true;
+                                var exData = dataValue.find(t => t.SP_ID == gridData[i].SP_ID && t.STOCK_ID == gridData[i].STOCK_ID);
+                                if (exData) {
+                                    bolExist = true;
+                                }
                             }
                             if (!bolExist) {
                                 for (var j = 0, len = (gridData2 || []).length; j < len; j++) {
@@ -288,10 +305,11 @@
                 var me = this;
                 if (!me.dialog) return;
                 var dialogData = me.dialog.get('data'); //获取data参数
-                me.dataValue = "," + (dialogData.dataValue || "") + ",";
                 me.rowindex = dialogData.rowindex;
                 me.callback = dialogData.callback;
                 me.isCancel = dialogData.isCancel;
+                me.dataValue = dialogData.dataValue || [];
+                me.filterData = dialogData.filterData;
 
                 me.loadComboxData();
                 me.setConfig();

@@ -26,6 +26,10 @@
     <script type="text/javascript">
         'use strict';
 
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
@@ -186,30 +190,42 @@
             },
             attach: function () {
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var me = this;
-                    LG.showUpload({
-                        multiple: false,
-                        extensions: 'xls,xlsx',
-                        mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
-                        compress: {
-                            width: 1920
-                        },
-                        showSuccess: false,
-                        //data: { folder: '../../Adv' },
-                        callback: function (status, data) {
-                            if (status) {
-                                LG.showSuccess("导入成功");
-                                me.reload();
-                            }
-                            else LG.showError(data.Message);
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        if (selected[0].AUDITING_B != "0") {
+                            LG.tip('已提交，无法上传!');
                         }
-                    });
+                        else {
+                            me.f_rowAttachManage(selected[0].FAULT_ID);
+                        }
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
                 }
-                else {
-                    LG.tip('请选择行!');
-                }
+            },
+
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                isView = false;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "REP_FAULT"; // 表名
+                isView = isView; // 是否为查看模式
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reload();
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;

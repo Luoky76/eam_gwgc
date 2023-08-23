@@ -264,6 +264,7 @@ namespace EAM.Device.services
             {
                 throw new MessageException("预计人员数量或预计花费时间不可为负数！");
             }
+            await Task.CompletedTask;
         }
 
         #endregion 码头维修计划

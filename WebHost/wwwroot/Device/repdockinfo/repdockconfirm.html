@@ -30,7 +30,7 @@
                     search: {
                         fields: [
                             { display: "确认单状态", name: "_search_AUDITING_CONFIRM", dbname: "AUDITING_CONFIRM", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditing } },
-                            { display: "是否有遗留问题", name: "_search_IS_LEAVE_CONFIR", dbname: "IS_LEAVE_CONFIR", newline: false, upper: true, type: "select", options: { type: 'select', data: me.isleave } },
+                            { display: "是否有遗留问题", name: "_search_IS_LEAVE", dbname: "IS_LEAVE", newline: false, upper: true, type: "select", options: { type: 'select', data: me.isleave } },
                         ]
                     },
                     grid: {
@@ -38,10 +38,10 @@
                             { display: "确认单状态", name: "AUDITING_CONFIRM", width: 100, type: "select", format: { data: me.auditing } },
                             { display: "维修项目", name: "REP_ITEM", minWidth: 200, type: "text" },
                             //{ display: "计划承修方", name: "PLAN_PROVIDER", minWidth: 100, type: "text"},
-                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date", },
                             { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date", },
+                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date", },
                             { display: "是否有遗留问题", name: "IS_LEAVE", minWidth: 100, type: "select", editor: { type: 'select', data: me.isleave } },
-                            { display: "备注", name: "CHECK_MEMO", minWidth: 300, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text" },
                             { display: "实施单单号", name: "EXE_CODE", minWidth: 100, type: "text" },
                             { display: "主键", name: "CHECK_ID", width: 100, type: "text", hide: true },
                         ]

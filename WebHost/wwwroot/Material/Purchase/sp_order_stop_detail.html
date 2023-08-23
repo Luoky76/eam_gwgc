@@ -40,15 +40,13 @@
                     grid: {
                         columns: [
                             { display: "订单编号", name: "ORDER_CODE", width: 150, type: "text", },
-                            { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
-
+                            { display: "中止数量", name: "STOP_NUM", type: "number", width: 80, editor: { type: 'number', }, validate: { required: true } },
                             { display: "物料编码", name: "SP_CODE", width: 150, type: "text"  },
                             { display: "物料名称", name: "SP_NAME", width: 150, type: "text",  },
                             { display: "型号规格", name: "SP_SIZE", width: 150, type: "text",  },
                             { display: "订单数量", name: "COUNT", width: 150, type: "decimal", },
                             { display: "入库数量", name: "INSTORE_COUNT", width: 150, type: "decimal", },
-                            { display: "中止数量", name: "STOP_NUM", type: "number", width: 80, editor: { type: 'number', }, validate: { required: true } },
-
+                            { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
                             { display: "申请人", name: "APPLY_USER", width: 150, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
 
@@ -128,10 +126,19 @@
                         me.grid.addEditRow({
                             "STOP_ID": me.Sid,
                             "ORDER_ID": list[i].ORDER_ID,
-                            "ORDERDET_ID": list[i].ORDERDET_ID
+                            "ORDERDET_ID": list[i].ORDERDET_ID,
+                            "ORDER_CODE": list[i].ORDER_CODE,
+                            "ORDER_DATE": list[i].ORDER_DATE,
+                            "COUNT": list[i].TYPE_ID,
+                            "INSTORE_COUNT": list[i].TYPE_NAME,
+                            "APPLY_USER": list[i].TYPE_CODE,
+                            "DEPT_NAME": list[i].DEPT_NAME,
+                            "UNIT": list[i].UNIT,
+                            "SP_SIZE": list[i].SP_SIZE,
+                            "SP_NAME": list[i].SP_NAME,
+                            "SP_CODE": list[i].SP_CODE,
                         });
                     }
-                    me.save();
                 };
 
 

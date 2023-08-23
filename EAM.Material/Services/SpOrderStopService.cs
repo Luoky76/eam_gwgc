@@ -277,7 +277,7 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.STOP_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
@@ -302,13 +302,18 @@ namespace EAM.Material.Services
                     a.ORDERDET_ID,
                     a.ORDER_ID,
                     b.ORDER_CODE,
+                    b.ORDER_DATE,
                     a.SP_ID,
                     a.SP_CODE,
                     a.SP_NAME,
                     a.SP_SIZE,
                     a.PRODUCE,
                     a.UNIT,
-                    a.TYPE_NAME
+                    a.TYPE_NAME,
+                    a.COUNT,
+                    a.INSTORE_COUNT,
+                    a.APPLY_USER,
+                    a.DEPT_NAME
                 })
                 .GetGridData(request);
         }

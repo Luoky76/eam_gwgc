@@ -101,7 +101,7 @@
                                     autocomplete: true,
                                     selectBoxWidth: 300,
                                     valueField: "ID",
-                                    textField: "TEXT",
+                                    textField: "VALUE",
                                     columns: [
                                         { header: '设备编号', name: 'TEXT', width: 150 },
                                         { header: '设备名称', name: 'VALUE' }
@@ -157,25 +157,16 @@
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
-                                        me.start = value
+                                        me.updateWorkHours(value, $('#COMPLETE_DATE').val());
                                     },
-                                }
+                                },
                             },
                             {
                                 display: "完工时间", name: "COMPLETE_DATE", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
-                                        if (me.start == null) {
-                                            LG.showError("请先选择开始时间,后选结束时间！");
-                                        }
-                                        var date1 = new Date(me.start);
-                                        var date2 = new Date(value);
-                                        // 计算时间差值（单位为毫秒）
-                                        var timeDiff = date2.getTime() - date1.getTime();
-                                        // 将时间差值转换为小时数
-                                        var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
-                                        $('#REPAIR_HOURS').val(minutesDiff);
+                                        me.updateWorkHours($('#ORDER_DATE').val(), value);
                                     },
                                 }
                             },
@@ -202,11 +193,11 @@
                     },
                     grid2: {
                         columns: [
-                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "text", },
+                            //{ display: "来源", name: "SP_SOURCE", minWidth: 100, type: "text", },
                             { display: "备件品种编码", name: "SP_CODE", minWidth: 100, type: "text", },
                             { display: "备件品种名称", name: "SP_NAME", minWidth: 100, type: "text", },
                             { display: "备件型号", name: "SP_TYPE", minWidth: 100, type: "text", },
-                            { display: "物料ID", name: "SP_ID", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "物料ID", name: "SP_ID", minWidth: 100, hide: true },
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text", },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
                             { display: "库存数量", name: "CUR_NUM", minWidth: 100, type: "float", },
@@ -214,6 +205,7 @@
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
                             //{ display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "主键", name: "FAULT_SP_ID", minWidth: 100, hide: true },
+                            { display: "外键", name: "SP_ID", minWidth: 100, hide: true },
                             { display: "外键", name: "FAULT_ID", minWidth: 100, hide: true },
                         ]
                     },
@@ -221,6 +213,35 @@
             },
             mainform: null,
             buttons: null,
+            //时间判断
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (!startDate || !completeDate) {
+                    $('#REPAIR_HOURS').val("");
+                    return;
+                }
+
+                if (start >= complete) {
+                    $('#ORDER_DATE').val("");
+                    $('#COMPLETE_DATE').val("");
+                    $('#REPAIR_HOURS').val("");
+                    LG.showError("开工时间不能大于完工时间或者当前时间！请重新选择！");
+                    return;
+                }
+
+                var now = new Date();
+                if (complete > now) {
+                    $('#COMPLETE_DATE').val("");
+                    LG.showError("完工时间不能大于当前时间！");
+                    return;
+                }
+
+                var timeDiff = complete - start;
+                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                $('#REPAIR_HOURS').val(minutesDiff);
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -319,10 +340,14 @@
             },
             close: function () {
                 var me = this;
+                debugger
                 function inner(callback) {
+                    debugger
                     var data = me.mainform.getData();
                     var updateFields = LG.getFormCombChanges(data, me.orginData, true);
-                    if (updateFields) {
+                    var isChangedGrid2 = me.grid2.getChangedRows();
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid2.updated.length > 0 || isChangedGrid2.added.length > 0 || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);
@@ -515,11 +540,12 @@
                             { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
                             { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text" },
                             { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text" },
-                            { display: "图号", name: "DRAWING_NO", minWidth: 100, type: "text" },
+                            //{ display: "图号", name: "DRAWING_NO", minWidth: 100, type: "text" },
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text" },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
                             { display: "库存数量", name: "NUM", minWidth: 100, type: "decimal" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "主键", name: "SP_ID", hide: true },
 
                         ]
                     },
@@ -537,10 +563,12 @@
                                     SP_CODE: item.SP_CODE,
                                     SP_NAME: item.SP_NAME,
                                     HOUSE_NAME: item.HOUSE_NAME,
-                                    SP_TYPE: item.SP_TYPE,
+                                    SP_TYPE: item.SP_SIZE,
                                     DRAWING_NO: item.DRAWING_NO,
                                     STOCK_NAME: item.STOCK_NAME,
                                     CUR_NUM: item.NUM,
+                                    SP_ID: item.SP_ID,
+                                    REAL_OUT_NUM:"1",
                                     UNIT: item.UNIT
                                 });
                             }
@@ -557,37 +585,44 @@
                     slide: false,
                     data: dataOptions
                 });
-            },	
+            },
             //保存
             savesp: function () { //保存
                 var me = this;
+                var flag = true;
                 if (me.grid2.endEdit() != false) {
                     if (!me.grid2.isDataChanged) {
-                        LG.showSuccess('无修改');
+                        LG.showSuccess('无变动');
                         return;
                     }
                     if (!me.grid2.validChangeRows()) return false;
                     var changeRow = me.grid2.getChangedRows();
-                    for(i = 0; changeRow.updated.length; i++)
-                    {
-                        if (changeRow.updated[i].CUR_NUM < changeRow.updated[i].REAL_OUT_NUM) {
-                            LG.showSuccess('实际消耗数量不可小于库存数量！');
+                    changeRow.updated.forEach(function (row) {
+                        if (row.CUR_NUM < row.REAL_OUT_NUM) {
+                            flag = false;
+                            LG.showSuccess('实际消耗数量不可大于库存数量！');
                         }
-                    }
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/RepFault/ManageFaultSp',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reloadSp();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+                        if (row.REAL_OUT_NUM<0) {
+                            flag = false;
+                            LG.showSuccess('实际消耗数量不可为负数！');
                         }
                     });
+                    if (flag) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/RepFault/ManageFaultSp',
+                            loading: '正在保存中...',
+                            data: changeRow,
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid.isDataChanged = false;
+                                me.reloadSp();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
                 }
             },
             //删除
@@ -857,10 +892,12 @@
                 //加载重大改造履历
                 me.setGrid();
                 me.setGrid2();
-                $('#REPAIR_USER').bind('click', function () {
-                    debugger
-                    me.f_select_man();
-                });
+                if (me.dialogData.view == undefined) {
+                    $('#REPAIR_USER').bind('click', function () {
+                        debugger
+                        me.f_select_man();
+                    });
+                }
                 me.reloadPep();
                 me.reloadSp();
                 if (me.dialogData.view != undefined) {

@@ -39,7 +39,8 @@
             tree: null,
             currentNode: null,
             providerName: [],
-            storeSou:[],
+            storeSou: [],
+            stockData: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -47,7 +48,8 @@
                         fields: [
                             { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, type: "text", },
                             { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, type: "text", },
-                            { display: "仓库ID", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", op: "equal", type: "hidden", options: {} }
+                            { display: "仓库ID", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", op: "startwith", type: "hidden", options: {} },
+                            { display: "库存数量", name: "_search_NUM", dbname: "NUM", op: "greater", type: "hidden", }
                         ]
                     },
                     grid: {
@@ -141,6 +143,12 @@
                         case "add"://库存初始化
                             me.add();
                             break;
+                        case "delete"://删除库存初始化
+                            me.delete();
+                            break;
+                        case "save"://保存库存初始化
+                            me.save();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
@@ -172,35 +180,58 @@
                         { display: "品牌、厂家", name: "PRODUCE", labelWidth: 120, width: 180, newline: true, type: "text", readonly: "readonly", },
                         { display: "计量单位", name: "UNIT", labelWidth: 120, width: 180, type: "text", readonly: "readonly" },
                         { display: "物料分类", name: "TYPE_NAME", labelWidth: 120, width: 180, newline: true, type: "text", readonly: "readonly", },
-                        { display: "库位名称", name: "STOCK_NAME", labelWidth: 120, width: 180, type: "text", readonly: "readonly", },
+                        {
+                            display: "库位名称", name: "STOCK_ID", labelWidth: 120, width: 180, type: "select", editor: {
+                                type: 'select', options: { data: me.stockData },
+                                onChangeValue: function (input, value, g) {
+                                    var da = me.stockData.find((va) => va.ID == value);
+                                    if (da != null) {
+                                        $("#STOCK_CODE").val(da.VALUE);
+                                        $("#STOCK_NAME").val(da.TEXT);
+                                    }
+                                }
+                            }, validate: { required: true }
+                        },
 
                         { display: "来源类型", name: "SRC_TYPE", labelWidth: 120, width: 180, newline: true, type: "select", editor: { type: 'select', options: { data: me.storeSou } }, validate: { required: true } },
                         {
-                            display: "库存数量", name: "NUM", labelWidth: 120, width: 180, type: "text", editor: {
-                                type: 'text',
+                            display: "库存数量", name: "NUM", labelWidth: 120, width: 180, type: "float",
+                            editor: {
+                                type: 'float',
                                 onChangeValue: function (input, value, g) {
-                                    var editParm = g.options.editParm.record;
-                                    editParm["MONEY"] = (value * (editParm.PRICE || 0)).toFixed(2);
+                                    var editParm = $("#PRICE").val();
+                                    $("#MONEY").val((value * (editParm || 0)).toFixed(2));
+
+                                    var PRICE = $("#NOTAX_PRICE").val();
+                                    $("#NOTAX_MONEY").val((value * (PRICE || 0)).toFixed(2));
 
                                 }
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存单价(元)", name: "PRICE", labelWidth: 120, width: 180, newline: true, type: "text", editor: {
-                                type: 'text', onChangeValue: function (input, value, g) {
-                                    var editParm = g.options.editParm.record;
-                                    editParm["MONEY"] = (value * (editParm.NUM || 0)).toFixed(2);
+                            display: "库存单价(元)", name: "PRICE", labelWidth: 120, width: 180, newline: true, type: "float", editor: {
+                                type: 'float', onChangeValue: function (input, value, g) {
+                                    var editParm = $("#NUM").val();
+                                    $("#MONEY").val((value * (editParm || 0)).toFixed(2));
 
                                 }
                             }, validate: { required: true }
                         },
-                        { display: "库存金额(元)", name: "MONEY", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' }, validate: { required: true } },
+                        { display: "库存金额(元)", name: "MONEY", labelWidth: 120, width: 180, type: "float", editor: { type: 'float' }, validate: { required: true } },
 
-                        { display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: 120, width: 180, newline: true, type: "text", editor: { type: 'text' } },
-                        { display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' } },
+                        {
+                            display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: 120, width: 180, newline: true, type: "float", editor: {
+                                type: 'float',
+                                onChangeValue: function (input, value, g) {
+                                    var editParm = $("#NUM").val();
+                                    $("#NOTAX_MONEY").val((value * (editParm || 0)).toFixed(2));
+                                }
+                            }
+                        },
+                        { display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: 120, width: 180, type: "float", editor: { type: 'float' } },
 
                         { display: "入库日期", name: "IN_DATE", labelWidth: 120, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
-                        { display: "税率", name: "TAX_RATE", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' } },
+                        { display: "税率", name: "TAX_RATE", labelWidth: 120, width: 180, type: "float", editor: { type: 'float' } },
                         {
                             display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: 120, width: 180, newline: true, type: "select", editor: {
                                 type: 'select',
@@ -223,7 +254,7 @@
                         { display: "TYPE_ID", name: "TYPE_ID", dbname: "TYPE_ID", width: 180, type: "hidden" },
                         { display: "TYPE_CODE", name: "TYPE_CODE", dbname: "TYPE_CODE", width: 180, type: "hidden" },
                         { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 180, type: "hidden" },
-                        { display: "仓库ID", name: "STOCK_ID", dbname: "STOCK_ID", width: 180, type: "hidden" },
+                        { display: "仓库名", name: "STOCK_NAME", dbname: "STOCK_NAME", width: 180, type: "hidden" },
                         { display: "仓库CODE", name: "STOCK_CODE", dbname: "STOCK_CODE", width: 180, type: "hidden" }
                     ],
                     space: 3,
@@ -292,6 +323,17 @@
                             }
 
                             var data = me.viewForm.getData();
+
+                            if (data.SP_NAME == null || data.SP_NAME == '') {
+                                LG.showError('请挑选物资!');
+                                return;
+                            }
+
+                            if (data.NUM < 0 || data.PRICE < 0 || data.MONEY < 0 || data.NOTAX_PRICE < 0 || data.NOTAX_MONEY < 0 || data.TAX_RATE < 0) {
+                                LG.showError('单价、总价、税率等字段的输入不能小于0!');
+                                return;
+                            }
+
                             var changeRow = new Object();
                             changeRow["added"] = [data];
                             LG.ajax({
@@ -324,7 +366,7 @@
             },
             reload: function () { //刷新
                 var me = this;
-                me.grid.loadData();
+                me.buttons[0].click();
             },
             bindGridEvent: function () {
                 var me = this;
@@ -389,6 +431,10 @@
                     iconClsFieldName: "ICON",
                     isExpand: 2,
                     onSuccess: function (data) {
+                        
+                        data.forEach((a) => {
+                            me.stockData.push({ ID: a.HOUSE_ID, TEXT: a.HOUSE_NAME, VALUE: a.HOUSE_CODE });
+                        });
                         $(".l-tree .l-body span").each(function () {
                             var $this = $(this);
                             var text = $this.text();
@@ -441,6 +487,7 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
+                        me.searchForm.setData({ "_search_NUM": "0" });
                     }
                 });
             },
@@ -452,6 +499,7 @@
                 me.setGrid();
                 me.setTree();
                 me.setForm();
+                me.reload();
                 return me;
             }
         };
