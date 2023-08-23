@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -26,36 +25,54 @@
                 me.config = {
                     search: {
                         fields: [
+                            { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "入库单号", name: "_search_IN_CODE", dbname: "IN_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text",options:{} },
+                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", },
-                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", },
-                            { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", },
-                            { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text", },
-                            { display: "入库日期", name: "IN_DATE", minWidth: 100, type: "text", },
-                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text",    },
-                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text",    },
-                            { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text",    },
-                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text",    },
-                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text",    },
-                            { display: "入库数量", name: "COUNT", minWidth: 100, type: "decimal"  },
-                            { display: "入库单价(元)", name: "PRICE", minWidth: 100, type: "decimal"  },
-                            { display: "入库金额(元)", name: "MONEY", minWidth: 100, type: "decimal"  },
-                            { display: "货位名称", name: "STOCK_NAME", minWidth: 100, type: "text",    },
-                            { display: "申请人", name: "APPLY_USER", minWidth: 100, type: "text",    },
-                            { display: "申请单号", name: "APPLY_NO", minWidth: 100, type: "text",    },
-                            { display: "说明", name: "MEMO", minWidth: 100, type: "text",    },
-                            { display: "需求备注", name: "APPLY_MEMO", minWidth: 100, type: "text",    },
-                            { display: "用途", name: "USE_MEMO", minWidth: 100, type: "text",    },
-                            { display: "不含税单价(元)", name: "NOTAX_PRICE", minWidth: 100, type: "decimal"  },
-                            { display: "不含税金额(元)", name: "UNTAX_MONEY", minWidth: 100, type: "decimal"  },
-                            { display: "税率", name: "TAX_RATE", minWidth: 100, type: "decimal"  },
+                            { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "text", editor: { type: 'decimal' } },
+                            { display: "备注", name: "MEMO", minWidth: 100, type: "text" },
+                            { display: "主键", name: "IN_BACK_ID", minWidth: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "入库ID", name: "IN_ID", minWidth: 100, type: "text", hide: true },
+                            {
+                                display: "物料编码", name: "SP_CODE", width: 150, type: "text"
+                            },
+                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
+                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
+                            {
+                                display: "入库数量", name: "COUNT", width: 150, type: "text"
+                            },
+                            {
+                                display: "货位编码", name: "STOCK_CODE", width: 120, type: "text"
+                            },
+                            {
+                                display: "货位名称", name: "STOCK_NAME", width: 120, type: "text"
+                            },
+                            { display: "入库单价", name: "PRICE", width: 150, type: "text", },
+                            {
+                                display: "入库金额", name: "MONEY", type: "text"
+                            },
+                            { display: "税率", name: "TAX_RATE", width: 120, type: "text" },
+                            { display: "不含税单价", name: "NOTAX_PRICE", width: 100, type: "text" },
+                            { display: "不含税金额", name: "UNTAX_MONEY", width: 100, type: "text" },
+                            { display: "申请人", name: "APPLY_USER", width: 120, type: "text" },
+                            { display: "申请部门", name: "DEPT_NAME", width: 120, type: "text" },
+                            { display: "申请单号", name: "APPLY_NO", width: 120, type: "text" },
+                            { display: "用途", name: "USE_MEMO", width: 120, type: "text" },
+                            { display: "INDET_ID", name: "INDET_ID", width: 120, type: "text", hide: true },
+                            
                         ]
                     }
                 };
@@ -76,7 +93,7 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: {},
-                    url: 'Material/SpInstore/DetailList',
+                    url: 'Material/SpInBack/DetailList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',

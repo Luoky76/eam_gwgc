@@ -42,6 +42,12 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(result);
         }
 
+        public async Task<AjaxResult> DetailListAsync(GridRequest request)
+        {
+            var result = await _service.DetailListAsync(request);
+            return AjaxResult.Success(result);
+        }
+
         public async Task<AjaxResult> Save(SaveRequest<SP_IN_BACK> request, SaveRequest<SP_INBACK_DET> requestdet)
         {
             return await _service.Save(request, requestdet);

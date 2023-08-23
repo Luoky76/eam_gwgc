@@ -86,6 +86,43 @@ namespace EAM.Material.Services
             return list;
         }
 
+        public async Task<GridData> DetailListAsync(GridRequest request)
+        {
+            var result = await _dbContext.JoinQuery<SP_IN_BACK, SP_INBACK_DET>((a, b) => new object[]
+               {
+                   JoinType.LeftJoin,a.IN_BACK_ID.Equals(b.IN_BACK_ID)
+               })
+               .Where((a, b) => a.AUDITING == "1")
+               .Select((a, b) => new {
+                   a.AUDITING,
+                   a.BACK_DATE,
+                   a.BACK_CODE,
+                   a.EDIT_USER,
+                   a.SUM_MONEY,
+                   a.MEMO,
+                   a.IN_BACK_ID,
+                   a.IN_CODE,
+                   a.IN_ID,
+                   a.ORDER_CODE,
+                   a.DELIVERY_CODE,
+                   b.SP_CODE,
+                   b.SP_NAME,
+                   b.UNIT,
+                   b.SP_SIZE,
+                   b.PRODUCE,
+                   b.STORE_ID,
+                   b.COUNT,
+                   b.STOCK_NAME,
+                   b.PRICE,
+                   b.MONEY,
+                   b.APPLY_USER,
+                   b.APPLY_NO,
+                   b.INDET_ID
+               })
+               .GetGridData(request);
+            return result;
+        }
+
         public async Task<AjaxResult> Save(SaveRequest<SP_IN_BACK> request, SaveRequest<SP_INBACK_DET> requestdet)
         {
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性

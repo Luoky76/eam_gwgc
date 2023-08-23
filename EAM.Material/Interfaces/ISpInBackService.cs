@@ -18,6 +18,8 @@ namespace EAM.Material.Interfaces
 
         Task<GridData> DetListAsync(GridRequest request);
 
+        Task<GridData> DetailListAsync(GridRequest request);
+
         Task<AjaxResult> Save(SaveRequest<SP_IN_BACK> request, SaveRequest<SP_INBACK_DET> requestdet);
     }
 }
