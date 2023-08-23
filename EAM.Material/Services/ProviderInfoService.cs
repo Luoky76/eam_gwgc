@@ -125,7 +125,7 @@ namespace EAM.Material.Services
                 var sysdate = await _dbContext.GetSysdate();
                 string dateCode = sysdate.Value.ToString("yyyyMM");
                 string newCode = headCode + dateCode + "0000";
-                string model = await _dbContext.Query<PROVIDER>(a => a.PROVIDER_CODE.Contains(headCode))
+                string model = await _dbContext.Query<PROVIDER>(a => a.PROVIDER_CODE.Contains(headCode + dateCode))
                     .Select(a => Sql.Max(a.PROVIDER_CODE) ?? newCode).FirstOrDefaultAsync();
                 entity.PROVIDER_CODE = headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
             }

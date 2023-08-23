@@ -206,6 +206,18 @@
                             me.save();
                             break;
                         case "submit":
+                            var selecteds = me.grid.getSelectedRows();
+                            var isAudited = false;
+                            for (let row of selecteds) {
+                                if (row.AUDITING == "1") {
+                                    isAudited = true;
+                                    break;
+                                }
+                            }
+                            if (isAudited) {
+                                LG.tip("有数据已提交，无法重复提交！");
+                                break;
+                            }
                             $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
                                 if (confirm) {
                                     me.submit();
@@ -275,19 +287,19 @@
                 var me = this;
                 var rows = me.grid.getSelectedRows();
                 if (rows.length > 1) {
-                    LG.showError("不能选择多行");
+                    LG.tip("不能选择多行");
                     return;
                 } else if (rows.length == 0) {
-                    LG.showError("请选择一行");
+                    LG.tip("请选择一行");
                     return;
                 }
                 var selected = me.grid.getSelectedRow();
                 if (selected.AUDITING == "1") {
-                    LG.showError("该数据已提交,无法修改!");
+                    LG.tip("该数据已提交,无法修改!");
                     return;
                 }
                 if (selected.CREATE_USERID != window.session.UserID) {
-                    LG.showError("您不是该任务的制定人！");
+                    LG.tip("您不是该任务的制定人！");
                     return;
                 }
                 $.ligerDialog.open({
@@ -342,7 +354,7 @@
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
                         if (ori.AUDITING == "1") {
-                            LG.showError("有数据已提交，无法重复提交！");
+                            LG.tip("有数据已提交，无法重复提交！");
                             return;
                         }
                         upd.AUDITING = "1";
@@ -380,7 +392,7 @@
                     var selected = me.grid.getSelectedRows();
                     for (var i = 0; i < selected.length; i++) {
                         if (selected[i].AUDITING == "1") {
-                            LG.showError("选中数据有部分已提交,无法删除");
+                            LG.tip("选中数据有部分已提交,无法删除");
                             return;
                         }
                     }

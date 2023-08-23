@@ -224,19 +224,19 @@
                 var me = this;
                 var rows = me.grid.getSelectedRows();
                 if (rows.length > 1) {
-                    LG.showError("不能选择多行");
+                    LG.tip("不能选择多行");
                     return;
                 } else if (rows.length == 0) {
-                    LG.showError("请选择一行");
+                    LG.tip("请选择一行");
                     return;
                 }
                 var selected = me.grid.getSelectedRow();
                 if (selected.AUDITING == "1") {
-                    LG.showError("该数据已提交,无法修改!");
+                    LG.tip("该数据已提交,无法修改!");
                     return;
                 }
                 if (selected.EXAMINER_ID != window.session.UserID) {
-                    LG.showError("您不是该任务的评分人！");
+                    LG.tip("您不是该任务的评分人！");
                     return;
                 }
                 var sid = selected.ASSESS_ID;
@@ -264,13 +264,13 @@
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
                         if (selecteds[i].EXAMINER_ID != window.session.UserID) {
-                            LG.showError("您不是该任务的评分人！");
+                            LG.tip("您不是该任务的评分人！");
                             return;
                         }
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
                         if (ori.AUDITING == "1") {
-                            LG.showError("有数据已提交，无法重复提交！");
+                            LG.tip("有数据已提交，无法重复提交！");
                             return;
                         }
                         upd.AUDITING = "1";

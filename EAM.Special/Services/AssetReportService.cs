@@ -443,7 +443,7 @@ namespace EAM.Special.Services
             var sysdate = await _dbContext.GetSysdate();
             string dateCode = sysdate.Value.ToString("yyyyMM");
             string newCode = headCode + dateCode + "0000";
-            string model = await _dbContext.Query<ASSET_REPORT>(a => a.APPLY_CODE.Contains(headCode))
+            string model = await _dbContext.Query<ASSET_REPORT>(a => a.APPLY_CODE.Contains(headCode + dateCode))
                 .Select(a => Sql.Max(a.APPLY_CODE) ?? newCode).FirstOrDefaultAsync();
             return headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
         }
