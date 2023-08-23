@@ -33,7 +33,14 @@
                         labelwidth: 220,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 300, type: "select", editor: { type: 'select', data: me.auditing, disabled: true }, group: "基础信息" },
+                            {
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 300, type: "select", options: {
+                                    type: 'select',
+                                    data: me.auditing,
+                                    value: "0",
+                                    disabled: true
+                                }, group: "基础信息"
+                            },
                             { display: "服务单位", name: "ORG_NAME", dbname: "ORG_NAME", width: 300, type: "text" },
                             { display: "管理部门", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 300, type: "text" },
                             { display: "供应商编码", name: "PROVIDER_CODE", dbname: "PROVIDER_CODE", width: 300, type: "text", options: { disabled: true } },
@@ -64,7 +71,7 @@
                                 display: "一般纳税人", name: "AVERAGE_TAX", dbname: "AVERAGE_TAX", width: 300, type: "select", options: {
                                     type: "select",
                                     data: me.yesNo,
-                                    value: 1
+                                    value: "1"
                                 }
                             },
                             { display: "主供范围", name: "BIZ_SCOPE", dbname: "BIZ_SCOPE", width: 300, type: "text" },
@@ -132,8 +139,6 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    //设置记录状态的初值为未提交
-                    me.mainform.setData({ AUDITING: "0" });
                     inner();
                 }
                 else {
