@@ -41,7 +41,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", width: 120, type: "text", },
+                            { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", width: 140, type: "text", },
                             { display: "物料名称", name: "SP_NAME", dbname: "SP_NAME", width: 150, type: "text", },
                             { display: "规格型号", name: "SP_SIZE", dbname: "SP_SIZE", width: 150, type: "text", },
                             { display: "计量单位", name: "UNIT", dbname: "UNIT", width: 150, type: "text", },
@@ -103,6 +103,9 @@
                         case "add":
                             me.add();
                             break;
+                        case "delete":
+                            me.delete();
+                            break;
                         case "setNum":
                             me.openNumDialog();
                             break;
@@ -161,8 +164,11 @@
                         });
                     }
                 };
-
-
+                var data = [];
+                me.grid.getData().forEach((a) => {
+                    data.push({ SP_ID: a.SP_ID, STOCK_ID: a.STOCK_ID });
+                });
+                
                 $.ligerDialog.open({
                     width: 1080,
                     height: 600,
@@ -178,9 +184,53 @@
                     data: {
                         isCancel: "0",
                         mainReloadBtn: me.buttons[0],
-                        callback: callback
+                        callback: callback,
+                        filterData: data
                     }
                 });
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'LimitSave',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function (message, data) {
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
             },
             openNumDialog: function () {
                 var me = this;
@@ -195,8 +245,8 @@
                 if (!me.viewForm) {
                     me.viewForm = $("#view-form").ligerForm({
                         fields: [
-                            { display: "上限", name: "STORE_TOP", newline: true, width: 150, type: "text", },
-                            { display: "下限", name: "STORE_LOWER", newline: true, width: 150, type: "text", }
+                            { display: "上限", name: "STORE_TOP", newline: true, width: 150, type: "float", },
+                            { display: "下限", name: "STORE_LOWER", newline: true, width: 150, type: "float", }
                         ],
                         space: 3,
                         validate: true,
@@ -221,6 +271,17 @@
                     buttons: [{
                         text: "确定", type: "info", onClick: function () {
                             var jsonData = me.viewForm.getData();
+
+                            if (jsonData.STORE_TOP < 0 || jsonData.STORE_LOWER < 0) {
+                                LG.showError("上下限不能小于0");
+                                return
+                            }
+
+                            if (jsonData.STORE_TOP < jsonData.STORE_LOWER) {
+                                LG.showError("上限不能小于下限");
+                                return
+                            }
+
                             $.ajax({
                                 url: me.rootPath + 'SetTopLower',
                                 dataType: 'json',

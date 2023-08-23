@@ -31,6 +31,7 @@
             scanType: [],
             stockData: [],
             typeData: [],
+            typeOldData: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -92,6 +93,16 @@
                                             liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);
                                         }
                                     },
+                                },
+                                render: function (rowdata, index, value) {
+                                    if (value != "") {
+                                        var type = me.typeData.find(t => t.ID == value);
+                                        if (!type) {
+                                            type = me.typeOldData.find(t => t.ID == value);
+                                        }
+                                        value = type ? type.TEXT : value;
+                                    }
+                                    return value;
                                 }
                             },
                             { display: "盘点人", name: "SCAN_USER", width: 100, type: "text", },
@@ -122,7 +133,8 @@
                         me.scanData = data.BCCode;
                         me.scanType = data.ScanType;
                         me.stockData = data.SpHouseName;
-                        me.typeData = data.BaseSpType;
+                        me.typeOldData = data.BaseSpType;
+                        me.typeData = data.BaseSpType.filter(x => x.FLAG == "0");
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -230,6 +242,11 @@
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
+                        var selected = me.grid.getSelectedRows();
+                        if (selected[0].AUDITING != "0") {
+                            LG.tip('已提交!');
+                            return;
+                        }
                         LG.showSuccess('无修改');
                         return;
                     }
@@ -358,6 +375,12 @@
                     return
                 }
 
+                var id = me.grid.getSelectedRows()[0].SCAN_ID;
+                if (!id) {
+                    LG.showError("新增后请先保存,再填写明细");
+                    return
+                }
+
                 $.ligerDialog.open({
                     width: 1100,
                     height: 750,
@@ -371,7 +394,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Cid": me.grid.getSelectedRows()[0].SCAN_ID, "view": me.grid.getSelectedRows()[0].AUDITING }
+                    data: { "Cid": id, "view": me.grid.getSelectedRows()[0].AUDITING }
                 });
             },
             bindGridEvent: function () {

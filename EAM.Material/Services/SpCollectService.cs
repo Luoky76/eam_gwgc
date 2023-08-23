@@ -290,6 +290,7 @@ namespace EAM.Material.Services
                         req.PRICE = det.TAX_PRICE;
                         req.MONEY = det.COLLECT_MONEY;
                         req.ORDER_ID = temp.ORDER_ID;
+                        req.IS_STOP = "0";
                         importDetail.Add(req);
                         await Task.CompletedTask;
                     }

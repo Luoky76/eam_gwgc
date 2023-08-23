@@ -280,8 +280,13 @@ namespace EAM.Material.Services
 
         private async Task BeforeAddDet(SPARE_APPLY_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
+            if (_dbContext.Query<SPARE_APPLY_DET>().Where(t => t.SP_CODE == entity.SP_CODE).Count() > 0)
+            {
+                throw new MessageException("物资编码已存在!"); 
+            }
 
+            DateTime? dt = await _dbContext.GetSysdate();
+    
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
@@ -294,11 +299,14 @@ namespace EAM.Material.Services
 
         private async Task BeforeUpdateDet(SPARE_APPLY_DET entity)
         {
+            if (_dbContext.Query<SPARE_APPLY_DET>().Where(t => t.SP_CODE == entity.SP_CODE && t.SP_ID != entity.SP_ID).Count() > 0)
+            {
+                throw new MessageException("物资编码已存在!");
+            }
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFY_DATE = dt;
-
         }
         #endregion
 

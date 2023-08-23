@@ -746,8 +746,8 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_SPTYPE>()
-                .Where(predicate)
-                .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
+            .Where(predicate)
+                .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE, FLAG = c.IS_CANCEL })
                 .Distinct()
                 .ToListAsync();
         }

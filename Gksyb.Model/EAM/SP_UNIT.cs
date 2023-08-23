@@ -83,6 +83,9 @@ namespace Gksyb.Model
         [Description("修改时间")]
         public DateTime? MODIFY_DATE { get; set; }
 
+        [Description("修改人")]
+        public string MODIFY_USER { get; set; }
+
     }
 
 }

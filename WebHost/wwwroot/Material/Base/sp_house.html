@@ -38,6 +38,7 @@
             HouseProperty: [],
             HouseType: [],
             SpHouseName: [],
+            parentNo: "",
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             setConfig: function () {
                 var me = this;
@@ -45,13 +46,13 @@
                     search: {
                         fields: [
                             {
-                                display: "仓库货位编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", newline: false, type: "text",
+                                display: "仓库货位编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", newline: false, type: "text", 
                             },
                             {
                                 display: "仓库货位名称", name: "_search_HOUSE_NAME", dbname: "HOUSE_NAME", newline: false, width: 200, type: "text", 
                             },
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
-                            { display: "上一节点id", name: "_search_PARENT_HOUSE_CODE", dbname: "PARENT_HOUSE_CODE", op: "equal", type: "hidden", options: {} }
+                           
                         ]
                     },
                     grid: {
@@ -378,22 +379,24 @@
                         me.currentNode = node;
                         var where = {};
                         if (nodeData) {
-                            var parentNo = nodeData.HOUSE_CODE;
-                            $("#_search_PARENT_HOUSE_CODE").val((parentNo == "ROOT" ? "" : parentNo));
+                            me.parentNo = nodeData.HOUSE_CODE;
+
                             where = {
                                 rules: [],
                                 groups: [{
                                     rules: [], op: "or"
                                 }], op: "and"
                             };
-                            if (parentNo === rootValue) {
-                                parentNo = "";
+                            
+                            if (me.parentNo === rootValue) {
+                                me.parentNo = "";
                             } else {
-                                where.groups[0].rules.push({ field: 'PARENT_HOUSE_CODE', value: parentNo, op: 'startwith' });
+                                where.groups[0].rules.push({ field: 'PARENT_HOUSE_CODE', value: me.parentNo, op: 'startwith' });
+                                where.groups[0].rules.push({ field: "HOUSE_CODE", op: "equal", value: me.parentNo });
                             }
 
                             me.grid.set('parms', { "where": JSON2.stringify(where) });
-                            me.currentMenuParentNo = parentNo;
+                            me.currentMenuParentNo = me.parentNo;
                             me.reload();
                         }
                     }
@@ -411,6 +414,17 @@
                         text: '查询',
                         width: 60,
                         click: function () {
+                            if (me.parentNo != "" && me.parentNo != "ROOT") {
+                                var where = {
+                                    op: 'or',
+                                    rules: []
+                                };
+                                where.rules.push({ field: 'PARENT_HOUSE_CODE', value: me.parentNo, op: 'startwith' });
+                                where.rules.push({ field: 'HOUSE_CODE', value: me.parentNo, op: 'equal' });
+                                me.grid.set('parms', { "where": JSON2.stringify(where) });
+                                me.grid.options.NoFirstSearch = false;
+                            }
+                         
                             LG.commonSearch($formsearch, me.grid);
                         }
                     }],

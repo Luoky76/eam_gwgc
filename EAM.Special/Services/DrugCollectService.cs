@@ -155,7 +155,7 @@ namespace EAM.Special.Services
                 var sysdate = await _dbContext.GetSysdate();
                 string dateCode = sysdate.Value.ToString("yyyyMM");
                 string newCode = headCode + dateCode + "0000";
-                string model = await _dbContext.Query<DRUG_COLLECT>(a => a.COLLECT_CODE.Contains(headCode))
+                string model = await _dbContext.Query<DRUG_COLLECT>(a => a.COLLECT_CODE.Contains(headCode + dateCode))
                     .Select(a => Sql.Max(a.COLLECT_CODE) ?? newCode).FirstOrDefaultAsync();
                 entity.COLLECT_CODE = headCode + (long.Parse(model.Substring(headCode.Length)) + 1).ToString();
             }

@@ -26,13 +26,15 @@
                 me.config = {
                     search: {
                         fields: [
+                            { display: "入库单号", name: "_search_IN_CODE", dbname: "IN_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text",options:{} },
                             { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text",options:{} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "订单号", name: "IN_CODE", minWidth: 100, type: "text", },
+                            { display: "入库单号", name: "IN_CODE", minWidth: 100, type: "text", },
                             { display: "订单号", name: "ORDER_CODE", minWidth: 100, type: "text", },
                             { display: "送货单号", name: "DELIVERY_CODE", minWidth: 100, type: "text", },
                             { display: "批次号", name: "STORE_CODE", minWidth: 100, type: "text", },
