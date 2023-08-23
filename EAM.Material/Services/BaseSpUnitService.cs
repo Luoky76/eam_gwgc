@@ -67,6 +67,7 @@ namespace EAM.Material.Services
             entity.CREATE_USERID = _userSession.UserID;
             entity.CREATE_DATE = dt;
             entity.MODIFY_USERID = _userSession.UserID;
+            entity.MODIFY_USER = _userSession.RealName;
             entity.MODIFY_DATE = dt;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
@@ -79,7 +80,7 @@ namespace EAM.Material.Services
 
             entity.MODIFY_USERID = _userSession.UserID;
             entity.MODIFY_DATE = dt;
-
+            entity.MODIFY_USER = _userSession.RealName;
         }
     }
 }

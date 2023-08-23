@@ -356,6 +356,7 @@ namespace EAM.Material.Services
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
+            entity.IS_STOP = "0";
         }
 
         private async Task DetBeforeUpdate(SP_ORDER_DETAIL entity)

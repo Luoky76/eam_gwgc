@@ -229,7 +229,7 @@ namespace EAM.Material.Services
                         req.CREATEDATE = dt;
                         req.MODIFY_USERID = _userSession.UserID.ToString();
                         req.MODIFYDATE = dt;
-
+                        req.IS_STOP = "0";
                         req.ORDER_ID = temp.ORDER_ID;
                         importDetail.Add(req);
                         await Task.CompletedTask;
