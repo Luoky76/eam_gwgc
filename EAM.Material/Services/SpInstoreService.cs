@@ -232,7 +232,7 @@ namespace EAM.Material.Services
 
                 foreach (var iten in det)
                 {
-                    SP_STORE _STORE = new();
+                    SP_STORE _STORE = new();//库存表
 
                     _STORE.SRC_TYPE = "2";
                     _STORE.IS_BACK = "0";
@@ -259,7 +259,26 @@ namespace EAM.Material.Services
                     var index = model.SubStr(8, 4).CastTo<int>() + 1;
                     _STORE.STORE_CODE = type + index.ToString("D4");
 
+                    STORE_WATER _WATER = new();//库存流水表
+
+                    _WATER.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
+                    _WATER.SRC_TYPE = "2";
+                    _WATER.IS_BACK = "0";
+                    _WATER.STORE_ID = _STORE.STORE_ID;
+                    _WATER.WATER_DATE = DateTime.Now;
+                    _WATER.SRC_CODE = request.IN_CODE;
+                    _WATER.SP_CODE = iten.SP_CODE;
+                    _WATER.SP_NAME = iten.SP_NAME;
+                    _WATER.SP_SIZE = iten.SP_SIZE;
+                    _WATER.IN_NUM = iten.COUNT;
+                    _WATER.IN_PRICE = iten.PRICE;
+                    _WATER.IN_MONEY = iten.MONEY;
+                    _WATER.CUR_NUM = iten.COUNT;
+                    _WATER.CUR_MONEY = iten.MONEY;
+                    
+
                     await _dbContext.InsertAsync(_STORE);
+                    await _dbContext.InsertAsync(_WATER);
                     await _dbContext.UpdateAsync<SP_INSTORE_DET>(x => iten.INDET_ID.Contains(x.INDET_ID),
                     x => new SP_INSTORE_DET
                     {

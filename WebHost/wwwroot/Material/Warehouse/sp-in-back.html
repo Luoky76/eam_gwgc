@@ -139,6 +139,13 @@
                         case "save":
                             me.save();
                             break;
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -201,6 +208,7 @@
                     SP_SIZE: data[0].SP_SIZE,
                     PRODUCE: data[0].PRODUCE,
                     COUNT: data[0].COUNT,
+                    STORE_ID : data[0].STORE_ID,
                     DELIVERY_CODE: data[0].DELIVERY_CODE,
                     STOCK_NAME: data[0].STOCK_NAME,
                     PRICE: data[0].PRICE,
@@ -280,6 +288,44 @@
                     }
                 }
             },
+            sumbit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpInBack/Save',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
             save: function () { //保存
                 var me = this;
                 if (me.grid.endEdit() != false) {
@@ -291,9 +337,9 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/SpInBack/Comboxdata',
+                        url: 'Material/SpInBack/Save',
                         loading: '正在保存中...',
-                        data: changeRow,
+                        data: { request: changeRow, requestdet: null },
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
@@ -314,6 +360,12 @@
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
+                    for (var i = 0; i < selected.length; i++) {
+                        if (selected[i].AUDITING == "1") {
+                            LG.showError("选中数据有部分已提交,无法删除");
+                            return;
+                        }
+                    }
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {

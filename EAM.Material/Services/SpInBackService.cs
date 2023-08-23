@@ -66,6 +66,7 @@ namespace EAM.Material.Services
                    b.UNIT,
                    b.SP_SIZE,
                    b.PRODUCE,
+                   b.STORE_ID,
                    b.COUNT,
                    b.DELIVERY_CODE,
                    b.STOCK_NAME,
@@ -129,6 +130,7 @@ namespace EAM.Material.Services
                              c.STOCK_NAME,
                              c.PRICE,
                              c.MONEY,
+                             c.STORE_ID,
                              c.APPLY_USER,
                              c.APPLY_NO,
                              c.MEMO,
@@ -177,52 +179,22 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeUpdate(SP_IN_BACK request)
         {
-            if (request.AUDITING == "7")
-            {
-                await _dbContext.UpdateAsync<SP_INSTORE_DET>(x => request.IN_ID.Contains(x.IN_ID),
-                    x => new SP_INSTORE_DET
-                    {
-                        IS_STOP = "1",
-                    });
-            }
-            else if (request.AUDITING == "1")
+            if (request.AUDITING == "1")
             {
                 var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID).ToListAsync();
 
                 foreach (var iten in det)
                 {
-                    SP_STORE _STORE = new();
-
-                    _STORE.SRC_TYPE = "2";
-                    _STORE.IS_BACK = "0";
-                    _STORE.SP_CODE = iten.SP_CODE;
-                    _STORE.SP_NAME = iten.SP_NAME;
-                    _STORE.SP_SIZE = iten.SP_SIZE;
-                    _STORE.STOCK_NAME = iten.STOCK_NAME;
-                    _STORE.UNIT = iten.UNIT;
-                    _STORE.NUM = iten.COUNT;
-                    _STORE.PRICE = iten.PRICE;
-                    _STORE.MONEY = iten.MONEY;
-                    _STORE.NOTAX_PRICE = iten.NOTAX_PRICE;
-                    _STORE.NOTAX_MONEY = iten.UNTAX_MONEY;
-                    _STORE.PROVIDER_NAME = request.PROVIDER_NAME;
-                    _STORE.APPLY_NO = iten.APPLY_NO;
-                    _STORE.DELIVERY_CODE = iten.DELIVERY_CODE;
-                    _STORE.INDET_ID = iten.INDET_ID;
-                    _STORE.STORE_ID = GuidHelper.NewSnowflakeId().ToString();
-                    _STORE.IN_CODE = request.IN_CODE;
-
-                    string type = "PC" + DateTime.Now.ToString("yyyyMM");
-                    string def = type + "0000";
-                    var model = await _dbContext.Query<SP_STORE>(x => x.STORE_CODE.Contains(type)).Select(x => Sql.Max(x.STORE_CODE) ?? def).FirstOrDefaultAsync();
-                    var index = model.SubStr(8, 4).CastTo<int>() + 1;
-                    _STORE.STORE_CODE = type + index.ToString("D4");
-
-                    await _dbContext.InsertAsync(_STORE);
-                    await _dbContext.UpdateAsync<SP_INSTORE_DET>(x => iten.INDET_ID.Contains(x.INDET_ID),
-                    x => new SP_INSTORE_DET
+                    await _dbContext.UpdateAsync<SP_STORE>(x => iten.STORE_ID.Contains(x.STORE_ID),
+                    x => new SP_STORE
                     {
-                        STORE_ID = _STORE.STORE_ID,
+                        IS_BACK = "1",
+                    });
+
+                    await _dbContext.UpdateAsync<STORE_WATER>(x => iten.STORE_ID.Contains(x.STORE_ID),
+                    x => new STORE_WATER
+                    {
+                        IS_BACK = "1",
                     });
                 }
             }
@@ -236,6 +208,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeDelete(SP_IN_BACK request)
         {
+            await _dbContext.DeleteAsync<SP_INBACK_DET>(x => x.IN_BACK_ID == request.IN_BACK_ID);
+
             await Task.CompletedTask;
         }
 
