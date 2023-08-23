@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>物资盘点结果</title>
+    <title>盘盈盘亏记录</title>
     <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
 </head>
 
@@ -20,7 +20,7 @@
                 <div class="navbar">
                     <div class="navbar-bg"></div>
                     <div class="navbar-inner sliding">
-                        <div class="title">物资盘点结果</div>
+                        <div class="title">盘盈盘亏记录</div>
 
                         <div class="subnavbar">
                             <form class="searchbar" id="searchbar-autocomplete">
@@ -51,7 +51,6 @@
                         <button class="button" id="refresh">
                             刷新
                         </button>
-                        <button class="button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
                     </div>
                 </div>
             </div>
@@ -100,7 +99,7 @@
                 var me = this;
                 var where = JSON.stringify({
                     op: 'and',
-                    rules: [{ field: 'AUDITING', op: 'equal', value: "0" }]
+                    rules: [{ field: 'AUDITING', op: 'equal', value: "1" }]
                 });
                 app.ajax({
                     async: false,
@@ -187,69 +186,6 @@
                     me.getData();
                     me.initSearchbar();
                 });
-
-                //提交
-                $("#sumbit").click(function () {
-                    var checkDom = $("#sp_scan_list input:checked");
-                    var checkedIDList = [];
-                    
-                    if (checkDom.length == 0) {
-                        app.dialog.error("请勾选后在点提交", function () { });
-                        return false;
-                    }
-
-                    checkDom.forEach(x => {
-                        checkedIDList.push(x.value);
-                    });
-
-                    if (checkedIDList.length <= 0) {
-                        app.dialog.error("请勾选后在点提交", function () { });
-                        return false;
-                    }
-
-                    if (checkedIDList.length > 1) {
-                        app.dialog.error("仅选择一行", function () { });
-                        return false;
-                    }
-
-                    var flag = true;
-                    checkedIDList.forEach((a) => {
-                        var ming = me.list.find((v) => v.SCAN_DET_ID == a.SCAN_DET_ID);
-                        if (ming.SCAN_NUM == null || data.SCAN_NUM == '') {
-                            app.dialog.error("盘点数量未确认，不能提交");
-                            flag = false;
-                            return false;
-                        }
-                        if (ming.SCAN_RESULT == null || data.SCAN_RESULT == '') {
-                            app.dialog.error("盘点结果未确认，不能提交");
-                            flag = false;
-                            return false;
-                        }
-                    });
-
-                    if (flag) {
-                        app.dialog.confirm('确定要提交？', '提交', function () {
-
-                            app.ajax({
-                                async: false,
-                                type: 'post',
-                                url: 'Material/SpScan/DetSubmit',
-                                data: {
-                                    "sids": checkedIDList
-                                },
-                                success: function (data) {
-                                    app.dialog.alert("提交成功", function () {
-                                        busResult.getData();
-                                    });
-                                },
-                                error: function (message, data) {
-                                    app.dialog.error(message, function () { });
-                                    return;
-                                }
-                            });
-                        })
-                    }
-                });
             }
 
         };
@@ -268,9 +204,6 @@
             { display: "盘点单号", name: "SCAN_CODE", readOnly: true, },
             { display: "盘点类型", name: "SCAN_TYPE", Option: busResult.scanType, readOnly: true, },
             { display: "来源类型", name: "SRC_TYPE", Option: busResult.storeSou, readOnly: true, },
-            { display: "库存数量", name: "STORE_NUM", readOnly: true, },
-            { display: "盘点数量", name: "SCAN_NUM", validate: { required: true }, },
-            { display: "盘点结果", name: "SCAN_RESULT", validate: { required: true }, Option: busResult.scanResult, Searched: true },
             { display: "物料编码", name: "SP_CODE", readOnly: true, },
             { display: "物料名称", name: "SP_NAME", readOnly: true, },
             { display: "规格型号", name: "SP_SIZE", readOnly: true, },
@@ -279,6 +212,9 @@
             { display: "品牌、厂家", name: "PRODUCE", readOnly: true, },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
             { display: "批次号", name: "STORE_CODE", readOnly: true, },
+            { display: "库存数量", name: "STORE_NUM", readOnly: true, },
+            { display: "盘点数量", name: "SCAN_NUM", validate: { required: true }, },
+            { display: "盘点结果", name: "SCAN_RESULT", validate: { required: true }, Option: busResult.scanResult, Searched: true },
             { display: "盘点人", name: "SCAN_USER", readOnly: true, },
             { display: "盘点部门", name: "DEPT_NAME", readOnly: true, },
             { display: "二级单位", name: "SEC_DEPT", readOnly: true, },
@@ -307,12 +243,6 @@
                                                                                 </div>
                                                                               </div>
                                                                             </div>
-                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
-                                                                                <div class="toolbar-inner">
-                                                                                    <button class="col button button-large button-fill" id="saveDetail" >保存</button>
-                                                                                    <button class="col button button-large button-fill" id="sumbitDetail" style="background-color: orange">提交</button>
-                                                                                </div>
-                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>`,
@@ -324,72 +254,6 @@
                         busResult.getData();
                     });
 
-                    $("#saveDetail").off('click').click(function () {
-
-                        let data = app.form.convertToData("#detail_bg_detail");
-                        data.SCAN_DET_ID = me.params.SCAN_DET_ID;
-
-                        if (data.SCAN_NUM == null || data.SCAN_NUM == '') {
-                            app.dialog.error("盘点数量不可为空");
-                            return;
-                        }
-
-                        if (data.SCAN_RESULT == null || data.SCAN_RESULT == '') {
-                            app.dialog.error("盘点结果不可为空");
-                            return;
-                        }
-                        
-                        var AddRow = new Object();
-
-                        if (data.SCAN_DET_ID) {
-                            AddRow["Updated"] = [data];
-                            AddRow["Original"] = [formDataDetail];
-                        }
-                        else {
-                            AddRow["Added"] = [data]
-                        }
-                        
-                        app.ajax({
-                            jsToken: true,
-                            type: 'post',
-                            data: {
-                                "request": AddRow
-                            },
-                            url: 'Material/SpScan/DetailSave',
-                            success: function () {
-                                busResult.getData();
-                            }
-                        });
-                    });
-
-                    $("#sumbitDetail").off('click').click(function () {
-
-                        let data = app.form.convertToData("#detail_bg_detail");
-
-                        if (data.SCAN_NUM == null || data.SCAN_NUM == '') {
-                            app.dialog.error("盘点数量不可为空");
-                            return;
-                        }
-
-                        if (data.SCAN_RESULT == null || data.SCAN_RESULT == '') {
-                            app.dialog.error("盘点结果不可为空");
-                            return;
-                        }
-                        var checkedIDList = [];
-                        checkedIDList.push(me.params.SCAN_DET_ID);
-                        app.ajax({
-                            type: 'post',
-                            data: {
-                                "sids": checkedIDList
-                            },
-                            url: 'Material/SpScan/DetSubmit',
-                            success: function () {
-                                detail_popup.close();
-                                busResult.getData();
-                            }
-                        });
-                    });
-               
                     // 清单明细
                     if (me.params.SCAN_DET_ID) {
                         var where = JSON.stringify({
