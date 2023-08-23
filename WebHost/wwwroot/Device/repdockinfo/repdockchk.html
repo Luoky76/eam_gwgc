@@ -30,7 +30,7 @@
                     search: {
                         fields: [
                             { display: "验收单状态", name: "_search_AUDITING_CHECK", dbname: "AUDITING_CHECK", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditing } },
-                            { display: "是否有遗留问题", name: "_search_IS_LEAVE_CONFIR", dbname: "IS_LEAVE_CONFIR", newline: false, upper: true, type: "select", options: { type: 'select', data: me.isleave } },
+                            { display: "是否有遗留问题", name: "_search_IS_LEAVE", dbname: "IS_LEAVE", newline: false, upper: true, type: "select", options: { type: 'select', data: me.isleave } },
                         ]
                     },
                     grid: {
@@ -39,8 +39,8 @@
                             { display: "维修项目", name: "REP_ITEM", minWidth: 200, type: "text", },
                             { display: "承修方", name: "PROVIDER_NAME", minWidth: 100, type: "text", },
                             { display: "维修费用(元)", name: "REP_MONEY", minWidth: 100, type: "float", },
-                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date" },
                             { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date" },
+                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date" },
                             { display: "是否有遗留问题", name: "IS_LEAVE", minWidth: 100, type: "select", editor: { type: 'select', data: me.isleave } },
                             { display: "合同金额(元)", name: "PACT_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
                             { display: "签订日期", name: "PACT_DATE", minWidth: 100, type: "date" },
@@ -48,7 +48,7 @@
                             { display: "验收时间", name: "CHECK_DATE", minWidth: 100, type: "date" },
                             { display: "验收情况", name: "CHECK_DESC", minWidth: 100, type: "text" },
                             { display: "实施单单号", name: "EXE_CODE", minWidth: 100, type: "text", },
-                            { display: "备注", name: "CHECK_MEMO", minWidth: 300, type: "text", },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", },
                             { display: "主键", name: "CHECK_ID", width: 100, type: "text", hide: true },
                         ]
                     }
