@@ -70,7 +70,7 @@
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
-                                        me.start = value
+                                        me.updateWorkHours(value, $('#RUN_END').val());
                                     },
                                 },
                             },
@@ -79,26 +79,7 @@
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
-                                        if (me.start == null) {
-                                            $('#RUN_END').val("");
-                                            LG.showError("请先选择开始时间,后选结束时间！");
-                                        }
-                                        var date1 = new Date(me.start);
-                                        var date2 = new Date(value);
-                                        if (me.start > value) {
-                                            $('#RUN_END').val("");
-                                            $('#RUN_START').val("");
-                                            LG.showError("停机结束时间应在停机开始时间之后！请重新选择！");
-                                        }
-                                        if (date2.getTime() > Date.now()) {
-                                            $('#RUN_END').val("");
-                                            LG.showError("停机结束时间不能大于当前时间！");
-                                        }
-                                        // 计算时间差值（单位为毫秒）
-                                        var timeDiff = date2.getTime() - date1.getTime();
-                                        // 将时间差值转换为小时数
-                                        var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
-                                        $('#STOP_HOURS').val(minutesDiff);
+                                        me.updateWorkHours($('#RUN_START').val(), value);
                                     },
                                 }
                             },
@@ -140,6 +121,35 @@
             },
             mainform: null,
             buttons: null,
+            //时间判断
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (!startDate || !completeDate) {
+                    $('#STOP_HOURS').val("");
+                    return;
+                }
+
+                if (start >= complete) {
+                    $('#RUN_START').val("");
+                    $('#RUN_END').val("");
+                    $('#STOP_HOURS').val("");
+                    LG.showError("停机开始时间不能大于停机结束时间或者当前时间！请重新选择！");
+                    return;
+                }
+
+                var now = new Date();
+                if (complete > now) {
+                    $('#RUN_END').val("");
+                    LG.showError("停机结束时间不能大于当前时间！");
+                    return;
+                }
+
+                var timeDiff = complete - start;
+                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                $('#STOP_HOURS').val(minutesDiff);
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({

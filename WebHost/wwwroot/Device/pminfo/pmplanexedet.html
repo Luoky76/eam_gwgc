@@ -51,6 +51,10 @@
     </div>
     <script type="text/javascript">
         'use strict';
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
@@ -115,11 +119,24 @@
                             { display: "遗留问题描述", name: "LEG_DESC", newline: true, upper: true, width: 775, type: "textarea", options: {} },
                             { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
 
-
-
-                            { display: "保养开始时间", name: "BEGIN_DATE", newline: false, upper: true, type: "date", options: {}, validate: { required: true }, group: "实施信息" },
-                            { display: "保养结束时间", name: "END_DATE", newline: false, upper: true, type: "date", options: {}, validate: { required: true }, },
-
+                            {
+                                display: "保养开始时间", name: "BEGIN_DATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours(value, $('#END_DATE').val());
+                                    },
+                                }, group: "实施信息"
+                            },
+                            {
+                                display: "保养结束时间", name: "END_DATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours($('#BEGIN_DATE').val(), value);
+                                    },
+                                }
+                            },
 
                             //隐藏
                             { display: "主键", name: "EXE_ID", newline: false, upper: true, type: "hidden", options: {} },]
@@ -128,23 +145,15 @@
                         columns: [
                             { display: "完成情况", name: "COMPLETE", newline: false, upper: true, type: "select", minWidth: 100, validate: { required: true }, editor: { type: 'select', data: me.complete } },
                             {
-                                display: "附件材料", name: "attach_id", dbname: "attach_id", width: 90, type: "text",
+                                display: "附件材料", name: "ATTACH_EXE", dbname: "ATTACH_EXE", width: 90, type: "text",
                                 render: function (rowdata, index, value) {
-                                    if (value != "0") {
-                                        return '<a href="javascript:void(0)" onclick="business.f_rowAttachManage(\'' + rowdata.MAINKEY + '\')"><span class="badge">' + value + '</span></i></a>';
-                                    } else {
-                                        return '-';
-                                    }
+                                    return '<a href="javascript:void(0)" onclick="business.f_exeAttachManage(\'' + rowdata.DONEITEM_ID + '\')"><span class="badge">' + value + '</span></i></a>';
                                 }
                             },
                             {
-                                display: "附件材料", name: "attach_id", dbname: "attach_id", width: 90, type: "text",
+                                display: "保养计划附件", name: "ATTACH_PLAN", dbname: "ATTACH_PLAN", width: 90, type: "text",
                                 render: function (rowdata, index, value) {
-                                    if (value != "0") {
-                                        return '<a href="javascript:void(0)" onclick="business.f_rowAttachManage(\'' + rowdata.MAINKEY + '\')"><span class="badge">' + value + '</span></i></a>';
-                                    } else {
-                                        return '-';
-                                    }
+                                    return '<a href="javascript:void(0)" onclick="business.f_planAttachManage(\'' + rowdata.DONEITEM_ID + '\')"><span class="badge">' + value + '</span></i></a>';
                                 }
                             },
                             { display: "标准编号", name: "STD_CODE", minWidth: 100, type: "text", },
@@ -184,6 +193,7 @@
                             { display: "外键", name: "EXE_ID", minWidth: 100, hide: true },
                             { display: "备注", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "外键", name: "DONEITEM_ID", width: 100, hide: true },
+                            { display: "外键", name: "STORE_ID", width: 100, hide: true },
 
 
                         ]
@@ -288,6 +298,69 @@
             },
             mainform: null,
             buttons: null,
+            //时间判断
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (start >= complete) {
+                    $('#BEGIN_DATE').val("");
+                    $('#END_DATE').val("");
+                    LG.showError("保养开始时间不能大于保养结束时间或者当前时间！请重新选择！");
+                    return;
+                }
+
+                var now = new Date();
+                if (complete > now) {
+                    $('#END_DATE').val("");
+                    LG.showError("保养结束时间不能大于当前时间！");
+                    return;
+                }
+
+                var timeDiff = complete - start;
+                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                $('#EXE_HOUR').val(minutesDiff);
+            },
+            //实施附件管理
+            f_exeAttachManage: function (dataid) {
+                var me = this;
+                isView = me.isView;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "PM_PLAN_EXE"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reloadDet();
+                    }
+                });
+            },
+            //保养计划附件管理
+            f_planAttachManage: function (dataid) {
+                var me = this;
+                isView = true; 
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "PM_PLAN_DONEITEM"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reloadDet();
+                    }
+                });
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -388,7 +461,8 @@
                 function inner(callback) {
                     var data = me.mainform.getData();
                     var updateFields = LG.getFormCombChanges(data, me.orginData, true);
-                    if (updateFields) {
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid.updated.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);
@@ -714,13 +788,13 @@
                     var gridData = me.grid2.getData();
                     var gridKeys = [];
                     for (var item of gridData) {
-                        gridKeys.push(item.SP_CODE);
+                        gridKeys.push(item.STORE_ID);
                     }
                     var dataOptions = {
                         values: gridKeys,
                         options: {
                             url: 'Device/PmInfo/ImportSpList',
-                            rowKey: "SP_CODE",
+                            rowKey: "STORE_ID",
                             columns: [
                                 { display: "来源类型", name: "SRC_TYPE", minWidth: 100, type: "select", format: { data: me.storeSou } },
                                 { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
@@ -743,7 +817,7 @@
                         callback: function (values, rows) {
                             var currentSet = new Set(gridKeys);
                             for (let item of rows) {
-                                if (!currentSet.has(item.SP_CODE)) {
+                                if (!currentSet.has(item.STORE_ID)) {
                                     me.addGrid({
                                         SP_SOURCE: item.SRC_TYPE,
                                         SP_CODE: item.SP_CODE,
@@ -753,7 +827,9 @@
                                         STOCK_NAME: item.STOCK_NAME,
                                         STORE_NUM: item.NUM,
                                         UNIT: item.UNIT,
+                                        STORE_ID: item.STORE_ID,
                                         TAX_MONEY: item.TAX_MONEY,
+                                        FACT_NUM: "1",
                                         NOTAX_MONEY: item.NOTAX_MONEY,
                                     });
                                 }
@@ -794,6 +870,7 @@
             //保存
             savesp: function () { //保存
                 var me = this;
+                var flag = true;
                 if (me.grid2.endEdit() != false) {
                     if (!me.grid2.isDataChanged) {
                         LG.showSuccess('无修改');
@@ -801,20 +878,36 @@
                     }
                     if (!me.grid2.validChangeRows()) return false;
                     var changeRow = me.grid2.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/PmInfo/ManagePmSp',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid2.isDataChanged = false;
-                            me.reloadSp();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+
+                    for (var i = 0; i < changeRow.updated.length; i++) {
+                        var row = changeRow.updated[i];
+                        if (row.STORE_NUM < row.FACT_NUM) {
+                            flag = false;
+                            LG.showSuccess('实际消耗数量不可大于库存数量！');
+                            break;
                         }
-                    });
+                        if (row.FACT_NUM < 0) {
+                            flag = false;
+                            LG.showSuccess('实际消耗数量不可为负数！');
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/PmInfo/ManagePmSp',
+                            loading: '正在保存中...',
+                            data: changeRow,
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid2.isDataChanged = false;
+                                me.reloadSp();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
                 }
             },
             //刷新

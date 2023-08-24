@@ -30,6 +30,10 @@
     </div>
     <script type="text/javascript">
         'use strict';
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
@@ -126,13 +130,9 @@
                     grid: {
                         columns: [
                             {
-                                display: "附件材料", name: "attach_id", dbname: "attach_id", width: 90, type: "text",
+                                display: "附件材料", name: "ATTACH_PLAN", dbname: "ATTACH_PLAN", width: 90, type: "text",
                                 render: function (rowdata, index, value) {
-                                    if (value != "0") {
-                                        return '<a href="javascript:void(0)" onclick="business.f_rowAttachManage(\'' + rowdata.MAINKEY + '\')"><span class="badge">' + value + '</span></i></a>';
-                                    } else {
-                                        return '-';
-                                    }
+                                    return '<a href="javascript:void(0)" onclick="business.f_planAttachManage(\'' + rowdata.DONEITEM_ID + '\')"><span class="badge">' + value + '</span></i></a>';
                                 }
                             },
                             { display: "标准编号", name: "STD_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -169,7 +169,7 @@
                         me.bySource = data.bySource;
                         me.workState = data.workState;
                         me.maintCycle = data.maintCycle;
-                        
+
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -188,6 +188,28 @@
                     }
                 });
             },
+
+            //附件管理
+            f_planAttachManage: function (dataid) {
+                var me = this;
+                isView = me.isView;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "PM_PLAN_DONEITEM"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reloadDet();
+                    }
+                });
+            },
+
             loadData: function () {
                 var me = this;
                 function inner() {
@@ -197,7 +219,7 @@
                     me.orginData = data;
                 }
                 if (me.isAddNew) {
-                    me.mainform.setData({ AUDITING: "0", PM_TYPE: "20", SOURCE: "3", attach_id: "-" });
+                    me.mainform.setData({ AUDITING: "0", PM_TYPE: "20", SOURCE: "3" });
                     inner();
                 }
                 else {
@@ -268,7 +290,8 @@
                 function inner(callback) {
                     var data = me.mainform.getData();
                     var updateFields = LG.getFormCombChanges(data, me.orginData, true);
-                    if (updateFields) {
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);
@@ -295,7 +318,7 @@
                 //表单底部按钮
                 var buttons = [];
                 buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存基础信息', icon: 'fa fa-save', onclick: me.save.bind(me) });
 
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
@@ -474,8 +497,8 @@
                         ]
                     },
                     fields: [
-                        { display: "编号", name: "STD_CODE", width: 100, type: "text" },
-                        { display: "周期", name: "CYCLE", width: 200, type: "select", format: { data: me.pmcycleUnit } }
+                        { display: "编号", name: "STD_CODE", width: 150, type: "text" },
+                        { display: "周期", name: "CYCLE", width: 150, type: "select", options: { data: me.pmcycleUnit } }
                     ],
                     callback: function (values, rows) {
                         var currentSet = new Set(gridKeys);
@@ -485,9 +508,9 @@
                                     STD_CODE: item.STD_CODE,
                                     OBJECT_NAME: item.PART_NAME,
                                     STD_LEVEL: "定期保养",
-                                    WORK_STATE:"10",
+                                    WORK_STATE: "10",
                                     CONTENT: item.CONTENT,
-                                    CYCLE: item.CYCLE,
+                                    MAINT_CYCLE: item.CYCLE,
                                     DRAWING_NO: item.DEPARTMENT,
                                     STOCK_NAME: item.EXE_USER,
                                     CUR_NUM: item.CHK_USER,
@@ -508,7 +531,7 @@
                     slide: false,
                     data: dataOptions
                 });
-            },	
+            },
             //刷新
             reloadDet: function () {
                 var me = this;
@@ -521,7 +544,7 @@
                     LG.showError("请先保存设备基础数据");
                     return;
                 }
-                me.grid.addEditRow({ "EXE_ID": $('#EXE_ID').val() });
+                me.grid.addEditRow({ "EXE_ID": $('#EXE_ID').val(), "ATTACH_PLAN": "0" });
                 me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
             },
             //保存
@@ -631,9 +654,11 @@
 
                 //加载重大改造履历
                 me.setGrid();
-                $('#EXE_USER').bind('click', function () {
-                    me.f_select_man();
-                });
+                if (!me.isView) {
+                    $('#EXE_USER').bind('click', function () {
+                        me.f_select_man();
+                    });
+                }
                 me.reloadDet();
                 if (me.dialogData.view != undefined) {
                     const commonGridOptions = {

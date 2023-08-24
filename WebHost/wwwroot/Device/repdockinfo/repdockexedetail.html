@@ -86,7 +86,17 @@
                             { display: "维修工时", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
                             { display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' } },
+                            {
+                                display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' },
+                                options: {
+                                    onChangeValue: function (input, value, g) {
+                                        if (value < 0) {
+                                            $('#EXE_COST').val("");
+                                            LG.showError("实际维修费用不可为负数！");
+                                        }
+                                    }
+                                }
+                            },
                             { display: "是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, editor: { type: 'select', data: me.isLose } },
                             { display: "遗留问题描述", name: "LEAVE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
                             { display: "实施情况描述", name: "EXE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
@@ -245,7 +255,8 @@
                 function inner(callback) {
                     var data = me.mainform.getData();
                     var updateFields = LG.getFormCombChanges(data, me.orginData, true);
-                    if (updateFields) {
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid.updated.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);
@@ -410,6 +421,7 @@
             //保存
             saveDet: function () { //保存
                 var me = this;
+                var flag = true;
                 debugger
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
@@ -418,20 +430,35 @@
                     }
                     if (!me.grid.validChangeRows()) return false;
                     var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/RepDockInfo/ManagePlandet',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reloadDet();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
+                    for (var i = 0; i < changeRow.updated.length; i++) {
+                        var row = changeRow.updated[i];
+                        if (row.EXE_LABOR_NUM < 0) {
+                            flag = false;
+                            LG.showSuccess('实际人员数量不可为负数！');
+                            break;
                         }
-                    });
+                        if (row.EXE_TAKE_TIME < 0) {
+                            flag = false;
+                            LG.showSuccess('实际花费时间不可为负数！');
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/RepDockInfo/ManagePlandet',
+                            loading: '正在保存中...',
+                            data: changeRow,
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid.isDataChanged = false;
+                                me.reloadDet();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
                 }
             },
             reloadDet: function () {

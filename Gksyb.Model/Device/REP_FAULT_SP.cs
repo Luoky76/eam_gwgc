@@ -226,5 +226,12 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string STOCK_ID { get; set; }
 
+        /// <summary>
+        /// 库存ID
+        /// </summary>
+        [Description("库存ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SP_STORE_ID { get; set; }
+
     }
 }

@@ -31,7 +31,7 @@
                     search: {
                         fields: [
                             { display: "编号", name: "_search_STD_CODE", dbname: "STD_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "维保内容", name: "_search_PART_NAME", dbname: "PART_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "维保项目", name: "_search_PART_NAME", dbname: "PART_NAME", newline: false, upper: true, type: "text", options: {} },
                             { display: "执行人", name: "_search_EXE_USER", dbname: "EXE_USER", newline: false, upper: true, type: "select", options: { data: me.pmShippost, } },
                             { display: "检查人", name: "_search_CHK_USER", dbname: "CHK_USER", newline: false, upper: true, type: "select", options: { data: me.pmShippost, } },
                             { display: "周期", name: "_search_CYCLE", dbname: "CYCLE", newline: false, upper: true, type: "select", options: { data: me.pmcycleUnit, } },
@@ -40,10 +40,10 @@
                     grid: {
                         columns: [
                             { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
-                            { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", },
-                            { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", },
-                            { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit } },
-                            { display: "部门", name: "DEPARTMENT", minWidth: 100, type: "select", format: { data: me.maintDept } },
+                            { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", validate: { required: true }, },
+                            { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", validate: { required: true }, },
+                            { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit }, validate: { required: true }, },
+                            { display: "部门", name: "DEPARTMENT", minWidth: 100, type: "select", format: { data: me.maintDept }, validate: { required: true } },
                             { display: "执行人", name: "EXE_USER", minWidth: 100, type: "select", format: { data: me.pmShippost } },
                             { display: "检查人", name: "CHK_USER", minWidth: 100, type: "select", format: { data: me.pmShippost } },
                             { display: "是否附件判断", name: "IS_ATTACH", minWidth: 100, type: "select", format: { data: me.isAttach } },

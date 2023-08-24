@@ -101,15 +101,15 @@
                                     autocomplete: true,
                                     selectBoxWidth: 300,
                                     valueField: "ID",
-                                    textField: "VALUE",
+                                    textField: "TEXT",
                                     columns: [
-                                        { header: '设备编号', name: 'TEXT', width: 150 },
-                                        { header: '设备名称', name: 'VALUE' }
+                                        { header: '设备编号', name: 'VALUE', width: 150 },
+                                        { header: '设备名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            $('#DEVICE_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
-                                            $('#DEVICE_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
                                             $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
@@ -205,7 +205,7 @@
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
                             //{ display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "主键", name: "FAULT_SP_ID", minWidth: 100, hide: true },
-                            { display: "外键", name: "SP_ID", minWidth: 100, hide: true },
+                            { display: "外键", name: "SP_STORE_ID", minWidth: 100, hide: true },
                             { display: "外键", name: "FAULT_ID", minWidth: 100, hide: true },
                         ]
                     },
@@ -340,9 +340,7 @@
             },
             close: function () {
                 var me = this;
-                debugger
                 function inner(callback) {
-                    debugger
                     var data = me.mainform.getData();
                     var updateFields = LG.getFormCombChanges(data, me.orginData, true);
                     var isChangedGrid2 = me.grid2.getChangedRows();
@@ -529,13 +527,13 @@
                 var gridData = me.grid2.getData();
                 var gridKeys = [];
                 for (var item of gridData) {
-                    gridKeys.push(item.SP_ID);
+                    gridKeys.push(item.SP_STORE_ID);
                 }
                 var dataOptions = {
                     values: gridKeys,
                     options: {
                         url: 'Device/RepFault/ImportList',
-                        rowKey: "SP_ID",
+                        rowKey: "STORE_ID",
                         columns: [
                             { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
                             { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text" },
@@ -543,9 +541,9 @@
                             //{ display: "图号", name: "DRAWING_NO", minWidth: 100, type: "text" },
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text" },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
-                            { display: "库存数量", name: "NUM", minWidth: 100, type: "decimal" },
+                            { display: "库存数量", name: "NUM", minWidth: 100, type: "float" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
-                            { display: "主键", name: "SP_ID", hide: true },
+                            { display: "主键", name: "STORE_ID", hide: true },
 
                         ]
                     },
@@ -554,11 +552,9 @@
                         { display: "物料编码", name: "SP_CODE", width: 200, type: "text" }
                     ],
                     callback: function (values, rows) {
-                        debugger
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
-                            if (!currentSet.has(item.SP_ID)) {
-                                debugger
+                            if (!currentSet.has(item.STORE_ID)) {
                                 me.addGrid({
                                     SP_CODE: item.SP_CODE,
                                     SP_NAME: item.SP_NAME,
@@ -567,7 +563,7 @@
                                     DRAWING_NO: item.DRAWING_NO,
                                     STOCK_NAME: item.STOCK_NAME,
                                     CUR_NUM: item.NUM,
-                                    SP_ID: item.SP_ID,
+                                    SP_STORE_ID: item.STORE_ID,
                                     REAL_OUT_NUM:"1",
                                     UNIT: item.UNIT
                                 });
@@ -597,16 +593,19 @@
                     }
                     if (!me.grid2.validChangeRows()) return false;
                     var changeRow = me.grid2.getChangedRows();
-                    changeRow.updated.forEach(function (row) {
+                    for (var i = 0; i < changeRow.updated.length; i++) {
+                        var row = changeRow.updated[i];
                         if (row.CUR_NUM < row.REAL_OUT_NUM) {
                             flag = false;
                             LG.showSuccess('实际消耗数量不可大于库存数量！');
+                            break;
                         }
-                        if (row.REAL_OUT_NUM<0) {
+                        if (row.REAL_OUT_NUM < 0) {
                             flag = false;
                             LG.showSuccess('实际消耗数量不可为负数！');
+                            break;
                         }
-                    });
+                    }
                     if (flag) {
                         LG.ajax({
                             jsToken: true,
@@ -627,7 +626,6 @@
             },
             //删除
             deletesp: function () { //删除
-                debugger
                 var me = this;
                 if (me.grid2.endEdit() != false) {
                     var selected = me.grid2.getSelectedRows();
@@ -788,6 +786,18 @@
                     }
                     if (!me.grid.validChangeRows()) return false;
                     var changeRow = me.grid.getChangedRows();
+                    var errorMessages = [];
+
+                    changeRow.updated.concat(changeRow.added).forEach(function (row) {
+                        if (row.WORK_HOURS < 0) {
+                            errorMessages.push('工时不可为负数！');
+                        }
+                    });
+
+                    if (errorMessages.length > 0) {
+                        LG.showSuccess(errorMessages[0]);
+                        return;
+                    }
                     LG.ajax({
                         jsToken: true,
                         url: 'Device/RepFault/ManageFaultPep',
@@ -894,7 +904,6 @@
                 me.setGrid2();
                 if (me.dialogData.view == undefined) {
                     $('#REPAIR_USER').bind('click', function () {
-                        debugger
                         me.f_select_man();
                     });
                 }

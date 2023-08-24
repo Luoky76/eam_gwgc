@@ -6,6 +6,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
@@ -80,6 +81,8 @@ namespace EAM.Device.services
             return await _dbContext.Query<PM_PLAN_EXE>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .Where(c => c.PM_TYPE=="20")
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
         }
 
@@ -174,6 +177,25 @@ namespace EAM.Device.services
         public async Task<GridData> GetPlandetList(GridRequest request)
         {
             return await _dbContext.Query<PM_PLAN_DONEITEM>()
+                .Select(c =>new {
+                    c.STD_CODE,
+                    c.OBJECT_NAME,
+                    c.CONTENT,
+                    c.STD_LEVEL,
+                    c.WORK_STATE,
+                    c.MAINT_CYCLE,
+                    c.PLAN_MONTH,
+                    c.EXE_USER,
+                    c.EXECUTE_USER,
+                    c.CHK_USER,
+                    c.CHECK_USER,
+                    c.MEMO,
+                    c.DONEITEM_ID,
+                    c.EXE_ID,
+                    c.COMPLETE,
+                    ATTACH_EXE = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_EXE").Count(),
+                    ATTACH_PLAN = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_DONEITEM").Count(),
+                })
                 .GetGridData(request);
         }
 

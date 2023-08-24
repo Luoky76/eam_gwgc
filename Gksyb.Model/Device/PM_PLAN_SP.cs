@@ -240,5 +240,11 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string DONEITEM_ID { get; set; }
 
+        /// <summary>
+        /// 库存ID
+        /// </summary>
+        [Description("库存ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string STORE_ID { get; set; }
     }
 }
