@@ -500,6 +500,53 @@ namespace Gksyb.Server.Services.Common
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// 企业性质下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> EnterNature(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "enterNature")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 供应商来源下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ProviderSrc(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "providerSrc")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// 供应商分类下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> ProviderType(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>()
+                .Where(a => a.CODE_TYPE == "providerType")
+                .Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .ToListAsync();
+        }
 
         /// <summary>
         /// 盘点状态

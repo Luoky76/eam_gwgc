@@ -32,8 +32,14 @@
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
-            detailWidth: 1500,
-            detailHeight: 700,
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
             dataYN: [{ ID: "0", TEXT: "否" }, { ID: "1", TEXT: "是" }],
             currentNode: null,
             setConfig: function () {
@@ -59,8 +65,6 @@
                             { display: "地址", name: "REG_ADDRESS", dbname: "REG_ADDRESS", minWidth: 150, type: "text"},
                             { display: "企业法人", name: "LEGAL_REPRESENT", dbname: "LEGAL_REPRESENT", minWidth: 150, type: "text"},
                             { display: "营业执照号", name: "LICENSE_CODE", dbname: "LICENSE_CODE", minWidth: 150, type: "text"},
-                            { display: "合格供应商综合评定", name: "QUA_CONCLUSION", dbname: "QUA_CONCLUSION", minWidth: 150, type: "text" },
-                            { display: "供应商状态", name: "PROVIDER_STATUS", dbname: "PROVIDER_STATUS", minWidth: 150, type: "text" },
                             //隐藏
                             { display: "主键", name: "c", dbname: "PROVIDER_ID", width: 150, type: "text", hide: true },
                         ]
@@ -421,6 +425,7 @@
                 var me = this;
                 $("#layout").ligerLayout({ leftWidth: 240 });
                 me.iframeloading.show();
+                me.setDialogSize();
                 me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
