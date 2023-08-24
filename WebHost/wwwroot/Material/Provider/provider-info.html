@@ -32,8 +32,14 @@
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
-            detailWidth: 1500,
-            detailHeight: 700,
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
             dataYN: [{ ID: "0", TEXT: "否" }, { ID: "1", TEXT: "是" }],
             currentNode: null,
             setConfig: function () {
@@ -419,6 +425,7 @@
                 var me = this;
                 $("#layout").ligerLayout({ leftWidth: 240 });
                 me.iframeloading.show();
+                me.setDialogSize();
                 me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
