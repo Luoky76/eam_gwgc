@@ -1,0 +1,536 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>船舶常规物料清册报表</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%; overflow:auto;">
+    <form id="mainform" style="width:97%;">
+    </form>
+    <div style="width: 94.5%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>常规物料明细</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style="width: 100%;">
+                    <div style="margin-bottom: 50px; width: 100%;" id="det-grid">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            {
+                                display: "记录状态", name: "AUDITING", width: 300, type: "select", options: {
+                                    data: me.auditing,
+                                    value: "0",
+                                    disabled: true
+                                }
+                            },
+                            {
+                                display: "船名", name: "SHIP_NAME", width: 300, type: "text", options: {
+                                    value: window.session.Corp.CName,
+                                    disabled: true
+                                }
+                            },
+                            {
+                                display: "部门", name: "DEPT_NAME", width: 300, type: "text", options: {
+                                    value: window.session.Corp.CName,
+                                    disabled: true
+                                }
+                            },
+                            { display: "日期", name: "DATE", width: 300, type: "date", options:{} },
+                            //隐藏
+                            { display: "主键", name: "LABOR_MATERIAL_ID", type: "hidden", options: {} },
+                            {
+                                display: "部门ID", name: "DEPT_ID", type: "hidden", options: {
+                                    value: window.session.Corp.CorpID
+                                }
+                            },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            //实际为物料ID
+                            {
+                                display: "物料名称", name: "SP_ID", minWidth: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.laborMaterialCard,
+                                    selectBoxWidth: 800,
+                                    columns: [
+                                        { header: '物料名称', name: 'TEXT' },
+                                        { header: '型号规格', name: 'EXTEND' },
+                                        { header: '物料分类', name: 'EXTEND2' },
+                                        { header: '计量单位', name: 'EXTEND4' }
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            var selected = business.grid.getSelectedRow();
+                                            business.grid.updateRow(selected, {
+                                                SP_NAME: g.selected.TEXT ?? '',
+                                                SP_CODE: g.selected.VALUE ?? '',
+                                                SP_SIZE: g.selected.EXTEND ?? '',
+                                                TYPE_ID: g.selected.EXTEND1 ?? '',
+                                                TYPE_NAME: g.selected.EXTEND2 ?? '',
+                                                TYPE_CODE: g.selected.EXTEND3 ?? '',
+                                                UNIT: g.selected.EXTEND4 ?? ''
+                                            });
+                                            /*business.grid.updateCell("SP_NAME", g.selected.TEXT ?? '', selected);
+                                            business.grid.updateCell("SP_CODE", g.selected.VALUE ?? '', selected);
+                                            business.grid.updateCell("SP_SIZE", g.selected.EXTEND ?? '', selected);
+                                            business.grid.updateCell("TYPE_ID", g.selected.EXTEND1 ?? '', selected);
+                                            business.grid.updateCell("TYPE_NAME", g.selected.EXTEND2 ?? '', selected);
+                                            business.grid.updateCell("TYPE_CODE", g.selected.EXTEND3 ?? '', selected);
+                                            business.grid.updateCell("UNIT", g.selected.EXTEND4 ?? '', selected);*/
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
+                            { display: "型号规格", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            { display: "物料类别", name: "TYPE_NAME", minWidth: 100, type: "text" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            {
+                                display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", editor: {
+                                    type: "float",
+                                    onChangeValue: function (input, value, g) {
+                                        if (value < 0) {
+                                            g.options.editParm.record.STORE_NUM = 0;
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "存放位置", name: "POSITION", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", minWidth: 200, type: "text", editor: { type: 'text' } },
+                            //隐藏
+                            { display: "主键", name: "LABOR_MATERIAL_DET_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "常规物料清点主表ID", name: "LABOR_MATERIAL_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text", hide: true },
+                            { display: "物料类别ID", name: "TYPE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物料类别编码", name: "TYPE_CODE", minWidth: 100, type: "text", hide: true },
+                            { display: "添加人ID", name: "CREATE_USERID", minWidth: 100, type: "long", hide: true },
+                            { display: "添加时间", name: "CREATEDATE", minWidth: 100, type: "date", hide: true },
+                            { display: "修改人ID", name: "MODIFY_USERID", minWidth: 100, type: "long", hide: true },
+                            { display: "修改时间", name: "MODIFYDATE", minWidth: 100, type: "date", hide: true },
+                        ]
+                    }
+                };
+            },
+            dialogData: {},
+            mainform: null,
+            buttons: null,
+            grid: null,
+            //主表主键
+            sid: "",
+            isNew: false,
+            isView: true,
+            auditing: [],
+            laborMaterialCard: [],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/LaborMaterialDet/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.auditing = data.Auditing;
+                        me.laborMaterialCard = data.LaborMaterialCard;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                if (me.isNew) {
+                    var originData = {
+                        AUDITING: "0",
+                        DEPT_ID: window.session.Corp.CorpID,
+                        DEPT_NAME: window.session.Corp.CName
+                    };
+                    LG.ajax({
+                        async: false,
+                        url: 'Special/LaborMaterial/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data, message) {
+                            me.sid = data;
+                            originData["LABOR_MATERIAL_ID"] = data;
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    me.mainform.setOrginData(originData);
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Special/LaborMaterial/Get',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                me.mainform.focus();
+            },
+            save: function () { //保存
+                var me = this;
+                if (!me.isNew && $.isEmptyObject(me.mainform.getChanges())) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.mainform.getOrginData());
+                var changeRow = new Object();
+                if (me.isNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/LaborMaterial/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () {
+                            //location.reload(true);
+                            //主表保存过后变为修改模式
+                            me.isNew = false;
+                            me.loadData();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                function inner(callback) {
+                    if (!skipConfirm && (!$.isEmptyObject(me.mainform.getChanges()) || me.grid.isDataChanged)) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+                    });
+                    buttons.push({
+                        text: '保存',
+                        icon: 'fa fa-save',
+                        onclick: function () {
+                            me.save();
+                            //子表有修改而未保存时，保存子表
+                            if (me.gird && me.grid.isDataChanged) me.saveGrid();
+                        }.bind(me)
+                    });
+                }
+                buttons.push({
+                    text: '关闭',
+                    onclick: function () {
+                        var me = this;
+                        me.close(false);
+                    }.bind(me)
+                });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    readonly: me.isView,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#det-grid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Special/LaborMaterialDet/GetCertainLaborMaterial',
+                    parms: { laborMaterialId: me.sid },
+                    sortName: 'LABOR_MATERIAL_DET_ID',
+                    sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    onAfterEdit: function (e) {
+                        //if (e.record.STORE_NUM < 0) me.grid.updateRow(e.rowindex, { STORE_NUM: 0 });
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                if (!me.isView) {
+                    me.loadToolbar();
+                }
+                me.bindGridEvent();
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadGrid();
+                            break;
+                        case "add":
+                            me.addGrid();
+                            break;
+                        case "delete":
+                            if (!me.isSelectRow()) break;
+                            me.deleteGrid();
+                            break;
+                        case "save":
+                            me.saveGrid();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid.toolbarManager.options.group = 'detail';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reloadGrid: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            addGrid: function () { //新增
+                var me = this;
+                me.grid.addEditRow({ LABOR_MATERIAL_ID: me.sid }, false);
+            },
+            deleteGrid: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.saveGrid();
+                            }
+                        });
+                    }
+                }
+            },
+            saveGrid: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/LaborMaterialDet/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reloadGrid();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            init: function () {
+                debugger
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.hasOwnProperty('isView')) me.isView = me.dialogData.isView;
+                    if (me.dialogData.hasOwnProperty('isNew')) me.isNew = me.dialogData.isNew;
+                }
+
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+
+                //加载明细表
+                me.setGrid();
+                me.reloadGrid();
+
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

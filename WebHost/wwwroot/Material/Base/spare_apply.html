@@ -301,6 +301,12 @@
                     return
                 }
 
+                var apply = me.grid.getSelectedRows()[0];
+                if (apply.APPLY_ID == null) {
+                    LG.showError("请先保存再打开明细");
+                    return
+                }
+
                 $.ligerDialog.open({
                     width: 980,
                     height: 650,
@@ -314,7 +320,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "applyId": me.grid.getSelectedRows()[0].APPLY_ID, "view": me.grid.getSelectedRows()[0].AUDITING }
+                    data: { "applyId": apply.APPLY_ID, "view": apply.AUDITING }
                 });
             },
             bindGridEvent: function () {

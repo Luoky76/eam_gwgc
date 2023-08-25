@@ -4,15 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <meta http-equiv="Expires" content="0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Cache" content="no-cache">
-    <title>供应商信息登记</title>
-    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+    <title>常规物料清点表</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 2px; height: 100%;">
+<body style="padding: 5px; height: 100%;">
     <div id="layout">
         <div position="center" title="">
             <div id="mainsearch">
@@ -29,64 +25,78 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
-            ver: getQueryStringByName("ver"),
-            iframeloading: $("#iframeloading"),
-            //明细页面大小
-            detailWidth: window.innerWidth * 0.9,
-            detailHeight: window.innerHeight * 0.9,
-            dataYN: [{ ID: "0", TEXT: "否" }, { ID: "1", TEXT: "是" }],
-            currentNode: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
+                            { display: "船名", name: "_search_SHIP_NAME", dbname: "SHIP_NAME", type: "text" },
                             {
-                                //实际取的是PROVIDER_ID，op: "equal"表示需要严格相等
-                                display: "供应商名称", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_ID", newline: false, minWidth: 300, upper: false, op: "equal", type: "select", options: {
-                                    type: "select",
-                                    data: me.ProviderName
+                                display: "部门", name: "_search_DEPT_ID", dbname: "DEPT_ID", type: "select", op: "equal", options: {
+                                    data: me.corp
                                 }
                             },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", dbname: "AUDITING", width: 100, type: "chk" },
-                            { display: "供应商名称", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", minWidth: 150, type: "text", validate: { required: true } },
-                            { display: "供应商编码", name: "PROVIDER_CODE", dbname: "PROVIDER_CODE", minWidth: 150, type: "text"},
-                            { display: "供应商简称", name: "ABBREVIATION", dbname: "ABBREVIATION", minWidth: 150, type: "text"},
-                            { display: "地址", name: "REG_ADDRESS", dbname: "REG_ADDRESS", minWidth: 150, type: "text"},
-                            { display: "企业法人", name: "LEGAL_REPRESENT", dbname: "LEGAL_REPRESENT", minWidth: 150, type: "text"},
-                            { display: "营业执照号", name: "LICENSE_CODE", dbname: "LICENSE_CODE", minWidth: 150, type: "text"},
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk" },
+                            { display: "船名", name: "SHIP_NAME", minWidth: 100, type: "text" },
+                            { display: "部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
+                            { display: "日期", name: "DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             //隐藏
-                            { display: "主键", name: "c", dbname: "PROVIDER_ID", width: 150, type: "text", hide: true },
+                            { display: "主键", name: "LABOR_MATERIAL_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "部门ID", name: "DEPT_ID", minWidth: 100, type: "text", hide: true },
                         ]
                     }
                 };
             },
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
+            menuNo: getQueryStringByName("MenuNo"),
             grid: null,
+            searchForm: null,
+            buttons: null,
+            corp: [],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/LaborMaterial/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.corp = data.Corp;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: true,
                     columns: me.config.grid.columns,
+                    usePager: false,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/ProviderInfo/List',
-                    sortName: 'PROVIDER_NAME',
+                    url: 'Special/LaborMaterial/List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'LABOR_MATERIAL_ID',
                     sortOrder: 'asc',
-                    width: '99%',
+                    width: '98%',
                     height: '100%',
-                    rownumbers: true,
                     checkbox: true,
-                    enabledEdit: false,
-                    clickToEdit: false,
+                    enabledEdit: true,
+                    clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -96,12 +106,15 @@
                         }
                     },
                     onSuccess: function (data, g) {
-                        me.iframeloading.hide();
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
                     },
                     rowAttrRender: function (rowdata, rowid) {
-                        if (rowdata && rowdata.VALIDFLAG && rowdata.VALIDFLAG !== "1") {
-                            return "style='color:red;'";
-                        }
                         return "";
                     },
                     onDblClickRow: function (data, rowid, rowdata) {
@@ -175,31 +188,29 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../System/Export.html?exporttype=xls",
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../System/Export.html?exporttype=doc",
                                 modal: true
                             });
                             break;
-                        default:
-                            break;
                     }
                 }
+                me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             add: function () { //新增
                 var me = this;
-
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]供应商信息登记',
-                    url: "provider-info-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    title: '[新增]船舶常规物料清册',
+                    url: "labor-material-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -213,44 +224,67 @@
             view: function () { //查看
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[查看]供应商信息登记',
-                        url: "provider-info-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": selected.PROVIDER_ID, "isNew": false, "isView": true }
-                    });
-                } else {
+                if (!selected) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[查看]船舶常规物料清册',
+                    url: "labor-material-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.LABOR_MATERIAL_ID, "isNew": false, "isView": true }
+                });
             },
             modify: function () { //修改
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]供应商信息登记',
-                        url: "provider-info-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": selected.PROVIDER_ID, isNew: false, isView: false }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[修改]船舶常规物料清册',
+                    url: "labor-material-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.LABOR_MATERIAL_ID, "isNew": false, "isView": false }
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/LaborMaterial/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
                     });
                 }
             },
@@ -272,39 +306,13 @@
                     changeRow["original"] = orginarr;
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/ProviderInfo/Save',
+                        url: 'Special/LaborMaterial/Save',
                         loading: '正在提交中...',
                         data: changeRow,
                         success: function () {
                             LG.showSuccess('提交成功');
                             me.grid.isDataChanged = false;
                             me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
-                    LG.tip('请选择行!');
-                }
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/ProviderInfo/Save',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -323,9 +331,7 @@
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
+                                me.grid.deleteSelectedRow();
                                 me.save();
                             }
                         });
@@ -386,6 +392,10 @@
                 me.searchForm = $formsearch.ligerForm({
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
+                    EnterMoveNextControl: true,
+                    space: 3,
+                    labelAlign: 'right',
+                    labelWidth: 82,
                     buttons: [{
                         text: '查询',
                         width: 60,
@@ -399,36 +409,19 @@
                     }
                 });
             },
-            //获取下拉框数据
-            loadComboxData: function () {
-                var me = this;
-                var dataControl = [];
-                LG.ajax({
-                    async: false,
-                    url: 'Material/ProviderInfo/ComboxData',
-                    loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.ProviderName = data.ProviderName;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
-                return dataControl;
-            },
             init: function () {
                 var me = this;
-                $("#layout").ligerLayout({ leftWidth: 240 });
-                me.iframeloading.show();
                 me.loadComboxData();
                 me.setConfig();
-                me.setGrid();
                 me.setForm();
+                me.setGrid();
                 me.reload();
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
 </html>

@@ -70,22 +70,21 @@
                                 }
                             },
                             {
-                                display: "预估单价(元)", name: "YG_PRICE", width: 120, type: "text", editor: {
-                                    type: 'text', onChangeValue: function (input, value, g) {
+                                display: "预估单价(元)", name: "YG_PRICE", width: 120, type: "number", editor: {
+                                    type: 'number', onChangeValue: function (input, value, g) {
                                         var editParm = g.options.editParm.record;
                                         editParm["YG_MONEY"] = (value * (editParm.COUNT || 0)).toFixed(2);
-
                                     }
                                 }, validate: { required: true },
                             },
                             {
-                                display: "预估金额(元)", name: "YG_MONEY", width: 120, type: "text", validate: { required: true }, editor: { type: 'text' }, totalSummary:
+                                display: "预估金额(元)", name: "YG_MONEY", width: 120, type: "number", validate: { required: true }, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 }
                             },
-                            { display: "预估库龄(月)", name: "STORE_MONTH", width: 120, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "预估库龄(月)", name: "STORE_MONTH", width: 120, type: "number", validate: { required: true }, editor: { type: 'number' } },
                             {
                                 display: "是否协议", name: "IS_XY", dbname: "IS_XY", width: 80, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
                             },
@@ -128,8 +127,17 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true
+                    enabledEdit: !me.isView,
+                    clickToEdit: true,
+                    onBeforeSubmitEdit: function (e) {
+                        if (e.column.name == "COUNT" || e.column.name == "YG_PRICE" || e.column.name == "STORE_MONTH") {
+                            if (e.value < 0) {
+                                LG.showError("不可为负数！");
+                                return false;
+                            } 
+                        }
+                        return true;
+                    }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
@@ -183,12 +191,18 @@
                             "YG_PRICE": list[i].STORE_PRICE,
                             "PURTYPE_ID": list[i].PURTYPE_ID,
                             "PURTYPE_NAME": list[i].PURTYPE_NAME,
-                            "APPLY_ID": me.Sid
+                            "APPLY_ID": me.Sid,
+                            "IS_XY": "0",
+                            "NO_PRODUCE": "0"
                         });
                     }
                 };
 
-
+                var selData = me.grid.getData();
+                var dataValue = "";
+                selData.forEach((a) => {
+                    dataValue += a.SP_ID + ",";
+                });
                 $.ligerDialog.open({
                     width: 980,
                     height: 600,
@@ -204,7 +218,8 @@
                     data: {
                         isCancel:"0",
                         mainReloadBtn: me.buttons[0],
-                        callback: callback
+                        callback: callback,
+                        dataValue: dataValue
                     }
                 });
 

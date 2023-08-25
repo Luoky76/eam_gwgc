@@ -199,39 +199,92 @@
                             editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
-                                    var editParm = $("#PRICE").val();
-                                    $("#MONEY").val((value * (editParm || 0)).toFixed(2));
+                                    if (value < 0) {
+                                        $('#NUM').val("");
+                                        LG.showError("数量不可为负数！");
+                                    }
+                                    else {
+                                        var editParm = $("#PRICE").val();
+                                        $("#MONEY").val((value * (editParm || 0)).toFixed(2));
 
-                                    var PRICE = $("#NOTAX_PRICE").val();
-                                    $("#NOTAX_MONEY").val((value * (PRICE || 0)).toFixed(2));
-
+                                        var PRICE = $("#NOTAX_PRICE").val();
+                                        $("#NOTAX_MONEY").val((value * (PRICE || 0)).toFixed(2));
+                                    }
                                 }
                             }, validate: { required: true }
                         },
                         {
                             display: "库存单价(元)", name: "PRICE", labelWidth: 120, width: 180, newline: true, type: "float", editor: {
                                 type: 'float', onChangeValue: function (input, value, g) {
-                                    var editParm = $("#NUM").val();
-                                    $("#MONEY").val((value * (editParm || 0)).toFixed(2));
+                                    if (value < 0) {
+                                        $('#PRICE').val("");
+                                        LG.showError("单价不可为负数！");
+                                    }
+                                    else {
+                                        var editParm = $("#NUM").val();
+                                        $("#MONEY").val((value * (editParm || 0)).toFixed(2));
+                                    }
 
                                 }
                             }, validate: { required: true }
                         },
-                        { display: "库存金额(元)", name: "MONEY", labelWidth: 120, width: 180, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                        {
+                            display: "库存金额(元)", name: "MONEY", labelWidth: 120, width: 180, type: "float", editor: {
+                                type: 'float',
+                                onChangeValue: function (input, value, g) {
+                                    if (value < 0) {
+                                        $('#MONEY').val("");
+                                        LG.showError("金额不可为负数！");
+                                    } else {
+                                        var editParm = $("#NUM").val();
+                                        $("#PRICE").val((value / (editParm || 0)).toFixed(2));
+                                    }
+                                }
+                            }, validate: { required: true }
+                        },
 
                         {
                             display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: 120, width: 180, newline: true, type: "float", editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
-                                    var editParm = $("#NUM").val();
-                                    $("#NOTAX_MONEY").val((value * (editParm || 0)).toFixed(2));
+                                    if (value < 0) {
+                                        $('#NOTAX_PRICE').val("");
+                                        LG.showError("单价不可为负数！");
+                                    }
+                                    else {
+                                        var editParm = $("#NUM").val();
+                                        $("#NOTAX_MONEY").val((value * (editParm || 0)).toFixed(2));
+                                    }
                                 }
                             }
                         },
-                        { display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: 120, width: 180, type: "float", editor: { type: 'float' } },
+                        {
+                            display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: 120, width: 180, type: "float", editor: {
+                                type: 'float',
+                                onChangeValue: function (input, value, g) {
+                                    if (value < 0) {
+                                        $('#NOTAX_MONEY').val("");
+                                        LG.showError("金额不可为负数！");
+                                    } else {
+                                        var editParm = $("#NUM").val();
+                                        $("#NOTAX_PRICE").val((value / (editParm || 0)).toFixed(2));
+                                    }
+                                }
+                            }
+                        },
 
                         { display: "入库日期", name: "IN_DATE", labelWidth: 120, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
-                        { display: "税率", name: "TAX_RATE", labelWidth: 120, width: 180, type: "float", editor: { type: 'float' } },
+                        {
+                            display: "税率", name: "TAX_RATE", labelWidth: 120, width: 180, type: "float", editor: {
+                                type: 'float',
+                                onChangeValue: function (input, value, g) {
+                                    if (value < 0) {
+                                        $('#TAX_RATE').val("");
+                                        LG.showError("税率不可为负数！");
+                                    }
+                                }
+                            }
+                        },
                         {
                             display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: 120, width: 180, newline: true, type: "select", editor: {
                                 type: 'select',

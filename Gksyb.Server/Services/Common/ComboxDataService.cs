@@ -165,6 +165,31 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <summary>
+        /// 船舶常规物料下拉框
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        private async Task<List<ComboxData>> LaborMaterialCard(Expression<Func<BASE_SPCATALOG, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BASE_SPCATALOG>(c => c.IS_CANCEL != "1")
+                .Where(predicate)
+                .OrderBy(c => c.SP_CODE)
+                .Select(c => new ComboxData()
+                {
+                    ID = c.SP_ID,
+                    TEXT = c.SP_NAME,
+                    VALUE = c.SP_CODE,
+                    EXTEND = c.SP_SIZE,
+                    EXTEND1 = c.TYPE_ID,
+                    EXTEND2 = c.TYPE_NAME,
+                    EXTEND3 = c.TYPE_CODE,
+                    EXTEND4 = c.UNIT
+                })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// 构造类型
         /// </summary>
         /// <param name="predicate"></param>
