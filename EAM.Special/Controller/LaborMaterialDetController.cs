@@ -45,6 +45,17 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 根据常规物料主表ID LABOR_MATERIAL_ID 获取列表
+        /// </summary>
+        /// <param name="laborMaterialId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> GetCertainLaborMaterialAsync(string laborMaterialId)
+        {
+            return await _service.GetCertainLaborMaterialAsync(laborMaterialId);
+        }
+
+        /// <summary>
         /// 生成主键
         /// </summary>
         /// <param></param>

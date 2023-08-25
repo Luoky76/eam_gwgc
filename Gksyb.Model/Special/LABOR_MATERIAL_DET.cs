@@ -26,6 +26,13 @@ namespace Gksyb.Model
         public string LABOR_MATERIAL_DET_ID { get; set; }
 
         /// <summary>
+        /// 常规物料清点主表ID
+        /// </summary>
+        [Description("常规物料清点主表ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string LABOR_MATERIAL_ID { get; set; }
+
+        /// <summary>
         /// 物料ID
         /// </summary>
         [Description("物料ID")]

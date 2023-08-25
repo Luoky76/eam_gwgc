@@ -262,7 +262,7 @@
             close: function (skipConfirm) {
                 var me = this;
                 function inner(callback) {
-                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                    if (!skipConfirm && (!$.isEmptyObject(me.mainform.getChanges()) || me.grid.isDataChanged)) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);

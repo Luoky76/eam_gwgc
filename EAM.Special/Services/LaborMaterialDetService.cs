@@ -33,6 +33,19 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 根据常规物料主表ID LABOR_MATERIAL_ID 获取列表
+        /// </summary>
+        /// <param name="laborMaterialId"></param>
+        /// <returns></returns>
+        public async Task<GridData> GetCertainLaborMaterialAsync(string laborMaterialId)
+        {
+            var list = await _dbContext.Query<LABOR_MATERIAL_DET>()
+                .Where(c => c.LABOR_MATERIAL_ID == laborMaterialId)
+                .GetGridData(null);
+            return list;
+        }
+
+        /// <summary>
         /// 根据ID获取单行记录
         /// </summary>
         /// <param name="id"></param>
@@ -66,6 +79,7 @@ namespace EAM.Special.Services
                 c => new
                 {
                     c.LABOR_MATERIAL_DET_ID,
+                    c.LABOR_MATERIAL_ID,
                     c.SP_ID,
                     c.SP_NAME,
                     c.SP_CODE,
@@ -138,6 +152,7 @@ namespace EAM.Special.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "Auditing", null },
+                    { "LaborMaterialCard", null }
                 });
 
                 return AjaxResult.Success(data);
