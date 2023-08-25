@@ -60,7 +60,7 @@ namespace EAM.Device.interfaces
         /// 提交维修计划
         /// </summary>
         /// <returns></returns>
-        public Task<int> SubmitRepDockPlan(List<string> sids);
+        public Task<AjaxResult> SubmitRepDockPlan(List<string> sids);
 
         /// <summary>
         /// 获取计划明细

@@ -37,7 +37,7 @@
             isAddNew: false,
             isView: false,
             orginData: {},
-            auditing: [],
+            auditing1: [],
             spapplyType: [],
             purtypeName: [{ "ID": "0", "TEXT": "材料（零星维修）" }, { "ID": "1", "TEXT": "材料（维修项目）" }, { "ID": "2", "TEXT": "材料（资本性支出）" },
             { "ID": "3", "TEXT": "劳保" }, { "ID": "4", "TEXT": "办公" }, { "ID": "5", "TEXT": "IT" }, { "ID": "5", "TEXT": "安全及消防" }
@@ -48,7 +48,7 @@
                     form: {
                         labelwidth: 220,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing, disabled: true }, group: "出库冲红" },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing1, disabled: true }, group: "出库冲红" },
                             { display: "冲红日期", name: "BACK_DATE", newline: false, upper: true, type: "date", options: { } },
                             { display: "冲红单号", name: "BACK_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "出库单号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
@@ -117,7 +117,7 @@
                     url: 'Material/SpOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.auditing;
+                        me.auditing1 = data.auditing;
                         me.spapplyType = data.spapplyType;
                     },
                     error: function (message) {
@@ -244,8 +244,12 @@
                 //表单底部按钮
                 var buttons = [];
                 buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
-
+                if (me.auditing == "0") {
+                    buttons.push({ text: '保存', onclick: me.save.bind(me) });
+                }
+                else {
+                    me.mainform.setReadonly(true);
+                }
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
             },
@@ -385,6 +389,7 @@
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
                     if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.auditing) me.auditing = me.dialogData.auditing;
                     if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
                 }
 

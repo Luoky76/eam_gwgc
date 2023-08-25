@@ -353,9 +353,11 @@
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
-                $('#CHECK_USER').bind('click', function () {
-                    me.f_select_man();
-                });
+                if (!me.isView) {
+                    $('#CHECK_USER').bind('click', function () {
+                        me.f_select_man();
+                    });
+                }
                 me.loadData();
                 return me;
             }

@@ -27,9 +27,21 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text", options: { data: me.auditing } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
                             { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "出库单号", name: "_search_OUT_CODE", dbname: "OUT_CODE", newline: false, upper: true, type: "text", options: {} },
+                            {
+                                display: "出库日期", name: "_search_OUT_DATE", dbname: "OUT_DATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_OUT_DATE", dbname: "OUT_DATE", newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+
                         ]
                     },
                     grid: {
@@ -37,6 +49,7 @@
                             { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 100, type: "select", format: { data: me.auditing } },
                             { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", },
                             { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", },
+                            { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text", },
                             { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "date", },
                             //{ display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
@@ -271,35 +284,29 @@
                     ],
                     callback: function (values, rows) {
                         var currentSet = new Set(gridKeys);
-                        var hasDataRed = false;
-
-                        for (var i = 0; i < rows.length; i++) {
-                            if (currentSet.has(rows[i].OUT_CODE)) {
-                                hasDataRed = true;
-                                LG.tip('已经有数据被冲红!');
-                                break;
+                        var newrows = [];
+                        for (let item of rows) {
+                            if (!currentSet.has(item.OUT_CODE)) {
+                                newrows.push(item);
                             }
                         }
-
-                        if (!hasDataRed) {
-                            var changeRow = [];
-                            changeRow = rows;
-                            LG.ajax({
-                                jsToken: true,
-                                url: 'Material/SpOut/ManageSpOutBack',
-                                loading: '正在保存中...',
-                                data: { request: changeRow },
-                                success: function () {
-                                    LG.showSuccess('保存成功', function () {
-                                        me.reload();
-                                        me.dialog.close();
-                                    });
-                                },
-                                error: function (message) {
-                                    LG.showError(message);
-                                }
-                            });
-                        }
+                        var changeRow = [];
+                        changeRow = newrows;
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/ManageSpOutBack',
+                            loading: '正在保存中...',
+                            data: { request: changeRow },
+                            success: function () {
+                                LG.showSuccess('保存成功', function () {
+                                    me.reload();
+                                    me.dialog.close();
+                                });
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
                     }
                 }
                 $.ligerDialog.open({
@@ -320,6 +327,7 @@
                     return;
                 }
                 var sid = selected.OUT_BACK_ID;
+                var auditing = selected.AUDITING;
                 $.ligerDialog.open({
                     width: 1100,
                     height: 620,
@@ -333,7 +341,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
+                    data: { "sid": sid, "auditing": auditing }
                 });
             },
             reload: function () { //刷新

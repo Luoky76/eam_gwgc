@@ -69,7 +69,7 @@
             deviceInfo: [],
             maintDept: [],
             storeSou: [],
-            workState: [], 
+            workState: [],
             btime: null,
             etime: null,
             maintCycle: [],
@@ -177,7 +177,7 @@
                     },
                     grid2: {
                         columns: [
-                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "select", format: { data: me.storeSou }  },
+                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "select", format: { data: me.storeSou } },
                             { display: "备件品种编码", name: "SP_CODE", minWidth: 100, type: "text", },
                             { display: "备件品种名称", name: "SP_NAME", minWidth: 100, type: "text", },
                             { display: "备件型号", name: "SP_TYPE", minWidth: 100, type: "text", },
@@ -344,7 +344,7 @@
             //保养计划附件管理
             f_planAttachManage: function (dataid) {
                 var me = this;
-                isView = true; 
+                isView = true;
                 dataId = dataid;
                 fileMark = 0;
                 tableName = "PM_PLAN_DONEITEM"; // 表名
@@ -537,7 +537,7 @@
                     //sortOrder: 'desc',
                     width: '99%',
                     height: '100%',
-                    checkbox: true,
+                    checkbox: false,
                     enabledEdit: true,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
@@ -784,7 +784,7 @@
                     LG.tip('先选择保养实施明细的一条数据!');
                 }
                 else {
-                     
+
                     var gridData = me.grid2.getData();
                     var gridKeys = [];
                     for (var item of gridData) {
@@ -1220,6 +1220,18 @@
                     }
                     if (!me.grid4.validChangeRows()) return false;
                     var changeRow = me.grid4.getChangedRows();
+                    var errorMessages = [];
+
+                    changeRow.updated.concat(changeRow.added).forEach(function (row) {
+                        if (row.BEGIN_TIME > row.END_TIME || row.END_TIME > new Date()) {
+                            errorMessages.push('结束时间大于当前时间或小于开始时间！');
+                        }
+                    });
+
+                    if (errorMessages.length > 0) {
+                        LG.showSuccess(errorMessages[0]);
+                        return;
+                    }
                     LG.ajax({
                         jsToken: true,
                         url: 'Device/PmInfo/ManageWork',
@@ -1297,12 +1309,12 @@
                 me.setGrid3();
                 if (me.dialogData.qry == undefined) {
                     me.setGrid4();
+                    me.reloadWork();
                 }
                 else {
                     $("#workgird").hide();
                     $("#work").hide();
                 }
-                me.reloadWork();
                 me.reloadPep();
                 me.reloadSp();
                 me.reloadDet();
@@ -1313,7 +1325,9 @@
                     me.grid.setOptions(commonGridOptions);
                     me.grid2.setOptions(commonGridOptions);
                     me.grid3.setOptions(commonGridOptions);
-                    me.grid4.setOptions(commonGridOptions);
+                    if (me.dialogData.qry == undefined) {
+                        me.grid4.setOptions(commonGridOptions);
+                    }
                 }
                 return me;
             }

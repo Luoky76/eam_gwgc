@@ -31,6 +31,7 @@ namespace EAM.Material.Services
                 { "BasePurtype", (Expression<Func <BC_CODE, bool>>)null},
                 { "SpTypeName", null},
                 { "SpCatalogName", null},
+                { "SpUnit", null},
             });
 
             return AjaxResult.Success(data);

@@ -472,9 +472,11 @@
                 me.loadData();
                 //加载重大改造履历
                 me.setGrid();
-                $('#M_USER').bind('click', function () {
-                    me.f_select_man();
-                });
+                if (!me.isView) {
+                    $('#M_USER').bind('click', function () {
+                        me.f_select_man();
+                    });
+                }
                 me.reloadDet();
                 if (me.dialogData.view != undefined) {
                     const commonGridOptions = {

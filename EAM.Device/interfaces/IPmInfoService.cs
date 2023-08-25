@@ -42,7 +42,7 @@ namespace EAM.Device.interfaces
         /// 提交维保计划
         /// </summary>
         /// <returns></returns>
-        public Task<int> SubmitPmPlan(List<string> sids);
+        public Task<AjaxResult> SubmitPmPlan(List<string> sids);
 
         /// <summary>
         /// 获取计划明细

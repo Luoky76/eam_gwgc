@@ -37,6 +37,7 @@
             iframeloading: $("#iframeloading"),
             tree: null,
             ConsType: [],
+            unitdata: [],
             DeviceComposeName: [],
             DeviceTypeName: [],
             currentNode: null,
@@ -78,7 +79,12 @@
                                 }
                             },
                             { display: "采购分类", name: "PURTYPE_NAME", minWidth: 100, type: "text", hide: true },
-                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "计量单位", name: "UNIT", minWidth: 100, type: "select", editor: {
+                                    type: 'select',
+                                    data: me.unitdata,
+                                }
+                            },
                             { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "质保期", name: "WARRANTY", minWidth: 100, type: "float", editor: { type: 'float' } },
 
@@ -108,7 +114,7 @@
 
                                 },
                             },
-                            { display: "物料分类编码", name: "TYPE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "物料分类编码", name: "TYPE_CODE", minWidth: 100, type: "text" },
 
                             { display: "是否回收", name: "IS_RECOVERY", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
                             { display: "是否禁用", name: "IS_CANCEL", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
@@ -134,6 +140,7 @@
                         me.basePurtype = data.BasePurtype
                         me.spCatalogName = data.SpCatalogName
                         me.spTypeName = data.SpTypeName
+                        me.unitdata = data.SpUnit
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -239,7 +246,7 @@
                         me.grid.addEditRow({ "PRE_CATALOGID": nodeId, "TYPE_CODE": item.VALUE, "TYPE_ID": me.currentNode.data.TYPE_ID, "STATUS": "1" });
                     }
                     if (me.currentNode.data.TYPE == "0") {
-                        me.grid.addEditRow({ "TYPE_ID": nodeId, "TYPE_CODE": item.VALUE ,"IS_RECOVERY": "0", "IS_CANCEL": "0" });
+                        me.grid.addEditRow({ "TYPE_ID": nodeId, "TYPE_CODE": item.VALUE, "IS_RECOVERY": "0", "IS_CANCEL": "0" });
                     }
                 }
             },
@@ -260,8 +267,8 @@
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
-                            location.reload();
-                            //me.reloadTree();
+                            //location.reload();
+                            me.reloadTree();
                             //me.reload();
                         },
                         error: function (message) {
@@ -376,13 +383,6 @@
                         if (nodeData) {
                             var parentNo = nodeData.SP_ID;
                             //根据树形数据设置查询条件
-                            if (nodeData.TYPE == "0") {
-                                //$("#_search_PRE_CATALOGID").val("");
-                                $("#_search_TYPE_ID").val((parentNo == "ROOT" ? "" : parentNo));
-                            }
-                            else {
-                                $("#_search_TYPE_ID").val("");
-                            }
                             where = {
                                 rules: [],
                                 groups: [{
@@ -394,6 +394,7 @@
                             }
                             else {
                                 where.groups[0].rules.push({ field: 'TYPE_ID', value: parentNo, op: 'startwith' });
+                                where.groups[0].rules.push({ field: "SP_ID", op: "equal", value: parentNo });
                             }
                             me.grid.set('parms', { "where": JSON2.stringify(where) });
                             me.currentMenuParentNo = parentNo;

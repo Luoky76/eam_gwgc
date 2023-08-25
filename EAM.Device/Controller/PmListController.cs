@@ -82,8 +82,7 @@ namespace EAM.Device.Controller
         [HttpPost]
         public async Task<AjaxResult> WeekTimerAsync()
         {
-            
-             await _service.WeekTimer();
+            await _service.WeekTimer();
             return AjaxResult.Success();
         }
         /// <summary>
@@ -93,7 +92,6 @@ namespace EAM.Device.Controller
         [HttpPost]
         public async Task<AjaxResult> MonthTimerAsync()
         {
-
             await _service.MonthTimer();
             return AjaxResult.Success();
         }
@@ -104,7 +102,6 @@ namespace EAM.Device.Controller
         [HttpPost]
         public async Task<AjaxResult> QuarterTimerAsync()
         {
-
             await _service.QuarterTimer();
             return AjaxResult.Success();
         }
@@ -115,7 +112,6 @@ namespace EAM.Device.Controller
         [HttpPost]
         public async Task<AjaxResult> YearTimerAsync()
         {
-
             await _service.YearTimer();
             return AjaxResult.Success();
         }

@@ -233,8 +233,8 @@
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
-                            location.reload();
-                            //me.reloadTree();
+                            //location.reload();
+                            me.reloadTree();
                             //me.reload();
                         },
                         error: function (message) {
@@ -382,6 +382,7 @@
                             }
                             else {
                                 where.groups[0].rules.push({ field: 'PRE_COMPOSEID', value: parentNo, op: 'startwith' });
+                                where.groups[0].rules.push({ field: "COMPOSE_ID", op: "equal", value: parentNo });
                             }
                             me.grid.set('parms', { "where": JSON2.stringify(where) });
                             me.currentMenuParentNo = parentNo;

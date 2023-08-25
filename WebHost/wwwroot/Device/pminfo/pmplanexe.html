@@ -25,7 +25,10 @@
     </form>
     <script type="text/javascript">
         'use strict';
-
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
@@ -55,7 +58,7 @@
                             { display: "设备名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "实施人员", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "保养负责人", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "实施完成时间", name: "AUDIT_TIME", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "是否有遗留问题", name: "IS_LOSE", dbname: "IS_LOSE", width: 100, type: "select", format: { data: me.isLose } },
                             { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
@@ -146,6 +149,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "attach":
+                            me.attach();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
@@ -162,6 +168,44 @@
                 }
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            attach: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        if (selected[0].AUDITING_EXE != "0") {
+                            LG.tip('已提交，无法上传!');
+                        }
+                        else {
+                            me.f_rowAttachManage(selected[0].EXE_ID);
+                        }
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                isView = false;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "PM_PLAN_EXE"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reload();
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;
@@ -208,7 +252,7 @@
                         break;
                     }
                 }
-                if (selected > 0) {
+                if (selected.length > 0) {
                     if (me.alreadySubmitted) {
                         LG.tip('已提交，无法再次提交!');
                         me.alreadySubmitted = false;

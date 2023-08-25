@@ -199,19 +199,28 @@ namespace EAM.Device.services
         /// 提交维修计划
         /// </summary>
         /// <returns></returns>
-        public async Task<int> SubmitRepDockPlan(List<string> sids)
+        public async Task<AjaxResult> SubmitRepDockPlan(List<string> sids)
         {
             string aa = "MTSS" + DateTime.Now.ToString("yyyyMM");
             string def = aa + "0000";
             var model = await _dbContext.Query<REP_DOCK_PLAN>(x => x.EXE_CODE.Contains(aa)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
-            return await _dbContext.UpdateAsync<REP_DOCK_PLAN>(x => sids.Contains(x.PLAN_ID),
-                x => new REP_DOCK_PLAN
-                {
-                    AUDITING_PLAN = "1",
-                    AUDITING_EXE = "0",
-                    EXE_CODE = aa + index.ToString("D4"),
-                });
+            var index = model.SubStr(10, 4).CastTo<int>();
+            foreach (var sid in sids)
+            {
+                index++;
+
+                string newExeCode = aa + index.ToString("D4");
+
+                await _dbContext.UpdateAsync<REP_DOCK_PLAN>(
+                    x => x.PLAN_ID == sid,
+                    x => new REP_DOCK_PLAN
+                    {
+                        AUDITING_PLAN = "1",
+                        AUDITING_EXE = "0",
+                        EXE_CODE = newExeCode,
+                    });
+            }
+            return AjaxResult.Success("更新成功");
         }
         /// <summary>
         /// 获取计划明细

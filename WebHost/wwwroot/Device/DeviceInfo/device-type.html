@@ -235,8 +235,8 @@
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
-                            location.reload();
-                            //me.reloadTree();
+                            //location.reload();
+                            me.reloadTree();
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -362,6 +362,7 @@
                                 //where.groups[0].rules.push({ field: "PRE_TYPEID", op: "equal", value: "0" });
                             } else {
                                 where.groups[0].rules.push({ field: 'PRE_TYPEID', value: parentNo, op: 'equal' });
+                                where.groups[0].rules.push({ field: "TYPE_ID", op: "equal", value: parentNo });
                             }
 
                             me.grid.set('parms', { "where": JSON2.stringify(where) });

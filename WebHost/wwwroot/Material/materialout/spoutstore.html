@@ -45,6 +45,18 @@
                             {
                                 display: "仓管员", name: "_search_M_USER", dbname: "M_USER", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
+                            {
+                                display: "出库日期", name: "_search_OUT_DATE", dbname: "OUT_DATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_OUT_DATE", dbname: "OUT_DATE", newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
                         ]
                     },
                     grid: {

@@ -156,19 +156,30 @@ namespace EAM.Device.services
         /// 提交维保计划
         /// </summary>
         /// <returns></returns>
-        public async Task<int> SubmitPmPlan(List<string> sids)
+        public async Task<AjaxResult> SubmitPmPlan(List<string> sids)
         {
             string aa = "BYSS" + DateTime.Now.ToString("yyyyMM");
             string def = aa + "0000";
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
-            return await _dbContext.UpdateAsync<PM_PLAN_EXE>(x => sids.Contains(x.EXE_ID),
-                x => new PM_PLAN_EXE
-                {
-                    AUDITING = "1",
-                    AUDITING_EXE = "0",
-                    EXE_CODE = aa + index.ToString("D4"),
-        });
+
+            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.EXE_CODE.Contains(aa)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(10, 4).CastTo<int>();
+
+            foreach (var sid in sids)
+            {
+                index++;
+
+                string newExeCode = aa + index.ToString("D4");
+
+                await _dbContext.UpdateAsync<PM_PLAN_EXE>(
+                    x => x.EXE_ID == sid,
+                    x => new PM_PLAN_EXE
+                    {
+                        AUDITING = "1",
+                        AUDITING_EXE = "0",
+                        EXE_CODE = newExeCode,
+                    });
+            }
+            return AjaxResult.Success("更新成功");
         }
         /// <summary>
         /// 获取计划明细
