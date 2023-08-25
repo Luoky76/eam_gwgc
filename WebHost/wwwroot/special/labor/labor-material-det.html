@@ -104,12 +104,11 @@
                             {
                                 display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", editor: {
                                     type: "float",
-                                    /*onChangeValue: function (input, value) {
+                                    onChangeValue: function (input, value, g) {
                                         if (value < 0) {
-                                            var selected = business.grid.getSelectedRow();
-                                            business.grid.updateCell("STORE_NUM", 0, selected);
+                                            g.options.editParm.record.STORE_NUM = 0;
                                         }
-                                    }*/
+                                    }
                                 }
                             },
                             { display: "存放位置", name: "POSITION", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -156,7 +155,11 @@
             loadData: function () {
                 var me = this;
                 if (me.isNew) {
-                    var originData = {};
+                    var originData = {
+                        AUDITING: "0",
+                        DEPT_ID: window.session.Corp.CorpID,
+                        DEPT_NAME: window.session.Corp.CName
+                    };
                     LG.ajax({
                         async: false,
                         url: 'Special/LaborMaterial/CreatePrimaryKey',
@@ -234,7 +237,7 @@
             close: function (skipConfirm) {
                 var me = this;
                 function inner(callback) {
-                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                    if (!skipConfirm && (!$.isEmptyObject(me.mainform.getChanges()) || me.grid.isDataChanged)) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);
@@ -352,7 +355,7 @@
                         }
                     },
                     onAfterEdit: function (e) {
-                        if (e.record.STORE_NUM < 0) me.grid.updateRow(e.rowindex, { STORE_NUM: 0 });
+                        //if (e.record.STORE_NUM < 0) me.grid.updateRow(e.rowindex, { STORE_NUM: 0 });
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
