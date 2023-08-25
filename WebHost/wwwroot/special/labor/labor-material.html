@@ -200,6 +200,7 @@
                             break;
                     }
                 }
+                me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             add: function () { //新增
@@ -208,7 +209,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]',
+                    title: '[新增]船舶常规物料清册',
                     url: "labor-material-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -231,7 +232,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[查看]',
+                    title: '[查看]船舶常规物料清册',
                     url: "labor-material-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -250,7 +251,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[修改]',
+                    title: '[修改]船舶常规物料清册',
                     url: "labor-material-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -259,7 +260,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": selected.LABOR_MATERIAL_ID }
+                    data: { "sid": selected.LABOR_MATERIAL_ID, "isNew": false, "isView": false }
                 });
             },
             save: function () { //保存
