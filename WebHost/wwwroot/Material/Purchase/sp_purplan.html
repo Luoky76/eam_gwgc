@@ -254,6 +254,15 @@
                             if (me.gridAuditing == "1") return false;
                             else return true;
                         }
+                    },
+                    onBeforeSubmitEdit: function (e) {
+                        if (e.column.name == "PRICE" || e.column.name == "MONEY" || e.column.name == "PERIOD") {
+                            if (e.value < 0) {
+                                LG.showError("不可为负数！");
+                                return false;
+                            }
+                        }
+                        return true;
                     }
                 });
                 me.gridReq.isValid = true;

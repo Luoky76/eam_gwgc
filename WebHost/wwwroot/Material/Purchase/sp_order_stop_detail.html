@@ -86,7 +86,16 @@
                     height: '100%',
                     checkbox: true,
                     enabledEdit: !me.isView,
-                    clickToEdit: true
+                    clickToEdit: true,
+                    onBeforeSubmitEdit: function (e) {
+                        if (e.column.name == "STOP_NUM") {
+                            if (e.value < 0) {
+                                LG.showError("不可为负数！");
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
