@@ -71,8 +71,8 @@
                                     },
                                 }
                             },
-                            { display: "总金额(元)", name: "SUM_MONEY", width: 150, type: "text",},
-                            { display: "申请人", name: "APPLY_USER", width: 100, type: "text", },
+                            { display: "预估总金额(元)", name: "SUM_MONEY", width: 150, type: "text",},
+                            { display: "询价人", name: "XJ_USER", width: 100, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
                             { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
                             { display: "询价日期", name: "PLAN_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
@@ -108,8 +108,8 @@
                                 }
                             },
                             {
-                                display: "成交单价(元)", name: "PRICE", width: 120, type: "text", editor: {
-                                    type: 'text', onChangeValue: function (input, value, g) {
+                                display: "成交单价(元)", name: "PRICE", width: 120, type: "float", editor: {
+                                    type: 'float', onChangeValue: function (input, value, g) {
                                         var editParm = g.options.editParm.record;
                                         editParm["MONEY"] = (value * (editParm.COUNT || 0)).toFixed(2);
 
@@ -117,13 +117,18 @@
                                 }, validate: { required: true },
                             },
                             {
-                                display: "成交金额(元)", name: "MONEY", width: 120, type: "text", validate: { required: true }, editor: { type: 'text' }, totalSummary:
+                                display: "成交金额(元)", name: "MONEY", width: 120, type: "float", validate: { required: true }, editor: {
+                                    type: 'float', onChangeValue: function (input, value, g) {
+                                        var editParm = g.options.editParm.record;
+                                        editParm["PRICE"] = (value / (editParm.COUNT || 0)).toFixed(2);
+                                    }
+                                }, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 }
                             },
-                            { display: "供应周期(天)", name: "PERIOD", width: 120, type: "text", editor: { type: 'text' }, validate: { required: true } },
+                            { display: "供应周期(天)", name: "PERIOD", width: 120, type: "float", editor: { type: 'float' }, validate: { required: true } },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
                             { display: "PURPLAN_ID", name: "PURPLAN_ID", dbname: "PURPLAN_ID", width: 100, type: "text", hide: true },
                             { display: "主键", name: "PLAN_ID", dbname: "PLAN_ID", width: 100, type: "text", hide: true },

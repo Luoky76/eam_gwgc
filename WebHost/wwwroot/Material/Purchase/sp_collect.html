@@ -317,7 +317,11 @@
                     LG.showError("请选择一条记录");
                     return
                 }
-
+                var apply = me.grid.getSelectedRows()[0];
+                if (apply.COLLECT_ID == null) {
+                    LG.showError("请先保存再打开明细");
+                    return
+                }
                 $.ligerDialog.open({
                     width: 1100,
                     height: 750,
@@ -331,7 +335,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Cid": me.grid.getSelectedRows()[0].COLLECT_ID, "view": me.grid.getSelectedRows()[0].AUDITING }
+                    data: { "Cid": apply.COLLECT_ID, "view": apply.AUDITING }
                 });
             },
             bindGridEvent: function () {

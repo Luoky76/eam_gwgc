@@ -406,6 +406,7 @@ namespace EAM.Material.Services
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
+            entity.DISABLE_DATE = dt;
             entity.AUDITING = "0";
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
@@ -593,6 +594,7 @@ namespace EAM.Material.Services
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
+            entity.ENABLE_DATE = dt;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();

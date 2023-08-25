@@ -71,6 +71,21 @@
                                     align: 'center'
                                 }
                             },
+                            {
+                                display: "预计采购数量", name: "CHECK_NUM", type: "number", width: 120, editor: { type: 'number' },
+                                validate: { required: true }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            {
+                                display: "预估金额(元)", name: "COLLECT_MONEY", width: 120, type: "number", validate: { required: true }, editor: { type: 'number' }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
                             { display: "申请人", name: "REQUEST_USER", width: 150, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
                             { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
@@ -81,21 +96,7 @@
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
                             { display: "申请数量", name: "REQUEST_NUM", width: 150, type: "decimal", },
-                            {
-                                display: "预计采购数量", name: "CHECK_NUM", type: "number", width: 120, editor: { type: 'number' },
-                                validate: { required: true }, totalSummary:
-                                {
-                                    type: 'sum',
-                                    align: 'center'
-                                }
-                            },
-                            {
-                                display: "预估金额(元)", name: "COLLECT_MONEY", width: 120, type: "text", validate: { required: true }, editor: { type: 'text' }, totalSummary:
-                                {
-                                    type: 'sum',
-                                    align: 'center'
-                                }
-                            },
+                            
                             { display: "说明", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
                             { display: "物料ID", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
                             { display: "COLLECT_ID", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
@@ -132,7 +133,7 @@
                     width: '98%',
                     height: '50%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onSelectRow: function (rowdata, rowid) {
                         me.gridSelectId = rowdata.COLLECT_DET_ID;
@@ -153,6 +154,9 @@
                             break;
                         case "add":
                             me.add();
+                            break;
+                        case "save":
+                            me.save();
                             break;
                     }
                 }
@@ -181,7 +185,7 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true
                 });
                 me.gridReq.isValid = true;
@@ -197,8 +201,8 @@
                         case "delete":
                             me.delete();
                             break;
-                        case "save":
-                            me.save();
+                        case "saveReq":
+                            me.saveReq();
                             break;
                     }
                 }
@@ -239,7 +243,6 @@
                     }
                 };
 
-
                 $.ligerDialog.open({
                     width: 980,
                     height: 600,
@@ -260,6 +263,33 @@
 
             },
             save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'DetailSave',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            saveReq: function () { //保存
                 var me = this;
                 if (me.gridReq.endEdit() != false) {
                     if (!me.gridReq.isDataChanged) {
