@@ -54,7 +54,7 @@
                         <button class="button" id="sumbit">
                             提交
                         </button>
-                        <button class="button button-large button-fill" id="unsubmit" style="background-color: orange">退回</button>
+                        <button class="button button-large button-fill" id="unsubmit" style="background-color: orange">注销</button>
                     </div>
                 </div>
             </div>
@@ -241,7 +241,7 @@
                         })
                     }
                 });
-                //退回
+                //注销
                 $("#unsubmit").click(function () {
                     var checkDom = $("#spout_store_list input:checked");
                     var checkedIDList = [];
@@ -250,7 +250,7 @@
                     });
 
                     if (checkedIDList.length <= 0) {
-                        app.dialog.error("请勾选后在点退回", function () { });
+                        app.dialog.error("请勾选后在点注销", function () { });
                         return false;
                     }
 
@@ -263,13 +263,13 @@
                     checkedIDList.forEach((a) => {
                         var aut = me.list.find((v) => v.OUT_ID == a.OUT_ID).AUDITING_A;
                         if (aut == "1") {
-                            app.dialog.error("已提交不能退回", function () { });
+                            app.dialog.error("已提交不能注销", function () { });
                             flag = false;
                             return false;
                         }
                     });
                     if (flag) {
-                        app.dialog.confirm('确定要退回？', '退回', function () {
+                        app.dialog.confirm('确定要注销？', '注销', function () {
 
                             app.ajax({
                                 async: false,
@@ -279,7 +279,7 @@
                                     "sid": checkedIDList[0].OUT_ID
                                 },
                                 success: function (data) {
-                                    app.dialog.alert("退回成功", function () {
+                                    app.dialog.alert("注销成功", function () {
                                         business.getData();
                                     });
                                 },

@@ -807,6 +807,7 @@
         return formData;
     };
 
+    //自动生成详情编辑页
     app.CreatePopupContentHtml = function (dict) {
         var ul = document.createElement('ul');
         for (var i = 0; i < dict.length; i++) {
@@ -870,6 +871,7 @@
             itemtitle.setAttribute("style", "color: #666666");
             itemtitle.textContent = dict[i].display || "";
 
+            //必填项
             if (dict[i].hasOwnProperty("validate") && dict[i].validate.required) {
                 var $span = $('<span style="color:red">*</span>');
                 $(itemtitle).append($span);
@@ -904,6 +906,7 @@
 
         return ul.outerHTML;
     };
+    //自动生成列表页
     app.CreateListContentHtml = function (data, dict, iCheckBox) {
         var ul = document.createElement('ul');
         for (var i = 0; i < data.length; i++) {
