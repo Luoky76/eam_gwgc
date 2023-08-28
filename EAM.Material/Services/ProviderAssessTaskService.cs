@@ -217,7 +217,7 @@ namespace EAM.Material.Services
                     MAX_SCORE = Sql.Max(b.TOTAL_SCORE),
                     MIN_SCORE = Sql.Min(b.TOTAL_SCORE),
                     EXAMINER_CNT_ACTUAL = Sql.Sum(b.AUDITING == "1" ? 1 : 0),
-                    EXMAINER_CNT = Sql.Count()
+                    EXMAINER_CNT = Sql.Sum((b.AUDITING == "1" || b.AUDITING == "0") ? 1 : 0)
                 })
                 .GroupBy(c => c.ASSESS_TASK_ID)
                 .AndBy(c => c.PROVIDER_ID)
