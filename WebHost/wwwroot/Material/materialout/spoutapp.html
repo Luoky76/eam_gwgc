@@ -384,7 +384,7 @@
                         jsToken: true,
                         url: 'Material/SpOut/ManageSpOutApp',
                         loading: '正在保存中...',
-                        data: changeRow,
+                        data: { request: changeRow, requestdet: null },
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
