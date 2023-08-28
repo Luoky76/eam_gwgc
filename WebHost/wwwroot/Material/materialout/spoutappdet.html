@@ -182,9 +182,13 @@
                     }
                     var changeRowDet = me.grid.getChangedRows();
                     var isSave = true
-                    for (var i = 0; i < changeRowDet.added.length; i++) {
-                        if (changeRowDet.added[i].APPLY_NUM > changeRowDet.added[i].STORE_NUM) {
+                    for (var i = 0; i < changeRowDet.updated.length; i++) {
+                        if (changeRowDet.updated[i].APPLY_NUM > changeRowDet.updated[i].STORE_NUM) {
                             LG.showSuccess('申请数量不可大于库存数量！')
+                            isSave = false;
+                        }
+                        if (changeRowDet.updated[i].APPLY_NUM < 0) {
+                            LG.showSuccess('申请数量不可小于0！')
                             isSave = false;
                         }
                     }

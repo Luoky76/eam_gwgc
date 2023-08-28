@@ -699,6 +699,7 @@ namespace EAM.Material.Services
                     index++; // 增加 index
                     request1.BACK_CODE = aa + (model.SubStr(8, 4).CastTo<int>() + index).ToString("D4");
                     request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
+                    request1.MEMO = "";
                     outDic[request1.OUT_ID] =  request1.OUT_BACK_ID;
                 }
                 await _dbContext.InsertRangeAsync(request2);
