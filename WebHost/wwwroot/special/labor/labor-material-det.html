@@ -104,11 +104,9 @@
                             {
                                 display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", editor: {
                                     type: "float",
-                                    onChangeValue: function (input, value, g) {
-                                        if (value < 0) {
-                                            g.options.editParm.record.STORE_NUM = 0;
-                                        }
-                                    }
+                                    mask: "ffffffff",
+                                    promptChar: " ",
+                                    clearPromptChar: true
                                 }
                             },
                             { display: "存放位置", name: "POSITION", minWidth: 100, type: "text", editor: { type: 'text' } },
