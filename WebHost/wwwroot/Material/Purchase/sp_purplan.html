@@ -47,7 +47,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", labelWidth: 100, width: 100, newline: true, type: "select", format: { data: me.dataCheck } },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "询价单号", name: "PLAN_NO", width: 180, type: "text" },
                             {
                                 display: "是否协议供货", name: "IS_SUPPACT", dbname: "IS_SUPPACT", width: 120, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
@@ -198,11 +198,13 @@
                         }
                     },
                     onSelectRow: function (rowdata, rowid) {
-                        me.gridSelectId = rowdata.PURPLAN_ID;
-                        me.gridAuditing = rowdata.AUDITING;
-                        me.gridReq.options.parms = { PURPLAN_ID: me.gridSelectId };
-                        me.gridReq.loadData();
+                        if (me.gridSelectId != rowdata.PURPLAN_ID) {
+                            me.gridSelectId = rowdata.PURPLAN_ID;
+                            me.gridAuditing = rowdata.AUDITING;
+                            me.gridReq.options.parms = { PURPLAN_ID: me.gridSelectId };
+                            me.gridReq.loadData();
 
+                        }
                     },
                 });
                 me.grid.isValid = true;

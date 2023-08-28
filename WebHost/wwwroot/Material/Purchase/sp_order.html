@@ -48,35 +48,17 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", labelWidth: 100, width: 100, newline: true, type: "select", format: { data: me.dataCheck } },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "申请单号", name: "ORDER_CODE", width: 180, type: "text" },
                             { display: "订单类型", name: "ORDER_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.typeData }, validate: { required: true }, },
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd", }, validate: { required: true }, },
-                            {
-                                display: "申购公司", name: "DEPT_ID", width: 180, type: "select", editor: {
-                                    type: 'select',
-                                    data: me.gyData,
-                                    onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.gyData.length; i++) {
-                                                if (rowdata.value == me.gyData[i].ID) {
-                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.gyData[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
-                                        } else {
-                                            liger.get("maingrid").updateCell("DEPT_NAME", "", rowdata.record);
-                                        }
-                                    },
-                                }
-                            },
+                            { display: "申购公司", name: "DEPT_NAME", width: 180, type: "text", },
                             { display: "采购员", name: "BUY_USER", width: 120, type: "text", },
                             { display: "订单金额(元)", name: "ORDER_MONEY", width: 120, type: "text", },
 
                             { display: "供应商", name: "PROVIDER_NAME", width: 100, type: "text", },
                             { display: "相关流程", name: "REQUEST_NAME", width: 150, type: "text", },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
-                            { display: "申购公司名", name: "DEPT_NAME", width: 100, type: "text", hide: true },
                             { display: "主键", name: "ORDER_ID", width: 100, type: "text", hide: true },
                         ],
                         columns2: [
@@ -192,11 +174,12 @@
                         }
                     },
                     onSelectRow: function (rowdata, rowid) {
-                        me.gridSelectId = rowdata.ORDER_ID;
-                        me.gridAuditing = rowdata.AUDITING;
-                        me.gridReq.options.parms = { ORDER_ID: me.gridSelectId };
-                        me.gridReq.loadData();
-
+                        if (me.gridSelectId != rowdata.ORDER_ID) {
+                            me.gridSelectId = rowdata.ORDER_ID;
+                            me.gridAuditing = rowdata.AUDITING;
+                            me.gridReq.options.parms = { ORDER_ID: me.gridSelectId };
+                            me.gridReq.loadData();
+                        }
                     },
                 });
                 me.grid.isValid = true;
@@ -311,6 +294,11 @@
                         selected.forEach((a) => {
                             if (a.AUDITING != "0") {
                                 LG.tip(a.ORDER_CODE + '已提交，无法再次提交!');
+                                flag = false;
+                                return;
+                            }
+                            if (a.ORDER_TYPE == null) {
+                                LG.tip(a.ORDER_CODE + '订单类型不能空!');
                                 flag = false;
                                 return;
                             }

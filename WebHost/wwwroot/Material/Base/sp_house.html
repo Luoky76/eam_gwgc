@@ -57,9 +57,7 @@
                     },
                     grid: {
                         columns: [
-                            {
-                                display: "记录状态", name: "AUDITING", labelWidth: 100, width: 100, newline: true, type: "select", format: { data: me.dataCheck }
-                            },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "仓库货位编码", name: "HOUSE_CODE", dbname: "HOUSE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             { display: "仓库货位名称", name: "HOUSE_NAME", dbname: "HOUSE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             { display: "类型", name: "HOUSE_TYPE", dbname: "HOUSE_TYPE", minWidth: 100, type: "select", editor: { type: 'select', data: me.HouseType }, validate: { required: true } },

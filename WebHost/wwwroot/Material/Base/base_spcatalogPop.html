@@ -128,10 +128,12 @@
                     height: '100%',
                     checkbox: false,
                     onDblClickRow: function (data, id, row) {
-                       
+                        if (data.TYPE_NAME == null) {
+                            var type = me.typeData.find(a => a.ID == data.TYPE_ID);
+                            data.TYPE_NAME = type != null ? type.TEXT : "";
+                        }
                         var g = this;
                         var p = this.options;
-                        console.log(me.grid2.currentData);
 
                         var gridData2 = me.grid2.currentData.Rows;
 

@@ -118,6 +118,7 @@
                 me.grid = $("#maingrid").ligerGrid({
                     autoWidth: false,
                     delayLoad: true,
+                    title: "物资请购-物资清单",
                     columns: me.config.grid.columns,
                     usePager: false,
                     toolbar: { group: "detail" },
@@ -136,10 +137,11 @@
                     enabledEdit: !me.isView,
                     clickToEdit: true,
                     onSelectRow: function (rowdata, rowid) {
-                        me.gridSelectId = rowdata.COLLECT_DET_ID;
-                        me.gridReq.options.parms = { COLLECT_DET_ID: me.gridSelectId };
-                        me.gridReq.loadData();
-
+                        if (rowdata.COLLECT_DET_ID != me.gridSelectId) {
+                            me.gridSelectId = rowdata.COLLECT_DET_ID;
+                            me.gridReq.options.parms = { COLLECT_DET_ID: me.gridSelectId };
+                            me.gridReq.loadData();
+                        }
                     },
                 });
                 me.grid.isValid = true;
@@ -170,6 +172,7 @@
                     autoWidth: false,
                     delayLoad: true,
                     columns: me.config.grid.columns2,
+                    title: "物资请购-需求明细",
                     usePager: false,
                     toolbar: { group: "request" },
                     url: me.rootPath + 'RequestList',
@@ -316,7 +319,7 @@
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.gridReq.isDataChanged = false;
-                            me.reload();
+                            me.gridReq.loadData();
                         },
                         error: function (message) {
                             LG.showError(message);
