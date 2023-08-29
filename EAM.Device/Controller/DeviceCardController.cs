@@ -1,4 +1,5 @@
-﻿using EAM.Device.Interfaces;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -17,6 +18,13 @@ namespace EAM.Device.Controller
             _service = service;
         }
 
+        #region 设备卡片
+        [HttpPost]
+        public async Task<AjaxResult> ComboxData()
+        {
+            return await _service.ComboxData();
+        }
+
         /// <summary>
         /// 列表
         /// </summary>
@@ -30,17 +38,9 @@ namespace EAM.Device.Controller
         }
 
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DeviceListAsync(GridRequest request)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            var result = await _service.DeviceListAsync(request);
-            return AjaxResult<GridData>.Success(result);
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult<DEVICE_CARD>> GetAsync(string id)
-        {
-            if (id.IsNullOrEmpty()) return AjaxResult<DEVICE_CARD>.Error("请传递参数");
-            return AjaxResult<DEVICE_CARD>.Success(await _service.GetAsync(id), "成功");
+            return await _service.GetAsync(id);
         }
 
         /// <summary>
@@ -53,5 +53,105 @@ namespace EAM.Device.Controller
         {
             return await _service.SaveAsync(request);
         }
+        #endregion
+
+        #region 设备参数
+        /// <summary>
+        /// 列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> ParamListAsync(GridRequest request)
+        {
+            return await _service.ParamListAsync(request);
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveParamAsync(SaveRequest<DEVICE_PARAM> request)
+        {
+            return await _service.SaveParamAsync(request);
+        }
+        #endregion
+
+        #region 设备随机资料
+
+        /// <summary>
+        /// 列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> DocListAsync(GridRequest request)
+        {
+            return await _service.DocListAsync(request);
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveDocAsync(SaveRequest<DEVICE_DOC> request)
+        {
+            return await _service.SaveDocAsync(request);
+        }
+        #endregion
+
+        #region 重大改造履历
+
+        /// <summary>
+        /// 列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> RemListAsync(GridRequest request)
+        {
+            return await _service.RemListAsync(request);
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveRemAsync(SaveRequest<DEVICE_REMOULD> request)
+        {
+            return await _service.SaveRemAsync(request);
+        }
+        #endregion
+
+        #region 设备台账
+
+        /// <summary>
+        /// 列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<GridData> DeviceListAllAsync(GridRequest request)
+        {
+            return await _service.DeviceListAllAsync(request);
+        }
+        #endregion
+
+        #region 维保设备
+
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> PmListAsync(GridRequest request)
+        {
+            var result = await _service.PmListAsync(request);
+            return AjaxResult<GridData>.Success(result);
+        }
+
+        #endregion
     }
 }

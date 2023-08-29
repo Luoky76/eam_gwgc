@@ -1,12 +1,15 @@
 ﻿using Chloe;
 using EAM.Repair.interfaces;
 using Gksyb.Common;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using NPOI.SS.Formula.PTG;
 using System.Collections.Concurrent;
+using static StackExchange.Redis.Role;
 
 namespace EAM.Repair.services
 {
@@ -14,7 +17,7 @@ namespace EAM.Repair.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
-
+        private string masterID = string.Empty, errMsg = string.Empty;
         public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService)
         {
             _dbContext = dbContext;
@@ -179,6 +182,27 @@ namespace EAM.Repair.services
                 var index = model.SubStr(10, 4).CastTo<int>() + 1;
                 exe.EXE_CODE = type + index.ToString("D4");
 
+                var item = await _dbContext.Query<REP_PLAN_ITEM>(x => x.PLAN_ID == request.PLAN_ID).ToListAsync();
+
+                foreach (var iten in item)
+                {
+                    REP_PLAN_EXE_ITEM exeitem = new();
+                    exeitem.BOM_NAME = iten.BOM_NAME;
+                    exeitem.REP_INDEX = iten.REP_INDEX;
+                    exeitem.REP_CONTENT = iten.REP_CONTENT;
+                    exeitem.DEAL_TYPE = iten.DEAL_TYPE;
+                    exeitem.ITEM_TYPE = iten.ITEM_TYPE;
+                    exeitem.IS_ASKBID = iten.IS_ASKBID;
+                    exeitem.REP_LEADER = iten.REP_LEADER;
+                    exeitem.PLAN_ID = iten.PLAN_ID;
+                    exeitem.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+                    exeitem.PLAN_ITEM_ID = iten.PLAN_ITEM_ID;
+                    exeitem.BOM_ID = iten.BOM_ID;
+                    exeitem.EXE_ID = exe.EXE_ID;
+
+                    await _dbContext.InsertAsync<REP_PLAN_EXE_ITEM>(exeitem);
+                }
+
                 await _dbContext.InsertAsync<REP_PLAN_EXE>(exe);
             }
             await Task.CompletedTask;
@@ -244,6 +268,7 @@ namespace EAM.Repair.services
                 a => new
                 {
                     a.PLAN_ITEM_ID,
+                    a.PLAN_ID,
                     a.BOM_NAME,
                     a.REP_CONTENT,
                     a.MEMO,
@@ -264,21 +289,6 @@ namespace EAM.Repair.services
         private async Task BeforeAddItem(REP_PLAN_ITEM entity)
         {
             entity.PLAN_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            REP_PLAN_EXE_ITEM exe = new();
-            exe.BOM_NAME = entity.BOM_NAME;
-            exe.REP_INDEX = entity.REP_INDEX;
-            exe.REP_CONTENT = entity.REP_CONTENT;
-            exe.DEAL_TYPE = entity.DEAL_TYPE;
-            exe.ITEM_TYPE = entity.ITEM_TYPE;
-            exe.IS_ASKBID = entity.IS_ASKBID;
-            exe.REP_LEADER = entity.REP_LEADER;
-            exe.PLAN_ID = entity.PLAN_ID;
-            exe.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
-            exe.PLAN_ITEM_ID = entity.PLAN_ITEM_ID;
-            exe.BOM_ID = entity.BOM_ID;
-
-            await _dbContext.InsertAsync<REP_PLAN_EXE_ITEM>(exe);
 
             await Task.CompletedTask;
         }
@@ -322,7 +332,9 @@ namespace EAM.Repair.services
             {
                 a.PLAN_ID,
                 a.AUDITING,
+                a.AUDITING_A,
                 a.EXE_CODE,
+                a.CHECK_CODE,
                 a.WSEC_DEPT,
                 a.MAINT_TYPE,
                 a.DEAL_TYPE,
@@ -378,6 +390,19 @@ namespace EAM.Repair.services
                 a.CHARGE_USER,
                 a.REPAIR_MEMO,
                 a.EIDT_DATE,
+                a.CHECK_CODE,
+                a.CHECK_DESC,
+                a.CHECK_DATE,
+                a.CHECK_MEMO,
+                a.CHECK_USER,
+                a.ACT_START_DATE,
+                a.ACT_END_DATE,
+                a.ACT_STOP_TIME,
+                a.EXE_USER,
+                a.ASSIST_USER,
+                a.IS_LEAVE,
+                a.EXE_DESC,
+                a.LEAVE_MEMO,
                 b.DEVICE_ID,
                 b.DEVICE_NAME,
                 b.DEVICE_TYPE,
@@ -406,6 +431,8 @@ namespace EAM.Repair.services
                 a.USE_TOOL,
                 a.LABOR_NUM,
                 a.TAKE_TIME,
+                a.BEGIN_TIME,
+                a.END_TIME,
                 a.MEMO,
                 a.DEAL_TYPE,
                 a.REP_LEADER,
@@ -416,6 +443,281 @@ namespace EAM.Repair.services
 
             return query;
         }
+
+        public async Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
+        {
+            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            {
+                bool mainSuccess = false, detSuccess = false;
+                var execResult = await _dbContext.SaveEntityAnsyc(request,
+                     c => new
+                     {
+                         c.PLAN_ID,
+                         c.AUDITING,
+                         c.EXE_CODE,
+                         c.MAINT_TYPE,
+                         c.DEAL_TYPE,
+                         c.ACT_START_DATE,
+                         c.ACT_END_DATE,
+                         c.ACT_STOP_TIME,
+                         c.EXE_USER,
+                         c.ASSIST_USER,
+                         c.IS_LEAVE,
+                         c.EXE_DESC,
+                         c.LEAVE_MEMO,
+                         c.FAULT_DESCRIBE,
+                         c.REP_LEVEL,
+                         c.CHARGE_USER,
+                         c.REPAIR_MEMO,
+                         c.EIDT_DATE,
+                         c.DEVICE_ID,
+                         c.CHECK_CODE,
+                         c.CHECK_DESC,
+                         c.CHECK_DATE,
+                         c.CHECK_MEMO,
+                         c.CHECK_USER,
+                         c.EXE_ID
+                     },
+                     c => a => a.EXE_ID == c.EXE_ID
+                     , BeforeAdd, BeforeUpdate);
+
+                mainSuccess = !execResult.IsError;
+                if (mainSuccess)  //主表是否保存成功
+                {
+                    requestdet = requestdet ?? new SaveRequest<REP_PLAN_EXE_ITEM>();
+
+                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                         c => new
+                         {
+                             c.EXE_ITEM_ID,
+                             c.EXE_ID,
+                             c.PLAN_ITEM_ID,
+                             c.BOM_ID,
+                             c.PLAN_ID,
+                             c.BOM_NAME,
+                             c.REP_CONTENT,
+                             c.IS_COMPLETE,
+                             c.USE_TOOL,
+                             c.LABOR_NUM,
+                             c.TAKE_TIME,
+                             c.BEGIN_TIME,
+                             c.END_TIME,
+                             c.MEMO,
+                             c.DEAL_TYPE,
+                             c.REP_LEADER,
+                             c.REP_INDEX,
+                             c.IS_ASKBID,
+                             c.ITEM_TYPE,
+                         },
+                         c => a => a.EXE_ITEM_ID == c.EXE_ITEM_ID,
+                         BeforeAddDet, BeforeUpdateDet);
+
+                    detSuccess = !execResult.IsError;  //明细表是否保存成功
+                }
+                if (mainSuccess && detSuccess)
+                    trans.Commit();
+                else
+                {
+                    trans.Rollback();
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    return AjaxResult.Error(errMsg);
+                }
+            }
+            return AjaxResult.Success("保存成功");
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        /// <returns></returns>
+        private async Task BeforeAdd(REP_PLAN_EXE entity)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdate(REP_PLAN_EXE request)
+        {
+            if (request.AUDITING == "1")
+            {
+                request.EIDT_DATE = DateTime.Now;
+                request.AUDITING_A = "0";
+
+                string type = "WXYS" + DateTime.Now.ToString("yyyyMM");
+                string def = type + "0000";
+                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.CHECK_CODE.Contains(type)).Select(x => Sql.Max(x.CHECK_CODE) ?? def).FirstOrDefaultAsync();
+                var index = model.SubStr(10, 4).CastTo<int>() + 1;
+                request.CHECK_CODE = type + index.ToString("D4");
+            }
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        /// <returns></returns>
+        private async Task BeforeAddDet(REP_PLAN_EXE_ITEM entity)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdateDet(REP_PLAN_EXE_ITEM request)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeDeleteDet(REP_PLAN_EXE_ITEM request)
+        {
+            await Task.CompletedTask;
+        }
+
+        public async Task<AjaxResult> SaveCheck(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
+        {
+            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            {
+                bool mainSuccess = false, detSuccess = false;
+                var execResult = await _dbContext.SaveEntityAnsyc(request,
+                     c => new
+                     {
+                         c.PLAN_ID,
+                         c.AUDITING,
+                         c.EXE_CODE,
+                         c.MAINT_TYPE,
+                         c.DEAL_TYPE,
+                         c.ACT_START_DATE,
+                         c.ACT_END_DATE,
+                         c.ACT_STOP_TIME,
+                         c.EXE_USER,
+                         c.ASSIST_USER,
+                         c.IS_LEAVE,
+                         c.EXE_DESC,
+                         c.LEAVE_MEMO,
+                         c.FAULT_DESCRIBE,
+                         c.REP_LEVEL,
+                         c.CHARGE_USER,
+                         c.REPAIR_MEMO,
+                         c.EIDT_DATE,
+                         c.DEVICE_ID,
+                         c.CHECK_CODE,
+                         c.CHECK_DESC,
+                         c.CHECK_DATE,
+                         c.CHECK_MEMO,
+                         c.CHECK_USER,
+                         c.EXE_ID
+                     },
+                     c => a => a.EXE_ID == c.EXE_ID
+                     , BeforeAddCHK, BeforeUpdateCHK);
+
+                mainSuccess = !execResult.IsError;
+                if (mainSuccess)  //主表是否保存成功
+                {
+                    requestdet = requestdet ?? new SaveRequest<REP_PLAN_EXE_ITEM>();
+
+                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                         c => new
+                         {
+                             c.EXE_ITEM_ID,
+                             c.EXE_ID,
+                             c.PLAN_ITEM_ID,
+                             c.BOM_ID,
+                             c.PLAN_ID,
+                             c.BOM_NAME,
+                             c.REP_CONTENT,
+                             c.IS_COMPLETE,
+                             c.USE_TOOL,
+                             c.LABOR_NUM,
+                             c.TAKE_TIME,
+                             c.BEGIN_TIME,
+                             c.END_TIME,
+                             c.MEMO,
+                             c.DEAL_TYPE,
+                             c.REP_LEADER,
+                             c.REP_INDEX,
+                             c.IS_ASKBID,
+                             c.ITEM_TYPE,
+                         },
+                         c => a => a.EXE_ITEM_ID == c.EXE_ITEM_ID,
+                         BeforeAddDetCHK, BeforeUpdateDetCHK);
+
+                    detSuccess = !execResult.IsError;  //明细表是否保存成功
+                }
+                if (mainSuccess && detSuccess)
+                    trans.Commit();
+                else
+                {
+                    trans.Rollback();
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    return AjaxResult.Error(errMsg);
+                }
+            }
+            return AjaxResult.Success("保存成功");
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        /// <returns></returns>
+        private async Task BeforeAddCHK(REP_PLAN_EXE entity)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdateCHK(REP_PLAN_EXE request)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        /// <returns></returns>
+        private async Task BeforeAddDetCHK(REP_PLAN_EXE_ITEM entity)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeUpdateDetCHK(REP_PLAN_EXE_ITEM request)
+        {
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        private async Task BeforeDeleteDetCHK(REP_PLAN_EXE_ITEM request)
+        {
+            await Task.CompletedTask;
+        }
+
+        #endregion
+
+        #region 维修计划验收
 
         #endregion
     }

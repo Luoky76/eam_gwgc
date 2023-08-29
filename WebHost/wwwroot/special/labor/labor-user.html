@@ -35,13 +35,26 @@
                         columns: [
                             { display: "人员编码", name: "USER_CODE", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "姓名", name: "USER_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "部门编码", name: "DEPT_CODE", width: 100, type: "text",  editor: { type: 'text'} },
+                            //{ display: "部门编码", name: "DEPT_CODE", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "部门名称", name: "DEPT_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            /*{ display: "人员ID", name: "USER_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text'} },*/
-                            { display: "部门ID", name: "DEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
+                            { display: "人员ID", name: "USER_ID", width: 100, type: "text",hide:true, editor: { type: 'text'} },
+                            //{ display: "部门ID", name: "DEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "性别", name: "SEX", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "生日", name: "BIRTHDAY", width: 100, type: "date", editor: { type: 'date', format: "yyyy-MM-dd"} },
                             { display: "是否注销", name: "IS_NOVALID", width: 60, type: "chk", editor: { type: 'chkStr' } },
+                            {
+                                display: "尺码", name: "ROLE", isSort: false, width: 100, minWidth: 130, type: "text", align: "center", formatType: "select", format: {
+                                    data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column) {
+                                        var strHref = `javascript:business.laborSizeSelect(${rowdata.USER_ID})`;
+                                        var strUrl = "<a style=\"color:blue\" href=" + strHref + ">设置</a>";
+                                        return strUrl;
+                                    }
+                                }, export: function (value, rowdata, column) {//导出处理
+                                    return this.options.formatters['select'](value, column, rowdata, function (value) {
+                                        return value.join(",");
+                                    });
+                                }
+                            },
 
                             //{ display: "生产系统人员ID", name: "USER_SID", width: 100, type: "text",  editor: { type: 'text'} }
                         ]
@@ -74,7 +87,7 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'local',
-                    toolbar: {},
+                    toolbar: { group: "size" },
                     url: 'special/Labor/laborUserList',
                     parms: {
                         where: JSON.stringify({
@@ -307,6 +320,25 @@
                     }
                 });
             },
+            laborSizeSelect: function (userID) {
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1400,
+                    height: 800,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "labor-size.html?MenuNo=labor-user",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": userID }
+                });
+            },
+            
             init: function () {
                 var me = this;
                 me.loadComboxData();

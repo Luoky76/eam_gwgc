@@ -56,7 +56,45 @@ namespace EAM.Special.Services
                 throw new Exception("获取下拉数据失败！原因：" + e.Message);
             }
         }
+        #region 劳保人员尺码
+        public async Task<GridData> LaborSizeListAsync(string userID)
+        {
+            var list = await _dbContext.Query<LABOR_SIZE>(x => x.USER_ID == userID).ToListAsync();
+            return new GridData { Rows = list, Total = list.Count() };
+        }
+
+        public async Task<AjaxResult> SaveSizeAsync(SaveRequest<LABOR_SIZE> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.TYPE_CODE,
+                    c.TYPE_NAME,
+                    c.SIZE_NAME,
+                    c.SIZE_ID,
+                    c.USER_ID,
+                    c.TYPE_ID,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
+
+                },
+                c => a => a.SIZE_ID == c.SIZE_ID
+                , BeforeAdd, null, null, false, null, null);
+        }
+        private async Task BeforeAdd(LABOR_SIZE entity)
+        {
+            entity.SIZE_ID = GuidHelper.NewSnowflakeId().ToString();
+            await Task.CompletedTask;
+        }
+
+        #endregion
+
+
         #region 劳保人员清单
+
+
         public async Task<GridData> laborUserListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_USER>().GetGridData(request);
