@@ -30,5 +30,7 @@ namespace EAM.Repair.interfaces
         Task<GridData> ExeItemListAsync(GridRequest request);
 
         Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
+
+        Task<AjaxResult> SaveCheck(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
     }
 }
