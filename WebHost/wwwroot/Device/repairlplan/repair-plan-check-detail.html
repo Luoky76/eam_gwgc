@@ -78,15 +78,19 @@
                             { display: "采购方式", name: "COLLECT_METHOD", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "预估维修金额", name: "PLAN_MONEY", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维修内容", name: "REPAIR_MEMO", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "实际开工时间", name: "ACT_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {}, group: "维修实施" },
-                            { display: "实际完工时间", name: "ACT_END_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
+                            { display: "实际开工时间", name: "ACT_START_DATE", newline: true, upper: true, type: "date", editor: { disabled: true }, options: {}, group: "维修实施" },
+                            { display: "实际完工时间", name: "ACT_END_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "维修工时", name: "ACT_STOP_TIME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: true, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "实施提交日期", name: "EIDT_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "协助人", name: "ASSIST_USER", newline: true, upper: true, type: "text", options: {} },
-                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "实施情况登记", name: "EXE_DESC", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "协助人", name: "ASSIST_USER", newline: true, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" }, editor: { disabled: true } },
+                            { display: "实施情况登记", name: "EXE_DESC", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" }, editor: { disabled: true } },
+                            { display: "验收人", name: "CHECK_USER", newline: true, upper: true, type: "text", options: {}, editor: { disabled: true }, group: "维修验收" },
+                            { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
+                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
+                            { display: "备注", name: "CHECK_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" }},
                         ]
                     },
                     grid: {
@@ -98,16 +102,13 @@
                             { display: "序号", name: "REP_INDEX", width: 150, type: "text", },
                             { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", },
                             { display: "维修项目分类", name: "ITEM_TYPE", width: 150, type: "text", },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 } },
+                            { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80 },
                             {
-                                display: "是否月度询价", name: "IS_ASKBID", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 }, validate: { required: true }
-                            },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 }, validate: { required: true } },
-                            { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, validate: { required: true } },
-                            {
-                                display: "实际开工时间", name: "BEGIN_TIME", width: 120, type: "date", editor: { type: 'date' }
+                                display: "实际开工时间", name: "BEGIN_TIME", width: 120, type: "date" 
                             },
                             {
-                                display: "实际完工时间", name: "END_TIME", width: 100, type: "date", editor: { type: 'date' }
+                                display: "实际完工时间", name: "END_TIME", width: 100, type: "date" 
                             },
                             { display: "花费时间", name: "TAKE_TIME", width: 100, type: "text" },
                             { display: "备注", name: "MEMO", width: 100, type: "text" },
@@ -171,6 +172,10 @@
             },
             save: function () { //保存
                 var me = this;
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
@@ -191,7 +196,7 @@
                 var changeRowDet = me.grid.getChangedRows();
                 LG.ajax({
                     jsToken: true,
-                    url: 'Repair/RepairPlan/SaveExe',
+                    url: 'Repair/RepairPlan/SaveCheck',
                     loading: '正在保存中...',
                     data: { request: changeRow, requestdet: changeRowDet },
                     success: function () {

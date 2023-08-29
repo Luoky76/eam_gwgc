@@ -253,9 +253,10 @@ namespace EAM.Material.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     {"Auditing", null },
-                    {"AssessBaseContent", null }
+                    {"AssessBaseContent", null },
+                    {"User", null }
                 });
-                data.TryAdd("User", await _userService.ComboxDataAsync());
+                //data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);
             }
             catch (Exception e)

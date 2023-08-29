@@ -7,11 +7,15 @@ namespace EAM.Special.Interfaces
 {
     public interface ILaborService : IService
     {
+        #region 劳保人员清单
+        Task<GridData> LaborSizeListAsync(string userID);
         Task<GridData> laborUserListAsync(GridRequest request);
 
         Task<AjaxResult> ComboxData();
 
         Task<AjaxResult> SaveAsync(SaveRequest<LABOR_USER> request);
+        Task<AjaxResult> SaveSizeAsync(SaveRequest<LABOR_SIZE> request);
+        #endregion
 
 
         #region 劳保需求申请

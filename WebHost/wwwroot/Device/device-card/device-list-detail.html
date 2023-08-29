@@ -1,0 +1,421 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>明细</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div style="width: 94.5%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>随机资料</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style=" width: 100%;" id="docgird">
+                    </div>
+                </li>
+            </ul>
+            <div class="l-group" style="width: 100%;"><span>设备参数</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style=" width: 100%;" id="paramgird">
+                    </div>
+                </li>
+            </ul>
+            <div class="l-group" style="width: 100%;"><span>重大改造履历</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="width: 100%;" id="remouldgird">
+                    </div>
+                </li>
+            </ul>
+            <div class="l-group" style="width: 100%;"><span>消耗材料</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="width: 100%;" id="outgrid">
+                    </div>
+                </li>
+            </ul>
+            <div class="l-group" style="width: 100%;"><span>维修维保记录</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style=" width: 100%;" id="pmgrid">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialogData: {},
+            menuNo: getQueryStringByName("MenuNo"),
+            isView: false,
+            sid: getQueryStringByName("sid"),
+            dataCorp: [],
+            rootPath: "../",
+            dialog: null,
+            dialogData: null,
+            callback: null,
+            orginData: {},
+            devicetype: [
+                { ID: "船舶", TEXT: "船舶", VALUE: "1" },
+                { ID: "设备", TEXT: "设备", VALUE: "2" }
+            ],
+            assetStatus: [
+                { ID: "1", TEXT: "在用", VALUE: "1" }
+            ],
+            yesno: [
+                { "ID": "0", "TEXT": "否" }, { "ID": "1", "TEXT": "是" }
+            ],
+            purpose: [
+                { "ID": "0", "TEXT": "非生产" }, { "ID": "1", "TEXT": "生产" }
+            ],
+            dataCorp: [],
+            auditing: [],
+            user: [],
+            stopSource: [],
+            malType: [],
+            deviceInfo: [],
+            start: null,
+            docgrid: null,
+            paramgird: null,
+            remouldgird: null,
+            docgrid: null,
+            docgrid: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    docgrid: {
+                        columns: [
+                            { display: "档案编号", name: "DOC_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "资料名称", name: "DOC_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "份数", name: "DOC_NUM", width: 100, type: "int", editor: { type: 'int' } },
+                            { display: "存放地点", name: "DOC_SITE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "附件", name: "DOC_ATTACH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "说明", name: "DOC_EXPLAIN", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "主键", name: "DOC_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true }
+                        ]
+                    },
+                    paramgird: {
+                        columns: [
+                            { display: "参数名称", name: "PARAM_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数值", name: "PARAM_VALUE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "说明", name: "PARAM_MEMO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数编号", name: "PARAM_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "参数子项", name: "PARAM_SUB", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "技术性能", name: "TECHFUN_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主键", name: "PARAM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "设备机型ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "设备主键", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                        ]
+                    },
+                    remouldgird: {
+                        columns: [
+                            { display: "改造开始时间", name: "START_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "改造结束时间", name: "END_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "改造类型", name: "REMOULD_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "改造情况描述", name: "REMOULD_DESC", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "是否完成改造", name: "ISFINISH", width: 100, type: "chk", editor: { type: 'chkStr' } },
+                            { display: "备注", name: "REMARK", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "DEVICE_ID", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 100, type: "text", align: "left", hide: true },
+                            { display: "DEVICE_REMOULD_ID", name: "DEVICE_REMOULD_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true }
+                        ]
+                    },
+                    pmgrid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING_EXE", dbname: "AUDITING_EXE", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
+                            { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "编制人", name: "EDIT_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "计划完成时间", name: "PLAN_FINISH_TIME", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
+                            { display: "实际开工时间", name: "BEGIN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "实际完工时间", name: "END_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "遗留问题描述", name: "LEG_DESC", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "EXE_ID", name: "EXE_ID", hide: true },
+                            { display: "设备主键", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                        ]
+                    },
+                    outgrid: {
+                        columns: [
+                            { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text", },
+                            { display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text", },
+                            { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "text", },
+                            { display: "领用人", name: "USER_NAME", minWidth: 100, type: "text", },
+                            { display: "领用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            { display: "仓管员", name: "M_USER", minWidth: 100, type: "text", },
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text", },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text", },
+                            { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text", },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text", },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
+                            { display: "申请数量", name: "APPLY_NUM", minWidth: 100, type: "float", },
+                            { display: "出库数量", name: "COUNT", minWidth: 100, type: "float", },
+                            { display: "参考单价(元)", name: "PRICE", minWidth: 100, type: "float", },
+                            { display: "金额(元)", name: "MONEY", minWidth: 100, type: "float", },
+                            { display: "设备ID", name: "DEVICE_ID", hide: true },
+                            { display: "OUT_ID", name: "OUT_ID", hide: true },
+                            { display: "OUTDET_ID", name: "OUTDET_ID", hide: true }
+                        ]
+                    },
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceCard/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.dataCorp = data.Corp;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setdocGrid: function () {
+                var me = this;
+                me.config.docgrid.columns.removeNull();
+                me.grid = $("#docgird").ligerGrid({
+                    columns: me.config.docgrid.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'DEVICE/DeviceCard/DocList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '20%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+            },
+            setparamGrid: function () {
+                var me = this;
+                me.config.paramgird.columns.removeNull();
+                me.grid = $("#paramgird").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.paramgird.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Device/DeviceCard/ParamList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '20%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+            },
+            setremGrid: function () {
+                var me = this;
+                me.config.remouldgird.columns.removeNull();
+                me.grid = $("#remouldgird").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.remouldgird.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Device/DeviceCard/RemList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '20%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+            },
+            setpmGrid: function () {
+                var me = this;
+                me.config.pmgrid.columns.removeNull();
+                me.grid = $("#pmgrid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.pmgrid.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Device/DeviceCard/PmListAsync',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '20%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+            },
+            setoutGrid: function () {
+                var me = this;
+                me.config.outgrid.columns.removeNull();
+                me.grid = $("#outgrid").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.outgrid.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Material/SpOut/GetSpOutStoreDetailList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '20%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                function inner(callback) {
+                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.isView) me.isView = me.dialogData.isView;
+                }
+                me.loadComboxData();
+                me.setConfig();
+                me.setdocGrid();
+                me.setparamGrid();
+                me.setremGrid();
+                me.setpmGrid();
+                me.setoutGrid();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

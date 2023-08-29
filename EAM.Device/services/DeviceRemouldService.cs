@@ -28,18 +28,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_REMOULD>((a, b) => a.DEVICE_ID == b.DEVICE_ID).Select((a, b) => new
-            {
-                a.DEVICE_ID,
-                a.DEVICE_NO,
-                b.REMOULD_TYPE,
-                b.DEVICE_REMOULD_ID,
-                b.START_DATE,
-                b.END_DATE,
-                b.REMOULD_DESC,
-                b.ISFINISH,
-                b.REMARK
-            }).GetGridData(request);
+            var list = await _dbContext.Query<DEVICE_REMOULD>().GetGridData(request);
             return list;
         }
 
@@ -73,7 +62,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeAdd(DEVICE_REMOULD entity)
         {
-            entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.DEVICE_REMOULD_ID = GuidHelper.NewSnowflakeId().ToString();
 
             await Task.CompletedTask;

@@ -23,6 +23,9 @@
         var rootPath = "../";
         window["encryptUrl"] = ["/Apis/"];
         var business = {
+            dialogData: {},
+            dialogData: null,
+            sid: getQueryStringByName("sid"),
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             detailWidth: 920,
@@ -33,20 +36,18 @@
                     search: {
                         fields: [
                             { display: "档案编号", name: "_search_DOC_CODE", dbname: "DOC_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text",options:{} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "档案编号", name: "DOC_CODE", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "资料名称", name: "DOC_NAME", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "份数", name: "DOC_NUM", width: 100, type: "decimal",  editor: { type: 'decimal'} },
+                            { display: "份数", name: "DOC_NUM", width: 100, type: "int",  editor: { type: 'int'} },
                             { display: "存放地点", name: "DOC_SITE", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "附件", name: "DOC_ATTACH", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "说明", name: "DOC_EXPLAIN", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "设备ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "主键", name: "DOC_ID", width: 100, type: "text", validate: { required: true }, editor: { type: 'text' }, hide: true }
+                            { display: "主键", name: "DOC_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true }
                         ]
                     }
                 };
@@ -83,14 +84,14 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     dataAction: 'server',
-                    toolbar: {},
-                    url: rootPath + 'DEVICE/DeviceDoc/List',
+                    toolbar: { group: "doc" },
+                    url: rootPath + 'DEVICE/DeviceCard/DocList',
                     //url: rootPath + 'handler/grid.ashx',
                     parms: {
                         //"view": "device_doc",
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'DEVICE_ID', value: me.sid, op: 'equal' },]
                         })
                     },
                     sortName: 'DOC_CODE',
@@ -178,32 +179,7 @@
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({ },true);
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var sid = selected.DOC_CODE;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]',
-                        url: "Detail.aspx?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": sid }
-                    });
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
+                me.grid.addEditRow({ DEVICE_ID: me.sid }, true);
             },
             save: function () { //保存
                 var me = this;
@@ -216,7 +192,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url:rootPath + 'Device/DeviceDoc/Save',
+                        url: rootPath + 'Device/DeviceCard/SaveDoc',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -326,6 +302,11 @@
             },
             init: function () {
                 var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                }
                 me.setConfig();
                 me.setGrid();
                 me.setForm();

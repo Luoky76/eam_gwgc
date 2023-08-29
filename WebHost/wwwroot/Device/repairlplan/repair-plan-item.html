@@ -44,7 +44,6 @@
                             { display: "外键", name: "PLAN_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "主键", name: "PLAN_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "维修部位ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "检修负责人", name: "REP_LEADER", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "序号", name: "REP_INDEX", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "是否月度询价", name: "IS_ASKBID", width: 100, type: "select", editor: { type: 'select', data: me.isaskbid, selectBoxHeight: 100 } },
@@ -87,7 +86,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'PLAN_ID', op: 'equal', value: me.sid }]
                         })
                     },
                     sortName: '',
@@ -179,7 +178,7 @@
                 var me = this;
                 data.forEach((a) => {
                     business.grid.addEditRow({
-                        "PLAN_ID": business.sid,
+                       "PLAN_ID": business.sid,
                        "BOM_ID":a.DEVICE_ID,
                        "BOM_NAME": a.DEVICE_NAME,
                        "DEVICE_TYPE": a.DEVICE_TYPE,

@@ -28,18 +28,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<DEVICE_CARD>().LeftJoin<DEVICE_PARAM>((a, b) => a.DEVICE_ID == b.DEVICE_ID).Select((a, b) => new
-            {
-                a.DEVICE_ID,
-                a.DEVICE_NO,
-                b.PARAM_NAME,
-                b.PARAM_VALUE,
-                b.PARAM_MEMO,
-                b.PARAM_CODE,
-                b.PARAM_SUB,
-                b.TECHFUN_NAME,
-                b.PARAM_ID
-            }).GetGridData(request);
+            var list = await _dbContext.Query<DEVICE_PARAM>().GetGridData(request);
             return list;
         }
 
@@ -73,7 +62,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeAdd(DEVICE_PARAM entity)
         {
-            entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.PARAM_ID = GuidHelper.NewSnowflakeId().ToString();
 
             await Task.CompletedTask;
