@@ -43,7 +43,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING",  width: 100, newline: true, type: "select", format: { data: me.dataCheck } },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "盘点单号", name: "SCAN_CODE", width: 150, type: "text" },
                             { display: "盘点状态", name: "SCAN_STATUS", width: 120, type: "select", format: { data: me.scanData } },
                             {
@@ -75,7 +75,7 @@
                                 }
                             },
                             {
-                                display: "物料分类", name: "TYPE_ID", width: 150, type: "select", validate: { required: true },
+                                display: "物料分类", name: "TYPE_ID", width: 160, type: "select", validate: { required: true },
                                 editor: {
                                     type: 'select',
                                     data: me.typeData,

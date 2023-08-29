@@ -104,11 +104,13 @@
                                             for (var i = 0; i < me.spTypeName.length; i++) {
                                                 if (rowdata.value == me.spTypeName[i].ID) {
                                                     liger.get("maingrid").updateCell("TYPE_CODE", me.spTypeName[i].VALUE, rowdata.record);
+                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.spTypeName[i].TEXT, rowdata.record);
                                                     break;
                                                 }
                                             }
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
                                         }
                                     },
 
@@ -120,7 +122,7 @@
                             { display: "是否禁用", name: "IS_CANCEL", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
                             { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
 
-                            //{ display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text",  hide: true },
+                            { display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", width: 100, type: "text",  hide: true },
 
                             { display: "主键", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
 

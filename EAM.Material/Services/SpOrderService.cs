@@ -231,7 +231,8 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_ORDER entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
+            entity.DEPT_ID = string.IsNullOrEmpty(entity.DEPT_ID)? _userSession.Corp.CorpID: entity.DEPT_ID;
+            entity.DEPT_NAME = string.IsNullOrEmpty(entity.DEPT_NAME) ? _userSession.Corp.CName: entity.DEPT_NAME;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }

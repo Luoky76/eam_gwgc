@@ -38,7 +38,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", labelWidth: 100, width: 100, newline: true, type: "select", format: { data: me.dataCheck } },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "中止单号", name: "STOP_CODE", width: 150, type: "text" },
 
                             { display: "中止原因", name: "MEMO", width: 180, type: "text", editor: { type: 'text' }, validate: { required: true }, },
