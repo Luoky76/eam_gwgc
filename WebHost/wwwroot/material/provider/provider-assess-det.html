@@ -36,6 +36,7 @@
             auditing: [],
             assessBaseContent: [],
             user: [],
+            appraise: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -90,7 +91,12 @@
                                 }
                             },
                             { display: "分数", name: "SCORE", width: 100, type: "float", editor: { type: 'float' } },
-                            { display: "分数等级", name: "SCORE_DESC", width: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "分数等级", name: "SCORE_DESC", width: 100, type: "select", editor: {
+                                    type: 'select',
+                                    data: me.appraise
+                                }
+                            },
                             //隐藏
                             { display: "评估主表id", name: "ASSESS_ID", width: 100, type: "text", hide: true }
                         ]
@@ -109,6 +115,7 @@
                         me.auditing = data.Auditing;
                         me.assessBaseContent = data.AssessBaseContent;
                         me.user = data.User;
+                        me.appraise = data.Appraise;
                     },
                     error: function (message) {
                         LG.showError(message);
