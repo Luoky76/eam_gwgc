@@ -27,8 +27,9 @@
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
-                            { display: "租借单号", name: "_search_RENT_CODE", dbname: "RENT_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "租借日期", name: "_search_RENT_DATE", dbname: "RENT_DATE", newline: false, upper: true, type: "date",options:{} },
+                            { display: "租借单号", name: "_search_RENT_CODE", dbname: "RENT_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "租借开始日期", name: "_search_RENT_DATE", dbname: "RENT_DATE", width: 160, newline: false, upper: true, type: "date", options: { format: "yyyy-MM-dd" }, op: 'greaterorequal', vt: 'date' },
+                            //{ display: "租借结束日期", name: "_search_RENT_DATE_END", dbname: "RENT_DATE", width: 160, newline: false, upper: true, type: "date", options: { format: "yyyy-MM-dd" }, op: 'lessorequal', vt: 'date' },
                             { display: "租借部门", name: "_search_RENT_DEPT", dbname: "RENT_DEPT", newline: false, upper: true, type: "select", options: { data: me.dataCorp } },
                             { display: "租借人", name: "_search_RENT_USER", dbname: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user } },
                             { display: "经办部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, upper: true, type: "text",options:{} },
@@ -88,12 +89,12 @@
                     dataAction: 'local',
                     toolbar: { group: "main" },
                     url: 'special/labor/LaborRentList',
-                    parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
-                    },
+                    //parms: {
+                    //    where: JSON.stringify({
+                    //        op: 'and',
+                    //        rules: []
+                    //    })
+                    //},
                     sortName: 'AUDITING',
                     sortOrder: 'asc',
                     width: '98%',
@@ -338,6 +339,9 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: 100,
+                    inputWidth: 150,
+                    labelAlign: 'left',
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
