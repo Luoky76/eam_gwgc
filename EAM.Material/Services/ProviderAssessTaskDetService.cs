@@ -160,10 +160,10 @@ namespace EAM.Material.Services
                 {
                     {"ProviderName", null },
                     {"AssessBaseContent", null},
-                    {"Auditing", null}
-                    //{"User", null }
+                    {"Auditing", null},
+                    {"User", null }
                 });
-                data.TryAdd("User", await _userService.ComboxDataAsync());
+                //data.TryAdd("User", await _userService.ComboxDataAsync());
                 return AjaxResult.Success(data);
             }
             catch (Exception e)
