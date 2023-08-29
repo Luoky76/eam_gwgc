@@ -27,7 +27,8 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "编制日期", name: "_search_EIDT_DATE", dbname: "EIDT_DATE", newline: false, upper: true, type: "date", vt: "date", options: { showTime: false, format: "yyyy-MM-dd" } },
+                            { display: "计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
@@ -176,7 +177,7 @@
                     isResize: true,
                     slide: false,
                     rownumbers: true,
-                    onClosed: null,
+                    onClosed: me.reload.bind(me),
                     data: { "sid": "" }
                 });
             },

@@ -22,6 +22,9 @@
         var rootPath = "../";
         window["encryptUrl"] = ["/Apis/"];
         var business = {
+            dialogData: {},
+            dialogData: null,
+            sid: getQueryStringByName("sid"),
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             detailWidth: 920,
@@ -32,19 +35,17 @@
                     search: {
                         fields: 
                         [
-                            { display: "设备编码", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                             { display: "改造开始时间", name: "_search_START_DATE", dbname: "START_DATE", newline: false, upper: true, type: "date", options: {} },
                             { display: "改造结束时间", name: "_search_END_DATE", dbname: "END_DATE", newline: false, upper: true, type: "date", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编码", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "改造开始时间", name: "START_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "改造结束时间", name: "END_DATE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "改造结束时间", name: "END_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "改造类型", name: "REMOULD_TYPE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "改造情况描述", name: "REMOULD_DESC", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "是否完成改造", name: "ISFINISH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "是否完成改造", name: "ISFINISH", width: 100, type: "chk", editor: { type: 'chkStr' } },
                             { display: "备注", name: "REMARK", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "DEVICE_ID", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 100, type: "text", align: "left", hide: true },
                             { display: "DEVICE_REMOULD_ID", name: "DEVICE_REMOULD_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true }
@@ -84,14 +85,14 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     dataAction: 'server',
-                    toolbar: {},
-                    url: rootPath + 'Device/DeviceRemould/List',
+                    toolbar: { group: "remould" },
+                    url: rootPath + 'Device/DeviceCard/RemList',
                     //url: rootPath + 'handler/grid.ashx',
                     parms: {
                         //"view": "device_remould",
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'DEVICE_ID', value: me.sid, op: 'equal' },]
                         })
                     },
                     sortName: 'START_DATE',
@@ -179,32 +180,7 @@
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({}, true);
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var sid = selected.START_DATE;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]',
-                        url: "Detail.aspx?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": sid }
-                    });
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
+                me.grid.addEditRow({ DEVICE_ID: me.sid }, true);
             },
             save: function () { //保存
                 var me = this;
@@ -217,7 +193,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: rootPath + 'Device/DeviceRemould/Save',
+                        url: rootPath + 'Device/DeviceCard/SaveRem',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -328,6 +304,11 @@
             init: function () {
                 var me = this;
                 //me.loadComboxData();
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                }
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
