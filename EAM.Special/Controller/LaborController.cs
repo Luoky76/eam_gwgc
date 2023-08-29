@@ -24,6 +24,15 @@ namespace EAM.Special.Controller
             return await _service.ComboxData();
         }
         #region 劳保人员清单
+
+        
+
+                  [HttpPost]
+        public async Task<GridData> LaborSizeListAsync(string userID)
+        {
+            return await _service.LaborSizeListAsync(userID);
+        }
+
         [HttpPost]
         public async Task<GridData> laborUserListAsync(GridRequest request)
         {
@@ -46,6 +55,13 @@ namespace EAM.Special.Controller
         {
             return await _service.SaveAsync(request);
         }
+
+        [HttpPost]
+        public async Task<AjaxResult> SaveSizeAsync(SaveRequest<LABOR_SIZE> request)
+        {
+            return await _service.SaveSizeAsync(request);
+        }
+
         #endregion
         #region 劳保需求申请
         [HttpPost]
