@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>设备详情</title>
+    <title>供应商评估结果明细</title>
     <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
 </head>
 <body class="color-theme-blue">
@@ -17,7 +17,7 @@
                 <div class="navbar">
                     <div class="navbar-bg"></div>
                     <div class="navbar-inner sliding">
-                        <div class="col-80 title" id="title">设备详情</div>
+                        <div class="col-80 title" id="title">供应商评估结果明细</div>
                     </div>
                     <button class="button col-1" id="detail-refresh" style="display:none">
                     </button>
@@ -32,7 +32,7 @@
                                     <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
                                         <div class="item-title" style="color: #666666">供应商</div>
                                         <div class="item-after" style="text-align:right">
-                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="PROVIDER_NAME" placeholder="" readonly />
+                                            <input style="text-align: right; font-size: 14px; color: rgba(0, 0, 0, 0.54);" type="text" name="PROVIDER_NAME" placeholder="" readonly />
                                         </div>
                                     </div>
                                 </li>
@@ -137,6 +137,24 @@
         var photos = [];
 
         var business = {
+            getActualWidthOfChars: function(text, options = {}) {
+                const { size = 14, family = "Microsoft YaHei" } = options;
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                ctx.font = `${size}px ${family}`;
+                const metrics = ctx.measureText(text);
+                const actual = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+                return Math.max(metrics.width, actual);
+            },
+            //根据input内容设置其宽度
+            setWidth: function () {
+                var me = this;
+                for (let key in me.detailData) {
+                    var actualWidth = me.getActualWidthOfChars($(`[name='${key}']`).val());
+                    actualWidth = Math.min(actualWidth, 200);
+                    $(`[name='${key}']`).css({ "width": actualWidth + "px" });
+                }
+            },
             detailData: null,
             orginData: null,
             loadComboxData: function () {
@@ -145,7 +163,7 @@
             loadData: function () {
                 var me = this;
                 me.detailData = paramsData.detailData;
-                app.form.fillFromData('#my-form', me.detail);
+                app.form.fillFromData('#my-form', me.detailData);
             },
             initButton: function () {
                 var me = this
@@ -165,6 +183,7 @@
                 var me = this;
                 me.initButton();
                 me.loadData();
+                me.setWidth();
                 me.initFreshButton();
             }
         };
