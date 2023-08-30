@@ -25,9 +25,14 @@ namespace EAM.Special.Controller
         }
         #region 劳保人员清单
 
-        
+        [HttpPost]
+        public async Task<GridData> LaborUserCataLogList(string code)
+        {
+            return await _service.LaborUserCataLogList(code);
+        }
 
-                  [HttpPost]
+
+        [HttpPost]
         public async Task<GridData> LaborSizeListAsync(string userID)
         {
             return await _service.LaborSizeListAsync(userID);

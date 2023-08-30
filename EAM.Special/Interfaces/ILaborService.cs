@@ -8,6 +8,8 @@ namespace EAM.Special.Interfaces
     public interface ILaborService : IService
     {
         #region 劳保人员清单
+
+        Task<GridData> LaborUserCataLogList(string code);
         Task<GridData> LaborSizeListAsync(string userID);
         Task<GridData> laborUserListAsync(GridRequest request);
 

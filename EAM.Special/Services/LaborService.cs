@@ -94,6 +94,14 @@ namespace EAM.Special.Services
 
         #region 劳保人员清单
 
+        public async Task<GridData> LaborUserCataLogList(string code)
+        {
+
+            var list = await _dbContext.Query<BASE_SPCATALOG>(x=>x.TYPE_CODE==code).ToListAsync();
+
+            return new GridData { Rows = list, Total = list.Count };
+        }
+
 
         public async Task<GridData> laborUserListAsync(GridRequest request)
         {
@@ -570,8 +578,10 @@ namespace EAM.Special.Services
         #endregion
 
         #region 劳保用品租借
+
         public async Task<GridData> LaborRentList(GridRequest request)
         {
+        
             return await _dbContext.Query<LABOR_RENT>().GetGridData(request);
         }
         public async Task<GridData> GetLaborRentDetList(string rentId)

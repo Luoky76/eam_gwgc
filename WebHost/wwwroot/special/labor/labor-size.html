@@ -30,8 +30,11 @@
                         columns: [
                             { display: "类型编码", name: "TYPE_CODE", width: 150, minWidth: 150, type: "text" },
                             { display: "类型名称", name: "TYPE_NAME", width: 400, minWidth: 400, type: "text" },
-                            { display: "物资型号", name: "SIZE_NAME", width: 150, minWidth: 150, type: "text" },
-                            { display: "尺码", name: "BRAND", width: 60, minWidth: 60, type: "text", editor: { type: "float" } },
+                            {
+                                display: "USER_ID", name: "USER_ID", width: 150, hide: true, minWidth: 150, type: "text", render: function () {
+                                    return me.sid;
+                                } },
+                            { display: "尺码", name: "SIZE_NAME", width: 60, minWidth: 60, type: "text", editor: { type: "float" } },
                             
                         ]
                     },
@@ -61,40 +64,24 @@
             },
             loadData: function () {
                 var me = this;
-                if (!me.sid) {
-                    me.mainform.setOrginData({});
-                }
-                else {
+               
                     LG.ajax({
                         async: false,
                         url: 'special/labor/LaborSizeList',
                         loading: '正在获取中...',
                         data: { userID: me.sid },
                         success: function (data, message) {
-                            me.mainform.setOrginData(data.maindata);
-                            me.grid.loadData(data.detdata);
+                            me.grid.loadData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
                         }
                     });
-                    if (me.isView) {
-                        me.mainform.setReadonly(true);
-                    }
-                }
-                me.mainform.focus();
+                  
             },
             save: function () { //保存
                 var me = this;
-                var formEdit = false, gridEdit = false;
-                if ($.isEmptyObject(me.mainform.getChanges())) {
-                    formEdit = false;
-                }
-                else formEdit = true;
-                if (!me.mainform.valid()) {
-                    me.mainform.showInvalid();
-                    return;
-                }
+                var gridEdit = false;
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
                         gridEdit = false;
@@ -106,24 +93,26 @@
                     return data;
                 }
 
-                if (formEdit || gridEdit) {
-                    var data = handle(me.mainform.getData());
-                    var original = handle(me.mainform.getOrginData());
-                    var changeRow = new Object();
-                    if (!me.sid) {
-                        changeRow["added"] = [data];
-                    }
-                    else {
-                        changeRow["updated"] = [data];
-                        changeRow["original"] = [original];
-                    }
+                if ( gridEdit) {
+                 
                     var changeRowDet = me.grid.getChangedRows();
+                    for (let key in changeRowDet) {
+                        if (changeRowDet[key]) {
+                            for (var i = 0; i < changeRowDet[key].length; i++) {
+                                changeRowDet[key][i].USER_ID = me.sid;
+                            }
+                        }
+                       
+                     
+
+                    }
+
 
                     LG.ajax({
                         jsToken: true,
                         url: 'special/labor/SaveSize',
                         loading: '正在保存中...',
-                        data: { request: changeRow, requestdet: changeRowDet },
+                        data: { request: changeRowDet },
                         success: function () {
                             LG.showSuccess('保存成功', function () {
                                 location.reload(true);
@@ -164,7 +153,7 @@
                 var dataOptions = {
                     values: gridKeys,
                     options: {
-                        url: 'special/labor/LaborStoreList',
+                        url: 'special/labor/LaborUserCataLogList?code=suit',
                         rowKey: "STORE_ID",
                         columns: [
                             { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text", },
@@ -189,14 +178,8 @@
                         for (let item of rows) {
                             if (!currentSet.has(item.SP_CODE)) {
                                 me.grid.addEditRow({
-                                    SP_CODE: item.SP_CODE,
-                                    SP_NAME: item.SP_NAME,
-                                    SP_TYPE: item.SP_TYPE,
-                                    RENT_NUM: 1,
-                                    UNIT: item.UNIT,
-                                    OTHER_CODE: item.OTHER_CODE,
-                                    TYPE_NAME: item.TYPE_NAME,
-                                    MEMO: item.MEMO,
+                                    TYPE_CODE: item.SP_CODE,
+                                    TYPE_NAME: item.SP_NAME,
                                 }, true);
                             }
                         }
@@ -321,6 +304,9 @@
                     switch (item.id) {
                         case "refresh":
                             me.reload();
+                            break;
+                        case "save":
+                            me.save();
                             break;
                         case "import":
                             me.import();
