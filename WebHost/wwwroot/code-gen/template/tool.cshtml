@@ -1,0 +1,25 @@
+﻿@using System;
+@using System.Text;
+@using RazorEngineCore
+@using Gksyb.Common;
+@using Gksyb.Common.Data
+@inherits RazorEngineTemplateBase<DbTableInfo>
+@{
+    var cols = new List<string>();
+    var colsWithName = new List<string>();
+    var models = new List<string>();
+    foreach (var item in Model.Columns)
+    {
+        cols.Add(@$"{item.Name}");
+        colsWithName.Add(@$"{item.Name} ""{item.Comment ?? item.Name}""");
+        models.Add(@$"model1.{item.Name} = model2.{item.Name}");
+    }
+}
+@($"SELECT {colsWithName.ToStr(",")} FROM {Model.Name} WHERE '@#' = '@#' ")
+@Environment.NewLine@Environment.NewLine
+
+@($"{cols.ToStr(",")}")
+@Environment.NewLine@Environment.NewLine
+
+@($"{models.ToStr($";{Environment.NewLine}")}")
+@Environment.NewLine@Environment.NewLine

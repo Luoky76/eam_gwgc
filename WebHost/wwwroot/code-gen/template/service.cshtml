@@ -1,0 +1,97 @@
+﻿@using System;
+@using System.Linq;
+@using System.Text;
+@using RazorEngineCore
+@using Gksyb.Common;
+@using Gksyb.Common.Data
+@inherits RazorEngineTemplateBase<DbTableInfo>
+@{
+    var mapName = Model.Name.ToPascal();
+    var modules = (string.IsNullOrWhiteSpace(Model.Module) ? "Gksyb.Server" : Model.Module).Split('.').Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+    var business = modules.Take(2).ToStr(".");
+    var module = modules.Skip(2).ToStr(".");
+    module = string.IsNullOrWhiteSpace(module) ? "" : $".{module}";
+    var skipPropertys = new List<string>() { "MODIFYUSERID", "MODIFY_USERID", "MODIFYUSER", "MODIFYDATE", "CREATEUSERID", "CREATE_USERID", "CREATEUSER", "CREATEDATE" };
+    var updateFields = Model.Columns.Where(c =>
+    {
+        if (c.IsPrimary == true || c.IsIdentity == true) return false;
+        if (skipPropertys.Any(a => a.Equals(c.Name, StringComparison.OrdinalIgnoreCase))) return false;
+        return true;
+    }).Select(c => $"c.{c.Name}").ToStr(", ");
+    var updateCondition = Model.Columns.Where(c => c.IsPrimary == true).Select(c => $"a.{c.Name} == c.{c.Name}").ToStr("&& ");
+    var idOutput = "";
+    var idColumn = Model.Columns.Where(c => "ID".Equals(c.Name, StringComparison.OrdinalIgnoreCase) || "SID".Equals(c.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+    if (idColumn != null)
+    {
+        idOutput = idColumn.CsType == "string" ? $"entity.{idColumn.Name} = GuidHelper.NewShortId();" : $"entity.{idColumn.Name} = GuidHelper.NewSnowflakeId();";
+        idOutput += Environment.NewLine;
+    }
+    var hasStatus = Model.Columns.Any(c => "RECORDSTATUS".Equals(c.Name, StringComparison.OrdinalIgnoreCase));
+}
+using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
+using Gksyb.Model.Grid;
+using @(business)@(module).Entities;
+namespace @(business).Services@(module)
+{
+    public class @(mapName)Service : IBaseService
+    {
+        private readonly IDbContext _dbContext;
+
+        public @(mapName)Service(IDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        public async Task<GridData> ListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<@Model.Name>().GetGridData(request);
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<@Model.Name> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new { @updateFields },
+                c => a => @updateCondition,
+                BeforeAdd, BeforeUpdate, BeforeDelete@(hasStatus ? ", true":""));
+        }
+
+        /// <summary>
+        /// 新增前
+        /// </summary>
+        private async Task BeforeAdd(@Model.Name entity)
+        {
+            await Handle(entity);@idOutput@(hasStatus ? $"entity.RECORDSTATUS = Oper.Add;{Environment.NewLine}":"")
+        }
+
+        /// <summary>
+        /// 更新前
+        /// </summary>
+        private async Task BeforeUpdate(@Model.Name entity)
+        {
+            await Handle(entity);@(hasStatus ? $"entity.RECORDSTATUS = Oper.Modify;{Environment.NewLine}":"")
+        }
+
+        /// <summary>
+        /// 删除前
+        /// </summary>
+        private async Task BeforeDelete(@Model.Name entity)
+        {
+            @(hasStatus ? $"entity.RECORDSTATUS = Oper.Delete;{Environment.NewLine}":"")await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 检查和预处理
+        /// </summary>
+        private async Task Handle(@Model.Name entity)
+        {
+            await Task.CompletedTask;
+        }
+    }
+}

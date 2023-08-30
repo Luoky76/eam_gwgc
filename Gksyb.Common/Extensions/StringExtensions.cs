@@ -204,6 +204,24 @@ namespace Gksyb.Common
         }
 
         /// <summary>
+        /// 转化成Pascal命名法(大驼峰)
+        /// </summary>
+        public static string ToPascal(this string source)
+        {
+            var pattern = @"(_)(\w)";
+            if (!Regex.IsMatch(source, pattern)) return source.ToTitleCase();
+            return Regex.Replace(source.ToLower(), pattern, m => m.Groups[2].Value.ToUpper()).ToTitleCase();
+        }
+
+        /// <summary>
+        /// 转化成短横线命名法
+        /// </summary>
+        public static string ToKebabCase(this string source)
+        {
+            return Regex.Replace(source.ToPascal().ToVariableCase(), @"([A-Z])", m => $"-{m.Groups[1].Value.ToLower()}");
+        }
+
+        /// <summary>
         /// 首字母大写
         /// </summary>
         /// <param name="value"></param>

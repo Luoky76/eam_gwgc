@@ -40,12 +40,12 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// 不缓存
         /// </summary>
-        private static string _cacheControl = "no-cache, no-store, must-revalidate, max-age=0";
+        private static readonly string _cacheControl = "no-cache, no-store, must-revalidate, max-age=0";
 
         /// <summary>
         /// 最小不缓存大小
         /// </summary>
-        private static long _cacheSize = 100 * 1024;
+        private static readonly long _cacheSize = 100 * 1024;
 
         private static string _domin = null;
 

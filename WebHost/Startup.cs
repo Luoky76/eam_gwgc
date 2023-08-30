@@ -4,7 +4,6 @@ using Gksyb.Common.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Serilog;
 using System.Collections.Concurrent;

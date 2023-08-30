@@ -355,11 +355,11 @@
     };
 
     //增加表单底部按钮,比如：保存、取消
-    LG.addFormButtons = function (buttons) {
+    LG.addFormButtons = function (buttons, wrapper) {
         if (!buttons) return;
         var formbar = $("body > div.form-bar");
         if (formbar.length == 0)
-            formbar = $('<div class="form-bar"><div class="l-dialog-buttons"></div></div>').appendTo('body');
+            formbar = $('<div class="form-bar"><div class="l-dialog-buttons"></div></div>').appendTo((wrapper || 'body'));
         if (!(buttons instanceof Array)) {
             buttons = [buttons];
         }

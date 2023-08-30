@@ -1,0 +1,50 @@
+﻿@using System;
+@using System.Text;
+@using RazorEngineCore
+@using Gksyb.Common;
+@using Gksyb.Common.Data
+@inherits RazorEngineTemplateBase<DbTableInfo>
+@{
+    var mapName = Model.Name.ToPascal();
+    var modules = (string.IsNullOrWhiteSpace(Model.Module) ? "Gksyb.Server" : Model.Module).Split('.').Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+    var business = modules.Take(2).ToStr(".");
+    var module = modules.Skip(2).ToStr(".");
+    module = string.IsNullOrWhiteSpace(module) ? "" : $".{module}";
+}
+using Gksyb.Core.Auth;
+using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Mvc;
+using @(business)@(module).Entities;
+using @(business).Services@(module);
+namespace @(business).Controllers@(module)
+{
+    [GksybAuthorize(MenuNo = "@mapName")]
+    public class @(mapName)Controller : AreaController
+    {
+        private readonly @(mapName)Service _service;
+
+        public @(mapName)Controller(@(mapName)Service service)
+        {
+            _service = service;
+        }
+
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        public async Task<AjaxResult> ListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ListAsync(request));
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SaveAsync(SaveRequest<@Model.Name> request)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.SaveAsync(request);
+        }
+    }
+}
