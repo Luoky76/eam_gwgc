@@ -319,7 +319,7 @@ namespace Gksyb.Common.Data
 		                    LEFT JOIN syscomments g ON g.id = a.default_object_id 
 	                    WHERE b.name = {paramPrefix}tableName ORDER BY a.column_id ASC";
             var columns = await source.SqlQueryAsync<DbColumnInfo>(sql, new DbParam("tableName", table), new DbParam("owner", schema));
-            foreach(var column in columns)
+            foreach (var column in columns)
             {
                 if (column.DefaultValue == null) continue;
                 var value = column.DefaultValue.ToString();
