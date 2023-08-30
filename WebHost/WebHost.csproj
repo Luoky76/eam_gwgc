@@ -12,6 +12,8 @@
 	<ItemGroup>
 		<Content Remove="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
 		<None Include="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
+		<Content Remove="wwwroot\code-gen\**" />
+		<None Include="wwwroot\code-gen\**" />
 		<Content Remove="wwwroot\lib\jquery\jquery.all.js" />
 	</ItemGroup>
 
