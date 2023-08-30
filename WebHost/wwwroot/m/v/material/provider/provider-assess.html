@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
-                    <ul id="danger_reform_list">
+                    <ul id="main_list">
                     </ul>
                 </div>
 
@@ -133,11 +133,10 @@
                                             </li>`;
                         }
 
-                        $("#danger_reform_list").html(str);
-                        data.Rows.forEach((a) => {
-                            $("#list-" + a.ASSESS_ID).click(function () {
-                                //debugger
-                                var param = { "ID": a.ASSESS_ID }
+                        $("#main_list").html(str);
+                        data.Rows.forEach((row) => {
+                            $("#list-" + row.ASSESS_ID).click(function () {
+                                var param = { sid: row.ASSESS_ID }
                                 app.methods.toUrl('/ProviderAssessDet/' + JSON2.stringify(param))
                             })
                         })

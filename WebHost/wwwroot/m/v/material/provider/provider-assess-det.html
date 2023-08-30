@@ -1,10 +1,195 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>供应商评估明细</title>
+    <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
 </head>
-<body>
+<body class="color-theme-blue">
+    <div id="app">
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home" style="background-color: RGB(236,235,235);">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="col-80 title" id="title">供应商评估明细</div>
+                    </div>
+                </div>
 
+                <div class="toolbar tabbar toolbar-top">
+                    <div class="toolbar-inner" style="
+                            --f7-tabbar-link-active-border-color: #fff;
+                            --f7-tabbar-link-active-color: black;
+                            --f7-tabbar-link-active-bg-color: white;
+                            --f7-tabbar-link-inactive-color: black;
+                            background-color: rgb(236, 235, 235);">
+                        <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">评估总览</a>
+                        <a href="#tab-2" class="tab-link" id="modify_list">评估明细</a>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <div id="tab-1" class="page-content tab tab-active">
+                        <div class="list inline-labels no-hairlines-md">
+                            <form class="list" id="assess">
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <div id="tab-2" class="page-content tab">
+                        <div class="list" id="modify_bg">
+                            <form class="list" id="assess_det">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a class="link external" id="backUrl">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="toolbar toolbar-bottom" id="menu1" style="display: none;">
+                    <div class="toolbar-inner">
+                        <button class="col button button-large button-fill" id="save">保存</button>
+                        <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                    </div>
+                </div>
+                <div class="toolbar toolbar-bottom " id="menu2" style="display: none;">
+                    <div class="toolbar-inner">
+                        <button class="col button button-large button-fill" id="AddDetail">新增</button>
+                        <button class="col button button-large button-fill" id="DeleteDetail" style="background-color: red">删除</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var img_baseurl = "../../../";
+        var myPhotoBrowserPopup = null;
+        var paramsData = eval('(' + page.route.params.params + ')');
+        var photos = [];
+
+        var business = {
+            sid: paramsData.sid,
+            //实际数据
+            data: null,
+            detailData: null,
+            //显示数据
+            showData: null,
+            showDetailData: null,
+            //原始数据
+            orginData: null,
+            orginDetailData: null,
+            auditing: new Map(),
+            assessBaseContent: new Map(),
+            user: new Map(),
+            appraise: new Map(),
+            columns: [
+                {
+                    display: "主键",
+                    name: "ASSESS_ID",
+                    PrimaryKey: "ASSESS_ID",
+                    readOnly: true,
+                    isPrimaryKey: true,
+                    isShow: false
+                },
+                { display: "记录状态", name: "AUDITING", readOnly: true },
+                { display: "任务制定人", name: "FORMULATER_ID", readOnly: true },
+                { display: "评分人", name: "EXAMINER_ID", readOnly: true },
+                { display: "评估年度", name: "ASSESS_YEAR", readOnly: true },
+                { display: "考核开始时间", name: "BEGIN_TIME", readOnly: true },
+                { display: "考核结束时间", name: "END_TIME", readOnly: true },
+                { display: "供应商名", name: "PROVIDER_NAME", readOnly: true },
+                { display: "供应商产品", name: "PROVIDER_PRODUCTION", readOnly: true },
+                { display: "考核说明", name: "REMARK" },
+                { display: "评估总分", name: "TOTAL_SCORE", readOnly: true },
+                { display: "评估结果", name: "RESULT" },
+            ],
+            loadComboxData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/ComboxData',
+                    success: function (data) {
+                        for (let it of data.Auditing) {
+                            me.auditing.set(it.ID, it.TEXT);
+                        }
+                        for (let it of data.AssessBaseContent) {
+                            me.assessBaseContent.set(it.ID, it.TEXT);
+                        }
+                        for (let it of data.User) {
+                            me.user.set(it.ID, it.TEXT);
+                        }
+                        for (let it of data.Appraise) {
+                            me.appraise.set(it.ID, it.TEXT);
+                        }
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/GetCertainAssess',
+                    data: { assessId: me.sid },
+                    success: function (data, message) {
+                        me.data = data;
+                        //深拷贝
+                        me.showData = JSON.parse(JSON.stringify(data))
+                        me.showData.AUDITING = me.auditing.get(me.showData.AUDITING);
+                        me.showData.FORMULATER_ID = me.user.get(me.showData.FORMULATER_ID);
+                        me.showData.EXAMINER_ID = me.user.get(me.showData.EXAMINER_ID);
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+                
+            },
+            setForm: function () {
+                var me = this;
+                var str = app.CreatePopupContentHtml(me.columns);
+                $("#assess").html(str);
+                app.form.fillFromData('#assess', me.showData);
+            },
+            initButton: function () {
+                var me = this
+                $('#backUrl').on('click', function (e) {
+                    $('#refresh', parent.document).click();
+                    app.methods.toUrl("back")
+                })
+            },
+            init: function () {
+                debugger;
+                var me = this;
+                me.initButton();
+                me.loadComboxData();
+                me.loadData();
+                me.setForm();
+            }
+        };
+        business.init();
+    </script>
 </body>
 </html>
