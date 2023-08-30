@@ -59,6 +59,10 @@
                 }
             }
         },
+        "ufloat": {
+            control: 'TextBox',
+            options: { number: true, clearPromptChar: true, promptChar: " ", mask: "ffffffffffffffffffff" }
+        },
         "currency": {
             control: 'TextBox',
             options: { currency: true }
@@ -72,6 +76,10 @@
                     return isNaN(val) ? "" : val;
                 }
             }
+        },
+        "uint": {
+            control: 'TextBox',
+            options: { digits: true, clearPromptChar: true, promptChar: " ", mask: "000000000000000" }
         },
         "password": {
             control: 'TextBox'
