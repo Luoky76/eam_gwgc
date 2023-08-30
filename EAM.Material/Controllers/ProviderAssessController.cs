@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controller
 {
-    [GksybAuthorize(MenuNo = "ProviderAssess,ProviderAssessTask")]
+    //[GksybAuthorize(MenuNo = "ProviderAssess,ProviderAssessTask")]
+    [GksybAuthorize(true)]
     public class ProviderAssessController : AreaController
     {
         private readonly IProviderAssessService _service;
@@ -27,9 +28,10 @@ namespace EAM.Material.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
-            return await _service.ListAsync(request);
+            var result = await _service.ListAsync(request);
+            return AjaxResult<GridData>.Success(result);
         }
 
         /// <summary>
@@ -38,9 +40,10 @@ namespace EAM.Material.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> ExtendListAsync(GridRequest request)
+        public async Task<AjaxResult<GridData>> ExtendListAsync(GridRequest request)
         {
-            return await _service.ExtendListAsync(request);
+            var result = await _service.ExtendListAsync(request);
+            return AjaxResult<GridData>.Success(result);
         }
 
         /// <summary>

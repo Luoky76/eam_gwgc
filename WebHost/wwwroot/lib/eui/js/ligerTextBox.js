@@ -42,5 +42,27 @@
         insertMode: true//插入模式
     };
     $.ligerMethos.TextBox = $.ligerMethos.TextBox || {};
-
+    $.ligerui.controls.TextBox = function (element, options) {
+        $.ligerui.controls.TextBox.base.constructor.call(this, element, options);
+    };
+    $.ligerui.controls.TextBox.ligerExtend($.ligerui.controls.Input, {
+        _rules: {
+            '0': /\d/,
+            '9': /\d|\s/,
+            'I': /\d|\-/,
+            'f': /\d|\./,
+            'F': /\d|\-|\./,
+            '#': /\d|\s|\+|\-/,
+            'L': /[a-zA-Z]/,
+            '?': /[a-zA-Z]|\s/,
+            '&': /\S/,
+            'C': /./,
+            'A': /[a-zA-Z0-9]/,
+            'a': /[a-zA-Z0-9]|\s/,
+            'M': /[0-1]/,
+            'd': /[0-3]/,
+            'h': /[0-2]/,
+            'm': /[0-5]/
+        }
+    });
 })(jQuery);

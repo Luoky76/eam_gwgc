@@ -213,10 +213,10 @@ namespace EAM.Material.Services
                     a.PROVIDER_NAME,
                     a.PROVIDER_PRODUCTION,
                     a.ASSESS_YEAR,
-                    TOTAL_SCORE_SUM = Sql.Sum(b.TOTAL_SCORE),
-                    AVERAGE_SCORE = Sql.Average(b.TOTAL_SCORE),
-                    MAX_SCORE = Sql.Max(b.TOTAL_SCORE),
-                    MIN_SCORE = Sql.Min(b.TOTAL_SCORE),
+                    TOTAL_SCORE_SUM = Sql.Sum(b.AUDITING == "1" ? b.TOTAL_SCORE : 0),
+                    AVERAGE_SCORE = Sql.Average(b.AUDITING == "1" ? b.TOTAL_SCORE : null),
+                    MAX_SCORE = Sql.Max(b.AUDITING == "1" ? b.TOTAL_SCORE : null),
+                    MIN_SCORE = Sql.Min(b.AUDITING == "1" ? b.TOTAL_SCORE : null),
                     EXAMINER_CNT_ACTUAL = Sql.Sum(b.AUDITING == "1" ? 1 : 0),
                     EXMAINER_CNT = Sql.Sum((b.AUDITING == "1" || b.AUDITING == "0") ? 1 : 0)
                 })

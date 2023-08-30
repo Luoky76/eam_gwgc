@@ -75,5 +75,21 @@ namespace EAM.Repair.Controller
         {
             return await _service.GetExeDetailAsync(ID);
         }
+
+        public async Task<AjaxResult> ExeItemListAsync(GridRequest request)
+        {
+            var result = await _service.ExeItemListAsync(request);
+            return AjaxResult.Success(result);
+        }
+
+        public async Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
+        {
+            return await _service.SaveExe(request, requestdet);
+        }
+
+        public async Task<AjaxResult> SaveCheck(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
+        {
+            return await _service.SaveCheck(request, requestdet);
+        }
     }
 }

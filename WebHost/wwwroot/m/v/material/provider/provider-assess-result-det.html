@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>供应商评估结果明细</title>
+    <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
+</head>
+<body class="color-theme-blue">
+    <div id="app">
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home" style="background-color: RGB(236,235,235);">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="col-80 title" id="title">供应商评估结果明细</div>
+                    </div>
+                    <button class="button col-1" id="detail-refresh" style="display:none">
+                    </button>
+                </div>
+
+                <div class="page-content" style="padding-bottom:70px;margin-top:-20px">
+
+                    <div class="list inline-labels no-hairlines-md">
+                        <form class="list" id="my-form">
+                            <ul>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">供应商</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right; font-size: 14px; color: rgba(0, 0, 0, 0.54);" type="text" name="PROVIDER_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">供应商产品</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="PROVIDER_PRODUCTION" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">评估年度</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="ASSESS_YEAR" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">总分</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="TOTAL_SCORE_SUM" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">平均分</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="AVERAGE_SCORE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">最高分</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="MAX_SCORE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">最低分</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="MIN_SCORE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">实际评分人数</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="EXAMINER_CNT_ACTUAL" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">计划评分人数</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="EXMAINER_CNT" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </form>
+                    </div>
+
+
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a class="link external" id="backUrl">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var img_baseurl = "../../../";
+        var myPhotoBrowserPopup = null;
+        var paramsData = eval('(' + page.route.params.params + ')');
+        var dangerCorpId = paramsData.DANGER_CORP_ID;
+        var photos = [];
+
+        var business = {
+            getActualWidthOfChars: function(text, options = {}) {
+                const { size = 14, family = "Microsoft YaHei" } = options;
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+                ctx.font = `${size}px ${family}`;
+                const metrics = ctx.measureText(text);
+                const actual = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+                return Math.max(metrics.width, actual);
+            },
+            //根据input内容设置其宽度
+            setWidth: function () {
+                var me = this;
+                for (let key in me.detailData) {
+                    var actualWidth = me.getActualWidthOfChars($(`[name='${key}']`).val());
+                    actualWidth = Math.min(actualWidth, 200);
+                    $(`[name='${key}']`).css({ "width": actualWidth + "px" });
+                }
+            },
+            detailData: null,
+            orginData: null,
+            loadComboxData: function () {
+                var me = this;
+            },
+            loadData: function () {
+                var me = this;
+                me.detailData = paramsData.detailData;
+                app.form.fillFromData('#my-form', me.detailData);
+            },
+            initButton: function () {
+                var me = this
+                $('#backUrl').on('click', function (e) {
+                    $('#refresh', parent.document).click();
+                    app.methods.toUrl("back")
+                })
+            },
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#detail-refresh').on('click', function (e) {
+                    me.loadData();
+                })
+            },
+            init: function () {
+                var me = this;
+                me.initButton();
+                me.loadData();
+                me.setWidth();
+                me.initFreshButton();
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

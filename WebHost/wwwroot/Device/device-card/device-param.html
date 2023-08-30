@@ -19,10 +19,13 @@
         </div>
     </form>
     <script type="text/javascript">
-'use strict';
-var rootPath = "../";
-window["encryptUrl"] = ["/Apis/"];
-var business = {
+        'use strict';
+        var rootPath = "../";
+        window["encryptUrl"] = ["/Apis/"];
+        var business = {
+            dialogData: {},
+            dialogData: null,
+            sid: getQueryStringByName("sid"),
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             detailWidth: 920,
@@ -33,12 +36,10 @@ var business = {
                     search: {
                         fields: [
                             { display: "参数名称", name: "_search_PARAM_NAME", dbname: "PARAM_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "设备编码", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "设备编码", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "参数名称", name: "PARAM_NAME", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "参数值", name: "PARAM_VALUE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "说明", name: "PARAM_MEMO", width: 100, type: "text", editor: { type: 'text' } },
@@ -84,14 +85,12 @@ var business = {
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     dataAction: 'server',
-                    toolbar: {},
-                    url: rootPath + 'Device/DeviceParam/List',
-                    //url: rootPath + 'handler/grid.ashx',
+                    toolbar: { group: "param" },
+                    url: rootPath + 'Device/DeviceCard/ParamList',
                     parms: {
-                        //"view": "device_param",
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'DEVICE_ID', value: me.sid, op: 'equal' },]
                         })
                     },
                     sortName: 'PARAM_NAME',
@@ -179,32 +178,7 @@ var business = {
                 //     onClosed: me.reload.bind(me),
                 //     data: { "sid": null }
                 // });
-                me.grid.addEditRow({}, true);
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var sid = selected.PARAM_NAME;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]',
-                        url: "Detail.aspx?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": sid }
-                    });
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
+                me.grid.addEditRow({ DEVICE_ID: me.sid }, true);
             },
             save: function () { //保存
                 var me = this;
@@ -217,7 +191,7 @@ var business = {
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: rootPath + 'Device/DeviceParam/Save',
+                        url: rootPath + 'Device/DeviceCard/SaveParam',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -327,14 +301,19 @@ var business = {
             },
             init: function () {
                 var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                }
                 //me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
                 return me;
             }
-};
-business.init();
+        };
+        business.init();
     </script>
 </body>
 

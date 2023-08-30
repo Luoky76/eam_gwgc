@@ -27,17 +27,19 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "编制日期", name: "_search_EIDT_DATE", dbname: "EIDT_DATE", newline: false, upper: true, type: "date", vt: "date", options: { showTime: false, format: "yyyy-MM-dd" } },
+                            { display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "EXE_ID", name: "EXE_ID", width: 100, type: "text", hide: true },
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditingStatus, selectBoxHeight: 100 }},
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk" },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
                             { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "text", },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "select", options: { data: me.repairhandtype } },
                             { display: "实际开工时间", name: "PLAN_START_DATE", width: 100, type: "text", },
                             { display: "实际完工时间", name: "PLAN_END_DATE", width: 100, type: "text", },
                             { display: "维修实施单号", name: "EXE_CODE", width: 100, type: "text", },
@@ -52,6 +54,7 @@
                 };
             },
             grid: null,
+            repairhandtype:[],
             auditingStatus: [
                 { ID: "0", TEXT: "未提交", VALUE: "0" },
                 { ID: "1", TEXT: "已提交", VALUE: "1" }
@@ -61,6 +64,19 @@
             UserInfo:null,
             loadComboxData: function () {
                 var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Repair/RepairPlan/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.maintdept = data.MaintDept;
+                        me.repairtype = data.RepairType;
+                        me.repairhandtype = data.RepairDealType;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             setGrid: function () {
                 var me = this;
@@ -135,6 +151,13 @@
                         case "modify":
                             me.modify();
                             break;
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
+                            break;
                         case "delete":
                             me.delete();
                             break;
@@ -172,32 +195,6 @@
                     onClosed: null,
                     data: { "sid": "" }
                 });
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Repair/RepairPlan/SaveExe',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
-
             },
             sumbit: function () { //提交
                 var me = this;
@@ -306,30 +303,6 @@
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
-            },
-            delete: function () { //删除
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    for (var i = 0; i < selected.length; i++) {
-                        if (selected[i].AUDITING == "1") {
-                            LG.showError("选中数据有部分已提交,无法删除");
-                            return;
-                        }
-                    }
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
             },
             bindGridEvent: function () {
                 var me = this;

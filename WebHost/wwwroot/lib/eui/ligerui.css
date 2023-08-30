@@ -29,6 +29,12 @@ input::-ms-clear {
     overflow-y: hidden !important;
 }
 
+.l-overflow-auto {
+    overflow: auto !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
 .l-loading {
     font-size: 48px;
     position: absolute;
