@@ -143,7 +143,7 @@
                 if (me.data.NodeId) url += "&nodeId=" + me.data.NodeId;
                 if (me.isStart) url += "&isStart=1";
                 if (me.isView) url += "&isView=1";
-                me.formPanel._setUrl(window.gksybConfigs.getUrl(url, this.urlBase));
+                me.formPanel._setUrl(window.gksybConfigs.getUrl(url, window.gksybConfigs.urlBase));
             },
             initForm: function () {
                 var me = this;
