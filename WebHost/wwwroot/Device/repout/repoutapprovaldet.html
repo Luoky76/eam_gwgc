@@ -67,8 +67,8 @@
                             { display: "合同编号", name: "PACT_CODE", newline: false, upper: true, type: "text", options: {}, group: "委外维修合同信息" },
                             { display: "合同名称", name: "PACT_NAME", newline: false, upper: true, type: "text", options: {} },
                             { display: "签订日期", name: "PACT_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "编制日期", name: "EIDT_DATE", newline: false, upper: true, type: "date", options: {disabled: true} },
-                            { display: "编制人", name: "EIDT_USER", newline: false, upper: true, type: "text", options: {disabled: true} },
+                            { display: "编制日期", name: "EIDT_DATE", newline: false, upper: true, type: "date", options: {} },
+                            { display: "编制人", name: "EIDT_USER", newline: false, upper: true, type: "text", options: {} },
                             //{ display: "计划预估金额", name: " ", newline: false, upper: true, type: "text", options: {disabled: true} },
 
                             {
@@ -78,6 +78,8 @@
                                     data: me.ratio,
                                     onChangeValue: function (input, value, g) {
                                         me.curratio = value
+                                        $('#REP_MONEY').val("");
+                                        $('#NOTAX_MONEY').val("");
                                     },
                                 }
                             },
@@ -116,13 +118,29 @@
                                 }
                             },
                             //{ display: "供应商名称", name: "PROVIDER_ID", newline: false, upper: true, type: "select", options: { data: me.providerData } },
-                            { display: "供应商名称", name: "PROVIDER_ID", newline: false, upper: true, type: "text", options: { } },
+                            //{ display: "供应商名称", name: "PROVIDER_ID", newline: false, upper: true, type: "text", options: { } },
 
-                            { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: { disabled: true }, group: "委外维修验收" },
-                            { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", group: "委外维修验收" },
+                            {
+                                display: "实际开工时间", name: "REAL_BEGINTIME", newline: false, upper: true, type: "date", 
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours(value, $('#REAL_ENDTIME').val());
+                                    },
+                                },
+                            },
+                            {
+                                display: "实际完工时间", name: "REAL_ENDTIME", newline: false, upper: true, type: "date", 
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours($('#REAL_BEGINTIME').val(), value);
+                                    },
+                                }
+                            },
+                            { display: "验收人", name: "EIDT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "委外停机时间(H)", name: "ACT_STOP_TIME", newline: false, upper: true, type: "float", options: { disabled: true } },
-                            { display: "实际完工时间", name: "REAL_ENDTIME", newline: false, upper: true, type: "date", options: { disabled: true } },
-                            { display: "实际开工时间", name: "REAL_BEGINTIME", newline: false, upper: true, type: "date", options: { disabled: true } },
                             { display: "验收情况", name: "CHECK_DESC", newline: true, width: 780, upper: true, validate: { required: true }, type: "textarea", options: { rows: "2" } },
                             { display: "主键", name: "OUT_ID", width: 100, type: "hidden" },
 
@@ -133,7 +151,7 @@
                             { display: "物资编码", name: "SP_CODE", minWidth: 150, type: "text" },
                             { display: "物资名称", name: "SP_NAME", minWidth: 150, type: "text" },
                             { display: "规格/型号", name: "SP_TYPE", minWidth: 150, type: "text" },
-                            { display: "实际消耗数量", name: "FACT_NUM", width: 100, type: "decimal" },
+                            { display: "实际消耗数量", name: "FACT_NUM", width: 100, type: "float" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
                             { display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "品牌", name: "BRAND", minWidth: 100, type: "text" },
@@ -147,6 +165,35 @@
             },
             mainform: null,
             buttons: null,
+            //时间判断
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (!startDate || !completeDate) {
+                    $('#ACT_STOP_TIME').val("");
+                    return;
+                }
+
+                if (start >= complete) {
+                    $('#REAL_BEGINTIME').val("");
+                    $('#REAL_ENDTIME').val("");
+                    $('#ACT_STOP_TIME').val("");
+                    LG.showError("实际开工时间不能大于实际完工时间或者当前时间！请重新选择！");
+                    return;
+                }
+
+                var now = new Date();
+                if (complete > now) {
+                    $('#REAL_ENDTIME').val("");
+                    LG.showError("实际完工时间不能大于当前时间！");
+                    return;
+                }
+
+                var timeDiff = complete - start;
+                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                $('#ACT_STOP_TIME').val(minutesDiff);
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -187,6 +234,47 @@
                     }
                 }
                 me.mainform.focus();
+            },
+
+            f_select_man: function () {
+                var me = this;
+                var userId = me.mainform.getData().EIDT_USER || "";
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 500,
+                    title: '人员挑选',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [userId],
+                        options: {
+                            url: 'popup/users', sortName: 'Name', rowKey: "Id", isSingleCheck: true,
+                            columns: [
+                                { display: "姓名", name: "Name", type: "text" },
+                                { display: "公司岗位", name: "Station", type: "text" }
+                            ]
+                        },
+                        fields: [
+                            { display: "姓名", name: "Name", width: 100, type: "text" },
+                            { display: "公司岗位", name: "Station", width: 100, type: "text" }
+                        ],
+                        callback: function (values, rows) {
+                            if (rows.length < 1) {
+                                me.mainform.setData({
+                                    "EIDT_USER": null,
+                                });
+                                return;
+                            }
+                            var row = rows[0];
+                            var corp = row.Corps.length > 0 ? row.Corps[0] : {};
+                            me.mainform.setData({
+                                "EIDT_USER": row.Name,
+                            });
+                        }
+                    }
+                });
+
             },
             save: function () { //保存
                 debugger
@@ -397,6 +485,9 @@
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
+                $('#EIDT_USER').bind('click', function () {
+                    me.f_select_man();
+                });
                 me.loadData();
                 me.setGrid();
                 return me;

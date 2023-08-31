@@ -1,0 +1,490 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>委外维修验收</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">委外维修验收</div>
+
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search" placeholder="请输入..." id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <div id="approval_list">
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <button class="button" id="sumbit">
+                            提交
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var formdata;
+        var formDataDetail;
+        var userList = [];
+
+        var busResult = {
+            AUDITING_CHK: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            scanResult: [{ "ID": "正常", "TEXT": "正常" }, { "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }],
+            repOutType: [],
+            ListDict: [
+                { display: "主键", name: "OUT_ID", PrimaryKey: "OUT_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+                { display: "记录状态", name: "AUDITING_CHK" },
+                { display: "委外状态", name: "OUT_STATUS" },
+                { display: "委外单号", name: "OUT_CODE" },
+                { display: "船舶名称", name: "DEVICE_NAME" },
+                { display: "船舶编号", name: "DEVICE_NO" },
+            ],
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/RepOut/GetRepOutAcceptList',
+                    success: function (data) {
+                        me.list = data.Rows;
+
+                        data.Rows.forEach((a) => {
+                            a.AUDITING_CHK = busResult.AUDITING_CHK.find((v) => v.ID == a.AUDITING_CHK).TEXT;
+                            a.OUT_STATUS = busResult.repOutType.find((v) => v.ID == a.OUT_STATUS).TEXT;
+                        });
+
+                        var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
+                        $("#approval_list").html(str);
+
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.OUT_ID).click(function () {
+                                detail_popup.params = { "OUT_ID": a.OUT_ID };
+                                detail_popup.open();
+                            });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            getCombox: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/RepOut/ComboxData',
+                    success: function (data) {
+                        me.maintDept = data.maintDept;
+                        me.repSourceType = data.repSourceType;
+                        me.repOutType = data.repOutType;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'popup/users',
+                    success: function (data) {
+                        data.forEach((a) => {
+                            var station = a.Station.length > 0 ? '(' + a.Station + ')' : "";
+                            userList.push({ "ID": a.Id, "TEXT": a.Name + station, "VALUE": a.Name });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+
+                me.getCombox();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                });
+                //提交
+                $("#sumbit").click(function () {
+                    var checkDom = $("#approval_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ OUT_ID: x.value });
+                    });
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        var aut = me.list.find((v) => v.OUT_ID == a.OUT_ID).AUDITING_CHK;
+                        if (aut == "已提交") {
+                            app.dialog.error("已提交不能再提交", function () { });
+                            flag = false;
+                            return false;
+                        }
+                    });
+                    var sids = [];
+                    checkedIDList.forEach((a) => {
+                        sids.push(a.OUT_ID)
+                    })
+                    if (flag) {
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Device/RepOut/SubmitRepOutCheck',
+                                data: {
+                                    "sids": sids
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("提交成功", function () {
+                                        busResult.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    }
+                });
+            }
+
+        };
+        busResult.init();
+
+        var isleave = [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }];
+
+        var ratio = [{ "ID": "0.13", "TEXT": "13%" }, { "ID": "0.03", "TEXT": "3%" }, { "ID": "0.06", "TEXT": "6%" }, { "ID": "0.10", "TEXT": "10%" }, { "ID": "0.00", "TEXT": "0%" }, { "ID": "0.16", "TEXT": "16%" }, { "ID": "0.01", "TEXT": "1%" }];
+        //明细信息
+        var repoutCheckDetailInfo = [
+            { display: "主键", name: "OUT_ID", PrimaryKey: "OUT_ID", readOnly: true, isPrimaryKey: true, isShow: false },
+            { display: "记录状态", name: "AUDITING_CHK", readOnly: true, },
+            { display: "委外状态", name: "OUT_STATUS", readOnly: true, },
+            { display: "委外单号", name: "OUT_CODE", readOnly: true, },
+            { display: "船舶名称", name: "DEVICE_NAME", readOnly: true, },
+            { display: "船舶型号", name: "DEVICE_TYPE", readOnly: true, },
+            { display: "船舶编号", name: "DEVICE_NO", readOnly: true, },
+            { display: "安装地点", name: "INSTALL_SITE", readOnly: true, },
+            { display: "维修设备名称", name: "REP_DEVICE", readOnly: true, },
+            { display: "来源类型", name: "SRC_TYPE", readOnly: true, },
+            { display: "来源单号", name: "SRC_CODE", readOnly: true, },
+            { display: "使用部门", name: "DEPT_NAME", readOnly: true, },
+            { display: "维保部门", name: "WDEPT_ID", readOnly: true, },
+            { display: "是否有遗留问题", name: "IS_LEAVE", readOnly: true, },
+            { display: "确认人", name: "CHECK_USER", validate: { required: true }, },
+            { display: "故障现象描述", name: "FAULT_DESCRIBE", readOnly: true, },
+            { display: "故障原因", name: "REASON", readOnly: true, },
+            { display: "解决方法", name: "SOLUTION", readOnly: true, },
+            { display: "委外维修内容", name: "OUT_REPAIR_MEMO", readOnly: true, },
+            { display: "遗留问题描述", name: "LEAVE_MEMO", readOnly: true, },
+            { display: "备注", name: "MEMO", readOnly: true, },
+
+            { display: "合同编号", name: "PACT_CODE", },
+            { display: "合同名称", name: "PACT_NAME", },
+            { display: "签订日期", name: "PACT_DATE", },
+            { display: "编制日期", name: "EIDT_DATE", },
+            { display: "编制人", name: "EIDT_USER", },
+            { display: "税率", name: "RATIO", Option: ratio, Searched: true },
+            { display: "维修费用(元)", name: "REP_MONEY", },
+            { display: "不含税维修费用(元)", name: "NOTAX_MONEY", },
+            { display: "验收时间", name: "CHECK_DATE", },
+            { display: "实际开工时间", name: "REAL_BEGINTIME", },
+            { display: "实际完工时间", name: "REAL_ENDTIME", },
+            { display: "验收人", name: "EIDT_USER", Option: userList, Searched: true },
+            { display: "委外停机时间(H)", name: "ACT_STOP_TIME", readOnly: true, },
+            { display: "验收情况", name: "CHECK_DESC", validate: { required: true }, },
+        ];
+        var detail_popup = app.popup.create({
+            content: `
+                                                                                                                    <div class="popup answersheet">
+                                                                                                                        <div class="view">
+                                                                                                                            <div class="page">
+                                                                                                                                <div class="navbar">
+                                                                                                                                    <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                                                        <div class="left link popup-close">
+                                                                                                                                            <i class="f7-icons">arrow_left</i>
+                                                                                                                                        </div>
+                                                                                                                                        <div class="title">委外维修验收</div>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                                <div class="toolbar tabbar toolbar-top">
+                                                                                                                                    <div class="toolbar-inner" style="
+                                                                                                                                        --f7-tabbar-link-active-border-color: #fff;
+                                                                                                                                        --f7-tabbar-link-active-color: black;
+                                                                                                                                        --f7-tabbar-link-active-bg-color: white;
+                                                                                                                                        --f7-tabbar-link-inactive-color: black;
+                                                                                                                                        background-color: rgb(236, 235, 235);
+                                                                                                                                 ">
+                                                                                                                                        <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">委外维修验收详情</a>
+                                                                                                                                        <a href="#tab-2" class="tab-link" id="modify_list">物资消耗明细明细</a>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                                <div class="tabs">
+                                                                                                                                  <div id="tab-1" class="page-content tab tab-active">
+                                                                                                                                    <div class="list inline-labels no-hairlines-md">
+                                                                                                                                        <form class="list" id="detail_bg"></form>
+                                                                                                                                    </div>
+
+                                                                                                                                  </div>
+
+                                                                                                                                  <div id="tab-2" class="page-content tab">
+
+                                                                                                                                        <div class="list" id="modify_bg">
+                                                                                                                                        </div>
+                                                                                                                                  </div>
+                                                                                                                                </div>
+                                                                                                                                <div class="toolbar toolbar-bottom " id="menu" style="display: none;">
+                                                                                                                                    <div class="toolbar-inner">
+                                                                                                                                        <button class="col button button-large button-fill" id="saveDetail" >保存</button>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                        </div>
+                                                                                                                    </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    var ID = me.params.OUT_ID;
+                    $("#popup-close").click(function () {
+                        detail_popup.close();
+                        busResult.getData();
+                    });
+
+                    $("#saveDetail").off('click').click(function () {
+
+                        let data = app.form.convertToData("#detail_bg");
+                        data.OUT_ID = ID;
+                        if (data.CHECK_DESC == null || data.CHECK_DESC == '') {
+                            app.dialog.error("验收情况不可为空");
+                            return;
+                        }
+                        debugger
+                        var repMoneyValue = Number(data.REP_MONEY);
+                        var notaxMoneyValue = Number(data.NOTAX_MONEY);
+                        if (repMoneyValue < 0 || isNaN(repMoneyValue) || notaxMoneyValue < 0 || isNaN(notaxMoneyValue)) {
+                            app.dialog.error('维修费用不是大于 0 的数字');
+                            return;
+                        } else {
+                            var curratio = data.RATIO;
+                            var repmoney = data.REP_MONEY;
+                            var item = ratio.find((v) => v.ID == curratio);
+                            var ratio1 = "";
+                            var newratio = "";
+                            if (item) {
+                                ratio1 = item.TEXT;
+                                newratio = ratio1.replace("%", "");
+                            }
+                            var notax_money = (repmoney / (1 + newratio / 100)).toFixed(2);
+                            data.NOTAX_MONEY = notax_money;
+                        }
+                        
+                        //判断时间
+                        var startDate = data.REAL_BEGINTIME;
+                        var completeDate = data.REAL_ENDTIME;
+                        var start = new Date(startDate);
+                        var complete = new Date(completeDate);
+
+                        if (!startDate || !completeDate) {
+                            $('#ACT_STOP_TIME').val("");
+                            return;
+                        }
+
+                        if (start >= complete) {
+                            $('#REAL_BEGINTIME').val("");
+                            $('#REAL_ENDTIME').val("");
+                            $('#ACT_STOP_TIME').val("");
+                            app.dialog.error("实际开工时间不能大于实际完工时间或者当前时间！请重新选择！");
+                            return;
+                        }
+
+                        var now = new Date();
+                        if (complete > now) {
+                            $('#REAL_ENDTIME').val("");
+                            app.dialog.error("实际完工时间不能大于当前时间！");
+                            return;
+                        }
+
+                        var timeDiff = complete - start;
+                        var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                        data.ACT_STOP_TIME = minutesDiff;
+
+
+
+                        var AddRow = new Object();
+                        AddRow["Updated"] = [data];
+                        AddRow["Original"] = [formDataDetail];
+                        app.ajax({
+                            jsToken: true,
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/RepOut/ManageRepOutAccept',
+                            success: function () {
+                                detail_popup.close();
+                            }
+                        });
+                    });
+                    // 清单明细
+                    if (ID) {
+                        app.ajax({
+                            type: 'post',
+                            data: { id: ID },
+                            url: 'Device/RepOut/GetRepOutDetail',
+                            success: function (data) {
+                                data.AUDITING_CHK = busResult.AUDITING_CHK.find((v) => v.ID == data.AUDITING_CHK).TEXT;
+                                data.OUT_STATUS = busResult.repOutType.find((v) => v.ID == data.OUT_STATUS).TEXT;
+                                data.SRC_TYPE = busResult.repSourceType.find((v) => v.ID == data.SRC_TYPE).TEXT;
+                                data.IS_LEAVE = isleave.find((v) => v.ID == data.IS_LEAVE).TEXT;
+                                var detailInfo = data.AUDITING_CHK == "未提交" ? repoutCheckDetailInfo : repoutCheckDetailInfo.map(function (item) {
+                                    item.readOnly = true;
+                                    return item;
+                                });
+
+                                var str = app.CreatePopupContentHtml(detailInfo);
+                                $("#detail_bg").html(str);
+                                if (data != null) {
+                                    formDataDetail = data;
+                                    app.form.fillFromData('#detail_bg', formDataDetail);
+                                    showBtn(data.AUDITING_CHK == "未提交");
+                                }
+                                app.smartSelect.create({
+                                    el: '.RATIO',
+                                    searchbar: true
+                                });
+                                app.smartSelect.create({
+                                    el: '.EIDT_USER',
+                                    searchbar: true
+                                });
+                                if (data.AUDITING_CHK == "未提交") {
+                                    createCalendar('#PACT_DATE');
+                                    createCalendar('#EIDT_DATE');
+                                    createCalendar('#CHECK_DATE');
+                                    createCalendar('#REAL_BEGINTIME');
+                                    createCalendar('#REAL_ENDTIME');
+                                }
+                                CreateSpDetail(ID);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        //时间
+        function createCalendar(inputId) {
+            app.calendar.create({
+                inputEl: inputId,
+                timePicker: true,
+                dateFormat: 'yyyy-mm-dd HH::mm:ss',
+            });
+        }
+        //按钮显示隐藏
+        function showBtn(isEdit) {
+            if (isEdit) {
+                $("#menu").show();
+            } else {
+                $("#menu").hide();
+            }
+        }
+        var spDetail = [
+            { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "物资编码", name: "SP_CODE", },
+            { display: "物资名称", name: "SP_NAME" },
+            { display: "规格/型号", name: "SP_TYPE" },
+            { display: "实际消耗数量", name: "FACT_NUM" },
+            { display: "计量单位", name: "UNIT" },
+            { display: "制造厂", name: "FACTORY" },
+            { display: "品牌", name: "BRAND" },
+            { display: "其他编号", name: "OTHER_CODE" },
+            { display: "备注", name: "MEMO" },
+        ];
+        //物资消耗明细列表
+        function CreateSpDetail(ID) {
+
+            var where = JSON.stringify({
+                op: 'and',
+                rules: [{ field: 'OUT_ID', op: 'equal', value: ID }]
+            });
+
+            app.ajax({
+                type: 'post',
+                data: { "where": where },
+                url: 'Device/RepOut/GetRepOutAcceptDetail',
+                success: function (data) {
+                    // 清单
+                    var str = app.CreateListContentHtml(data.Rows, spDetail, false);
+                    $("#modify_bg").html(str);
+                }
+            });
+
+        };
+    </script>
+</body>
+
+</html>

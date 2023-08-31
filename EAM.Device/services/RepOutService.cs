@@ -185,15 +185,15 @@ namespace EAM.Device.services
                     c.NOTAX_MONEY,
                     c.RATIO,
                     c.PROVIDER_ID,
+                    c.REAL_BEGINTIME,
+                    c.REAL_ENDTIME,
+                    c.ACT_STOP_TIME,
+                    c.CHECK_DATE,
+                    c.EIDT_DATE,
+                    c.EIDT_USER,
                     c.OUT_ID,
                 },
-                c => a => a.OUT_ID == c.OUT_ID, null, BeforeUpdate);
-        }
-
-        public async Task BeforeUpdate(REP_OUT entity)
-        {
-            entity.EIDT_DATE = await _dbContext.GetSysdate();
-            entity.EIDT_USER = _userSession.RealName;
+                c => a => a.OUT_ID == c.OUT_ID, null, null);
         }
 
         /// <summary>
