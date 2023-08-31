@@ -157,8 +157,8 @@
                         isPrimaryKey: true,
                         isShow: false
                     },
-                    { display: "记录状态", name: "AUDITING", Option: me.auditing, Searched: true, readOnly: true, disabled: true },
-                    { display: "任务制定人", name: "FORMULATER_ID", readOnly: true },
+                    { display: "记录状态", name: "AUDITING", Option: me.auditing, Searched: true, readOnly: true },
+                    { display: "任务制定人", name: "FORMULATER_ID", Option: me.user, readOnly: true },
                     { display: "评分人", name: "EXAMINER_ID", Option: me.user, Searched: true, readOnly: true },
                     { display: "评估年度", name: "ASSESS_YEAR", readOnly: true },
                     { display: "考核开始时间", name: "BEGIN_TIME", readOnly: true },
@@ -183,11 +183,30 @@
                 app.form.fillFromData('#assess', me.data);
                 app.smartSelect.create({
                     el: '.AUDITING',
-                    searchbar: true
+                    searchbar: true,
+                    on: {
+                        beforeOpen: function (e) {
+                            e.detail.prevent();
+                        }
+                    }
+                });
+                app.smartSelect.create({
+                    el: '.FORMULATER_ID',
+                    searchbar: true,
+                    on: {
+                        beforeOpen: function (e) {
+                            e.detail.prevent();
+                        }
+                    }
                 });
                 app.smartSelect.create({
                     el: '.EXAMINER_ID',
-                    searchbar: true
+                    searchbar: true,
+                    on: {
+                        beforeOpen: function (e) {
+                            e.detail.prevent();
+                        }
+                    }
                 });
             },
             save: function () {
