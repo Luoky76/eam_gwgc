@@ -1,8 +1,10 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using EAM.Repair.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -17,11 +19,15 @@ namespace EAM.Repair.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly IUserService _userService;
+        private readonly ICorpService _corpService;
         private string masterID = string.Empty, errMsg = string.Empty;
-        public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService)
+        public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _userService = userService;
+            _corpService = corpService;
         }
 
         /// <summary>
@@ -35,8 +41,11 @@ namespace EAM.Repair.services
                     {"MaintDept", null},
                     {"RepairType",null },
                     {"RepitemType",null },
-                    {"RepairDealType",null }
+                    {"RepairDealType",null },
+                    { "Auditing", null },
+                    { "User", null }
             });
+            result.TryAdd("Corp", await _corpService.ComboxDataAsync());
             return result;
         }
         #region 维修计划
@@ -377,6 +386,8 @@ namespace EAM.Repair.services
             {
                 a.PLAN_ID,
                 a.AUDITING,
+                a.AUDITING_A,
+                a.EXE_CODE,
                 a.WSEC_DEPT,
                 a.MAINT_TYPE,
                 a.DEAL_TYPE,
@@ -585,6 +596,41 @@ namespace EAM.Repair.services
             await Task.CompletedTask;
         }
 
+        public async Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
+        {
+            return await _dbContext.SaveEntityAnsyc(requestdet,
+                c => new
+                {
+                    c.EXE_ITEM_ID,
+                    c.EXE_ID,
+                    c.PLAN_ITEM_ID,
+                    c.BOM_ID,
+                    c.PLAN_ID,
+                    c.BOM_NAME,
+                    c.REP_CONTENT,
+                    c.IS_COMPLETE,
+                    c.USE_TOOL,
+                    c.LABOR_NUM,
+                    c.TAKE_TIME,
+                    c.BEGIN_TIME,
+                    c.END_TIME,
+                    c.MEMO,
+                    c.DEAL_TYPE,
+                    c.REP_LEADER,
+                    c.REP_INDEX,
+                    c.IS_ASKBID,
+                    c.ITEM_TYPE,
+                },
+                c => a => a.EXE_ITEM_ID == c.EXE_ITEM_ID, BeforeAddDet, BeforeUpdateDet);
+        }
+
+
+
+
+        #endregion
+
+        #region 维修计划验收
+
         public async Task<AjaxResult> SaveCheck(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
         {
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
@@ -595,6 +641,7 @@ namespace EAM.Repair.services
                      {
                          c.PLAN_ID,
                          c.AUDITING,
+                         c.AUDITING_A,
                          c.EXE_CODE,
                          c.MAINT_TYPE,
                          c.DEAL_TYPE,
@@ -714,10 +761,6 @@ namespace EAM.Repair.services
         {
             await Task.CompletedTask;
         }
-
-        #endregion
-
-        #region 维修计划验收
 
         #endregion
     }
