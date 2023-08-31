@@ -71,7 +71,6 @@
             loadTemplate: function (name) {
                 var me = this;
                 LG.ajax({
-                    async: false,
                     url: 'codeGen/templateContent',
                     loading: '正在生成中...',
                     data: { tableInfos: me.dialogData, template: name },
@@ -144,6 +143,23 @@
                     });
                 });
             },
+            download: function () {
+                var me = this;
+                $.ligerDialog.prompt("请输入模块", "", function (isOk, val) {
+                    if (!isOk) return;
+                    var rows = $.extend(true, [], me.dialogData || []);
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var item = rows[i];
+                        item.Module = val;
+                    }
+                    LG.download({
+                        url: "codeGen/templateDownload",
+                        type: "post",
+                        contentType: "application/json",
+                        data: { tableInfos: rows, template: me.template }
+                    });
+                });
+            },
             copy: function () {
                 var me = this;
                 var html = me.tab.getSelectedTabItem().find(".full").text();
@@ -152,6 +168,7 @@
             setFormDefaultBtn: function () {
                 var me = this;
                 var buttons = [];
+                buttons.push({ text: '下载', onclick: function () { me.download(); } });
                 buttons.push({ text: '本地生成', onclick: function () { me.build(); } });
                 buttons.push({ text: '复制', onclick: function () { me.copy(); } });
                 LG.addFormButtons(buttons, $("#template"));
