@@ -31,6 +31,8 @@ namespace EAM.Repair.interfaces
 
         Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
 
+        Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
+
         Task<AjaxResult> SaveCheck(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
     }
 }

@@ -1,0 +1,676 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>维修计划实施</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">维修计划实施</div>
+
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search" placeholder="请输入..." id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <div id="exe_list">
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <!--<button class="button" id="refresh">
+                            刷新
+                        </button>-->
+                        <button class="button" id="sumbit">
+                            提交
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var formdata;
+        var formDataDetail;
+        var user = [];//人员
+        var business = {
+            auditing: [],
+            maintdept: [],
+            dataCorp:[],
+            repairtype: [],
+            repairhandtype: [],
+            iscomplete: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
+            ListDict: [
+                {
+                    display: " 主键",
+                    name: "EXE_ID",
+                    PrimaryKey: "EXE_ID",
+                    readOnly: false,
+                    isPrimaryKey: true,
+                    isShow: false
+                },
+                {
+                    display: "记录状态 ", name: "AUDITING",
+                },
+                {
+                    display: "维修实施单号", name: "EXE_CODE",
+                },
+                {
+                    display: "计划单号", name: "PLAN_CODE",
+                },
+                {
+                    display: "船舶编号", name: "DEVICE_NO"
+                },
+                {
+                    display: "船舶名称", name: "DEVICE_NAME"
+                }
+            ],
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Repair/RepairPlan/ExeList',
+                    success: function (data) {
+                        me.list = data.Rows;
+                        data.Rows.forEach((a) => {
+                            a.AUDITING = me.auditing.find((v) => v.ID == a.AUDITING).TEXT;
+                        });
+
+                        var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
+                        $("#exe_list").html(str);
+
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.EXE_ID).click(function () {
+                                Info_popup.params = { "EXE_ID": a.EXE_ID };
+                                Info_popup.open();
+                            });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            getCombox: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Repair/RepairPlan/ComboxData',
+                    success: function (data) {
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.dataCorp = data.Corp;
+                        me.maintdept = data.MaintDept;
+                        me.repairtype = data.RepairType;
+                        me.repairhandtype = data.RepairDealType;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+
+            },
+            init: function () {
+                var me = this;
+
+                me.getCombox();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                });
+
+                //提交
+                $("#sumbit").click(function () {
+                    var checkDom = $("#exe_list input:checked");
+                    var checkedIDList = [];
+                    debugger
+                    checkDom.forEach(x => {
+                        checkedIDList.push(me.list.find((v) => v.EXE_ID == x.value));
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList.length > 1) {
+                        app.dialog.error("仅选择一行", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList[0].AUDITING == "已提交") {
+                        app.dialog.error("已提交不能再提交", function () { });
+                        return false;
+                    }
+                    var flag = true;
+                    var updatedarr = {
+                        ACT_END_DATE : checkedIDList[0].ACT_END_DATE,
+                        ACT_START_DATE: checkedIDList[0].ACT_START_DATE,
+                        AUDITING: "1",
+                        AUDITING_A: checkedIDList[0].AUDITING_A,
+                        CHECK_CODE: checkedIDList[0].CHECK_CODE,
+                        DEAL_TYPE: checkedIDList[0].DEAL_TYPE,
+                        EIDT_DATE: checkedIDList[0].EIDT_DATE,
+                        EXE_CODE: checkedIDList[0].EXE_CODE,
+                        EXE_DESC: checkedIDList[0].EXE_DESC,
+                        EXE_ID: checkedIDList[0].EXE_ID,
+                        EXE_USER: checkedIDList[0].EXE_USER,
+                        FAULT_DESCRIBE: checkedIDList[0].FAULT_DESCRIBE,
+                        LEAVE_MEMO: checkedIDList[0].LEAVE_MEMO,
+                        MAINT_TYPE: checkedIDList[0].MAINT_TYPE,
+                        PLAN_CODE: checkedIDList[0].PLAN_CODE,
+                        PLAN_ID: checkedIDList[0].PLAN_ID,
+                    }
+                    debugger
+                    var AddRow = new Object();
+                    AddRow["Original"] = checkedIDList;
+                    AddRow["Updated"] = [updatedarr];
+                    if (flag) {
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                data: { request: AddRow, requestdet: null },
+                                url: 'Repair/RepairPlan/SaveExe',
+                                success: function (data) {
+                                    app.dialog.alert("提交成功", function () {
+                                        business.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    }
+                });
+            }
+
+        };
+        business.init();
+
+        var outAppInfo = [
+            {
+                display: " 主键",
+                name: "EXE_ID",
+                PrimaryKey: "EXE_ID",
+                readOnly: true,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "维修实施单号", name: "EXE_CODE", readOnly: true, },
+            { display: "计划单号", name: "PLAN_CODE", readOnly: true, },
+            { display: "船舶名称", name: "DEVICE_NAME", readOnly: true, },
+            { display: "船舶编号", name: "DEVICE_NO", readOnly: true, },
+            { display: "维保部门", name: "WSEC_DEPT", readOnly: true, },
+            { display: "维修类型", name: "MAINT_TYPE", Option: business.repairtype, readOnly: true,  },
+            { display: "维修处理方式", name: "DEAL_TYPE", Option: business.repairhandtype, readOnly: true, },
+            { display: "故障现象描述", name: "FAULT_DESCRIBE", readOnly: true, },
+            { display: "备注", name: "PLAN_MEMO", readOnly: true, },
+
+            { display: "计划开工时间", name: "PLAN_START_DATE", readOnly: true, },
+            { display: "计划完工时间", name: "PLAN_END_DATE", readOnly: true },
+            { display: "实际开工时间", name: "ACT_START_DATE", validate: { required: true } },
+            { display: "实际完工时间", name: "ACT_END_DATE", validate: { required: true }, },
+            { display: "实施人", name: "EXE_USER", readOnly: true },
+            { display: "实施提交日期", name: "EIDT_DATE", readOnly: true },
+            { display: "遗留问题描述", name: "LEAVE_MEMO", },
+            { display: "实施情况登记", name: "EXE_DESC", },
+            { display: "PLAN_ID", name: "PLAN_ID", isShow: false },
+        ];
+        //出库信息
+        var Info_popup = app.popup.create({
+            content: `
+                                                                <div class="popup answersheet">
+                                                                    <div class="view">
+                                                                        <div class="page">
+                                                                            <div class="navbar">
+                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                    <div class="left link popup-close">
+                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                    </div>
+                                                                                    <div class="title">维修实施</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="toolbar tabbar toolbar-top">
+                                                                                <div class="toolbar-inner" style="
+                                                                                    --f7-tabbar-link-active-border-color: #fff;
+                                                                                    --f7-tabbar-link-active-color: black;
+                                                                                    --f7-tabbar-link-active-bg-color: white;
+                                                                                    --f7-tabbar-link-inactive-color: black;
+                                                                                    background-color: rgb(236, 235, 235);
+                                                                             ">
+                                                                                    <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">维修实施详情</a>
+                                                                                    <a href="#tab-2" class="tab-link" id="modify_list">维修项目明细</a>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="tabs">
+                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                    <form class="list" id="detail_bg"></form>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div id="tab-2" class="page-content tab">
+                                                                                    <div class="list" id="modify_bg">
+                                                                                    </div>
+                                                                              </div>
+                                                                            </div>
+                                                                            <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
+                                                                                <div class="toolbar-inner">
+                                                                                    <button class="col button button-large button-fill" id="save" >保存</button>
+                                                                                    <button class="col button button-large button-fill" id="sumbitdet" style="background-color: orange">提交</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`
+            ,
+            on: {
+                open: function () {
+                    var me = this;
+                    var ID = me.params.EXE_ID;
+                    $("#popup-close").click(function () {
+                        Info_popup.close();
+                    });
+
+                    //保存事件
+                    $("#save").off('click').click(function () {
+                        let data = app.form.convertToData("#detail_bg");
+                        data.EXE_ID = ID;
+
+                        if (data.ACT_START_DATE == null || data.ACT_START_DATE == '') {
+                            app.dialog.error("实际开工时间不能为空");
+                            return
+                        }
+                        if (data.ACT_END_DATE == null || data.ACT_END_DATE == '') {
+                            app.dialog.error("实际完工时间不能为空");
+                            return
+                        }
+                        data.AUDITING = "0";
+
+                        var AddRow = new Object();
+                        if (ID) {
+                            AddRow["Updated"] = [data];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+                        AddRow["Original"] = [formdata];
+
+                        app.ajax({
+                            type: 'post',
+                            data: { request: AddRow, requestdet: null },
+                            url: 'Repair/RepairPlan/SaveExe',
+                            success: function (data) {
+                                Info_popup.close();
+                                business.getData();
+                            }
+                        });
+                    });
+                    //提交事件
+                    $("#sumbitdet").off('click').click(function () {
+                        let data = app.form.convertToData("#detail_bg");
+                        data.EXE_ID = ID;
+
+                        if (data.AUDITING == "1") {
+                            app.dialog.error("该单据已经提交！");
+                            return false
+                        }
+                        if (formDataDetail == undefined || formDataDetail == null || formDataDetail.length == 0) {
+                            app.dialog.error("请先保存维修项目明细", function () {
+                                $("#modify_list").click();
+                            });
+                            return false
+                        }
+
+                        data.AUDITING = "1";
+
+                        var AddRow = new Object();
+                        if (ID) {
+                            AddRow["Updated"] = [data];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+                        AddRow["Original"] = [formdata];
+
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+                            app.ajax({
+                                type: 'post',
+                                data: { request: AddRow, requestdet: null },
+                                url: 'Repair/RepairPlan/SaveExe',
+                                success: function () {
+                                    Info_popup.close();
+                                    business.getData();
+                                }
+                            });
+                        });
+                    });
+
+                    if (ID) {
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "id": ID
+                            },
+                            url: 'Repair/RepairPlan/GetExeDetail',
+                            success: function (data) {
+                                var str = "";
+                                str = app.CreatePopupContentHtml(outAppInfo);
+                                $("#detail_bg").html(str);
+
+                                formdata = data[0];
+                                me.detail = data[0];
+                                me.detail.AUDITING = business.auditing.find((v) => v.ID == me.detail.AUDITING).ID;
+                                app.form.fillFromData('#detail_bg', me.detail);
+                                showBtn(data[0].AUDITING == "0");
+
+                                app.smartSelect.create({
+                                    el: '.M_USERID',
+                                    searchbar: true
+                                });
+                                app.smartSelect.create({
+                                    el: '.APPLY_TYPE',
+                                    searchbar: true
+                                });
+                                app.smartSelect.create({
+                                    el: '.PURTYPE_NAME',
+                                    searchbar: true
+                                });
+
+                                app.calendar.create({
+                                    inputEl: '#ACT_START_DATE',
+                                    timePicker: true,
+                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                });
+
+                                app.calendar.create({
+                                    inputEl: '#ACT_END_DATE',
+                                    timePicker: true,
+                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                });
+
+                                //明细数据
+                                CreateApplyDetail(ID, me.detail.AUDITING);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        //按钮显示隐藏
+        function showBtn(isEdit) {
+            debugger
+            if (isEdit) {
+                $("#menu").show();
+                $("#dg_list").click(function () {
+                    $("#menu").show();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
+            } else {
+                $("#menu").hide();
+                $("#dg_list").click(function () {
+                    $("#menu").hide();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
+            }
+        }
+
+        var outAppDetail = [
+            {
+                display: " 主键",
+                name: "EXE_ITEM_ID",
+                PrimaryKey: "EXE_ITEM_ID",
+                readOnly: false,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "是否完成", name: "IS_COMPLETE", Option: business.iscomplete, },
+            { display: "维修项目", name: "BOM_NAME",  },
+            { display: "维修内容", name: "REP_CONTENT",  },
+            { display: "维修项目分类", name: "ITEM_TYPE", },
+            { display: "是否月度询价", name: "IS_ASKBID", Option: business.iscomplete, },
+            { display: "维修处理方式", name: "DEAL_TYPE",  },
+            { display: "检修负责人", name: "STOCK_NAME", }
+        ];
+        //明细列表
+        function CreateApplyDetail(ID, AUDITING) {
+           var where = JSON.stringify({
+                op: 'and',
+               rules: [{ field: 'EXE_ID', op: 'equal', value: ID }]
+            });
+
+            app.ajax({
+                type: 'post',
+                data: { "where": where },
+                url: 'Repair/RepairPlan/ExeItemList',
+                success: function (data) {
+                    formDataDetail = data.Rows;
+                    // 清单
+                    debugger
+                    var str = app.CreateListContentHtml(data.Rows, outAppDetail, true);
+                    $("#modify_bg").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.EXE_ITEM_ID).click(function () {
+                            detail_popup.params = { "EXE_ITEM_ID": a.EXE_ITEM_ID, "EXE_ID": a.EXE_ID, "AUDITING": AUDITING };
+                            detail_popup.open();
+
+                        })
+                    });
+                }
+            });
+
+        };
+
+        //明细信息
+        var outAppDetailInfo = [
+            {
+                display: " 主键",
+                name: "EXE_ITEM_ID",
+                PrimaryKey: "EXE_ITEM_ID",
+                readOnly: true,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "是否完成", name: "IS_COMPLETE", Option: business.iscomplete, validate: { required: true } },
+            { display: "维修项目", name: "BOM_NAME", readOnly: true, },
+            { display: "序号", name: "REP_INDEX", readOnly: true, },
+            { display: "维修内容", name: "REP_CONTENT", readOnly: true, },
+            { display: "维修项目分类", name: "ITEM_TYPE", readOnly: true, },
+            { display: "是否月度询价", name: "IS_ASKBID", Option: business.iscomplete, readOnly: true, },
+            { display: "维修处理方式", name: "DEAL_TYPE", readOnly: true, },
+            { display: "检修负责人", name: "STOCK_NAME", readOnly: true, },
+
+            { display: "实际开工时间", name: "BEGIN_TIME" },
+            { display: "实际完工时间", name: "END_TIME"},
+            { display: "花费时间", name: "TAKE_TIME" },
+            { display: "备注", name: "MEMO" },
+            { display: "外键", name: "EXE_ID", isShow: false },
+            { display: "外键", name: "PLAN_ITEM_ID", isShow: false },
+            { display: "外键", name: "BOM_ID", isShow: false },
+            { display: "外键", name: "PLAN_ID", isShow: false },
+        ];
+        var detail_popup = app.popup.create({
+            content: `
+                                                                <div class="popup answersheet"id ="detail_popup">
+                                                                    <div class="view" >
+                                                                        <div class="page">
+                                                                            <div class="navbar">
+                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                    <div class="left link popup-close">
+                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                    </div>
+                                                                                    <div class="title">维修项目明细</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="tabs">
+                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                    <form class="list" id="detail_bg_detail">
+                                                                                     </form>
+                                                                                </div>
+                                                                              </div>
+                                                                            </div>
+                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                <div class="toolbar-inner">
+                                                                                    <button class="col button button-large button-fill" id="saveDetail" style="background-color: #2faa44">保存</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    me.AUDITING = me.params.AUDITING;
+                    $("#popup-close").click(function () {
+                        detail_popup.close();
+                    })
+
+                    $("#saveDetail").off('click').click(function () {
+
+                        let data = app.form.convertToData("#detail_bg_detail");
+                        data.EXE_ID = me.params.EXE_ID;
+                        data.EXE_ITEM_ID = me.params.EXE_ITEM_ID;
+
+                        if (data.IS_COMPLETE == null || data.IS_COMPLETE == '') {
+                            app.dialog.error("完成状态不可为空");
+                            return
+                        }
+
+                        var AddRow = new Object();
+
+                        if (data.EXE_ITEM_ID) {
+                            AddRow["Updated"] = [data];
+                            AddRow["Original"] = [formDataDetail];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "requestdet": AddRow
+                            },
+                            url: 'Repair/RepairPlan/SaveExeItem',
+                            success: function () {
+                                detail_popup.close();
+                                CreateApplyDetail(data.EXE_ID);
+                            }
+                        });
+                    });
+
+
+
+                    // 清单明细
+                    if (me.params.EXE_ITEM_ID) {
+                        var where = JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'EXE_ITEM_ID', op: 'equal', value: me.params.EXE_ITEM_ID }]
+                        });
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "where": where
+                            },
+                            url: 'Repair/RepairPlan/ExeItemList',
+                            success: function (data) {
+                                debugger
+                                var str = app.CreatePopupContentHtml(outAppDetailInfo);
+                                $("#detail_bg_detail").html(str);
+                                if (data.Rows.length > 0) {
+                                    formDataDetail = data.Rows[0];
+                                    app.form.fillFromData('#detail_bg_detail', formDataDetail);
+                                }
+                                if (me.AUDITING == "1") {
+                                    $("#menuDetail").hide();
+                                } else {
+                                    $("#menuDetail").show();
+                                }
+
+                                app.calendar.create({
+                                    inputEl: '#BEGIN_TIME',
+                                    timePicker: true,
+                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                });
+
+                                app.calendar.create({
+                                    inputEl: '#END_TIME',
+                                    timePicker: true,
+                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
