@@ -5,8 +5,10 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using RazorEngineCore;
 using System.Collections;
+using System.Text.RegularExpressions;
 using IOFile = System.IO.File;
 
 namespace Gksyb.Server.Services.System
@@ -103,14 +105,27 @@ namespace Gksyb.Server.Services.System
         /// </summary>
         public async Task<string> TemplateBuildAsync(DbTableInfo tableInfo, string template, string path = null)
         {
+            MessageException.ThrowIf(!_environment.IsDevelopment(), "只能在本地开发时使用");
+            return await TemplateBuildAsync(tableInfo, template, path, async (filePath, content) =>
+            {
+                var basePath = Path.Combine(_environment.ContentRootPath, $"..{Path.DirectorySeparatorChar}");
+                filePath = Path.Combine(basePath, filePath);
+                var directory = Path.GetDirectoryName(filePath);
+                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+                await IOFile.WriteAllTextAsync(filePath, content, Encoding.UTF8);
+                return filePath;
+            });
+        }
+
+        public async Task<string> TemplateBuildAsync(DbTableInfo tableInfo, string template, string path, Func<string, string, Task<string>> func)
+        {
             var mapName = tableInfo.Name.ToPascal();
             var htmlName = mapName.ToKebabCase();
             var modules = (tableInfo.Module ?? "Gksyb.Server").Split('.').Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
             tableInfo.Module = modules.ToStr(".");
             var business = modules.Take(2).ToStr(".");
             var module = modules.Skip(2).ToStr(".");
-            var lastModule = modules.LastOrDefault();
-            var basePath = Path.Combine(_environment.ContentRootPath, $"..{Path.DirectorySeparatorChar}");
+            var lastModule = modules.LastOrDefault() ?? "";
             var content = await TemplateContentAsync(tableInfo, template);
             path ??= PathConfig.ContainsKey(template) ? PathConfig[template] :
                 (await _codeService.Get("代码生成", template)).Select(c => c.TEXT).FirstOrDefault();
@@ -123,11 +138,10 @@ namespace Gksyb.Server.Services.System
                     { "mapName",mapName},
                     { "htmlName",htmlName},
                     { "lastModule",lastModule}
-            }).Replace('/', Path.DirectorySeparatorChar);
-            path = Path.Combine(basePath, path);
-            var directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-            await IOFile.WriteAllTextAsync(path, content, Encoding.UTF8);
+            });
+            path = Regex.Replace(path, @"/{2,}", "/").Trim('/');
+            path = path.Replace('/', Path.DirectorySeparatorChar);
+            await func(path, content);
             return Path.GetFullPath(path);
         }
 
@@ -156,8 +170,8 @@ namespace Gksyb.Server.Services.System
         private static readonly Dictionary<string, string> PathConfig = new()
         {
             {"model","Gksyb.Model/{modules}/{name}.cs" },
-            {"controller","{business}/Controllers/{module}/{mapName}.cs" },
-            {"service","{business}/Services/{module}/{mapName}.cs" },
+            {"controller","{business}/Controllers/{module}/{mapName}Controller.cs" },
+            {"service","{business}/Services/{module}/{mapName}Service.cs" },
             {"view","WebHost/wwwroot/{lastModule}/{htmlName}.html" },
             {"view-detail","WebHost/wwwroot/{lastModule}/{htmlName}-detail.html" }
         };

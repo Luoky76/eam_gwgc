@@ -1,9 +1,21 @@
 ﻿; (function () {
     'use strict';
+    var urlBase = "/";
+    for (var i = 0, l = document.scripts.length; i < l; i++) {
+        var src = document.scripts[i].src;
+        var index = src.indexOf("m/dist/Framework7/app.js");
+        if (index > 0) {
+            urlBase = src.substring(0, index);
+            var host = "//" + location.host;
+            index = urlBase.indexOf(host);
+            if (index > 0) urlBase = urlBase.substring((index + host.length));
+            break;
+        }
+    }
     //全局配置
     window.gksybConfigs = {
-        urlBase: "/m/v/", // url访问路径
-        apiBase: "/", // api 接口的访问路径
+        urlBase: urlBase + "m/v/", // url访问路径
+        apiBase: urlBase, // api 接口的访问路径
         getUrl: function (url) {
             if (url.indexOf("http") < 0) { //url处理
                 if (this.apiBase) {
@@ -16,6 +28,7 @@
             return url;
         }
     };
+
     //会话变量
     if (!window.session) {
         var sessionKey = "GksybData";
@@ -622,7 +635,7 @@
         },
         //初始化微信服务JSSDK
         initWX: function (callback) {
-            var inner = function(model) {
+            var inner = function (model) {
                 wx.config({
                     debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
                     appId: model.AppId, // 必填，公众号的唯一标识

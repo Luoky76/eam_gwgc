@@ -4,9 +4,8 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Gksyb.Server.Services.System;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
+using System.IO.Compression;
 using System.Web;
 
 namespace Gksyb.Server.Controllers.System
@@ -76,22 +75,6 @@ namespace Gksyb.Server.Controllers.System
         }
 
         /// <summary>
-        /// 模型生成
-        /// </summary>
-        public async Task<AjaxResult> ModelContentAsync(List<DbTableInfo> tableInfos)
-        {
-            return await TemplateContentAsync(tableInfos, "model");
-        }
-
-        /// <summary>
-        /// 模型本地生成
-        /// </summary>
-        public async Task<AjaxResult> ModelBuildAsync([FromServices] IWebHostEnvironment env, List<DbTableInfo> tableInfos)
-        {
-            return await TemplateBuildAsync(env, tableInfos, "model");
-        }
-
-        /// <summary>
         /// 模板内容
         /// </summary>
         public async Task<AjaxResult> TemplateContentAsync(List<DbTableInfo> tableInfos, string template)
@@ -111,9 +94,8 @@ namespace Gksyb.Server.Controllers.System
         /// <summary>
         /// 模板本地生成
         /// </summary>
-        public async Task<AjaxResult> TemplateBuildAsync([FromServices] IWebHostEnvironment env, List<DbTableInfo> tableInfos, string template)
+        public async Task<AjaxResult> TemplateBuildAsync(List<DbTableInfo> tableInfos, string template)
         {
-            if (!env.IsDevelopment()) return AjaxResult.Error("只能在本地开发时使用");
             var paths = new List<string>();
             foreach (var tableInfo in tableInfos)
             {
@@ -124,7 +106,32 @@ namespace Gksyb.Server.Controllers.System
         }
 
         /// <summary>
-        /// 服务生成
+        /// 模板内容下载
+        /// </summary>
+        public async Task<FileResult> TemplateDownloadAsync(List<DbTableInfo> tableInfos, string template)
+        {
+            using var memoryStream = new MemoryStream();
+            using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var tableInfo in tableInfos)
+                {
+                    tableInfo.Module = (tableInfo.Module ?? "").Replace("Gksyb.Model", "");
+                    await _service.TemplateBuildAsync(tableInfo, template, null, async (path, content) =>
+                    {
+                        var codeFile = archive.CreateEntry(path);
+                        using var streamWriter = new StreamWriter(codeFile.Open());
+                        await streamWriter.WriteAsync(content);
+                        return path;
+                    });
+                }
+            }
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var fileName = tableInfos.Select(c => c.Name).FirstOrDefault() ?? "code";
+            return new FileContentResult(memoryStream.ToArray(), "application/zip") { FileDownloadName = $"{fileName}.zip" };
+        }
+
+        /// <summary>
+        /// 代码生成
         /// </summary>
         public async Task<AjaxResult> CodeContentAsync(List<DbTableInfo> tableInfos)
         {
@@ -163,11 +170,10 @@ namespace Gksyb.Server.Controllers.System
         }
 
         /// <summary>
-        /// 模型本地生成
+        /// 代码本地生成
         /// </summary>
-        public async Task<AjaxResult> CodeBuildAsync([FromServices] IWebHostEnvironment env, List<DbTableInfo> tableInfos)
+        public async Task<AjaxResult> CodeBuildAsync(List<DbTableInfo> tableInfos)
         {
-            if (!env.IsDevelopment()) return AjaxResult.Error("只能在本地开发时使用");
             var paths = new List<string>();
             foreach (var tableInfo in tableInfos)
             {
@@ -179,6 +185,59 @@ namespace Gksyb.Server.Controllers.System
                 paths.Add(await _service.TemplateBuildAsync(tableInfo, "view-detail"));
             }
             return AjaxResult.Success(paths.Take(10).ToStr("<br/>"), "成功");
+        }
+
+        /// <summary>
+        /// 代码下载
+        /// </summary>
+        public async Task<FileResult> CodeDownloadAsync(List<DbTableInfo> tableInfos)
+        {
+            using var memoryStream = new MemoryStream();
+            using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var tableInfo in tableInfos)
+                {
+                    tableInfo.Module = (tableInfo.Module ?? "").Replace("Gksyb.Model", "");
+                    await _service.TemplateBuildAsync(tableInfo, "model", null, async (path, content) =>
+                    {
+                        var codeFile = archive.CreateEntry(path);
+                        using var streamWriter = new StreamWriter(codeFile.Open());
+                        await streamWriter.WriteAsync(content);
+                        return path;
+                    });
+                    await _service.TemplateBuildAsync(tableInfo, "controller", null, async (path, content) =>
+                    {
+                        var codeFile = archive.CreateEntry(path);
+                        using var streamWriter = new StreamWriter(codeFile.Open());
+                        await streamWriter.WriteAsync(content);
+                        return path;
+                    });
+                    await _service.TemplateBuildAsync(tableInfo, "service", null, async (path, content) =>
+                    {
+                        var codeFile = archive.CreateEntry(path);
+                        using var streamWriter = new StreamWriter(codeFile.Open());
+                        await streamWriter.WriteAsync(content);
+                        return path;
+                    });
+                    await _service.TemplateBuildAsync(tableInfo, "view", null, async (path, content) =>
+                    {
+                        var codeFile = archive.CreateEntry(path);
+                        using var streamWriter = new StreamWriter(codeFile.Open());
+                        await streamWriter.WriteAsync(content);
+                        return path;
+                    });
+                    await _service.TemplateBuildAsync(tableInfo, "view-detail", null, async (path, content) =>
+                    {
+                        var codeFile = archive.CreateEntry(path);
+                        using var streamWriter = new StreamWriter(codeFile.Open());
+                        await streamWriter.WriteAsync(content);
+                        return path;
+                    });
+                }
+            }
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var fileName = tableInfos.Select(c => c.Name).FirstOrDefault() ?? "code";
+            return new FileContentResult(memoryStream.ToArray(), "application/zip") { FileDownloadName = $"{fileName}.zip" };
         }
     }
 }
