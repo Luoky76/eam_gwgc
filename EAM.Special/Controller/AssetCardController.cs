@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "TangibleAsset,IntangibleAsset")]
+    [GksybAuthorize(true)]
     public class AssetCardController : AreaController
     {
         private readonly IAssetCardService _service;
@@ -27,9 +27,10 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request)
         {
-            return await _service.ListAsync(request);
+            var result = await _service.ListAsync(request);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
