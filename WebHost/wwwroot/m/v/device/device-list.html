@@ -70,8 +70,9 @@ var business = {
                 app.ajax({
                     async: false,
                     type: 'post',
-                    url: 'Device/DeviceCard/DeviceList',
+                    url: 'Device/DeviceCard/List',
                     success: function (data) {
+                        debugger
                         me.list = data.Rows;
                         var str = '';
                         for (var i = 0; i < me.list.length; i++) {

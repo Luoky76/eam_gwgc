@@ -85,8 +85,10 @@
         style: null,
         containerCls: null,
         newline: null,          //换行显示
-        op: null,               //操作符 附加到input
-        vt: null,               //值类型 附加到input
+        op: null,               //操作符 参考ligerFilter
+        vt: null,               //参数类型 int float date
+        paramName: null,        //参数名 :paramName
+        handleValue: null,      //值二次处理 (如果需要时间加1可以在此处理) handleValue(value)
         attr: null,             //属性列表 附加到input
         validate: null          //验证参数，比如required:true
     };

@@ -59,7 +59,7 @@
                 }
             }
         },
-        "ufloat": {
+        "ufloat": {//正小数
             control: 'TextBox',
             options: { number: true, clearPromptChar: true, promptChar: " ", mask: "ffffffffffffffffffff" }
         },
@@ -77,7 +77,7 @@
                 }
             }
         },
-        "uint": {
+        "uint": {//正整数
             control: 'TextBox',
             options: { digits: true, clearPromptChar: true, promptChar: " ", mask: "000000000000000" }
         },
@@ -95,7 +95,8 @@
     liger.editors["chk"] = liger.editors["checkbox"];
     liger.editors["popupedit"] = liger.editors["popup"];
     liger.editors['dateStr'] = liger.editors["date"];
-    liger.editors['dateFmt'];
+    liger.editors['dateFmt'];//字符串的日期
+    liger.editors['dateEnd'];//选中日期加1天
     liger.editors['chkStr'] = liger.editors['checkboxString'];
     //扩展一个 多行文本框 的编辑器
     liger.editors['textarea'];

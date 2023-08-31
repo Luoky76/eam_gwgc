@@ -6,8 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#2196f3">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>供应商评估</title>
-    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+    <title>IT设备台账</title>
+    <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
 </head>
 
 <body class="color-theme-blue">
@@ -20,7 +20,7 @@
                 <div class="navbar">
                     <div class="navbar-bg"></div>
                     <div class="navbar-inner sliding">
-                        <div class="title">供应商评估</div>
+                        <div class="title">IT设备台账</div>
 
                         <div class="subnavbar">
                             <form class="searchbar" id="searchbar-autocomplete">
@@ -71,8 +71,9 @@
                 app.ajax({
                     async: false,
                     type: 'post',
-                    url: 'Material/ProviderAssess/Comboxdata',
+                    url: 'Special/AssetCard/Comboxdata',
                     success: function (data) {
+                        debugger
                         for (let it of data.Auditing) {
                             me.auditing.set(it.ID, it.TEXT);
                         }
@@ -90,12 +91,12 @@
                 app.ajax({
                     async: false,
                     type: 'post',
-                    url: 'Material/ProviderAssess/ExtendList',
+                    url: 'Special/AssetCard/List',
                     success: function (data) {
                         me.list = data.Rows;
                         var str = '';
                         for (var i = 0; i < me.list.length; i++) {
-                            var sid = me.list[i].ASSESS_ID;
+                            var sid = me.list[i].ASSET_ID;
 
                             str += `
                                             <li id="list-` + sid + `">
@@ -112,18 +113,18 @@
                                                                     `<div class="col-10"></div>
                                                                 </div>
                                                                 <div class="row no-gap">
-                                                                    <div class="col-25" style="color: rgb(192,192,192)">评分人</div>
-                                                                    <div class="col-65" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">` + (me.user.get(me.list[i].EXAMINER_ID) ?? '') + `</div>
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">资产名称</div>
+                                                                    <div class="col-65" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">` + (me.list[i].ASSET_NAME ?? '') + `</div>
                                                                     <div class="col-10"></div>
                                                                 </div>
                                                                 <div class="row no-gap">
-                                                                    <div class="col-25" style="color: rgb(192,192,192)">评价结果</div>
-                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].RESULT ?? '') + `</div>
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">资产编号</div>
+                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].ASSETNO ?? '') + `</div>
                                                                     <div class="col-10"></div>
                                                                 </div>
                                                                 <div class="row no-gap">
-                                                                    <div class="col-25" style="color: rgb(192,192,192)">供应商名</div>
-                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].PROVIDER_NAME ?? '') + `</div>
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">设备类型</div>
+                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].TYPE_NAME ?? '') + `</div>
                                                                     <div class="col-10"></div>
                                                                 </div>
                                                             </div>
@@ -135,9 +136,9 @@
 
                         $("#main_list").html(str);
                         data.Rows.forEach((row) => {
-                            $("#list-" + row.ASSESS_ID).click(function () {
-                                var param = { sid: row.ASSESS_ID }
-                                app.methods.toUrl('/ProviderAssessDet/' + JSON2.stringify(param))
+                            $("#list-" + row.ASSET_ID).click(function () {
+                                var param = { sid: row.ASSET_ID }
+                                app.methods.toUrl('/AssetDet/' + JSON2.stringify(param))
                             })
                         })
                     },
@@ -179,10 +180,10 @@
             },
             initDetailRoute: function () {
                 var detailRoute = {
-                    title: "评估明细",
-                    name: "ProviderAssessDet",
-                    path: "/ProviderAssessDet/:params",
-                    url: "./m/v/material/provider/provider-assess-det.html"
+                    title: "台账明细",
+                    name: "AssetDet",
+                    path: "/AssetDet/:params",
+                    url: "./m/v/special/asset/asset-list-detail.html"
                 }
                 app.routes.push(detailRoute);
             }
