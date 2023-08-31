@@ -25,13 +25,14 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            template: "model",
             load: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'codeGen/modelContent',
+                    url: 'codeGen/templateContent',
                     loading: '正在生成中...',
-                    data: me.dialogData,
+                    data: { tableInfos: me.dialogData, template: me.template },
                     success: function (data, message) {
                         me.initTab(data);
                     },
@@ -68,9 +69,9 @@
                         item.Module = val;
                     }
                     LG.ajax({
-                        url: 'codeGen/modelBuild',
+                        url: 'codeGen/templateBuild',
                         loading: '正在生成中...',
-                        data: rows,
+                        data: { tableInfos: rows, template: me.template },
                         success: function (data) {
                             LG.showSuccess("生成路径：" + data, function () {
                                 me.dialog.close();
@@ -82,6 +83,23 @@
                     });
                 });
             },
+            download: function () {
+                var me = this;
+                $.ligerDialog.prompt("请输入模块", "", function (isOk, val) {
+                    if (!isOk) return;
+                    var rows = $.extend(true, [], me.dialogData || []);
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var item = rows[i];
+                        item.Module = val;
+                    }
+                    LG.download({
+                        url: "codeGen/templateDownload",
+                        type: "post",
+                        contentType: "application/json",
+                        data: { tableInfos: rows, template: me.template }
+                    });
+                });
+            },
             copy: function () {
                 var me = this;
                 var html = me.tab.getSelectedTabItem().find(".full").text();
@@ -90,6 +108,7 @@
             setFormDefaultBtn: function () {
                 var me = this;
                 var buttons = [];
+                buttons.push({ text: '下载', onclick: function () { me.download(); } });
                 buttons.push({ text: '本地生成', onclick: function () { me.build(); } });
                 buttons.push({ text: '复制', onclick: function () { me.copy(); } });
                 LG.addFormButtons(buttons);
