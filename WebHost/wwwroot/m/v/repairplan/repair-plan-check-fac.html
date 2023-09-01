@@ -431,6 +431,25 @@
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data[0].AUDITING_A == "0");
 
+                                app.smartSelect.create({
+                                    el: '.MAINT_TYPE',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
+                                });
+                                app.smartSelect.create({
+                                    el: '.DEAL_TYPE',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
+                                });
+
                                 //明细数据
                                 CreateApplyDetail(ID, me.detail.AUDITING_A);
                             }
@@ -633,6 +652,26 @@
                                 } else {
                                     $("#menuDetail").show();
                                 }
+
+                                app.smartSelect.create({
+                                    el: '.IS_COMPLETE',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
+                                });
+
+                                app.smartSelect.create({
+                                    el: '.IS_ASKBID',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
