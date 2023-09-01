@@ -77,12 +77,6 @@
 
         var business = {
             sid: paramsData.sid,
-            //实际数据
-            data: null,
-            detailData: null,
-            //显示数据
-            showData: null,
-            showDetailData: null,
             //原始数据
             orginData: null,
             orginDetailData: null,
@@ -134,12 +128,7 @@
                     url: 'Material/ProviderAssess/GetCertainAssess',
                     data: { assessId: me.sid },
                     success: function (data, message) {
-                        me.data = data;
-                        //深拷贝
-                        /*me.showData = JSON.parse(JSON.stringify(data))
-                        me.showData.AUDITING = me.auditing.get(me.showData.AUDITING);
-                        me.showData.FORMULATER_ID = me.user.get(me.showData.FORMULATER_ID);
-                        me.showData.EXAMINER_ID = me.user.get(me.showData.EXAMINER_ID);*/
+                        me.orginData = data;
                     },
                     error: function (message) {
                         app.dialog.error(message, function () { });
@@ -157,8 +146,9 @@
                         isPrimaryKey: true,
                         isShow: false
                     },
+                    { display: "评估任务id", name: "ASSESS_TASK_ID", readOnly: true, isShow: false },
                     { display: "记录状态", name: "AUDITING", Option: me.auditing, Searched: true, readOnly: true },
-                    { display: "任务制定人", name: "FORMULATER_ID", Option: me.user, readOnly: true },
+                    { display: "任务制定人", name: "FORMULATER_ID", Option: me.user, Searched: true, readOnly: true },
                     { display: "评分人", name: "EXAMINER_ID", Option: me.user, Searched: true, readOnly: true },
                     { display: "评估年度", name: "ASSESS_YEAR", readOnly: true },
                     { display: "考核开始时间", name: "BEGIN_TIME", readOnly: true },
@@ -172,21 +162,24 @@
             },
             setForm: function () {
                 var me = this;
-                //对于已提交数据，统一将行设为只读
-                if (me.data.AUDITING == "1") {
+                //对于已提交数据，统一将列设为只读
+                if (me.orginData.AUDITING == "1") {
                     for (let i = 0; i < me.columns.length; i++) {
                         me.columns[i].readOnly = true;
                     }
                 }
+                //创建input
                 var str = app.CreatePopupContentHtml(me.columns);
                 $("#assess").html(str);
-                app.form.fillFromData('#assess', me.data);
+                //填充表单数据
+                app.form.fillFromData('#assess', me.orginData);
+                //设置选择框
                 app.smartSelect.create({
                     el: '.AUDITING',
                     searchbar: true,
                     on: {
-                        beforeOpen: function (e) {
-                            e.detail.prevent();
+                        beforeOpen: function (smartSelect, prevent) {
+                            prevent();
                         }
                     }
                 });
@@ -194,8 +187,8 @@
                     el: '.FORMULATER_ID',
                     searchbar: true,
                     on: {
-                        beforeOpen: function (e) {
-                            e.detail.prevent();
+                        beforeOpen: function (smartSelect, prevent) {
+                            prevent();
                         }
                     }
                 });
@@ -203,16 +196,38 @@
                     el: '.EXAMINER_ID',
                     searchbar: true,
                     on: {
-                        beforeOpen: function (e) {
-                            e.detail.prevent();
+                        beforeOpen: function (smartSelect, prevent) {
+                            prevent();
                         }
                     }
                 });
             },
+            refresh: function () {
+                app.form.fillFromData('#assess', me.orginData);
+            },
             save: function () {
                 var me = this;
                 let data = app.form.convertToData("#assess");
-
+                //防止主键篡改
+                data.ASSESS_ID = me.orginData.ASSESS_ID;
+                //TODO 无修改的判断
+                var changeRow = new Object();
+                changeRow["updated"] = [data];
+                changeRow["original"] = [me.orginData];
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/Save',
+                    data: changeRow,
+                    success: function (data, message) {
+                        app.dialog.alert("保存成功");
+                        me.orginData = data;
+                        me.refresh();
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
             },
             initButton: function () {
                 var me = this
@@ -221,13 +236,13 @@
                     app.methods.toUrl("back")
                 })
                 $('#assess_list').on('click', function (e) {
-                    if (me.data.AUDITING == "0") {
+                    if (me.orginData.AUDITING == "0") {
                         $('.btns1').show();
                         $('.btns2').hide();
                     }
                 })
                 $('#assess_det_list').on('click', function (e) {
-                    if (me.data.AUDITING == "0") {
+                    if (me.orginData.AUDITING == "0") {
                         $('.btns1').hide();
                         $('.btns2').show();
                     }
