@@ -63,7 +63,7 @@
         var formdata;
         var formDataDetail;
         var states;
-
+        var scanstatus;//盘点状态
         var busResult = {
             scanStatus: [],
             storeSou: [],
@@ -94,7 +94,7 @@
 
                         data.Rows.forEach((a) => {
                             $("#list-" + a.SCAN_ID).click(function () {
-                                popupOpen(a.SCAN_ID);
+                                popupOpen(a.SCAN_ID, a.STATUS);
                             });
                         });
                     },
@@ -153,8 +153,8 @@
 
         };
         busResult.init();
-        function popupOpen(id) {
-            scan_popup.params = { "SCAN_ID": id };
+        function popupOpen(id,status) {
+            scan_popup.params = { "SCAN_ID": id, "STATUS": status };
             scan_popup.open();
             $("#popup-close").click(function () {
                 scan_popup.close();
@@ -224,6 +224,7 @@
                 open: function () {
                     var me = this;
                     var ID = me.params.SCAN_ID;
+                    scanstatus = me.params.STATUS;
 
                     //提交事件
                     $("#sumbit").off('click').click(function () {
@@ -332,7 +333,7 @@
                         a.HANDLE = handle.find((v) => v.ID == a.HANDLE).TEXT;
                         a.STATUS = states.find((v) => v.ID == a.STATUS).TEXT;
                         $("#list-" + a.SCAN_DET_ID).click(function () {
-                            detail_popup.params = { "SCAN_DET_ID": a.SCAN_DET_ID, "SCAN_ID": a.SCAN_ID, };
+                            detail_popup.params = { "SCAN_DET_ID": a.SCAN_DET_ID, "SCAN_ID": a.SCAN_ID};
                             detail_popup.open();
                             $("#popup-close").click(function () {
                                 detail_popup.close();
@@ -352,11 +353,11 @@
             { display: "设备名称", name: "DEVICE_NAME", readOnly: true, },
             { display: "设备类别", name: "TYPE_NAME", readOnly: true, },
 
-            { display: "设备型号", name: "DEVICE_TYPE", },
-            { display: "使用部门", name: "DEPT_NAME", },
+            { display: "设备型号", name: "DEVICE_TYPE", readOnly: true, },
+            { display: "使用部门", name: "DEPT_NAME", readOnly: true, },
             { display: "当前管理状态", name: "STATUS", readOnly: true, },
             { display: "二级单位", name: "SEC_DEPT", readOnly: true, },
-            { display: "备注", name: "MEMO", readOnly: true, },
+            { display: "备注", name: "MEMO", },
             { display: "外键", name: "SCAN_ID", isShow: false },
         ];
         var detail_popup = app.popup.create({
@@ -431,8 +432,6 @@
                         });
                     });
 
-
-
                     // 清单明细
                     if (me.params.SCAN_DET_ID) {
                         var where = JSON.stringify({
@@ -446,11 +445,15 @@
                             },
                             url: 'Device/InventoryTask/GetDeviceScanDetails',
                             success: function (data) {
+                                debugger
                                 data.Rows.forEach((a) => {
                                     a.HANDLE = handle.find((v) => v.ID == a.HANDLE).TEXT;
                                     a.STATUS = states.find((v) => v.ID == a.STATUS).TEXT;
                                 });
-                                var str = app.CreatePopupContentHtml(resultDetailInfoEdit);
+                                var detailInfo = scanstatus == "生成清单" ? resultDetailInfoEdit : resultDetailInfoEdit.map(function (item) {
+                                    return { ...item, readOnly: true };
+                                });
+                                var str = app.CreatePopupContentHtml(detailInfo);
                                 $("#detail_bg_detail").html(str);
                                 app.smartSelect.create({
                                     el: '.SCAN_RESULT',

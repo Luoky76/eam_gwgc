@@ -516,8 +516,6 @@ namespace EAM.Device.services
                     c.CHECK_USER,
                     c.CHECK_DATE,
                     c.CHECK_DESC,
-                    c.EXE_BDATE,
-                    c.EXE_EDATE,
                     c.CHECK_ID,
                 },
                 c => a => a.CHECK_ID == c.CHECK_ID);
