@@ -282,7 +282,7 @@
                     app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
                     //设置选择框
                     app.smartSelect.create({
-                        el: '.ASSESS_BASE_ID',
+                        el: '#' + form_id + ' .ASSESS_BASE_ID',
                         searchbar: true,
                         on: {
                             beforeOpen: function (smartSelect, prevent) {
@@ -290,11 +290,58 @@
                             }
                         }
                     });
-                    app.smartSelect.create({
-                        el: '.SCORE_DESC',
-                        searchbar: false
-                    });
+                    if (me.orginData.AUDITING == "1") {
+                        app.smartSelect.create({
+                            el: '#' + form_id + ' .SCORE_DESC',
+                            searchbar: false,
+                            on: {
+                                beforeOpen: function (smartSelect, prevent) {
+                                    prevent();
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        app.smartSelect.create({
+                            el: '#' + form_id + ' .SCORE_DESC',
+                            searchbar: false
+                        });
+                    }
                 }
+            },
+            refreshDet: function () {
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    let form_id = "assess_det_" + i;
+                    app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
+                }
+            },
+            saveDet: function () {
+                var me = this;
+                //TODO 无修改的判断
+                let changeRow = new Object();
+                changeRow.updated = [];
+                changeRow.original = [];
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    //表格ID
+                    let form_id = "assess_det_" + i;
+                    let data = app.form.convertToData("#" + form_id);
+                    changeRow.updated.push(data);
+                    changeRow.original.push(me.orginDetailData[i]);
+                }
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssessDet/Save',
+                    data: changeRow,
+                    success: function (data, message) {
+                        app.dialog.alert("保存成功");
+                        me.orginDetailData = data;
+                        me.refreshDet();
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
             },
             initButton: function () {
                 var me = this;
@@ -332,6 +379,13 @@
                             me.submit();
                         }
                     });
+                });
+                $('#saveDet').on('click', function (e) {
+                    if (me.orginData.AUDITING == "1") {
+                        app.dialog.error("数据已提交，无法变更！");
+                        return;
+                    }
+                    me.saveDet();
                 });
             },
             init: function () {
