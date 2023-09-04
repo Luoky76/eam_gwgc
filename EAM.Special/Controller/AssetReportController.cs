@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Special.Controller
 {
-    [GksybAuthorize(MenuNo = "MaintenanceApply,MaintenanceCheck,MaintenanceOutsource,MaintenanceAccept,MaintenanceInfo")]
+    [GksybAuthorize(true)]
     public class AssetReportController : AreaController
     {
         private readonly IAssetReportService _service;
@@ -27,9 +27,10 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request)
         {
-            return await _service.ListAsync(request);
+            var result = await _service.ListAsync(request);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
@@ -38,9 +39,10 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> ApplyListAsync(GridRequest request)
+        public async Task<AjaxResult> ApplyListAsync(GridRequest request)
         {
-            return await _service.ApplyListAsync(request);
+            var result =  await _service.ApplyListAsync(request);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
@@ -49,9 +51,10 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> CheckListAsync(GridRequest request)
+        public async Task<AjaxResult> CheckListAsync(GridRequest request)
         {
-            return await _service.CheckListAsync(request);
+            var result = await _service.CheckListAsync(request);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
@@ -60,9 +63,10 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> OutsourceListAsync(GridRequest request)
+        public async Task<AjaxResult> OutsourceListAsync(GridRequest request)
         {
-            return await _service.OutsourceListAsync(request);
+            var result = await _service.OutsourceListAsync(request);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
@@ -71,9 +75,10 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> AcceptListAsync(GridRequest request)
+        public async Task<AjaxResult> AcceptListAsync(GridRequest request)
         {
-            return await _service.AcceptListAsync(request);
+            var result = await _service.AcceptListAsync(request);
+            return AjaxResult.Success(result);
         }
 
         /// <summary>

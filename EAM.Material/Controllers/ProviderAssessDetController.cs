@@ -38,9 +38,9 @@ namespace EAM.Material.Controller
         /// <param name="assessId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<GridData> CertainAssessListAsync(string assessId)
+        public async Task<AjaxResult<GridData>> CertainAssessListAsync(string assessId)
         {
-            return await _service.CertainAssessListAsync(assessId);
+            return AjaxResult<GridData>.Success(await _service.CertainAssessListAsync(assessId));
         }
 
         /// <summary>

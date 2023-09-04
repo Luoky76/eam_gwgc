@@ -426,18 +426,23 @@
                                 showBtn(data[0].AUDITING == "0");
 
                                 app.smartSelect.create({
-                                    el: '.M_USERID',
-                                    searchbar: true
+                                    el: '.MAINT_TYPE',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
                                 });
                                 app.smartSelect.create({
-                                    el: '.APPLY_TYPE',
-                                    searchbar: true
+                                    el: '.DEAL_TYPE',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
                                 });
-                                app.smartSelect.create({
-                                    el: '.PURTYPE_NAME',
-                                    searchbar: true
-                                });
-
                                 app.calendar.create({
                                     inputEl: '#ACT_START_DATE',
                                     timePicker: true,
@@ -652,6 +657,26 @@
                                 } else {
                                     $("#menuDetail").show();
                                 }
+
+                                app.smartSelect.create({
+                                    el: '.IS_COMPLETE',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
+                                });
+
+                                app.smartSelect.create({
+                                    el: '.IS_ASKBID',
+                                    searchbar: true,
+                                    on: {
+                                        beforeOpen: function (e) {
+                                            e.detail.prevent();
+                                        }
+                                    }
+                                });
 
                                 app.calendar.create({
                                     inputEl: '#BEGIN_TIME',

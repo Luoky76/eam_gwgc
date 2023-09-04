@@ -881,7 +881,12 @@
 
 
             itemtitle.className = "item-title";
-            itemtitle.setAttribute("style", "color: #666666");
+            if (dict[i].readOnly) {
+                itemtitle.setAttribute("style", "color: #666666");
+            }
+            else {
+                itemtitle.setAttribute("style", "color: #2b73af");
+            }
             itemtitle.textContent = dict[i].display || "";
 
             //必填项
