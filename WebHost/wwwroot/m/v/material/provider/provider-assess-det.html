@@ -88,6 +88,8 @@
             appraise: [],
             columns: [],
             columnsDet: [],
+            //是否允许修改
+            isEditable: false,
             //成功提示框，当已有提示框未关闭时不会重复弹出
             showSuccessMessage: function (message = '成功') {
                 var me = this;
@@ -149,25 +151,19 @@
                     { display: "考核结束时间", name: "END_TIME", readOnly: true },
                     { display: "供应商名", name: "PROVIDER_NAME", readOnly: true },
                     { display: "供应商产品", name: "PROVIDER_PRODUCTION", readOnly: true },
-                    { display: "考核说明", name: "REMARK" },
+                    { display: "考核说明", name: "REMARK", readOnly: !me.isEditable },
                     { display: "评估总分", name: "TOTAL_SCORE", readOnly: true },
-                    { display: "评估结果", name: "RESULT" },
+                    { display: "评估结果", name: "RESULT", readOnly: !me.isEditable },
                 ]
                 me.columnsDet = [
                     { display: "评估主表id", name: "ASSESS_ID", readOnly: true, isShow: false },
                     { display: "评估内容", name: "ASSESS_BASE_ID", Option: me.assessBaseContent, Searched: true, readOnly: true },
-                    { display: "分数", name: "SCORE" },
-                    { display: "分数等级", name: "SCORE_DESC", Option: me.appraise },
+                    { display: "分数", name: "SCORE", readOnly: !me.isEditable },
+                    { display: "分数等级", name: "SCORE_DESC", Option: me.appraise, readOnly: !me.isEditable },
                 ]
             },
             setForm: function () {
                 var me = this;
-                //对于已提交数据，统一将列设为只读
-                if (me.orginData.AUDITING == "1") {
-                    for (let i = 0; i < me.columns.length; i++) {
-                        me.columns[i].readOnly = true;
-                    }
-                }
                 //创建input
                 var str = app.CreatePopupContentHtml(me.columns);
                 $("#assess").html(str);
@@ -279,12 +275,6 @@
             },
             setFormDet: function () {
                 var me = this;
-                //对于已提交数据，统一将列设为只读
-                if (me.orginData.AUDITING == "1") {
-                    for (let i = 0; i < me.columnsDet.length; i++) {
-                        me.columnsDet[i].readOnly = true;
-                    }
-                }
                 //对每行数据分别创建表格
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
                     //新增表格
@@ -393,13 +383,13 @@
                 });
                 //设置按钮的显示切换，仅未提交记录且登录用户为评分人或超管才显示按钮
                 $('#assess_list').on('click', function (e) {
-                    if (me.orginData.AUDITING == '0' && (me.orginData.EXAMINER_ID == window.session.UserID || window.session.UserID == '1')) {
+                    if (me.isEditable) {
                         $('#save').show();
                         $('#submit').show();
                     }
                 });
                 $('#assess_det_list').on('click', function (e) {
-                    if (me.orginData.AUDITING == '0' && (me.orginData.EXAMINER_ID == window.session.UserID || window.session.UserID == '1')) {
+                    if (me.isEditable) {
                         $('#save').show();
                         $('#submit').hide();
                     }
@@ -437,6 +427,7 @@
 
                 me.loadData();
                 me.loadDetailData();
+                me.isEditable = me.orginData.AUDITING == '0' && (me.orginData.EXAMINER_ID == window.session.UserID || window.session.UserID == '1');
                 me.setColumns();
                 me.setForm();
                 me.setFormDet();
