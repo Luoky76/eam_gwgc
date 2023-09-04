@@ -54,7 +54,7 @@
 }
             </tr>
         </thead>
-        @{ DataTable dt = JSONHelper.FromJson<DataTable>(JSONHelper.ToJson(Model.Datas)); }
+        @{ var dt = Model.Datas.ToJson().ToObject<DataTable>(); }
         @foreach (DataRow dr in dt.Rows)
         {
 <tr>

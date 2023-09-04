@@ -95,6 +95,8 @@ namespace Chloe
         /// <param name="beforeSave">保存前委托</param>
         /// <param name="afterSave">保存后委托</param
         /// <param name="orgin">如果没有原始值，则主动从数据库获取</param>
+        /// <param name="beforeUpdate2">修改前委托(带旧值)</param>
+        /// <param name="autoSet">自动设置 操作人和操作时间</param>
         /// <returns></returns>
         public static async Task<AjaxResult> SaveEntityAnsyc<T>(this IDbContext source,
             SaveRequest<T> request,
@@ -103,7 +105,7 @@ namespace Chloe
             Func<T, Task> beforeAdd = null, Func<T, Task> beforeUpdate = null,
             Func<T, Task> beforeDelete = null, bool isSoftDelete = false,
             Func<List<T>, List<T>, List<T>, Task> beforeSave = null,
-            Func<List<T>, List<T>, List<T>, Task> afterSave = null, bool orgin = false)
+            Func<List<T>, List<T>, List<T>, Task> afterSave = null, bool orgin = false, Func<T, T, Task> beforeUpdate2 = null, bool autoSet = true)
         {
             var canTransationOper = false;
             try
@@ -124,18 +126,21 @@ namespace Chloe
                 var user = HttpContext.Current.GetCurrentUserOrDefault();
                 var sysdate = await source.GetSysdate();
                 Type idType = user.UserID.GetType().GetUnNullableType(), nameType = user.Display.GetType().GetUnNullableType(), dateType = sysdate.GetType().GetUnNullableType();
-                var idPropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => IDPropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == idType).ToList();
-                var namePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => NamePropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == nameType).ToList();
-                var datePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => DatePropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == dateType).ToList();
+                var idPropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => IDPropertys.Any(a => a.EqualsTo(c.Property.Name, true)) && c.PropertyType.GetUnNullableType() == idType).ToList();
+                var namePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => NamePropertys.Any(a => a.EqualsTo(c.Property.Name, true)) && c.PropertyType.GetUnNullableType() == nameType).ToList();
+                var datePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => DatePropertys.Any(a => a.EqualsTo(c.Property.Name, true)) && c.PropertyType.GetUnNullableType() == dateType).ToList();
                 foreach (var entity in request.Deleted)
                 {
                     if (isSoftDelete)
                     {
                         source.TrackEntity(entity);
-                        idPropertys.ForEach(c => { c.SetValue(entity, user.UserID); });
-                        namePropertys.ForEach(c => { c.SetValue(entity, user.Display); });
-                        datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
+                        if (autoSet)
+                        {
+                            idPropertys.ForEach(c => { c.SetValue(entity, user.UserID); });
+                            namePropertys.ForEach(c => { c.SetValue(entity, user.Display); });
+                        }
                         if (beforeDelete != null) await beforeDelete(entity);
+                        if (autoSet) datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
                         row = hasPrimaryKey ? await source.UpdateAsync(entity) : await source.UpdateAsync(entity, updateCondition(entity));
                     }
                     else
@@ -151,14 +156,17 @@ namespace Chloe
                 }
                 if (request.Added.Count > 0)
                 {
-                    var createIDPropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => CreateIDPropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == idType).ToList();
-                    var createNamePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => CreateNamePropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == nameType).ToList();
-                    var createDatePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => CreateDatePropertys.Contains(c.Property.Name) && c.PropertyType.GetUnNullableType() == dateType).ToList();
+                    var createIDPropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => CreateIDPropertys.Any(a => a.EqualsTo(c.Property.Name, true)) && c.PropertyType.GetUnNullableType() == idType).ToList();
+                    var createNamePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => CreateNamePropertys.Any(a => a.EqualsTo(c.Property.Name, true)) && c.PropertyType.GetUnNullableType() == nameType).ToList();
+                    var createDatePropertys = typeDescriptor.PrimitivePropertyDescriptors.Where(c => CreateDatePropertys.Any(a => a.EqualsTo(c.Property.Name, true)) && c.PropertyType.GetUnNullableType() == dateType).ToList();
                     foreach (var entity in request.Added)
                     {
-                        idPropertys.Concat(createIDPropertys).ForEach(c => { c.SetValue(entity, user.UserID); });
-                        namePropertys.Concat(createNamePropertys).ForEach(c => { c.SetValue(entity, user.Display); });
-                        datePropertys.Concat(createDatePropertys).ForEach(c => { c.SetValue(entity, sysdate); });
+                        if (autoSet)
+                        {
+                            idPropertys.Concat(createIDPropertys).ForEach(c => { c.SetValue(entity, user.UserID); });
+                            namePropertys.Concat(createNamePropertys).ForEach(c => { c.SetValue(entity, user.Display); });
+                            datePropertys.Concat(createDatePropertys).ForEach(c => { c.SetValue(entity, sysdate); });
+                        }
                         if (beforeAdd != null) await beforeAdd(entity);
                         await source.InsertAsync(entity);
                     }
@@ -170,10 +178,14 @@ namespace Chloe
                     if (orgin && !request.Original.Contains(old)) request.Original.Add(old);
                     source.TrackEntity(entity);
                     source.SetChangedFields(entity, updateFields, old);
-                    idPropertys.ForEach(c => { c.SetValue(entity, user.UserID); });
-                    namePropertys.ForEach(c => { c.SetValue(entity, user.Display); });
-                    datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
+                    if (autoSet)
+                    {
+                        idPropertys.ForEach(c => { c.SetValue(entity, user.UserID); });
+                        namePropertys.ForEach(c => { c.SetValue(entity, user.Display); });
+                    }
                     if (beforeUpdate != null) await beforeUpdate(entity);
+                    if (autoSet) datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
+                    if (beforeUpdate2 != null) await beforeUpdate2(entity, old);
                     row = await source.UpdateAsync(entity, updateCondition(orgin ? old : entity));
                     if (row != 1)
                     {

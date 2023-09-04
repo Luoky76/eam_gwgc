@@ -19,6 +19,7 @@ namespace Gksyb.Server.Services.Auth
         private readonly SysContextOptions _options;
         private DateTime? sysdate;
         private static readonly string _opertype = "用户公司";
+        protected static readonly string _weixinType = "微信";
 
         /// <summary>
         /// 用户服务
@@ -94,6 +95,7 @@ namespace Gksyb.Server.Services.Auth
                 ROLEID = c.ROLEID
             }).ToListAsync();
             var userPorts = await _dbContext.Query<CF_USER_PORT>().Where(a => a.APPNAME == _options.UserAppName).ToListAsync();
+            var hasWeixin = userPorts.Any(c => c.OPTYPE == _weixinType);
             foreach (var c in list)
             {
                 var ports = userPorts.Where(a => a.LOGINNAME == c.LOGINNAME).ToList();
@@ -101,6 +103,10 @@ namespace Gksyb.Server.Services.Auth
                 var corps = ports.Where(a => a.OPTYPE == _opertype).DistinctBy(c => c.CORPID).ToList();
                 c.CORP = corps.Select(a => a.CORPID).Join();
                 c.CorpStation = corps.ToDictionary(c => c.CORPID, c => c.REMARK);
+                if (hasWeixin)
+                {
+                    c.QQ = ports.Any(a => a.OPTYPE == _weixinType) ? "1" : "0";
+                }
             }
             return data;
         }
@@ -114,7 +120,7 @@ namespace Gksyb.Server.Services.Auth
         {
             sysdate = await _dbContext.GetSysdate();
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.REALNAME, c.TITLE, c.SEX, c.PHONE, c.FAX, c.EMAIL, c.QQ, c.NICKNAME, c.ADDRESS, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
+                c => new { c.REALNAME, c.TITLE, c.SEX, c.PHONE, c.FAX, c.EMAIL, c.NICKNAME, c.ADDRESS, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
                 c => a => a.USERID == c.USERID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
         }

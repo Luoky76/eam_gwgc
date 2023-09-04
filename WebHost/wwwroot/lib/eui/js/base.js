@@ -91,6 +91,7 @@
     liger.editors["string"] = liger.editors["text"];
     liger.editors["select"] = liger.editors["combobox"];
     liger.editors["int"] = liger.editors["digits"];
+    liger.editors["long"] = liger.editors["digits"];
     liger.editors["float"] = liger.editors["number"];
     liger.editors["chk"] = liger.editors["checkbox"];
     liger.editors["popupedit"] = liger.editors["popup"];

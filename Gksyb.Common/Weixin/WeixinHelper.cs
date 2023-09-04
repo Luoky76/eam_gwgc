@@ -67,7 +67,6 @@ namespace Gksyb.Common.Weixin
                     return response;
                 });
                 if (response.IsError) return AjaxResult<UserInfoResponse>.Error(response.ToString(), response);
-                if (response.Subscribe == 0) return AjaxResult<UserInfoResponse>.Error("用户未关注公众号", response);
                 return AjaxResult<UserInfoResponse>.Success(response);
             }
             catch (Exception ex)

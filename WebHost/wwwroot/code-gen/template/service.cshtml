@@ -23,13 +23,15 @@
     var idColumn = Model.Columns.Where(c => "ID".Equals(c.Name, StringComparison.OrdinalIgnoreCase) || "SID".Equals(c.Name, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
     if (idColumn != null)
     {
-        idOutput = idColumn.CsType == "string" ? $"entity.{idColumn.Name} = GuidHelper.NewShortId();" : $"entity.{idColumn.Name} = GuidHelper.NewSnowflakeId();";
-        idOutput += Environment.NewLine;
+        idOutput += $"{Environment.NewLine}            ";
+        idOutput += idColumn.CsType == "string" ? $"entity.{idColumn.Name} = GuidHelper.NewShortId();" : $"entity.{idColumn.Name} = GuidHelper.NewSnowflakeId();";
     }
     var hasStatus = Model.Columns.Any(c => "RECORDSTATUS".Equals(c.Name, StringComparison.OrdinalIgnoreCase));
+    var getCondition = Model.Columns.Where(c => c.IsPrimary == true).Select(c => $"c.{c.Name} == {c.Name.ToPascal().ToVariableCase()}").ToStr("&& ");
+    var getParams = Model.Columns.Where(c => c.IsPrimary == true).Select(c => $"{(c.CsType == "string" ? "string" : $"{c.CsType}?")} {c.Name.ToPascal().ToVariableCase()}").ToStr(", ");
 }
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using @(business)@(module).Entities;
 namespace @(business).Services@(module)
@@ -41,6 +43,14 @@ namespace @(business).Services@(module)
         public @(mapName)Service(IDbContext dbContext)
         {
             _dbContext = dbContext;
+        }
+
+        /// <summary>
+        /// 根据ID获取数据
+        /// </summary>
+        public async Task<@Model.Name> GetAsync(@getParams)
+        {
+            return await _dbContext.Query<@Model.Name>().FirstOrDefaultAsync(c => @getCondition);
         }
 
         /// <summary>
@@ -59,7 +69,7 @@ namespace @(business).Services@(module)
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new { @updateFields },
                 c => a => @updateCondition,
-                BeforeAdd, BeforeUpdate, BeforeDelete@(hasStatus ? ", true":""));
+                BeforeAdd, BeforeUpdate, BeforeDelete@(hasStatus ? ", true":""), orgin: true);
         }
 
         /// <summary>
@@ -67,7 +77,7 @@ namespace @(business).Services@(module)
         /// </summary>
         private async Task BeforeAdd(@Model.Name entity)
         {
-            await Handle(entity);@idOutput@(hasStatus ? $"entity.RECORDSTATUS = Oper.Add;{Environment.NewLine}":"")
+            await Handle(entity);@idOutput@(hasStatus ? $"{Environment.NewLine}            entity.RECORDSTATUS = Oper.Add;":"")
         }
 
         /// <summary>
@@ -75,7 +85,7 @@ namespace @(business).Services@(module)
         /// </summary>
         private async Task BeforeUpdate(@Model.Name entity)
         {
-            await Handle(entity);@(hasStatus ? $"entity.RECORDSTATUS = Oper.Modify;{Environment.NewLine}":"")
+            await Handle(entity);@(hasStatus ? $"{Environment.NewLine}            entity.RECORDSTATUS = Oper.Modify;":"")
         }
 
         /// <summary>
@@ -83,7 +93,7 @@ namespace @(business).Services@(module)
         /// </summary>
         private async Task BeforeDelete(@Model.Name entity)
         {
-            @(hasStatus ? $"entity.RECORDSTATUS = Oper.Delete;{Environment.NewLine}":"")await Task.CompletedTask;
+            @(hasStatus ? $"entity.RECORDSTATUS = Oper.Delete;{Environment.NewLine}            ":"")await Task.CompletedTask;
         }
 
         /// <summary>

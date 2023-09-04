@@ -54,9 +54,8 @@
                             <i class="f7-icons">arrow_left</i>
                             <span class="ios-only">返回</span>
                         </a>
-                        <button class="col button button-large button-fill btns1" id="save" style="display: none; background-color: rgba(27, 167, 132, 0.5)">保存</button>
-                        <button class="col button button-large button-fill btns1" id="submit" style="display: none; background-color: orange">提交</button>
-                        <button class="col button button-large button-fill btns2" id="saveDet" style="display: none; background-color: rgba(27, 167, 132, 0.5)">保存</button>
+                        <button class="col button button-large button-fill" id="save" style="display: none; background-color: rgba(27, 167, 132, 0.5)">保存</button>
+                        <button class="col button button-large button-fill" id="submit" style="display: none; background-color: orange">提交</button>
                     </div>
                 </div>
             </div>
@@ -79,6 +78,9 @@
             //原始数据
             orginData: null,
             orginDetailData: null,
+            //数据是否改变
+            isDataChanged: false,
+            isDetailDataChanged: false,
             //下拉数据
             auditing: [],
             assessBaseContent: [],
@@ -86,6 +88,17 @@
             appraise: [],
             columns: [],
             columnsDet: [],
+            //是否允许修改
+            isEditable: false,
+            //成功提示框，当已有提示框未关闭时不会重复弹出
+            showSuccessMessage: function (message = '成功') {
+                var me = this;
+                if (me.showSuccessMessage.isShown) return;
+                me.showSuccessMessage.isShown = true;
+                app.dialog.alert(message, function () {
+                    me.showSuccessMessage.isShown = false;
+                });
+            },
             loadComboxData: function () {
                 var me = this;
                 app.ajax({
@@ -138,25 +151,19 @@
                     { display: "考核结束时间", name: "END_TIME", readOnly: true },
                     { display: "供应商名", name: "PROVIDER_NAME", readOnly: true },
                     { display: "供应商产品", name: "PROVIDER_PRODUCTION", readOnly: true },
-                    { display: "考核说明", name: "REMARK" },
+                    { display: "考核说明", name: "REMARK", readOnly: !me.isEditable },
                     { display: "评估总分", name: "TOTAL_SCORE", readOnly: true },
-                    { display: "评估结果", name: "RESULT" },
+                    { display: "评估结果", name: "RESULT", readOnly: !me.isEditable },
                 ]
                 me.columnsDet = [
                     { display: "评估主表id", name: "ASSESS_ID", readOnly: true, isShow: false },
                     { display: "评估内容", name: "ASSESS_BASE_ID", Option: me.assessBaseContent, Searched: true, readOnly: true },
-                    { display: "分数", name: "SCORE" },
-                    { display: "分数等级", name: "SCORE_DESC", Option: me.appraise },
+                    { display: "分数", name: "SCORE", readOnly: !me.isEditable },
+                    { display: "分数等级", name: "SCORE_DESC", Option: me.appraise, readOnly: !me.isEditable },
                 ]
             },
             setForm: function () {
                 var me = this;
-                //对于已提交数据，统一将列设为只读
-                if (me.orginData.AUDITING == "1") {
-                    for (let i = 0; i < me.columns.length; i++) {
-                        me.columns[i].readOnly = true;
-                    }
-                }
                 //创建input
                 var str = app.CreatePopupContentHtml(me.columns);
                 $("#assess").html(str);
@@ -190,6 +197,12 @@
                         }
                     }
                 });
+                //设置数字输入框
+                $('#TOTAL_SCORE').attr("type", "number");
+                //为表格添加修改事件
+                $('#assess input, #assess select').on('change', function () {
+                    me.isDataChanged = true;
+                });
             },
             refresh: function () {
                 app.form.fillFromData('#assess', me.orginData);
@@ -199,7 +212,6 @@
                 let data = app.form.convertToData("#assess");
                 //防止主键篡改
                 data.ASSESS_ID = me.orginData.ASSESS_ID;
-                //TODO 无修改的判断
                 var changeRow = new Object();
                 changeRow["updated"] = [data];
                 changeRow["original"] = [me.orginData];
@@ -209,8 +221,9 @@
                     url: 'Material/ProviderAssess/Save',
                     data: changeRow,
                     success: function (data, message) {
-                        app.dialog.alert("保存成功");
+                        me.showSuccessMessage("保存成功");
                         me.orginData = data;
+                        me.isDataChanged = false;
                         me.refresh();
                     },
                     error: function (message) {
@@ -225,7 +238,6 @@
                 data.ASSESS_ID = me.orginData.ASSESS_ID;
                 //提交
                 data.AUDITING = "1";
-                //TODO 无修改的判断
                 var changeRow = new Object();
                 changeRow["updated"] = [data];
                 changeRow["original"] = [me.orginData];
@@ -235,7 +247,7 @@
                     url: 'Material/ProviderAssess/Save',
                     data: changeRow,
                     success: function (data, message) {
-                        app.dialog.alert("提交成功");
+                        me.showSuccessMessage("提交成功");
                         me.orginData = data;
                         me.refresh();
                     },
@@ -263,12 +275,6 @@
             },
             setFormDet: function () {
                 var me = this;
-                //对于已提交数据，统一将列设为只读
-                if (me.orginData.AUDITING == "1") {
-                    for (let i = 0; i < me.columnsDet.length; i++) {
-                        me.columnsDet[i].readOnly = true;
-                    }
-                }
                 //对每行数据分别创建表格
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
                     //新增表格
@@ -307,6 +313,22 @@
                             searchbar: false
                         });
                     }
+                    //设置数字输入框
+                    $('#' + form_id + ' #SCORE').attr("type", "number");
+                    //为表格添加修改事件
+                    $('#' + form_id + ' input, #' + form_id + ' select').on('change', function () {
+                        me.isDetailDataChanged = true;
+                    });
+                    //计算总分
+                    $('#' + form_id + ' #SCORE').on('change', function (e) {
+                        let score = 0;
+                        for (let i = 0; i < me.orginDetailData.length; ++i) {
+                            let form_id = "assess_det_" + i;
+                            score += Number($('#' + form_id + ' #SCORE').val());
+                        }
+                        $('#TOTAL_SCORE').val(score);
+                        me.isDataChanged = true;
+                    });
                 }
             },
             refreshDet: function () {
@@ -317,7 +339,6 @@
             },
             saveDet: function () {
                 var me = this;
-                //TODO 无修改的判断
                 let changeRow = new Object();
                 changeRow.updated = [];
                 changeRow.original = [];
@@ -334,8 +355,9 @@
                     url: 'Material/ProviderAssessDet/Save',
                     data: changeRow,
                     success: function (data, message) {
-                        app.dialog.alert("保存成功");
+                        me.showSuccessMessage("保存成功");
                         me.orginDetailData = data;
+                        me.isDetailDataChanged = false;
                         me.refreshDet();
                     },
                     error: function (message) {
@@ -346,46 +368,56 @@
             initButton: function () {
                 var me = this;
                 $('#backUrl').on('click', function (e) {
-                    $('#refresh', parent.document).click();
-                    app.methods.toUrl("back")
+                    if (me.isDataChanged || me.isDetailDataChanged) {
+                        app.dialog.confirm('有未保存的数据，是否仍要返回？', function (confirm) {
+                            if (confirm) {
+                                $('#refresh', parent.document).click();
+                                app.methods.toUrl('back');
+                            }
+                        });
+                    }
+                    else {
+                        $('#refresh', parent.document).click();
+                        app.methods.toUrl('back');
+                    }
                 });
+                //设置按钮的显示切换，仅未提交记录且登录用户为评分人或超管才显示按钮
                 $('#assess_list').on('click', function (e) {
-                    if (me.orginData.AUDITING == "0") {
-                        $('.btns1').show();
-                        $('.btns2').hide();
+                    if (me.isEditable) {
+                        $('#save').show();
+                        $('#submit').show();
                     }
                 });
                 $('#assess_det_list').on('click', function (e) {
-                    if (me.orginData.AUDITING == "0") {
-                        $('.btns1').hide();
-                        $('.btns2').show();
+                    if (me.isEditable) {
+                        $('#save').show();
+                        $('#submit').hide();
                     }
                 });
                 $('#assess_list').click();
                 $('#save').on('click', function (e) {
-                    if (me.orginData.AUDITING == "1") {
-                        app.dialog.error("数据已提交，无法变更！");
+                    if (me.orginData.AUDITING == '1') {
+                        app.dialog.error('数据已提交，无法变更！');
                         return;
                     }
-                    me.save();
+                    if (!me.isDataChanged && !me.isDetailDataChanged) {
+                        me.showSuccessMessage('无修改');
+                    }
+                    else {
+                        if (me.isDataChanged) me.save();
+                        if (me.isDetailDataChanged) me.saveDet();
+                    }
                 });
                 $('#submit').on('click', function (e) {
-                    if (me.orginData.AUDITING == "1") {
-                        app.dialog.error("数据已提交，无法变更！");
+                    if (me.orginData.AUDITING == '1') {
+                        app.dialog.error('数据已提交，无法变更！');
                         return;
                     }
-                    app.dialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                    app.dialog.confirm('提交后不可修改，是否继续？', function (confirm) {
                         if (confirm) {
                             me.submit();
                         }
                     });
-                });
-                $('#saveDet').on('click', function (e) {
-                    if (me.orginData.AUDITING == "1") {
-                        app.dialog.error("数据已提交，无法变更！");
-                        return;
-                    }
-                    me.saveDet();
                 });
             },
             init: function () {
@@ -395,6 +427,7 @@
 
                 me.loadData();
                 me.loadDetailData();
+                me.isEditable = me.orginData.AUDITING == '0' && (me.orginData.EXAMINER_ID == window.session.UserID || window.session.UserID == '1');
                 me.setColumns();
                 me.setForm();
                 me.setFormDet();
