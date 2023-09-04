@@ -857,7 +857,7 @@
                 });
                 select.setAttribute("type", "select");
                 itemsmart.href = "#";
-                itemsmart.className = "item-link smart-select smart-select-init " + dict[i].name;
+                itemsmart.className = "item-link smart-select smart-select-init " + dict[i].smartSelectClass ?? dict[i].name;
                 if (dict[i].Searched) {
                     itemsmart.setAttribute("data-open-in", "popup");
                     itemsmart.setAttribute("data-searchbar", "true");
