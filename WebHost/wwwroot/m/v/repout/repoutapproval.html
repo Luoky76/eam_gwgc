@@ -327,7 +327,7 @@
                         var repMoneyValue = Number(data.REP_MONEY);
                         var notaxMoneyValue = Number(data.NOTAX_MONEY);
                         if (repMoneyValue < 0 || isNaN(repMoneyValue) || notaxMoneyValue < 0 || isNaN(notaxMoneyValue)) {
-                            app.dialog.error('维修费用不是大于 0 的数字');
+                            app.dialog.error('维修费用不是正数');
                             return;
                         } else {
                             var curratio = data.RATIO;
