@@ -13,6 +13,21 @@ namespace Gksyb.Core.Auth
         private static readonly string[] SkipBtnNos = new string[] { "List", "Save" };
 
         /// <summary>
+        /// 新增按钮
+        /// </summary>
+        public const string AddBtn = "add";
+
+        /// <summary>
+        /// 更新按钮
+        /// </summary>
+        public const string UpdateBtn = "save,modify";
+
+        /// <summary>
+        /// 删除按钮
+        /// </summary>
+        public const string DeleteBtn = "delete";
+
+        /// <summary>
         /// 验证是否超级管理员
         /// </summary>
         public bool IsSuper { get; set; }

@@ -69,6 +69,7 @@ namespace Microsoft.AspNetCore.Mvc
             var dic = json.StartsWith("{") ? json.ToObject<Dictionary<string, JToken>>() : null;
             var form = (dic ?? new Dictionary<string, JToken>()).ToIgnoreCaseDictionary();
             var isHandle = false;
+            var jsonType = new List<Type>();
             foreach (var param in paramters)
             {
                 if (form.TryGetValue(param.Name, out JToken value))
@@ -77,10 +78,16 @@ namespace Microsoft.AspNetCore.Mvc
                     isHandle = true;
                     continue;
                 }
-                if (param.ParameterType.IsSimpleType()) continue;//简单类型
+                if (param.ParameterType.IsSimpleType()) continue;//简单类型或者已经解析过的类型
+                if (jsonType.Contains(param.ParameterType))
+                {
+                    context.ActionArguments[param.Name] = null;
+                    continue;
+                }
                 try
                 {
                     context.ActionArguments[param.Name] = JSONHelper.FromJson(json, param.ParameterType) ?? context.ActionArguments[param.Name];
+                    jsonType.Add(param.ParameterType);
                     isHandle = true;
                 }
                 catch (Exception)

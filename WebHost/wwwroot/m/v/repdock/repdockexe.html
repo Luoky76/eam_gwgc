@@ -314,7 +314,7 @@
                         }
                         var exeCost = Number(data.EXE_COST);
                         if (exeCost < 0 || isNaN(exeCost)) {
-                            app.dialog.error('实际维修费用不是大于 0 的数字');
+                            app.dialog.error('实际维修费用不是正数');
                             return;
                         }
 
@@ -400,14 +400,6 @@
                 }
             }
         });
-        //时间
-        function createCalendar(inputId) {
-            app.calendar.create({
-                inputEl: inputId,
-                timePicker: true,
-                dateFormat: 'yyyy-mm-dd HH::mm:ss',
-            });
-        }
         //按钮显示隐藏
         function showBtn(isEdit) {
             if (isEdit) {
@@ -544,13 +536,13 @@
 
                         var exeLaborValue = Number(data.EXE_LABOR_NUM);
                         if (exeLaborValue < 0 || isNaN(exeLaborValue)) {
-                            app.dialog.error('实际人员数量不是大于 0 的数字');
+                            app.dialog.error('实际人员数量不是正数');
                             return;
                         }
 
                         var exeTimeValue = Number(data.EXE_TAKE_TIME);
                         if (exeTimeValue < 0 || isNaN(exeTimeValue)) {
-                            app.dialog.error('实际花费时间不是大于 0 的数字');
+                            app.dialog.error('实际花费时间不是正数');
                             return;
                         }
 
@@ -598,7 +590,6 @@
 
                                 var str = app.CreatePopupContentHtml(detailInfo);
                                 $("#detail_bg_detail").html(str);
-                                debugger
                                 app.smartSelect.create({
                                     el: '.IS_COMPLETE',
                                     searchbar: true
@@ -611,7 +602,6 @@
                                     createCalendar('#EXE_DATE');
                                 }
                                 if (aud != "0") {
-                                    createCalendar('#EXE_DATE');
                                     $("#menuDetail").hide();
                                 }
                             }

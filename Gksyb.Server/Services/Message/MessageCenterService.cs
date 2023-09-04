@@ -45,6 +45,7 @@ namespace Gksyb.Server.Services.Message
             await hubContext.Clients.SendAsync(info, true);
         }
 
+        /// <inheritdoc/>
         public async Task SendAsync(MessageInfo info, bool isCode = false)
         {
             var hasCode = await InitWithTemplate(info);
@@ -64,26 +65,31 @@ namespace Gksyb.Server.Services.Message
             info.MsgGroup = "其他";
             if (string.IsNullOrWhiteSpace(info.Code)) return false;
             var model = await _dbContext.Query<SYS_MESSAGE_TEMPLATE>().Where(c => c.CODE == info.Code).FirstOrDefaultAsync();
-            if (model == null) return false;
-            info.MsgType = model.MSG_TYPE;
-            info.DialogMode = model.DIALOG_MODE;
-            info.DialogType = model.DIALOG_TYPE;
-            info.AutoReaded = model.AUTO_READED;
-            info.MsgGroup = model.GROUP;
-            info.Href = string.IsNullOrWhiteSpace(info.Href) ? model.MSG_HREF : info.Href;
-            info.MobileHref = string.IsNullOrWhiteSpace(info.MobileHref) ? model.MSG_MOBILE_HREF : info.MobileHref;
-            info.Receives ??= new List<string>();
-            if (string.IsNullOrWhiteSpace(model.NOTICE_TYPE)) return true;
-            var userService = _serviceProvider.GetService<IUserService>();
-            var receives = await userService.FindOperators(new FindOperatorInfo()
+            var hasCode = model != null;
+            if (hasCode)
             {
-                Type = model.NOTICE_TYPE,
-                Corp = info.CorpId ?? _user.Corp?.CorpID,
-                Operators = model.NOTICE_USERS
-            });
-            info.Receives.AddRange(receives.Select(c => c.Account));
-            info.Receives = info.Receives.DistinctAndOrderBy().ToList();
-            return true;
+                info.MsgType = model.MSG_TYPE;
+                info.DialogMode = model.DIALOG_MODE;
+                info.DialogType = model.DIALOG_TYPE;
+                info.AutoReaded = model.AUTO_READED;
+                info.MsgGroup = model.GROUP;
+                info.Template = model.TEMPLATE;
+                info.Href = string.IsNullOrWhiteSpace(info.Href) ? model.MSG_HREF : info.Href;
+                info.MobileHref = string.IsNullOrWhiteSpace(info.MobileHref) ? model.MSG_MOBILE_HREF : info.MobileHref;
+                info.Receives ??= new List<string>();
+                if (string.IsNullOrWhiteSpace(model.NOTICE_TYPE)) return true;
+                var userService = _serviceProvider.GetService<IUserService>();
+                var receives = await userService.FindOperators(new FindOperatorInfo()
+                {
+                    Type = model.NOTICE_TYPE,
+                    Corp = info.CorpId ?? _user.Corp?.CorpID,
+                    Operators = model.NOTICE_USERS
+                });
+                info.Receives.AddRange(receives.Select(c => c.Account));
+                info.Receives = info.Receives.DistinctAndOrderBy().ToList();
+            }
+            info.Handle();
+            return hasCode;
         }
 
 
@@ -92,8 +98,7 @@ namespace Gksyb.Server.Services.Message
         /// </summary>
         private async Task SendMessageAsync(MessageInfo info)
         {
-            info.BuildHref();
-            if (info.AutoReaded == "1" || !string.IsNullOrWhiteSpace(info.Action) && info.Action != MessageInfoExtensions.ActionName)
+            if (info.AutoReaded == "1" || (!string.IsNullOrWhiteSpace(info.Action) && info.Action != MessageInfoExtensions.ActionName))
             {
                 var hubContext = _serviceProvider.GetService<IHubContext<BroadcastChannelHub, IBroadcastChannelClient>>();
                 await hubContext.Clients.SendAsync(info);
@@ -106,7 +111,7 @@ namespace Gksyb.Server.Services.Message
                 ID = GuidHelper.NewSnowflakeId(),
                 TEMPLATE_CODE = info.Code,
                 MSG_TITLE = info.Title,
-                MSG_CONTENT = info.Content,
+                MSG_CONTENT = string.IsNullOrWhiteSpace(info.Content) ? info.Template : info.Content,
                 MSG_GROUP = info.MsgGroup,
                 DIALOG_MODE = info.DialogMode,
                 DIALOG_TYPE = info.DialogType,
@@ -133,7 +138,7 @@ namespace Gksyb.Server.Services.Message
             await service.CreateNotice(new WeixinNoticeRequest()
             {
                 Receiver = info.Receives.ToStr(","),
-                Template = info.Code,
+                Template = string.IsNullOrWhiteSpace(info.Template) ? info.Code : info.Template,
                 Url = info.Href,
                 TData = info.Data == null ? info.Data.ToJson() : info.Content,
                 Creater = _user.UserName,
