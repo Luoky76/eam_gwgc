@@ -269,15 +269,12 @@
                         me.columnsDet[i].readOnly = true;
                     }
                 }
-                
                 //对每行数据分别创建表格
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
                     //新增表格
                     let form_id = "assess_det_" + i;
                     let str = `<form class="list" id="${form_id}"> </form >`;
                     $("#assess_det").append(str);
-                    //设置选择框类名
-                    me.columnsDet[1].smartSelectClass = "ASSESS_BASE_ID_" + i;
                     //创建input
                     str = app.CreatePopupContentHtml(me.columnsDet);
                     $("#" + form_id).html(str);
@@ -285,7 +282,7 @@
                     app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
                     //设置选择框
                     app.smartSelect.create({
-                        el: '.ASSESS_BASE_ID_' + i,
+                        el: '.ASSESS_BASE_ID',
                         searchbar: true,
                         on: {
                             beforeOpen: function (smartSelect, prevent) {
