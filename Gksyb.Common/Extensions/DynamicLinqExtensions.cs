@@ -26,7 +26,7 @@ namespace Gksyb.Common
                 {
                     value = funcs[match.Value]();
                 }
-                if (func == null) return value.ToString();
+                if (func == null) return (value ?? "").ToString();
                 return func(key, value);
             }, RegexOptions.IgnoreCase);
         }

@@ -40,6 +40,13 @@ namespace Gksyb.Model.Core
         public string NAME { get; set; }
 
         /// <summary>
+        /// 模板
+        /// </summary>
+        [Description("模板")]
+        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        public string TEMPLATE { get; set; }
+
+        /// <summary>
         /// 所属组
         /// </summary>
         [Description("所属组")]

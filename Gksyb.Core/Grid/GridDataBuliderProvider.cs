@@ -198,7 +198,7 @@ namespace Gksyb.Core.Grid
             }
             var whereTranslator = new FilterTranslatorLinq(EntityTypeContainer.GetDescriptor(typeof(T)))
             {
-                Group = JSONHelper.FromJson<FilterGroup>(where)
+                Group = where.ToObject<FilterGroup>()
             };
             whereTranslator.Group?.Check();
             whereTranslator.Translate();
@@ -222,7 +222,7 @@ namespace Gksyb.Core.Grid
             var whereTranslator = new FilterTranslator();
             if (!string.IsNullOrWhiteSpace(request.Where))
             {
-                whereTranslator.Group = JSONHelper.FromJson<FilterGroup>(request.Where);
+                whereTranslator.Group = request.Where.ToObject<FilterGroup>();
                 whereTranslator.Group?.Check();
             }
             whereTranslator.Translate();

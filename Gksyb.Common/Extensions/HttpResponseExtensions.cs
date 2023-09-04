@@ -34,8 +34,8 @@ namespace Gksyb.Common
                 source.Headers[HeaderNames.ContentSecurityPolicy] = "manifest-src 'self'";
                 source.Headers[HeaderNames.StrictTransportSecurity] = "max-age=31536000";
                 source.Headers[HeaderNames.XFrameOptions] = "SAMEORIGIN";
-                source.Headers["X-Content-Type-Options"] = "nosniff";
-                source.Headers["X-XSS-Protection"] = "1";
+                source.Headers[HeaderNames.XContentTypeOptions] = "nosniff";
+                source.Headers[HeaderNames.XXSSProtection] = "1";
                 source.Headers["X-Download-Options"] = "noopen";
                 source.Headers["X-Permitted-Cross-Domain-Policies"] = "master-only";
                 source.Headers["Referrer-Policy"] = "no-referrer-when-downgrade";
