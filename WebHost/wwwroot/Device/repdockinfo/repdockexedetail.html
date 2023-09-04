@@ -49,7 +49,7 @@
                         labelwidth: 220,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_PLAN", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
+                            { display: "记录状态", name: "AUDITING_EXE", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
                             { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
@@ -307,7 +307,7 @@
                 });
                 me.setFormDefaultBtn();
             },
-            //保养实施明细
+            //实施明细
             grid: null,
             setGrid: function () {
                 var me = this;

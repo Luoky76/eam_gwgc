@@ -252,7 +252,7 @@
             { display: "编制人", name: "EIDT_USER", },
             { display: "税率", name: "RATIO", Option: ratio, Searched: true },
             { display: "维修费用(元)", name: "REP_MONEY", },
-            { display: "不含税维修费用(元)", name: "NOTAX_MONEY", },
+            { display: "不含税维修费用(保存自动计算)", name: "NOTAX_MONEY", },
             { display: "验收时间", name: "CHECK_DATE", },
             { display: "实际开工时间", name: "REAL_BEGINTIME", },
             { display: "实际完工时间", name: "REAL_ENDTIME", },
@@ -282,7 +282,7 @@
                                                                                                                                         background-color: rgb(236, 235, 235);
                                                                                                                                  ">
                                                                                                                                         <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">委外维修验收详情</a>
-                                                                                                                                        <a href="#tab-2" class="tab-link" id="modify_list">物资消耗明细明细</a>
+                                                                                                                                        <a href="#tab-2" class="tab-link" id="modify_list">物资消耗明细</a>
                                                                                                                                     </div>
                                                                                                                                 </div>
                                                                                                                                 <div class="tabs">
@@ -324,7 +324,6 @@
                             app.dialog.error("验收情况不可为空");
                             return;
                         }
-                        debugger
                         var repMoneyValue = Number(data.REP_MONEY);
                         var notaxMoneyValue = Number(data.NOTAX_MONEY);
                         if (repMoneyValue < 0 || isNaN(repMoneyValue) || notaxMoneyValue < 0 || isNaN(notaxMoneyValue)) {
@@ -403,8 +402,7 @@
                                 data.SRC_TYPE = busResult.repSourceType.find((v) => v.ID == data.SRC_TYPE).TEXT;
                                 data.IS_LEAVE = isleave.find((v) => v.ID == data.IS_LEAVE).TEXT;
                                 var detailInfo = data.AUDITING_CHK == "未提交" ? repoutCheckDetailInfo : repoutCheckDetailInfo.map(function (item) {
-                                    item.readOnly = true;
-                                    return item;
+                                    return { ...item, readOnly: true };
                                 });
 
                                 var str = app.CreatePopupContentHtml(detailInfo);
@@ -448,8 +446,20 @@
         function showBtn(isEdit) {
             if (isEdit) {
                 $("#menu").show();
+                $("#dg_list").click(function () {
+                    $("#menu").show();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
             } else {
                 $("#menu").hide();
+                $("#dg_list").click(function () {
+                    $("#menu").hide();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
             }
         }
         var spDetail = [
