@@ -457,7 +457,13 @@
                                 $("#detail_bg_detail").html(str);
                                 app.smartSelect.create({
                                     el: '.SCAN_RESULT',
-                                    searchbar: true
+                                    on: {
+                                        beforeOpen: function (smartSelect, prevent) {
+                                            if (scanstatus == "盘点完成") {
+                                                prevent();
+                                            }
+                                        }
+                                    }
                                 });
                                 if (data.Rows.length > 0) {
                                     formDataDetail = data.Rows[0];

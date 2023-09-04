@@ -414,11 +414,23 @@
                                 }
                                 app.smartSelect.create({
                                     el: '.RATIO',
-                                    searchbar: true
+                                    on: {
+                                        beforeOpen: function (smartSelect, prevent) {
+                                            if (data.AUDITING_CHK != "未提交") {
+                                                prevent();
+                                            }
+                                        }
+                                    }
                                 });
                                 app.smartSelect.create({
                                     el: '.EIDT_USER',
-                                    searchbar: true
+                                    on: {
+                                        beforeOpen: function (smartSelect, prevent) {
+                                            if (data.AUDITING_CHK != "未提交") {
+                                                prevent();
+                                            }
+                                        }
+                                    }
                                 });
                                 if (data.AUDITING_CHK == "未提交") {
                                     createCalendar('#PACT_DATE');

@@ -305,6 +305,7 @@
                             url: 'Device/RepDockInfo/GetRepDockConfirmDetail',
                             success: function (data) {
                                 data.AUDITING_CHECK = busResult.auditing.find((v) => v.ID == data.AUDITING_CHECK).TEXT;
+                                data.IS_LEAVE = isleave.find((v) => v.ID == data.IS_LEAVE).TEXT;
                                 var detailInfo = data.AUDITING_CHECK == "未提交" ? repoutCheckDetailInfo : repoutCheckDetailInfo.map(function (item) {
                                     return { ...item, readOnly: true };
                                 });
@@ -315,9 +316,6 @@
                                     formDataDetail = data;
                                     app.form.fillFromData('#detail_bg', formDataDetail);
                                     showBtn(data.AUDITING_CHECK == "未提交");
-                                    app.smartSelect.create({
-                                        el: '.IS_LEAVE'
-                                    });
                                     if (data.AUDITING_CHECK == "未提交") {
                                         createCalendar('#CHECK_DATE');
                                         createCalendar('#PACT_DATE');

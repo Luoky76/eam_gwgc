@@ -387,7 +387,13 @@
                                 }
                                 app.smartSelect.create({
                                     el: '.IS_LEAVE',
-                                    searchbar: true
+                                    on: {
+                                        beforeOpen: function (smartSelect, prevent) {
+                                            if (data.AUDITING_EXE != "未提交") {
+                                                prevent();
+                                            }
+                                        }
+                                    }
                                 });
                                 if (data.AUDITING_EXE == "未提交") {
                                     createCalendar('#EXE_BDATE');
@@ -592,7 +598,13 @@
                                 $("#detail_bg_detail").html(str);
                                 app.smartSelect.create({
                                     el: '.IS_COMPLETE',
-                                    searchbar: true
+                                    on: {
+                                        beforeOpen: function (smartSelect, prevent) {
+                                            if (aud != "0") {
+                                                prevent();
+                                            }
+                                        }
+                                    }
                                 });
                                 if (data.Rows.length > 0) {
                                     formDataDetail = data.Rows[0];

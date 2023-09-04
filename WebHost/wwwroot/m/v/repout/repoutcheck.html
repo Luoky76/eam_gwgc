@@ -315,7 +315,14 @@
                                     app.form.fillFromData('#detail_bg', formDataDetail);
                                     showBtn(data.AUDITING == "未提交");
                                     app.smartSelect.create({
-                                        el: '.IS_LEAVE'
+                                        el: '.IS_LEAVE',
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                if (data.AUDITING != "未提交") {
+                                                    prevent();
+                                                }
+                                            }
+                                        }
                                     });
                                 }
                             }

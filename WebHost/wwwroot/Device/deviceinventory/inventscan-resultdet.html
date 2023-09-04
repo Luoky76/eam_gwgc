@@ -270,14 +270,20 @@
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid
                     if (me.dialogData.auditing) me.auditing = me.dialogData.auditing
+                    if (me.dialogData.scanstatus) me.scanstatus = me.dialogData.scanstatus
                     me.isView = me.dialogData.view === "1";
                 }
                 if ((me.sid || "0") === "0") me.sid = "";
-
                 me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
+                if (me.dialogData.scanstatus == "3") {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

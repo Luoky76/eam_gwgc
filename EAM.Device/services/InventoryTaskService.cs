@@ -328,6 +328,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_SCAN_DET entity)
         {
+            var queryScan = _dbContext.Query<DEVICE_SCAN>()
+                     .Where(c => c.SCAN_ID==entity.SCAN_ID).Select(c => c.STATUS).First();
+            if (queryScan=="3")
+            {
+                throw new MessageException("已经盘点完成，无法保存！");
+            }
             if (entity.SCAN_RESULT!=null)
             {
                 entity.HANDLE = "1";
