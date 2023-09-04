@@ -111,6 +111,7 @@
         rownumbers: false, //是否显示行序号
         frozenRownumbers: true, //行序号是否在固定列中
         rownumbersColWidth: 40,
+        rownumbersName: "#", //序号列名称
         colDraggable: true, //是否允许表头拖拽
         rowDraggable: false, //是否允许行拖拽
         rowDraggingRender: null,
