@@ -11,6 +11,11 @@
         public string Title { get; set; }
 
         /// <summary>
+        /// 模板
+        /// </summary>
+        public string Template { get; set; }
+
+        /// <summary>
         /// 内容
         /// </summary>
         public string Content { get; set; }
@@ -49,6 +54,30 @@
         /// 关联主键
         /// </summary>
         public string Key { get; set; }
+
+        private Dictionary<string, object> _dic;
+
+        /// <summary>
+        /// 转字典数据
+        /// </summary>
+        public Dictionary<string, object> GetDicData(bool cache = true)
+        {
+            if (!cache) _dic = null;
+            if (_dic != null) return _dic;
+            Dictionary<string, object> dic = null;
+            try
+            {
+                var json = Data is string ? Data as string : Data?.ToJson();
+                dic = (json ?? "").ToObject<Dictionary<string, object>>();
+            }
+            catch
+            {
+            }
+            dic ??= new Dictionary<string, object>();
+            if (!dic.ContainsKey("Key")) dic.Add("Key", Key);
+            _dic = dic.ToIgnoreCaseDictionary();
+            return _dic;
+        }
     }
 
     /// <summary>
@@ -57,7 +86,7 @@
     public class MessageInfo : MessageInfoBase
     {
         /// <summary>
-        /// 模板代码
+        /// 消息编码
         /// </summary>
         public string Code { get; set; }
 

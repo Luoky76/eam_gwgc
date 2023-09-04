@@ -7,10 +7,17 @@
 @{
     var mapName = Model.Name.ToPascal().ToVariableCase();
     var htmlName = mapName.ToKebabCase();
+    var modules = (string.IsNullOrWhiteSpace(Model.Module) ? "Gksyb.Server" : Model.Module).Split('.').Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+    var url = modules.Take(2).LastOrDefault();
+    url = string.IsNullOrWhiteSpace(url) ? mapName : $"{url.ToLowerInvariant()}/{mapName}";
+    var skipPropertys = new List<string>() { "MODIFYUSERID", "MODIFY_USERID", "MODIFYUSER", "MODIFYDATE", "CREATEUSERID", "CREATE_USERID", "CREATEUSER", "CREATEDATE", "RECORDSTATUS" };
+    var changeType = new Dictionary<string, string>() { { "DateTime", "date" }, { "long", "int" } };
     var fields = new List<string>();
     foreach (var item in Model.Columns)
     {
-        var colType = item.CsType == "DateTime" ? "date" : $"{item.CsType}";
+        if (item.IsPrimary == true || item.IsIdentity == true) continue;
+        if (skipPropertys.Any(a => a.Equals(item.Name, StringComparison.OrdinalIgnoreCase))) continue;
+        var colType = changeType.ContainsKey(item.CsType) ? changeType[item.CsType] : item.CsType;
         var comment = item.Comment ?? item.Name;
         fields.Add($@"{{ display: ""{comment}"", name: ""{item.Name}"", newline: false, upper: false, type: ""{colType}"",{((item.IsNullable == true) ? "" : " validate: { required: true },")} options: {{}} }}");
     }
@@ -21,7 +28,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title> 明细</title>
+    <title>明细</title>
     <script src="../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -40,25 +47,25 @@
                 me.config = {
                     form: {
                         fields: [@($"{Environment.NewLine}                            ")@fields.ToStr($",{Environment.NewLine}                            ")
-                        ]
+                                ]
                     }
                 };
             },
             mainform: null,
             buttons: null,
             loadComboxData: function () {
-                var me = this;
-                LG.ajax({
-                    async: false,
-                    url: '@mapName/comboxdata',
-                    loading: '正在获取中...',
-                    success: function (data) {
-                        me.dataCorp = data.corpData;
-                    },
-                    error: function (message) {
-                        LG.showError(message);
-                    }
-                });
+                //var me = this;
+                //LG.ajax({
+                //    async: false,
+                //    url: '@url/comboxdata',
+                //    loading: '正在获取中...',
+                //    success: function (data) {
+                //        me.dataCorp = data.corpData;
+                //    },
+                //    error: function (message) {
+                //        LG.showError(message);
+                //    }
+                //});
             },
             loadData: function () {
                 var me = this;
@@ -68,7 +75,7 @@
                 else {
                     LG.ajax({
                         async: false,
-                        url: '@mapName/get',
+                        url: '@url/get',
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
@@ -109,7 +116,7 @@
                 }
                 LG.ajax({
                     jsToken: true,
-                    url: '@mapName/save',
+                    url: '@url/save',
                     loading: '正在保存中...',
                     data: changeRow,
                     success: function () {
@@ -178,7 +185,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 60,
+                    labelWidth: 90,
+                    inputWidth: 220,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

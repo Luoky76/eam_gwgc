@@ -211,7 +211,7 @@ namespace Gksyb.Common
             var pattern = @"(_)(\w)";
             if (!Regex.IsMatch(source, pattern))
             {
-                if (!Regex.IsMatch(@"([a-z])", pattern)) source = source.ToLower();
+                if (!Regex.IsMatch(source, @"([a-z])")) source = source.ToLower();
                 return source.ToTitleCase();
             }
             return Regex.Replace(source.ToLower(), pattern, m => m.Groups[2].Value.ToUpper()).ToTitleCase();
@@ -223,10 +223,9 @@ namespace Gksyb.Common
         public static string ToKebabCase(this string source)
         {
             var pattern = @"(_)(\w)";
-            if (!Regex.IsMatch(source, pattern))
+            if (!Regex.IsMatch(source, pattern) && !Regex.IsMatch(source, @"([a-z])"))
             {
-                if (!Regex.IsMatch(@"([a-z])", pattern)) source = source.ToLower();
-                return source.ToVariableCase();
+                source = source.ToLower();
             }
             return Regex.Replace(source.ToPascal().ToVariableCase(), @"([A-Z])", m => $"-{m.Groups[1].Value.ToLower()}");
         }

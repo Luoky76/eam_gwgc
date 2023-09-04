@@ -10,6 +10,8 @@
     var business = modules.Take(2).ToStr(".");
     var module = modules.Skip(2).ToStr(".");
     module = string.IsNullOrWhiteSpace(module) ? "" : $".{module}";
+    var getParams = Model.Columns.Where(c => c.IsPrimary == true).Select(c => $"{(c.CsType == "string" ? "string" : $"{c.CsType}?")} {c.Name.ToPascal().ToVariableCase()}").ToStr(", ");
+    var getMethodParams = Model.Columns.Where(c => c.IsPrimary == true).Select(c => $"{c.Name.ToPascal().ToVariableCase()}").ToStr(", ");
 }
 using Gksyb.Core.Auth;
 using Gksyb.Model.Grid;
@@ -29,11 +31,56 @@ namespace @(business).Controllers@(module)
         }
 
         /// <summary>
+        /// 根据ID获取记录
+        /// </summary>
+        public async Task<AjaxResult> GetAsync(@getParams)
+        {
+            return AjaxResult.Success(await _service.GetAsync(@getMethodParams));
+        }
+
+        /// <summary>
         /// 获取列表
         /// </summary>
         public async Task<AjaxResult> ListAsync(GridRequest request)
         {
             return AjaxResult.Success(await _service.ListAsync(request));
+        }
+
+        /// <summary>
+        /// 新增
+        /// </summary>
+        [JsToken, GksybAuthorize(BtnNo = GksybAuthorizeAttribute.AddBtn)]
+        public async Task<AjaxResult> AddAsync(@Model.Name model)
+        {
+            var request = new SaveRequest<@Model.Name> { Added = new List<@Model.Name> { model } };
+            var result = await _service.SaveAsync(request);
+            if (result.IsError) return result;
+            result.Data = model;
+            return result;
+        }
+
+        /// <summary>
+        /// 修改
+        /// </summary>
+        [JsToken, GksybAuthorize(BtnNo = GksybAuthorizeAttribute.UpdateBtn)]
+        public async Task<AjaxResult> UpdateAsync(@Model.Name model, @Model.Name original)
+        {
+            var request = new SaveRequest<@Model.Name> { Updated = new List<@Model.Name> { model } };
+            if (original != null) request.Original = new List<@Model.Name> { original };
+            var result = await _service.SaveAsync(request);
+            if (result.IsError) return result;
+            result.Data = model;
+            return result;
+        }
+
+        /// <summary>
+        /// 删除
+        /// </summary>
+        [JsToken, GksybAuthorize(BtnNo = GksybAuthorizeAttribute.DeleteBtn)]
+        public async Task<AjaxResult> DeleteAsync(List<@Model.Name> list)
+        {
+            var request = new SaveRequest<@Model.Name> { Deleted = list };
+            return await _service.SaveAsync(request);
         }
 
         /// <summary>

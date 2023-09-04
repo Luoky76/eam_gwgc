@@ -21,25 +21,23 @@ namespace Gksyb.Core.Interfaces.Common
         public const string Sms = "Sms";
 
         /// <summary>
-        /// 处理Href
+        /// 处理数据
         /// </summary>
-        public static void BuildHref(this MessageInfo source)
+        public static void Handle(this MessageInfo source)
         {
-            var isHrefMatch = Regex.IsMatch(source.Href ?? "", @"{(\w+)}");
-            var isMobileMatch = Regex.IsMatch(source.MobileHref ?? "", @"{(\w+)}");
-            if (!isHrefMatch && !isMobileMatch) return;
-            Dictionary<string, object> dic = null;
-            try
+            var dic = source.GetDicData(false);
+            if (Regex.IsMatch(source.Href ?? "", @"{(\w+)}"))
             {
-                dic = source.Data?.ToJson().ToObject<Dictionary<string, object>>();
+                source.Href = source.Href.Replace(null, dic);
             }
-            catch
+            if (Regex.IsMatch(source.MobileHref ?? "", @"{(\w+)}"))
             {
+                source.MobileHref = source.MobileHref.Replace(null, dic);
             }
-            dic ??= new Dictionary<string, object>();
-            dic.Add("Key", source.Key);
-            source.Href = isHrefMatch ? source.Href.Replace(null, dic) : source.Href;
-            source.MobileHref = isHrefMatch ? source.MobileHref.Replace(null, dic) : source.MobileHref;
+            if (Regex.IsMatch(source.Template ?? "", @"{(\w+)}"))
+            {
+                source.Template = source.Template.Replace(null, dic);
+            }
         }
 
         /// <summary>

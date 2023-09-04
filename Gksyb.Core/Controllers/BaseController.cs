@@ -119,39 +119,24 @@ namespace Microsoft.AspNetCore.Mvc
             }
             if (request.Added?.Count > 0)
             {
-                authorize.BtnNo = AddBtn;
+                authorize.BtnNo = GksybAuthorizeAttribute.AddBtn;
                 isValid = await authorize.ValidAsync(HttpContext);
                 if (!isValid) return AjaxResult.Error(ForbidText);
             }
             if (request.Updated?.Count > 0)
             {
-                authorize.BtnNo = UpdateBtn;
+                authorize.BtnNo = GksybAuthorizeAttribute.UpdateBtn;
                 isValid = await authorize.ValidAsync(HttpContext);
                 if (!isValid) return AjaxResult.Error(ForbidText);
             }
             if (request.Deleted?.Count > 0)
             {
-                authorize.BtnNo = DeleteBtn;
+                authorize.BtnNo = GksybAuthorizeAttribute.DeleteBtn;
                 isValid = await authorize.ValidAsync(HttpContext);
                 if (!isValid) return AjaxResult.Error(ForbidText);
             }
             return AjaxResult.Success();
         }
-
-        /// <summary>
-        /// 新增按钮
-        /// </summary>
-        private static readonly string AddBtn = "add";
-
-        /// <summary>
-        /// 更新按钮
-        /// </summary>
-        private static readonly string UpdateBtn = "save,modify";
-
-        /// <summary>
-        /// 删除按钮
-        /// </summary>
-        private static readonly string DeleteBtn = "delete";
 
         /// <summary>
         /// 禁止提示

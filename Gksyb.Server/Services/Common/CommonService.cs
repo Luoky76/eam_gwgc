@@ -177,7 +177,7 @@ namespace Gksyb.Server.Services.Common
                     var parmMatch = new Dictionary<string, object>();
                     try
                     {
-                        parmMatch = JSONHelper.FromJson<Dictionary<string, object>>(entity.GRID);
+                        parmMatch = entity.GRID.ToObject<Dictionary<string, object>>();
                     }
                     catch
                     {
