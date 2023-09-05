@@ -51,7 +51,7 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous]
         public async Task<string> LoginTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync("Auth/Login");
+            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}Auth/Login");
         }
 
         /// <summary>

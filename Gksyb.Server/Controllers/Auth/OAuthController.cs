@@ -64,7 +64,7 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous]
         public async Task<string> JsTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync("oauth/validTicket");
+            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}/oauth/validTicket");
         }
 
         [JsToken, AllowAnonymous]
