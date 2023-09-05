@@ -41,12 +41,14 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            basePageName: location.pathname.substring(location.pathname.lastIndexOf("/") + 1),
             //初始路由
             initRoutes: function () {
+                var me = this;
                 app.routes.push({
                     name: "default",
                     path: "/",
-                    url: gksybConfigs.urlBase + "default.html"
+                    url: gksybConfigs.urlBase + me.basePageName
                 }, {
                     name: "iframe",
                     path: "/iframe/:url/:title/:backType",
@@ -239,7 +241,7 @@
                 $$("#myTitle").html("欢迎您，" + (session ? (session.RealName || "") : ""));
                 app.methods.initMainView({
                     url: "/",
-                    browserHistoryRoot: gksybConfigs.urlBase + "default.html",
+                    browserHistoryRoot: gksybConfigs.urlBase + me.basePageName,
                     browserHistory: true
                 });
             }
