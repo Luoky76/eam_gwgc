@@ -205,7 +205,9 @@
                 });
             },
             refresh: function () {
+                var me = this;
                 app.form.fillFromData('#assess', me.orginData);
+                me.isDataChanged = false;
             },
             save: function () {
                 var me = this;
@@ -222,7 +224,7 @@
                     data: changeRow,
                     success: function (data, message) {
                         me.showSuccessMessage("保存成功");
-                        me.orginData = data;
+                        me.orginData = changeRow.updated[0];
                         me.isDataChanged = false;
                         me.refresh();
                     },
@@ -315,6 +317,7 @@
                     }
                     //设置数字输入框
                     $('#' + form_id + ' #SCORE').attr("type", "number");
+                    $('#' + form_id + ' #SCORE').attr("step", "0.01");
                     //为表格添加修改事件
                     $('#' + form_id + ' input, #' + form_id + ' select').on('change', function () {
                         me.isDetailDataChanged = true;
@@ -332,10 +335,12 @@
                 }
             },
             refreshDet: function () {
+                var me = this;
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
                     let form_id = "assess_det_" + i;
                     app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
                 }
+                me.isDetailDataChanged = false;
             },
             saveDet: function () {
                 var me = this;
@@ -356,7 +361,7 @@
                     data: changeRow,
                     success: function (data, message) {
                         me.showSuccessMessage("保存成功");
-                        me.orginDetailData = data;
+                        me.orginDetailData = changeRow.updated;
                         me.isDetailDataChanged = false;
                         me.refreshDet();
                     },
