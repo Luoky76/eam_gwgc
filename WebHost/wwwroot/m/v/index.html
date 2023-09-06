@@ -30,12 +30,14 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            basePageName: location.pathname.substring(location.pathname.lastIndexOf("/") + 1),
             //初始路由
             initRoutes: function () {
+                var me = this;
                 app.routes.push({
                     name: "index",
                     path: "/",
-                    url: gksybConfigs.urlBase + "index.html",
+                    url: gksybConfigs.urlBase + me.basePageName,
                     tabs: []
                 }, {
                     name: "iframe",
@@ -187,7 +189,7 @@
                 me.loadMenu();
                 app.methods.initMainView({
                     url: "/",
-                    browserHistoryRoot: gksybConfigs.urlBase + "index.html",
+                    browserHistoryRoot: gksybConfigs.urlBase + me.basePageName,
                     browserHistory: true
                 });
             }

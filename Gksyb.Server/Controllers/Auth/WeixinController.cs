@@ -6,6 +6,7 @@ using Gksyb.Server.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 
 namespace Gksyb.Server.Controllers.Auth
@@ -94,9 +95,23 @@ namespace Gksyb.Server.Controllers.Auth
         /// 微信单点登录
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> OAuth([FromHeader] string code)
+        public async Task<AjaxResult> OAuth([FromServices] IConfiguration config, [FromHeader] string code)
         {
-            var token = await WeixinHelper.GetOauthAccessToken(code);
+            OAuthAccessTokenResponse token;
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
+                token = new OAuthAccessTokenResponse() { ErrCode = 0, Openid = openid };
+                if (string.IsNullOrWhiteSpace(openid))
+                {
+                    token.ErrCode = 1;
+                    token.ErrMsg = "请传递参数";
+                }
+            }
+            else
+            {
+                token = await WeixinHelper.GetOauthAccessToken(code);
+            }
             if (token.IsError) return AjaxResult.Error(token.ToString());
             var result = await _service.OauthAsync(new LoginRequest()
             {

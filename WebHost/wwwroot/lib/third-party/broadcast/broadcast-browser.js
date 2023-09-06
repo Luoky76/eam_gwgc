@@ -3792,7 +3792,7 @@
         leaderElector.awaitLeadership().then(function () {
             //领导者连接signalR
             if (channel.onLeader) channel.onLeader();
-            var connection = new signalR.HubConnectionBuilder().withUrl("/broadcast-channel", {
+            var connection = new signalR.HubConnectionBuilder().withUrl(window.gksybConfigs.apiBase + "broadcast-channel", {
                 accessTokenFactory: function accessTokenFactory() {
                     return window.session.Token;
                 }

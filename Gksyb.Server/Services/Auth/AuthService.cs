@@ -200,16 +200,8 @@ namespace Gksyb.Server.Services.Auth
         {
             if (userSession.IsAdmin)
             {
-                var query = _dbContext.Query<SYS_BUTTON>().Where(c => c.MENUNO == menuNo);
+                var query = _dbContext.Query<SYS_BUTTON>().Where(c => c.MENUNO == menuNo && c.APPNAME == appname);
                 var list = await query.ToListAsync<ButtonModule>();
-                if (list.Count > 0)
-                {
-                    var firstAppname = list[0].APPNAME;
-                    if (list.Exists(c => c.APPNAME != firstAppname))
-                    {
-                        list = list.FindAll(c => c.APPNAME == appname);
-                    }
-                }
                 return list.OrderBy(c => c.SEQNO).ToList();
             }
             var buttons = new List<ButtonModule>();

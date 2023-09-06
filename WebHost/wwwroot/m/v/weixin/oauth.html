@@ -71,7 +71,6 @@
             init: function () {
                 var me = this;
                 var code = me.getQueryStringByName("code");
-                if (!code) return;
                 me.baseUrl = me.getBaseUrl("../../../");
                 me.httpRequest({
                     url: 'weixin/oauth',
