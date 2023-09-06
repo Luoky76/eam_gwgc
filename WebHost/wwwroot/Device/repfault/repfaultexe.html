@@ -430,6 +430,32 @@
 
             },
 
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/RepFault/ManageFaultExe',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
             delete: function () { //删除
                 var me = this;
                 if (me.grid.endEdit() != false) {

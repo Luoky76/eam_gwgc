@@ -230,7 +230,7 @@ namespace EAM.Device.services
         }
 
         /// <summary>
-        /// 管理人员明细
+        /// 管理物资明细
         /// </summary>
         /// <returns></returns>
         public async Task<AjaxResult> ManageFaultSp(SaveRequest<REP_FAULT_SP> request)
