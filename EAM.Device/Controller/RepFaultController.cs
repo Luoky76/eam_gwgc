@@ -4,6 +4,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
+using static EAM.Device.services.RepFaultService;
 
 namespace EAM.Device.controller
 {
@@ -66,7 +67,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetFaultExeListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<REP_FAULT>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult<REP_FAULT_IMG>.Error("请传递参数");
             return AjaxResult.Success(await _service.GetFaultExeListDetail(ID), "成功");
         }
 

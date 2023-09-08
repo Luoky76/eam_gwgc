@@ -84,15 +84,25 @@ namespace EAM.Device.services
                 .ThenByDesc(c => c.FAULT_CODE)
                 .GetGridData(request);
         }
+        //图片SRC
+        public class REP_FAULT_IMG: REP_FAULT
+        {
+            public List<string> ImageSrcList { get; set; }
 
+        }
         /// <summary>
         /// 获取单条故障处理记录
         /// </summary>
         /// <returns></returns>
 
-        public async Task<REP_FAULT> GetFaultExeListDetail(string ID)
+        public async Task<REP_FAULT_IMG> GetFaultExeListDetail(string ID)
         {
-            var qry = await _dbContext.QueryByKeyAsync<REP_FAULT>(ID);
+            var qry = await _dbContext.QueryByKeyAsync<REP_FAULT_IMG>(ID);
+            qry.ImageSrcList = await _dbContext.Query<SYS_ATTACH>()
+                      .Where(img => img.data_id == ID && img.attach_type ==".jpg"||img.attach_type ==".jpeg")
+                      .Select(img => img.attach_path)
+                      .ToListAsync();
+
             return qry;
         }
 
@@ -102,7 +112,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> ManageFaultExe(SaveRequest<REP_FAULT> request)
         {
-            return await _dbContext.SaveEntityAnsyc(request,
+            await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
                     c.AUDITING_B,
@@ -148,6 +158,15 @@ namespace EAM.Device.services
                     c.MODIFYDATE,
                 },
                 c => a => a.FAULT_ID == c.FAULT_ID, BeforeAdd);
+            var ID = "";
+            if (request.Added.Count>0)
+            {
+                ID = request.Added[0].FAULT_ID;
+            }
+            else {
+                ID = request.Updated[0].FAULT_ID;
+            }
+            return AjaxResult.Success(ID);
         }
 
         public async Task BeforeAdd(REP_FAULT entity)

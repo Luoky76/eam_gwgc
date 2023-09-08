@@ -37,6 +37,7 @@
             faultSrc: [],
             deviceStatus: [],
             alreadySubmitted: false,
+            alreadyUnSubmitted: false,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -257,12 +258,19 @@
                 }
             },
 
-            unsubmit: function () {    //提交
+            unsubmit: function () {    //驳回
                 var me = this;
                 var selected = me.grid.getSelectedRows();
+                for (var i = 0; i < selected.length; i++) {
+                    if (selected[i].AUDITING_D == "1") {
+                        me.alreadyUnSubmitted = true;
+                        break;
+                    }
+                }
                 if (selected.length > 0) {
-                    if (selected[0].AUDITING_D != "0") {
+                    if (me.alreadyUnSubmitted) {
                         LG.tip('已提交，无法驳回!');
+                        me.alreadyUnSubmitted = false;
                     }
                     else {
                         var sids = [];
