@@ -474,17 +474,7 @@
             { display: "保养内容", name: "CONTENT"},
             { display: "保养类型", name: "STD_LEVEL"},
         ];
-        //保养实施明细
-        var shisDetail = [
-            { display: "主键", name: "DONEITEM_ID", PrimaryKey: "DONEITEM_ID", readOnly: false, isPrimaryKey: true, isShow: false },
-            { display: "完成情况", name: "COMPLETE", Option: business.complete, validate: { required: true } },
-            { display: "附件材料", name: "ATTACH_EXE", readOnly: true },
-            { display: "保养计划附件", name: "ATTACH_PLAN", readOnly: true },
-            { display: "标准编号", name: "STD_CODE", readOnly: true },
-            { display: "保养项目", name: "OBJECT_NAME", readOnly: true },
-            { display: "保养内容", name: "CONTENT", readOnly: true },
-            { display: "保养类型", name: "STD_LEVEL", readOnly: true },
-        ];
+       
         //保养实施明细列表
         function CreateShisList(ID) {
             var where = JSON.stringify({
@@ -513,7 +503,214 @@
             });
 
         };
+        //保养实施明细
+        var shisDetail = [
+            { display: "主键", name: "DONEITEM_ID", PrimaryKey: "DONEITEM_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "完成情况", name: "COMPLETE", Option: business.complete, validate: { required: true } },
+            { display: "附件材料", name: "ATTACH_EXE", readOnly: true },
+            { display: "保养计划附件", name: "ATTACH_PLAN", readOnly: true },
+            { display: "标准编号", name: "STD_CODE", readOnly: true },
+            { display: "保养项目", name: "OBJECT_NAME", readOnly: true },
+            { display: "保养内容", name: "CONTENT", readOnly: true },
+            { display: "保养类型", name: "STD_LEVEL", readOnly: true },
+        ];
+        var Info_popup = app.popup.create({
+            content: `
+                                                              <div class="popup answersheet">
+                                                                  <div class="view">
+                                                                      <div class="page">
+                                                                          <div class="navbar">
+                                                                              <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                  <div class="left link popup-close">
+                                                                                      <i class="f7-icons">arrow_left</i>
+                                                                                  </div>
+                                                                                  <div class="title">维保实施</div>
+                                                                              </div>
+                                                                          </div>
+                                                                          <div class="toolbar tabbar toolbar-top">
+                                                                              <div class="toolbar-inner" style="
+                                                                                  --f7-tabbar-link-active-border-color: #fff;
+                                                                                  --f7-tabbar-link-active-color: black;
+                                                                                  --f7-tabbar-link-active-bg-color: white;
+                                                                                  --f7-tabbar-link-inactive-color: black;
+                                                                                  background-color: rgb(236, 235, 235);
+                                                                           ">
+                                                                                  <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">详情</a>
+                                                                                  <a href="#tab-2" class="tab-link" id="modify_list">实施</a>
+                                                                                  <a href="#tab-3" class="tab-link" id="modify_list2">物资</a>
+                                                                                  <a href="#tab-4" class="tab-link" id="modify_list3">人员</a>
+                                                                                  <a href="#tab-5" class="tab-link" id="modify_list4">作业</a>
+                                                                              </div>
+                                                                          </div>
+                                                                          <div class="tabs">
+                                                                            <div id="tab-1" class="page-content tab tab-active">
+                                                                              <div class="list inline-labels no-hairlines-md">
+                                                                                  <form class="list" id="detail_bg"></form>
+                                                                              </div>
 
+                                                                            </div>
+                                                                             <div id="tab-2" class="page-content tab">
+                                                                                    <div class="list" id="modify_bg1">
+                                                                                       dddd
+                                                                                    </div>
+                                                                              </div>
+                                                                             <div id="tab-3" class="page-content tab">
+                                                                                    <div class="list" id="modify_bg2">
+                                                                                    ddeee
+                                                                                    </div>
+                                                                              </div>
+                                                                              <div id="tab-4" class="page-content tab">
+                                                                                    <div class="list" id="modify_bg3">
+                                                                                    fff
+                                                                                    </div>
+                                                                              </div>
+                                                                              <div id="tab-5" class="page-content tab">
+                                                                                   <div class="list" id="modify_bg4">
+                                                                                   ggg
+                                                                                   </div>
+                                                                             </div>
+                                                                          </div>
+                                                                          <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
+                                                                              <div class="toolbar-inner">
+                                                                                  <button class="col button button-large button-fill" id="save" >保存</button>
+                              
+                                                                              </div>
+                                                                          </div>
+                                                                          
+                                                                          
+                                                                      </div>
+                                                                  </div>
+                                                              </div>`
+            ,
+            on: {
+                open: function () {
+                    debugger
+                    var me = this;
+                    var ID = me.params.EXE_ID;
+                    var showBtn = me.params.UPDATE;
+                    //保存事件
+                    $("#save").off('click').click(function () {
+                        debugger;
+                        let data = app.form.convertToData("#detail_bg");
+                        data.EXE_ID = ID;
+
+                        if (data.IS_LOSE == null || data.IS_LOSE == '') {
+                            app.dialog.error("请选择是否有遗留问题");
+                            return
+                        }
+                        //判断时间
+                        var startDate = data.BEGIN_DATE;
+                        var completeDate = data.END_DATE;
+
+
+                        if (!startDate || !completeDate) {
+                            app.dialog.error("保养开始时间保养结束时间不能为空！请重新选择！");
+                            return;
+                        }
+
+                        if (startDate >= completeDate) {
+
+                            app.dialog.error("保养开始时间能大于保养结束时间！请重新选择！");
+                            return;
+                        }
+
+
+                        var AddRow = new Object();
+                        if (ID) {
+                            data.AUDITING_EXE = "0";
+
+                            AddRow["Updated"] = [data];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+                        AddRow["Original"] = [formdata];
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/PmInfo/ManagePmExe',
+                            success: function (data) {
+                                //if (ID) {
+                                //    $("#modify_list").click();
+                                //} else {
+                                //    Info_popup.close();
+                                //}
+                                Info_popup.close();
+                                //实施的html
+                                //business.getData();
+                            }
+                        });
+                    });
+                    if (ID) {
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "ID": ID
+                            },
+                            url: 'Device/PmInfo/GetPmPlanListDetail',
+                            success: function (data) {
+                                aud = data.AUDITING_EXE;
+                                var str = "";
+                                formdata = data;
+                                me.detail = data;
+                                me.detail.AUDITING_EXE = business.auditingData.find((v) => v.ID == me.detail.AUDITING_EXE).TEXT;
+                                var detailInfo = me.detail.AUDITING_EXE == "未提交" ? pmPlanexeInfo : pmPlanexeInfo.map(function (item) {
+                                    return { ...item, readOnly: true };
+                                });
+                                str = app.CreatePopupContentHtml(detailInfo);
+                                $("#detail_bg").html(str);
+
+                                app.form.fillFromData('#detail_bg', me.detail);
+                                //showBtn(data.AUDITING_EXE == "未提交");
+                                //设备名称下拉框html
+                                createSmartSelect('.DEVICE_ID');
+                                //保养来源
+                                createSmartSelect('.SOURCE');
+                                //维护类别
+                                createSmartSelect('.PM_TYPE');
+                                //维保部门
+                                createSmartSelect('.WDEPT_ID');
+                                //是否有遗留问题
+                                createSmartSelect('.IS_LOSE');
+                                //设备名称下拉框值改变事件，吧相关连的数据填充到表单中
+                                //$('#DEVICE_ID').on('change', function (e) {
+                                //    var value = e.target.value;
+                                //    if (value != null && value.length > 0) {
+                                //        var da = deviceSelect.find((va) => va.ID == value);
+                                //        if (da != null) {
+                                //            da.DEVICE_NAME = da.TEXT;
+                                //            da.DEVICE_CODE = da.VALUE;
+                                //            da.DEVICE_TYPE = da.EXTEND1;
+                                //            da.TYPE_NAME = da.EXTEND2;
+                                //            da.DEPT_NAME = da.EXTEND3;
+                                //            app.form.fillFromData('#detail_bg', da);
+                                //        }
+                                //    }
+                                //});
+                                if (aud == "0") {
+                                    createCalendar('#BEGIN_DATE');
+                                    createCalendar('#END_DATE');
+                                }
+                                if (showBtn == 1) {
+                                    $("#menu").show();
+                                } else {
+                                    $("#menu").hide();
+                                }
+                            }
+                        });
+                        //明细数据
+                        //$("#save").show();
+                        //$("#modify_list").show();
+                        //$("#modify_list2").show();
+                        //CreateSpDetail(ID);
+                        //CreatePepDetail(ID);
+                    }
+                }
+            }
+        });
         var aud;
         
         //时间
