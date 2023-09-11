@@ -303,22 +303,22 @@
 
                                                                                    </div>
                                                                                     <div id="tab-2" class="page-content tab">
-                                                                                           <div class="list" id="modify_bg">
+                                                                                           <div class="list" id="modify_bg1">
                                                                                               dddd
                                                                                            </div>
                                                                                      </div>
                                                                                     <div id="tab-3" class="page-content tab">
-                                                                                           <div class="list" id="modify_bg">
+                                                                                           <div class="list" id="modify_bg2">
                                                                                            ddeee
                                                                                            </div>
                                                                                      </div>
                                                                                      <div id="tab-4" class="page-content tab">
-                                                                                           <div class="list" id="modify_bg">
+                                                                                           <div class="list" id="modify_bg3">
                                                                                            fff
                                                                                            </div>
                                                                                      </div>
                                                                                      <div id="tab-5" class="page-content tab">
-                                                                                          <div class="list" id="modify_bg">
+                                                                                          <div class="list" id="modify_bg4">
                                                                                           ggg
                                                                                           </div>
                                                                                     </div>
@@ -489,17 +489,17 @@
         function CreateShisList(ID) {
             var where = JSON.stringify({
                 op: 'and',
-                rules: [{ field: 'FAULT_ID', op: 'equal', value: ID }]
+                rules: [{ field: 'EXE_ID', op: 'equal', value: ID }]
             });
             app.ajax({
                 type: 'post',
                 data: { "where": where },
-                url: 'Device/RepFault/GetFaultPepList',
+                url: 'Device/PmInfo/GetPlandetList',
                 success: function (data) {
                     pepDataDetail = data.Rows;
                     // 清单
-                    var str = app.CreateListContentHtml(data.Rows, shisDetail, true);
-                    $("#modify_bg2").html(str);
+                    var str = app.CreateListContentHtml(data.Rows, shisList, true);
+                    $("#modify_bg1").html(str);
                     data.Rows.forEach((a) => {
                         $("#list-" + a.FAULT_LABOR_ID).click(function () {
                             detail_pep_popup.params = { "FAULT_LABOR_ID": a.FAULT_LABOR_ID, "FAULT_ID": a.FAULT_ID, };
