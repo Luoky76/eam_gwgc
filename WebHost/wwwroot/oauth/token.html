@@ -19,7 +19,7 @@
                     dataType: 'json',
                     jsToken: true,
                     _toLogin: true,
-                    url: 'oauth/token',
+                    url: 'oauth/generateToken',
                     success: function (result) {
                         if (result.IsError) {
                             location.href = "../login.html?FromUrl=" + encodeURIComponent(location.href);

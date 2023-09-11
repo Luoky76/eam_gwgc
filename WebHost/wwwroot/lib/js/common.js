@@ -339,7 +339,7 @@
             delete jqXHR.orginOpt;
             jqXHR.orginOpt = $.extend(true, {}, opt);
         }
-        opt.url = gksybConfigs.getUrl(opt.url || "");
+        if (opt.skipUrlHandle !== true) opt.url = gksybConfigs.getUrl(opt.url || "");
         window.setGksybToken(jqXHR);
         var contentType = (opt.contentType || "").toLocaleLowerCase();
         var isJson = contentType.indexOf("application/json") >= 0;

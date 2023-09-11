@@ -103,10 +103,10 @@ namespace Gksyb.Server.Services.Auth
         private async Task Handle(CF_CORP entity)
         {
             var isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CORP_SNAME == entity.CORP_SNAME)
-                .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID == entity.CORPID).AnyAsync();
+                .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID != entity.CORPID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在组织简称{entity.CORP_SNAME}");
             isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CNO == entity.CNO)
-                .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID == entity.CORPID).AnyAsync();
+                .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID != entity.CORPID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在组织代码{entity.CNO}");
         }
     }

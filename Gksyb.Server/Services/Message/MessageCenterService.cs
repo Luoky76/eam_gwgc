@@ -72,7 +72,7 @@ namespace Gksyb.Server.Services.Message
                 info.DialogMode = model.DIALOG_MODE;
                 info.DialogType = model.DIALOG_TYPE;
                 info.AutoReaded = model.AUTO_READED;
-                info.MsgGroup = model.GROUP;
+                info.MsgGroup = model.MSG_GROUP;
                 info.Template = model.TEMPLATE;
                 info.Href = string.IsNullOrWhiteSpace(info.Href) ? model.MSG_HREF : info.Href;
                 info.MobileHref = string.IsNullOrWhiteSpace(info.MobileHref) ? model.MSG_MOBILE_HREF : info.MobileHref;
