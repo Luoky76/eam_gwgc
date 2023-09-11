@@ -1,10 +1,543 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <title></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>维保实施</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
 </head>
-<body>
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">维保实施</div>
 
-</body>
-</html>
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search" placeholder="请输入..." id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <div id="pmplanexe_list">
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+
+                        <button class="button" id="sumbit">
+                            提交
+                        </button>
+                        <button class="button button-large button-fill" id="writeresult" style="background-color: red">填写实施结果</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var formdata;
+        var formDataDetail;
+        var business = {
+            bySource :[],//来源
+            maintDept :[],
+            pmType :[],
+            deviceSelect :[],
+            workState :[],
+            maintCycle :[],
+            storeSou: [],
+            isLose: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
+            auditingData: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
+            //主列表
+            ListDict: [
+                { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+                { display: "记录状态", name: "AUDITING_EXE" },
+                { display: "保养实施单号", name: "EXE_CODE" },
+                { display: "设备编号", name: "DEVICE_CODE" },
+                { display: "设备名称", name: "DEVICE_NAME" },
+                { display: "维保部门", name: "SHIP_DEPT" },
+                { display: "保养计划单号", name: "PLAN_CODE" },
+            ],
+            //获取主列表的数据
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/PmInfo/GetPmExeList',
+                    success: function (data) {
+                       
+                        me.list = data.Rows;
+                        data.Rows.forEach((a) => {
+                            a.AUDITING_EXE = me.auditingData.find((v) => v.ID == a.AUDITING_EXE).TEXT;
+                            //a.FAULT_STATUS = faultStatus.find((v) => v.ID == a.FAULT_STATUS).TEXT;
+                        });
+                        //渲染主列表的html
+                        var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
+                        $("#pmplanexe_list").html(str);
+                        //绑定列表项的点击事件
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.EXE_ID).click(function () {
+                                //popupOpen(a.EXE_ID, 0);
+                                Info_popup.params = { "EXE_ID": a.EXE_ID, "UPDATE": 0 };
+                                Info_popup.open();
+                            });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            //获取下拉框数据暂时不用后面再加
+            getCombox: function () {
+                var me = this;
+                //获取来源
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/PmInfo/ComboxData',
+                    success: function (data) {
+                        
+                        data.deviceInfo.forEach((a) => {
+                            var code = a.VALUE.length > 0 ? '(' + a.VALUE + ')' : "";
+                            me.deviceSelect.push({ "ID": a.ID, "TEXT": a.TEXT + code, "VALUE": a.EXTEND1 });
+                        });
+                        me.bySource = data.bySource;
+                        me.maintDept = data.maintDept;
+                        me.pmType = data.pmType;
+                        me.workState = data.workState;
+                        me.maintCycle = data.maintCycle;
+                        me.storeSou = data.storeSou;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.getCombox();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+            //搜索功能
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+            //页面主列表的按钮事件
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                });
+                //填写实施结果弹出框
+                $('#writeresult').on('click', function (e) {
+                    var checkDom = $("#pmplanexe_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ EXE_ID: x.value });
+                    });
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点填写实施结果", function () { });
+                        return false;
+                    } else if (checkedIDList.length > 1) {
+                        app.dialog.error("只能勾选一项进行填写实施结果", function () { });
+                        return false;
+                    }
+                    var aut = me.list.find((v) => v.EXE_ID == checkedIDList[0].EXE_ID).AUDITING_EXE;
+                    if (aut == "已提交") {
+                        app.dialog.error("已提交，无法填写!", function () { });
+                        flag = false;
+                        return false;
+                    }
+                    Info_popup.params = { "EXE_ID": checkedIDList[0].EXE_ID, "UPDATE": 1 };
+                    Info_popup.open();
+                });
+                //提交事件
+                $("#sumbit").click(function () {
+                    var checkDom = $("#pmplanexe_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ EXE_ID: x.value });
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        
+                        var aut = me.list.find((v) => v.EXE_ID == a.EXE_ID).AUDITING_EXE;
+                        if (aut == "已提交") {
+                            app.dialog.error("已提交，无法再次提交!", function () { });
+                            flag = false;
+                            return false;
+                        }
+                    });
+                    if (flag) {
+                        var sids = [];
+                        checkedIDList.forEach((a) => {
+                            sids.push(a.EXE_ID)
+                        });
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+                            app.ajax({
+                                type: 'post',
+                                data: {
+                                    "sids": sids
+                                },
+                                url: 'Device/PmInfo/SubmitPmExe',
+                                success: function () {
+                                    business.getData();
+                                }
+                            });
+                        });
+                    }
+                });
+            }
+        };
+        business.init();
+
+        //编辑第一块去对象
+        var pmPlanexeInfo = [
+            { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: true, isPrimaryKey: true, isShow: false },
+            { display: "记录状态", name: "AUDITING_EXE", readOnly: true },
+            { display: "保养实施单号", name: "EXE_CODE", readOnly: true },
+            { display: "保养计划单号", name: "PLAN_CODE", readOnly: true },
+            { display: "保养来源", name: "SOURCE", Option: business.bySource },
+            { display: "设备名称", name: "DEVICE_ID", Option: business.deviceSelect, readOnly: true },
+            { display: "设备编号", name: "DEVICE_CODE", readOnly: true },
+            { display: "设备型号", name: "DEVICE_TYPE", readOnly: true },
+            { display: "资产编号", name: "ASSET_CODE", readOnly: true },
+            { display: "安装地点", name: "INSTALL_SITE", readOnly: true },
+            { display: "维护类别", name: "PM_TYPE", Option: business.pmType, readOnly: true },
+            { display: "计划完成时间", name: "PLAN_FINISH_TIME", readOnly: true },
+            { display: "计划编制人", name: "EDIT_USER", readOnly: true },
+            { display: "使用部门", name: "DEPT_NAME", readOnly: true },
+            { display: "维保部门", name: "WDEPT_ID", Option: business.maintDept,  readOnly: true },
+            { display: "保养负责人", name: "EXE_USER", readOnly: true },
+            { display: "是否有遗留问题", name: "IS_LOSE", Option: business.isLose, validate: { required: true } },
+            { display: "遗留问题描述", name: "LEG_DESC" },
+            { display: "备注", name: "MEMO" },
+            { display: "保养开始时间", name: "BEGIN_DATE", readOnly: true, validate: { required: true } },
+            { display: "保养结束时间", name: "END_DATE", readOnly: true, validate: { required: true } },
+        ];
+
+        
+
+        var Info_popup = app.popup.create({
+            content: `
+                                                                     <div class="popup answersheet">
+                                                                         <div class="view">
+                                                                             <div class="page">
+                                                                                 <div class="navbar">
+                                                                                     <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                         <div class="left link popup-close">
+                                                                                             <i class="f7-icons">arrow_left</i>
+                                                                                         </div>
+                                                                                         <div class="title">维保实施</div>
+                                                                                     </div>
+                                                                                 </div>
+                                                                                 <div class="toolbar tabbar toolbar-top">
+                                                                                     <div class="toolbar-inner" style="
+                                                                                         --f7-tabbar-link-active-border-color: #fff;
+                                                                                         --f7-tabbar-link-active-color: black;
+                                                                                         --f7-tabbar-link-active-bg-color: white;
+                                                                                         --f7-tabbar-link-inactive-color: black;
+                                                                                         background-color: rgb(236, 235, 235);
+                                                                                  ">
+                                                                                         <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">详情</a>
+                                                                                         <a href="#tab-2" class="tab-link" id="modify_list">实施</a>
+                                                                                         <a href="#tab-3" class="tab-link" id="modify_list2">物资</a>
+                                                                                         <a href="#tab-4" class="tab-link" id="modify_list3">人员</a>
+                                                                                         <a href="#tab-5" class="tab-link" id="modify_list4">作业</a>
+                                                                                     </div>
+                                                                                 </div>
+                                                                                 <div class="tabs">
+                                                                                   <div id="tab-1" class="page-content tab tab-active">
+                                                                                     <div class="list inline-labels no-hairlines-md">
+                                                                                         <form class="list" id="detail_bg"></form>
+                                                                                     </div>
+
+                                                                                   </div>
+                                                                                    <div id="tab-2" class="page-content tab">
+                                                                                           <div class="list" id="modify_bg">
+                                                                                              dddd
+                                                                                           </div>
+                                                                                     </div>
+                                                                                    <div id="tab-3" class="page-content tab">
+                                                                                           <div class="list" id="modify_bg">
+                                                                                           ddeee
+                                                                                           </div>
+                                                                                     </div>
+                                                                                     <div id="tab-4" class="page-content tab">
+                                                                                           <div class="list" id="modify_bg">
+                                                                                           fff
+                                                                                           </div>
+                                                                                     </div>
+                                                                                     <div id="tab-5" class="page-content tab">
+                                                                                          <div class="list" id="modify_bg">
+                                                                                          ggg
+                                                                                          </div>
+                                                                                    </div>
+                                                                                 </div>
+                                                                                 <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
+                                                                                     <div class="toolbar-inner">
+                                                                                         <button class="col button button-large button-fill" id="save" >保存</button>
+                                     
+                                                                                     </div>
+                                                                                 </div>
+                                                                                 
+                                                                                 
+                                                                             </div>
+                                                                         </div>
+                                                                     </div>`
+            ,
+            on: {
+                open: function () {
+                    debugger
+                    var me = this;
+                    var ID = me.params.EXE_ID;
+                    var showBtn = me.params.UPDATE;
+                    //保存事件
+                    $("#save").off('click').click(function () {
+                        debugger;
+                        let data = app.form.convertToData("#detail_bg");
+                        data.EXE_ID = ID;
+
+                        if (data.IS_LOSE == null || data.IS_LOSE == '') {
+                            app.dialog.error("请选择是否有遗留问题");
+                            return
+                        }
+                        //判断时间
+                        var startDate = data.BEGIN_DATE;
+                        var completeDate = data.END_DATE;
+                        
+
+                        if (!startDate || !completeDate) {
+                            app.dialog.error("保养开始时间保养结束时间不能为空！请重新选择！");
+                            return;
+                        }
+
+                        if (startDate >= completeDate) {
+                           
+                            app.dialog.error("保养开始时间能大于保养结束时间！请重新选择！");
+                            return;
+                        }
+
+                 
+                        var AddRow = new Object();
+                        if (ID) {
+                            data.AUDITING_EXE = "0";
+                           
+                            AddRow["Updated"] = [data];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+                        AddRow["Original"] = [formdata];
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/PmInfo/ManagePmExe',
+                            success: function (data) {
+                                //if (ID) {
+                                //    $("#modify_list").click();
+                                //} else {
+                                //    Info_popup.close();
+                                //}
+                                Info_popup.close();
+                                //实施的html
+                                //business.getData();
+                            }
+                        });
+                    });
+                    if (ID) {
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "ID": ID
+                            },
+                            url: 'Device/PmInfo/GetPmPlanListDetail',
+                            success: function (data) {
+                                aud = data.AUDITING_EXE;
+                                var str = "";
+                                formdata = data;
+                                me.detail = data;
+                                me.detail.AUDITING_EXE = business.auditingData.find((v) => v.ID == me.detail.AUDITING_EXE).TEXT;
+                                var detailInfo = me.detail.AUDITING_EXE == "未提交" ? pmPlanexeInfo : pmPlanexeInfo.map(function (item) {
+                                    return { ...item, readOnly: true };
+                                });
+                                str = app.CreatePopupContentHtml(detailInfo);
+                                $("#detail_bg").html(str);
+
+                                app.form.fillFromData('#detail_bg', me.detail);
+                                //showBtn(data.AUDITING_EXE == "未提交");
+                                //设备名称下拉框html
+                                createSmartSelect('.DEVICE_ID');
+                                //保养来源
+                                createSmartSelect('.SOURCE');
+                                //维护类别
+                                createSmartSelect('.PM_TYPE');
+                                //维保部门
+                                createSmartSelect('.WDEPT_ID');
+                                //是否有遗留问题
+                                createSmartSelect('.IS_LOSE');
+                                //设备名称下拉框值改变事件，吧相关连的数据填充到表单中
+                                //$('#DEVICE_ID').on('change', function (e) {
+                                //    var value = e.target.value;
+                                //    if (value != null && value.length > 0) {
+                                //        var da = deviceSelect.find((va) => va.ID == value);
+                                //        if (da != null) {
+                                //            da.DEVICE_NAME = da.TEXT;
+                                //            da.DEVICE_CODE = da.VALUE;
+                                //            da.DEVICE_TYPE = da.EXTEND1;
+                                //            da.TYPE_NAME = da.EXTEND2;
+                                //            da.DEPT_NAME = da.EXTEND3;
+                                //            app.form.fillFromData('#detail_bg', da);
+                                //        }
+                                //    }
+                                //});
+                                if (aud == "0") {
+                                    createCalendar('#BEGIN_DATE');
+                                    createCalendar('#END_DATE');
+                                }
+                                if (showBtn == 1) {
+                                    $("#menu").show();
+                                } else {
+                                    $("#menu").hide();
+                                }
+                            }
+                        });
+                        //明细数据
+                        //$("#save").show();
+                        //$("#modify_list").show();
+                        //$("#modify_list2").show();
+                        //CreateSpDetail(ID);
+                        //CreatePepDetail(ID);
+                    }
+                }
+            }
+        });
+
+        //保养实施明细列表
+        var shisList = [
+            { display: "主键", name: "DONEITEM_ID", PrimaryKey: "DONEITEM_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "保养计划附件", name: "ATTACH_PLAN"},
+            { display: "标准编号", name: "STD_CODE"},
+            { display: "保养项目", name: "OBJECT_NAME"},
+            { display: "保养内容", name: "CONTENT"},
+            { display: "保养类型", name: "STD_LEVEL"},
+        ];
+        //保养实施明细
+        var shisDetail = [
+            { display: "主键", name: "DONEITEM_ID", PrimaryKey: "DONEITEM_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "完成情况", name: "COMPLETE", Option: business.complete, validate: { required: true } },
+            { display: "附件材料", name: "ATTACH_EXE", readOnly: true },
+            { display: "保养计划附件", name: "ATTACH_PLAN", readOnly: true },
+            { display: "标准编号", name: "STD_CODE", readOnly: true },
+            { display: "保养项目", name: "OBJECT_NAME", readOnly: true },
+            { display: "保养内容", name: "CONTENT", readOnly: true },
+            { display: "保养类型", name: "STD_LEVEL", readOnly: true },
+        ];
+        //保养实施明细列表
+        function CreateShisList(ID) {
+            var where = JSON.stringify({
+                op: 'and',
+                rules: [{ field: 'FAULT_ID', op: 'equal', value: ID }]
+            });
+            app.ajax({
+                type: 'post',
+                data: { "where": where },
+                url: 'Device/RepFault/GetFaultPepList',
+                success: function (data) {
+                    pepDataDetail = data.Rows;
+                    // 清单
+                    var str = app.CreateListContentHtml(data.Rows, shisDetail, true);
+                    $("#modify_bg2").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.FAULT_LABOR_ID).click(function () {
+                            detail_pep_popup.params = { "FAULT_LABOR_ID": a.FAULT_LABOR_ID, "FAULT_ID": a.FAULT_ID, };
+                            detail_pep_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_pep_popup.close();
+                            })
+                        })
+                    });
+                }
+            });
+
+        };
+
+        var aud;
+        
+        //时间
+        function createCalendar(inputId) {
+            app.calendar.create({
+                inputEl: inputId,
+                timePicker: true,
+                dateFormat: 'yyyy-mm-dd HH::mm:ss',
+            });
+        };
+        //选择器
+        function createSmartSelect(elSelector) {
+            app.smartSelect.create({
+                el: elSelector,
+                on: {
+                    beforeOpen: function (smartSelect, prevent) {
+                        if (aud != "0") {
+                            prevent();
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body >
+
+</html >
