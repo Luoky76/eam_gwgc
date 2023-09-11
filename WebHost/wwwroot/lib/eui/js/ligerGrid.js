@@ -12,6 +12,9 @@
         if (usePager === false) {
             p.dataAction = "local";
         }
+        var size = $.ligerui.getScrollbarSize();
+        if (p.scrollWidth === undefined) p.scrollWidth = size.width;
+        if (p.scrollHeight === undefined) p.scrollHeight = size.height;
         return $.ligerui.run.call(this, "ligerGrid", arguments);
     };
 
@@ -44,6 +47,9 @@
         switchPageSizeApplyComboBox: false, //切换每页记录数是否应用ligerComboBox
         allowAdjustColWidth: true, //是否允许调整列宽
         checkbox: true, //是否显示复选框
+        frozenCheckbox: true, //复选框按钮是否在固定列中
+        checkboxColWidth: 40, //复选框列宽度
+        checkboxIndex: 2, //复选框列位置
         isSingleCheck: false, //复选框选择的时候是否单选模式
         isMultiSelect: null, //点击行进行多选 默认只有点击checkbox多选
         allowHideColumn: true, //是否显示'切换列层'按钮
@@ -91,8 +97,6 @@
         whenRClickToSelect: false, //右击行时是否选中
         ajaxOptions: null,//ajax扩展属性
         contentType: null, //Ajax contentType参数
-        checkboxColWidth: 40, //复选框列宽度
-        detailColWidth: 40, //明细列宽度
         clickToEdit: true, //是否点击单元格的时候就编辑
         detailToEdit: false, //是否点击明细的时候进入编辑
         onEndEdit: null,
@@ -103,15 +107,17 @@
         isChecked: null, //复选框 初始化函数
         isSelected: null, //选择 初始化函数
         frozen: false, //是否固定列
+        detail: null, //明细列
         frozenDetail: false, //明细按钮是否在固定列中
-        frozenCheckbox: true, //复选框按钮是否在固定列中
-        detail: null,
+        detailColWidth: 40, //明细列宽度
+        detailIndex: 3, //明细列位置
         detailHeight: 260,
         isShowDetailToggle: null, //是否显示展开/收缩明细的判断函数
         rownumbers: false, //是否显示行序号
         frozenRownumbers: true, //行序号是否在固定列中
-        rownumbersColWidth: 40,
+        rownumbersColWidth: 40, //序号列宽度
         rownumbersName: "#", //序号列名称
+        rownumbersIndex: 1,//序号列位置
         colDraggable: true, //是否允许表头拖拽
         rowDraggable: false, //是否允许行拖拽
         rowDraggingRender: null,
@@ -206,6 +212,7 @@
         isSort: false,
         type: null,
         columns: null,//多级表头
+        frozen: false, //浮动 true false right
         width: 120,
         minWidth: 80, //最小宽度
         maxWidth: null, //最大宽度

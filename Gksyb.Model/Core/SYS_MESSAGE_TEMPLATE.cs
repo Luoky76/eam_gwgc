@@ -51,7 +51,7 @@ namespace Gksyb.Model.Core
         /// </summary>
         [Description("所属组")]
         [Column(DbType = DbType.AnsiString, Size = 200)]
-        public string GROUP { get; set; }
+        public string MSG_GROUP { get; set; }
 
         /// <summary>
         /// 消息类型（Message:站内信,Weixin:微信,Sms:短信）

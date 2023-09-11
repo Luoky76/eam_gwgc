@@ -3,6 +3,7 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Gksyb.Server.Controllers.Auth.Dtos;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
@@ -87,7 +88,7 @@ namespace Gksyb.Server.Services.Auth
                 UserName = model.APPID,
                 RealName = model.NAME,
                 IsApi = true,
-                Group = model.INFORMATION,
+                Group = model.INFORMATION ?? "",
                 Roles = new List<string>(),
                 IP = request.IP,
                 UserAgent = request.UA,
@@ -115,7 +116,7 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 生成token
         /// </summary>
-        public async Task<string> TokenAsync()
+        public async Task<string> GenerateTokenAsync()
         {
             var token = Guid.NewGuid().ToString("N");
             await _distributedCache.SetStringAsync(token, _user.UserName, new DistributedCacheEntryOptions()
@@ -128,8 +129,9 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 获取ticket
         /// </summary>
-        public async Task<string> TicketAsync(string name)
+        public async Task<string> TicketAsync(TokenRequest request)
         {
+            var name = request.Account;
             var query = _dbContext.Query<CF_USER>();
             if (name.IsMobileNumber())
             {
@@ -142,8 +144,9 @@ namespace Gksyb.Server.Services.Auth
             var list = await query.Where(c => c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).ToListAsync();
             MessageException.ThrowIf(list.Count < 1, $"找不到用户{name}");
             var model = list.FirstOrDefault(c => c.Phone == name) ?? list.FirstOrDefault(c => c.WorkerCode == name) ?? list.FirstOrDefault();
+            request.Account = model.Account;
             var ticket = Guid.NewGuid().ToString("N");
-            await _distributedCache.SetStringAsync(ticket, model.Account, new DistributedCacheEntryOptions()
+            await _distributedCache.SetAsync(ticket, request, new DistributedCacheEntryOptions()
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ShortExpiration)
             });
@@ -208,7 +211,7 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 检查
         /// </summary>
-        public async Task<SYS_OAUTH> Check(OAuthRequest<string> request)
+        public async Task<SYS_OAUTH> Check<T>(OAuthRequest<T> request)
         {
             var model = await _dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == request.AppId && c.FLAG == "1").FirstOrDefaultAsync();
             MessageException.ThrowIf(model == null, $"找不到{request.AppId}的记录");

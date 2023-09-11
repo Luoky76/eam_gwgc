@@ -38,7 +38,7 @@ namespace Gksyb.Common
             };
         }
 
-        public static new AjaxResult<T> Success(object data = default, string message = default)
+        public static new AjaxResult<T> Success(object data = default, string message = "成功")
         {
             return new AjaxResult<T>()
             {

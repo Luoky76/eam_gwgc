@@ -633,28 +633,35 @@
     //下载文件
     LG.download = function (p) {
         var url = p.url || p.server || "";
-        if (url.indexOf(".") >= 0) {
+        var isFile = url.indexOf(".") >= 0;
+        if (isFile && !p.filename) {
             window.open(url);
             return;
         }
         p.url = url;
         $.ajax($.extend(true, {
-            type: 'post',
+            noGlobal: isFile ? true : undefined,
+            skipUrlHandle: isFile ? true : undefined,
+            type: isFile ? 'get' : 'post',
             async: true,
             xhrFields: {
                 responseType: 'blob'
             },
             success: function (data, status, xhr) {
-                var name = xhr.getResponseHeader("Content-disposition");
-                var match = name.match(new RegExp("filename\\*=[^\&]+\'\'([^\&]+)", "i"));
-                if (!match || match.length < 1) {
-                    match = name.match(new RegExp("filename=([^\&]+);", "i"));
+                var filename = p.filename;
+                if (!filename) {
+                    var name = xhr.getResponseHeader("Content-disposition") || "";
+                    var match = name.match(new RegExp("filename\\*=[^\&]+\'\'([^\&]+)", "i"));
+                    if (!match || match.length < 1) {
+                        match = name.match(new RegExp("filename=([^\&]+);", "i"));
+                    }
+                    if (!match || match.length < 1) {
+                        LG.showError("文件名获取失败");
+                        return;
+                    }
+                    filename = decodeURIComponent(match[1]);
                 }
-                if (!match || match.length < 1) {
-                    LG.showError("文件名获取失败");
-                    return;
-                }
-                liger.saveAs(data, decodeURIComponent(match[1]));
+                liger.saveAs(data, filename);
             }
         }, p));
     }

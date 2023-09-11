@@ -105,7 +105,7 @@ namespace Gksyb.Server.Services.Auth
                 c.CorpStation = corps.ToDictionary(c => c.CORPID, c => c.REMARK);
                 if (hasWeixin)
                 {
-                    c.QQ = ports.Any(a => a.OPTYPE == _weixinType) ? "1" : "0";
+                    c.QQ = ports.Where(a => a.OPTYPE == _weixinType).Select(a => a.CORPID).FirstOrDefault();
                 }
             }
             return data;

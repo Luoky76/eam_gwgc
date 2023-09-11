@@ -22,7 +22,7 @@ namespace Gksyb.Server.Services.Message
         /// <returns></returns>
         public async Task<AjaxResult> TreeAsync()
         {
-            var list = await _dbContext.Query<SYS_MESSAGE_TEMPLATE>().Select(c => c.GROUP).Distinct().ToListAsync();
+            var list = await _dbContext.Query<SYS_MESSAGE_TEMPLATE>().Select(c => c.MSG_GROUP).Distinct().ToListAsync();
             var data = list.DistinctAndOrderBy().Select(c => new
             {
                 ID = c,
@@ -53,7 +53,7 @@ namespace Gksyb.Server.Services.Message
         public async Task<AjaxResult> Save(SaveRequest<SYS_MESSAGE_TEMPLATE> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.CODE, c.NAME, c.TEMPLATE, c.GROUP, c.MSG_TYPE, c.DIALOG_MODE, c.DIALOG_TYPE, c.AUTO_READED, c.NOTICE_TYPE, c.NOTICE_USERS, c.MSG_HREF, c.MSG_MOBILE_HREF },
+                c => new { c.CODE, c.NAME, c.TEMPLATE, c.MSG_GROUP, c.MSG_TYPE, c.DIALOG_MODE, c.DIALOG_TYPE, c.AUTO_READED, c.NOTICE_TYPE, c.NOTICE_USERS, c.MSG_HREF, c.MSG_MOBILE_HREF },
                 c => a => a.ID == c.ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, true);
         }
