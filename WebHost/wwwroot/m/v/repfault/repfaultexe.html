@@ -62,6 +62,7 @@
     </div>
     <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
     <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
     <script type="text/javascript" id="scriptBlock">
         'use strict';
         var formdata;
@@ -81,6 +82,7 @@
         var repType = [];
         var faultSrc = [];
         var spid = [];
+        var attachList = [];
         var business = {
             auditingData: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             ListDict: [
@@ -232,7 +234,6 @@
 
                     var flag = true;
                     checkedIDList.forEach((a) => {
-                        debugger
                         var aut = me.list.find((v) => v.FAULT_ID == a.FAULT_ID).AUDITING_B;
                         if (aut == "已提交") {
                             app.dialog.error("已提交不能删除", function () { });
@@ -302,7 +303,7 @@
             { display: "维保部门", name: "WDEPT_ID", Option: maintDept, validate: { required: true } },
             { display: "上报人", name: "EDIT_USER", readOnly: true },
             { display: "故障现象描述", name: "FAULT_DESCRIBE" },
-            { display: "", name: "" },
+            { display: "", name: "", readOnly: true },
             { display: "处理方式", name: "DISPOSE_TYPE", Option: disposeType, validate: { required: true } },
             { display: "故障分类", name: "REP_TYPE_ID", Option: repType, validate: { required: true } },
             { display: "故障库编码", name: "FRDB_CODE" },
@@ -312,7 +313,7 @@
             { display: "故障及解决方法描述", name: "FAULT_REASON", validate: { required: true } },
             { display: "解决方法", name: "MEASURES", validate: { required: true } },
             { display: "故障处理备注", name: "FAULT_MEMO" },
-            { display: "添加图片", name: "" },
+            { display: "附件", name: "IMG", readOnly: true },
         ];
         var repFaultInfoEdit = [
             { display: "主键", name: "FAULT_ID", PrimaryKey: "FAULT_ID", readOnly: true, isPrimaryKey: true, isShow: false },
@@ -343,71 +344,73 @@
         //处理信息
         var Info_popup = app.popup.create({
             content: `
-                                                                            <div class="popup answersheet">
-                                                                                <div class="view">
-                                                                                    <div class="page">
-                                                                                        <div class="navbar">
-                                                                                            <div class="navbar-inner" style="background-color:rgb(0,125,255);">
-                                                                                                <div class="left link popup-close">
-                                                                                                    <i class="f7-icons">arrow_left</i>
+                                                                                <div class="popup answersheet">
+                                                                                    <div class="view">
+                                                                                        <div class="page">
+                                                                                            <div class="navbar">
+                                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                    <div class="left link popup-close">
+                                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                                    </div>
+                                                                                                    <div class="title">故障处理</div>
                                                                                                 </div>
-                                                                                                <div class="title">故障处理</div>
                                                                                             </div>
-                                                                                        </div>
-                                                                                        <div class="toolbar tabbar toolbar-top">
-                                                                                            <div class="toolbar-inner" style="
-                                                                                                --f7-tabbar-link-active-border-color: #fff;
-                                                                                                --f7-tabbar-link-active-color: black;
-                                                                                                --f7-tabbar-link-active-bg-color: white;
-                                                                                                --f7-tabbar-link-inactive-color: black;
-                                                                                                background-color: rgb(236, 235, 235);
-                                                                                         ">
-                                                                                                <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">处理详情</a>
-                                                                                                <a href="#tab-2" class="tab-link" id="modify_list">物资</a>
-                                                                                                <a href="#tab-3" class="tab-link" id="modify_list2">人员</a>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="tabs">
-                                                                                          <div id="tab-1" class="page-content tab tab-active">
-                                                                                            <div class="list inline-labels no-hairlines-md">
-                                                                                                <form class="list" id="detail_bg"></form>
-                                                                                            </div>
-
-                                                                                          </div>
-
-                                                                                          <div id="tab-2" class="page-content tab">
-
-                                                                                                <div class="list" id="modify_bg">
+                                                                                            <div class="toolbar tabbar toolbar-top">
+                                                                                                <div class="toolbar-inner" style="
+                                                                                                    --f7-tabbar-link-active-border-color: #fff;
+                                                                                                    --f7-tabbar-link-active-color: black;
+                                                                                                    --f7-tabbar-link-active-bg-color: white;
+                                                                                                    --f7-tabbar-link-inactive-color: black;
+                                                                                                    background-color: rgb(236, 235, 235);
+                                                                                             ">
+                                                                                                    <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">处理详情</a>
+                                                                                                    <a href="#tab-2" class="tab-link" id="modify_list">物资</a>
+                                                                                                    <a href="#tab-3" class="tab-link" id="modify_list2">人员</a>
                                                                                                 </div>
-                                                                                          </div>
-                                                                                          <div id="tab-3" class="page-content tab">
-
-                                                                                                <div class="list" id="modify_bg2">
+                                                                                            </div>
+                                                                                            <div class="tabs">
+                                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                                    <form class="list" id="detail_bg">
+                                                                                                    
+                                                                                                    </form>
                                                                                                 </div>
-                                                                                          </div>
-                                                                                        </div>
-                                                                                        <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
-                                                                                            <div class="toolbar-inner">
-                                                                                                <button class="col button button-large button-fill" id="save" >保存</button>
-                                                                                                <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
-                                                                                                <button class="col button button-large button-fill" id="attach" style="background-color: red">上传附件</button>
+
+                                                                                              </div>
+
+                                                                                              <div id="tab-2" class="page-content tab">
+
+                                                                                                    <div class="list" id="modify_bg">
+                                                                                                    </div>
+                                                                                              </div>
+                                                                                              <div id="tab-3" class="page-content tab">
+
+                                                                                                    <div class="list" id="modify_bg2">
+                                                                                                    </div>
+                                                                                              </div>
                                                                                             </div>
-                                                                                        </div>
-                                                                                        <div class="toolbar toolbar-bottom " id="menu2" style="display: none;">
-                                                                                            <div class="toolbar-inner">
-                                                                                                <button class="col button button-large button-fill" id="AddDetail" >新增</button>
-                                                                                                <button class="col button button-large button-fill" id="DeleteDetail" style="background-color: red">删除</button>
+                                                                                            <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
+                                                                                                <div class="toolbar-inner">
+                                                                                                    <button class="col button button-large button-fill" id="save" >保存</button>
+                                                                                                    <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                                                                                                    <button class="col button button-large button-fill" id="attach" style="background-color: red">上传附件</button>
+                                                                                                </div>
                                                                                             </div>
-                                                                                        </div>
-                                                                                        <div class="toolbar toolbar-bottom " id="menu3" style="display: none;">
-                                                                                            <div class="toolbar-inner">
-                                                                                                <button class="col button button-large button-fill" id="AddPepDetail" >新增</button>
-                                                                                                <button class="col button button-large button-fill" id="DeletePepDetail" style="background-color: red">删除</button>
+                                                                                            <div class="toolbar toolbar-bottom " id="menu2" style="display: none;">
+                                                                                                <div class="toolbar-inner">
+                                                                                                    <button class="col button button-large button-fill" id="AddDetail" >新增</button>
+                                                                                                    <button class="col button button-large button-fill" id="DeleteDetail" style="background-color: red">删除</button>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <div class="toolbar toolbar-bottom " id="menu3" style="display: none;">
+                                                                                                <div class="toolbar-inner">
+                                                                                                    <button class="col button button-large button-fill" id="AddPepDetail" >新增</button>
+                                                                                                    <button class="col button button-large button-fill" id="DeletePepDetail" style="background-color: red">删除</button>
+                                                                                                </div>
                                                                                             </div>
                                                                                         </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </div>`
+                                                                                </div>`
             ,
             on: {
                 open: function () {
@@ -532,6 +535,8 @@
                             },
                             url: 'Device/RepFault/ManageFaultExe',
                             success: function (data) {
+                                //处理附件
+                                submitAttach(data);
                                 if (ID) {
                                     $("#modify_list").click();
                                 } else {
@@ -600,9 +605,17 @@
                             });
                         })
                     });
-                    $("#attach").off('click').click(function () {
-                        uploadPhoto(this);
+                    $("#attach").off('click').click(function (e) {
+                        uploadPhoto(e);
                     });
+
+                    $(document).on('click', '.imgAdd', function () {
+                        $(this).remove();
+                        var currentId = $(this).attr('id')
+                        var index = currentId.slice(9)
+                        attachList.splice(index, 1)
+                    })
+
 
                     $("#AddDetail").click(function () {
                         //明细弹窗
@@ -665,8 +678,29 @@
                                     return { ...item, readOnly: true };
                                 });
                                 str = app.CreatePopupContentHtml(detailInfo);
-                                $("#detail_bg").html(str);
+                                str += `
+                                <li id="list-` + ID + `" style="list-style:none;">
+                                    <a href="#" class="item-link item-content">
+                                        <div class="weui-cells btdb">
+                                            <div class="weui-cell">`;
+                                str += `<div class="item-cell" >
+                                            <span id="imgSpan">
+                                            
+                                            </span>
+                                            </br></br></br></br>
+                                        </div>
+                                        </div>
+                                        </div>
+                                    </a>
+                                </li>`;
+                                var html = '';
 
+                                data.ImageSrcList.forEach(function (item) {
+                                    html += '<img src="' + item + '" width="100" style="padding-top:5px;padding-left:5px" class="imgAdd" />';
+                                });
+
+                                $("#detail_bg").html(str);
+                                $("#imgSpan").append(html);
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data.AUDITING_B == "未提交");
                                 createSmartSelect('.REPAIR_USERID');
@@ -770,6 +804,60 @@
                 }
             }
         });
+
+        function submitAttach(id) {
+            var requestObj = new Object;
+            var param = new Object;
+
+            if (attachList.length != 0) {
+
+                attachList.forEach((a) => {
+                    requestObj.formFile = a.formFile
+                    a.paramObj.dataId = id
+                    param = a.paramObj
+
+                    var formData = new FormData();
+                    formData.append("formFile", requestObj.formFile);
+                    formData.append("fileName", param.fileName);
+                    formData.append("dataId", param.dataId);
+                    formData.append("tableName", param.tableName);
+                    formData.append("attachField", param.attachField);
+
+                    app.ajax({
+                        //type: 'post',
+                        contentType: "multipart/form-data",
+                        url: 'attach/WXUpload',
+                        data: formData,
+                        success: function (data) {
+                            console.log("上传情况" + data)
+                        }
+                    })
+                })
+
+                //requestObj.parms = JSON2.stringify(param)
+
+
+
+                //for (var i = 0; i < attachList.length; i++) {
+
+                //}
+
+                ////请求批量附件接口
+                //var requestObj = new Object;
+                //requestObj.attachList = attachList;
+                //app.ajax({
+                //    type: 'post',
+                //    url: 'attach/UploadBatch',
+                //    data: { "attachRequest": requestObj },
+                //    success: function (data) {
+
+                //    }
+                //})
+
+            } else {
+                //alert("没有附件")
+            }
+        }
         //时间
         function createCalendar(inputId) {
             app.calendar.create({
@@ -946,33 +1034,33 @@
         ];
         var detail_popup = app.popup.create({
             content: `
-                                                                            <div class="popup answersheet"id ="detail_popup">
-                                                                                <div class="view" >
-                                                                                    <div class="page">
-                                                                                        <div class="navbar">
-                                                                                            <div class="navbar-inner" style="background-color:rgb(0,125,255);">
-                                                                                                <div class="left link popup-close">
-                                                                                                    <i class="f7-icons">arrow_left</i>
+                                                                                <div class="popup answersheet"id ="detail_popup">
+                                                                                    <div class="view" >
+                                                                                        <div class="page">
+                                                                                            <div class="navbar">
+                                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                    <div class="left link popup-close">
+                                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                                    </div>
+                                                                                                    <div class="title">清单详情</div>
                                                                                                 </div>
-                                                                                                <div class="title">清单详情</div>
                                                                                             </div>
-                                                                                        </div>
-                                                                                        <div class="tabs">
-                                                                                          <div id="tab-1" class="page-content tab tab-active">
-                                                                                            <div class="list inline-labels no-hairlines-md">
-                                                                                                <form class="list" id="detail_bg_detail">
-                                                                                                 </form>
+                                                                                            <div class="tabs">
+                                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                                    <form class="list" id="detail_bg_detail">
+                                                                                                     </form>
+                                                                                                </div>
+                                                                                              </div>
                                                                                             </div>
-                                                                                          </div>
-                                                                                        </div>
-                                                                                         <div class="toolbar toolbar-bottom" id="menuDetail">
-                                                                                            <div class="toolbar-inner">
-                                                                                                <button class="col button button-large button-fill" id="saveDetail" style="background-color: #2faa44">保存</button>
+                                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                                <div class="toolbar-inner">
+                                                                                                    <button class="col button button-large button-fill" id="saveDetail" style="background-color: #2faa44">保存</button>
+                                                                                                </div>
                                                                                             </div>
                                                                                         </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </div>`,
+                                                                                </div>`,
             on: {
                 open: function () {
                     var me = this;
@@ -1102,33 +1190,33 @@
         ];
         var detail_pep_popup = app.popup.create({
             content: `
-                                                                            <div class="popup answersheet"id ="detail_popup">
-                                                                                <div class="view" >
-                                                                                    <div class="page">
-                                                                                        <div class="navbar">
-                                                                                            <div class="navbar-inner" style="background-color:rgb(0,125,255);">
-                                                                                                <div class="left link popup-close">
-                                                                                                    <i class="f7-icons">arrow_left</i>
+                                                                                <div class="popup answersheet"id ="detail_popup">
+                                                                                    <div class="view" >
+                                                                                        <div class="page">
+                                                                                            <div class="navbar">
+                                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                    <div class="left link popup-close">
+                                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                                    </div>
+                                                                                                    <div class="title">人员详情</div>
                                                                                                 </div>
-                                                                                                <div class="title">人员详情</div>
                                                                                             </div>
-                                                                                        </div>
-                                                                                        <div class="tabs">
-                                                                                          <div id="tab-1" class="page-content tab tab-active">
-                                                                                            <div class="list inline-labels no-hairlines-md">
-                                                                                                <form class="list" id="detail_bg_pep">
-                                                                                                 </form>
+                                                                                            <div class="tabs">
+                                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                                    <form class="list" id="detail_bg_pep">
+                                                                                                     </form>
+                                                                                                </div>
+                                                                                              </div>
                                                                                             </div>
-                                                                                          </div>
-                                                                                        </div>
-                                                                                         <div class="toolbar toolbar-bottom" id="menuDetail">
-                                                                                            <div class="toolbar-inner">
-                                                                                                <button class="col button button-large button-fill" id="savePepDetail" style="background-color: #2faa44">保存</button>
+                                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                                <div class="toolbar-inner">
+                                                                                                    <button class="col button button-large button-fill" id="savePepDetail" style="background-color: #2faa44">保存</button>
+                                                                                                </div>
                                                                                             </div>
                                                                                         </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </div>`,
+                                                                                </div>`,
             on: {
                 open: function () {
                     var me = this;
@@ -1303,6 +1391,7 @@
                                         //var html = ' <li onclick="DangerReportPage.editPhoto(this)" data-imgUrl="' + src + '"   class="weui-uploader__file" style="background-image:url(' + showSrc + ')"></li>';
                                         var html = ' <img src="' + src + '" width="100" style="padding-top:5px;padding-left:5px" id="imgUpload' + index + '" class = "imgAdd" />'
                                         //$(even).siblings(".weui-uploader__files").prepend(html);
+                                        //$("#img").append(html);
                                         $("#imgSpan").append(html);
                                         resolve();
                                     }

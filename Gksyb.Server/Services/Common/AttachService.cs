@@ -217,6 +217,70 @@ namespace Gksyb.Server.Services.Common
             }
         }
 
+        public async Task<AjaxResult> WXUpload([FileOptions("gif,jpg,jpeg,bmp,png,pdf,xlsx,xls,doc,docx", 100)] IFormFile formFile, string newFileName, string tableName, string attachField, string dataId)
+        {
+
+            if (dataId.IsNullOrEmpty() || tableName.IsNullOrEmpty())
+            {
+                throw new Exception("未将附件绑定到项目！");
+            }
+
+            long fileSize = formFile.Length;
+            string fileType = formFile.ContentType;
+            string fileName = formFile.FileName;
+            string fileExtension = Regex.Match(formFile.FileName, @"\..+$").ToString().ToLower();
+            var oldfile = fileName.Split(".");
+            newFileName += $".{oldfile[1]}";
+
+            //以newFileName存入tableName文件夹
+            var path = await formFile.SaveAs(tableName, newFileName, true);
+
+            //var requestServices = Gksyb.Common.Static.HttpContext.Current.RequestServices;
+            //var webhost = requestServices.GetRequiredService<IWebHostEnvironment>();
+            var fullpath = _webhost.WebRootPath + path;
+
+            //if (!MimeHelper.GetMimeMapping(fileName).Contains("image")) throw new Exception("上传的附件不是图片格式的！请重新上传！");
+
+            //DateTime? sysdate = SysContext.Sysdate;
+            //SYS_ATTACH attach = new SYS_ATTACH();
+            //attach.ATTACH_ID = GuidHelper.NewSnowflakeId().ToString();
+            //attach.DATA_ID = dataId;
+            //attach.ATTACH_NAME = fileName;
+            //attach.ATTACH_FIELD = attachField;
+            //attach.ATTACH_PATH = filePath.Replace("\\", "/");
+            //attach.ATTACH_URLPATH = serverFilePath.Replace("\\", "/");
+            //attach.TABLE_NAME = tableName;
+            //attach.FILE_SIZE = fileSize;
+            //attach.CONTENT_TYPE = fileType;
+            //attach.ATTACH_TYPE = fileExtension;
+            //attach.UPLOAD_USER = SysContext.CurrentUserName;
+            //attach.UPLOAD_DATE = sysdate;
+            //attach.CREATEUSER = SysContext.CurrentUserName;
+            //attach.CREATEDATE = sysdate;
+
+            //dbTransaction.Insert<SYS_ATTACH>(attach);
+            await _dbContext.InsertAsync(() => new SYS_ATTACH()
+            {
+                attach_id = GuidHelper.NewShortId(),
+                data_id = dataId,
+                attach_name = fileName,
+                attach_field = attachField,
+                attach_path = fullpath.Replace("\\", "/"),
+                attach_urlpath = path.Replace("\\", "/"),
+                table_name = tableName,
+                file_size = fileSize,
+                content_type = fileType,
+                attach_type = fileExtension,
+                upload_user = CurrentUser.RealName,
+                upload_date = Sysdate,
+                createuser = CurrentUser.RealName,
+                createdate = Sysdate
+            });
+
+            return AjaxResult.Success(fileName, path);
+        }
+
+
         /// <summary>
         /// 获取数据库时间
         /// </summary>

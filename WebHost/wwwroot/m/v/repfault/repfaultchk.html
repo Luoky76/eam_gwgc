@@ -1,0 +1,609 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>故障验收</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">故障验收</div>
+
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search" placeholder="请输入..." id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <div id="repfault_list">
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <!--<button class="button" id="refresh">
+                            刷新
+                        </button>-->
+                        <button class="button button-large button-fill" id="Return" style="background-color: red">驳回</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var formdata;
+        var formDataDetail;
+        var pepDataDetail;
+        var userList = [];//人员
+        var SpList = []; //物资
+        var SpOrList = []; //物资原始数据
+        var faultStatus = [];
+        var disposeType = [];
+        var shipInfo = [];//船原始数据
+        var shipSelect = [];//船
+        var deviceSelect = [];//设备
+        var deviceInfo = [];//设备原始数据
+        var maintDept = [];
+        var deviceStatus = [];
+        var repType = [];
+        var faultSrc = [];
+        var spid = [];
+        var checkResult = [{ "ID": "1", "TEXT": "合格" }, { "ID": "0", "TEXT": "不合格" }];
+        var business = {
+            auditingData: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            ListDict: [
+                { display: "主键", name: "FAULT_ID", PrimaryKey: "FAULT_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+                { display: "记录状态", name: "AUDITING_D" },
+                { display: "验收结果", name: "CHECK_RESULT" },
+                { display: "故障状态", name: "FAULT_STATUS" },
+                { display: "故障单号", name: "FAULT_CODE" },
+                { display: "故障发生时间", name: "FAULT_DATE" },
+            ],
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/RepFault/GetFaultCheckList',
+                    success: function (data) {
+                        me.list = data.Rows;
+                        data.Rows.forEach((a) => {
+                            a.AUDITING_D = me.auditingData.find((v) => v.ID == a.AUDITING_D).TEXT;
+                            a.FAULT_STATUS = faultStatus.find((v) => v.ID == a.FAULT_STATUS).TEXT;
+                            if (a.CHECK_RESULT != null) {
+                                a.CHECK_RESULT = checkResult.find((v) => v.ID == a.CHECK_RESULT).TEXT;
+                            }
+                        });
+
+                        var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
+                        $("#repfault_list").html(str);
+
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.FAULT_ID).click(function () {
+                                popupOpen(a.FAULT_ID);
+                            });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            getCombox: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/RepFault/ComboxData',
+                    success: function (data) {
+                        data.shipInfo.forEach((a) => {
+                            var code = a.VALUE.length > 0 ? '(' + a.VALUE + ')' : "";
+                            shipSelect.push({ "ID": a.ID, "TEXT": a.TEXT + code, "VALUE": a.EXTEND });
+                        });
+                        data.deviceInfo.forEach((a) => {
+                            var code = a.VALUE.length > 0 ? '(' + a.VALUE + ')' : "";
+                            deviceSelect.push({ "ID": a.ID, "TEXT": a.TEXT + code, "VALUE": a.EXTEND1 });
+                        });
+                        faultStatus = data.faultStatus;
+                        maintDept = data.maintDept;
+                        shipInfo = data.shipInfo;
+                        deviceInfo = data.deviceInfo;
+                        disposeType = data.disposeType;
+                        deviceStatus = data.deviceStatus;
+                        repType = data.repType;
+                        faultSrc = data.faultSrc;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'popup/users',
+                    success: function (data) {
+                        data.forEach((a) => {
+                            var station = a.Station.length > 0 ? '(' + a.Station + ')' : "";
+                            userList.push({ "ID": a.Id, "TEXT": a.Name + station, "VALUE": a.Name });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/RepFault/ImportList',
+                    success: function (data) {
+                        data.Rows.forEach((a) => {
+                            var text = a.NUM ? '(库存数量:' + a.NUM + ')' : "";
+                            var id = a.NUM ? '_' + a.NUM : "";
+                            SpList.push({ "ID": a.SP_NAME + id, "TEXT": a.SP_NAME + text, "VALUE": a.SP_CODE });
+                            a.TEXT_ID = a.SP_NAME + id;
+                        });
+                        SpOrList = data.Rows;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+
+                me.getCombox();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                });
+
+                $("#Return").click(function () {
+                    var checkDom = $("#repfault_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push(x.value);
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点驳回", function () { });
+                        return false;
+                    }
+
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        var aut = me.list.find((v) => v.FAULT_ID == a).AUDITING_D;
+                        if (aut == "已提交") {
+                            app.dialog.error("已提交不能驳回", function () { });
+                            flag = false;
+                            return false;
+                        }
+                    });
+                    if (flag) {
+                        app.dialog.confirm('确定要驳回？', '驳回', function () {
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Device/RepFault/SubmitFaultUnCheck',
+                                data: {
+                                    "sids": checkedIDList
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("已驳回", function () {
+                                        business.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    }
+                });
+            }
+        };
+        business.init();
+
+        var aud;
+        function popupOpen(id) {
+            Info_popup.params = { "FAULT_ID": id };
+            Info_popup.open();
+            $("#popup-close").click(function () {
+                Info_popup.close();
+            });
+        }
+        var repFaultInfo = [
+            { display: "主键", name: "FAULT_ID", PrimaryKey: "FAULT_ID", readOnly: true, isPrimaryKey: true, isShow: false },
+            { display: "记录状态", name: "AUDITING_D", readOnly: true },
+            { display: "故障单号", name: "FAULT_CODE", readOnly: true },
+            { display: "故障状态", name: "FAULT_STATUS", readOnly: true, readOnly: true },
+            { display: "船舶名称", name: "SHIP_NAME", readOnly: true, },
+            { display: "船舶编码", name: "SHIP_CODE", isShow: false, readOnly: true },
+            { display: "故障发生时间", name: "FAULT_DATE", readOnly: true },
+            { display: "设备状态", name: "DEVICE_STATUS", readOnly: true },
+            { display: "故障设备名称", name: "DEVICE_NAME", readOnly: true },
+            { display: "设备编号", name: "DEVICE_CODE", readOnly: true },
+            { display: "设备型号", name: "DEVICE_TYPE", readOnly: true },
+            { display: "设备类别", name: "TYPE_NAME", readOnly: true },
+            { display: "异常来源", name: "FAULT_SRC", readOnly: true },
+            { display: "维修人姓名", name: "REPAIR_USER", readOnly: true },
+            { display: "使用部门", name: "DEPT_NAME", readOnly: true },
+            { display: "维保部门", name: "WDEPT_NAME", isShow: false, readOnly: true },
+            { display: "维保部门", name: "WDEPT_ID", readOnly: true },
+            { display: "上报人", name: "EDIT_USER", readOnly: true },
+            { display: "故障现象描述", name: "FAULT_DESCRIBE", readOnly: true },
+            { display: "", name: "", readOnly: true },
+            { display: "处理方式", name: "DISPOSE_TYPE", readOnly: true },
+            { display: "故障分类", name: "REP_TYPE_ID", readOnly: true },
+            { display: "故障库编码", name: "FRDB_CODE", readOnly: true },
+            { display: "开工时间", name: "ORDER_DATE", readOnly: true },
+            { display: "完工时间", name: "COMPLETE_DATE", readOnly: true },
+            { display: "维修工时(H)", name: "REPAIR_HOURS", readOnly: true },
+            { display: "故障及解决方法描述", name: "FAULT_REASON", readOnly: true },
+            { display: "解决方法", name: "MEASURES", readOnly: true },
+            { display: "故障验收备注", name: "FAULT_MEMO", readOnly: true },
+            { display: "", name: "", readOnly: true },
+            { display: "验收人", name: "CHECK_USER", readOnly: true },
+            { display: "验收时间", name: "CHECK_DATE", readOnly: true },
+            { display: "验收结果", name: "CHECK_RESULT", Option: checkResult, },
+            { display: "验收说明", name: "CHECK_MEMO" },
+            { display: "附件", name: "", readOnly: true },
+        ];
+        //验收信息
+        var Info_popup = app.popup.create({
+            content: `
+                                                                                        <div class="popup answersheet">
+                                                                                            <div class="view">
+                                                                                                <div class="page">
+                                                                                                    <div class="navbar">
+                                                                                                        <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                            <div class="left link popup-close">
+                                                                                                                <i class="f7-icons">arrow_left</i>
+                                                                                                            </div>
+                                                                                                            <div class="title">故障验收</div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="toolbar tabbar toolbar-top">
+                                                                                                        <div class="toolbar-inner" style="
+                                                                                                            --f7-tabbar-link-active-border-color: #fff;
+                                                                                                            --f7-tabbar-link-active-color: black;
+                                                                                                            --f7-tabbar-link-active-bg-color: white;
+                                                                                                            --f7-tabbar-link-inactive-color: black;
+                                                                                                            background-color: rgb(236, 235, 235);
+                                                                                                     ">
+                                                                                                            <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">验收详情</a>
+                                                                                                            <a href="#tab-2" class="tab-link" id="modify_list">物资</a>
+                                                                                                            <a href="#tab-3" class="tab-link" id="modify_list2">人员</a>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <div class="tabs">
+                                                                                                      <div id="tab-1" class="page-content tab tab-active">
+                                                                                                        <div class="list inline-labels no-hairlines-md">
+                                                                                                            <form class="list" id="detail_bg"></form>
+                                                                                                        </div>
+
+                                                                                                      </div>
+
+                                                                                                      <div id="tab-2" class="page-content tab">
+
+                                                                                                            <div class="list" id="modify_bg">
+                                                                                                            </div>
+                                                                                                      </div>
+                                                                                                      <div id="tab-3" class="page-content tab">
+
+                                                                                                            <div class="list" id="modify_bg2">
+                                                                                                            </div>
+                                                                                                      </div>
+                                                                                                    </div>
+                                                                                                    <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
+                                                                                                        <div class="toolbar-inner">
+                                                                                                            <button class="col button button-large button-fill" id="save" >保存</button>
+                                                                                                            <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>`
+            ,
+            on: {
+                open: function () {
+                    var me = this;
+                    var ID = me.params.FAULT_ID;
+                    //保存事件
+                    $("#save").off('click').click(function () {
+                        let data = app.form.convertToData("#detail_bg");
+                        data.FAULT_ID = ID;
+
+                        if (data.CHECK_RESULT == null || data.CHECK_RESULT == '') {
+                            app.dialog.error("验收结果不能为空");
+                            return
+                        }
+                        var AddRow = new Object();
+                        if (ID) {
+                            AddRow["Updated"] = [data];
+                        }
+                        AddRow["Original"] = [formdata];
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/RepFault/ManageFaultCheck',
+                            success: function (data) {
+                                Info_popup.close();
+                                business.getData();
+                            }
+                        });
+                    });
+                    //提交事件
+                    $("#sumbit").off('click').click(function () {
+                        let data = app.form.convertToData("#detail_bg");
+
+                        if (data.AUDITING_D == "1") {
+                            app.dialog.error("该单据已经提交！");
+                            return false
+                        }
+
+                        var sids = [];
+                        sids.push(ID)
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+                            app.ajax({
+                                type: 'post',
+                                data: {
+                                    "sids": sids
+                                },
+                                url: 'Device/RepFault/SubmitFaultCheck',
+                                success: function () {
+                                    Info_popup.close();
+                                    business.getData();
+                                }
+                            });
+                        });
+                    });
+
+                    if (ID) {
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "ID": ID
+                            },
+                            url: 'Device/RepFault/GetFaultExeListDetail',
+                            success: function (data) {
+                                aud = data.AUDITING_D;
+                                var str = "";
+                                formdata = data;
+                                me.detail = data;
+                                me.detail.AUDITING_D = business.auditingData.find((v) => v.ID == me.detail.AUDITING_D).TEXT;
+                                me.detail.FAULT_STATUS = faultStatus.find((v) => v.ID == me.detail.FAULT_STATUS).TEXT;
+                                me.detail.DEVICE_STATUS = deviceStatus.find((v) => v.ID == me.detail.DEVICE_STATUS).TEXT;
+                                me.detail.FAULT_SRC = faultSrc.find((v) => v.ID == me.detail.FAULT_SRC).TEXT;
+                                me.detail.DISPOSE_TYPE = disposeType.find((v) => v.ID == me.detail.DISPOSE_TYPE).TEXT;
+                                me.detail.REP_TYPE_ID = repType.find((v) => v.ID == me.detail.REP_TYPE_ID).TEXT;
+                                var detailInfo = me.detail.AUDITING_D == "未提交" ? repFaultInfo : repFaultInfo.map(function (item) {
+                                    return { ...item, readOnly: true };
+                                });
+                                str = app.CreatePopupContentHtml(detailInfo);
+                                str += `
+                                <li id="list-` + ID + `" style="list-style:none;">
+                                    <a href="#" class="item-link item-content">
+                                        <div class="weui-cells btdb">
+                                            <div class="weui-cell">`;
+                                str += `<div class="item-cell" >
+                                            <span id="imgSpan">
+                                            
+                                            </span>
+                                            </br></br></br></br>
+                                        </div>
+                                        </div>
+                                        </div>
+                                    </a>
+                                </li>`;
+                                var html = '';
+
+                                data.ImageSrcList.forEach(function (item) {
+                                    html += '<img src="' + item + '" width="100" style="padding-top:5px;padding-left:5px" class="imgAdd" />';
+                                });
+
+                                $("#detail_bg").html(str);
+                                $("#imgSpan").append(html);
+                                app.form.fillFromData('#detail_bg', me.detail);
+                                showBtn(data.AUDITING_D == "未提交");
+                                createSmartSelect('.CHECK_RESULT');
+                            }
+                        });
+
+                        //明细数据
+                        $("#sumbit").show();
+                        $("#modify_list").show();
+                        $("#modify_list2").show();
+                        CreateSpDetail(ID);
+                        CreatePepDetail(ID);
+                    }
+                }
+            }
+        });
+        //选择器
+        function createSmartSelect(elSelector) {
+            app.smartSelect.create({
+                el: elSelector,
+                on: {
+                    beforeOpen: function (smartSelect, prevent) {
+                        if (aud != "0") {
+                            prevent();
+                        }
+                    }
+                }
+            });
+        }
+        //按钮
+        function showBtn(isEdit) {
+            if (isEdit) {
+                $("#menu").show();
+                $("#dg_list").click(function () {
+                    $("#menu").show();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
+                $("#modify_list2").click(function () {
+                    $("#menu").hide();
+                });
+            } else {
+                $("#menu").hide();
+                $("#dg_list").click(function () {
+                    $("#menu").hide();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
+                $("#modify_list2").click(function () {
+                    $("#menu").hide();
+                });
+            }
+        }
+
+        var spDetail = [
+            { display: "主键", name: "FAULT_SP_ID", PrimaryKey: "FAULT_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "备件品种编码", name: "SP_CODE" },
+            { display: "备件品种名称", name: "SP_NAME" },
+            { display: "备件型号", name: "SP_TYPE" },
+            { display: "仓库名称", name: "HOUSE_NAME" },
+            { display: "库位名称", name: "STOCK_NAME" },
+            { display: "库存数量", name: "CUR_NUM" },
+            { display: "实际消耗数量", name: "REAL_OUT_NUM" },
+            { display: "计量单位", name: "UNIT" }
+        ];
+        //明细列表
+        function CreateSpDetail(ID) {
+
+            var where = JSON.stringify({
+                op: 'and',
+                rules: [{ field: 'FAULT_ID', op: 'equal', value: ID }]
+            });
+
+            app.ajax({
+                type: 'post',
+                data: { "where": where },
+                url: 'Device/RepFault/GetFaultSpList',
+                success: function (data) {
+                    data.Rows.forEach((a) => {
+                        spid.push(a.SP_STORE_ID)
+                    });
+                    formDataDetail = data.Rows;
+                    // 清单
+                    var str = app.CreateListContentHtml(data.Rows, spDetail, false);
+                    $("#modify_bg").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.FAULT_SP_ID).click(function () {
+                            detail_popup.params = { "FAULT_SP_ID": a.FAULT_SP_ID, "FAULT_ID": a.FAULT_ID, };
+                            detail_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_popup.close();
+                            })
+                        })
+                    });
+                }
+            });
+
+        };
+        //人员列表
+        var pepDetail = [
+            { display: "主键", name: "FAULT_LABOR_ID", PrimaryKey: "FAULT_LABOR_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "人员姓名", name: "LABOR_NAME" },
+            { display: "工时(H)", name: "WORK_HOURS" },
+            { display: "备注", name: "MEMO" },
+        ];
+        //人员明细列表
+        function CreatePepDetail(ID) {
+
+            var where = JSON.stringify({
+                op: 'and',
+                rules: [{ field: 'FAULT_ID', op: 'equal', value: ID }]
+            });
+
+            app.ajax({
+                type: 'post',
+                data: { "where": where },
+                url: 'Device/RepFault/GetFaultPepList',
+                success: function (data) {
+                    pepDataDetail = data.Rows;
+                    // 清单
+                    var str = app.CreateListContentHtml(data.Rows, pepDetail, false);
+                    $("#modify_bg2").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.FAULT_LABOR_ID).click(function () {
+                            detail_pep_popup.params = { "FAULT_LABOR_ID": a.FAULT_LABOR_ID, "FAULT_ID": a.FAULT_ID, };
+                            detail_pep_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_pep_popup.close();
+                            })
+                        })
+                    });
+                }
+            });
+
+        };
+    </script>
+</body>
+
+</html>

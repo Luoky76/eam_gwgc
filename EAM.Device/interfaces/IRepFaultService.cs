@@ -3,6 +3,7 @@ using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using static EAM.Device.services.RepFaultService;
 
 namespace EAM.Device.interfaces
 {
@@ -30,7 +31,7 @@ namespace EAM.Device.interfaces
         /// 获取单条故障处理记录
         /// </summary>
         /// <returns></returns>
-        Task<REP_FAULT> GetFaultExeListDetail(string ID);
+        Task<REP_FAULT_IMG> GetFaultExeListDetail(string ID);
         /// <summary>
         /// 管理故障处理记录
         /// </summary>
