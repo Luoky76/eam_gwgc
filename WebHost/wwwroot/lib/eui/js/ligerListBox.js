@@ -16,6 +16,7 @@
         onSelected: null,       //选择值事件
         valueField: 'ID',       //值成员
         textField: 'TEXT',      //显示成员
+        statusField: 'STATUS',  //可选择状态 true可用 false 不可选择
         valueFieldID: null,     //值 隐藏域 表单名
         split: ";",             //分隔符
         searchSplit: null,         //查询分隔符
