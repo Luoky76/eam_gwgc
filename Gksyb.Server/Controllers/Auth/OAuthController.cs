@@ -3,6 +3,7 @@ using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Dtos;
 using Gksyb.Model.Grid;
+using Gksyb.Server.Controllers.Auth.Dtos;
 using Gksyb.Server.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,9 @@ namespace Gksyb.Server.Controllers.Auth
             return await _service.SaveAsync(request);
         }
 
+        [AllowAnonymous, HttpGet, HttpPost]
+        public AjaxResult<DateTime> Now() => AjaxResult<DateTime>.Success(DateTime.Now);
+
         [AllowAnonymous]
         public async Task<AjaxResult> AccessTokenAsync(OAuthRequest<string> request)
         {
@@ -48,23 +52,32 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         [JsToken]
-        public async Task<AjaxResult> TokenAsync()
+        public async Task<AjaxResult> GenerateTokenAsync()
         {
-            var token = await _service.TokenAsync();
+            var token = await _service.GenerateTokenAsync();
             return AjaxResult.Success(token, default);
         }
 
-        [GksybAuthorize(IsApi = true)]
-        public async Task<AjaxResult> TicketAsync([FromHeader, Required] string name)
+        [AllowAnonymous]
+        public async Task<AjaxResult> TokenAsync(OAuthRequest<TokenRequest> request)
         {
-            var ticket = await _service.TicketAsync(name);
+            request.Init(Request);
+            await _service.Check(request);
+            var ticket = await _service.TicketAsync(request.Data);
+            return AjaxResult.Success(ticket, default);
+        }
+
+        [GksybAuthorize(IsApi = true)]
+        public async Task<AjaxResult> TicketAsync(TokenRequest request)
+        {
+            var ticket = await _service.TicketAsync(request);
             return AjaxResult.Success(ticket, default);
         }
 
         [AllowAnonymous]
         public async Task<string> JsTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}/oauth/validTicket");
+            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}oauth/validTicket");
         }
 
         [JsToken, AllowAnonymous]
@@ -72,13 +85,17 @@ namespace Gksyb.Server.Controllers.Auth
         {
             try
             {
-                var userName = await distributedCache.GetStringAsync(ticket);
-                if (string.IsNullOrWhiteSpace(userName)) return AjaxResult.Error("票据过期");
+                var info = await distributedCache.GetAsync<TokenRequest>(ticket);
+                if (info == null) return AjaxResult.Error("验证失败：1001");
+                var ip = Request.GetRealIP();
+                var ua = Request.GetUserAgent();
+                if (!string.IsNullOrWhiteSpace(info.IP) && info.IP != ip) return AjaxResult.Error("验证失败：1002");
+                if (!string.IsNullOrWhiteSpace(info.UA) && info.UA != CryptographyHelper.GetSM3(ua)) return AjaxResult.Error("验证失败：1003");
                 var request = new LoginRequest()
                 {
-                    Username = userName,
-                    IP = Request.GetRealIP(),
-                    UserAgent = Request.GetUserAgent()
+                    Username = info.Account,
+                    IP = ip,
+                    UserAgent = ua
                 };
                 request.Password = await service.GetPasswordAsync(request.Username);
                 request.Source = "Ticket";

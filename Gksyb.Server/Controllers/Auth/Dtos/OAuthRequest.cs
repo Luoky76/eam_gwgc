@@ -7,6 +7,8 @@ namespace Gksyb.Model.Core
 {
     public class OAuthRequest<T>
     {
+        private const double Expiry = 3 * 60;
+
         /// <summary>
         /// 应用编码
         /// </summary>
@@ -70,7 +72,7 @@ namespace Gksyb.Model.Core
         /// <returns></returns>
         public bool CheckBody(string secret, bool isThrow = true)
         {
-            var isFail = Math.Abs((TimeStamp.Value - DateTime.Now).TotalMinutes) > 30;
+            var isFail = Math.Abs((TimeStamp.Value - DateTime.Now).TotalSeconds) > Expiry;
             if (isThrow && isFail) throw new MessageException($"{TimeStamp:yyyy-MM-dd HH:mm:ss}已过期");
             if (isFail) return false;
             var sign = CryptographyHelper.GetSM3($"{AppId}{Body}{TimeStamp.Value:yyyy-MM-dd HH:mm:ss}{secret}");
