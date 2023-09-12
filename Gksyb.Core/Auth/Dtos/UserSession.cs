@@ -177,7 +177,7 @@ namespace Gksyb.Core.Auth
                     new Claim(ClaimTypes.Sid, Token),
                     new Claim(ClaimTypes.NameIdentifier, UserID.ToString()),
                     new Claim(ClaimTypes.Name, UserName),
-                    new Claim(ClaimTypes.GroupSid, Group)
+                    new Claim(ClaimTypes.GroupSid, Group ??"")
                }, "GKSYB")
             {
                 Label = RealName

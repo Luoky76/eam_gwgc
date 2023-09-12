@@ -68,7 +68,7 @@
             user: [],
             grid: null,
             searchForm: null,
-            buttons: null,
+            buttons: null,  
             auditingData: [
                 { ID: "0", TEXT: "未提交", VALUE: "0" },
                 { ID: "1", TEXT: "已提交", VALUE: "1" }
@@ -428,14 +428,22 @@
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
                     if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
+                        for (var i = 0; i < selected.length; i++) {
+                            if (selected[i].AUDITING == "1") {
+                                LG.tip('已提交，无法删除!');
+                                break;
                             }
-                        });
+                            else {
+                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                    if (confirm) {
+                                        for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                            me.grid.deleteRow(selected[i]);
+                                        }
+                                        me.save();
+                                    }
+                                }); break;
+                            }
+                        }
                     } else {
                         LG.tip('请选择行!');
                     }

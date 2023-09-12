@@ -151,8 +151,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_CARD entity)
         {
-            entity.AUDITING = "1";
-
             await Task.CompletedTask;
         }
 
