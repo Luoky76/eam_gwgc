@@ -53,10 +53,10 @@ namespace EAM.Device.services
                     .Select(c => new
                     {
                         c.REP_DEVICE,
-                        c.CHECK_USER,
+                        c.CONFIRM_USER,
                         c.OUT_REPAIR_MEMO,
                     }).FirstAsync();
-                if (qry.REP_DEVICE == null||qry.CHECK_USER == null||qry.OUT_REPAIR_MEMO == null)
+                if (qry.REP_DEVICE == null||qry.CONFIRM_USER == null||qry.OUT_REPAIR_MEMO == null)
                 {
                     throw new MessageException("核对委外维修确认单是否填写完成！");
                 }
@@ -80,7 +80,7 @@ namespace EAM.Device.services
                 c => new
                 {
                     c.REP_DEVICE,
-                    c.CHECK_USER,
+                    c.CONFIRM_USER,
                     c.OUT_REPAIR_MEMO,
                     c.IS_LEAVE,
                     c.REASON,
@@ -184,6 +184,8 @@ namespace EAM.Device.services
                     c.REP_MONEY,
                     c.NOTAX_MONEY,
                     c.RATIO,
+                    c.CHECK_USER,
+                    c.CHECK_USERID,
                     c.PROVIDER_ID,
                     c.REAL_BEGINTIME,
                     c.REAL_ENDTIME,
@@ -211,6 +213,8 @@ namespace EAM.Device.services
                     a.OUT_STATUS,
                     a.OUT_CODE,
                     a.CHECK_USER,
+                    a.CONFIRM_USER,
+                    a.CONFIRM_USERID,
                     a.CHECK_USERID,
                     a.WDEPT_NAME,
                     a.WDEPT_ID,
