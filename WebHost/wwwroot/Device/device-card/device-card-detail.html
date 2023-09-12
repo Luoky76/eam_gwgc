@@ -58,7 +58,7 @@
                             {
                                 display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.devicetype }, options: {
                                     onChangeValue: function (input, value, g) {
-                                        debugger
+                                        
                                         if (value) {
                                             for (var i = 0; i < me.devicetype.length; i++) {
                                                 if (value == me.devicetype[i].ID) {
@@ -73,9 +73,57 @@
                             },
                             { display: "设备机型", name: "TYPE_ID", newline: false, upper: true, type: "hidden" },
                             { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {} },
-                            { display: "维保部门", name: "WDEPT_NAME", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {} },
-                            { display: "负责人", name: "CARD_USER", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.user }, options: {} },
+                            {
+                                display: "使用部门", name: "DEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                    onChangeValue: function (input, value, g) {
+                                        
+                                        if (value) {
+                                            for (var i = 0; i < me.dataCorp.length; i++) {
+                                                if (value == me.dataCorp[i].ID) {
+                                                    $("#DEPT_NAME").val(me.dataCorp[i].VALUE);
+                                                }
+                                            }
+                                        } else {
+                                            $("#DEPT_NAME").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                    onChangeValue: function (input, value, g) {
+                                        
+                                        if (value) {
+                                            for (var i = 0; i < me.dataCorp.length; i++) {
+                                                if (value == me.dataCorp[i].ID) {
+                                                    $("#WDEPT_NAME").val(me.dataCorp[i].VALUE);
+                                                }
+                                            }
+                                        } else {
+                                            $("#WDEPT_NAME").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "hidden" },
+                            { display: "维保部门", name: "WDEPT_NAME", newline: false, upper: true, type: "hidden" },
+                            {
+                                display: "负责人", name: "CARD_USERID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.user }, options: {
+                                    onChangeValue: function (input, value, g) {
+                                        
+                                        if (value) {
+                                            for (var i = 0; i < me.user.length; i++) {
+                                                if (value == me.user[i].ID) {
+                                                    $("#CARD_USER").val(me.user[i].VALUE);
+                                                }
+                                            }
+                                        } else {
+                                            $("#CARD_USER").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "负责人", name: "CARD_USER", newline: false, upper: true, type: "hidden" },
                             { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", options: {} },
                             { display: "启用日期", name: "REV_DATE", newline: false, upper: true, type: "date", options: {} },
                             { display: "当前管理状态", name: "STATUS", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.assetStatus }, options: {} },
@@ -128,6 +176,7 @@
                     url: 'Device/DeviceCard/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
+                        
                         me.auditing = data.Auditing;
                         me.user = data.User;
                         me.dataCorp = data.Corp;
