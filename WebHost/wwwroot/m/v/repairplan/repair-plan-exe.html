@@ -429,8 +429,8 @@
                                     el: '.MAINT_TYPE',
                                     searchbar: true,
                                     on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
+                                        beforeOpen: function (e, prevent) {
+                                            prevent();
                                         }
                                     }
                                 });
@@ -438,8 +438,8 @@
                                     el: '.DEAL_TYPE',
                                     searchbar: true,
                                     on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
+                                        beforeOpen: function (e, prevent) {
+                                            prevent();
                                         }
                                     }
                                 });
@@ -662,8 +662,8 @@
                                     el: '.IS_COMPLETE',
                                     searchbar: true,
                                     on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
+                                        beforeOpen: function (e, prevent) {
+                                            prevent();
                                         }
                                     }
                                 });
@@ -672,8 +672,8 @@
                                     el: '.IS_ASKBID',
                                     searchbar: true,
                                     on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
+                                        beforeOpen: function (e, prevent) {
+                                            prevent();
                                         }
                                     }
                                 });
