@@ -78,6 +78,10 @@
             maintCycle: [],
             storeSou: [],
             auditingData: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            isLose: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
+            planMonth: [{ "ID": "1", "TEXT": "一月" }, { "ID": "2", "TEXT": "二月" }, { "ID": "3", "TEXT": "三月" }, { "ID": "4", "TEXT": "四月" }, { "ID": "5", "TEXT": "五月" }
+                , { "ID": "6", "TEXT": "六月" }, { "ID": "7", "TEXT": "七月" }, { "ID": "8", "TEXT": "八月" }, { "ID": "9", "TEXT": "九月" }, { "ID": "10", "TEXT": "十月" }
+                , { "ID": "11", "TEXT": "十一月" }, { "ID": "12", "TEXT": "十二月" }],
             plan: null,
             plan_card: null,
             getData: function () {
@@ -93,74 +97,74 @@
                             var sid = me.list[i].EXE_ID;
 
                             str += `
-                                                                                <li id="list-` + sid + `">
-                                                                                    <a href="#" class="item-link item-content">
-                                                                                        <div class="item-inner item-cell">
-                                                                                            <div class="item-row">`;
+                                                                                        <li id="list-` + sid + `">
+                                                                                            <a href="#" class="item-link item-content">
+                                                                                                <div class="item-inner item-cell">
+                                                                                                    <div class="item-row">`;
                             str += `<div class="item-cell">
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">保养实施单号</div>`;
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">保养实施单号</div>`;
                             str += `<div class="col-65" style="color: RGB(255,99,99); white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].EXE_CODE == null ? '' : me.list[i].EXE_CODE) + `</div>`;
 
                             str += `<div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">资产编号</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].ASSET_CODE == null ? '' : me.list[i].ASSET_CODE) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">设备编号</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEVICE_CODE == null ? '' : me.list[i].DEVICE_CODE) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">设备名称</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEVICE_NAME == null ? '' : me.list[i].DEVICE_NAME) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">使用部门</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEPT_NAME == null ? '' : me.list[i].DEPT_NAME) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">维保部门</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].SHIP_DEPT == null ? '' : me.list[i].SHIP_DEPT) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">实施人员</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].EXE_USER == null ? '' : me.list[i].EXE_USER) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">实施完成时间</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].AUDIT_TIME == null ? '' : me.list[i].AUDIT_TIME) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">是否有遗留问题</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].IS_LOSE == null ? '' : me.list[i].IS_LOSE) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">保养计划单号</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;color: blue;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].PLAN_CODE == null ? '' : me.list[i].PLAN_CODE) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div>
-                                                                                                    <div class="row no-gap">
-                                                                                                        <div class="col-25" style="color: rgb(192,192,192)">备注</div>
-                                                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].MEMO == null ? '' : me.list[i].MEMO) + `</div>
-                                                                                                        <div class="col-10"></div>
-                                                                                                    </div> `;
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">资产编号</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].ASSET_CODE == null ? '' : me.list[i].ASSET_CODE) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">设备编号</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEVICE_CODE == null ? '' : me.list[i].DEVICE_CODE) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">设备名称</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEVICE_NAME == null ? '' : me.list[i].DEVICE_NAME) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">使用部门</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].DEPT_NAME == null ? '' : me.list[i].DEPT_NAME) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">维保部门</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].SHIP_DEPT == null ? '' : me.list[i].SHIP_DEPT) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">实施人员</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].EXE_USER == null ? '' : me.list[i].EXE_USER) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">实施完成时间</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].AUDIT_TIME == null ? '' : me.list[i].AUDIT_TIME) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">是否有遗留问题</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].IS_LOSE == null ? '' : business.isLose.find((v) => v.ID == me.list[i].IS_LOSE).TEXT) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">保养计划单号</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;color: blue;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].PLAN_CODE == null ? '' : me.list[i].PLAN_CODE) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div>
+                                                                                                            <div class="row no-gap">
+                                                                                                                <div class="col-25" style="color: rgb(192,192,192)">备注</div>
+                                                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].MEMO == null ? '' : me.list[i].MEMO) + `</div>
+                                                                                                                <div class="col-10"></div>
+                                                                                                            </div> `;
                             str += `
 
+                                                                                                        </div>
+                                                                                                    </div>
                                                                                                 </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </a>
-                                                                                </li>`;
+                                                                                            </a>
+                                                                                        </li>`;
 
 
                         }
@@ -268,64 +272,64 @@
         //处理信息
         var Info_popup = app.popup.create({
             content: `
-                                                                                                            <div class="popup answersheet">
-                                                                                                                <div class="view">
-                                                                                                                    <div class="page">
-                                                                                                                        <div class="navbar">
-                                                                                                                            <div class="navbar-inner" style="background-color:rgb(0,125,255);">
-                                                                                                                                <div class="left link popup-close">
-                                                                                                                                    <i class="f7-icons">arrow_left</i>
+                                                                                                                    <div class="popup answersheet">
+                                                                                                                        <div class="view">
+                                                                                                                            <div class="page">
+                                                                                                                                <div class="navbar">
+                                                                                                                                    <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                                                        <div class="left link popup-close">
+                                                                                                                                            <i class="f7-icons">arrow_left</i>
+                                                                                                                                        </div>
+                                                                                                                                        <div class="title">查看明细</div>
+                                                                                                                                    </div>
                                                                                                                                 </div>
-                                                                                                                                <div class="title">查看明细</div>
+                                                                                                                                <div class="toolbar tabbar toolbar-top">
+                                                                                                                                    <div class="toolbar-inner" style="
+                                                                                                                                        --f7-tabbar-link-active-border-color: #fff;
+                                                                                                                                        --f7-tabbar-link-active-color: black;
+                                                                                                                                        --f7-tabbar-link-active-bg-color: white;
+                                                                                                                                        --f7-tabbar-link-inactive-color: black;
+                                                                                                                                        background-color: rgb(236, 235, 235);
+                                                                                                                                 ">
+                                                                                                                                        <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">基础信息</a>
+                                                                                                                                        <a href="#tab-2" class="tab-link" id="modify_list">保养实施明细</a>
+                                                                                                                                        <a href="#tab-3" class="tab-link" id="modify_list2">物资明细</a>
+                                                                                                                                        <a href="#tab-4" class="tab-link" id="modify_list3">人员明细</a>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+                                                                                                                                <div class="tabs">
+
+                                                                                                                                  <div id="tab-1" class="page-content tab tab-active">
+                                                                                                                                    <div class="list inline-labels no-hairlines-md">
+                                                                                                                                        <form class="list" id="detail_bg"></form>
+                                                                                                                                    </div>
+                                                                                                                                  </div>
+
+                                                                                                                                  <div id="tab-2" class="page-content tab">
+                                                                                                                                        <div class="list" id="modify_bg">
+                                                                                                                                        </div>
+                                                                                                                                  </div>
+
+                                                                                                                                  <div id="tab-3" class="page-content tab">
+                                                                                                                                        <div class="list" id="modify_bg2">
+                                                                                                                                        </div>
+                                                                                                                                  </div>
+
+                                                                                                                                  <div id="tab-4" class="page-content tab">
+                                                                                                                                        <div class="list" id="modify_bg3">
+                                                                                                                                        </div>
+                                                                                                                                  </div>
+
+                                                                                                                                </div>
+
+                                                                                                                                <div class="toolbar toolbar-bottom" id="menu" >
+                                                                                                                                    <div class="toolbar-inner">
+                                                                                                                                        <button class="col button button-large button-fill" id="popup-close" >关闭</button>
+                                                                                                                                    </div>
+                                                                                                                                </div>
                                                                                                                             </div>
                                                                                                                         </div>
-                                                                                                                        <div class="toolbar tabbar toolbar-top">
-                                                                                                                            <div class="toolbar-inner" style="
-                                                                                                                                --f7-tabbar-link-active-border-color: #fff;
-                                                                                                                                --f7-tabbar-link-active-color: black;
-                                                                                                                                --f7-tabbar-link-active-bg-color: white;
-                                                                                                                                --f7-tabbar-link-inactive-color: black;
-                                                                                                                                background-color: rgb(236, 235, 235);
-                                                                                                                         ">
-                                                                                                                                <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">基础信息</a>
-                                                                                                                                <a href="#tab-2" class="tab-link" id="modify_list">保养实施明细</a>
-                                                                                                                                <a href="#tab-3" class="tab-link" id="modify_list2">物资明细</a>
-                                                                                                                                <a href="#tab-4" class="tab-link" id="modify_list3">人员明细</a>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                        <div class="tabs">
-
-                                                                                                                          <div id="tab-1" class="page-content tab tab-active">
-                                                                                                                            <div class="list inline-labels no-hairlines-md">
-                                                                                                                                <form class="list" id="detail_bg"></form>
-                                                                                                                            </div>
-                                                                                                                          </div>
-
-                                                                                                                          <div id="tab-2" class="page-content tab">
-                                                                                                                                <div class="list" id="modify_bg">
-                                                                                                                                </div>
-                                                                                                                          </div>
-
-                                                                                                                          <div id="tab-3" class="page-content tab">
-                                                                                                                                <div class="list" id="modify_bg2">
-                                                                                                                                </div>
-                                                                                                                          </div>
-
-                                                                                                                          <div id="tab-4" class="page-content tab">
-                                                                                                                                <div class="list" id="modify_bg3">
-                                                                                                                                </div>
-                                                                                                                          </div>
-
-                                                                                                                        </div>
-
-                                                                                                                        <div class="toolbar toolbar-bottom" id="menu" >
-                                                                                                                            <div class="toolbar-inner">
-                                                                                                                                <button class="col button button-large button-fill" id="popup-close" >关闭</button>
-                                                                                                                            </div>
-                                                                                                                        </div>
-                                                                                                                    </div>
-                                                                                                                </div>
-                                                                                                            </div>`
+                                                                                                                    </div>`
             ,
             on: {
                 open: function () {
@@ -344,6 +348,7 @@
                                 var str = "";
                                 formdata = data;
                                 me.detail = data;
+                                me.detail.IS_LOSE = business.isLose.find((v) => v.ID == me.detail.IS_LOSE).TEXT;
                                 me.detail.AUDITING_A = business.auditingData.find((v) => v.ID == me.detail.AUDITING_A).TEXT;
                                 var detailInfo = me.detail.AUDITING_A == "未提交" ? repFaultInfo : repFaultInfo.map(function (item) {
                                     return { ...item, readOnly: true };
@@ -355,9 +360,9 @@
                                 // 加载实施明细
                                 CreatePlanDetDetail(ID);
                                 // 加载物资明细
-                                CreatePlanSpDetail(ID);
+                                CreatePlanSpDetail();
                                 // 加载人员明细
-                                CreatePlanPeDetail(ID);
+                                CreatePlanPeDetail();
                             }
                         });
 
@@ -407,76 +412,80 @@
                     var str = '<ul>';
                     for (var i = 0; i < data.Rows.length; i++) {
                         var sid = data.Rows[i].DONEITEM_ID;
-
+                        //if (data.Rows[i].MAINT_CYCLE != null) {
+                        //    data.Rows[i].MAINT_CYCLE = business.maintCycle.find((v) => v.ID == data.Rows[i].MAINT_CYCLE).TEXT;
+                        //} if (data.Rows[i].PLAN_MONTH != null) {
+                        //    data.Rows[i].PLAN_MONTH = business.planMonth.find((v) => v.ID == data.Rows[i].PLAN_MONTH).TEXT;
+                        //}
                         str += ` <li id="list-` + sid + `">`;
                         str += `<label class="item-checkbox item-checkbox-icon-start item-content">
-                                                            <div class="item-inner item-cell">
-                                                                <div class="item-row">
-                                                                    <div class="item-cell">
-                                                                        <div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">完成情况</div>
-                                                                            <div  class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].COMPLETE == null ? '' : data.Rows[i].COMPLETE) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">附件材料</div>
-                                                                            <div id="list-exe-` + sid + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].ATTACH_EXE == null ? '' : data.Rows[i].ATTACH_EXE) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">保养计划附件</div>
-                                                                            <div id="list-plan-` + sid + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].ATTACH_PLAN == null ? '' : data.Rows[i].ATTACH_PLAN) + `</div>
-                                                                            <div class="col-10">
+                                                                    <div class="item-inner item-cell">
+                                                                        <div class="item-row">
+                                                                            <div class="item-cell">
+                                                                                <div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">完成情况</div>
+                                                                                    <div  class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].COMPLETE == null ? '' : data.Rows[i].COMPLETE) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">附件材料</div>
+                                                                                    <div id="list-exe-` + sid + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;"><a href="javascript:void(0)" style="text-decoration: underline;">` + (data.Rows[i].ATTACH_EXE == null ? '' : data.Rows[i].ATTACH_EXE) + `</a></div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">保养计划附件</div>
+                                                                                    <div id="list-plan-` + sid + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;"><a href="javascript:void(0)" style="text-decoration: underline;">` + (data.Rows[i].ATTACH_PLAN == null ? '' : data.Rows[i].ATTACH_PLAN) + `</a></div>
+                                                                                    <div class="col-10">
+                                                                                    </div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">标准编号</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].STD_CODE == null ? '' : data.Rows[i].STD_CODE) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">保养项目</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].OBJECT_NAME == null ? '' : data.Rows[i].OBJECT_NAME) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">保养内容</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].CONTENT == null ? '' : data.Rows[i].CONTENT) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">保养类型</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].STD_LEVEL == null ? '' : data.Rows[i].STD_LEVEL) + `</div>
+                                                                                    <div class="col-10">
+                                                                                    </div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">作业时设备状态</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].WORK_STATE == null ? '' : data.Rows[i].WORK_STATE) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">保养周期</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].MAINT_CYCLE == null ? '' : data.Rows[i].MAINT_CYCLE) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">计划保养月份</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].PLAN_MONTH == null ? '' : data.Rows[i].PLAN_MONTH) + `</div>
+                                                                                    <div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">执行岗位</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].EXE_USER == null ? '' : data.Rows[i].EXE_USER) + `</div><div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">执行人</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].EXECUTE_USER == null ? '' : data.Rows[i].EXECUTE_USER) + `</div><div class="col-10">
+                                                                                    </div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">检查岗位</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].CHK_USER == null ? '' : data.Rows[i].CHK_USER) + `</div><div class="col-10"></div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">检查人</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].CHECK_USER == null ? '' : data.Rows[i].CHECK_USER) + `</div><div class="col-10">
+                                                                                    </div>
+                                                                                </div><div class="row no-gap">
+                                                                                    <div class="col-33" style="color: rgb(192,192,192)">备注</div>
+                                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].MEMO == null ? '' : data.Rows[i].MEMO) + `</div><div class="col-10"></div>
+                                                                                </div>
                                                                             </div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">标准编号</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].STD_CODE == null ? '' : data.Rows[i].STD_CODE) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">保养项目</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].OBJECT_NAME == null ? '' : data.Rows[i].OBJECT_NAME) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">保养内容</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].CONTENT == null ? '' : data.Rows[i].CONTENT) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">保养类型</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].STD_LEVEL == null ? '' : data.Rows[i].STD_LEVEL) + `</div>
-                                                                            <div class="col-10">
-                                                                            </div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">作业时设备状态</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].WORK_STATE == null ? '' : data.Rows[i].WORK_STATE) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">保养周期</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].MAINT_CYCLE == null ? '' : data.Rows[i].MAINT_CYCLE) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">计划保养月份</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].PLAN_MONTH == null ? '' : data.Rows[i].PLAN_MONTH) + `</div>
-                                                                            <div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">执行岗位</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].EXE_USER == null ? '' : data.Rows[i].EXE_USER) + `</div><div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">执行人</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].EXECUTE_USER == null ? '' : data.Rows[i].EXECUTE_USER) + `</div><div class="col-10">
-                                                                            </div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">检查岗位</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].CHK_USER == null ? '' : data.Rows[i].CHK_USER) + `</div><div class="col-10"></div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">检查人</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].CHECK_USER == null ? '' : data.Rows[i].CHECK_USER) + `</div><div class="col-10">
-                                                                            </div>
-                                                                        </div><div class="row no-gap">
-                                                                            <div class="col-33" style="color: rgb(192,192,192)">备注</div>
-                                                                            <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].MEMO == null ? '' : data.Rows[i].MEMO) + `</div><div class="col-10"></div>
                                                                         </div>
                                                                     </div>
-                                                                </div>
-                                                            </div>
-                                                        </label>`;
+                                                                </label>`;
 
                         str += `</li>`;
                     }
@@ -488,6 +497,7 @@
                     data.Rows.forEach((a) => {
                         $("#list-" + a.DONEITEM_ID).click(function () {
                             CreatePlanSpDetail(a.EXE_ID, a.DONEITEM_ID);
+                            CreatePlanPeDetail(a.EXE_ID, a.DONEITEM_ID);
                         });
                         $("#list-exe-" + a.DONEITEM_ID).click(function () {
                             // 弹窗参数保存
@@ -534,16 +544,17 @@
             { display: "外键", name: "DONEITEM_ID", readOnly: true, isShow: false },
             { display: "外键", name: "STORE_ID", readOnly: true, isShow: false },
         ];
-        function CreatePlanSpDetail(ID) {
-            var where = JSON.stringify({
-                op: 'and',
-                rules: [{ field: 'EXE_ID', op: 'equal', value: ID }]
-            });
+        function CreatePlanSpDetail() {
 
             app.ajax({
                 type: 'post',
-                data: { "where": where },
                 url: 'Device/PmInfo/GetPmSpList',
+                parms: {
+                    where: JSON.stringify({
+                        op: 'and',
+                        rules: []
+                    })
+                },
                 success: function (data) {
                     // 清单
                     var str = app.CreateListContentHtml(data.Rows, planSpInfo, true);
@@ -572,22 +583,49 @@
         //人员明细
         var planPeInfo = [
             { display: "人员姓名", name: "USER_NAME", readOnly: true },
-            { display: "人员ID", name: "LABOR_ID", readOnly: true },
-            { display: "工时(H)", name: "PLAN_DATE", readOnly: true },
+            { display: "人员ID", name: "LABOR_ID", readOnly: true, isShow: false },
+            { display: "工时(H)", name: "PLAN_DATE", validate: { required: true }, type: "float", readOnly: true },
             { display: "备注", name: "MEMO", readOnly: true },
             { display: "主键", name: "PLAN_LABOR_ID", readOnly: true, isShow: false },
             { display: "外键", name: "EXE_ID", readOnly: true, isShow: false },
             { display: "外键", name: "DONEITEM_ID", readOnly: true, isShow: false },
         ];
-        function CreatePlanPeDetail(ID) {
+        function CreatePlanPeDetail() {
+
+            app.ajax({
+                type: 'post',
+                url: 'Device/PmInfo/GetPmPepList',
+                parms: {
+                    where: JSON.stringify({
+                        op: 'and',
+                        rules: []
+                    })
+                },
+                success: function (data) {
+                    // 清单
+                    var str = app.CreateListContentHtml(data.Rows, planPeInfo, true);
+                    $("#modify_bg3").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.DONEITEM_ID).click(function () {
+                            detail_popup.params = { "DONEITEM_ID": a.DONEITEM_ID, "EXE_ID": a.EXE_ID, };
+                            detail_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_popup.close();
+                            })
+                        })
+                    });
+                }
+            });
+        }
+        function CreatePlanPeDetail(EXEID, DONEITEMID) {
             var where = JSON.stringify({
                 op: 'and',
-                rules: [{ field: 'EXE_ID', op: 'equal', value: ID }]
+                rules: [{ field: 'EXE_ID', op: 'equal', value: EXEID }, { field: 'DONEITEM_ID', op: 'equal', value: DONEITEMID }]
             });
 
             app.ajax({
                 type: 'post',
-                data: { "where": where },
+                data: { "exeId": EXEID, "doneitemId": DONEITEMID },
                 url: 'Device/PmInfo/GetPmPepList',
                 success: function (data) {
                     // 清单
@@ -605,7 +643,6 @@
                 }
             });
         }
-
 
         // 点击查看附件触发事件
         function popupExeAttachOpen(id) {
@@ -657,46 +694,46 @@
         // 附件信息
         var File_popup = app.popup.create({
             content: `
-                                                                                                     <div class="popup answersheet">
-                                                                                                         <div class="view">
-                                                                                                             <div class="page">
-                                                                                                                 <div class="navbar">
-                                                                                                                     <div class="navbar-inner" style="background-color:rgb(0,125,255);">
-                                                                                                                         <div class="left link popup-close">
-                                                                                                                             <i class="f7-icons">arrow_left</i>
+                                                                                                             <div class="popup answersheet">
+                                                                                                                 <div class="view">
+                                                                                                                     <div class="page">
+                                                                                                                         <div class="navbar">
+                                                                                                                             <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                                                 <div class="left link popup-close">
+                                                                                                                                     <i class="f7-icons">arrow_left</i>
+                                                                                                                                 </div>
+                                                                                                                                 <div class="title">附件管理</div>
+                                                                                                                             </div>
                                                                                                                          </div>
-                                                                                                                         <div class="title">附件管理</div>
-                                                                                                                     </div>
-                                                                                                                 </div>
-                                                                                                                 <div class="toolbar tabbar toolbar-top">
-                                                                                                                     <div class="toolbar-inner" style="
-                                                                                                                         --f7-tabbar-link-active-border-color: #fff;
-                                                                                                                         --f7-tabbar-link-active-color: black;
-                                                                                                                         --f7-tabbar-link-active-bg-color: white;
-                                                                                                                         --f7-tabbar-link-inactive-color: black;
-                                                                                                                         background-color: rgb(236, 235, 235);
-                                                                                                                  ">
-                                                                                                                         <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">附件信息</a>
-                                                                                                                     </div>
-                                                                                                                 </div>
-                                                                                                                 <div class="tabs">
+                                                                                                                         <div class="toolbar tabbar toolbar-top">
+                                                                                                                             <div class="toolbar-inner" style="
+                                                                                                                                 --f7-tabbar-link-active-border-color: #fff;
+                                                                                                                                 --f7-tabbar-link-active-color: black;
+                                                                                                                                 --f7-tabbar-link-active-bg-color: white;
+                                                                                                                                 --f7-tabbar-link-inactive-color: black;
+                                                                                                                                 background-color: rgb(236, 235, 235);
+                                                                                                                          ">
+                                                                                                                                 <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">附件信息</a>
+                                                                                                                             </div>
+                                                                                                                         </div>
+                                                                                                                         <div class="tabs">
 
-                                                                                                                   <div id="tab-1" class="page-content tab tab-active">
-                                                                                                                     <div class="list inline-labels no-hairlines-md">
-                                                                                                                         <form class="list" id="detail_file_bg"></form>
-                                                                                                                     </div>
-                                                                                                                   </div>
+                                                                                                                           <div id="tab-1" class="page-content tab tab-active">
+                                                                                                                             <div class="list inline-labels no-hairlines-md">
+                                                                                                                                 <form class="list" id="detail_file_bg"></form>
+                                                                                                                             </div>
+                                                                                                                           </div>
 
-                                                                                                                 </div>
+                                                                                                                         </div>
 
-                                                                                                                 <div class="toolbar toolbar-bottom" id="menu" >
-                                                                                                                     <div class="toolbar-inner">
-                                                                                                                         <button class="col button button-large button-fill" id="popup-file-close" >关闭</button>
+                                                                                                                         <div class="toolbar toolbar-bottom" id="menu" >
+                                                                                                                             <div class="toolbar-inner">
+                                                                                                                                 <button class="col button button-large button-fill" id="popup-file-close" >关闭</button>
+                                                                                                                             </div>
+                                                                                                                         </div>
                                                                                                                      </div>
                                                                                                                  </div>
-                                                                                                             </div>
-                                                                                                         </div>
-                                                                                                     </div>`
+                                                                                                             </div>`
             ,
             on: {
 
@@ -732,38 +769,38 @@
                                     //if (data.Rows[i].attach_urlpath) downStr = "下载";
 
                                     str += `<li id="list-` + data.Rows[i].attach_id + `">
-                                                    <label class="item-checkbox item-checkbox-icon-start item-content">
-                                                        <input type="checkbox"><i class="icon icon-checkbox"></i><div class="item-inner item-cell">
-                                                            <div class="item-row">
-                                                                <div class="item-cell">
-                                                                    <div class="row no-gap">
-                                                                        <div class="col-33" style="color: rgb(192,192,192)">查看</div>
-                                                                        <div id="list-view-` + data.Rows[i].attach_id + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + showStr + `</div>
-                                                                        <div class="col-10"></div>
-                                                                    </div>
-                                                                    <div class="row no-gap">
-                                                                        <div class="col-33" style="color: rgb(192,192,192)">下载</div>
-                                                                        <div id="list-down-` + data.Rows[i].attach_id + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + downStr + `</div>
-                                                                        <div class="col-10"></div>
-                                                                    </div> 
-                                                                    <div class="row no-gap">
-                                                                        <div class="col-33" style="color: rgb(192,192,192)">附件名称</div>
-                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].attach_name == null ? '' : data.Rows[i].attach_name) + `EAM3.0计划表.xlsx</div>
-                                                                        <div class="col-10"></div>
-                                                                    </div><div class="row no-gap">
-                                                                        <div class="col-33" style="color: rgb(192,192,192)">上传人</div>
-                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].upload_user == null ? '' : data.Rows[i].upload_user) + `超级管理员</div>
-                                                                        <div class="col-10"></div>
-                                                                    </div><div class="row no-gap">
-                                                                        <div class="col-33" style="color: rgb(192,192,192)">上传日期</div>
-                                                                        <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].upload_date == null ? '' : data.Rows[i].upload_date) + `2023-08-24 17:24:30</div>
-                                                                        <div class="col-10"></div>
+                                                            <label class="item-checkbox item-checkbox-icon-start item-content">
+                                                                <input type="checkbox"><i class="icon icon-checkbox"></i><div class="item-inner item-cell">
+                                                                    <div class="item-row">
+                                                                        <div class="item-cell">
+                                                                            <div class="row no-gap">
+                                                                                <div class="col-33" style="color: rgb(192,192,192)">查看</div>
+                                                                                <div id="list-view-` + data.Rows[i].attach_id + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;"><a href="javascript:void(0)" style="text-decoration: underline;">` + showStr + `</a></div>
+                                                                                <div class="col-10"></div>
+                                                                            </div>
+                                                                            <div class="row no-gap">
+                                                                                <div class="col-33" style="color: rgb(192,192,192)">下载</div>
+                                                                                <div id="list-down-` + data.Rows[i].attach_id + `" class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + downStr + `</div>
+                                                                                <div class="col-10"></div>
+                                                                            </div>
+                                                                            <div class="row no-gap">
+                                                                                <div class="col-33" style="color: rgb(192,192,192)">附件名称</div>
+                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].attach_name == null ? '' : data.Rows[i].attach_name) + `EAM3.0计划表.xlsx</div>
+                                                                                <div class="col-10"></div>
+                                                                            </div><div class="row no-gap">
+                                                                                <div class="col-33" style="color: rgb(192,192,192)">上传人</div>
+                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].upload_user == null ? '' : data.Rows[i].upload_user) + `超级管理员</div>
+                                                                                <div class="col-10"></div>
+                                                                            </div><div class="row no-gap">
+                                                                                <div class="col-33" style="color: rgb(192,192,192)">上传日期</div>
+                                                                                <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;">` + (data.Rows[i].upload_date == null ? '' : data.Rows[i].upload_date) + `2023-08-24 17:24:30</div>
+                                                                                <div class="col-10"></div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    </label>
-                                                </li>`;
+                                                            </label>
+                                                        </li>`;
                                 }
 
                                 str += `</ul>`;
@@ -827,7 +864,7 @@
             xhr.send();
         }
         //查看
-        function f_fileView( urlpath, fileName) {
+        function f_fileView(urlpath, fileName) {
             // 弹窗参数保存
             Look_popup.params = { "urlpath": urlpath, "fileName": fileName };
             // 初始化弹窗
@@ -840,46 +877,46 @@
 
         var Look_popup = app.popup.create({
             content: `
-                                                                                                     <div class="popup answersheet">
-                                                                                                         <div class="view">
-                                                                                                             <div class="page">
-                                                                                                                 <div class="navbar">
-                                                                                                                     <div class="navbar-inner" style="background-color:rgb(0,125,255);">
-                                                                                                                         <div class="left link popup-close">
-                                                                                                                             <i class="f7-icons">arrow_left</i>
+                                                                                                             <div class="popup answersheet">
+                                                                                                                 <div class="view">
+                                                                                                                     <div class="page">
+                                                                                                                         <div class="navbar">
+                                                                                                                             <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                                                                 <div class="left link popup-close">
+                                                                                                                                     <i class="f7-icons">arrow_left</i>
+                                                                                                                                 </div>
+                                                                                                                                 <div class="title">查看</div>
+                                                                                                                             </div>
                                                                                                                          </div>
-                                                                                                                         <div class="title">查看</div>
-                                                                                                                     </div>
-                                                                                                                 </div>
-                                                                                                                 <div class="toolbar tabbar toolbar-top">
-                                                                                                                     <div class="toolbar-inner" style="
-                                                                                                                         --f7-tabbar-link-active-border-color: #fff;
-                                                                                                                         --f7-tabbar-link-active-color: black;
-                                                                                                                         --f7-tabbar-link-active-bg-color: white;
-                                                                                                                         --f7-tabbar-link-inactive-color: black;
-                                                                                                                         background-color: rgb(236, 235, 235);
-                                                                                                                  ">
-                                                                                                                         <a href="#tab-1" class="tab-link tab-link-active" id="fileInfo">附件信息</a>
-                                                                                                                     </div>
-                                                                                                                 </div>
-                                                                                                                 <div class="tabs">
+                                                                                                                         <div class="toolbar tabbar toolbar-top">
+                                                                                                                             <div class="toolbar-inner" style="
+                                                                                                                                 --f7-tabbar-link-active-border-color: #fff;
+                                                                                                                                 --f7-tabbar-link-active-color: black;
+                                                                                                                                 --f7-tabbar-link-active-bg-color: white;
+                                                                                                                                 --f7-tabbar-link-inactive-color: black;
+                                                                                                                                 background-color: rgb(236, 235, 235);
+                                                                                                                          ">
+                                                                                                                                 <a href="#tab-1" class="tab-link tab-link-active" id="fileInfo">附件信息</a>
+                                                                                                                             </div>
+                                                                                                                         </div>
+                                                                                                                         <div class="tabs">
 
-                                                                                                                   <div id="tab-1" class="page-content tab tab-active">
-                                                                                                                     <div class="list inline-labels no-hairlines-md">
-                                                                                                                         <form class="list" id="LookInfo"></form>
-                                                                                                                     </div>
-                                                                                                                   </div>
+                                                                                                                           <div id="tab-1" class="page-content tab tab-active">
+                                                                                                                             <div class="list inline-labels no-hairlines-md">
+                                                                                                                                 <form class="list" id="LookInfo"></form>
+                                                                                                                             </div>
+                                                                                                                           </div>
 
-                                                                                                                 </div>
+                                                                                                                         </div>
 
-                                                                                                                 <div class="toolbar toolbar-bottom" id="menu" >
-                                                                                                                     <div class="toolbar-inner">
-                                                                                                                         <button class="col button button-large button-fill" id="popup-file-look-close" >关闭</button>
+                                                                                                                         <div class="toolbar toolbar-bottom" id="menu" >
+                                                                                                                             <div class="toolbar-inner">
+                                                                                                                                 <button class="col button button-large button-fill" id="popup-file-look-close" >关闭</button>
+                                                                                                                             </div>
+                                                                                                                         </div>
                                                                                                                      </div>
                                                                                                                  </div>
-                                                                                                             </div>
-                                                                                                         </div>
-                                                                                                     </div>`
+                                                                                                             </div>`
             ,
             on: {
 
