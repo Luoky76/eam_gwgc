@@ -55,6 +55,7 @@
                             { display: "来源类型", name: "SRC_TYPE", newline: false, upper: true, type: "select", options: { disabled: true, date: me.repSourceType } },
                             { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "确认人", name: "CONFIRM_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", options: { data: me.maintDept, disabled: true } },
                             { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", options: { data: me.isleave, disabled: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
@@ -139,7 +140,7 @@
                                     },
                                 }
                             },
-                            { display: "验收人", name: "EIDT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", },
                             { display: "委外停机时间(H)", name: "ACT_STOP_TIME", newline: false, upper: true, type: "float", options: { disabled: true } },
                             { display: "验收情况", name: "CHECK_DESC", newline: true, width: 780, upper: true, validate: { required: true }, type: "textarea", options: { rows: "2" } },
                             { display: "主键", name: "OUT_ID", width: 100, type: "hidden" },
@@ -280,7 +281,7 @@
                 debugger
                 var me = this;
                 if ($.isEmptyObject(me.mainform.getChanges())) {
-                    LG.showSuccess('请填写验收情况！');
+                    LG.showSuccess('无修改！');
                     return;
                 }
                 if (!me.mainform.valid()) {

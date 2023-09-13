@@ -32,11 +32,7 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditing } },
-                            { display: "委外单号", name: "_search_OUT_CODE", dbname: "OUT_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "委外状态", name: "_search_OUT_STATUS", dbname: "OUT_STATUS", newline: false, upper: true, type: "select", options: { type: 'select', data: me.repOutType } },
                             {
                                 display: "实际开工时间", name: "_search_ACT_START_DATE", dbname: "ACT_START_DATE",  newline: false, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
@@ -49,7 +45,6 @@
                                     format: "yyyy-MM-dd"
                                 }
                             },
-                            { display: "是否有遗留问题", name: "_search_IS_LEAVE", dbname: "IS_LEAVE", newline: false, upper: true, type: "select", options: { type: 'select', data: me.isleave } },
                         ]
                     },
                     grid: {
@@ -318,7 +313,7 @@
                     validate: true,
                     buttons: [{
                         text: '查询',
-                        width: 100,
+                        width: 60,
                         click: function () {
                             LG.commonSearch($formsearch, me.grid);
                         }

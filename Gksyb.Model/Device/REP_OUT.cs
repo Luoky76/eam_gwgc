@@ -394,5 +394,19 @@ namespace Gksyb.Model
         [Description("不含税维修费用(元)")]
         public decimal? NOTAX_MONEY { get; set; }
 
+        /// <summary>
+        /// 确认人ID
+        /// </summary>
+        [Description("确认人ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CONFIRM_USERID { get; set; }
+
+        /// <summary>
+        /// 确认人
+        /// </summary>
+        [Description("确认人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CONFIRM_USER { get; set; }
+
     }
 }

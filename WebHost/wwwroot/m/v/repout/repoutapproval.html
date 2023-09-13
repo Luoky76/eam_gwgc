@@ -196,7 +196,7 @@
                             app.ajax({
                                 async: false,
                                 type: 'post',
-                                url: 'Device/RepOut/SubmitRepOutCheck',
+                                url: 'Device/RepOut/SubmitRepOutAccept',
                                 data: {
                                     "sids": sids
                                 },
@@ -237,7 +237,7 @@
             { display: "使用部门", name: "DEPT_NAME", readOnly: true, },
             { display: "维保部门", name: "WDEPT_ID", readOnly: true, },
             { display: "是否有遗留问题", name: "IS_LEAVE", readOnly: true, },
-            { display: "确认人", name: "CHECK_USER", validate: { required: true }, },
+            { display: "确认人", name: "CHECK_USER", readOnly: true, },
             { display: "故障现象描述", name: "FAULT_DESCRIBE", readOnly: true, },
             { display: "故障原因", name: "REASON", readOnly: true, },
             { display: "解决方法", name: "SOLUTION", readOnly: true, },
@@ -249,14 +249,14 @@
             { display: "合同名称", name: "PACT_NAME", },
             { display: "签订日期", name: "PACT_DATE", },
             { display: "编制日期", name: "EIDT_DATE", },
-            { display: "编制人", name: "EIDT_USER", },
+            { display: "编制人", name: "EIDT_USER", Option: userList, Searched: true },
             { display: "税率", name: "RATIO", Option: ratio, Searched: true },
             { display: "维修费用(元)", name: "REP_MONEY", },
             { display: "不含税维修费用(保存自动计算)", name: "NOTAX_MONEY", },
             { display: "验收时间", name: "CHECK_DATE", },
             { display: "实际开工时间", name: "REAL_BEGINTIME", },
             { display: "实际完工时间", name: "REAL_ENDTIME", },
-            { display: "验收人", name: "EIDT_USER", Option: userList, Searched: true },
+            { display: "验收人", name: "CHECK_USER", },
             { display: "委外停机时间(H)", name: "ACT_STOP_TIME", readOnly: true, },
             { display: "验收情况", name: "CHECK_DESC", validate: { required: true }, },
         ];
@@ -349,10 +349,10 @@
                         var start = new Date(startDate);
                         var complete = new Date(completeDate);
 
-                        if (!startDate || !completeDate) {
+                        /*if (!startDate || !completeDate) {
                             $('#ACT_STOP_TIME').val("");
                             return;
-                        }
+                        }*/
 
                         if (start >= complete) {
                             $('#REAL_BEGINTIME').val("");

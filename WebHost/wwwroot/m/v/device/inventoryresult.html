@@ -87,6 +87,10 @@
 
                         data.Rows.forEach((a) => {
                             a.STATUS = busResult.scanStatus.find((v) => v.ID == a.STATUS).TEXT;
+                            if (a.SCAN_DATE != null) {
+                                var parts = a.SCAN_DATE.split(' ');
+                                a.SCAN_DATE = parts[0];
+                            }
                         });
 
                         var str = app.CreateListContentHtml(data.Rows, me.ListDict, false);
@@ -263,6 +267,10 @@
                                 var str = "";
                                 data.Rows.forEach((a) => {
                                     a.STATUS = busResult.scanStatus.find((v) => v.ID == a.STATUS).TEXT;
+                                    if (a.SCAN_DATE != null) {
+                                        var parts = a.SCAN_DATE.split(' ');
+                                        a.SCAN_DATE = parts[0];
+                                    }
                                 });
 
                                 str = app.CreatePopupContentHtml(resultInfo);
@@ -327,11 +335,13 @@
                 success: function (data) {
                     formDataDetail = data.Rows;
                     // 清单
+                    data.Rows.forEach((a) => {
+                        a.STATUS = states.find((v) => v.ID == a.STATUS).TEXT;
+                    });
                     var str = app.CreateListContentHtml(data.Rows, resultDetail, false);
                     $("#modify_bg").html(str);
                     data.Rows.forEach((a) => {
                         a.HANDLE = handle.find((v) => v.ID == a.HANDLE).TEXT;
-                        a.STATUS = states.find((v) => v.ID == a.STATUS).TEXT;
                         $("#list-" + a.SCAN_DET_ID).click(function () {
                             detail_popup.params = { "SCAN_DET_ID": a.SCAN_DET_ID, "SCAN_ID": a.SCAN_ID};
                             detail_popup.open();
@@ -404,8 +414,8 @@
                             return
                         }
 
-                        if (data.SCAN_RESULT == null || data.SCAN_RESULT == '') {
-                            app.dialog.error("盘点结果不可为空");
+                        if (data.SCAN_RESULT == null || data.SCAN_RESULT == '' || data.SCAN_RESULT == '-99') {
+                            app.dialog.error("请选择盘点结果");
                             return
                         }
 
@@ -445,7 +455,6 @@
                             },
                             url: 'Device/InventoryTask/GetDeviceScanDetails',
                             success: function (data) {
-                                debugger
                                 data.Rows.forEach((a) => {
                                     a.HANDLE = handle.find((v) => v.ID == a.HANDLE).TEXT;
                                     a.STATUS = states.find((v) => v.ID == a.STATUS).TEXT;
