@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Gksyb.Workflow.Services.Workflow
 {
-    public class TaskService : IBaseService
+    public class TaskService : IBaseService, ITaskService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IDbContext _dbContext;
@@ -59,7 +59,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 await nodeService.Complate(info);
                 if (info.ToNodeIsEmpty) return;
                 var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
-                info.ToNode = info.NodeStatus == WF_NODEExtensions.Back ? nodeService.Id : null;
+                info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
                 toNodeService?.Execute(info);
             });
         }
@@ -73,7 +73,7 @@ namespace Gksyb.Workflow.Services.Workflow
             MessageException.ThrowIf(task == null, "任务已结束");
             MessageException.ThrowIf(!_user.IsSuper && task.CREATEUSERID != _user.UserID, "您无权进行此操作");
             info.FlowId = task.FLOW_ID;
-            info.NodeStatus = WF_NODEExtensions.Cancel;
+            info.NodeStatus = NodeStatus.Cancel;
             await Init(info);
             await _dbContext.UseTransactionAsync(async () =>
             {
@@ -95,7 +95,7 @@ namespace Gksyb.Workflow.Services.Workflow
         }
 
         /// <summary>
-        /// 标记成已阅
+        /// 全部标记成已阅
         /// </summary>
         public async Task ReadAllAsync()
         {
@@ -129,7 +129,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     shareNode.ID = GuidHelper.NewShortId();
                     shareNode.NODE_USERID = user.Id;
                     shareNode.NODE_USER = user.Name;
-                    shareNode.NODE_STATUS = WF_NODEExtensions.Share;
+                    shareNode.NODE_STATUS = NodeStatus.Share;
                     shareNode.CREATEUSER = _user.RealName;
                     shareNode.CREATEDATE = sysdate;
                     shareNode.VIEWDATE = sysdate;
@@ -162,7 +162,7 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task TransferAsync(FlowExecuteInfo info)
         {
             WF_NODE node = null;
-            info.NodeStatus = WF_NODEExtensions.Transfer;
+            info.NodeStatus = NodeStatus.Transfer;
             var nodeService = await FindNodeService(info, c =>
             {
                 node = c;
@@ -184,7 +184,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         public async Task ExcuteAndJump(FlowExecuteInfo info)
         {
-            info.NodeStatus ??= WF_NODEExtensions.Back;
+            info.NodeStatus ??= NodeStatus.Back;
             await ExcuteAsync(info);
         }
 
@@ -196,7 +196,7 @@ namespace Gksyb.Workflow.Services.Workflow
             var node = await _dbContext.Query<WF_NODE>().Where(c => c.ID == info.Id).FirstOrDefaultAsync()
                ?? throw new MessageException($"找不到{info.Id}的任务节点");
             MessageException.ThrowIf(!_user.IsSuper && node.NODE_USERID != _user.UserID, "您无权进行此操作");
-            MessageException.ThrowIf(node.NODE_STATUS != WF_NODEExtensions.Active, "节点已完成");
+            MessageException.ThrowIf(node.NODE_STATUS != NodeStatus.Active, "节点已完成");
             info.FlowId = node.FLOW_ID;
             info.TaskId = node.TASK_ID;
             info.NodeId = node.NODE_ID;
@@ -204,8 +204,8 @@ namespace Gksyb.Workflow.Services.Workflow
             var nodeService = Nodes.FirstOrDefault(c => c.Id == node.NODE_ID);
             info.ToNode = info.NodeStatus switch
             {
-                WF_NODEExtensions.Back => info.ToNodeIsEmpty ? StartNode.Id : info.ToNode,
-                WF_NODEExtensions.Reject => EndNode.Id,
+                NodeStatus.Back => info.ToNodeIsEmpty ? StartNode.Id : info.ToNode,
+                NodeStatus.Reject => EndNode.Id,
                 _ => info.ToNode,
             };
             if (info.ToNodeIsEmpty) info.ToNode = node.TO_NODE_ID;

@@ -68,24 +68,24 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         public override async Task Complate(FlowExecuteInfo info)
         {
-            info.NodeStatus ??= WF_NODEExtensions.Agree;
+            info.NodeStatus ??= NodeStatus.Agree;
             await ComplateTask(info);
             switch (info.NodeStatus)
             {
-                case WF_NODEExtensions.Agree:
+                case NodeStatus.Agree:
                     if (!info.ToNodeIsEmpty) break;
                     await ExecuteOutputs(info);
                     break;
 
-                case WF_NODEExtensions.Back:
+                case NodeStatus.Back:
                     //退回同时完成同节点的其他任务
-                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == Id && c.NODE_STATUS == WF_NODEExtensions.Active, c =>
+                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == Id && c.NODE_STATUS == NodeStatus.Active, c =>
                     {
-                        c.NODE_STATUS = WF_NODEExtensions.Archived;
+                        c.NODE_STATUS = NodeStatus.Archived;
                     });
                     break;
 
-                case WF_NODEExtensions.Transfer:
+                case NodeStatus.Transfer:
                     await AddTask(info);
                     break;
 
@@ -119,22 +119,32 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         protected async Task<string> AddTask(FlowExecuteInfo info, bool publishEvent = true)
         {
-            var users = info.Users;
+            var users = info.Users ?? new List<UserInfo>();
             info.Users = null;
-            if (users == null || users.Count < 1)
+            if (users.Count < 1)
             {
                 var operatorType = OperatorType ?? "";
-                if (string.IsNullOrWhiteSpace(operatorType)) return info.NodeId;
-                var service = _serviceProvider.GetService<IUserService>();
-                var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();
-                users = await service.FindOperators(new FindOperatorInfo()
+                if (!string.IsNullOrWhiteSpace(operatorType))
                 {
-                    Type = operatorType,
-                    Corp = corpid,
-                    Operators = Operators
-                });
+                    var service = _serviceProvider.GetService<IUserService>();
+                    var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();
+                    users = await service.FindOperators(new FindOperatorInfo()
+                    {
+                        Type = operatorType,
+                        Corp = corpid,
+                        Operators = Operators
+                    });
+                }
             }
-            if (users.Count < 1) throw new MessageException($"找不到下一节点的处理人");
+            if (users.Count < 1)
+            {
+                if (AutoNext)
+                {
+                    await ExecuteOutputs(info);
+                    return info.NodeId;
+                }
+                throw new MessageException($"找不到下一节点的处理人");
+            }
             var nodeId = info.NodeId;
             var sysdate = await _dbContext.GetSysdate();
             var nodes = new List<WF_NODE>();
@@ -152,7 +162,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                     NODE_USERID = user.Id,
                     NODE_USERNAME = user.Account,
                     NODE_USER = user.Name,
-                    NODE_STATUS = WF_NODEExtensions.Active,
+                    NODE_STATUS = NodeStatus.Active,
                     TO_NODE_ID = info.ToNode,
                     CREATEUSER = User.RealName,
                     CREATEDATE = sysdate
@@ -201,7 +211,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         protected async Task ComplateTask(FlowExecuteInfo info)
         {
-            await ComplateTask(c => c.ID == info.Id && c.NODE_STATUS == WF_NODEExtensions.Active, c =>
+            await ComplateTask(c => c.ID == info.Id && c.NODE_STATUS == NodeStatus.Active, c =>
             {
                 c.NODE_STATUS = info.NodeStatus;
                 c.NODE_REASON = info.NodeReason;
@@ -219,9 +229,9 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 if (input.Source == null) continue;
                 if (input.Source._isTask)
                 {
-                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == input.Source.Id && c.NODE_STATUS == WF_NODEExtensions.Active, c =>
+                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == input.Source.Id && c.NODE_STATUS == NodeStatus.Active, c =>
                     {
-                        c.NODE_STATUS = WF_NODEExtensions.Archived;
+                        c.NODE_STATUS = NodeStatus.Archived;
                     });
                 }
                 await ComplatePreviousTask(info, input.Source.Inputs);
@@ -394,6 +404,17 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             get
             {
                 return GetProperties("operators").CastTo<string>();
+            }
+        }
+
+        /// <summary>
+        /// 操作人
+        /// </summary>
+        private bool AutoNext
+        {
+            get
+            {
+                return GetProperties("autoNext").CastTo(false);
             }
         }
     }

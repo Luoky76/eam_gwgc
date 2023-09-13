@@ -1,5 +1,6 @@
 ﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.Grid;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Controllers.Workflow.Dtos;
@@ -31,7 +32,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         public async Task<GridData> ToDoAsync(GridRequest request)
         {
-            var query = _dbContext.Query<WF_NODE>().Where(node => node.NODE_STATUS == WF_NODEExtensions.Active)
+            var query = _dbContext.Query<WF_NODE>().Where(node => node.NODE_STATUS == NodeStatus.Active)
                 .InnerJoin<WF_TASK>((node, task) => node.TASK_ID == task.ID)
                 .CorpFilter(_user).SelectNodeInfo();
             return await query.GetGridData(request);
@@ -195,7 +196,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     VIEWDATE = DateTime.Now
                 });
             }
-            if (info.NodeStatus == WF_NODEExtensions.Share)
+            if (info.NodeStatus == NodeStatus.Share)
             {
                 await ReadAsync(info.Id);
             }
@@ -256,7 +257,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 OperDate = a.OPERDATE
             }).ToListAsync();
             info.Logs = info.Logs.OrderByDescending(c => c.OperDate).ToList();
-            if (info.NodeStatus == WF_NODEExtensions.Share)
+            if (info.NodeStatus == NodeStatus.Share)
             {
                 await ReadAsync(info.Id);
             }

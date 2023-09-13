@@ -19,11 +19,11 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
 
             //完成处理
             var sysdate = await _dbContext.GetSysdate();
-            task.FLOW_STATUS = info.NodeStatus == WF_NODEExtensions.Cancel ? WF_TASKExtensions.Cancel : WF_TASKExtensions.Finish;
+            task.FLOW_STATUS = info.NodeStatus == NodeStatus.Cancel ? WF_TASKExtensions.Cancel : WF_TASKExtensions.Finish;
             task.FINISHDATE = sysdate;
             var nodes = await ComplateTask(c => c.TASK_ID == info.TaskId, c =>
             {
-                c.NODE_STATUS = WF_NODEExtensions.Archived;
+                c.NODE_STATUS = NodeStatus.Archived;
             }, true);
 
             //更新抄送表的任务完成标志

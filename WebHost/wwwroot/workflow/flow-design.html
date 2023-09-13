@@ -123,7 +123,6 @@
                             split: ","
                         }
                     },
-                    //{ display: "表单", name: "form", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
                     { display: "类路径", name: "clazz", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
                     { display: "方法名", name: "methodName", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
                     { display: "参数变量", name: "args", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
@@ -133,28 +132,10 @@
                         }
                     },
                     { display: "处理类", name: "handle", newline: true, bpmn: "bpmn:exclusiveGateway", type: "text", options: {} },
-                    //{
-                    //    display: "任务类型", name: "taskType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
-                    //        data: [{ ID: 1, TEXT: "主办任务" }, { ID: 2, TEXT: "协办任务" }]
-                    //    }
-                    //},
-                    //{
-                    //    display: "参与类型", name: "performType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
-                    //        data: [{ ID: 1, TEXT: "普通参与" }, { ID: 2, TEXT: "会签参与" }]
-                    //    }
-                    //},
                     { display: "前置拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
                     { display: "后置拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
-                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: {} }
-                    //, { display: "提醒时间", name: "reminderTime", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
-                    //{ display: "重复提醒间隔", name: "reminderRepeat", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
-                    //{ display: "期待完成时间", name: "expireTime", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
-                    //{
-                    //    display: "是否自动完成", name: "autoExecute", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
-                    //        data: [{ ID: "N", TEXT: "否" }, { ID: "Y", TEXT: "是" }]
-                    //    }
-                    //},
-                    //{ display: "回调处理", name: "callback", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} }
+                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: {} },
+                    { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} }
                 ];
                 for (var i = 0, l = fields.length; i < l; i++) {
                     var field = fields[i];

@@ -14,7 +14,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
 
         protected override async Task Exec(FlowExecuteInfo info)
         {
-            if (info.NodeStatus == WF_NODEExtensions.Back)//退回
+            if (info.NodeStatus == NodeStatus.Back)//退回
             {
                 await ReExec(info);
                 return;
@@ -29,8 +29,8 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             {
                 await UpdateWfTask(info);
             }
-            if (info.NodeStatus == WF_NODEExtensions.Draft) return;
-            info.NodeStatus ??= WF_NODEExtensions.Agree;
+            if (info.NodeStatus == NodeStatus.Draft) return;
+            info.NodeStatus ??= NodeStatus.Agree;
             await base.Complate(info);
             await AddLog(info, isNew ? "发起" : "重新提交");
         }

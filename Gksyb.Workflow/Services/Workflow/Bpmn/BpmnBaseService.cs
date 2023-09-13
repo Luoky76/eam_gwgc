@@ -82,14 +82,14 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 var key = $"{{{nodeName}}}";
                 if (!expression.Contains(key)) continue;
                 var group = nodes.Where(c => c.NODE_NAME == nodeName).ToList();
-                funcData.Add(key, () => group.Count < 1 ? 0 : group.Count(c => c.NODE_STATUS == WF_NODEExtensions.Agree) * 1.0 / group.Count);
+                funcData.Add(key, () => group.Count < 1 ? 0 : group.Count(c => c.NODE_STATUS == NodeStatus.Agree) * 1.0 / group.Count);
             }
             if (expression.Contains("{通过率}"))
             {
                 funcData.Add("{通过率}", () =>
                 {
                     if (nodeNames.Exists(c => !nodes.Any(a => a.NODE_NAME == c))) return 0;//有节点还没走到,通过率就算0
-                    return nodes.Count < 1 ? 0 : nodes.Count(c => c.NODE_STATUS == WF_NODEExtensions.Agree) * 1.0 / nodes.Count;
+                    return nodes.Count < 1 ? 0 : nodes.Count(c => c.NODE_STATUS == NodeStatus.Agree) * 1.0 / nodes.Count;
                 });
             }
             if (expression.Contains("{节点通过率}"))
@@ -97,7 +97,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 funcData.Add("{节点通过率}", () =>
                 {
                     if (nodeNames.Count < 1) return 0;//有节点还没走到,通过率就算0
-                    return nodes.Where(c => c.NODE_STATUS == WF_NODEExtensions.Agree).Select(c => c.NODE_NAME).Distinct().Count() * 1.0 / nodeNames.Count;
+                    return nodes.Where(c => c.NODE_STATUS == NodeStatus.Agree).Select(c => c.NODE_NAME).Distinct().Count() * 1.0 / nodeNames.Count;
                 });
             }
             return expression.Eval(formData, funcData).CastTo<string>();

@@ -31,7 +31,7 @@
         public string NodeId { get; set; }
 
         /// <summary>
-        /// 节点状态
+        /// 节点状态 <seealso cref="WorkFlow.NodeStatus"/>
         /// </summary>
         public int? NodeStatus { get; set; }
 
