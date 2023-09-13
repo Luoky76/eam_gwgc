@@ -281,8 +281,8 @@
         return targetData;
 
         function getKey(key) {
-            if (typeof key === "string") key = key.replace(/[.]/g, '').toLowerCase();
-            return key;
+            if (key === 0) return "0";
+            return (key || "").toString();
         }
     };
     try {
