@@ -232,8 +232,14 @@
             },
             doc: function () { //设备随机资料
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
                 if (selected) {
                     $.ligerDialog.open({
                         width: 1200,
@@ -256,8 +262,14 @@
             },
             param: function () { //设备参数
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
                 if (selected) {
                     $.ligerDialog.open({
                         width: 1200,
@@ -280,7 +292,14 @@
             },
             remould: function () { //重大改造履历
                 var me = this;
-                var selected = me.grid.getSelectedRow();
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
                 if (selected) {
                     $.ligerDialog.open({
                         width: 1200,

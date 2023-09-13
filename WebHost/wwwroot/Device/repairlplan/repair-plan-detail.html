@@ -79,12 +79,26 @@
                             { display: "安装地点", name: "INSTALL_SITE", newline: true, width: 880, upper: true, type: "text", options: {} },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", options: {}, group: "维修计划-指导确认信息" },
-                            { display: "实际完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "计划停机时长(H)", name: "PLAN_STOP_TIME", newline: false, upper: true, type: "text", options: {} },
+                            {
+                                display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", options: {
+                                    format: 'yyyy-MM-dd',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours(value, $('#PLAN_END_DATE').val());
+                                    },
+                                }, group: "维修计划-指导确认信息"
+                            },
+                            {
+                                display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", options: {
+                                    format: 'yyyy-MM-dd',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours($('#PLAN_START_DATE').val(), value);
+                                    },
+                                }
+                            },
+                            { display: "计划停机时长(H)", name: "PLAN_STOP_TIME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "负责人", name: "CHARGE_USER", newline: true, upper: true, type: "text", options: {} },
                             { display: "采购方式", name: "COLLECT_METHOD", newline: false, upper: true, type: "text", options: {} },
-                            { display: "预估维修金额", name: "PLAN_MONEY", newline: false, upper: true, type: "text", options: {} },
+                            { display: "预估维修金额", name: "PLAN_MONEY", newline: false, upper: true, type: "float", options: {} },
                             { display: "维修内容", name: "REPAIR_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } }
                         ]
                     }
@@ -118,6 +132,20 @@
                         LG.showError(message);
                     }
                 }); 
+            },
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (start >= complete) {
+                    $('#PLAN_START_DATE').val("");
+                    $('#PLAN_END_DATE').val("");
+                    LG.showError("计划开始时间不能大于计划结束时间！");
+                    return;
+                }
+                var timeDiff = complete - start;
+                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                $('#PLAN_STOP_TIME').val(minutesDiff);
             },
             loadData: function () {
                 var me = this;

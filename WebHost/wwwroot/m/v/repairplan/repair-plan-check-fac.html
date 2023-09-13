@@ -208,6 +208,24 @@
                         app.dialog.error("已提交不能再提交", function () { });
                         return false;
                     }
+
+                    var where = JSON.stringify({
+                        op: 'and',
+                        rules: [{ field: 'EXE_ID', op: 'equal', value: checkedIDList[0].EXE_ID }]
+                    });
+                    app.ajax({
+                        type: 'post',
+                        data: { "where": where },
+                        url: 'Repair/RepairPlan/ExeItemList',
+                        success: function (data) {
+                            formDataDetail = data.Rows;
+                        }
+                    });
+                    if (formDataDetail == undefined || formDataDetail == null || formDataDetail.length == 0) {
+                        app.dialog.error("请先保存维修项目明细", function () { });
+                        return false
+                    }
+
                     var flag = true;
                     var updatedarr = {
                         ACT_END_DATE: checkedIDList[0].ACT_END_DATE,
@@ -418,7 +436,7 @@
                             type: 'post',
                             data: {
                                 "id": ID
-                            },
+                            },  
                             url: 'Repair/RepairPlan/GetExeDetail',
                             success: function (data) {
                                 var str = "";
@@ -431,24 +449,36 @@
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data[0].AUDITING_A == "0");
 
-                                app.smartSelect.create({
-                                    el: '.MAINT_TYPE',
-                                    searchbar: true,
-                                    on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
+                                if (data[0].AUDITING_A == "1") {
+                                    app.smartSelect.create({
+                                        el: '.MAINT_TYPE',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
                                         }
-                                    }
-                                });
-                                app.smartSelect.create({
-                                    el: '.DEAL_TYPE',
-                                    searchbar: true,
-                                    on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.DEAL_TYPE',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                    $('#detail_bg').find('input').attr('readonly', true);
+                                } else {
+                                    app.smartSelect.create({
+                                        el: '.MAINT_TYPE',
+                                        searchbar: true,
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.DEAL_TYPE',
+                                        searchbar: true,
+                                    });
+                                }
 
                                 //明细数据
                                 CreateApplyDetail(ID, me.detail.AUDITING_A);
@@ -649,29 +679,40 @@
                                 }
                                 if (me.AUDITING_A == "1") {
                                     $("#menuDetail").hide();
+                                    app.smartSelect.create({
+                                        el: '.IS_COMPLETE',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+
+                                    app.smartSelect.create({
+                                        el: '.IS_ASKBID',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    $('#detail_bg_detail').find('input').attr('readonly', true);
                                 } else {
                                     $("#menuDetail").show();
+                                    app.smartSelect.create({
+                                        el: '.IS_COMPLETE',
+                                        searchbar: true,
+                                    });
+
+                                    app.smartSelect.create({
+                                        el: '.IS_ASKBID',
+                                        searchbar: true,
+                                    });
                                 }
 
-                                app.smartSelect.create({
-                                    el: '.IS_COMPLETE',
-                                    searchbar: true,
-                                    on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
-                                        }
-                                    }
-                                });
-
-                                app.smartSelect.create({
-                                    el: '.IS_ASKBID',
-                                    searchbar: true,
-                                    on: {
-                                        beforeOpen: function (e) {
-                                            e.detail.prevent();
-                                        }
-                                    }
-                                });
+                                
                             }
                         });
                     }

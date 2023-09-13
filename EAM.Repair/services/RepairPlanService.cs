@@ -97,7 +97,12 @@ namespace EAM.Repair.services
                 a.AUDIT_TIME,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
+                a.PLAN_STOP_TIME,
                 a.PLAN_CODE,
+                a.FAULT_DESCRIBE,
+                a.COLLECT_METHOD,
+                a.PLAN_MONEY,
+                a.REPAIR_MEMO,
                 a.DEPT_NAME,
                 a.CHARGE_USER,
                 a.PLAN_MEMO,
@@ -106,6 +111,7 @@ namespace EAM.Repair.services
                 b.DEVICE_NAME,
                 b.DEVICE_TYPE,
                 b.DEVICE_NO,
+                b.INSTALL_SITE,
                 b.ASSET_CODE,
                 AUDITINGSORT = Case.When(a.AUDITING.Equals("6")).Then("1.5").Else(a.AUDITING)
             }).Where(x => x.PLAN_ID == ID).ToListAsync();

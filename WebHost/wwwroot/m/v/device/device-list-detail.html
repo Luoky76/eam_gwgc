@@ -32,7 +32,7 @@
                                     <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
                                         <div class="item-title" style="color: #666666">设备编号</div>
                                         <div class="item-after" style="text-align:right">
-                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_CODE" placeholder="" readonly />
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_NO" placeholder="" readonly />
                                         </div>
                                     </div>
                                 </li>
@@ -55,7 +55,7 @@
                                 </li>
                                 <li>
                                     <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
-                                        <div class="item-title" style="color: #666666">规格型号</div>
+                                        <div class="item-title" style="color: #666666">设备规格</div>
                                         <div class="item-after" style="text-align:right">
                                             <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEVICE_SIZE" placeholder="" readonly />
                                         </div>
@@ -108,27 +108,9 @@
 
                                 <li>
                                     <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
-                                        <div class="item-title" style="color: #666666">使用二级部门</div>
-                                        <div class="item-after" style="text-align:right">
-                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="SEC_DEPT" placeholder="" readonly />
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
                                         <div class="item-title" style="color: #666666">维保部门</div>
                                         <div class="item-after" style="text-align:right">
-                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="WDEPT_NAME" placeholder="" readonly />
-                                        </div>
-                                    </div>
-                                </li>
-
-                                <li>
-                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
-                                        <div class="item-title" style="color: #666666">维保二级部门</div>
-                                        <div class="item-after" style="text-align:right">
-                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="WSEC_DEPT" placeholder="" readonly />
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="WDEPT_NAME"  placeholder="" readonly />
                                         </div>
                                     </div>
                                 </li>
@@ -145,7 +127,7 @@
                                     <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
                                         <div class="item-title" style="color: #666666">状态变动日期</div>
                                         <div class="item-after" style="text-align:right">
-                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="STATUS_DATE" placeholder="" readonly />
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="STATUS_DATE" placeholder="" readonly/>
                                         </div>
                                     </div>
                                 </li>
@@ -184,7 +166,6 @@
         //var id = 'wl-046';
         var dangerCorpId = originalData.DANGER_CORP_ID
         var photos = [];
-
         var business = {
             detail: null,
             deptList:[],

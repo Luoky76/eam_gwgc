@@ -423,24 +423,55 @@
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data.AUDITING_APPLY == "0");
 
-                                app.smartSelect.create({
-                                    el: '.ASSET_ID',
-                                    searchbar: true
-                                });
-                                app.smartSelect.create({
-                                    el: '.APPLY_DEPTID',
-                                    searchbar: true
-                                });
-                                app.smartSelect.create({
-                                    el: '.APPLY_USERID',
-                                    searchbar: true
-                                });
-
-                                app.calendar.create({
-                                    inputEl: '#FAILURE_TIME',
-                                    timePicker: true,
-                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
-                                })
+                                if (data.AUDITING_APPLY == "1") {
+                                    app.smartSelect.create({
+                                        el: '.ASSET_ID',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.APPLY_DEPTID',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.APPLY_USERID',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    $('#detail_bg').find('input').attr('readonly', true);
+                                    
+                                } else {
+                                    app.calendar.create({
+                                        inputEl: '#FAILURE_TIME',
+                                        timePicker: true,
+                                        dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                    })
+                                    app.smartSelect.create({
+                                        el: '.ASSET_ID',
+                                        searchbar: true
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.APPLY_DEPTID',
+                                        searchbar: true
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.APPLY_USERID',
+                                        searchbar: true
+                                    });
+                                }
                             }
                         });
 
@@ -481,6 +512,11 @@
                             let data = business.user.find(x => x.ID == $("#APPLY_USERID").val());
 
                             $('#APPLY_USER').val(data.TEXT ?? '');
+                        })
+                        app.calendar.create({
+                            inputEl: '#FAILURE_TIME',
+                            timePicker: true,
+                            dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
                         })
                         /* app.form.fillFromData('#detail_bg');*/
                         $("#sumbit").hide();

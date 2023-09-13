@@ -414,10 +414,25 @@
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data.AUDITING_OUTSOURCE == "0");
 
-                                app.smartSelect.create({
-                                    el: '.IS_UNDER_WARRANTY',
-                                    searchbar: true
-                                });
+                                if (data.AUDITING_OUTSOURCE == "1") {
+                                    app.smartSelect.create({
+                                        el: '.IS_UNDER_WARRANTY',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    $('#detail_bg').find('input').attr('readonly', true);
+                                }
+                                else {
+                                    app.smartSelect.create({
+                                        el: '.IS_UNDER_WARRANTY',
+                                        searchbar: true
+                                    });
+                                }
+                                
                             }
                         });
 

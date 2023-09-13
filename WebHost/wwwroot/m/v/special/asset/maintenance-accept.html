@@ -411,11 +411,24 @@
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data.AUDITING_ACCEPT == "0");
 
-
-                                app.smartSelect.create({
-                                    el: '.ACCEPT_APPRAISE',
-                                    searchbar: true
-                                });
+                                if (data.AUDITING_ACCEPT == "1") {
+                                    app.smartSelect.create({
+                                        el: '.ACCEPT_APPRAISE',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    $('#detail_bg').find('input').attr('readonly', true);
+                                }
+                                else {
+                                    app.smartSelect.create({
+                                        el: '.ACCEPT_APPRAISE',
+                                        searchbar: true
+                                    });
+                                }
                             }
                         });
 

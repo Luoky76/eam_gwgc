@@ -21,6 +21,10 @@
     </form>
     <script type="text/javascript">
         'use strict';
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
@@ -131,6 +135,9 @@
                         case "add":
                             me.add();
                             break;
+                        case "upload":
+                            me.upload();
+                            break;
                         case "modify":
                             me.modify();
                             break;
@@ -158,33 +165,90 @@
             },
             add: function () { //新增
                 var me = this;
+
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.BOM_ID);
+                }
+
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Repair/RepairPlan/GetDevice',
+                        rowKey: "DEVICE_ID",
+                        columns: [
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+
+                        ]
+                    },
+                    fields: [
+                        { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                        { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.DEVICE_ID)) {
+                                me.grid.addEditRow({
+                                    PLAN_ID: business.sid,
+                                    BOM_ID: item.DEVICE_ID,
+                                    BOM_NAME: item.DEVICE_NAME,
+                                    DEVICE_TYPE: item.DEVICE_TYPE,
+                                });
+                            }
+                        }
+                    }
+                }
                 $.ligerDialog.open({
-                    width: 860,
-                    height: 500,
-                    allowClose: true,
-                    title: '导入设备',
-                    url: "repair-plan-item-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
+                    width: 1000,
+                    height: 400,
+                    title: '选择设备',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
                     isResize: true,
                     slide: false,
-                    data: { "sid": null, "callback": me.f_callback }
+                    data: dataOptions
                 });
 
             },
-            f_callback: function (id, data) {
+            upload: function () {
                 var me = this;
-                data.forEach((a) => {
-                    business.grid.addEditRow({
-                       "PLAN_ID": business.sid,
-                       "BOM_ID":a.DEVICE_ID,
-                       "BOM_NAME": a.DEVICE_NAME,
-                       "DEVICE_TYPE": a.DEVICE_TYPE,
-                   });
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        me.f_rowAttachManage(selected[0].PLAN_ITEM_ID);
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                isView = false;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "REP_PLAN_ITEM"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reload();
+                    }
                 });
-                
             },
             save: function () { //保存
                 var me = this;

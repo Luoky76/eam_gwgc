@@ -430,29 +430,64 @@
                                 app.form.fillFromData('#detail_bg', me.detail);
                                 showBtn(data.AUDITING_CHECK == "0");
 
-                                app.smartSelect.create({
-                                    el: '.REPORT_STATE',
-                                    searchbar: true
-                                });
-                                app.smartSelect.create({
-                                    el: '.CHECK_DEPTID',
-                                    searchbar: true
-                                });
-                                app.smartSelect.create({
-                                    el: '.CHECK_USERID',
-                                    searchbar: true
-                                });
+                                if (data.AUDITING_CHECK == "1") {
+                                    app.smartSelect.create({
+                                        el: '.REPORT_STATE',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.CHECK_DEPTID',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.CHECK_USERID',
+                                        searchbar: true,
+                                        on: {
+                                            beforeOpen: function (smartSelect, prevent) {
+                                                prevent();
+                                            }
+                                        }
+                                    });
+                                    $('#detail_bg').find('input').attr('readonly', true);
+                                }
+                                else {
+                                    app.smartSelect.create({
+                                        el: '.REPORT_STATE',
+                                        searchbar: true
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.CHECK_DEPTID',
+                                        searchbar: true
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.CHECK_USERID',
+                                        searchbar: true
+                                    });
 
-                                app.calendar.create({
-                                    inputEl: '#CHECK_BEGIN',
-                                    timePicker: true,
-                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
-                                });
-                                app.calendar.create({
-                                    inputEl: '#CHECK_END',
-                                    timePicker: true,
-                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
-                                });
+                                    app.calendar.create({
+                                        inputEl: '#CHECK_BEGIN',
+                                        timePicker: true,
+                                        dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                    });
+                                    app.calendar.create({
+                                        inputEl: '#CHECK_END',
+                                        timePicker: true,
+                                        dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                    });
+                                }
+                                
+
+                                
                             }
                         });
 
