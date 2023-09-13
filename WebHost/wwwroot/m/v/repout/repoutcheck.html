@@ -218,7 +218,7 @@
             { display: "来源单号", name: "SRC_CODE", readOnly: true, },
             { display: "使用部门", name: "DEPT_NAME", readOnly: true, },
             { display: "维保部门", name: "WDEPT_ID", readOnly: true, },
-            { display: "是否有遗留问题", name: "IS_LEAVE", Option: isleave, },
+            { display: "是否有遗留问题", name: "IS_LEAVE", Option: isleave, validate: { required: true }, },
             { display: "确认人", name: "CONFIRM_USER", validate: { required: true }, },
             { display: "故障现象描述", name: "FAULT_DESCRIBE", readOnly: true, },
             { display: "故障原因", name: "REASON", },
@@ -273,7 +273,10 @@
                             app.dialog.error("确认人不可为空");
                             return;
                         }
-
+                        if (data.IS_LEAVE == null || data.IS_LEAVE == '' || data.IS_LEAVE == '-99') {
+                            app.dialog.error("请选择是否有遗留问题");
+                            return;
+                        }
                         if (data.OUT_REPAIR_MEMO == null || data.OUT_REPAIR_MEMO == '') {
                             app.dialog.error("委外维修内容不可为空");
                             return;

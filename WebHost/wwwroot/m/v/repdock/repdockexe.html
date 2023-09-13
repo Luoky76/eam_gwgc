@@ -299,16 +299,15 @@
                         let data = app.form.convertToData("#detail_bg");
                         data.PLAN_ID = ID;
                         function checkAndShowError(value, errorMessage) {
-                            if (value == null || value === '') {
+                            if (value == null || value === '' || value === '-99') {
                                 app.dialog.error(errorMessage);
                                 return false;
                             }
                             return true;
                         }
-
                         if (!checkAndShowError(data.EXE_BDATE, "实际开工时间不可为空") ||
                             !checkAndShowError(data.EXE_EDATE, "实际完工时间不可为空") ||
-                            !checkAndShowError(data.IS_LEAVE, "是否遗留问题不可为空")) {
+                            !checkAndShowError(data.IS_LEAVE, "请选择是否有遗留问题")) {
                             return;
                         }
                         var exeCost = Number(data.EXE_COST);
