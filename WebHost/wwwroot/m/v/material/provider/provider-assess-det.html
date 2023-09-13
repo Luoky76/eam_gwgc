@@ -199,6 +199,7 @@
                 });
                 //设置数字输入框
                 $('#TOTAL_SCORE').attr("type", "number");
+                $('#TOTAL_SCORE').attr("step", "0.01");
                 //为表格添加修改事件
                 $('#assess input, #assess select').on('change', function () {
                     me.isDataChanged = true;
@@ -209,9 +210,18 @@
                 app.form.fillFromData('#assess', me.orginData);
                 me.isDataChanged = false;
             },
+            validate: function () {
+                var me = this;
+                var isValidated = true;
+                if (!document.forms['assess'].reportValidity()) {
+                    //验证不通过
+                    isValidated = false;
+                }
+                return isValidated;
+            },
             save: function () {
                 var me = this;
-                let data = app.form.convertToData("#assess");
+                let data = app.form.convertToData('#assess');
                 //防止主键篡改
                 data.ASSESS_ID = me.orginData.ASSESS_ID;
                 var changeRow = new Object();
@@ -318,6 +328,7 @@
                     //设置数字输入框
                     $('#' + form_id + ' #SCORE').attr("type", "number");
                     $('#' + form_id + ' #SCORE').attr("step", "0.01");
+                    $('#' + form_id + ' #SCORE').attr("min", "0");
                     //为表格添加修改事件
                     $('#' + form_id + ' input, #' + form_id + ' select').on('change', function () {
                         me.isDetailDataChanged = true;
@@ -329,18 +340,33 @@
                             let form_id = "assess_det_" + i;
                             score += Number($('#' + form_id + ' #SCORE').val());
                         }
-                        $('#TOTAL_SCORE').val(score);
-                        me.isDataChanged = true;
+                        if (score != $('#TOTAL_SCORE').val()) {
+                            $('#TOTAL_SCORE').val(score);
+                            me.isDataChanged = true;
+                        }
                     });
                 }
             },
             refreshDet: function () {
                 var me = this;
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
-                    let form_id = "assess_det_" + i;
+                    let form_id = 'assess_det_' + i;
                     app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
                 }
                 me.isDetailDataChanged = false;
+            },
+            validateDet: function () {
+                var me = this;
+                var isValidated = true;
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    //表格ID
+                    let form_id = 'assess_det_' + i;
+                    if (!document.forms[form_id].reportValidity()) {
+                        //验证不通过
+                        isValidated = false;
+                    }
+                }
+                return isValidated;
             },
             saveDet: function () {
                 var me = this;
@@ -349,8 +375,8 @@
                 changeRow.original = [];
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
                     //表格ID
-                    let form_id = "assess_det_" + i;
-                    let data = app.form.convertToData("#" + form_id);
+                    let form_id = 'assess_det_' + i;
+                    let data = app.form.convertToData('#' + form_id);
                     changeRow.updated.push(data);
                     changeRow.original.push(me.orginDetailData[i]);
                 }
@@ -409,8 +435,10 @@
                         me.showSuccessMessage('无修改');
                     }
                     else {
-                        if (me.isDataChanged) me.save();
-                        if (me.isDetailDataChanged) me.saveDet();
+                        if (me.validate() && me.validateDet()) {
+                            if (me.isDataChanged) me.save();
+                            if (me.isDetailDataChanged) me.saveDet();
+                        }
                     }
                 });
                 $('#submit').on('click', function (e) {
