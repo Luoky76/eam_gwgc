@@ -121,5 +121,13 @@ namespace EAM.Device.interfaces
         /// </summary>
         /// <returns></returns>
         public Task<GridData> GetPmExeQryList(GridRequest request);
+        /// <summary>
+        /// 获取附件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public Task<AjaxResult> GetPmFileList(string Id);
+
     }
 }

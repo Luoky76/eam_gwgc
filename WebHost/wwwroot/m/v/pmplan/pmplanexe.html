@@ -48,13 +48,15 @@
                             <span class="ios-only">返回</span>
                         </a>
 
-                        <button class="button" id="sumbit">
+                        <button class="button button-large button-fill" id="sumbit">
                             提交
                         </button>
-                        <button class="button button-large button-fill" id="writeresult" style="background-color: red">填写实施结果</button>
+                        <button class="button button-large button-fill" id="writeresult" style="background-color: orange">填写实施结果</button>
+                        <button class="button button-large button-fill" id="speWork" style="background-color: red">特色作业清单</button>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
     <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
@@ -64,17 +66,33 @@
         var formdata;
         var formDataDetail;
         var pepDataDetail;
+        var wzDataDetail;
+        var byDataDetail;
+        var ryDataDetail;
+        var zyDataDetail;
+        var storeDataDetail;
+        var SpList = []; //物资
+        var SpOrList = []; //物资原始数据
+        //上传的附件列表
+        var attachList = [];
         var business = {
             bySource :[],//来源
-            maintDept :[],
+            maintDept: [],
+            exeid: null,//实施单ID全局用于其它项的选择和操作
+            doneitemId: null,//保养实施ID 用于其它项的选择和操作
             pmType :[],
             deviceSelect :[],
             workState :[],
             maintCycle :[],
             storeSou: [],
+            storeIds:[],//当前的物资对应的库位
             isLose: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             auditingData: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
+            stdLevel: [{ "ID": "临时保养", "TEXT": "临时保养" }, { "ID": "定期保养", "TEXT": "定期保养" }],
+            planMonth: [{ "ID": "1", "TEXT": "一月" }, { "ID": "2", "TEXT": "二月" }, { "ID": "3", "TEXT": "三月" }, { "ID": "4", "TEXT": "四月" }, { "ID": "5", "TEXT": "五月" }
+                , { "ID": "6", "TEXT": "六月" }, { "ID": "7", "TEXT": "七月" }, { "ID": "8", "TEXT": "八月" }, { "ID": "9", "TEXT": "九月" }, { "ID": "10", "TEXT": "十月" }
+                , { "ID": "11", "TEXT": "十一月" }, { "ID": "12", "TEXT": "十二月" }],
             //主列表
             ListDict: [
                 { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: false, isPrimaryKey: true, isShow: false },
@@ -105,9 +123,11 @@
                         //绑定列表项的点击事件
                         data.Rows.forEach((a) => {
                             $("#list-" + a.EXE_ID).click(function () {
-                                //popupOpen(a.EXE_ID, 0);
+                                //popupOpen(a.EXE_ID, 0);点击实施单项把选中的ID赋值给全局变量exeid
+                                business.exeid = a.EXE_ID;
                                 Info_popup.params = { "EXE_ID": a.EXE_ID, "UPDATE": 0 };
                                 Info_popup.open();
+                                $("#dg_list").click();
                             });
                         });
                     },
@@ -116,6 +136,7 @@
                         return;
                     }
                 });
+
             },
             //获取下拉框数据暂时不用后面再加
             getCombox: function () {
@@ -137,6 +158,24 @@
                         me.workState = data.workState;
                         me.maintCycle = data.maintCycle;
                         me.storeSou = data.storeSou;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Device/PmInfo/ImportSpList',
+                    success: function (data) {
+                        data.Rows.forEach((a) => {
+                            var text = a.NUM ? '(库存数量:' + a.NUM + ')' : "";
+                            var id = a.NUM ? '_' + a.NUM : "";
+                            SpList.push({ "ID": a.SP_NAME + id, "TEXT": a.SP_NAME + text, "VALUE": a.SP_CODE });
+                            a.TEXT_ID = a.SP_NAME + id;
+                        });
+                        SpOrList = data.Rows;
                     },
                     error: function (message, data) {
                         app.dialog.error(message, function () { });
@@ -180,7 +219,7 @@
                         checkedIDList.push({ EXE_ID: x.value });
                     });
                     if (checkedIDList.length <= 0) {
-                        app.dialog.error("请勾选后在点填写实施结果", function () { });
+                        app.dialog.error("请勾选后再点填写实施结果", function () { });
                         return false;
                     } else if (checkedIDList.length > 1) {
                         app.dialog.error("只能勾选一项进行填写实施结果", function () { });
@@ -192,8 +231,13 @@
                         flag = false;
                         return false;
                     }
+                    //点击实施单项把选中的ID赋值给全局变量exeid
+                    business.exeid = checkedIDList[0].EXE_ID;
                     Info_popup.params = { "EXE_ID": checkedIDList[0].EXE_ID, "UPDATE": 1 };
                     Info_popup.open();
+                    CreateShisList(business.exeid);
+                    $("#modify_list").click();
+                   
                 });
                 //提交事件
                 $("#sumbit").click(function () {
@@ -237,6 +281,31 @@
                         });
                     }
                 });
+                //特殊作业清单
+                $('#speWork').on('click', function (e) {
+                    var checkDom = $("#pmplanexe_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ EXE_ID: x.value });
+                    });
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后再点击按钮", function () { });
+                        return false;
+                    } else if (checkedIDList.length > 1) {
+                        app.dialog.error("只能勾选一项点击按钮", function () { });
+                        return false;
+                    }
+                  
+                    //点击实施单项把选中的ID赋值给全局变量exeid
+                    business.exeid = checkedIDList[0].EXE_ID;
+                    //先弹出主窗
+                    Info_popup.params = { "EXE_ID": checkedIDList[0].EXE_ID, "UPDATE": 1 };
+                    Info_popup.open();
+                    //生成
+                    CreateZyList();
+                    $("#modify_list4").click();
+                });
+               
             }
         };
         business.init();
@@ -305,53 +374,71 @@
                                                                                    </div>
                                                                                     <div id="tab-2" class="page-content tab">
                                                                                            <div class="list" id="modify_bg1">
-                                                                                              dddd
+                                                                                              
                                                                                            </div>
                                                                                      </div>
                                                                                     <div id="tab-3" class="page-content tab">
                                                                                            <div class="list" id="modify_bg2">
-                                                                                           ddeee
+                                                                                             请选择一项保养实施
                                                                                            </div>
                                                                                      </div>
                                                                                      <div id="tab-4" class="page-content tab">
                                                                                            <div class="list" id="modify_bg3">
-                                                                                           fff
+                                                                                           
                                                                                            </div>
                                                                                      </div>
                                                                                      <div id="tab-5" class="page-content tab">
                                                                                           <div class="list" id="modify_bg4">
-                                                                                          ggg
+                                                                                         
                                                                                           </div>
                                                                                     </div>
                                                                                  </div>
                                                                                  <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
                                                                                      <div class="toolbar-inner">
                                                                                          <button class="col button button-large button-fill" id="save" >保存</button>
-                                     
+                                                                                         
                                                                                      </div>
                                                                                  </div>
                                                                                   <div class="toolbar toolbar-bottom" id="menu1" style="display: none;">
                                                                                      <div class="toolbar-inner">
-                                                                                        <button class="col button button-large button-fill" id="save1" >保存</button>
+                                                                                        <button class="col button button-large button-fill" id="showWuzList" >物资明细查看</button>
+                                                                                        <button class="col button button-large button-fill" id="showRyList" style="background-color:orange">人员明细查看</button>
                                                                                      </div>
                                                                                  </div>
-                                                                                 
+                                                                                  <div class="toolbar toolbar-bottom" id="menu2" style="display: none;">
+                                                                                        <div class="toolbar-inner">
+                                                                                           <button class="col button button-large button-fill" id="importWz" >新增</button>
+                                                                                           <button class="col button button-large button-fill" id="delWz" style="background-color: red">删除</button>
+                                                                                        </div>
+                                                                                  </div>
+                                                                                  <div class="toolbar toolbar-bottom" id="menu3" style="display: none;">
+                                                                                          <div class="toolbar-inner">
+                                                                                             <button class="col button button-large button-fill" id="addRy" >新增</button>
+                                                                                             <button class="col button button-large button-fill" id="delRy" style="background-color: red">删除</button>
+                                                                                          </div>
+                                                                                   </div>
+                                                                                   <div class="toolbar toolbar-bottom" id="menu4" style="display: none;">
+                                                                                            <div class="toolbar-inner">
+                                                                                               <button class="col button button-large button-fill" id="addZy" >新增</button>
+                                                                                               <button class="col button button-large button-fill" id="delZy" style="background-color: red">删除</button>
+                                                                                            </div>
+                                                                                    </div>
                                                                              </div>
                                                                          </div>
                                                                      </div>`
             ,
             on: {
                 open: function () {
-                    debugger
+                   
                     var me = this;
                     var ID = me.params.EXE_ID;
                     var showBtn = me.params.UPDATE;
                     //保存事件
                     $("#save").off('click').click(function () {
-                        debugger;
+                       
                         let data = app.form.convertToData("#detail_bg");
                         data.EXE_ID = ID;
-
+                       
                         if (data.IS_LOSE == null || data.IS_LOSE == '') {
                             app.dialog.error("请选择是否有遗留问题");
                             return
@@ -402,6 +489,160 @@
                             }
                         });
                     });
+                    //打开物资列表
+                    $("#showWuzList").off('click').click(function () {
+                        var wzdata = $("#modify_bg1 input:checked");
+                        var checkedIDList = [];
+                        wzdata.forEach(x => {
+                            checkedIDList.push({ DONEITEM_ID: x.value });
+                        });
+                        if (checkedIDList.length <= 0) {
+                            app.dialog.error("请勾选后再点物资明细", function () { });
+                            return false;
+                        } else if (checkedIDList.length > 1) {
+                            app.dialog.error("只能勾选一项进行物资明细操作", function () { });
+                            return false;
+                        }
+                        me.params.DONEITEM_ID = checkedIDList[0].DONEITEM_ID;
+                        business.doneitemId = checkedIDList[0].DONEITEM_ID;
+                        CreateWuziList(me.params.DONEITEM_ID);
+                        $("#modify_list2").click();
+                    });
+                    //打开人员列表
+                    $("#showRyList").off('click').click(function () {
+                        var wzdata = $("#modify_bg1 input:checked");
+                        var checkedIDList = [];
+                        wzdata.forEach(x => {
+                            checkedIDList.push({ DONEITEM_ID: x.value });
+                        });
+                        if (checkedIDList.length <= 0) {
+                            app.dialog.error("请勾选后再点按钮", function () { });
+                            return false;
+                        } else if (checkedIDList.length > 1) {
+                            app.dialog.error("只能勾选一项", function () { });
+                            return false;
+                        }
+                       
+                        business.doneitemId = checkedIDList[0].DONEITEM_ID;
+                        CreateRyList();
+                    });
+                    //新增人员
+                    $("#addRy").off('click').click(function () {
+                        detail_ry_popup.open();
+                        $("#popup-close").click(function () {
+                            detail_ry_popup.close();
+                        })
+                    });
+                    //删除人员
+                    $("#delRy").off('click').click(function () {
+                        app.dialog.confirm('确定要删除？', '删除', function () {
+                          
+                            var checkDom = $("#modify_bg3 input:checked");
+                            var checkedIDList = [];
+                            checkDom.forEach(x => { checkedIDList.push({ PLAN_LABOR_ID: x.value }) });
+                            if (checkedIDList.length <= 0) {
+                                app.dialog.error("请勾选后在点删除", function () { });
+                                return false;
+                            }
+
+                            var deleteRow = {};
+                            deleteRow["Deleted"] = checkedIDList;
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Device/PmInfo/ManagePmPep',
+                                data: {
+                                    "request": deleteRow
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("删除成功", function () {
+                                        CreateRyList();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    });
+                    //新增特殊作业
+                    $("#addZy").off('click').click(function () {
+                        detail_zy_popup.open();
+                        $("#popup-close").click(function () {
+                            detail_zy_popup.close();
+                        })
+                    });
+                    //删除特殊作业
+                    $("#delZy").off('click').click(function () {
+                        app.dialog.confirm('确定要删除？', '删除', function () {
+                            debugger;
+                            var checkDom = $("#modify_bg4 input:checked");
+                            var checkedIDList = [];
+                            checkDom.forEach(x => { checkedIDList.push({ WORK_ID: x.value }) });
+                            if (checkedIDList.length <= 0) {
+                                app.dialog.error("请勾选后在点删除", function () { });
+                                return false;
+                            }
+
+                            var deleteRow = {};
+                            deleteRow["Deleted"] = checkedIDList;
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Device/PmInfo/ManageWork',
+                                data: {
+                                    "request": deleteRow
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("删除成功", function () {
+                                        CreateZyList();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    });
+                    //删除物资
+                    $("#delWz").off('click').click(function () {
+                        app.dialog.confirm('确定要删除？', '删除', function () {
+                            
+                            var checkDom = $("#modify_bg2 input:checked");
+                            var checkedIDList = [];
+                            checkDom.forEach(x => { checkedIDList.push({ PLAN_SP_ID: x.value }) });
+                            if (checkedIDList.length <= 0) {
+                                app.dialog.error("请勾选后在点删除", function () { });
+                                return false;
+                            }
+
+                            var deleteRow = {};
+                            deleteRow["Deleted"] = checkedIDList;
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Device/PmInfo/ManagePmSp',
+                                data: {
+                                    "request": deleteRow
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("删除成功", function () {
+                                        CreateWuziList(me.params.DONEITEM_ID);
+                                        $("#modify_list2").click();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    });
                     if (ID) {
                         app.ajax({
                             type: 'post',
@@ -434,45 +675,75 @@
                                 //是否有遗留问题
                                 createSmartSelect('.IS_LOSE');
                                 //设备名称下拉框值改变事件，吧相关连的数据填充到表单中
-                                //$('#DEVICE_ID').on('change', function (e) {
-                                //    var value = e.target.value;
-                                //    if (value != null && value.length > 0) {
-                                //        var da = deviceSelect.find((va) => va.ID == value);
-                                //        if (da != null) {
-                                //            da.DEVICE_NAME = da.TEXT;
-                                //            da.DEVICE_CODE = da.VALUE;
-                                //            da.DEVICE_TYPE = da.EXTEND1;
-                                //            da.TYPE_NAME = da.EXTEND2;
-                                //            da.DEPT_NAME = da.EXTEND3;
-                                //            app.form.fillFromData('#detail_bg', da);
-                                //        }
-                                //    }
-                                //});
+                                
                                 if (aud == "0") {
                                     createCalendar('#BEGIN_DATE');
                                     createCalendar('#END_DATE');
                                 }
-                                if (showBtn == 1) {
-                                    $("#menu").show();
-                                } else {
-                                    $("#menu").hide();
-                                }
+                              
                             }
                         });
                         //明细数据
                         //生成保养实施明细列表
-                        CreateShisList(ID);
-                        $("#menu").hide();
-                        $("#menu1").show();
+                        //CreateShisList(ID); 
                     }
+                    //详情点击
+                    $("#dg_list").off('click').click(function () {
+                        $("#menu").show();
+                        $("#menu1").hide();
+                        $("#menu2").hide();
+                        $("#menu3").hide();
+                        $("#menu4").hide();
+                    });
                     //实施点击事件
                     $("#modify_list").off('click').click(function () {
-                        debugger;
-                        if (ID) {
-                            CreateShisList(ID);
-                            $("#menu").hide();
-                            $("#menu1").show();
+                        //单实施已经有勾选了就不要从新刷新数据了
+                        
+                        if (ID && !business.doneitemId) {
+                            CreateShisList(ID);  
                         }
+                        $("#menu").hide();
+                        $("#menu1").show();
+                        $("#menu2").hide();
+                        $("#menu3").hide();
+                        $("#menu4").hide();
+                    });
+                    //点击物资
+                    $("#modify_list2").off('click').click(function () {
+                        
+                        CreateWuziList(business.doneitemId);
+                        $("#menu").hide();
+                        $("#menu1").hide();
+                        $("#menu2").show();
+                        $("#menu3").hide();
+                        $("#menu4").hide();
+                    });
+                    //点击人员
+                    $("#modify_list3").off('click').click(function () {
+                        CreateRyList();
+                        $("#menu").hide();
+                        $("#menu1").hide();
+                        $("#menu2").hide();
+                        $("#menu3").show();
+                        $("#menu4").hide();
+                    });
+                    //点击作业
+                    $("#modify_list4").off('click').click(function () {
+                       
+                        CreateZyList();
+                        $("#menu").hide();
+                        $("#menu1").hide();
+                        $("#menu2").hide();
+                        $("#menu3").hide();
+                        $("#menu4").show();
+                    });
+                    //导入 
+                    $("#importWz").off('click').click(function () {
+                        detail_wuzi_popup.params = { "EXE_ID": business.exeid, "DONEITEM_ID": business.doneitemId };
+                        detail_wuzi_popup.open();
+                        $("#popup-close").click(function () {
+                            detail_wuzi_popup.close();
+                        })
                     });
                 }
             }
@@ -499,13 +770,15 @@
                 data: { "where": where },
                 url: 'Device/PmInfo/GetPlandetList',
                 success: function (data) {
+              
                     pepDataDetail = data.Rows;
                     // 明细列表
                     var str = app.CreateListContentHtml(data.Rows, shisList, true);
                     $("#modify_bg1").html(str);
                     data.Rows.forEach((a) => {
-                        $("#list-" + a.FAULT_LABOR_ID).click(function () {
-                            detail_shis_popup.params = { "FAULT_LABOR_ID": a.FAULT_LABOR_ID, "FAULT_ID": a.FAULT_ID, };
+                        $("#list-" + a.DONEITEM_ID).click(function () {
+                            business.doneitemId = a.DONEITEM_ID;
+                            detail_shis_popup.params = { "DONEITEM_ID": a.DONEITEM_ID, "EXE_ID": a.EXE_ID, };
                             detail_shis_popup.open();
                             $("#popup-close").click(function () {
                                 detail_shis_popup.close();
@@ -514,7 +787,7 @@
                     });
                 }
             });
-
+           
         };
         //保养实施明细
         var shisDetail = [
@@ -525,7 +798,18 @@
             { display: "标准编号", name: "STD_CODE", readOnly: true },
             { display: "保养项目", name: "OBJECT_NAME", readOnly: true },
             { display: "保养内容", name: "CONTENT", readOnly: true },
-            { display: "保养类型", name: "STD_LEVEL", readOnly: true },
+            { display: "保养类型", name: "STD_LEVEL", Option: business.stdLevel, readOnly: true },
+            { display: "作业时设备状态", name: "WORK_STATE", Option: business.workState, readOnly: true },
+            { display: "保养周期", name: "MAINT_CYCLE", Option: business.maintCycle, readOnly: true },
+            { display: "计划保养月份", name: "PLAN_MONTH", Option: business.planMonth, readOnly: true },
+            { display: "上次完成时间", name: "LAST_COMP_DATE", readOnly: true },
+            { display: "下次保养截止日期", name: "NEXT_ENDDATE", readOnly: true },
+            { display: "执行岗位", name: "EXE_USER", readOnly: true },
+            { display: "执行人", name: "EXECUTE_USER", validate: { required: true } },
+            { display: "检查岗位", name: "CHK_USER", readOnly: true },
+            { display: "检查人", name: "CHECK_USER", validate: { required: true } },
+            { display: "备注", name: "MEMO", readOnly: true },
+            
         ];
         var detail_shis_popup = app.popup.create({
             content: `
@@ -550,7 +834,8 @@
                                                                                             </div>
                                                                                              <div class="toolbar toolbar-bottom" id="menuDetail">
                                                                                                 <div class="toolbar-inner">
-                                                                                                    <button class="col button button-large button-fill" id="saveDetail" style="background-color: #2faa44">保存</button>
+                                                                                                    <button class="col button button-large button-fill" id="saveShisDetail" style="background-color: orange">保存</button>
+                                                                                                    <button class="col button button-large button-fill" id="attach" style="background-color: red">上传附件</button>
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
@@ -559,44 +844,35 @@
             on: {
                 open: function () {
                     var me = this;
-
-                    $("#saveDetail").off('click').click(function () {
-                        var ID = me.params.FAULT_SP_ID;
-                        let data = app.form.convertToData("#detail_bg_detail");
-                        data.FAULT_ID = me.params.FAULT_ID;
-                        data.FAULT_SP_ID = ID;
-
-                        if (data.FAULT_ID == null || data.FAULT_ID == '') {
-                            app.dialog.error("参数错误");
+                    //附件上传
+                    $("#attach").off('click').click(function (e) {
+                        uploadPhoto(e);
+                    });
+                    //保存保养实施
+                    $("#saveShisDetail").off('click').click(function () {
+                        var ID = me.params.DONEITEM_ID;
+                        //获取表单数据
+                        let data = app.form.convertToData("#detail_shisbg_detail");
+                        data.DONEITEM_ID = me.params.DONEITEM_ID;
+                       
+                        if (data.COMPLETE == null || data.COMPLETE == '') {
+                            app.dialog.error("请填写完成情况");
                             return
                         }
-                        if (data.SP_CODE == null || data.SP_CODE == '') {
-                            app.dialog.error("请选择物料");
+                        if (data.EXECUTE_USER == null || data.EXECUTE_USER == '') {
+                            app.dialog.error("请填写执行人");
                             return
                         }
-                        if (data.SP_NAME == null || data.SP_NAME == '') {
-                            var da = SpOrList.find((va) => va.SP_CODE == data.SP_CODE && va.NUM == data.CUR_NUM);
-                            if (da != null) {
-                                data.SP_NAME = da.SP_NAME;
-                            }
-                        }
-
-                        var realOutValue = Number(data.REAL_OUT_NUM);
-                        if (realOutValue < 0 || isNaN(realOutValue)) {
-                            app.dialog.error('实际消耗数量不是正数');
-                            return;
-                        }
-
-
-                        if (parseInt(data.REAL_OUT_NUM) > parseInt(data.CUR_NUM)) {
-                            app.dialog.error("实际消耗数量不可大于库存数量！");
+                        if (data.CHECK_USER == null || data.CHECK_USER == '') {
+                            app.dialog.error("请填写检查人");
                             return
                         }
+
                         var AddRow = new Object();
 
-                        if (data.FAULT_SP_ID) {
+                        if (data.DONEITEM_ID) {
                             AddRow["Updated"] = [data];
-                            AddRow["Original"] = [formDataDetail];
+                            AddRow["Original"] = [byDataDetail];
                         }
                         else {
                             AddRow["Added"] = [data]
@@ -607,35 +883,303 @@
                             data: {
                                 "request": AddRow
                             },
-                            url: 'Device/RepFault/ManageFaultSp',
-                            success: function () {
-                                detail_popup.close();
-                                CreateSpDetail(data.FAULT_ID);
+                            url: 'Device/PmInfo/ManagePlandet',
+                            success: function (data) {
+                                console.log(data);
+                                detail_shis_popup.open();
                             }
                         });
                     });
 
-
-
-                    // 清单明细
-                    if (me.params.FAULT_SP_ID) {
+                    // 保养实施明细
+                    if (me.params.DONEITEM_ID) {
                         var where = JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'FAULT_SP_ID', op: 'equal', value: me.params.FAULT_SP_ID }]
+                            rules: [{ field: 'DONEITEM_ID', op: 'equal', value: me.params.DONEITEM_ID }]
                         });
                         app.ajax({
                             type: 'post',
                             data: {
                                 "where": where
                             },
-                            url: 'Device/RepFault/GetFaultSpList',
+                            url: 'Device/PmInfo/GetPlandetList',
+                            success: function (rdata) {
+                                byDataDetail = rdata;
+                                var str = app.CreatePopupContentHtml(shisDetail);
+                                //获取附件
+                                app.ajax({
+                                    type: 'post',
+                                    data: {
+                                        "where": where,
+                                        "doneitemId": me.params.DONEITEM_ID
+                                    },
+                                    url: 'Device/PmInfo/GetPlandetFile',
+                                    success: function (data) {
+                                        
+                                        //材料附件
+                                        str = str.replace("</ul>","");
+                                        
+                                        data.Data[0].ATTACH_EXE_FILE.split(",").forEach(function (item) {
+                                            //判断是否是图片
+                                            if (item) {  
+                                                str += `<li>
+                                                        <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                                         <div class="item-title" style="color: #666666">材料附件</div>
+                                                        `;
+                                            if (item.toLowerCase().indexOf(".jpg") > -1 || item.toLowerCase().indexOf('.png') > -1) {
+                                                str += `
+                                                    <div class="item-after" style="text-align:right;">
+                                                        <a href="#" class="item-link item-content">
+                                                            <span>
+                                                                <img src="` + item + `" width="100" style="padding-top:5px;padding-left:5px" class="imgAdd" />
+                                                            </span>                                                                  
+                                                        </a>
+                                                   </div>`;
+                                            } else {
+                                                str += `
+                                                     <div class="item-after" style="text-align:right;">
+                                                         <a href="#" class="item-link item-content">
+                                                             <span>
+                                                                 ` + item.substring(item.lastIndexOf("/")+1) + `
+                                                             </span>                                                                  
+                                                         </a>
+                                                    </div>`;
+                                                }
+                                                str += `
+                                                      </div>
+                                                 </li>`;
+                                            }                                            
+                                        });
+                                       
+                                        //保养计划附件
+                                       
+                                        data.Data[0].ATTACH_PLAN_FILE.split(",").forEach(function (item) {
+                                            //判断是否是图片
+                                            if (item) {
+                                                str += `<li>
+                                                 <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                                   <div class="item-title" style="color: #666666">保养计划附件</div>
+                                                 `;
+                                                if (item.toLowerCase().indexOf(".jpg") > -1 || item.toLowerCase().indexOf('.png') > -1) {
+                                                    str += `
+                                                    <div class="item-after" style="text-align:right;">
+                                                        <a href="#" class="item-link item-content">
+                                                            <span>
+                                                                <img src="` + item + `" width="100" style="padding-top:5px;padding-left:5px" class="imgAdd" />
+                                                            </span>                                                                  
+                                                        </a>
+                                                   </div>`;
+                                                } else {
+                                                    str += `
+                                                     <div class="item-after" style="text-align:right;">
+                                                         <a href="#" class="item-link item-content">
+                                                             <span>
+                                                                 ` + item.substring(item.lastIndexOf("/")+1) + `
+                                                             </span>                                                                  
+                                                         </a>
+                                                    </div>`;
+                                                }
+                                                str += `
+                                                      </div>
+                                                 </li>`;
+                                            }
+                                        });                                       
+                                        str += `</ul>`;
+                                        $("#detail_shisbg_detail").html(str);
+                                        if (rdata.Rows.length > 0) {
+                                            formDataDetail = rdata.Rows[0];
+                                            app.form.fillFromData('#detail_shisbg_detail', formDataDetail);
+                                        }
+                                        app.smartSelect.create({
+                                            el: '.COMPLETE',
+                                            on: {
+                                                beforeOpen: function (smartSelect, prevent) {
+                                                    if (aud != "0") {
+                                                        prevent();
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }  
+                                    
+                                });                            
+                            }
+                        });
+                    } 
+                    
+                }
+            }
+        });
+        //物资明细列表
+        var wuziList = [
+            { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "备件品种编码", name: "SP_CODE" },
+            { display: "备件品种名称", name: "SP_NAME" },
+            { display: "备件型号", name: "SP_TYPE" },
+        ];
+        //创建物资明细列表html
+        function CreateWuziList(ID) {
+            
+            var where = JSON.stringify({
+                op: 'and',
+                rules: []
+            });
+            app.ajax({
+                type: 'post',
+                data: {
+                    "where": where,
+                    "exeId": business.exeid,
+                    "doneitemId": ID
+                },
+                url: 'Device/PmInfo/GetPmSpList',
+                success: function (data) {
+                    business.storeIds = [];
+                    // 明细列表
+                    var str = app.CreateListContentHtml(data.Rows, wuziList, true);
+                    $("#modify_bg2").html(str);
+                    data.Rows.forEach((a) => {
+                        if (a.STORE_ID) {
+                            business.storeIds.push(a.STORE_ID);
+                        }
+                        $("#list-" + a.PLAN_SP_ID).click(function () {
+
+                            detail_wuzi_popup.params = { "PLAN_SP_ID": a.PLAN_SP_ID, "EXE_ID": a.EXE_ID, "DONEITEM_ID": a.DONEITEM_ID };
+                            detail_wuzi_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_wuzi_popup.close();
+                            })
+                        });
+                    });
+                }
+            });
+           
+        };
+        var wuziDetail = [
+            { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "备件品种编码", name: "SP_CODE", readOnly: true },
+            { display: "备件品种名称", name: "SP_NAME", readOnly: true },
+            { display: "备件型号", name: "SP_TYPE", readOnly: true },
+            { display: "仓库名称", name: "HOUSE_NAME", readOnly: true },
+            { display: "库位名称", name: "STOCK_NAME", readOnly: true },
+            { display: "库存数量", name: "STORE_NUM", readOnly: true },
+            { display: "实际消耗数量", name: "FACT_NUM", type: "float", validate: { required: true } },
+            { display: "计量单位", name: "UNIT", readOnly: true },
+            { display: "含税金额(元)", name: "TAX_MONEY", type: "float", readOnly: true },
+            { display: "不含税金额(元)", name: "UNTAX_MONEY", type: "float", readOnly: true },
+            { display: "备注", name: "MEMO" },
+            { display: "外键", name: "STORE_ID", isShow: false },
+        ];
+        var wuziAddDetail = [
+            { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "备件品种编码", name: "SP_CODE", readOnly: true },
+            { display: "备件品种名称", name: "SP_NAME", validate: { required: true }, Option: SpList, Searched: true },
+            { display: "备件型号", name: "SP_TYPE", readOnly: true },
+            { display: "仓库名称", name: "HOUSE_NAME", readOnly: true },
+            { display: "库位名称", name: "STOCK_NAME", readOnly: true },
+            { display: "库存数量", name: "STORE_NUM", readOnly: true },
+            { display: "实际消耗数量", name: "FACT_NUM", type: "float", validate: { required: true } },
+            { display: "计量单位", name: "UNIT", readOnly: true },
+            { display: "含税金额(元)", name: "TAX_MONEY", type: "float", readOnly: true },
+            { display: "不含税金额(元)", name: "UNTAX_MONEY", type: "float", readOnly: true },
+            { display: "备注", name: "MEMO" },
+            { display: "外键", name: "STORE_ID", isShow: false },
+        ];
+        var detail_wuzi_popup = app.popup.create({
+            content: `
+                                                                        <div class="popup answersheet"id ="detail_wuzi_popup">
+                                                                            <div class="view" >
+                                                                                <div class="page">
+                                                                                    <div class="navbar">
+                                                                                        <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                            <div class="left link popup-close">
+                                                                                                <i class="f7-icons">arrow_left</i>
+                                                                                            </div>
+                                                                                            <div class="title">物资详情</div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="tabs">
+                                                                                      <div id="tab-1" class="page-content tab tab-active">
+                                                                                        <div class="list inline-labels no-hairlines-md">
+                                                                                            <form class="list" id="detail_wuzibg_detail">
+                                                                                             </form>
+                                                                                        </div>
+                                                                                      </div>
+                                                                                    </div>
+                                                                                     <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                        <div class="toolbar-inner">
+                                                                                            <button class="col button button-large button-fill" id="saveWuziDetail" style="background-color: blue">保存</button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    //保存
+                    $("#saveWuziDetail").off('click').click(function () {
+                        debugger;
+                        var ID = me.params.PLAN_SP_ID;
+                        let data = app.form.convertToData("#detail_wuzibg_detail");
+                        data.PLAN_SP_ID = me.params.PLAN_SP_ID;
+                        data.EXE_ID = business.exeid;
+                        data.DONEITEM_ID = business.doneitemId;
+                        if (data.FACT_NUM == null || data.FACT_NUM <0) {
+                            app.dialog.error("实际消耗数量不可为负数！");
+                            return
+                        }
+
+                        if (parseFloat(data.STORE_NUM) < parseFloat(data.FACT_NUM)) {
+                            app.dialog.error("实际消耗数量不可大于库存数量！");
+                            return
+                        }
+                        
+                        var AddRow = new Object();
+
+                        if (data.PLAN_SP_ID) {
+                            AddRow["Updated"] = [data];
+                            AddRow["Original"] = [wzDataDetail];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/PmInfo/ManagePmSp',
+                            success: function () {
+                                detail_wuzi_popup.close();
+                                CreateWuziList(business.doneitemId);
+                                $("#modify_list2").click();
+                            }
+                        });
+                    });
+                   
+                    // 物资明细
+                    if (detail_wuzi_popup.params.PLAN_SP_ID) {
+                        var where = JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'PLAN_SP_ID', op: 'equal', value: detail_wuzi_popup.params.PLAN_SP_ID }]
+                        });
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "where": where,
+                                "exeId": detail_wuzi_popup.params.EXE_ID,
+                                "doneitemId": detail_wuzi_popup.params.DONEITEM_ID
+                            },
+                            url: 'Device/PmInfo/GetPmSpList',
                             success: function (data) {
-                                var str = app.CreatePopupContentHtml(spDetailInfoEdit);
-                                $("#detail_bg_detail").html(str);
+                                debugger;
+                                var str = app.CreatePopupContentHtml(wuziDetail);
+
+                                $("#detail_wuzibg_detail").html(str);
                                 if (data.Rows.length > 0) {
-                                    formDataDetail = data.Rows[0];
-                                    app.form.fillFromData('#detail_bg_detail', formDataDetail);
-                                    showDetailBtn(aud == "0")
+                                    wzDataDetail = data.Rows[0];
+                                    app.form.fillFromData('#detail_wuzibg_detail', wzDataDetail);
                                 }
                                 app.smartSelect.create({
                                     el: '.SP_NAME',
@@ -650,21 +1194,25 @@
                             }
                         });
                     } else {
-                        var str = app.CreatePopupContentHtml(spDetailInfo);
-                        $("#detail_bg_detail").html(str);
-                    }
+                        var str = app.CreatePopupContentHtml(wuziAddDetail);
 
+                        $("#detail_wuzibg_detail").html(str);
+                    }
+                   
                     $('#SP_NAME').on('change', function (e) {
+                        debugger;
                         var value = e.target.value;
-                        var currentSet = new Set(spid);
+                        var currentSet = new Set(business.storeIds);
                         if (value != null && value.length > 0) {
                             var split = value.split('_');
                             var da = SpOrList.find((va) => va.SP_NAME == split[0] && va.NUM == split[1]);
                             if (!currentSet.has(da.STORE_ID)) {
-                                da.CUR_NUM = da.NUM;
+                                da.STORE_NUM = da.NUM;
                                 da.SP_TYPE = da.SP_SIZE;
-                                da.SP_STORE_ID = da.STORE_ID;
-                                app.form.fillFromData('#detail_bg_detail', da);
+                                da.STORE_ID = da.STORE_ID;
+                                da.HOUSE_NAME = da.HOUSE_NAME;
+                                da.STOCK_NAME = da.STOCK_NAME;
+                                app.form.fillFromData('#detail_wuzibg_detail', da);
                             }
                             else {
                                 app.dialog.error("已存在该物料，请重新选择", function () {
@@ -675,6 +1223,353 @@
                 }
             }
         });
+        //人员明细列表
+        var ryList = [
+            { display: "主键", name: "PLAN_LABOR_ID", PrimaryKey: "PLAN_LABOR_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "人员姓名", name: "USER_NAME" },
+            { display: "工时(H)", name: "PLAN_DATE" }   
+        ];
+        //创建人员明细列表html
+        function CreateRyList() {
+
+            var where = JSON.stringify({
+                op: 'and',
+                rules: []
+            });
+            app.ajax({
+                type: 'post',
+                data: {
+                    "where": where,
+                    "exeId": business.exeid,
+                    "doneitemId": business.doneitemId
+                },
+                url: 'Device/PmInfo/GetPmPepList',
+                success: function (data) {
+
+                    // 明细列表
+                    var str = app.CreateListContentHtml(data.Rows, ryList, true);
+                    $("#modify_bg3").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.PLAN_LABOR_ID).click(function () {
+
+                            detail_ry_popup.params = { "PLAN_LABOR_ID": a.PLAN_LABOR_ID};
+                            detail_ry_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_ry_popup.close();
+                            })
+                        })
+                    });
+                }
+            });
+            $("#modify_list3").click();
+            $("#menu").hide();
+            $("#menu1").hide();
+            $("#menu2").show();
+        };
+        var ryDetail = [
+           
+            { display: "主键", name: "PLAN_LABOR_ID", PrimaryKey: "PLAN_LABOR_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "人员姓名", name: "USER_NAME"},
+            { display: "工时(H)", name: "PLAN_DATE", type: "float", validate: { required: true } },
+            { display: "备注", name: "MEMO" },
+        ];
+        var detail_ry_popup = app.popup.create({
+            content: `
+                                                                <div class="popup answersheet"id ="detail_ry_popup">
+                                                                    <div class="view" >
+                                                                        <div class="page">
+                                                                            <div class="navbar">
+                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                    <div class="left link popup-close">
+                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                    </div>
+                                                                                    <div class="title">人员详情</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="tabs">
+                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                    <form class="list" id="detail_rybg_detail">
+                                                                                     </form>
+                                                                                </div>
+                                                                              </div>
+                                                                            </div>
+                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                <div class="toolbar-inner">
+                                                                                    <button class="col button button-large button-fill" id="saveRyDetail" style="background-color: blue">保存</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    //保存
+                    $("#saveRyDetail").off('click').click(function () {
+                       
+                        let data = app.form.convertToData("#detail_rybg_detail");
+                        data.PLAN_LABOR_ID = detail_ry_popup.params.PLAN_LABOR_ID;
+                        data.EXE_ID = business.exeid;
+                        data.DONEITEM_ID = business.doneitemId;
+                        if (data.PLAN_DATE == null || data.PLAN_DATE < 0 || isNaN(data.PLAN_DATE)) {
+                            app.dialog.error("工时不可为负数！");
+                            return
+                        }
+
+                       
+                        var AddRow = new Object();
+
+                        if (data.PLAN_LABOR_ID) {
+                            AddRow["Updated"] = [data];
+                            AddRow["Original"] = [ryDataDetail];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/PmInfo/ManagePmPep',
+                            success: function () {
+                            
+                                detail_ry_popup.close();
+                                CreateRyList();
+
+                            }
+                        });
+                    });
+
+                    // 人员明细
+                    if (detail_ry_popup.params.PLAN_LABOR_ID) {
+                       
+                        var where = JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'PLAN_LABOR_ID', op: 'equal', value: detail_ry_popup.params.PLAN_LABOR_ID }]
+                        });
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "where": where,
+                                "exeId": business.exeid,
+                                "doneitemId": business.doneitemId
+                            },
+                            url: 'Device/PmInfo/GetPmPepList',
+                            success: function (data) {
+                              
+                                var str = app.CreatePopupContentHtml(ryDetail);
+
+                                $("#detail_rybg_detail").html(str);
+                                if (data.Rows.length > 0) {
+                                    ryDataDetail = data.Rows[0];
+                                    app.form.fillFromData('#detail_rybg_detail', ryDataDetail);
+                                }
+
+                            }
+                        });
+                    } else {//新增时界面
+                        var str = app.CreatePopupContentHtml(ryDetail);
+
+                        $("#detail_rybg_detail").html(str);
+                    }
+                }
+            }
+        });
+
+        //特殊作业明细列表
+        var zyList = [
+            { display: "主键", name: "WORK_ID", PrimaryKey: "WORK_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "特殊作业", name: "WORK_NAME" },
+            { display: "日期", name: "WORK_DATE" },
+            { display: "开始时间", name: "BEGIN_TIME" },
+            { display: "结束时间", name: "END_TIME" },
+            { display: "作业时间/时", name: "WORK_HOUR" },
+            { display: "作业耗油/吨", name: "WORK_OIL" },
+        ];
+        //创建特殊作业明细列表html
+        function CreateZyList() {
+
+            var where = JSON.stringify({
+                op: 'and',
+                rules: [{ field: 'EXE_ID', op: 'equal', value: business.exeid }]
+            });
+            app.ajax({
+                type: 'post',
+                data: {
+                    "where": where
+                },
+                url: 'Device/PmInfo/GetWorkList',
+                success: function (data) {
+
+                    // 明细列表
+                    var str = app.CreateListContentHtml(data.Rows, zyList, true);
+                    $("#modify_bg4").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.WORK_ID).click(function () {
+
+                            detail_zy_popup.params = { "WORK_ID": a.WORK_ID };
+                            detail_zy_popup.open();
+                            $("#popup-close").click(function () {
+                                detail_zy_popup.close();
+                            })
+                        })
+                    });
+                }
+            });
+            //$("#modify_list4").click();
+           
+        };
+        var zyDetail = [
+
+            { display: "主键", name: "WORK_ID", PrimaryKey: "WORK_ID", readOnly: false, isPrimaryKey: true, isShow: false },
+            { display: "特殊作业", name: "WORK_NAME" ,validate: { required: true } },
+            { display: "日期", name: "WORK_DATE", validate: { required: true } },
+            { display: "开始时间", name: "BEGIN_TIME", validate: { required: true } },
+            { display: "结束时间", name: "END_TIME", validate: { required: true } },
+            { display: "作业时间/时", name: "WORK_HOUR",type:"float"},
+            { display: "作业耗油/吨", name: "WORK_OIL", type: "float", validate: { required: true } },
+            { display: "备注", name: "MEMO" }
+        ];
+        var detail_zy_popup = app.popup.create({
+            content: `
+                                                        <div class="popup answersheet"id ="detail_zy_popup">
+                                                            <div class="view" >
+                                                                <div class="page">
+                                                                    <div class="navbar">
+                                                                        <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                            <div class="left link popup-close">
+                                                                                <i class="f7-icons">arrow_left</i>
+                                                                            </div>
+                                                                            <div class="title">特殊作业详情</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="tabs">
+                                                                      <div id="tab-1" class="page-content tab tab-active">
+                                                                        <div class="list inline-labels no-hairlines-md">
+                                                                            <form class="list" id="detail_zybg_detail">
+                                                                             </form>
+                                                                        </div>
+                                                                      </div>
+                                                                    </div>
+                                                                     <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                        <div class="toolbar-inner">
+                                                                            <button class="col button button-large button-fill" id="saveZyDetail" style="background-color: blue">保存</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    //保存
+                    $("#saveZyDetail").off('click').click(function () {
+                        debugger;
+                        let data = app.form.convertToData("#detail_zybg_detail");
+                        data.WORK_ID = detail_zy_popup.params.WORK_ID;
+                        data.EXE_ID = business.exeid;
+                        if (data.WORK_NAME == null || data.WORK_NAME =='') {
+                            app.dialog.error("请输入特殊作业！");
+                            return
+                        }
+                        if (data.WORK_DATE == null || data.WORK_DATE == '') {
+                            app.dialog.error("请输入日期！");
+                            return
+                        }
+                        if (data.BEGIN_TIME == null || data.BEGIN_TIME == '') {
+                            app.dialog.error("请输入开始时间！");
+                            return
+                        }
+                        if (data.END_TIME == null || data.END_TIME == '') {
+                            app.dialog.error("请输入结束时间！");
+                            return
+                        }
+                        if (data.BEGIN_TIME > data.END_TIME || data.END_TIME > new Date()) {
+                            app.dialog.error("结束时间大于当前时间或小于开始时间！");
+                            return
+                        }
+                        if (data.WORK_HOUR == null || data.WORK_HOUR < 0 || isNaN(data.WORK_HOUR) || data.WORK_HOUR == '') {
+                            var strTime = new Date(data.BEGIN_TIME);
+                            var endTime = new Date(data.END_TIME);
+                            data.WORK_HOUR = Math.floor((endTime.getTime() - strTime.getTime()) / 1000 / 60 / 60);
+                            if (data.WORK_HOUR < 0) {
+                                app.dialog.error("作业时间不能负数！");
+                                return
+                            }
+                        }
+                        if (data.WORK_OIL == null || data.WORK_OIL < 0 || isNaN(data.WORK_OIL) || data.WORK_OIL == '') {
+                            app.dialog.error("油耗不能负数！");
+                            return
+                        }
+
+
+                        var AddRow = new Object();
+
+                        if (data.WORK_ID) {
+                            AddRow["Updated"] = [data];
+                            AddRow["Original"] = [zyDataDetail];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Device/PmInfo/ManageWork',
+                            success: function () {
+                                detail_zy_popup.close();
+                                CreateZyList();
+
+                            }
+                        });
+                    });
+
+                    // 特殊作业明细
+                    if (detail_zy_popup.params.WORK_ID) {
+
+                        var where = JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'WORK_ID', op: 'equal', value: detail_zy_popup.params.WORK_ID }]
+                        });
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "where": where
+                            },
+                            url: 'Device/PmInfo/GetWorkList',
+                            success: function (data) {
+
+                                var str = app.CreatePopupContentHtml(zyDetail);
+
+                                $("#detail_zybg_detail").html(str);
+                                if (data.Rows.length > 0) {
+                                    zyDataDetail = data.Rows[0];
+                                    app.form.fillFromData('#detail_zybg_detail', zyDataDetail);
+                                }
+
+                                createCalendar('#WORK_DATE');
+                                createCalendar('#BEGIN_TIME');
+                                createCalendar('#END_TIME');
+                            }
+                        });
+                    } else {//新增时界面
+                        var str = app.CreatePopupContentHtml(zyDetail);
+
+                        $("#detail_zybg_detail").html(str);
+                        createCalendar('#WORK_DATE');
+                        createCalendar('#BEGIN_TIME');
+                        createCalendar('#END_TIME');
+                    }
+                }
+            }
+        });
+        
         var aud;
         
         //时间
@@ -698,6 +1593,116 @@
                 }
             });
         };
+
+        //附件上传
+        function uploadPhoto(even) {
+            app.methods.initWX(function () {
+                wx.chooseImage({
+                    count: 9, // 默认9
+                    sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+                    sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+                    success: function (res) {
+                        var localIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+                        var index = 0;
+                        function f1(index) {
+                            return new Promise(function (resolve, reject) {
+                                wx.getLocalImgData({
+                                    localId: localIds[index], // 图片的localID
+                                    success: function (res) {
+                                        var localData = res.localData; // localData是图片的base64数据，可以用img标签显示
+                                        var showSrc = "";
+                                        //设置图片
+                                        if (localData.indexOf('data:image') != 0) {
+                                            //判断是否有这样的头部
+                                            src = 'data:image/jpeg;base64,' + localData;
+                                            var arr = src.split(',');
+                                            var bstr = atob(arr[arr.length - 1]),
+                                                n = bstr.length,
+                                                u8arr = new Uint8Array(n);
+                                            while (n--) {
+                                                u8arr[n] = bstr.charCodeAt(n);
+                                            }
+                                            var file = new File([u8arr], "upload.jpg", {
+                                                type: "image/jpeg"
+                                            });
+
+                                            if (window.createObjcectURL != undefined) {
+                                                showSrc = window.createOjcectURL(file);
+                                            } else if (window.URL != undefined) {
+                                                showSrc = window.URL.createObjectURL(file);
+                                            } else if (window.webkitURL != undefined) {
+                                                showSrc = window.webkitURL.createObjectURL(file);
+                                            }
+                                        } else {
+                                            src = localData;
+                                            showSrc = localData;
+                                        }
+
+                                        //begin 将附件信息放入到附件列表中
+                                        //var attachObj = new Object;
+                                        //attachObj.formFile = file
+                                        //attachObj.fileName = new Date().format("yyyyMMddhhmmss");
+                                        //attachObj.tableName = "HIDDEN_DANGER_APPLY"
+                                        //attachObj.attachField = "apply"
+                                        //attachList.push(attachObj);
+                                        //end 附件放入附件列表处理结束
+
+                                        var base64 = res.localData; // localData是图片的base64数据，可以用img标签显示
+                                        var arr = base64.split(',');
+                                        var mime = arr.length > 1 ? arr[0].match(/:(.*?);/)[1] : "image/jpeg";
+                                        var bstr = atob(arr[arr.length - 1]),
+                                            n = bstr.length,
+                                            u8arr = new Uint8Array(n);
+                                        while (n--) {
+                                            u8arr[n] = bstr.charCodeAt(n);
+                                        }
+                                        var file = new File([u8arr], "upload.jpg", {
+                                            type: mime
+                                        });
+                                        var attachObj = new Object;
+                                        attachObj.formFile = file
+                                        var paramObj = new Object;
+                                        paramObj.fileName = new Date().format("yyyyMMddhhmmss");
+                                        paramObj.tableName = "PM_PLAN_EXE"
+                                        paramObj.attachField = "apply"
+                                        attachObj.paramObj = paramObj;
+
+                                        //var formData = new FormData();
+                                        //formData.append("formFile", file);
+                                        //formData.append("folder", "SealImg");
+                                        //formData.append("data", "123123");
+                                        //var formData = new FormData();
+                                        //formData.append("formFile", file);
+                                        //formData.append("folder", "SealImg");
+                                        //formData.append("data", "123123");
+                                        var index = attachList.length
+                                        attachList.push(attachObj);
+
+                                        //var html = ' <li onclick="DangerReportPage.editPhoto(this)" data-imgUrl="' + src + '"   class="weui-uploader__file" style="background-image:url(' + showSrc + ')"></li>';
+                                        var html = ' <img src="' + src + '" width="100" style="padding-top:5px;padding-left:5px" id="imgUpload' + index + '" class = "imgAdd" />'
+                                        //$(even).siblings(".weui-uploader__files").prepend(html);
+                                        //$("#img").append(html);
+                                        $("#imgSpan").append(html);
+                                        resolve();
+                                    }
+                                });
+                            });
+                        }
+                        function asyncControl() {
+                            if (index < localIds.length) {
+                                f1(index).then(function () {
+                                    index++;
+                                    asyncControl();
+                                });
+                            } else {
+                                // console.log('数据全部处理完了');
+                            }
+                        }
+                        asyncControl();
+                    }
+                })
+            });
+        }
     </script>
 </body >
 

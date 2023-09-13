@@ -97,7 +97,15 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.GetPlandetList(request), "成功");
         }
-
+        /// <summary>
+        /// 获取计划明细
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetPlandetFileAsync(string doneitemId)
+        {
+            return AjaxResult.Success(await _service.GetPmFileList(doneitemId), "成功");
+        }
         /// <summary>
         /// 管理计划明细
         /// </summary>

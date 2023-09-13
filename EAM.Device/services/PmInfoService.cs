@@ -182,32 +182,50 @@ namespace EAM.Device.services
             return AjaxResult.Success("更新成功");
         }
         /// <summary>
+        /// 查询附件
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> GetPmFileList(string Id) 
+        {
+           var query = await _dbContext.Query<PM_PLAN_DONEITEM>(c=>c.DONEITEM_ID.ToString() == Id).ToListAsync();
+
+            var list = query.Select(c=>new {
+                ATTACH_EXE_FILE = string.Join(",", _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_EXE").Select(a => a.attach_path).ToList()),
+                ATTACH_PLAN_FILE = string.Join(",", _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_DONEITEM").Select(a => a.attach_path).ToList())
+            }).ToList();
+
+            return AjaxResult.Success(list);
+        }
+        /// <summary>
         /// 获取计划明细
         /// </summary>
         /// <returns></returns>
         public async Task<GridData> GetPlandetList(GridRequest request)
         {
             return await _dbContext.Query<PM_PLAN_DONEITEM>()
-                .Select(c =>new {
-                    c.STD_CODE,
-                    c.OBJECT_NAME,
-                    c.CONTENT,
-                    c.STD_LEVEL,
-                    c.WORK_STATE,
-                    c.MAINT_CYCLE,
-                    c.PLAN_MONTH,
-                    c.EXE_USER,
-                    c.EXECUTE_USER,
-                    c.CHK_USER,
-                    c.CHECK_USER,
-                    c.MEMO,
-                    c.DONEITEM_ID,
-                    c.EXE_ID,
-                    c.COMPLETE,
-                    ATTACH_EXE = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_EXE").Count(),
-                    ATTACH_PLAN = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_DONEITEM").Count(),
-                })
-                .GetGridData(request);
+                 .Select(c => new
+                 {
+                     c.STD_CODE,
+                     c.OBJECT_NAME,
+                     c.CONTENT,
+                     c.STD_LEVEL,
+                     c.WORK_STATE,
+                     c.MAINT_CYCLE,
+                     c.PLAN_MONTH,
+                     c.EXE_USER,
+                     c.EXECUTE_USER,
+                     c.CHK_USER,
+                     c.CHECK_USER,
+                     c.MEMO,
+                     c.DONEITEM_ID,
+                     c.EXE_ID,
+                     c.COMPLETE,
+                     ATTACH_EXE = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_EXE").Count(),
+                     ATTACH_PLAN = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_DONEITEM").Count()
+                 }).GetGridData(request);
+
+
         }
 
         /// <summary>
