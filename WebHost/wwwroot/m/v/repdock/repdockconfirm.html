@@ -259,8 +259,8 @@
                             return;
                         }
 
-                        if (data.IS_LEAVE == null || data.IS_LEAVE == '') {
-                            app.dialog.error("是否有遗留问题不可为空");
+                        if (data.IS_LEAVE == null || data.IS_LEAVE == '' || data.IS_LEAVE == '-99') {
+                            app.dialog.error("请选择是否有遗留问题");
                             return;
                         }
 

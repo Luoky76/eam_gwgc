@@ -88,13 +88,13 @@
                                                                 <div class="row no-gap">
 
                                                                     <div class="col-35" style="color: rgb(192,192,192)">运行状态</div>`;
-                            if (me.list[i].RUN_STATUS == "10" || me.list[i].RUN_STATUS == null) str += `<div class="col-65" style="color: green; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 正常 </div>`;
-                            if (me.list[i].RUN_STATUS == "20") str += `<div class="col-65" style="color: black; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 维修 </div>`;
-                            if (me.list[i].RUN_STATUS == "30") str += `<div class="col-65" style="color: red; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 停机 </div>`;
-                            if (me.list[i].RUN_STATUS == "40") str += `<div class="col-65" style="color: black; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 事故 </div>`;
-                            if (me.list[i].RUN_STATUS == "50") str += `<div class="col-65" style="color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 保养 </div>`;
-                            if (me.list[i].RUN_STATUS == "60") str += `<div class="col-65" style="color: green; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 检查 </div>`;
-                            if (me.list[i].RUN_STATUS == "70") str += `<div class="col-65" style="color: green; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 备用 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "正常" || me.list[i].NEW_RUN_STATUS == null) str += `<div class="col-65" style="color: #00FF00; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 正常 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "维修") str += `<div class="col-65" style="color: black; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 维修 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "停机") str += `<div class="col-65" style="color: red; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 停机 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "事故") str += `<div class="col-65" style="color: black; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 事故 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "保养") str += `<div class="col-65" style="color: #2BD5D5; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 保养 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "检查") str += `<div class="col-65" style="color: green; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 检查 </div>`;
+                            if (me.list[i].NEW_RUN_STATUS == "备用") str += `<div class="col-65" style="color: green; white-space: nowrap;overflow: hidden;text-overflow:ellipsis;"> 备用 </div>`;
 
                             str += `<div class="col-10"></div>
                                                                 </div>

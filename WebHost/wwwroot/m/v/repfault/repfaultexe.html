@@ -103,6 +103,10 @@
                         data.Rows.forEach((a) => {
                             a.AUDITING_B = me.auditingData.find((v) => v.ID == a.AUDITING_B).TEXT;
                             a.FAULT_STATUS = faultStatus.find((v) => v.ID == a.FAULT_STATUS).TEXT;
+                            if (a.FAULT_DATE != null) {
+                                var parts = a.FAULT_DATE.split(' ');
+                                a.FAULT_DATE = parts[0];
+                            }
                         });
 
                         var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
@@ -421,12 +425,12 @@
                         let data = app.form.convertToData("#detail_bg");
                         data.FAULT_ID = ID;
 
-                        if (data.WDEPT_ID == null || data.WDEPT_ID == '') {
+                        if (data.WDEPT_ID == null || data.WDEPT_ID == '' || data.WDEPT_ID == '-99') {
                             app.dialog.error("请选择维保部门");
                             return
                         }
 
-                        if (data.REPAIR_USERID == null || data.REPAIR_USERID == '') {
+                        if (data.REPAIR_USERID == null || data.REPAIR_USERID == '' || data.REPAIR_USERID == '-99') {
                             app.dialog.error("请选择维修人");
                             return
                         }
@@ -436,42 +440,42 @@
                             data.REPAIR_USER = da.TEXT;
                         }
 
-                        if (data.SHIP_ID == null || data.SHIP_ID == '') {
+                        if (data.SHIP_ID == null || data.SHIP_ID == '' || data.SHIP_ID == '-99') {
                             app.dialog.error("请选择船舶");
                             return
                         }
-                        if (data.DEVICE_STATUS == null || data.DEVICE_STATUS == '') {
+                        if (data.DEVICE_STATUS == null || data.DEVICE_STATUS == '' || data.DEVICE_STATUS == '-99') {
                             app.dialog.error("请选择设备状态");
                             return
                         }
 
-                        if (data.DEVICE_ID == null || data.DEVICE_ID == '') {
+                        if (data.DEVICE_ID == null || data.DEVICE_ID == '' || data.DEVICE_ID == '-99') {
                             app.dialog.error("请选择设备");
                             return
                         }
 
-                        if (data.FAULT_DATE == null || data.FAULT_DATE == '') {
+                        if (data.FAULT_DATE == null || data.FAULT_DATE == '' || data.FAULT_DATE == '-99') {
                             app.dialog.error("请选择故障发生时间");
                             return
                         }
 
-                        if (data.FAULT_DESCRIBE == null || data.FAULT_DESCRIBE == '') {
+                        if (data.FAULT_DESCRIBE == null || data.FAULT_DESCRIBE == '' || data.FAULT_DESCRIBE == '-99') {
                             app.dialog.error("请填写故障现象描述");
                             return
                         }
-                        if (data.DISPOSE_TYPE == null || data.DISPOSE_TYPE == '') {
+                        if (data.DISPOSE_TYPE == null || data.DISPOSE_TYPE == '' || data.DISPOSE_TYPE == '-99') {
                             app.dialog.error("请选择处理方式");
                             return
                         }
-                        if (data.REP_TYPE_ID == null || data.REP_TYPE_ID == '') {
+                        if (data.REP_TYPE_ID == null || data.REP_TYPE_ID == '' || data.REP_TYPE_ID == '-99') {
                             app.dialog.error("请选择故障分类");
                             return
                         }
-                        if (data.ORDER_DATE == null || data.ORDER_DATE == '') {
+                        if (data.ORDER_DATE == null || data.ORDER_DATE == '' || data.ORDER_DATE == '-99') {
                             app.dialog.error("请选择开工时间");
                             return
                         }
-                        if (data.COMPLETE_DATE == null || data.COMPLETE_DATE == '') {
+                        if (data.COMPLETE_DATE == null || data.COMPLETE_DATE == '' || data.COMPLETE_DATE == '-99') {
                             app.dialog.error("请选择完工时间");
                             return
                         }
@@ -674,6 +678,10 @@
                                 formdata = data;
                                 me.detail = data;
                                 me.detail.AUDITING_B = business.auditingData.find((v) => v.ID == me.detail.AUDITING_B).TEXT;
+                                if (me.detail.FAULT_DATE != null) {
+                                    var parts = me.detail.FAULT_DATE.split(' ');
+                                    me.detail.FAULT_DATE = parts[0];
+                                }
                                 var detailInfo = me.detail.AUDITING_B == "未提交" ? repFaultInfo : repFaultInfo.map(function (item) {
                                     return { ...item, readOnly: true };
                                 });
@@ -1135,7 +1143,10 @@
                             },
                             url: 'Device/RepFault/GetFaultSpList',
                             success: function (data) {
-                                var str = app.CreatePopupContentHtml(spDetailInfoEdit);
+                                var detailInfo = data.AUDITING_B == "未提交" ? spDetailInfoEdit : spDetailInfoEdit.map(function (item) {
+                                    return { ...item, readOnly: true };
+                                });
+                                var str = app.CreatePopupContentHtml(detailInfo);
                                 $("#detail_bg_detail").html(str);
                                 if (data.Rows.length > 0) {
                                     formDataDetail = data.Rows[0];
@@ -1222,10 +1233,10 @@
                     var me = this;
 
                     $("#savePepDetail").off('click').click(function () {
-                        var ID = me.params.FAULT_SP_ID;
+                        var ID = me.params.FAULT_LABOR_ID;
                         let data = app.form.convertToData("#detail_bg_pep");
                         data.FAULT_ID = me.params.FAULT_ID;
-                        data.FAULT_SP_ID = ID;
+                        data.FAULT_LABOR_ID = ID;
 
                         if (data.FAULT_ID == null || data.FAULT_ID == '') {
                             app.dialog.error("参数错误");
@@ -1237,13 +1248,10 @@
                             return;
                         }
                         var AddRow = new Object();
-
+                        debugger
                         if (data.FAULT_LABOR_ID) {
                             AddRow["Updated"] = [data];
                             AddRow["Original"] = [pepDataDetail];
-                        }
-                        else {
-                            AddRow["Added"] = [data]
                         }
 
                         app.ajax({
