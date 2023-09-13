@@ -212,12 +212,7 @@
             },
             validate: function () {
                 var me = this;
-                var isValidated = true;
-                if (!document.forms['assess'].reportValidity()) {
-                    //验证不通过
-                    isValidated = false;
-                }
-                return isValidated;
+                return document.forms['assess'].reportValidity()
             },
             save: function () {
                 var me = this;
@@ -357,16 +352,15 @@
             },
             validateDet: function () {
                 var me = this;
-                var isValidated = true;
                 for (let i = 0; i < me.orginDetailData.length; ++i) {
                     //表格ID
                     let form_id = 'assess_det_' + i;
                     if (!document.forms[form_id].reportValidity()) {
                         //验证不通过
-                        isValidated = false;
+                        return false;
                     }
                 }
-                return isValidated;
+                return true;
             },
             saveDet: function () {
                 var me = this;
