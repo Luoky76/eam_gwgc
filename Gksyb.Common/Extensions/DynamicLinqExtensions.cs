@@ -12,6 +12,7 @@ namespace Gksyb.Common
         {
             if (string.IsNullOrWhiteSpace(source)) return source;
             var data = formData.ToIgnoreCaseDictionary();
+            if (data == null) return source;
             var funcs = funcData == null ? new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase) : funcData.ToIgnoreCaseDictionary();
             pattern ??= @"{(\w+)}";
             return Regex.Replace(source, pattern, match =>

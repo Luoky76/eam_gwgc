@@ -11,7 +11,7 @@ namespace Gksyb.Common
         /// </summary>
         public static object GetService(this IServiceProvider source, string serviceType)
         {
-            return source.GetService(c => c.ServiceType.Name == serviceType);
+            return source.GetService(c => c.ServiceType.FullName == serviceType);
         }
 
         /// <summary>
