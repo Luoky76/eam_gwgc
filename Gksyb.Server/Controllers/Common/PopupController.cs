@@ -69,6 +69,14 @@ namespace Gksyb.Server.Controllers.Common
         /// <summary>
         /// 岗位数据
         /// </summary>
+        public async Task<AjaxResult> CorpsAsync([FromServices] ICorpService service)
+        {
+            return AjaxResult.Success(await service.Corps());
+        }
+
+        /// <summary>
+        /// 岗位数据
+        /// </summary>
         public async Task<AjaxResult> StationsAsync([FromServices] IBCCodeService codeService)
         {
             return AjaxResult.Success(await codeService.Get("岗位"));

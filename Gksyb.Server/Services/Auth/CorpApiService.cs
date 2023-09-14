@@ -21,6 +21,15 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <inheritdoc/>
+        public async Task<List<CorpInfo>> Corps()
+        {
+            var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
+            return await _dbContext.Query<CF_CORP>().WhereIf(!_user.IsAdmin, c => corpids.Contains(c.CORPID))
+                .Select(CorpInfoExtensions.SelectCorpInfo)
+                .ToListAsync();
+        }
+
+        /// <inheritdoc/>
         public async Task<List<CorpInfo>> FindCorpsAsync(Expression<Func<CorpInfo, bool>> filter = null)
         {
             return await _dbContext.Query<CF_CORP>().Select(CorpInfoExtensions.SelectCorpInfo)

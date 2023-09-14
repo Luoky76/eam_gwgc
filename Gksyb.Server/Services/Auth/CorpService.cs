@@ -1,5 +1,6 @@
 ﻿using Chloe.Annotations;
 using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.Tree;
@@ -13,11 +14,13 @@ namespace Gksyb.Server.Services.Auth
     /// </summary>
     public partial class CorpService : BaseService<CF_CORP>, ICorpService
     {
+        private readonly UserSession _user;
         /// <summary>
         /// 组织服务
         /// </summary>
-        public CorpService(IDbContext dbContext) : base(dbContext)
+        public CorpService(IDbContext dbContext, UserSession userSession) : base(dbContext)
         {
+            _user = userSession;
         }
 
         /// <summary>

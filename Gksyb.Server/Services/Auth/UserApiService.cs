@@ -80,6 +80,14 @@ namespace Gksyb.Server.Services.Auth
                     }
                     break;
 
+                case "CoprStation":
+                    if (string.IsNullOrWhiteSpace(info.Corp)) return users;
+                    foreach (var station in operators)
+                    {
+                        users.AddRange(await FindByCorpStation(info.Corp, station));
+                    }
+                    break;
+
                 case "Group":
                     users.AddRange(await FindByGroup(operators));
                     break;
@@ -105,6 +113,15 @@ namespace Gksyb.Server.Services.Auth
             if (parentId == null) return users;
             users = await FindByStation(parentId, station, skipCorp);
             return users;
+        }
+
+        /// <summary>
+        /// 查找上级公司指定岗位的人员
+        /// </summary>
+        public async Task<List<UserInfo>> FindByCorpStation(string CorpId, string station)
+        {
+            var parentId = await _dbContext.Query<CF_CORP>().Where(a => a.CORPID == CorpId).Select(a => a.CORPPARENTID).FirstOrDefaultAsync();
+            return await FindByStation(parentId, station);
         }
 
         /// <inheritdoc/>
