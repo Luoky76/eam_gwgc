@@ -344,7 +344,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             var list = new List<IFlowInterceptor>();
             interceptors.ForEach(c =>
             {
-                if (_serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).Name == c && a.ServiceType is IFlowInterceptor) is IFlowInterceptor service)
+                if (_serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == c && a.ServiceType is IFlowInterceptor) is IFlowInterceptor service)
                 {
                     list.Add(service);
                 }
