@@ -1,4 +1,4 @@
-﻿namespace Gksyb.Workflow.Controllers.Workflow.Dtos
+﻿namespace Gksyb.Core.Interfaces.WorkFlow
 {
     public class TaskInfo
     {

@@ -1,7 +1,22 @@
-﻿namespace Gksyb.Core.Interfaces.WorkFlow
+﻿using System.Linq.Expressions;
+
+namespace Gksyb.Core.Interfaces.WorkFlow
 {
-    public interface ITaskService : IService
+    /// <summary>
+    /// 流程引擎服务
+    /// </summary>
+    public interface IFlowEngineService : IService
     {
+        /// <summary>
+        /// 获取流程列表
+        /// </summary>
+        public Task<List<FlowInfo>> FlowListAsync(Expression<Func<FlowInfo, bool>> filter = null);
+
+        /// <summary>
+        /// 获取任务流转意见
+        /// </summary>
+        public Task<List<TaskLog>> TaskLogAsync(string taskId);
+
         /// <summary>
         /// 启动流程 {"FlowId":"2I9BnRW0HmW","FormData":{"money":500}}
         /// </summary>

@@ -62,6 +62,13 @@ namespace Gksyb.Workflow.Controllers.Workflow
             await _service.SaveOrderAsync(request.Updated);
             return AjaxResult.Success();
         }
+
+        [JsToken]
+        public async Task<AjaxResult> CopyAsync(List<string> ids, List<string> corps)
+        {
+            await _service.CopyAsync(ids, corps);
+            return AjaxResult.Success();
+        }
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

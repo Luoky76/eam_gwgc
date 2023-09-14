@@ -6,10 +6,11 @@ using Gksyb.Workflow.EventSubscriber.Dtos;
 using Gksyb.Workflow.Services.Workflow.Bpmn;
 using Gksyb.Workflow.Services.Workflow.Dtos;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
 
 namespace Gksyb.Workflow.Services.Workflow
 {
-    public class TaskService : IBaseService, ITaskService
+    public class TaskService : IBaseService, IFlowEngineService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IDbContext _dbContext;
@@ -22,6 +23,42 @@ namespace Gksyb.Workflow.Services.Workflow
             _dbContext = dbContext;
             _userService = userService;
             _user = user;
+        }
+
+        /// <summary>
+        /// 流程列表
+        /// </summary>
+        public async Task<List<FlowInfo>> FlowListAsync(Expression<Func<FlowInfo, bool>> filter = null)
+        {
+            return await _dbContext.Query<WF_FLOW>().Where(c => c.FLAG == "1")
+                .Select(c => new FlowInfo()
+                {
+                    Id = c.ID,
+                    FlowName = c.FLOW_NAME,
+                    FlowGroup = c.FLOW_GROUP,
+                    FlowTitle = c.FLOW_TITLE,
+                    FlowOrder = c.FLOW_ORDER,
+                    FlowFormUrl = c.FLOW_FORM_URL,
+                    FlowFormMobileUrl = c.FLOW_FORM_MOBILE_URL,
+                    FlowVersion = c.FLOW_VERSION,
+                    Corpid = c.CORPID
+                }).WhereIfNotNull(filter, filter).ToListAsync();
+        }
+
+        /// <summary>
+        /// 流程列表
+        /// </summary>
+        public async Task<List<TaskLog>> TaskLogAsync(string taskId)
+        {
+            return await _dbContext.Query<WF_TASK_LOG>().Where(a => a.TASK_ID == taskId).Select(a => new TaskLog()
+            {
+                NodeId = a.NODE_ID,
+                Operator = a.OPERATOR,
+                OperType = a.OPERTYPE,
+                OperTitle = a.OPERTITLE,
+                OperDetail = a.OPERDETAIL,
+                OperDate = a.OPERDATE
+            }).ToListAsync();
         }
 
         /// <summary>

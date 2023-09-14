@@ -214,8 +214,13 @@
                     nodes.push(nodeInfos[i].NodeId);
                 }
                 me.data.NodeId = me.data.NodeId || me.lf.getNodeModelByType("bpmn:startEvent").id;
-                if (nodes.length < 1) nodes.push(me.data.NodeId);
-                me.lf.highLight(nodes, me.data.NodeId);
+                var nodeId = me.data.NodeId;
+                if ($.inArray(me.data.NodeId, nodes) >= 0) {
+                    var outNodes = me.lf.getNodeOutgoingNode(me.data.NodeId);
+                    if (outNodes.length === 1) nodeId = outNodes[0].id;
+                }
+                if (nodes.length < 1) nodes.push(nodeId);
+                me.lf.highLight(nodes, nodeId);
                 me.isAssign = me.lf.getNodeDataById(me.data.NodeId).properties.assign;
             },
             initTimeline: function () {

@@ -32,6 +32,13 @@ namespace Gksyb.Model.WorkFlow
         public string FLOW_NAME { get; set; }
 
         /// <summary>
+        /// 所属组
+        /// </summary>
+        [Description("所属组")]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
+        public string FLOW_GROUP { get; set; }
+
+        /// <summary>
         /// 流程标题
         /// </summary>
         [Description("流程标题")]
@@ -68,10 +75,24 @@ namespace Gksyb.Model.WorkFlow
         public string FLOW_FORM_URL { get; set; }
 
         /// <summary>
+        /// 流程表单url
+        /// </summary>
+        [Description("流程表单移动端URL")]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
+        public string FLOW_FORM_MOBILE_URL { get; set; }
+
+        /// <summary>
         /// 流程版本
         /// </summary>
         [Description("流程版本")]
         public int? FLOW_VERSION { get; set; }
+
+        /// <summary>
+        /// 被动触发（不可由人工主动发起流程）
+        /// </summary>
+        [Description("被动触发")]
+        [Column(DbType = DbType.AnsiString, Size = 1)]
+        public string PASSIVE { get; set; }
 
         /// <summary>
         /// 状态(1:可用 0:已下线)
