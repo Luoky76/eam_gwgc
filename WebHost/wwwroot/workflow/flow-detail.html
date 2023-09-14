@@ -278,7 +278,7 @@
                 }
                 $.ligerDialog.confirm('确认不同意吗?', function (confirm) {
                     if (!confirm) return;
-                    me.excute(me.nodeStatus.Reject, formData);
+                    me.excute(me.nodeStatus.Reject);
                 });
             },
             back: function () {
