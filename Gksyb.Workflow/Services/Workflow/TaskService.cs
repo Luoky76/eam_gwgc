@@ -263,8 +263,8 @@ namespace Gksyb.Workflow.Services.Workflow
             Sequences.Clear();
             graphData.Nodes?.ForEach(c =>
             {
-                var serviceName = c.ServiceName;
-                if (_serviceProvider.GetService(a => a.ServiceType.Name == serviceName) is not BpmnNodeService service) return;
+                var serviceName = $"Gksyb.Workflow.Services.Workflow.Bpmn.{c.ServiceName}";
+                if (_serviceProvider.GetService(serviceName) is not BpmnNodeService service) return;
                 service.Init(c);
                 Nodes.Add(service);
             });
