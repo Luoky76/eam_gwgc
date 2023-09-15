@@ -132,7 +132,7 @@
                             }
                         }]
                 });
-                me.auditForm.setOrginData(me.data);
+                me.auditForm.setData(me.data);
             },
             initFormUrl: function () {
                 var me = this;
@@ -267,6 +267,11 @@
             },
             agree: function () {
                 var me = this;
+                var formData = me.auditForm.getData();
+                if (formData.Reason === "不同意") {
+                    LG.showError("同意操作不能选择不同意为处理意见");
+                    return;
+                }
                 me.excute(me.nodeStatus.Agree);
             },
             reject: function () {
@@ -274,6 +279,10 @@
                 var formData = me.auditForm.getData();
                 if (!formData.Reason) {
                     LG.showError("请输入处理意见");
+                    return;
+                }
+                if (formData.Reason === "同意") {
+                    LG.showError("不同意操作不能选择同意为处理意见");
                     return;
                 }
                 $.ligerDialog.confirm('确认不同意吗?', function (confirm) {
