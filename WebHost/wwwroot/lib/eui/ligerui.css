@@ -1657,6 +1657,8 @@ table.l-filter-group-alt table.l-filter-group {
 
 .l-box-dropdown {
     position: absolute;
+    top: 0px;
+    left: 0px;
     z-index: 9999;
     display: none;
     float: left;

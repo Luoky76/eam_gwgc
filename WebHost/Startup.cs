@@ -76,6 +76,7 @@ namespace WebHost
         {
             app.Use((context, next) =>
             {
+                context.Request.EnableRewind();
                 context.Response.AddSecurityHeader();//安全响应头
                 return next.Invoke();
             });

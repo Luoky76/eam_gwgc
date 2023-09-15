@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Mvc
             if (arguments?.Count > 0)
             {
                 var body = arguments.ToMiniJson();
+                context.HttpContext.SetRequestBodyItem(body);
                 if (!description.MethodInfo.HasAttribute<SkipXssFilterAttribute>(false))
                     body.XssFilter();
-                context.HttpContext.SetRequestBodyItem(body);
             }
             if (context.Result == null && !context.ModelState.IsValid)
             {

@@ -157,9 +157,9 @@ namespace Gksyb.Common
         {
             if (string.IsNullOrWhiteSpace(value)) return value;
             if (Regex.IsMatch(value, @"(insert\s+|union\s+|update\s+|delete\s+|select\s+|\s+or\s+|\s+=\s+|\s+dual\s+|create\s+|declare\s+|exec\s+|sys\.|dbms_|extractvalue|dburitype)", RegexOptions.IgnoreCase))
-                throw new MessageException("防注入系统");
+                throw new MessageException("防注入:1001");
             if (limit != null && value.Length > limit && Regex.Replace(value, $@"^((\w|\.|,){{{limit},}})|(\basc\b)|(\bdesc\b)|( )", "", RegexOptions.IgnoreCase).Length > limit)
-                throw new MessageException("防注入系统");
+                throw new MessageException("防注入:1002");
             return value;
         }
 
@@ -170,7 +170,7 @@ namespace Gksyb.Common
         {
             if (string.IsNullOrWhiteSpace(value)) return value;
             if (Regex.IsMatch(value, @"<[^>]+>", RegexOptions.IgnoreCase))
-                throw new MessageException("防注入");
+                throw new MessageException("防注入:1003");
             return value;
         }
 

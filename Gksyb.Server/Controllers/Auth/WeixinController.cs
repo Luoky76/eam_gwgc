@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
+using System.Web;
 
 namespace Gksyb.Server.Controllers.Auth
 {
@@ -54,8 +55,10 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取微信授权地址
         /// </summary>
         /// <returns></returns>
-        public AjaxResult AuthorizeUrl([FromHeader] string redirectUrl)
+        public AjaxResult AuthorizeUrl([FromServices] IConfiguration config, [FromHeader] string redirectUrl)
         {
+            var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
+            if (!string.IsNullOrWhiteSpace(openid)) return AjaxResult.Success(HttpUtility.UrlDecode(redirectUrl), "成功");
             return AjaxResult.Success(WeixinHelper.GetAuthorizeUrl(redirectUrl), "成功");
         }
 
@@ -97,18 +100,9 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         public async Task<AjaxResult> OAuth([FromServices] IConfiguration config, [FromHeader] string code)
         {
-            OAuthAccessTokenResponse token;
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
-                token = new OAuthAccessTokenResponse() { ErrCode = 0, Openid = openid };
-                if (string.IsNullOrWhiteSpace(openid))
-                {
-                    token.ErrCode = 1;
-                    token.ErrMsg = "请传递参数";
-                }
-            }
-            else
+            var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
+            var token = new OAuthAccessTokenResponse() { ErrCode = 0, Openid = openid };
+            if (string.IsNullOrWhiteSpace(openid))
             {
                 token = await WeixinHelper.GetOauthAccessToken(code);
             }

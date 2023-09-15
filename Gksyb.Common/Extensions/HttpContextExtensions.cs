@@ -139,12 +139,11 @@ namespace Gksyb.Common
 
         public static string GetRequestBodyItem(this HttpContext source)
         {
-            var body = source.Request.ContentType;
             if (source.Items.ContainsKey(RequestBodyName))
             {
-                body = source.Items[RequestBodyName] as string;
+                return source.Items[RequestBodyName] as string;
             }
-            return body;
+            return source.Request.GetContent().Result();
         }
 
         public static void SetResponseBodyItem(this HttpContext source, object value)
@@ -156,12 +155,11 @@ namespace Gksyb.Common
 
         public static string GetResponseBodyItem(this HttpContext source)
         {
-            var body = source.Response.ContentType;
             if (source.Items.ContainsKey(ResponseBodyName))
             {
-                body = source.Items[ResponseBodyName] as string;
+                return source.Items[ResponseBodyName] as string;
             }
-            return body;
+            return source.Response.ContentType;
         }
 
         /// <summary>

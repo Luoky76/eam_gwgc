@@ -51,7 +51,7 @@ namespace Gksyb.Common
                 {
                 }
                 types.Add(type);
-                result.Add(key, value);
+                if (!result.ContainsKey(key)) result.Add(key, value);
                 return $"(As(it.{key},@{index++}))";
             }, formData, funcData);
             var queryable = (new List<Dictionary<string, object>>() { result }).AsQueryable();

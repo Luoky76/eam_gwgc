@@ -294,5 +294,17 @@ namespace Gksyb.Common
             if (source.Headers.ContainsKey(parm)) return source.Headers[parm];
             return null;
         }
+
+        /// <summary>
+        /// 允许重复读取body
+        /// </summary>
+        public static void EnableRewind(this HttpRequest source, long maxLength = 10 * 1024)
+        {
+            if (!source.HasFormContentType) return;
+            if (source.ContentLength > maxLength) return;
+            if (source.Body?.CanSeek == true) return;
+            if (source.ContentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase)) return;
+            source.EnableBuffering();
+        }
     }
 }
