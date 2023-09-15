@@ -11,8 +11,7 @@ namespace Gksyb.Common
         public static string Replace(this string source, Func<string, object, string> func, Dictionary<string, object> formData, Dictionary<string, Func<object>> funcData = null, string pattern = null)
         {
             if (string.IsNullOrWhiteSpace(source)) return source;
-            var data = formData.ToIgnoreCaseDictionary();
-            if (data == null) return source;
+            var data = formData.ToIgnoreCaseDictionary() ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             var funcs = funcData == null ? new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase) : funcData.ToIgnoreCaseDictionary();
             pattern ??= @"{(\w+)}";
             return Regex.Replace(source, pattern, match =>
