@@ -1,4 +1,5 @@
-﻿using Gksyb.Common.EventBus;
+﻿using DocumentFormat.OpenXml.EMMA;
+using Gksyb.Common.EventBus;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -355,8 +356,13 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 拦截方法
         /// </summary>
-        private static async Task Intercept(List<IFlowInterceptor> interceptorList, FlowExecuteInfo taskInfo)
+        private async Task Intercept(List<IFlowInterceptor> interceptorList, FlowExecuteInfo taskInfo)
         {
+            if (interceptorList.Count < 1) return;
+            if (taskInfo.FormData == null)
+            {
+                await SetFormData(taskInfo);
+            }
             await interceptorList.ForEachAsync(async c =>
             {
                 await c.Intercept(taskInfo);
