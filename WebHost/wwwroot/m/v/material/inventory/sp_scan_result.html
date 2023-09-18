@@ -214,13 +214,13 @@
 
                     var flag = true;
                     checkedIDList.forEach((a) => {
-                        var ming = me.list.find((v) => v.SCAN_DET_ID == a.SCAN_DET_ID);
-                        if (ming.SCAN_NUM == null || data.SCAN_NUM == '') {
+                        var ming = me.list.find((v) => v.SCAN_DET_ID == a);
+                        if (ming.SCAN_NUM == null || ming.SCAN_NUM == '') {
                             app.dialog.error("盘点数量未确认，不能提交");
                             flag = false;
                             return false;
                         }
-                        if (ming.SCAN_RESULT == null || data.SCAN_RESULT == '') {
+                        if (ming.SCAN_RESULT == null || ming.SCAN_RESULT == '') {
                             app.dialog.error("盘点结果未确认，不能提交");
                             flag = false;
                             return false;
