@@ -133,6 +133,7 @@
                         }]
                 });
                 me.auditForm.setData(me.data);
+                me.auditForm.orginData = me.auditForm.getData();
             },
             initFormUrl: function () {
                 var me = this;
@@ -140,7 +141,7 @@
                 url += (url.indexOf('?') > -1 ? "&" : "?");
                 url += "flowId=" + me.data.FlowId;
                 if (me.data.TaskId) url += "&taskId=" + me.data.TaskId;
-                if (me.data.NodeId) url += "&nodeId=" + me.data.NodeId;
+                if (me.data.Id) url += "&nodeId=" + me.data.Id;
                 if (me.isStart) url += "&isStart=1";
                 if (me.isView) url += "&isView=1";
                 me.formPanel._setUrl(window.gksybConfigs.getUrl(url, window.gksybConfigs.urlBase));

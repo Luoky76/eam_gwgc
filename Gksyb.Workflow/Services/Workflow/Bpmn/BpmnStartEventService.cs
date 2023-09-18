@@ -2,6 +2,7 @@
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Gksyb.Workflow.Services.Workflow.Bpmn
 {
@@ -57,14 +58,24 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         private async Task AddWfTask(FlowExecuteInfo info)
         {
+            var id = GuidHelper.NewShortId();
+            var company = info.CorpId;
+            if (!string.IsNullOrWhiteSpace(company))
+            {
+                var service = _serviceProvider.GetService<ICorpService>();
+                var corpInfo = await service.ParentCompany(info.CorpId);
+                if (corpInfo != null) company = corpInfo.CorpID;
+            }
             var entity = new WF_TASK()
             {
-                ID = GuidHelper.NewShortId(),
+                ID = id,
                 FLOW_ID = info.FlowId,
                 FLOW_NAME = info.FlowName,
                 FLOW_TITLE = BuildTitle(info),
+                TASK_KEY = info.GetTaskKey(id),
                 FLOW_FORM_DATA = info.FormData.ToJson(),
                 FLOW_STATUS = WF_TASKExtensions.Active,
+                COMPANY = company,
                 CORPID = info.CorpId,
                 CREATEUSERID = User.UserID,
                 CREATEUSERNAME = User.UserName,

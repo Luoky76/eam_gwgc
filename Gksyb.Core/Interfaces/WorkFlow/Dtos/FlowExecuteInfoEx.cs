@@ -15,6 +15,12 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public string FlowName { get; set; }
 
         /// <summary>
+        /// 流程表单主键名称
+        /// </summary>
+        [JsonIgnore]
+        public string KeyName { get; set; }
+
+        /// <summary>
         /// 标题
         /// </summary>
         [JsonIgnore]
@@ -37,5 +43,26 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         /// </summary>
         [JsonIgnore]
         public List<UserInfo> Users = null;
+
+        /// <summary>
+        /// 程序名
+        /// </summary>
+        [JsonIgnore]
+        public string AppName { get; set; }
+
+        /// <summary>
+        /// 获取任务主键
+        /// </summary>
+        public string GetTaskKey(string defaultId = null)
+        {
+            defaultId ??= TaskId;
+            if (FormData == null) return defaultId;
+            var key = string.IsNullOrWhiteSpace(KeyName) ? "key" : KeyName;
+            key = FormData.ContainsKey(key) ? key :
+                FormData.ContainsKey("key") ? "key" : "id";
+            if (!FormData.ContainsKey(key)) return defaultId;
+            var value = (FormData[key] ?? "").CastTo<string>();
+            return string.IsNullOrWhiteSpace(value) ? defaultId : value;
+        }
     }
 }

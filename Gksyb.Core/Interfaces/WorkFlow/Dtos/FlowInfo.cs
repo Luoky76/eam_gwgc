@@ -11,6 +11,11 @@
         public string Id { get; set; }
 
         /// <summary>
+        /// 流程编码
+        /// </summary>
+        public string FlowCode { get; set; }
+
+        /// <summary>
         /// 流程名称
         /// </summary>
         public string FlowName { get; set; }
@@ -28,7 +33,7 @@
         /// <summary>
         /// 流程序号
         /// </summary>
-        public string FlowOrder { get; set; }
+        public int? FlowOrder { get; set; }
 
         /// <summary>
         /// 流程表单url

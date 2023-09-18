@@ -6,11 +6,10 @@ using Gksyb.Workflow.EventSubscriber.Dtos;
 using Gksyb.Workflow.Services.Workflow.Bpmn;
 using Gksyb.Workflow.Services.Workflow.Dtos;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq.Expressions;
 
 namespace Gksyb.Workflow.Services.Workflow
 {
-    public class TaskService : IBaseService, IFlowEngineService
+    public class TaskService : IBaseService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IDbContext _dbContext;
@@ -23,42 +22,6 @@ namespace Gksyb.Workflow.Services.Workflow
             _dbContext = dbContext;
             _userService = userService;
             _user = user;
-        }
-
-        /// <summary>
-        /// 流程列表
-        /// </summary>
-        public async Task<List<FlowInfo>> FlowListAsync(Expression<Func<FlowInfo, bool>> filter = null)
-        {
-            return await _dbContext.Query<WF_FLOW>().Where(c => c.FLAG == "1")
-                .Select(c => new FlowInfo()
-                {
-                    Id = c.ID,
-                    FlowName = c.FLOW_NAME,
-                    FlowGroup = c.FLOW_GROUP,
-                    FlowTitle = c.FLOW_TITLE,
-                    FlowOrder = c.FLOW_ORDER,
-                    FlowFormUrl = c.FLOW_FORM_URL,
-                    FlowFormMobileUrl = c.FLOW_FORM_MOBILE_URL,
-                    FlowVersion = c.FLOW_VERSION,
-                    Corpid = c.CORPID
-                }).WhereIfNotNull(filter, filter).ToListAsync();
-        }
-
-        /// <summary>
-        /// 流程列表
-        /// </summary>
-        public async Task<List<TaskLog>> TaskLogAsync(string taskId)
-        {
-            return await _dbContext.Query<WF_TASK_LOG>().Where(a => a.TASK_ID == taskId).Select(a => new TaskLog()
-            {
-                NodeId = a.NODE_ID,
-                Operator = a.OPERATOR,
-                OperType = a.OPERTYPE,
-                OperTitle = a.OPERTITLE,
-                OperDetail = a.OPERDETAIL,
-                OperDate = a.OPERDATE
-            }).ToListAsync();
         }
 
         /// <summary>
@@ -238,6 +201,10 @@ namespace Gksyb.Workflow.Services.Workflow
             info.TaskId = node.TASK_ID;
             info.NodeId = node.NODE_ID;
             await Init(info);
+            if (string.IsNullOrWhiteSpace(info.TaskKey) && info.FormData != null)
+            {
+                info.TaskKey = info.GetTaskKey();
+            }
             var nodeService = Nodes.FirstOrDefault(c => c.Id == node.NODE_ID);
             info.ToNode = info.NodeStatus switch
             {
@@ -257,7 +224,9 @@ namespace Gksyb.Workflow.Services.Workflow
         private async Task Init(FlowExecuteInfo info)
         {
             if (isInit) return;
-            var flow = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == info.FlowId).FirstOrDefaultAsync();
+            var flow = await _dbContext.Query<WF_FLOW>()
+                .WhereIfNotNullOrEmpty(info.FlowId, c => c.ID == info.FlowId)
+                .WhereIfNotNullOrEmpty(info.FlowCode, c => c.FLOW_CODE == info.FlowCode).FirstOrDefaultAsync();
             var graphData = flow.FLOW_CONTENT.ToObject<FlowGraphData>();
             Nodes.Clear();
             Sequences.Clear();
@@ -276,10 +245,17 @@ namespace Gksyb.Workflow.Services.Workflow
                 Sequences.Add(service);
             });
             info.Users = await FindUsers(info.Operators);
-            info.CorpId = _user.Corp?.CorpID;
+            info.CorpId = string.IsNullOrWhiteSpace(info.CorpId) ? _user.Corp?.CorpID : info.CorpId;
+            if (string.IsNullOrWhiteSpace(info.CorpId))
+            {
+                info.CorpId = flow.CORPID;
+            }
             info.AppName = flow.APPNAME;
+            info.FlowId = flow.ID;
+            info.FlowCode = flow.FLOW_CODE;
             info.FlowName = flow.FLOW_NAME;
             info.Title = flow.FLOW_TITLE;
+            info.KeyName = flow.KEY_NAME;
             isInit = true;
         }
 

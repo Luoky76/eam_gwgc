@@ -13,12 +13,17 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public Task<List<FlowInfo>> FlowListAsync(Expression<Func<FlowInfo, bool>> filter = null);
 
         /// <summary>
+        /// 获取任务详情
+        /// </summary>
+        public Task<TaskInfo> TaskInfoAsync(Expression<Func<TaskInfo, bool>> filter = null);
+
+        /// <summary>
         /// 获取任务流转意见
         /// </summary>
         public Task<List<TaskLog>> TaskLogAsync(string taskId);
 
         /// <summary>
-        /// 启动流程 {"FlowId":"2I9BnRW0HmW","FormData":{"money":500}}
+        /// 启动流程 {"FlowId":"2I9BnRW0HmW","FormData":{"money":500}} 或 {"FlowCode":"流程编码","FormData":{"money":500}}
         /// </summary>
         public Task StartAsync(FlowExecuteInfo info);
 

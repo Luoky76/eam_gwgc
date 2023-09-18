@@ -99,7 +99,7 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<AjaxResult> SaveAsync(SaveRequest<WF_FLOW> request)
         {
             var result = await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.FLOW_NAME, c.FLOW_GROUP, c.FLOW_TITLE, c.FLOW_ORDER, c.FLOW_CONTENT, c.FLOW_FORM, c.FLOW_FORM_URL, c.FLOW_FORM_MOBILE_URL, c.PASSIVE, c.CORPID },
+                c => new { c.FLOW_CODE, c.FLOW_NAME, c.FLOW_GROUP, c.FLOW_TITLE, c.FLOW_ORDER, c.FLOW_CONTENT, c.KEY_NAME, c.FLOW_FORM, c.FLOW_FORM_URL, c.FLOW_FORM_MOBILE_URL, c.PASSIVE, c.CORPID },
                 c => a => a.ID == c.ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, true, BeforeSave, AfterSave);
             if (result.IsError) return result;
@@ -197,10 +197,18 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         private async Task Handle(WF_FLOW entity)
         {
+            entity.FLOW_NAME.CheckNotNullOrWhiteSpace("流程名称");
             var isExists = await _dbContext.Query<WF_FLOW>()
                 .Where(c => c.FLOW_NAME == entity.FLOW_NAME && c.CORPID == entity.CORPID && c.FLAG == "1" && c.APPNAME == _options.AppName)
                 .WhereIfNotNullOrEmpty(entity.ID, c => c.ID != entity.ID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在流程名称{entity.FLOW_NAME}");
+            if (!string.IsNullOrWhiteSpace(entity.FLOW_CODE))
+            {
+                isExists = await _dbContext.Query<WF_FLOW>()
+                    .Where(c => c.FLOW_CODE == entity.FLOW_CODE && c.FLAG == "1" && c.APPNAME == _options.AppName)
+                    .WhereIfNotNullOrEmpty(entity.ID, c => c.ID != entity.ID).AnyAsync();
+                if (isExists) throw new MessageException($"已经存在流程编码{entity.FLOW_CODE}");
+            }
         }
     }
 }

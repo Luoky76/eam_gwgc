@@ -27,6 +27,13 @@ namespace Gksyb.Model.WorkFlow
         /// <summary>
         /// 流程名称
         /// </summary>
+        [Description("流程编号")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
+        public string FLOW_CODE { get; set; }
+
+        /// <summary>
+        /// 流程名称
+        /// </summary>
         [Description("流程名称")]
         [Column(DbType = DbType.AnsiString, Size = 200)]
         public string FLOW_NAME { get; set; }
@@ -49,7 +56,7 @@ namespace Gksyb.Model.WorkFlow
         /// 流程序号
         /// </summary>
         [Description("流程序号")]
-        public string FLOW_ORDER { get; set; }
+        public int? FLOW_ORDER { get; set; }
 
         /// <summary>
         /// 流程内容
@@ -66,6 +73,13 @@ namespace Gksyb.Model.WorkFlow
         [Description("流程表单")]
         [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string FLOW_FORM { get; set; }
+
+        /// <summary>
+        /// 流程表单主键名称
+        /// </summary>
+        [Description("流程表单主键名称")]
+        [Column(DbType = DbType.AnsiString, Size = 50)]
+        public string KEY_NAME { get; set; }
 
         /// <summary>
         /// 流程表单url
@@ -112,7 +126,7 @@ namespace Gksyb.Model.WorkFlow
         /// 创建人ID
         /// </summary>
         [Description("创建人ID")]
-        public int? CREATEUSERID { get; set; }
+        public long? CREATEUSERID { get; set; }
 
         /// <summary>
         /// 创建人

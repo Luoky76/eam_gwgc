@@ -66,8 +66,20 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         protected async Task SetFormData(FlowExecuteInfo info)
         {
-            var formData = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => c.FLOW_FORM_DATA).FirstOrDefaultAsync();
-            info.FormData = (formData ?? "").ToObject<Dictionary<string, object>>();
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => new WF_TASK()
+            {
+                ID = c.ID,
+                TASK_KEY = c.TASK_KEY,
+                FLOW_FORM_DATA = c.FLOW_FORM_DATA
+            }).FirstOrDefaultAsync();
+            task ??= await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == info.TaskId).Select(c => new WF_TASK()
+            {
+                ID = c.ID,
+                TASK_KEY = c.TASK_KEY,
+                FLOW_FORM_DATA = c.FLOW_FORM_DATA
+            }).FirstOrDefaultAsync();
+            info.FormData = (task == null ? "" : (task.FLOW_FORM_DATA ?? "")).ToObject<Dictionary<string, object>>();
+            info.TaskKey = task == null ? info.GetTaskKey() : task.TASK_KEY;
         }
 
         /// <summary>
