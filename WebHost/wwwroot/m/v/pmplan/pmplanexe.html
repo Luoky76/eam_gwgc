@@ -886,6 +886,8 @@
                             url: 'Device/PmInfo/ManagePlandet',
                             success: function (data) {
                                 console.log(data);
+                                //上传附件保存到服务器
+                                submitAttach(ID);
                                 detail_shis_popup.open();
                             }
                         });
@@ -1571,7 +1573,59 @@
         });
         
         var aud;
-        
+        function submitAttach(id) {
+            var requestObj = new Object;
+            var param = new Object;
+
+            if (attachList.length != 0) {
+
+                attachList.forEach((a) => {
+                    requestObj.formFile = a.formFile
+                    a.paramObj.dataId = id
+                    param = a.paramObj
+
+                    var formData = new FormData();
+                    formData.append("formFile", requestObj.formFile);
+                    formData.append("fileName", param.fileName);
+                    formData.append("dataId", param.dataId);
+                    formData.append("tableName", param.tableName);
+                    formData.append("attachField", param.attachField);
+
+                    app.ajax({
+                        //type: 'post',
+                        contentType: "multipart/form-data",
+                        url: 'attach/WXUpload',
+                        data: formData,
+                        success: function (data) {
+                            console.log("上传情况" + data)
+                        }
+                    })
+                })
+
+                //requestObj.parms = JSON2.stringify(param)
+
+
+
+                //for (var i = 0; i < attachList.length; i++) {
+
+                //}
+
+                ////请求批量附件接口
+                //var requestObj = new Object;
+                //requestObj.attachList = attachList;
+                //app.ajax({
+                //    type: 'post',
+                //    url: 'attach/UploadBatch',
+                //    data: { "attachRequest": requestObj },
+                //    success: function (data) {
+
+                //    }
+                //})
+
+            } else {
+                //alert("没有附件")
+            }
+        }
         //时间
         function createCalendar(inputId) {
             app.calendar.create({
