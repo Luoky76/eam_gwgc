@@ -1,6 +1,7 @@
 ﻿using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.UI;
+using System.Linq.Expressions;
 
 namespace Gksyb.Server.Services.Auth
 {
@@ -50,14 +51,20 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
                .Where(c => ids.Contains(c.USERID))
-               .Select(c => new UserInfo()
-               {
-                   Id = c.USERID,
-                   Account = c.LOGINNAME,
-                   Name = c.REALNAME,
-                   WorkerCode = c.DEPARTCODE
-               });
+               .Select(UserInfoExtensions.SelectUserInfo);
             var users = await query.ToListAsync();
+            if (users.Count < 1) return users;
+            if (skipCorp) return users;
+            await HandleCorp(users);
+            return users;
+        }
+
+        /// <inheritdoc/>
+        public async Task<List<UserInfo>> FindUsersAsync(Expression<Func<UserInfo, bool>> filter = null, bool skipCorp = true)
+        {
+            var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options));
+            var users = await query.Select(UserInfoExtensions.SelectUserInfo)
+                .WhereIfNotNull(filter, filter).ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
             await HandleCorp(users);
@@ -129,13 +136,7 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
                 .Where(c => groups.Contains(c.STATION))
-                .Select(c => new UserInfo()
-                {
-                    Id = c.USERID,
-                    Account = c.LOGINNAME,
-                    Name = c.REALNAME,
-                    WorkerCode = c.DEPARTCODE
-                });
+                .Select(UserInfoExtensions.SelectUserInfo);
             var users = await query.ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
@@ -148,13 +149,7 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
                 .Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && roles.Contains(a.ROLEID) && a.APPNAME == _options.RoleAppName).Any())
-                .Select(c => new UserInfo()
-                {
-                    Id = c.USERID,
-                    Account = c.LOGINNAME,
-                    Name = c.REALNAME,
-                    WorkerCode = c.DEPARTCODE
-                });
+                .Select(UserInfoExtensions.SelectUserInfo);
             var users = await query.ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
@@ -177,13 +172,7 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options));
             if (filter != null) query = filter(query);
-            var users = await query.Select(c => new UserInfo()
-            {
-                Id = c.USERID,
-                Account = c.LOGINNAME,
-                Name = c.REALNAME,
-                WorkerCode = c.DEPARTCODE
-            }).ToListAsync();
+            var users = await query.Select(UserInfoExtensions.SelectUserInfo).ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
             await HandleCorp(users);

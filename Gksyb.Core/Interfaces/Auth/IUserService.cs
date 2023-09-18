@@ -1,4 +1,5 @@
 ﻿using Gksyb.Model.UI;
+using System.Linq.Expressions;
 
 namespace Gksyb.Core.Interfaces.Auth
 {
@@ -35,6 +36,11 @@ namespace Gksyb.Core.Interfaces.Auth
         /// <param name="skipCorp">返回数据跳过获取用户公司信息</param>
         /// <returns></returns>
         Task<List<UserInfo>> Find(List<long?> ids, bool skipCorp = true);
+
+        /// <summary>
+        /// 根据条件获取用户
+        /// </summary>
+        Task<List<UserInfo>> FindUsersAsync(Expression<Func<UserInfo, bool>> filter = null, bool skipCorp = true);
 
         /// <summary>
         /// 根据给定信息查找操作人
