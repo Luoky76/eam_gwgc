@@ -128,8 +128,7 @@
                     url: 'popup/users',
                     success: function (data) {
                         data.forEach((a) => {
-                            var station = a.Station.length > 0 ? '(' + a.Station + ')' : "";
-                            userList.push({ "ID": a.Id, "TEXT": a.Name + station, "VALUE": a.Name });
+                            userList.push({ "ID": a.Name, "TEXT": a.Name, "VALUE": a.Name });
                         });
                     },
                     error: function (message, data) {
