@@ -18,12 +18,12 @@
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <ul style="display: block; width: 100%;" id="ulGrid">
-                <li style="width: 100%; height: 20%">
+                <li style="width: 100%; height: 300px">
                     <div class="l-group" style="display: inline-block; width: 100%"><span>药品采购明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="drug-collect-grid">
                     </div>
                 </li>
-                <li style="width: 100%">
+                <li style="width: 100%; height: 300px">
                     <div class="l-group" style="display: inline-block; width: 100%"><span>药品采购需求明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="drug-request-grid">
                     </div>
@@ -696,7 +696,9 @@
                                 //采购数量预设为申请数量
                                 COLLECT_NUM: row.REQUEST_NUM,
                                 //默认全数购买
-                                IS_FULLBUY: "1"
+                                IS_FULLBUY: "1",
+                                //默认采购金额为0
+                                COLLECT_MONEY: 0
                             }, row);
                             me.requestGrid.addEditRow(newRow, true);
                         }
