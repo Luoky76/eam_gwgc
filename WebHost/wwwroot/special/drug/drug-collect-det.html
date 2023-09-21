@@ -18,12 +18,12 @@
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <ul style="display: block; width: 100%;" id="ulGrid">
-                <li style="width: 100%; height: 300px">
+                <li style="width: 100%;">
                     <div class="l-group" style="display: inline-block; width: 100%"><span>药品采购明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="drug-collect-grid">
                     </div>
                 </li>
-                <li style="width: 100%; height: 300px">
+                <li style="width: 100%;">
                     <div class="l-group" style="display: inline-block; width: 100%"><span>药品采购需求明细</span></div>
                     <div style="margin-bottom: 50px; width: 100%;" id="drug-request-grid">
                     </div>
@@ -342,10 +342,10 @@
                     parms: {
                         collectId: me.sid
                     },
-                    sortName: 'SP_CODE',
-                    sortOrder: 'dec',
+                    sortName: 'SP_NAME',
+                    sortOrder: 'asc',
                     width: '99%',
-                    height: '100%',
+                    height: '40%',
                     checkbox: true,
                     enabledEdit: !me.isView,
                     clickToEdit: true,
@@ -457,6 +457,7 @@
                     options: {
                         url: 'Special/DrugCollectDet/ImportList',
                         sortName: 'SP_NAME',
+                        sortOrder: 'asc',
                         rowKey: "SP_ID",
                         columns: [
                             { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
@@ -509,7 +510,7 @@
                                     //删除对应需求明细表
                                     var collectDetId = selected[i].COLLECT_DET_ID;
                                     me.deleteRequestRow(collectDetId);
-                                    me.collectGrid.deleteRow(selected[i]);
+                                    me.collectGrid.deleteRange([selected[i]]);
                                 }
                                 me.saveCollect();
                                 me.saveRequest();
@@ -581,10 +582,10 @@
                     parms: {
                         collectId: me.sid
                     },
-                    sortName: 'SP_CODE',
-                    sortOrder: 'dec',
+                    sortName: 'SP_NAME',
+                    sortOrder: 'asc',
                     width: '99%',
-                    height: '100%',
+                    height: '40%',
                     checkbox: true,
                     enabledEdit: !me.isView,
                     clickToEdit: true,
@@ -713,7 +714,7 @@
                 var me = this;
                 for (let i = me.requestGrid.rows.length - 1; i >= 0; --i) {
                     if (me.requestGrid.rows[i].COLLECT_DET_ID == collectDetId) {
-                        me.requestGrid.deleteRow(i);
+                        me.requestGrid.deleteRange([me.requestGrid.rows[i]]);
                     }
                 }
             },
