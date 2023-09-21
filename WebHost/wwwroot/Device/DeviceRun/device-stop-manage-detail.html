@@ -48,13 +48,13 @@
                                     valueField: "ID",
                                     textField: "TEXT",
                                     columns: [
-                                        { header: '设备编号', name: 'TEXT', width: 150 },
-                                        { header: '设备名称', name: 'VALUE' }
+                                        { header: '设备编号', name: 'VALUE', width: 150 },
+                                        { header: '设备名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            $('#DEVICE_NO').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
-                                            $('#DEVICE_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
                                         }
