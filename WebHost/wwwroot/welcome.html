@@ -1,14 +1,1087 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 
 <head>
-    <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title>生产管理系统</title>
-    <script src="lib/LGboot.js" type="text/javascript"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title></title>
+
 </head>
 
 <body>
+    <style type="text/css">
+        .content {
+            position: relative;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            width: 100%;
+            padding: 20px 15px 30px 15px;
+        }
+
+        .box6, .box4, .box3, .box2, .box1 {
+            padding: 0px 3px 15px 15px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            float: left;
+        }
+
+        .box6 {
+            width: 16.66666666%;
+        }
+
+        .box4 {
+            width: 25%;
+        }
+
+        .box3 {
+            width: 33.33333333%;
+        }
+
+        .box2 {
+            width: 50%;
+        }
+
+        .box1 {
+            width: 100%;
+        }
+
+        .box {
+            background-color: #FFF;
+            box-shadow: 0 0 10px 2px rgba(0,74,116,.15);
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+
+            .box span {
+                display: block;
+            }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+        }
+
+
+        .l-form .l-field-required {
+            color: #333333 !important;
+        }
+
+        .flex-parent {
+            display: flex;
+        }
+
+        table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        table td {
+            text-align: center;
+        }
+
+        .box span {
+            display: inline;
+        }
+
+        .right-border {
+            border-right: solid 3px #dedede;
+        }
+
+        .bottom-border {
+            border-bottom: solid 3px #dedede;
+        }
+
+        .sum-back-color {
+            background-color: #f5f6f8
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        #rank-history-table-tbody tr:nth-child(2n) {
+            background-color: #f1f1f1
+        }
+
+        .tbl-header {
+            position: relative;
+            top: 0;
+            left: 0;
+            z-index: 999;
+        }
+
+            .tbl-header td {
+                white-space: nowrap;
+            }
+
+        .tbl-body {
+            position: relative;
+            top: 0;
+            left: 0;
+            height: 470px;
+        }
+
+            .tbl-body td {
+                white-space: nowrap;
+            }
+
+        h4 {
+            color: #81a7c4;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            margin-bottom: 10px !important;
+        }
+
+        .h4content {
+            width: 200px;
+            height: 75px;
+            padding: 10px;
+            /*padding-left: 90px;*/
+        }
+
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f0f2ff;
+        }
+
+        th {
+            font-weight: bold;
+            background-color: #2196f3;
+            color: #ffffff;
+        }
+    </style>
+    <div id="layout" style="margin: 2px; margin-right: 3px; height: 100% ">
+        <div position="center" class="l-portal" id="portalMain" style="width: 100%; height: 100%">
+
+        </div>
+    </div>
+
+    <div class="content" style="background-color:#e4edf3;min-width:1400px">
+        <div class="flex-parent" style="flex-direction: column">
+            <div class="flex-parent" style="flex-direction:row-reverse">
+                <div id="mainsearch" style="width: 300px;">
+                    <div class="searchbox">
+
+                        <form id="formsearch" class="l-form">
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+            <!--提醒-->
+            <div style="margin:0px 3px 0px 15px;">
+                <div class="box1 fade-in-up" style="height:55px;padding-right:10px;width:50%">
+                    <div class="box" style="padding:8px;border-radius:5px;">
+                        <div style="display: flex; align-items: center;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">预警提醒</div>
+                            <span style="display: flex-grow-0; margin-left: 4px;">
+                                <span class="badge" style="background-color: #ff0000; padding: 0px 5px; border-radius: 20px;font-size: 12px; color: white; font-weight: bold;position: relative; top: -5px; left: -4px;">
+                                    1
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="box1 fade-in-up" style="height: 55px; padding-right: 10px; width: 50%">
+                    <div class="box " style="padding:8px;border-radius:5px;">
+                        <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">通知公告</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding:0px 3px 15px 15px;">
+
+                <div class="flex-parent" style="flex-direction:row;">
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+                        <div class="box flex-parent" style="position:relative;background-color:#5b90fa ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
+                            <img src="" style="position: absolute;float: right;right: 3%; top: 20%;height:65%;" ; />
+                            <div class="font-size-desc">
+                                设备数量
+                                <span class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div class="font-size-desc" id="warehouseCount"> <span class="font-size-desc">10个</span></div>
+                        </div>
+                    </div>
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+                        <div class="box flex-parent" style="position:relative;background-color:#5d7091 ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
+                            <img src="" style="position: absolute;float: right;right: 3%; top: 20%;height:65%;" ; />
+                            <div class="font-size-desc">
+                                维修单数
+                                <span class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div id="warehousestorageSum" class="font-size-desc">  <span class="font-size-desc">10单</span> </div>
+                        </div>
+                    </div>
+
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+
+                        <div class="box flex-parent" style="position:relative;background-color:#e76452 ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
+                            <div class="font-size-desc">
+                                委外维修单数
+                                <span data-name="累计箱量" class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div class="font-size-subtitle" id="goodsareaSum" style="display: inline">  <span class="font-size-desc">10单</span> </div>
+                        </div>
+                    </div>
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+                        <div class="box flex-parent" style="position: relative; background-color: #55bb5a; color: white; height: 97px; padding: 15px; line-height: 35px; flex-direction: column; border-radius: 5px;">
+                            <img src="" style="position: absolute;float: right;right: 3%; top: 20%;height:65%;" ; />
+                            <div class="font-size-desc">
+                                码头维修单数
+                                <span class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div id="warehousestorageSum" class="font-size-desc">  <span class="font-size-desc">10单</span> </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!--第二层-->
+            <div style="margin:0px 3px 80px 15px;">
+                <div class="flex-parent" style="width:100%;flex-direction:row">
+                    <div class="box1 fade-in-up" style="height:300px;padding-right:10px;width:50%">
+                        <div class="box" style="padding:8px;border-radius:5px;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">设备维修情况（月）</div>
+                            <div id="percent" style="height: 300px; margin: 20px;">
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="flex-parent" style="flex-direction:column;width:50%;">
+                        <div class="box1 fade-in-up" style="height:300px">
+                            <div class="box " style="padding:8px;border-radius:5px;">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:10px">设备储备量</div>
+                                <div style="border: 0; margin: 5px auto; width: 100%; line-height: 35px; min-height: 325px; font-size: 18px; max-height: 325px; word-break: break-all; overflow: auto;">
+                                    <div id="deviceUpBar" style="padding-left: 10px; list-style: none; height: 300px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!--第三层-->
+            <!--<div style="margin:15px 3px 50px 15px;">
+                <div class="flex-parent" style="width:100%;flex-direction:row">
+                    <div class="box1 fade-in-up" style="height:300px;padding-right:10px;width:100%">
+                        <div class="box" style="padding:8px;border-radius:5px;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">近7日维修情况</div>
+                            <div id="outIn" style="height:300px;padding-right:10px;width:100%">
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>-->
+
+
+            <!--第五层  储煤情况-->
+            <div style="margin:0px 10px 50px 15px;">
+                <div>
+                    <div class="box1 fade-in-up" style="width:100%;height:300px;">
+                        <div class="box flex-parent" style="padding:8px;border-radius:5px;flex-direction:row">
+                            <div style="width:50%">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:12px;margin-bottom:20px">
+                                    维修情况
+                                </div>
+                                <div id="coalStorage" style="height:300px;"></div>
+
+                            </div>
+                            <div style="width:40%;margin-top:50px;">
+                                <div style="display:flex; flex-wrap:wrap; ">
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/ff7b00/fff" alt="预约" style="margin-right: 10px; ">
+                                        <div class="h4content">
+                                            <h4 id="warehousestorageSum">1</h4>
+                                            <p>维修单数量</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/ffd500/fff" alt="会议" style="margin-right: 10px;">
+                                        <div class="h4content">
+                                            <h4 id="reserve">2</h4>
+                                            <p>委外维修单数量</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/00aeff/fff" alt="任务" style="margin-right: 10px;">
+                                        <div class="h4content">
+                                            <h4 id="innum">3</h4>
+                                            <p>码头维修单数量</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/9c27b0/fff" alt="报表" style="margin-right: 10px;">
+                                        <div class="h4content">
+                                            <h4 id="outnum">4</h4>
+                                            <p>快修数量</p>
+                                        </div>
+                                    </div>
+                                   
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <!--第六层 堆场月均库存-->
+            <div style="margin:50px 10px 100px 15px;">
+                <div>
+                    <div class="box1 fade-in-up" style="width:100%;height:300px;">
+                        <div class="box flex-parent" style="padding:8px;border-radius:5px;flex-direction:row">
+                            <div style="width:75%">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:12px;margin-bottom:20px">
+                                    堆场月均库存
+                                </div>
+                                <div style="position:relative;left:380px;top:-25px;z-index:2;">
+                                    <button class="font-size-desc sb" id="now" onclick="changeinventoryBarEchart(this.id)" style="border-bottom-left-radius:20px;border-top-left-radius:20px;border:1px solid #dcdcdc;padding:8px 10px;margin-right:-5px;background-color:#ffffff">今年</button>
+                                    <button class="font-size-desc ts" id="last" onclick="changeinventoryBarEchart(this.id)" style="border:1px solid #dcdcdc;padding:8px 10px 8px 10px;border-bottom-right-radius:20px;border-top-right-radius:20px;background-color:#eeeeee">去年</button>
+                                </div>
+                                <div id="inventoryBar" style="height:300px;"></div>
+
+                            </div>
+                            <div style="width:20%;margin-top:80px;">
+                                <div id="inventoryPie" style="height:300px;"></div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <!--第七层 当前出入库情况-->
+            <div style="margin:30px 10px 80px 15px;">
+                <div>
+                    <div class="flex-parent" style="width:100%;flex-direction:row">
+                        <div class="box1 fade-in-up" style="height:330px;width:50%">
+                            <div class="box" style="padding: 8px; border-radius: 5px; min-height: 365px; max-height: 385px; ">
+                                <div class="font-size-title" style="display: flex; align-items: center; line-height: 14px; color: #666666; border-left: 6px solid #ffbb00; padding-left: 6px; margin-top: 5px;">
+                                    <span>当前出入库情况</span>
+                                    <a href="#" style="color: #49a5f3; margin-left: auto; font-size: 14px;" onclick="showMore('Info')">更多</a>
+                                </div>
+                                <div style="border: 0; margin: 10px auto; width: 100%; line-height: 15px;  font-size: 18px; word-break: break-all; overflow: auto;">
+                                    <table class="font-size-desc" style="margin: 0 auto; width: 100%; left: 0; line-height: 40px; border-collapse: collapse;text-align:center;">
+                                        <tr>
+                                            <th style="background-color: #80a4fc; color: #fff;">煤炭名称</th>
+                                            <th style="background-color: #80a4fc; color: #fff;">出入类型</th>
+                                            <th style="background-color: #80a4fc; color: #fff;">数量(吨)</th>
+                                            <th style="background-color: #80a4fc; color: #fff;">记录时间</th>
+                                        </tr>
+                                        <tbody id="GetOutInData">
+                                            <tr>
+                                                <td>1</td>
+                                                <td>2</td>
+                                                <td>3</td>
+                                                <td>4</td>
+                                            </tr>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>2</td>
+                                                <td>3</td>
+                                                <td>4</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="flex-parent" style="flex-direction:column;width:50%;">
+                            <div class="box1 fade-in-up">
+                                <div class="box " style="padding: 8px; border-radius: 5px; min-height: 365px; max-height: 385px; ">
+                                    <div class="font-size-title" style="display: flex; align-items: center; line-height: 14px; color: #666666; border-left: 6px solid #ffbb00; padding-left: 6px; margin-top: 5px;">
+                                        <span>闸口进出情况</span>
+                                        <a href="#" style="color: #49a5f3; margin-left: auto; font-size: 14px;" onclick="showMore('EquipCarWeigh')">更多</a>
+                                    </div>
+                                    <div style="border: 0; margin: 10px auto; width: 100%; line-height: 15px;font-size: 18px; word-break: break-all; overflow: auto;">
+                                        <table class="font-size-desc" style="margin: 0 auto; width: 100%; left: 0; line-height: 40px; border-collapse: collapse;text-align:center;">
+                                            <tr>
+                                                <th style="background-color: #80a4fc; color: #fff;">车牌号</th>
+                                                <th style="background-color: #80a4fc; color: #fff;">进出闸类型</th>
+                                                <th style="background-color: #80a4fc; color: #fff;">重量（吨）</th>
+                                                <th style="background-color: #80a4fc; color: #fff;">记录时间</th>
+                                            </tr>
+
+                                            <tbody id="GetGateEntryExit">
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>2</td>
+                                                    <td>3</td>
+                                                    <td>4</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>2</td>
+                                                    <td>3</td>
+                                                    <td>4</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+    </div>
+
+
+    <div id="legend-size" style="display: none"></div><!--用于获取css变量内容-->
+    <script src="lib/LGboot.js"></script>
+    <script src="lib/js/common.js"></script>
+    <script src="lib/echarts/echarts.expand.js"></script>
+    <script src="lib/echarts/echarts.js"></script>
+
+
+    <script>
+
+        var upperUrl = "common/jsonvalue";
+        var timeFlag = false;
+        var _YearStandBoxNum;
+        var _NowYear;
+        var layout = $("#layout").ligerLayout({
+            topHeight: 300,
+            heightDiff: -6
+        });
+
+        var portal = $("#portalMain").ligerPortal({
+            rows: [{
+                columns: [
+                    { width: '100%', height: '100%', panels: [{ title: '待处理事项', height: '100%', width: '100%', showToggle: false, showMax: false, url: 'Home/HomeReminder.html' }] }
+                ]
+            }]
+        });
+        var app = {
+            percentEchartData: null,
+            outInEchartData: null,
+            coalStorageEchartData: null,
+            inventoryData: null,
+
+            percentEchart: function (data) {
+                var ChartPercent = echarts.init(document.getElementById("percent"));
+                ChartPercent.clear(this.option);//清空数据缓存
+               
+
+                option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                        }
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: { show: true, readOnly: false },
+                            magicType: { show: true, type: ['line', 'bar'] },
+                            restore: { show: true },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    legend: {
+                        data: ['蒸发量', '降水量', '平均温度']
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '水量',
+                            min: 0,
+                            max: 250,
+                            interval: 50,
+                            axisLabel: {
+                                formatter: '{value} ml'
+                            }
+                        },
+                        {
+                            type: 'value',
+                            name: '温度',
+                            min: 0,
+                            max: 25,
+                            interval: 5,
+                            axisLabel: {
+                                formatter: '{value} °C'
+                            }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '蒸发量',
+                            type: 'bar',
+                            data: [2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3]
+                        },
+                        {
+                            name: '降水量',
+                            type: 'bar',
+                            data: [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3]
+                        },
+                        {
+                            name: '平均温度',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+                        }
+                    ]
+                };
+
+
+                ChartPercent.setOption(option);
+                window.addEventListener("resize", function () {
+
+                    ChartPercent.resize();
+                });
+            },
+            //近7日出入库情况
+            outInEchart: function (data) {
+                var ChartoutIn = echarts.init(document.getElementById("outIn"));
+                ChartoutIn.clear(this.option);//清空数据缓存
+                let option = {
+                    color: ['#73c0de', '#fac858', '#5470c6'],
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {},
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: null
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            axisLabel: { formatter: '{value}' },
+                            name: '(万吨)'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '出库量',
+                            type: 'bar',
+                            barGap: 0,
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: null
+                        },
+                        {
+                            name: '入库量',
+                            type: 'bar',
+                            barGap: 0,
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: null
+                        },
+                        {
+                            name: '库存量',
+                            type: 'bar',
+                            barGap: 0,
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: null
+                        },
+
+
+
+
+                    ]
+                };
+                ChartoutIn.setOption(option);
+                window.addEventListener("resize", function () {
+
+                    ChartoutIn.resize();
+                });
+
+            },
+
+            //可调配存煤
+            coalStorageEchart: function (data) {
+                var ChartcoalStorage = echarts.init(document.getElementById("coalStorage"));
+                ChartcoalStorage.clear(this.option);//清空数据缓存
+
+
+                // 配置环形饼图
+                var option = {
+                    title: {
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c} ({d}%)'
+                    },
+                    legend: {
+                        top: 'top',
+                        data: ['维修单', '委外单', '码头维修单', '快修数量']
+                    },
+                    series: [
+                        {
+                            name: '访问来源',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: [
+                                { value: 335, name: '维修单' },
+                                { value: 310, name: '委外单' },
+                                { value: 234, name: '码头维修单' },
+                                { value: 135, name: '快修数量' },
+
+                            ],
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+
+                ChartcoalStorage.setOption(option);
+                window.addEventListener("resize", function () {
+
+                    ChartcoalStorage.resize();
+                });
+            },
+
+            //堆场月均库存
+            inventoryBarEchart: function (data) {
+                var ChartinventoryBar = echarts.init(document.getElementById("inventoryBar"));
+                ChartinventoryBar.clear(this.option);//清空数据缓存
+                let option = {
+                    color: ['#73c0de', '#fac858', '#5470c6'],
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {},
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            axisLabel: { formatter: '{value}' },
+                            name: '万吨'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '动力煤',
+                            type: 'bar',
+                            stack: 'Ad',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: null
+                        },
+                        {
+                            name: '炼焦煤',
+                            type: 'bar',
+                            stack: 'Ad',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: null
+                        },
+                        {
+                            name: '其他',
+                            type: 'bar',
+                            stack: 'Ad',
+                            emphasis: {
+                                focus: 'series'
+                            },
+                            data: null
+                        },
+
+
+
+
+                    ]
+                };
+                ChartinventoryBar.setOption(option);
+                window.addEventListener("resize", function () {
+
+                    ChartinventoryBar.resize();
+                });
+            },
+            inventoryPieEchart: function (data) {
+                var ChartinventoryBar = echarts.init(document.getElementById("inventoryPie"));
+                ChartinventoryBar.clear(this.option);//清空数据缓存
+                let option = {
+                    color: ['#73c0de', '#fac858', '#5470c6'],
+                    tooltip: {
+                        trigger: 'item'
+                    },
+                    legend: {
+                        top: '5%',
+                        left: 'center'
+                    },
+                    series: [
+                        {
+                            name: '',
+                            type: 'pie',
+                            radius: ['40%', '60%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: {
+                                borderRadius: 10,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            label: {
+                                show: false,
+                                position: 'center'
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: 40,
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: null
+                        }
+                    ]
+                };
+                ChartinventoryBar.setOption(option);
+                window.addEventListener("resize", function () {
+
+                    ChartinventoryBar.resize();
+                });
+            },
+
+            outInEchartGetData: function () {
+                //var data = LG.ajax({
+                //    async: true,
+                //    url: '/ExternalAPI/DataReport/GetOutInData',
+                //    loading: '正在获取中...',
+                //    data: { "QueryDate": QueryDate },
+                //    success: function (data, message) {
+                //        app.outInEchartData = data;
+                //        app.outInEchart(app.outInEchartData);
+                //    },
+                //    error: function (message) {
+                //        LG.showError(message);
+                //    }
+                //});
+            },
+            inventoryEchartGetData: function () {
+                app.inventoryBarEchart(null);
+                app.inventoryPieEchart(null);
+                //var data = LG.ajax({
+                //    async: true,
+                //    url: '/ExternalAPI/DataReport/GetWarehouseMonthStock',
+                //    loading: '正在获取中...',
+                //    data: { "QueryDate": QueryDate },
+                //    success: function (data, message) {
+                //        app.inventoryData = data;
+                //        let echartdata = OrganaizationData(data);
+                //        app.inventoryBarEchart(echartdata.barData);
+                //        app.inventoryPieEchart(echartdata.pieData);
+                //    },
+                //    error: function (message) {
+                //        LG.showError(message);
+                //    }
+                //});
+            },
+            percentEchartGetData: function () {
+                app.percentEchart(null);
+                //var data = LG.ajax({
+                //    async: true,
+                //    url: '/ExternalAPI/DataReport/GetWareHouseUseInfo',
+                //    loading: '正在获取中...',
+                //    data: { "QueryDate": QueryDate },
+                //    success: function (data, message) {
+                //        app.percentEchart(data);
+                //    },
+                //    error: function (message) {
+                //        LG.showError(message);
+                //    }
+                //});
+            },
+            coalStorageEchartGetData: function () {
+                app.coalStorageEchart(null);
+                //var data = LG.ajax({
+                //    async: true,
+                //    url: '/ExternalAPI/DataReport/GetCoalStorage',
+                //    loading: '正在获取中...',
+                //    data: { "QueryDate": QueryDate },
+                //    success: function (data, message) {
+                //        var title1 = $(".h4content #warehousestorageSum")[0];
+                //        var title2 = $(".h4content #reserve")[0];
+                //        var title3 = $(".h4content #innum")[0];
+                //        var title4 = $(".h4content #outnum")[0];
+
+                //        title1.innerHTML = (data[title1.id] / 10000).toFixed(2) + "万吨";
+                //        title2.innerHTML = (data[title2.id] / 10000).toFixed(2) + "万吨";
+                //        title3.innerHTML = (data[title3.id] / 10000).toFixed(2) + "万吨";
+                //        title4.innerHTML = (data[title4.id] / 10000).toFixed(2) + "万吨";
+
+
+                //        var result = {};
+                //        result.remainingPercent = (data.residuenum / data.reserve).toFixed(0) * 100
+                //        result.usedPercent = (data.usednum / data.reserve).toFixed(0) * 100
+
+
+
+                //        app.coalStorageEchart(result);
+                //    },
+                //    error: function (message) {
+                //        LG.showError(message);
+                //    }
+                //});
+            },
+            deviceUpBarEchart: function () {
+                var ChartinventoryBar = echarts.init(document.getElementById("deviceUpBar"));
+                ChartinventoryBar.clear(this.option);//清空数据缓存
+                let
+                    option = {
+                        color: ['#003366', '#006699', '#4cabce', '#e5323e'],
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        },
+                        legend: {
+                            data: ['设备A', '设备B', '设备C', '设备D']
+                        },
+                        toolbox: {
+                            show: true,
+                            orient: 'vertical',
+                            left: 'right',
+                            top: 'center',
+                            feature: {
+                                mark: { show: true },
+                                dataView: { show: true, readOnly: false },
+                                magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+                                restore: { show: true },
+                                saveAsImage: { show: true }
+                            }
+                        },
+                        xAxis: [
+                            {
+                                type: 'category',
+                                axisTick: { show: false },
+                                data: ['2012', '2013', '2014', '2015', '2016']
+                            }
+                        ],
+                        yAxis: [
+                            {
+                                type: 'value'
+                            }
+                        ],
+                        series: [
+                            {
+                                name: '设备A',
+                                type: 'bar',
+                                barGap: 0,
+
+                                data: [320, 332, 301, 334, 390]
+                            },
+                            {
+                                name: '设备B',
+                                type: 'bar',
+
+                                data: [220, 182, 191, 234, 290]
+                            },
+                            {
+                                name: '设备C',
+                                type: 'bar',
+
+                                data: [150, 232, 201, 154, 190]
+                            },
+                            {
+                                name: '设备D',
+                                type: 'bar',
+
+                                data: [98, 77, 101, 99, 40]
+                            }
+                        ]
+                    };
+                ChartinventoryBar.setOption(option);
+                window.addEventListener("resize", function () {
+
+                    ChartinventoryBar.resize();
+                });
+            },
+
+
+            totalGetData: function () {
+                var me = this;
+                var startTime = $("#_search_STARTDATE").val();
+
+                //获取数据
+
+                me.outInEchartGetData();
+                me.inventoryEchartGetData();
+                me.percentEchartGetData();
+                me.coalStorageEchartGetData();
+                me.deviceUpBarEchart();
+
+            },
+            init: function () {
+
+                app.totalGetData();
+
+                //app.coalStorageEchart();
+                //me.inventoryBarEchart();
+                //me.inventoryPieEchart();
+
+            }
+        };
+
+        app.init();
+       
+
+
+
+        //更改日期
+        function f_changeDate(input, value, g) {
+            if (mainForm) {
+                rls = mainForm.toConditions();
+                //if (rls && rls.length < 2) {
+                //    $.ligerDialog.warn('查询条件不能为空！');
+                //    return;
+                //}
+                var sdate = rls[0].value.format("yyyy-MM-dd"); //统计起始时间
+                var dateSysDate = {};
+                LG.getSysdate({
+                    DateFormat: "yyyy-MM",
+
+                    //viewname: 'DUAL', idfield: "trunc(sysdate,'MM')",
+                    //textfield: "case when (to_date('" + sdate + "','yyyy-MM-dd') = trunc(sysdate, 'yyyy')) then (sysdate+1) else  (add_months(trunc(to_date('"
+                    //    + sdate + "','yyyy-MM-dd'), 'yyyy'), 12)) end"
+                }, dateSysDate);
+
+
+                mainForm.setData({ "_search_ENDDATE": dateSysDate.TEXT });
+
+            }
+            input.validValue = true;
+
+        }
+        var dateSysDate = {};
+        var mainForm = $("#formsearch").ligerForm({
+            //buttons: [
+            //    { text: '搜索', width: 50, click: app.init }
+            //],
+            NoSuperSearch: true,
+            SearchClick: true, validate: true,
+            onAfterSetFields: function (g) {
+                LG.getSysdate({
+                    DateFormat: "yyyy-MM-dd HH:mm:ss",
+
+                    //viewname: 'DUAL', idfield: "trunc(sysdate,'MM')",
+                    //textfield: "case when (to_date('" + sdate + "','yyyy-MM-dd') = trunc(sysdate, 'yyyy')) then (sysdate+1) else  (add_months(trunc(to_date('"
+                    //    + sdate + "','yyyy-MM-dd'), 'yyyy'), 12)) end"
+                }, dateSysDate);
+
+                //LG.getSysdate({
+                //    viewname: 'DUAL', idfield: "trunc(sysdate,'yyyy')",
+                //    textfield: "case when (sysdate < add_months(trunc(sysdate, 'yyyy'), 12)) then (sysdate+1) else (add_months(trunc(sysdate, 'yyyy'), 12)) end"
+                //}, dateSysDate);
+                //g.setData({ "_search_STARTDATE": new Date(new Date().getFullYear()+"-01-01") });
+                //g.setData({ "_search_ENDDATE": new Date((new Date().getFullYear()-1) + "-01-01") });
+                g.setData({ "_search_STARTDATE": dateSysDate.TEXT });
+                g.setData({ "_search_ENDDATE": dateSysDate.ID });
+                $(".l-fieldcontainer:eq(1)").hide();
+            },
+            fields: [
+                { display: "", name: "_search_STARTDATE", id: "_search_STARTDATE", newline: false, labelWidth: 115, width: 115, op: 'equal', vt: "date", type: "date", options: { format: "yyyy-MM", onChangeValue: f_changeDate } }
+            ]
+
+        })
+        var buttons = $(".l-form-buttons");
+        buttons.css("margin", "0px");
+        var div = $("<div style=\"float:left;\"></div>")
+        var container = $(".l-form-container ul:first");
+        buttons.appendTo(div);
+        div.appendTo(container);
+
+
+
+        //更多跳转
+        function showMore(MenuNo) {
+            var url = `/index.html?MenuNo=${MenuNo}&ver=" ${new Date().format("yyyyMMddhhmmss")}`;
+            window.open(url);
+        }
+
+    </script>
+
+
 </body>
 
 </html>

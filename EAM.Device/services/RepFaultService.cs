@@ -152,6 +152,7 @@ namespace EAM.Device.services
                     c.MEASURES,
                     c.FAULT_MEMO,
                     c.FAULT_ID,
+                    c.REPAIR_USERID,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
