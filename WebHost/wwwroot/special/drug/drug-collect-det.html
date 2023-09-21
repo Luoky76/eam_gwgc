@@ -536,7 +536,7 @@
                 var me = this;
                 if (rowId >= me.collectGrid.rows.length || rowId < 0) return;
                 var collectDetId = me.collectGrid.rows[rowId].COLLECT_DET_ID;
-                me.collectGrid.deleteRow(rowId);
+                me.collectGrid.deleteRange([me.collectGrid.rows[rowId]]);
                 me.deleteRequestRow(collectDetId);
             },
             //保存采购明细表
