@@ -173,7 +173,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             }
             if (publishEvent) await EventPublish(WorkflowEventAction.AddTask, nodes);
             info.ToNode = null;
-            info.ToIds.AddRange(nodes.Select(c => c.ID));
+            info.ToNodeInfos.AddRange(nodes.Select(c => c.ToNodeInfo()));
             return nodeId;
         }
 

@@ -25,7 +25,7 @@ namespace Gksyb.Model.WorkFlow
         public string ID { get; set; }
 
         /// <summary>
-        /// 流程名称
+        /// 流程编号
         /// </summary>
         [Description("流程编号")]
         [Column(DbType = DbType.AnsiString, Size = 100)]

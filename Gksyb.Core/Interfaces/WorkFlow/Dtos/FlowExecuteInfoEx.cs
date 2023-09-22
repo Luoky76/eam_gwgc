@@ -1,4 +1,5 @@
 ﻿using Gksyb.Core.Interfaces.Auth;
+using Gksyb.Core.Interfaces.WorkFlow.Dtos;
 using Newtonsoft.Json;
 
 namespace Gksyb.Core.Interfaces.WorkFlow
@@ -30,7 +31,7 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         /// 目标节点ID
         /// </summary>
         [JsonIgnore]
-        public List<string> ToIds { get; set; } = new List<string>();
+        public List<NodeInfo> ToNodeInfos { get; set; } = new List<NodeInfo>();
 
         /// <summary>
         /// 目标节点
