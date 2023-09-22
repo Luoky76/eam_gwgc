@@ -203,9 +203,10 @@
                 if (!me.isView) buttons.push({
                     text: '保存', icon: 'fa fa-save', onclick: function () {
                         //先保存子表
-                        if (me.requestGrid.isDataChanged) me.saveRequest();
-                        if (me.collectGrid.isDataChanged) me.saveCollect();
-                        me.save();
+                        //if (me.requestGrid.isDataChanged) me.saveRequest();
+                        //if (me.collectGrid.isDataChanged) me.saveCollect();
+                        //me.save();
+                        me.saveAll();
                     }.bind(me)
                 });
 
@@ -617,9 +618,7 @@
                             me.reloadRequest();
                             break;
                         case "save":
-                            me.saveRequest();
-                            me.saveCollect();
-                            me.save();
+                            me.saveAll();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -816,6 +815,68 @@
                         }
                     });
                 }
+            },
+            //同时保存三表
+            saveAll: function () {
+                var me = this;
+                //保存前验证
+                if (!me.vertifyBeforeSaveRequest() || !me.collectGrid.endEdit() || !me.requestGrid.endEdit()) return;
+                if ($.isEmptyObject(me.mainform.getChanges()) && !me.collectGrid.isDataChanged && !me.requestGrid.isDataChanged) {
+                    me.showSuccessMessage('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+
+                //构造保存请求
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow1 = new Object();
+                if (me.isNew) {
+                    changeRow1["added"] = [data];
+                }
+                else {
+                    changeRow1["updated"] = [data];
+                    changeRow1["original"] = [original];
+                }
+
+                var changeRow2 = new Object();
+                if (me.collectGrid.validChangeRows()) changeRow2 = me.collectGrid.getChangedRows();
+
+                var changeRow3 = new Object();
+                if (me.requestGrid.validChangeRows()) changeRow3 = me.requestGrid.getChangedRows();
+
+                //统一保存请求
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/DrugCollect/SaveAll',
+                    loading: '正在保存中...',
+                    data: { request1: changeRow1, request2: changeRow2, request3: changeRow3 },
+                    success: function (result) {
+                        me.showSuccessMessage('保存成功');
+                        //保存过一次后自动变为修改模式
+                        me.isNew = false;
+                        //保存后原始数据变为当前数据
+                        me.orginData = data;
+                        me.loadData();
+                        me.collectGrid.isDataChanged = false;
+                        me.reloadCollect();
+                        me.requestGrid.isDataChanged = false;
+                        me.reloadRequest();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             //初始化
             init: function () {
