@@ -23,7 +23,7 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public Task<List<TaskLog>> TaskLogAsync(string taskId);
 
         /// <summary>
-        /// 启动流程 {"FlowId":"2I9BnRW0HmW","FormData":{"money":500}} 或 {"FlowCode":"流程编码","FormData":{"money":500}}
+        /// 启动流程 {"FlowCode":"流程编码","FormData":{"money":500}} 或 {"FlowId":"FlowId每次修改流程后会变（慎用）","FormData":{"money":500}}
         /// </summary>
         public Task StartAsync(FlowExecuteInfo info);
 

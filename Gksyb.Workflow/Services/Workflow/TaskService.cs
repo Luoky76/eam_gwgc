@@ -224,7 +224,7 @@ namespace Gksyb.Workflow.Services.Workflow
         private async Task Init(FlowExecuteInfo info)
         {
             if (isInit) return;
-            var flow = await _dbContext.Query<WF_FLOW>()
+            var flow = await _dbContext.Query<WF_FLOW>().Where(c => c.FLAG == "1")
                 .WhereIfNotNullOrEmpty(info.FlowId, c => c.ID == info.FlowId)
                 .WhereIfNotNullOrEmpty(info.FlowCode, c => c.FLOW_CODE == info.FlowCode).FirstOrDefaultAsync();
             var graphData = flow.FLOW_CONTENT.ToObject<FlowGraphData>();
