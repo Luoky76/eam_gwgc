@@ -98,7 +98,7 @@
                     fields: [
                         { display: "流程标题", name: "Title", width: 300, newline: true, type: "text", options: { readonly: true } },
                         { display: "发起人", name: "Creator", width: 160, newline: true, type: "text", options: { readonly: true } },
-                        { display: "发起时间", name: "CreateDate", labelWidth: 70, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } },
+                        { display: "发起时间", name: "CreateDate", labelWidth: 70, width: 180, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } },
                         {
                             display: "处理意见", name: "CommonReason", width: 250, newline: true, type: "select", options: {
                                 url: "workflow/query/reasonData", triggerToLoad: true,
@@ -203,7 +203,7 @@
                 });
                 var graphData = {};
                 try {
-                    graphData = JSON.parse(me.data.FlowContet || "{}");
+                    graphData = JSON.parse(me.data.FlowContent || "{}");
                 }
                 catch (e) {
 

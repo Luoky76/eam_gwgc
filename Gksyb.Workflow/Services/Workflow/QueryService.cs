@@ -169,9 +169,10 @@ namespace Gksyb.Workflow.Services.Workflow
                 {
                     FlowId = flow.ID,
                     Title = flow.FLOW_NAME,
-                    FlowContet = flow.FLOW_CONTENT,
+                    FlowContent = flow.FLOW_CONTENT,
                     FormContent = flow.FLOW_FORM,
-                    FormUrl = flow.FLOW_FORM_URL
+                    FormUrl = flow.FLOW_FORM_URL,
+                    FormMobileUrl = flow.FLOW_FORM_MOBILE_URL
                 }).FirstOrDefaultAsync();
         }
 
@@ -195,9 +196,10 @@ namespace Gksyb.Workflow.Services.Workflow
                     TaskId = node.TASK_ID,
                     FlowId = node.FLOW_ID,
                     Title = task.FLOW_TITLE,
-                    FlowContet = flow.FLOW_CONTENT,
+                    FlowContent = flow.FLOW_CONTENT,
                     FormContent = flow.FLOW_FORM,
                     FormUrl = flow.FLOW_FORM_URL,
+                    FormMobileUrl = flow.FLOW_FORM_MOBILE_URL,
                     FormData = task.FLOW_FORM_DATA,
                     Creator = task.CREATEUSER,
                     CreateDate = task.CREATEDATE

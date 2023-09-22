@@ -138,7 +138,7 @@
                                 if (row.TaskFinishDate) {
                                     var minute = parseInt((row.TaskFinishDate.toDate() - row.CreateDate.toDate()) / (1000 * 60));
                                     var hour = parseInt(minute / 60);
-                                    row.Elapsed = (hour > 0 ? hour + "小时" : "") + (minute % 60) + "分钟";
+                                    row.Elapsed = (hour > 0 ? hour + "小时" : "") + parseInt(minute % 60) + "分钟";
                                 }
                             }
                         }

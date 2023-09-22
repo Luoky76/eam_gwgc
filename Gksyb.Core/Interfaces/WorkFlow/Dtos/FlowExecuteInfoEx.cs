@@ -27,6 +27,12 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public string Title { get; set; }
 
         /// <summary>
+        /// 目标节点ID
+        /// </summary>
+        [JsonIgnore]
+        public List<string> ToIds { get; set; } = new List<string>();
+
+        /// <summary>
         /// 目标节点
         /// </summary>
         [JsonIgnore]

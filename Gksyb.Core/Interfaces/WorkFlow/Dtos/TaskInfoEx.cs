@@ -10,7 +10,7 @@
         /// <summary>
         /// 流程内容
         /// </summary>
-        public string FlowContet { get; set; }
+        public string FlowContent { get; set; }
 
         /// <summary>
         /// 表单内容
@@ -21,6 +21,11 @@
         /// 表单url
         /// </summary>
         public string FormUrl { get; set; }
+
+        /// <summary>
+        /// 表单url
+        /// </summary>
+        public string FormMobileUrl { get; set; }
 
         /// <summary>
         /// 节点ID
