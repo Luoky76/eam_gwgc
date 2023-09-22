@@ -129,6 +129,7 @@ namespace Gksyb.Common.Data
                        AND b.column_name = a.column_name
                      WHERE a.TABLE_NAME = {paramPrefix}tableName
                        AND a.owner = {paramPrefix}owner
+                       AND a.HIDDEN_COLUMN = 'NO'
                      ORDER BY a.COLUMN_ID ASC";
             var columns = await source.SqlQueryAsync<DbColumnInfo>(sql, new DbParam("tableName", table), new DbParam("owner", schema));
             sql = $@"SELECT c.COLUMN_NAME
@@ -138,7 +139,7 @@ namespace Gksyb.Common.Data
                        AND t.table_name = c.table_name
                        AND t.CONSTRAINT_NAME = c.constraint_name
                        AND t.CONSTRAINT_TYPE = 'P'
-                     WHERE c.table_name = {paramPrefix}tableName 
+                     WHERE c.table_name = {paramPrefix}tableName
                        AND c.owner = {paramPrefix}owner";
             var names = await source.SqlQueryAsync<string>(sql, new DbParam("tableName", table), new DbParam("owner", schema));
             foreach (var column in columns)
@@ -175,7 +176,7 @@ namespace Gksyb.Common.Data
                        A.COLUMN_COMMENT ""Comment"",
                        a.COLUMN_DEFAULT DefaultValue,
                        a.ORDINAL_POSITION Position
-                  FROM information_schema.COLUMNS a 
+                  FROM information_schema.COLUMNS a
                   WHERE a.TABLE_NAME = {paramPrefix}tableName
                        AND a.TABLE_SCHEMA = {paramPrefix}owner
                      ORDER BY a.ORDINAL_POSITION ASC";
@@ -305,18 +306,18 @@ namespace Gksyb.Common.Data
 		                    a.is_nullable IsNullable,
 		                    f.value ""Comment"",
 		                    g.text ""DefaultValue"",
-		                    a.column_id ""Position"" 
+		                    a.column_id ""Position""
 	                    FROM sys.columns a
-		                    INNER JOIN sys.objects b ON b.object_id = a.object_id 
+		                    INNER JOIN sys.objects b ON b.object_id = a.object_id
 		                    AND b.type IN ( 'U', 'V' )
 		                    INNER JOIN sys.types c ON c.user_type_id = a.user_type_id
-		                    LEFT JOIN sys.index_columns d ON d.object_id = a.object_id 
+		                    LEFT JOIN sys.index_columns d ON d.object_id = a.object_id
 		                    AND d.column_id = a.column_id
-		                    LEFT JOIN sys.indexes e ON e.object_id = d.object_id 
+		                    LEFT JOIN sys.indexes e ON e.object_id = d.object_id
 		                    AND e.index_id = d.index_id
-		                    LEFT JOIN sys.extended_properties f ON f.major_id = a.object_id 
+		                    LEFT JOIN sys.extended_properties f ON f.major_id = a.object_id
 		                    AND f.minor_id = a.column_id
-		                    LEFT JOIN syscomments g ON g.id = a.default_object_id 
+		                    LEFT JOIN syscomments g ON g.id = a.default_object_id
 	                    WHERE b.name = {paramPrefix}tableName ORDER BY a.column_id ASC";
             var columns = await source.SqlQueryAsync<DbColumnInfo>(sql, new DbParam("tableName", table), new DbParam("owner", schema));
             foreach (var column in columns)

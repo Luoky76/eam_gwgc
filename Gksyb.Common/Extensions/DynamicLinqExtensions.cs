@@ -41,6 +41,7 @@ namespace Gksyb.Common
             var types = new List<object>();
             var expression = source.Replace((key, value) =>
             {
+                value ??= "";
                 var type = value.GetType();
                 try
                 {
