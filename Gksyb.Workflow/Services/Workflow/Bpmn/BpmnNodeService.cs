@@ -142,7 +142,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 {
                     await ExecuteOutputs(info);
                     await Intercept(PostInterceptors, info);
-                    PostInterceptor.Clear();
+                    PostInterceptors.Clear();
                     return info.NodeId;
                 }
                 throw new MessageException($"找不到下一节点的处理人");
