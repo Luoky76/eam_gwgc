@@ -77,6 +77,7 @@ namespace EAM.Special.Services
                     c.SUBTOTAL,
                     c.SUPPLEMENT2,
                     c.STOCK2,
+                    c.LUBRICATE,
                     c.MEMO
                 },
                 c => a => a.BUILD_ID == c.BUILD_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);

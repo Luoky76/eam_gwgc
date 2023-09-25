@@ -170,6 +170,17 @@
                                     { display: "库存", name: "STOCK2", minWidth: 100, type: "int", editor: { type: 'int' } },
                                 ]
                             },
+                            {
+                                display: "滑油", columns: [
+                                    {
+                                        display: "日耗", name: "LUBRICATE", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                ]
+                            },
                             { display: "简要说明", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } }
                         ]
                     }

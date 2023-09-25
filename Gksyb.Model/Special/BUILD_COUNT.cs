@@ -136,6 +136,12 @@ namespace Gksyb.Model
         public int? STOCK2 { get; set; }
 
         /// <summary>
+        /// 滑油日耗
+        /// </summary>
+        [Description("滑油日耗")]
+        public decimal? LUBRICATE { get; set; }
+
+        /// <summary>
         /// 简要说明
         /// </summary>
         [Description("简要说明")]
