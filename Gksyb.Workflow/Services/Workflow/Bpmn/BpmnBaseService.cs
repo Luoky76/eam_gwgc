@@ -78,7 +78,8 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 TASK_KEY = c.TASK_KEY,
                 FLOW_FORM_DATA = c.FLOW_FORM_DATA
             }).FirstOrDefaultAsync();
-            info.FormData = (task == null ? "" : (task.FLOW_FORM_DATA ?? "")).ToObject<Dictionary<string, object>>();
+            info.FormData = (task == null ? "" : (task.FLOW_FORM_DATA ?? "")).ToObject<Dictionary<string, object>>()
+                ?? new Dictionary<string, object>();
             info.TaskKey = task == null ? info.GetTaskKey() : task.TASK_KEY;
         }
 

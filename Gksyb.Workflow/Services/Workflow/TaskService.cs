@@ -55,7 +55,7 @@ namespace Gksyb.Workflow.Services.Workflow
             var nodeService = await FindNodeService(info);
             await _dbContext.UseTransactionAsync(async () =>
             {
-                await nodeService.AddLog(info, WF_NODEExtensions.GetDesc(info.NodeStatus));
+                await nodeService.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
                 await nodeService.Complate(info);
                 if (info.ToNodeIsEmpty) return;
                 var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
@@ -77,7 +77,7 @@ namespace Gksyb.Workflow.Services.Workflow
             await Init(info);
             await _dbContext.UseTransactionAsync(async () =>
             {
-                await EndNode.AddLog(info, WF_NODEExtensions.GetDesc(info.NodeStatus));
+                await EndNode.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
                 await EndNode.Execute(info);
             });
         }
@@ -227,6 +227,7 @@ namespace Gksyb.Workflow.Services.Workflow
             var flow = await _dbContext.Query<WF_FLOW>().Where(c => c.FLAG == "1")
                 .WhereIfNotNullOrEmpty(info.FlowId, c => c.ID == info.FlowId)
                 .WhereIfNotNullOrEmpty(info.FlowCode, c => c.FLOW_CODE == info.FlowCode).FirstOrDefaultAsync();
+            MessageException.ThrowIf(flow == null, $"找不到编号{info.FlowId ?? info.FlowCode}的流程");
             var graphData = flow.FLOW_CONTENT.ToObject<FlowGraphData>();
             Nodes.Clear();
             Sequences.Clear();

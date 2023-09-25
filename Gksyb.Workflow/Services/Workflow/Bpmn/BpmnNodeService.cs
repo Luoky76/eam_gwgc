@@ -141,6 +141,8 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 if (AutoNext)
                 {
                     await ExecuteOutputs(info);
+                    await Intercept(PostInterceptors, info);
+                    PostInterceptor.Clear();
                     return info.NodeId;
                 }
                 throw new MessageException($"找不到下一节点的处理人");
@@ -291,7 +293,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             {
                 message.Key = node.ID;
                 message.Receives = new List<string>() { node.NODE_USERNAME };
-                message.Data = WF_NODEExtensions.GetDesc(node.NODE_STATUS);
+                message.Data = node.ToNodeInfo();
                 await eventPublisher.PublishAsync(new ActionData<MessageInfo>()
                 {
                     Action = action,
@@ -345,7 +347,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             var list = new List<IFlowInterceptor>();
             interceptors.ForEach(c =>
             {
-                if (_serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == c && a.ServiceType == typeof(IFlowInterceptor)) is IFlowInterceptor service)
+                if (_serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == c) is IFlowInterceptor service)
                 {
                     list.Add(service);
                 }

@@ -1,5 +1,7 @@
 ﻿using Gksyb.Common.EventBus;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.WorkFlow;
+using Gksyb.Core.Interfaces.WorkFlow.Dtos;
 using Gksyb.Workflow.EventSubscriber.Dtos;
 
 namespace Gksyb.Workflow.EventSubscriber
@@ -24,8 +26,9 @@ namespace Gksyb.Workflow.EventSubscriber
         [EventSubscribe(WorkflowEventAction.ComplateTask)]
         public async Task ComplateTaskAsync(MessageInfo info)
         {
+            var nodeInfo = info.Data as NodeInfo;
             info.Code = "ToDoComplate";
-            info.Content = $"您的《{info.Title}》申请已审批，结果为{info.Data}";
+            info.Content = $"您的《{info.Title}》申请已审批，结果为{NodeStatus.GetDesc(nodeInfo.NodeStatus)}";
             await _service.SendAsync(info, true);
         }
 

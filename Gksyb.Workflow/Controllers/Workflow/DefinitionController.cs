@@ -50,20 +50,20 @@ namespace Gksyb.Workflow.Controllers.Workflow
             return AjaxResult<GridData>.Success(await _service.ListAsync(request));
         }
 
-        [JsToken]
+        [JsToken, SkipXssFilter]
         public async Task<AjaxResult> SaveAsync(SaveRequest<WF_FLOW> request)
         {
             return await _service.SaveAsync(request);
         }
 
-        [JsToken]
+        [JsToken, SkipXssFilter]
         public async Task<AjaxResult> SaveOrderAsync(SaveRequest<WF_FLOW> request)
         {
             await _service.SaveOrderAsync(request.Updated);
             return AjaxResult.Success();
         }
 
-        [JsToken]
+        [JsToken, SkipXssFilter]
         public async Task<AjaxResult> CopyAsync(List<string> ids, List<string> corps)
         {
             await _service.CopyAsync(ids, corps);

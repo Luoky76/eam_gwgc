@@ -51,5 +51,22 @@
         /// 草稿
         /// </summary>
         public const int Draft = 10;
+
+        /// <summary>
+        /// 获取描述
+        /// </summary>
+        public static string GetDesc(int? status)
+        {
+            return status switch
+            {
+                Agree => "同意",
+                Share => "抄送",
+                Back => "退回",
+                Transfer => "转办",
+                Reject => "拒绝",
+                Cancel => "取消",
+                _ => null,
+            };
+        }
     }
 }

@@ -64,7 +64,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         {
             var handle = Handle;
             if (string.IsNullOrWhiteSpace(handle)) return null;
-            return _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == handle && a.ServiceType == typeof(IFlowGatewayHandle)) as IFlowGatewayHandle;
+            return _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == handle) as IFlowGatewayHandle;
         }
     }
 }
