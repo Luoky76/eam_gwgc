@@ -53,7 +53,7 @@
                 key = gksybConfigs.getUrl(opt.url || "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "");
             }
             var tokenOptions = $.extend(true, {
-                noGlobal: true,
+                noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
                 data: { key: key },
