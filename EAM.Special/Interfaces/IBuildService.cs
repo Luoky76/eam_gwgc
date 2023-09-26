@@ -1,8 +1,10 @@
 ﻿using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +14,12 @@ namespace EAM.Special.Interfaces
 {
     public interface IBuildService : IService
     {
+
+        /// <summary>
+        /// 获取下拉
+        /// </summary>
+        /// <returns></returns>
+        Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
         Task<GridData> ListAsync(GridRequest request);
 
         Task<AjaxResult> GetAsync(string ID);

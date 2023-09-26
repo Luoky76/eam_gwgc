@@ -24,6 +24,14 @@ namespace EAM.Special.DTO
         [Display(Name = "日期")]
         public DateTime STARTDATE { get; set; }
 
+
+        /// <summary>
+        /// 船舶名称
+        /// </summary>
+        [ImporterHeader(Name = "船舶名称")]
+        [Display(Name = "船舶名称")]
+        public string DEVICE_NAME { get; set; }
+
         /// <summary>
         /// 船次
         /// </summary>
@@ -135,6 +143,13 @@ namespace EAM.Special.DTO
         [ImporterHeader(Name = "补充2")]
         [Display(Name = "补充2")]
         public int? SUPPLEMENT2 { get; set; }
+
+        /// <summary>
+        /// 滑油日耗
+        /// </summary>
+        [ImporterHeader(Name = "滑油日耗")]
+        [Display(Name = "滑油日耗")]
+        public decimal? LUBRICATE { get; set; }
 
         /// <summary>
         /// 库存
