@@ -67,6 +67,7 @@
                                         if (rowdata.value) {
                                             for (var i = 0; i < me.deptData.length; i++) {
                                                 if (rowdata.value == me.deptData[i].ID) {
+                                                    debugger
                                                     liger.get("maingrid").updateCell("DEPT_NAME", me.deptData[i].TEXT, rowdata.record);
                                                     liger.get("maingrid").updateCell("DEPT_CODE", me.deptData[i].VALUE, rowdata.record);
                                                     break;
