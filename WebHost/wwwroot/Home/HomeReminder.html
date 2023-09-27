@@ -6,7 +6,8 @@
     <title>待办事项</title>
     <style>
         .l-tab-content {
-            height: 100%;
+            
+            overflow-y:auto!important;
         }
 
         .l-listbox td {
@@ -22,37 +23,49 @@
         .l-listbox {
             border: 0px !important;
         }
+        .l-tab-content-item {
+            position: relative;
+            overflow: auto!important;
+            width: 100%;
+            height: 100%;
+        }
+
     </style>
 </head>
-<body style="height: 300px; overflow:hidden;">
-    <div id="tabContainer" style="margin: 2px; height: 300px;">
-        <div id="applyAcceptList" title="待受理申请[0]" tabid="ApplyAccept" style=" height: 100%; overflow-y: auto; ">
-            <div id="applyAcceptDetial" style=" height: 100%;">
+<body style="overflow-y:hidden">
+    <div id="tabContainer" style="margin: 2px; ">
+        <div id="applyAcceptList" title="维修计划[0]" tabid="ApplyAccept" style=" overflow-y: auto; ">
+            <div id="applyAcceptDetial" style="   ">
                 <div id="acceptList"></div>
             </div>
         </div>
-        <div id="applyDeptList" title="待部门审核申请[0]" tabid="ApplyDept" style=" height: 100%; overflow-y: auto; ">
-            <div id="applyDeptDetail" style=" height: 100%;">
+        <div id="applyDeptList" title="维修计划验收[0]" tabid="ApplyDept" style="  overflow-y: auto; ">
+            <div id="applyDeptDetail" style=" ">
                 <div id="deptList"></div>
             </div>
         </div>
-        <div id="applyLeaderList" title="待领导审核申请[0]" tabid="ApplyLeader" style="height: 100%; overflow-y: auto; ">
-            <div id="applyLeaderDetail" style=" height: 100%;">
+        <div id="applyLeaderList" title="委外维修确认[0]" tabid="ApplyLeader" style=" overflow-y: auto; ">
+            <div id="applyLeaderDetail" style=" ">
                 <div id="leaderList"></div>
             </div>
         </div>
-        <div id="registerList" title="待审核客户[0]" tabid="UserRegister" style="height: 100%; overflow-y: auto; ">
-            <div id="registerDetail" style=" height: 100%;">
+        <div id="registerList" title="委外维修验收[0]" tabid="UserRegister" style=" overflow-y: auto; ">
+            <div id="registerDetail" style=" ">
                 <div id="userList"></div>
             </div>
         </div>
-        <div id="VisitorList" title="待审核访客[0]" tabid="ApprovalAppointment" style="height: 100%; overflow-y: auto; ">
-            <div id="VisitorDetail" style=" height: 100%;">
+        <div id="VisitorList" title="码头维修实施[0]" tabid="ApprovalAppointment" style=" overflow-y: auto; ">
+            <div id="VisitorDetail" style=" ">
                 <div id="visitList"></div>
             </div>
         </div>
-        <div id="RecentReleaseList" title="近期发布[0]" tabid="RecentRelease" style="height: 100%; overflow-y: auto; ">
-            <div id="RecentReleaseDetail" style=" height: 100%;">
+        <div id="RecentReleaseList" title="码头维修确认[0]" tabid="RecentRelease" style=" overflow-y: auto; ">
+            <div id="RecentReleaseDetail" style=" ">
+                <div id="ArticleList"></div>
+            </div>
+        </div>
+        <div id="RecentReleaseList" title="维保实施[0]" tabid="RecentRelease" style=" overflow-y: auto; ">
+            <div id="RecentReleaseDetail" style=" ">
                 <div id="ArticleList"></div>
             </div>
         </div>
@@ -258,16 +271,49 @@
                                 "TABLE_NAME": "B_DELEGATE_APPLY"
                             },
                             {
-                                "ID": 8154,
+                                "ID": 18154,
+                                "TEXT": "销户申请，待处理业务申请单（XH202308280001）</a>",
+                                "ValueFieldID": "CloseApplyManager",
+                                "DATATYPE": null,
+                                "TABLE_NAME": "B_CLOSE_APPLY"
+                            },
+                            {
+                                "ID": 28154,
                                 "TEXT": "销户申请，待处理业务申请单（XH202308280001）</a>",
                                 "ValueFieldID": "CloseApplyManager",
                                 "DATATYPE": null,
                                 "TABLE_NAME": "B_CLOSE_APPLY"
                             }
+                            ,
+                            {
+                                "ID": 38154,
+                                "TEXT": "销户申请，待处理业务申请单（XH202308280001）</a>",
+                                "ValueFieldID": "CloseApplyManager",
+                                "DATATYPE": null,
+                                "TABLE_NAME": "B_CLOSE_APPLY"
+                            }
+                            ,
+                            {
+                                "ID": 48154,
+                                "TEXT": "销户申请，待处理业务申请单（XH202308280001）</a>",
+                                "ValueFieldID": "CloseApplyManager",
+                                "DATATYPE": null,
+                                "TABLE_NAME": "B_CLOSE_APPLY"
+                            }
+                            ,
+                            {
+                                "ID": 58154,
+                                "TEXT": "销户申请，待处理业务申请单（XH202308280001）</a>",
+                                "ValueFieldID": "CloseApplyManager",
+                                "DATATYPE": null,
+                                "TABLE_NAME": "B_CLOSE_APPLY"
+                            
+                            }
+
                         ],
                         "listCount": {
                             "VisitNum": 1,
-                            "AcceptNum": 9,
+                            "AcceptNum": 11,
                             "DeptNum": 1,
                             "LeaderNum": 2,
                             "UserNum": 3
@@ -313,8 +359,11 @@
                 tab.setHeader("ApprovalAppointment", "待审核访客<span style=\" color: red\">[" + data.listCount.VisitNum + "]</span>");
             }
         }
-        var height = Number($('#portalMain', parent.document).css("height").replace("px", ""));
-        $(".l-tab-content").css("height", (height - 86) + "px");
+        $("#layout", parent.document).css("height", "300px")
+        $(".l-layout-center", parent.document).css("height", "300px")
+        $('#portalMain', parent.document).css("height", "300px")
+        $('.l-tab-content').css("height", "300px")
+        $(".l-panel-content-frame", parent.document).css("height", "300px")
     </script>
 </body>
 </html>
