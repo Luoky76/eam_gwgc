@@ -200,5 +200,19 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string MODIFY_USERNAME { get; set; }
 
+        /// <summary>
+        /// 关联设备ID
+        /// </summary>
+        [Description("关联设备ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_ID { get; set; }
+
+        /// <summary>
+        /// 船舶名称
+        /// </summary>
+        [Description("船舶名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NAME { get; set; }
+
     }
 }
