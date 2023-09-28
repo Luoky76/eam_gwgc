@@ -73,6 +73,7 @@
                 Back: "back",//退回
                 Draft: "draft" //草稿
             },
+            code: getQueryStringByName("code"),
             sid: getQueryStringByName("sid"),
             nid: getQueryStringByName("nid"),
             isView: getQueryStringByName("isView"),
@@ -135,6 +136,13 @@
                 me.auditForm.setData(me.data);
                 me.auditForm.orginData = me.auditForm.getData();
             },
+            initDraft: function (fn) {
+                var me = this;
+                fn = fn || function () { me.draft(); };
+                $('<button></button>').appendTo(me.formPanel.panel.winbtns).ligerButton({
+                    text: '保存草稿', type: "primary small", icon: "fa fa-archive", onClick: fn
+                });
+            },
             initFormUrl: function () {
                 var me = this;
                 var url = me.data.FormUrl;
@@ -161,11 +169,7 @@
                 }
                 var isOper = me.isStart && !me.isView;
                 if (isOper) {
-                    $('<button></button>').appendTo(me.formPanel.panel.winbtns).ligerButton({
-                        text: '保存草稿', type: "primary small", icon: "fa fa-archive", onClick: function () {
-                            me.draft();
-                        }
-                    });
+                    me.initDraft();
                     window._displayOptions = $.extend({
                         validate: true,
                         buttons: [
@@ -253,7 +257,7 @@
                     jsToken: true,
                     url: 'workflow/query/taskInfo',
                     loading: '正在获取中...',
-                    data: { id: me.nid, flowId: me.sid },
+                    data: { Id: me.nid, FlowId: me.sid, FlowCode: me.code },
                     success: function (data) {
                         me.data = data;
                         me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
@@ -494,9 +498,10 @@
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.code) me.code = me.dialogData.code;
                     if (me.dialogData.nid) me.nid = me.dialogData.nid;
                 }
-                if (!me.sid && !me.nid) {
+                if (!me.sid && !me.code && !me.nid) {
                     LG.showError("参数不完整");
                     return;
                 }

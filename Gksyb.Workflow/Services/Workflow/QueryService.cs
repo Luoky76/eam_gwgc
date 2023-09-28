@@ -148,26 +148,29 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <summary>
         /// 任务详情
         /// </summary>
-        public async Task<TaskInfoEx> TaskInfoAsync(string id, string flowId)
+        public async Task<TaskInfoEx> TaskInfoAsync(TaskInfoRequest request)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrWhiteSpace(request.Id))
             {
-                return await GetTaskInfoInnerAsync(flowId);
+                return await GetTaskInfoInnerAsync(request);
             }
-            var info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(id) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(id);
-            MessageException.ThrowIf(info == null, $"找不到ID为{id}的节点");
+            var info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(request.Id) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(request.Id);
+            MessageException.ThrowIf(info == null, $"找不到ID为{request.Id}的节点");
             return info;
         }
 
         /// <summary>
         /// 初始任务详情
         /// </summary>
-        private async Task<TaskInfoEx> GetTaskInfoInnerAsync(string flowId)
+        private async Task<TaskInfoEx> GetTaskInfoInnerAsync(TaskInfoRequest request)
         {
-            return await _dbContext.Query<WF_FLOW>().Where(FilterCorp).Where(c => c.ID == flowId)
+            return await _dbContext.Query<WF_FLOW>().Where(FilterCorp)
+                .WhereIfNotNullOrEmpty(request.FlowId, c => c.ID == request.FlowId)
+                .WhereIfNotNullOrEmpty(request.FlowCode, c => c.FLOW_CODE == request.FlowCode)
                 .Select(flow => new TaskInfoEx()
                 {
                     FlowId = flow.ID,
+                    FlowCode = flow.FLOW_CODE,
                     Title = flow.FLOW_NAME,
                     FlowContent = flow.FLOW_CONTENT,
                     FormContent = flow.FLOW_FORM,
@@ -195,6 +198,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     ViewDate = node.VIEWDATE,
                     TaskId = node.TASK_ID,
                     FlowId = node.FLOW_ID,
+                    FlowCode = flow.FLOW_CODE,
                     Title = task.FLOW_TITLE,
                     FlowContent = flow.FLOW_CONTENT,
                     FormContent = flow.FLOW_FORM,
