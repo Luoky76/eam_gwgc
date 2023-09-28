@@ -170,14 +170,14 @@
     <div class="content" style="background-color:#e4edf3;min-width:1400px">
         <div class="flex-parent" style="flex-direction: column">
             <div class="flex-parent" style="flex-direction:row-reverse">
-                <div id="mainsearch" style="width: 300px;">
+                <!--<div id="mainsearch" style="width: 300px;">
                     <div class="searchbox">
 
                         <form id="formsearch" class="l-form">
                         </form>
                     </div>
 
-                </div>
+                </div>-->
             </div>
 
             <div style="padding:0px 3px 15px 15px;">
@@ -191,7 +191,7 @@
                                 <span class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div class="font-size-desc" id="warehouseCount"> <span class="font-size-desc">10个</span></div>
+                            <div class="font-size-desc"> <span class="font-size-desc" id="deviceCount">10</span>个</div>
                         </div>
                     </div>
                     <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
@@ -202,7 +202,7 @@
                                 <span class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div id="warehousestorageSum" class="font-size-desc">  <span class="font-size-desc">10单</span> </div>
+                            <div  class="font-size-desc">  <span class="font-size-desc" id="repairCount">10</span>单 </div>
                         </div>
                     </div>
 
@@ -211,10 +211,9 @@
                         <div class="box flex-parent" style="position:relative;background-color:#e76452 ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
                             <div class="font-size-desc">
                                 委外维修单数
-                                <span data-name="累计箱量" class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div class="font-size-subtitle" id="goodsareaSum" style="display: inline">  <span class="font-size-desc">10单</span> </div>
+                            <div class="font-size-subtitle" style="display: inline">  <span class="font-size-desc" id="outrepairCount" >10</span>单 </div>
                         </div>
                     </div>
                     <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
@@ -225,7 +224,7 @@
                                 <span class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div id="warehousestorageSum" class="font-size-desc">  <span class="font-size-desc">10单</span> </div>
+                            <div class="font-size-desc">  <span class="font-size-desc" id="shiprepairCount">10</span> 单</div>
                         </div>
                     </div>
 
@@ -291,29 +290,29 @@
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/ff7b00/fff" alt="预约" style="margin-right: 10px; ">
                                         <div class="h4content">
-                                            <h4 id="warehousestorageSum">1</h4>
-                                            <p>维修单数量</p>
+                                            <h4 id="deviceCount">1</h4>
+                                            <p>设备数量</p>
                                         </div>
                                     </div>
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/ffd500/fff" alt="会议" style="margin-right: 10px;">
                                         <div class="h4content">
-                                            <h4 id="reserve">2</h4>
-                                            <p>委外维修单数量</p>
+                                            <h4 id="repairCount">2</h4>
+                                            <p>维修单数</p>
                                         </div>
                                     </div>
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/00aeff/fff" alt="任务" style="margin-right: 10px;">
                                         <div class="h4content">
-                                            <h4 id="innum">3</h4>
-                                            <p>码头维修单数量</p>
+                                            <h4 id="outrepairCount">3</h4>
+                                            <p>委外维修单数</p>
                                         </div>
                                     </div>
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/9c27b0/fff" alt="报表" style="margin-right: 10px;">
                                         <div class="h4content">
-                                            <h4 id="outnum">4</h4>
-                                            <p>快修数量</p>
+                                            <h4 id="shiprepairCount">4</h4>
+                                            <p>码头维修单数 </p>
                                         </div>
                                     </div>
                                    
@@ -476,7 +475,6 @@
             outInEchartData: null,
             coalStorageEchartData: null,
             inventoryData: null,
-
             percentEchart: function (data) {
                 var ChartPercent = echarts.init(document.getElementById("percent"));
                 ChartPercent.clear(this.option);//清空数据缓存
@@ -634,7 +632,6 @@
                 });
 
             },
-
             //可调配存煤
             coalStorageEchart: function (data) {
                 var ChartcoalStorage = echarts.init(document.getElementById("coalStorage"));
@@ -684,7 +681,6 @@
                     ChartcoalStorage.resize();
                 });
             },
-
             //堆场月均库存
             inventoryBarEchart: function (data) {
                 var ChartinventoryBar = echarts.init(document.getElementById("inventoryBar"));
@@ -804,7 +800,6 @@
                     ChartinventoryBar.resize();
                 });
             },
-
             outInEchartGetData: function () {
                 //var data = LG.ajax({
                 //    async: true,
@@ -962,11 +957,35 @@
             },
 
 
+            GetCarddata: function () {
+                var data = LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceRepairCount',
+                    loading: '正在获取中...',
+                    data: { },
+                    success: function (data, message) {
+                        for (let key in data) {
+                            document.getElementById(key).innerHTML = data[key];
+                        }
+
+
+                      
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+
+
+
             totalGetData: function () {
                 var me = this;
                 var startTime = $("#_search_STARTDATE").val();
 
+
                 //获取数据
+                me.GetCarddata();
 
                 me.outInEchartGetData();
                 me.inventoryEchartGetData();

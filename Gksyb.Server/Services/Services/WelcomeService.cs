@@ -29,32 +29,39 @@ namespace Gksyb.Server.Services.Message
         {
             GetTodoListDataCountResponse result = new GetTodoListDataCountResponse();
             result.exe = await _dbContext.Query<REP_PLAN_EXE>().WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.exeTitle = "维修计划";
             result.exeList = await _dbContext.Query<REP_PLAN_EXE>().WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                                .Select(x => new todolist { ID = x.EXE_ID, TEXT = x.EXE_CODE, TYPENAME = "维修计划", MENUNAME = "exe" }).ToListAsync();
 
             result.check = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.DEAL_TYPE == "自修").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.checkTitle = "维修验收"; 
             result.checkList = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.DEAL_TYPE == "自修")
                                     .WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                     .Select(x => new todolist { ID = x.EXE_ID, TEXT = x.EXE_CODE, TYPENAME = "维修验收", MENUNAME = "check" }).ToListAsync();
 
             result.ExtMainteCheck = await _dbContext.Query<REP_OUT>(x => x.AUDITING == "1").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.ExtMainteCheckTitle = "委外维修验收";
             result.ExtMainteList = await _dbContext.Query<REP_OUT>(x => x.AUDITING == "1").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                    .Select(x => new todolist { ID = x.OUT_ID, TEXT = x.OUT_CODE, TYPENAME = "委外维修验收", MENUNAME = "ExtMainteCheck" }).ToListAsync();
 
             result.ExtCheck = await _dbContext.Query<REP_OUT>().WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.ExtCheckTitle = "委外维修确认";
             result.ExtCheckList = await _dbContext.Query<REP_OUT>().WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                      .Select(x => new todolist { ID = x.OUT_ID, TEXT = x.OUT_CODE, TYPENAME = "委外维修确认", MENUNAME = "ExtCheck" }).ToListAsync();
 
             result.RepDockExe = await _dbContext.Query<REP_DOCK_PLAN>(x => x.AUDITING_PLAN == "1").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.RepDockExeTitle = "码头维修实施";
             result.RepDockExeList = await _dbContext.Query<REP_DOCK_PLAN>(x => x.AUDITING_PLAN == "1").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
                        .Select(x => new todolist { ID = x.PLAN_ID, TEXT = x.EXE_CODE, TYPENAME = "码头维修实施", MENUNAME = "RepDockExe" }).ToListAsync();
 
             result.RepDockConfirm = await _dbContext.Query<REP_OUT>().WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.RepDockConfirmTitle = "码头维修确认";
             //维保实施   .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
             result.RepDockConfirmList = await _dbContext.Query<REP_OUT>().WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
            .Select(x => new todolist { ID = x.OUT_ID, TEXT = x.OUT_CODE, TYPENAME = "码头维修确认", MENUNAME = "RepDockConfirm" }).ToListAsync();
 
             result.PmPlanExe = await _dbContext.Query<PM_PLAN_EXE>(x => x.AUDITING == "1").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.PmPlanExeTitle = "维保实施";
             result.PmPlanExeList = await _dbContext.Query<PM_PLAN_EXE>(x => x.AUDITING == "1").WhereIf(1 != 1, x => x.DEPT_NAME == _user.ParentCompany.CName)
                        .Select(x => new todolist { ID = x.EXE_ID, TEXT = x.EXE_CODE, TYPENAME = "维保实施", MENUNAME = "PmPlanExe" }).ToListAsync();
 
@@ -63,6 +70,8 @@ namespace Gksyb.Server.Services.Message
 
         }
   
+    
+
 
 
         #endregion
