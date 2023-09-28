@@ -163,7 +163,7 @@ namespace Gksyb.Server.Services.Message
                 }).ToList();
 
             List<decimal> hourList = new List<decimal>();
-            List<int> RepairList = new List<int>();
+            List<int> RepairList = new List<int>(); 
             for (int i = 1; i <= 12; i++)
             {
                 var info = sumList.Where(x=>x.Month==i).FirstOrDefault();
