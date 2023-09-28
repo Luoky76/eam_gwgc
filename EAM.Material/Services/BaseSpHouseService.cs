@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
+﻿using Chloe;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -122,6 +123,12 @@ namespace EAM.Material.Services
 
             entity.HOUSE_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.HOUSE_CODE = string.IsNullOrEmpty(entity.PARENT_HOUSE_CODE) ? entity.HOUSE_CODE : entity.PARENT_HOUSE_CODE + entity.HOUSE_CODE + "";
+
+            if (_dbContext.Query<SP_HOUSE>().Any(t => t.HOUSE_CODE == entity.HOUSE_CODE))
+            {
+                throw new MessageException($"[{entity.HOUSE_CODE}]货位编码已存在，请重新输入！");
+            }
+
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
@@ -131,7 +138,10 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_HOUSE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
+            if (_dbContext.Query<SP_HOUSE>().Any(t => t.HOUSE_CODE == entity.HOUSE_CODE && t.HOUSE_ID != entity.HOUSE_ID))
+            {
+                throw new MessageException($"[{entity.HOUSE_CODE}]货位编码已存在，请重新输入！");
+            }
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
