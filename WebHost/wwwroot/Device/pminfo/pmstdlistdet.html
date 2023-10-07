@@ -27,16 +27,16 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "编号", name: "STD_CODE", newline: false, upper: true, type: "text", options: {}, group: "维保标准明细" },
-                            { display: "部门", name: "DEPARTMENT", newline: false, upper: true, type: "select", options: { data: me.maintDept } },
-                            { display: "周期", name: "CYCLE", newline: false, upper: true, type: "select", options: { data: me.pmcycleUnit } },
-                            { display: "执行人", name: "EXE_USER", newline: false, upper: true, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },
-                            { display: "检查人", name: "CHK_USER", newline: false, upper: true, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },   
-                            { display: "是否附件判断", name: "IS_ATTACH", newline: false, upper: true, type: "select", options: { data: me.isAttach } },
-                            { display: "维保项目", name: "PART_NAME", newline: true, upper: true, width: 775, type: "text", options: {} },
-                            { display: "维保内容", name: "CONTENT", newline: true, upper: true, width: 775, type: "textarea", options: {} },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
-                            { display: "主键", name: "PM_STD_LIST_ID", newline: false, upper: true, type: "text", type: "hidden" },
+                            { display: "编号", name: "STD_CODE", newline: false, upper: true, width: 300, type: "text", options: {}, group: "维保标准明细" },
+                            { display: "部门", name: "DEPARTMENT", newline: false, width: 300, type: "select", options: { data: me.maintDept } },
+                            { display: "周期", name: "CYCLE", newline: false, width: 300, type: "select", options: { data: me.pmcycleUnit } },
+                            { display: "执行人", name: "EXE_USER", newline: false, width: 300, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },
+                            { display: "检查人", name: "CHK_USER", newline: false, width: 300, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },   
+                            { display: "是否附件判断", name: "IS_ATTACH", newline: false, width: 300, type: "select", options: { data: me.isAttach } },
+                            { display: "维保项目", name: "PART_NAME", newline: true, width: 1146, type: "text", options: {} },
+                            { display: "维保内容", name: "CONTENT", newline: true, width: 1146, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, width: 1146, type: "textarea", options: {} },
+                            { display: "主键", name: "PM_STD_LIST_ID", newline: false, type: "text", type: "hidden" },
 
                         ]
                     }
