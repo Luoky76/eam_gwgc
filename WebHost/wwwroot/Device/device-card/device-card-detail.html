@@ -9,7 +9,7 @@
 </head>
 
 <body style="padding: 5px; height: 100%;">
-    <form id="mainform">
+    <form id="mainform" style="margin-bottom: 50px">
     </form>
     <script type="text/javascript">
         'use strict';
@@ -50,8 +50,8 @@
                     form: {
                         fields: [
                             { display: "DEVICE_ID", name: "DEVICE_ID", type: "hidden" },
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.auditing }, options: { disabled: true }, group: "基础信息" },
-                            { display: "设备编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "记录状态", name: "AUDITING", type: "hidden" },
+                            { display: "设备编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: {}, group: "基础信息" },
                             { display: "立卡日期", name: "CARD_DATE", newline: false, upper: true, type: "date", options: {} },
                             { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                             { display: "设备机型", name: "BOM_NAME", newline: false, upper: true, type: "text", options: {} },
@@ -161,7 +161,6 @@
                             { display: "净残值比例(%)", name: "NET_RATE", newline: false, upper: true, type: "float", options: {} },
                             { display: "年折旧率(%)", name: "DEP_RATE", newline: false, upper: true, type: "float", options: {} },
                             { display: "资产来源", name: "ASSET_SOURCE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "参数组", name: "PARAMS", newline: false, upper: true, type: "text", options: { disabled: true }, group: "其他信息" },
                             { display: "备注", name: "MEMO", newline: false, width: 880 ,upper: true, type: "textarea", options: {} },
                         ]
                     }
@@ -189,7 +188,8 @@
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    me.mainform.setOrginData({ AUDITING: "0" });
+                    //注：原默认为未提交，现默认为已提交，2023.10.07
+                    me.mainform.setOrginData({ AUDITING: "1" });
                 }
                 else {
                     LG.ajax({
