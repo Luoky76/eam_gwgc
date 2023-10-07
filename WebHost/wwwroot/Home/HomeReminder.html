@@ -6,7 +6,7 @@
     <title>待办事项</title>
     <style>
         .l-tab-content {
-            height: 100%;
+            overflow-y: auto !important;
         }
 
         .l-listbox td {
@@ -22,83 +22,66 @@
         .l-listbox {
             border: 0px !important;
         }
+
+        .l-tab-content-item {
+            position: relative;
+            overflow: auto !important;
+            width: 100%;
+            height: 100%;
+        }
     </style>
 </head>
-<body style="height: 300px; overflow:hidden;">
-    <div id="tabContainer" style="margin: 2px; height: 300px;">
-        <div id="applyAcceptList" title="待受理申请[0]" tabid="ApplyAccept" style=" height: 100%; overflow-y: auto; ">
-            <div id="applyAcceptDetial" style=" height: 100%;">
-                <div id="acceptList"></div>
+
+<body style="overflow-y:hidden">
+    <div id="tabContainer" style="margin: 2px; ">
+        <div title="维修计划[0]" tabid="exe" style=" overflow-y: auto; ">
+            <div >
+                <div id="exeList"></div>
             </div>
         </div>
-        <div id="applyDeptList" title="待部门审核申请[0]" tabid="ApplyDept" style=" height: 100%; overflow-y: auto; ">
-            <div id="applyDeptDetail" style=" height: 100%;">
-                <div id="deptList"></div>
+        <div  title="维修计划验收[0]" tabid="check" style="  overflow-y: auto; ">
+            <div >
+                <div id="checkList"></div>
             </div>
         </div>
-        <div id="applyLeaderList" title="待领导审核申请[0]" tabid="ApplyLeader" style="height: 100%; overflow-y: auto; ">
-            <div id="applyLeaderDetail" style=" height: 100%;">
-                <div id="leaderList"></div>
+        <div  title="委外维修确认[0]" tabid="ExtCheck" style=" overflow-y: auto; ">
+            <div >
+                <div id="ExtCheckList"></div>
             </div>
         </div>
-        <div id="registerList" title="待审核客户[0]" tabid="UserRegister" style="height: 100%; overflow-y: auto; ">
-            <div id="registerDetail" style=" height: 100%;">
-                <div id="userList"></div>
+        <div  title="委外维修验收[0]" tabid="ExtMainteCheck" style=" overflow-y: auto; ">
+            <div>
+                <div id="ExtMainteCheckList"></div>
             </div>
         </div>
-        <div id="VisitorList" title="待审核访客[0]" tabid="ApprovalAppointment" style="height: 100%; overflow-y: auto; ">
-            <div id="VisitorDetail" style=" height: 100%;">
-                <div id="visitList"></div>
+        <div  title="码头维修实施[0]" tabid="RepDockExe" style=" overflow-y: auto; ">
+            <div >
+                <div id="RepDockExeList"></div>
             </div>
         </div>
-        <div id="RecentReleaseList" title="近期发布[0]" tabid="RecentRelease" style="height: 100%; overflow-y: auto; ">
-            <div id="RecentReleaseDetail" style=" height: 100%;">
-                <div id="ArticleList"></div>
+        <div  title="码头维修确认[0]" tabid="RepDockConfirm" style=" overflow-y: auto; ">
+            <div >
+                <div id="RepDockConfirmList"></div>
+            </div>
+        </div>
+        <div  title="维保实施[0]" tabid="PmPlanExe" style=" overflow-y: auto; ">
+            <div >
+                <div id="PmPlanExeList"></div>
             </div>
         </div>
     </div>
     <script type="text/javascript">
-        var acceptListData = [], deptListData = [], leaderListData = [], userListData = [], ArticleListData = [];
-        var dict = {
-            "acceptList": acceptListData,
-            "deptList": deptListData,
-            "leaderList": leaderListData,
-            "userList": userListData,
-            "ArticleList": ArticleListData,
-            "visitList": VisitorList
-        };
+    
         var tab = $("#tabContainer").ligerTab({ type: "brief" });
-        var acceptList = $("#acceptList").ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: f_openMenu, data: [] });
-        var deptList = $("#deptList").ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: f_openMenu, data: [] });
-        var leaderList = $("#leaderList").ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: f_openMenu, data: [] });
-        var userList = $("#userList").ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: f_openMenu2, data: [] });
-        var ArticleList = $("#ArticleList").ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: opendialog, data: [] });
-        var VisitorList = $("#visitList").ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: f_openMenu3, data: [] });
-        tab.setHeader("RecentRelease", "近期发布<span style=\" color: red\">[10]</span>");
+        var business = {};
+        var idLIst = ['exe', 'check', 'ExtMainteCheck', 'ExtCheck', 'RepDockExe', 'RepDockConfirm', 'PmPlanExe']
         //在tab选择的时候才加载数据
         tab.bind('afterSelectTabItem', function (tabid) {
-           
-            //f_loadListData(tabid);
+
+            f_loadListData(tabid);
         });
 
-        function opendialog(value, text, data) {
-          top.$.ligerDialog.open({
-                width: 960,
-                height: 700,
-                allowClose: true,
-                title: '[查看]',
-                url: "/public/bulletin-view.html",
-                isHidden: false,
-                showMax: false,
-                showToggle: false,
-                showMin: false,
-                isResize: true,
-                slide: false,
-                onClosed: null,
-                data: { "sid": data.ID, source: data.TABLE_NAME }
-            });
-        }
-        function createdata(tabdata,id,chooseData) {
+        function createdata(tabdata, id, chooseData) {
             var selectTextList = { chooseNo: "", No: [] };
             if (id == "acceptList" || id == "deptList" || id == "leaderList") {
                 let pattern = /（(.*?)）/;
@@ -136,7 +119,7 @@
                 sessionStorage.setItem('selectText', JSON.stringify(selectTextList));
 
                 return selectTextList;
-                
+
 
             }
 
@@ -145,25 +128,16 @@
 
         //点击待处理事项，打开功能菜单
         function f_openMenu(value, text, data) {
-           
-            
+
+
             var applyNO = data.TEXT.substr(14, 14);
             if (applyNO && data.ValueFieldID)
                 deploy2(data.ValueFieldID, applyNO);
             createdata(dict[this.id], this.id, data);
         };
 
-        function f_openMenu2(value, text, data) {
-            var selected = data.TEXT.match(/【(\S*)】/)[1];
-            if (selected && data.ValueFieldID)
-                deploy2(data.ValueFieldID, escape(selected));
-        };
 
-        function f_openMenu3(value, text, data) {
-            var selected = data.ID;
-            if ( data.ValueFieldID)
-               deploy2(data.ValueFieldID, escape(selected));
-        };
+   
         function deploy2(menuNo, selected) {
             if (menuNo) {
                 let menuListJSon = JSON.stringify(top.menuList);
@@ -191,130 +165,56 @@
         //}, 60000)
 
         //加载数据
-  
-        f_loadListData("ApplyAccept");
+ 
+        f_loadListData()
 
-        function f_loadListData(typeId) {
-            if (typeId) {
-                var dataobj = {
-                    "IsError": false,
-                    "Message": "成功",
-                    "Data": {
-                        "listData": [
-                            {
-                                "ID": 8166,
-                                "TEXT": "变更用电，待处理业务申请单（BG202309120001）</a>",
-                                "ValueFieldID": "AlterEleApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_ALTER_APPLY"
-                            },
-                            {
-                                "ID": 8165,
-                                "TEXT": "用电申请，待处理业务申请单（YD202309110002）</a>",
-                                "ValueFieldID": "EleApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_ELEC_APPLY"
-                            },
-                            {
-                                "ID": 8164,
-                                "TEXT": "用电申请，待处理业务申请单（YD202309110001）</a>",
-                                "ValueFieldID": "EleApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_ELEC_APPLY"
-                            },
-                            {
-                                "ID": 8163,
-                                "TEXT": "变更用电，待处理业务申请单（BG202309110001）</a>",
-                                "ValueFieldID": "AlterEleApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_ALTER_APPLY"
-                            },
-                            {
-                                "ID": 8162,
-                                "TEXT": "委托项目，待处理业务申请单（WT202309060001）</a>",
-                                "ValueFieldID": "DelegateApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_DELEGATE_APPLY"
-                            },
-                            {
-                                "ID": 8161,
-                                "TEXT": "销户申请，待处理业务申请单（XH202308290001）</a>",
-                                "ValueFieldID": "CloseApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_CLOSE_APPLY"
-                            },
-                            {
-                                "ID": 8157,
-                                "TEXT": "委托项目，待处理业务申请单（WT202304070001）</a>",
-                                "ValueFieldID": "DelegateApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_DELEGATE_APPLY"
-                            },
-                            {
-                                "ID": 8155,
-                                "TEXT": "委托项目，待处理业务申请单（WT202308290001）</a>",
-                                "ValueFieldID": "DelegateApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_DELEGATE_APPLY"
-                            },
-                            {
-                                "ID": 8154,
-                                "TEXT": "销户申请，待处理业务申请单（XH202308280001）</a>",
-                                "ValueFieldID": "CloseApplyManager",
-                                "DATATYPE": null,
-                                "TABLE_NAME": "B_CLOSE_APPLY"
+
+        function f_loadListData() {
+                LG.ajax({
+                    async: false,
+                    url: 'welcome/GetTodoListData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        if (data) {
+                            for (let i = 0; i < idLIst.length; i++) {
+                                let key = idLIst[i];
+                                let keyList = key + 'List';
+                                var count = data[key]??0;
+                                var dataList = data[keyList]??null;
+                                tab.setHeader(key, `${data[(key + 'Title')]}<span style=\" color: red\">[${count}]</span>`);
+                                $("#" + keyList).ligerListBox({ width: '100%', height: '100%', isShowCheckBox: false, filter: false, onSelected: f_openMenu, data: dataList });
                             }
-                        ],
-                        "listCount": {
-                            "VisitNum": 1,
-                            "AcceptNum": 9,
-                            "DeptNum": 1,
-                            "LeaderNum": 2,
-                            "UserNum": 3
                         }
-                    }
-                }
-                var data = dataobj.Data;
 
-                if (typeId == "ApplyAccept") {
-                    acceptListData = data.listData;
-                    acceptList.setData(acceptListData);
-                    dict["acceptList"] = acceptListData
-                }
-                else if (typeId == "ApplyDept") {
-                    deptListData = data.listData;
-                    deptList.setData(deptListData);
-                    dict["deptList"] = deptListData
-                }
-                else if (typeId == "ApplyLeader") {
-                    leaderListData = data.listData;
-                    leaderList.setData(leaderListData);
-                    dict["leaderList"] = leaderListData
-                }
-                else if (typeId == "UserRegister") {
-                    userListData = data.listData;
-                    userList.setData(userListData);
-                    dict["userList"] = userListData
-                }
-                else if (typeId == "RecentRelease") {
-                    ArticleListData = data.listData;
-                    ArticleList.setData(ArticleListData);
-                    dict["ArticleList"] = ArticleListData
-                }
-                else if (typeId == "ApprovalAppointment") {
-                    VisitorList.setData(data.listData);
-                    dict["visitList"] = VisitorList
-                }
-                tab.setHeader("ApplyAccept", "待受理申请<span style=\" color: red\">[" + data.listCount.AcceptNum + "]</span>");
-                tab.setHeader("ApplyDept", "待部门审核申请<span style=\" color: red\">[" + data.listCount.DeptNum + "]</span>");
-                tab.setHeader("ApplyLeader", "待领导审核申请<span style=\" color: red\">[" + data.listCount.LeaderNum + "]</span>");
-                tab.setHeader("UserRegister", "待审核客户<span style=\" color: red\">[" + data.listCount.UserNum + "]</span>");
-                tab.setHeader("RecentRelease", "近期发布<span style=\" color: red\">[10]</span>");
-                tab.setHeader("ApprovalAppointment", "待审核访客<span style=\" color: red\">[" + data.listCount.VisitNum + "]</span>");
-            }
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
         }
-        var height = Number($('#portalMain', parent.document).css("height").replace("px", ""));
-        $(".l-tab-content").css("height", (height - 86) + "px");
+        $("#layout", parent.document).css("height", "300px")
+        $(".l-layout-center", parent.document).css("height", "300px")
+        $('#portalMain', parent.document).css("height", "300px")
+        $('.l-tab-content').css("height", "300px")
+        $(".l-panel-content-frame", parent.document).css("height", "300px")
+   
+        //function opendialog(value, text, data) {
+        //    top.$.ligerDialog.open({
+        //        width: 960,
+        //        height: 700,
+        //        allowClose: true,
+        //        title: '[查看]',
+        //        url: "/public/bulletin-view.html",
+        //        isHidden: false,
+        //        showMax: false,
+        //        showToggle: false,
+        //        showMin: false,
+        //        isResize: true,
+        //        slide: false,
+        //        onClosed: null,
+        //        data: { "sid": data.ID, source: data.TABLE_NAME }
+        //    });
+        //}
     </script>
 </body>
 </html>

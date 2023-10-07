@@ -16,11 +16,15 @@ namespace EAM.Special.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly IDrugCollectDetService _drugCollectDetService;
+        private readonly IDrugCollectRequestService _drugCollectRequestService;
 
-        public DrugCollectService(IDbContext dbContext, IComboxDataService comboxDataService)
+        public DrugCollectService(IDbContext dbContext, IComboxDataService comboxDataService, IDrugCollectDetService drugCollectDetService, IDrugCollectRequestService drugCollectRequestService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _drugCollectDetService = drugCollectDetService;
+            _drugCollectRequestService = drugCollectRequestService;
         }
 
         /// <summary>
@@ -224,6 +228,40 @@ namespace EAM.Special.Services
                 await _dbContext.DeleteAsync<DRUG_COLLECT_REQUEST>(c => c.COLLECT_ID == entity.COLLECT_ID);
             }
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 同时保存采购主表以及与其关联的采购明细子表、采购需求子表
+        /// </summary>
+        /// <param name="request1"></param>
+        /// <param name="request2"></param>
+        /// <param name="request3"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveAllAsync
+            (SaveRequest<DRUG_COLLECT> request1, SaveRequest<DRUG_COLLECT_DET> request2, SaveRequest<DRUG_COLLECT_REQUEST> request3)
+        {
+            try
+            {
+                await _dbContext.UseTransactionAsync(async () =>
+                {
+                    if ((await SaveAsync(request1)).IsError)
+                    {
+                        throw new MessageException("采购订单保存失败");
+                    }
+                    if ((await _drugCollectDetService.SaveAsync(request2)).IsError)
+                    {
+                        throw new MessageException("采购订单明细保存失败");
+                    }
+                    if ((await _drugCollectRequestService.SaveAsync(request3)).IsError)
+                    {
+                        throw new MessageException("采购订单需求明细保存失败");
+                    }
+                });
+            } catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
+            }
+            return AjaxResult.Success("保存成功");
         }
 
         /// <summary>

@@ -15,6 +15,10 @@ using NPOI.SS.Formula.PTG;
 using Microsoft.AspNetCore.Http;
 using Gksyb.Common.Office;
 using EAM.Special.DTO;
+using Gksyb.Model.UI;
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
+using Gksyb.Common.Data;
 
 namespace EAM.Special.Services
 {
@@ -32,13 +36,51 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 下拉
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        {
+            return await _comboxDataService.Get(new Dictionary<string, object>(){
+                { "ShipInfo",null},
+            });
+        }
+
+        /// <summary>
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<BUILD_COUNT>().GetGridData(request);
+            var list = await _dbContext.Query<BUILD_COUNT>()
+                .LeftJoin<DEVICE_CARD>((a,b) => a.DEVICE_ID == b.DEVICE_ID)
+                .Select((a,b) => new {
+                    a.BUILD_ID,
+                    a.DEVICE_ID,
+                    a.DEVICE_NAME,
+                    a.STARTDATE,
+                    a.SHIPTIMES,
+                    a.SHIPNUM,
+                    a.CONPLAN,
+                    a.DREDGETIME,
+                    a.SAILTIME,
+                    a.REPAIRTIME,
+                    a.WEATHEREFFECT,
+                    a.OTHERSTOP,
+                    a.DAILYCONSUMPTION,
+                    a.SUPPLEMENT,
+                    a.STOCK,
+                    a.MASTER,
+                    a.AUXILIARY,
+                    a.PUMP,
+                    a.SUBTOTAL,
+                    a.SUPPLEMENT2,
+                    a.STOCK2,
+                    a.LUBRICATE,
+                    a.MEMO
+                })
+                .GetGridData(request);
             return list;
         }
 
@@ -59,6 +101,8 @@ namespace EAM.Special.Services
                 c => new
                 {
                     c.BUILD_ID,
+                    c.DEVICE_ID,
+                    c.DEVICE_NAME,
                     c.STARTDATE,
                     c.SHIPTIMES,
                     c.SHIPNUM,
@@ -77,6 +121,7 @@ namespace EAM.Special.Services
                     c.SUBTOTAL,
                     c.SUPPLEMENT2,
                     c.STOCK2,
+                    c.LUBRICATE,
                     c.MEMO
                 },
                 c => a => a.BUILD_ID == c.BUILD_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);
@@ -141,8 +186,16 @@ namespace EAM.Special.Services
                         throw new MessageException("已存在"+ c.STARTDATE.ToString("yyyy-MM-dd") + "日期数据，无法重复添加！");
                     }
 
+                    if (string.IsNullOrWhiteSpace(c.DEVICE_NAME))
+                    {
+                        throw new MessageException("船舶名称不能为空！");
+                    }
+
+                    var device = await _dbContext.Query<DEVICE_CARD>(x => x.DEVICE_NAME == c.DEVICE_NAME).FirstOrDefaultAsync();
+
                     BUILD_COUNT dto = c.MapTo<BUILD_COUNT>();
                     dto.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
+                    dto.DEVICE_ID = device.DEVICE_ID;
 
                     await _dbContext.InsertAsync<BUILD_COUNT>(dto);
 

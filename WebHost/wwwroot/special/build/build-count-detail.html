@@ -20,6 +20,7 @@
             isView: true,
             sid: getQueryStringByName("sid"),
             dataCorp: [],
+            shipinfo:[],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -27,23 +28,60 @@
                         fields: [
                             { display: "主键", name: "BUILD_ID", type: "hidden" },
                             { display: "日期", name: "STARTDATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
+                            {
+                                display: "船舶名称", name: "DEVICE_ID", width: 180, newline: true, upper: true, type: "select",
+                                options: {
+                                    data: me.shipinfo,
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                        }
+                                    }
+                                }, group: "产量"
+                            },
+                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "船次", name: "SHIPTIMES", newline: false, upper: true, type: "text", options: {} },
                             { display: "船方", name: "SHIPNUM", newline: false, upper: true, type: "int", options: {} },
-                            { display: "施工准备", name: "CONPLAN", newline: false, upper: true, type: "text", options: {} },
+                            { display: "施工准备", name: "CONPLAN", newline: true, upper: true, type: "text", options: {}, group: "" },
                             { display: "挖泥时间", name: "DREDGETIME", newline: false, upper: true, type: "float", options: {} },
                             { display: "航行时间", name: "SAILTIME", newline: false, upper: true, type: "float", options: {} },
-                            { display: "检修时间", name: "REPAIRTIME", newline: false, upper: true, type: "float", options: {} },
+                            { display: "检修时间", name: "REPAIRTIME", newline: true, upper: true, type: "float", options: {}, group: "停工时间" },
                             { display: "天气影响", name: "WEATHEREFFECT", newline: false, upper: true, type: "float", options: {} },
                             { display: "其他停工", name: "OTHERSTOP", newline: false, upper: true, type: "float", options: {} },
-                            { display: "日耗", name: "DAILYCONSUMPTION", newline: false, upper: true, type: "int", options: {} },
+                            { display: "日耗", name: "DAILYCONSUMPTION", newline: false, upper: true, type: "int", options: {}, group: "淡水" },
                             { display: "补充", name: "SUPPLEMENT", newline: false, upper: true, type: "int", options: {} },
                             { display: "库存", name: "STOCK", newline: false, upper: true, type: "int", options: {} },
-                            { display: "主机日耗", name: "MASTER", newline: false, upper: true, type: "float", options: {} },
-                            { display: "辅机日耗", name: "AUXILIARY", newline: false, upper: true, type: "float", options: {} },
-                            { display: "泵机日耗", name: "PUMP", newline: false, upper: true, type: "float", options: {} },
-                            { display: "小计", name: "SUBTOTAL", newline: false, upper: true, type: "float", options: {} },
+                            {
+                                display: "主机日耗", name: "MASTER", newline: false, upper: true, type: "float", options: {
+                                    onChangeValue: function (input, value, g) {
+                                        if (value) {
+                                            me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
+                                        }
+                                    }
+                                }, group: "柴油"
+                            },
+                            {
+                                display: "辅机日耗", name: "AUXILIARY", newline: false, upper: true, type: "float", options: {
+                                    onChangeValue: function (input, value, g) {
+                                        if (value) {
+                                            me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                display: "泵机日耗", name: "PUMP", newline: false, upper: true, value:0, type: "float", options: {
+                                    onChangeValue: function (input, value, g) {
+                                        if (value) {
+                                            me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "小计", name: "SUBTOTAL", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true } },
                             { display: "补充", name: "SUPPLEMENT2", newline: false, upper: true, type: "int", options: {} },
                             { display: "库存", name: "STOCK2", newline: false, upper: true, type: "int", options: {} },
+                            { display: "日耗", name: "LUBRICATE", newline: true, upper: true, type: "float", options: {}, group: "滑油" },
                             { display: "简要说明", name: "MEMO", newline: false, upper: true, type: "text", options: {} }
                         ]
                     }
@@ -53,6 +91,23 @@
             buttons: null,
             loadComboxData: function () {
                 var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/Build/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        
+                        me.shipinfo = data.shipInfo;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            sum: function (zhu, fu, ban) {
+                
+                var total = Number(zhu) + Number(fu) + Number(ban);
+                $('#SUBTOTAL').val(total);
             },
             loadData: function () {
                 var me = this;
@@ -195,7 +250,7 @@
                     if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
                 }
                 me.isView = false;
-                //me.loadComboxData();
+                me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.loadData();

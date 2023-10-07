@@ -18,6 +18,20 @@ namespace EAM.Special.Controller
     {
         private readonly IBuildService _service;
 
+
+        /// <summary>
+        /// 下拉
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ComboxData()
+        {
+            var comboxData = await _service.ComboxData();
+            return AjaxResult.Success(new
+            {
+                shipInfo = comboxData["ShipInfo"],
+            }, "成功");
+        }
         public BuildController(IBuildService service)
         {
             _service = service;

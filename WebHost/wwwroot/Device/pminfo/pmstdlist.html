@@ -53,6 +53,9 @@
                     }
                 };
             },
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             grid: null,
             searchForm: null,
             buttons: null,
@@ -272,8 +275,8 @@
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: 1120,
-                    height: 420,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[新增]',
                     url: "pmstdlistdet.html",
@@ -296,8 +299,8 @@
                 }
                 var sid = selected.PM_STD_LIST_ID;
                 $.ligerDialog.open({
-                    width: 1120,
-                    height: 420,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[修改]',
                     url: "pmstdlistdet.html",
