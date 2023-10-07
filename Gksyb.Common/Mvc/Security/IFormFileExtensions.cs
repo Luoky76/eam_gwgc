@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// 验证用户
         /// </summary>
-        public const string Auth = "public";
+        public const string Auth = "auth";
 
         /// <summary>
         /// 文件另存
