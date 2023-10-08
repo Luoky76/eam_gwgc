@@ -8,6 +8,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Http;
@@ -89,10 +90,14 @@ namespace EAM.Device.Services
                         _ => throw new MessageException($"序号为 {c.ID} 的是否附件判断数据异常"),
                     };
                 }
-                if (c.DEPARTMENT != "甲板部" && c.DEPARTMENT != "机舱部")
+
+                var list = await _dbContext.Query<BC_CODE>(d => d.CODE_TYPE == "ship_dept" && d.CODE_CN == c.DEPARTMENT)
+                    .ToListAsync();
+                if (!list.Any())
                 {
                     throw new MessageException($"序号为 {c.ID} 的部门数据异常");
                 }
+
                 //主键生成
                 //var mainKey = GuidHelper.NewSnowflakeId().ToString();
                 var pmlists = c.MapTo<PM_STD_LIST>();
