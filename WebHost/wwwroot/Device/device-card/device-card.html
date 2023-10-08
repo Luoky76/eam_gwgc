@@ -23,6 +23,9 @@
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -208,8 +211,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '[查看]船舶卡片',
                         url: "device-card-detail.html?MenuNo=" + me.menuNo,
@@ -238,8 +241,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '设备随机资料',
                         url: "device-doc.html?MenuNo=" + me.menuNo,
@@ -268,8 +271,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '设备参数',
                         url: "device-param.html?MenuNo=" + me.menuNo,
@@ -298,8 +301,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '重大改造履历',
                         url: "device-remould.html?MenuNo=" + me.menuNo,
@@ -357,8 +360,8 @@
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: 1200,
-                    height: 650,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[新增]船舶卡片',
                     url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
@@ -386,8 +389,8 @@
                 if (selected) {
                     var sid = selected.DEVICE_ID;
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '[修改]船舶卡片',
                         url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
