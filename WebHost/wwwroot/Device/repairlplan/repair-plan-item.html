@@ -28,7 +28,7 @@
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
-            sid: getQueryStringByName("sid"),
+            sid: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -196,8 +196,9 @@
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
                             if (!currentSet.has(item.DEVICE_ID)) {
+                                
                                 me.grid.addEditRow({
-                                    PLAN_ID: business.sid,
+                                    PLAN_ID: me.sid,
                                     BOM_ID: item.DEVICE_ID,
                                     BOM_NAME: item.DEVICE_NAME,
                                     DEVICE_TYPE: item.DEVICE_TYPE,
