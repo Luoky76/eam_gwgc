@@ -182,7 +182,7 @@ namespace EAM.Special.Services
         public async Task<GridData> DrugListAsync(GridRequest request)
         {
             return await _dbContext.Query<BASE_SPCATALOG>()
-                .Where(a => a.TYPE_CODE == "medicine")
+                .Where(a => a.TYPE_CODE.StartsWith("016"))
                 .Select(a => new
                 {
                     a.SP_ID,
