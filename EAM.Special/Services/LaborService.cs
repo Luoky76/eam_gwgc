@@ -161,7 +161,7 @@ namespace EAM.Special.Services
                     c.CREATE_USERID,
                     c.BIRTHDAY,
                 },
-                c => a => a.USER_SID == c.USER_SID
+                c => a => a.USER_ID == c.USER_ID
                 , BeforeAdd, null, null, false, null, null);
         }
 
