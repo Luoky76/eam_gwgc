@@ -34,7 +34,7 @@
                     grid: {
                         columns: [
                             { display: "PLAN_ID", name: "PLAN_ID", width: 100, type: "text", hide: true },
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk" },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
                             { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
@@ -209,11 +209,34 @@
             },
             sumbit: function () { //提交
                 var me = this;
+                var flag = true;
                 var selecteds = me.grid.getSelectedRows();
                 if (selecteds) {
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Repair/RepairPlan/ItemList',
+                            data: {
+                                where: JSON.stringify({
+                                    op: 'and',
+                                    rules: [{ field: 'PLAN_ID', op: 'equal', value: selecteds[i].PLAN_ID }]
+                                })
+                            },
+                            success: function (data) {
+                                
+                                if (data.Total == 0) {
+                                    flag = false;
+                                    LG.showError("维修项目明细未填写，无法提交！");
+                                }
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        })
+                        if (flag)
+                            return;
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
                         if (ori.AUDITING == "1") {
@@ -250,7 +273,7 @@
                 var selected = me.grid.getSelectedRows();
                 
                 if (selected) {
-                    debugger
+                    
                     if (selected.length > 1) {
                         LG.showError("不能选择多行")
                         return
@@ -268,7 +291,7 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.PLAN_ID }
+                        data: { "sid": selected[0].PLAN_ID }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -318,7 +341,7 @@
                         selected = rowdata;
                     }
                     if (selected) {
-                        var sid = selected.PLAN_ID;
+                        var sid = selected[0].PLAN_ID;
                         $.ligerDialog.open({
                             width: 1200,
                             height: 650,

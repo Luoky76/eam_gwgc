@@ -51,9 +51,7 @@
                     },
                     grid: {
                         columns: [
-                            {
-                                display: "记录状态", name: "AUDITING", labelWidth: 100, width: 300, newline: true, type: "select", format: { data: me.dataCheck }
-                            },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "盘点单号", name: "SCAN_CODE", minWidth: 120, type: "text" },
                             {
                                 display: "盘点状态", name: "STATUS", minWidth: 100, type: "select", format: { data: me.scanStatus }

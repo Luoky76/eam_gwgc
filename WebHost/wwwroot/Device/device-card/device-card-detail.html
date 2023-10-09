@@ -9,7 +9,7 @@
 </head>
 
 <body style="padding: 5px; height: 100%;">
-    <form id="mainform">
+    <form id="mainform" style="margin-bottom: 50px">
     </form>
     <script type="text/javascript">
         'use strict';
@@ -50,13 +50,13 @@
                     form: {
                         fields: [
                             { display: "DEVICE_ID", name: "DEVICE_ID", type: "hidden" },
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.auditing }, options: { disabled: true }, group: "基础信息" },
-                            { display: "设备编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "立卡日期", name: "CARD_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "设备机型", name: "BOM_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "记录状态", name: "AUDITING", type: "hidden" },
+                            { display: "设备编号", name: "DEVICE_NO", newline: false, width: 300, type: "text", options: {}, validate: { required: true }, group: "基础信息" },
+                            { display: "立卡日期", name: "CARD_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "设备名称", name: "DEVICE_NAME", newline: false, width: 300, type: "text", options: {} },
+                            { display: "设备机型", name: "BOM_NAME", newline: false, width: 300, type: "text", options: {} },
                             {
-                                display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.devicetype }, options: {
+                                display: "设备类别", name: "TYPE_NAME", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.devicetype }, validate: { required: true }, options: {
                                     onChangeValue: function (input, value, g) {
                                         
                                         if (value) {
@@ -71,10 +71,10 @@
                                     }
                                 }
                             },
-                            { display: "设备机型", name: "TYPE_ID", newline: false, upper: true, type: "hidden" },
-                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "设备机型", name: "TYPE_ID", newline: false, width: 300, type: "hidden" },
+                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, width: 300, type: "text", options: {} },
                             {
-                                display: "使用部门", name: "DEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                display: "使用部门", name: "DEPT_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
                                     onChangeValue: function (input, value, g) {
                                         
                                         if (value) {
@@ -90,7 +90,7 @@
                                 }
                             },
                             {
-                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                display: "维保部门", name: "WDEPT_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
                                     onChangeValue: function (input, value, g) {
                                         
                                         if (value) {
@@ -105,10 +105,10 @@
                                     }
                                 }
                             },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "hidden" },
-                            { display: "维保部门", name: "WDEPT_NAME", newline: false, upper: true, type: "hidden" },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, width: 300, type: "hidden" },
+                            { display: "维保部门", name: "WDEPT_NAME", newline: false, width: 300, type: "hidden" },
                             {
-                                display: "负责人", name: "CARD_USERID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.user }, options: {
+                                display: "负责人", name: "CARD_USERID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.user }, options: {
                                     onChangeValue: function (input, value, g) {
                                         
                                         if (value) {
@@ -123,46 +123,45 @@
                                     }
                                 }
                             },
-                            { display: "负责人", name: "CARD_USER", newline: false, upper: true, type: "hidden" },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "启用日期", name: "REV_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "当前管理状态", name: "STATUS", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.assetStatus }, options: {} },
-                            { display: "状态变动日期", name: "STATUS_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
-                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {}, group: "船舶/设备信息" },
-                            { display: "制造厂", name: "FACTORY", newline: false, upper: true, type: "text", options: {} },
-                            { display: "出厂编号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "出厂日期", name: "OUT_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "生产用途", name: "PURPOSE", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.purpose }, options: {} },
-                            { display: "图号", name: "GRAPH_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "船舶类型", name: "SHIP_TYPE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "船舶识别号", name: "SHIP_ID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "船长(米)", name: "SHIP_LENGTH", newline: false, upper: true, type: "float", options: {} },
-                            { display: "型宽(米)", name: "SHIP_WIDTH", newline: false, upper: true, type: "float", options: {} },
-                            { display: "型深(米)", name: "SHIP_DEPTH", newline: false, upper: true, type: "float", options: {} },
-                            { display: "吃水(米)", name: "SHIP_DRAFT", newline: false, upper: true, type: "float", options: {} },
-                            { display: "主机功率", name: "MAIN_POWER", newline: false, upper: true, type: "text", options: {} },
-                            { display: "副机功率", name: "SECOND_POWER", newline: false, upper: true, type: "text", options: {} },
-                            { display: "航速", name: "SPEED", newline: false, upper: true, type: "text", options: {} },
-                            { display: "拖力", name: "DRAG_FORCE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "总吨", name: "TOTAL_TON", newline: false, upper: true, type: "text", options: {} },
-                            { display: "净吨", name: "PURE_TON", newline: false, upper: true, type: "text", options: {} },
-                            { display: "坞修日期(三年)", name: "REP_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "是否环保设备", name: "IS_GREEN", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.yesno }, options: {} },
-                            { display: "坞修日期(五年)", name: "REP_DATE5", newline: false, upper: true, type: "date", options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text", options: {}, group: "财务信息" },
-                            { display: "财务分类", name: "FINAN_TYPE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "当前折旧月度", name: "DEP_MONTH", newline: false, upper: true, type: "date", options: {} },
-                            { display: "当前累计折旧", name: "DEP_VALUE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "安装及杂费(元)", name: "INSTALL_FEE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "单价(元)", name: "PRICE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "原值(元)", name: "ORG_VALUE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "净值(元)", name: "NET_VALUE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "使用年限(年)", name: "USE_YEAR", newline: false, upper: true, type: "float", options: {} },
-                            { display: "净残值比例(%)", name: "NET_RATE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "年折旧率(%)", name: "DEP_RATE", newline: false, upper: true, type: "float", options: {} },
-                            { display: "资产来源", name: "ASSET_SOURCE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "参数组", name: "PARAMS", newline: false, upper: true, type: "text", options: { disabled: true }, group: "其他信息" },
-                            { display: "备注", name: "MEMO", newline: false, width: 880 ,upper: true, type: "textarea", options: {} },
+                            { display: "负责人", name: "CARD_USER", newline: false, width: 300, type: "hidden" },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "启用日期", name: "REV_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "当前管理状态", name: "STATUS", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.assetStatus }, options: {} },
+                            { display: "状态变动日期", name: "STATUS_DATE", newline: false, width: 300, type: "date", options: { disabled: true } },
+                            { display: "供应商", name: "PROVIDER_NAME", newline: false, width: 300, type: "text", options: {}, group: "船舶/设备信息" },
+                            { display: "制造厂", name: "FACTORY", newline: false, width: 300, type: "text", options: {} },
+                            { display: "出厂编号", name: "OUT_CODE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "出厂日期", name: "OUT_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "生产用途", name: "PURPOSE", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.purpose }, options: {} },
+                            { display: "图号", name: "GRAPH_NO", newline: false, width: 300, type: "text", options: {} },
+                            { display: "船舶类型", name: "SHIP_TYPE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "船舶识别号", name: "SHIP_ID", newline: false, width: 300, type: "text", options: {} },
+                            { display: "船长(米)", name: "SHIP_LENGTH", newline: false, width: 300, type: "float", options: {} },
+                            { display: "型宽(米)", name: "SHIP_WIDTH", newline: false, width: 300, type: "float", options: {} },
+                            { display: "型深(米)", name: "SHIP_DEPTH", newline: false, width: 300, type: "float", options: {} },
+                            { display: "吃水(米)", name: "SHIP_DRAFT", newline: false, width: 300, type: "float", options: {} },
+                            { display: "主机功率", name: "MAIN_POWER", newline: false, width: 300, type: "text", options: {} },
+                            { display: "副机功率", name: "SECOND_POWER", newline: false, width: 300, type: "text", options: {} },
+                            { display: "航速", name: "SPEED", newline: false, width: 300, type: "text", options: {} },
+                            { display: "拖力", name: "DRAG_FORCE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "总吨", name: "TOTAL_TON", newline: false, width: 300, type: "text", options: {} },
+                            { display: "净吨", name: "PURE_TON", newline: false, width: 300, type: "text", options: {} },
+                            { display: "坞修日期(三年)", name: "REP_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "是否环保设备", name: "IS_GREEN", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.yesno }, options: {} },
+                            { display: "坞修日期(五年)", name: "REP_DATE5", newline: false, width: 300, type: "date", options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", newline: false, width: 300, type: "text", options: {}, group: "财务信息" },
+                            { display: "财务分类", name: "FINAN_TYPE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "当前折旧月度", name: "DEP_MONTH", newline: false, width: 300, type: "date", options: {} },
+                            { display: "当前累计折旧", name: "DEP_VALUE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "安装及杂费(元)", name: "INSTALL_FEE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "单价(元)", name: "PRICE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "原值(元)", name: "ORG_VALUE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "净值(元)", name: "NET_VALUE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "使用年限(年)", name: "USE_YEAR", newline: false, width: 300, type: "float", options: {} },
+                            { display: "净残值比例(%)", name: "NET_RATE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "年折旧率(%)", name: "DEP_RATE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "资产来源", name: "ASSET_SOURCE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "备注", name: "MEMO", newline: false, width: 1146, type: "textarea", options: {} },
                         ]
                     }
                 };
@@ -189,7 +188,8 @@
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    me.mainform.setOrginData({ AUDITING: "0" });
+                    //注：原默认为未提交，现默认为已提交，2023.10.07
+                    me.mainform.setOrginData({ AUDITING: "1" });
                 }
                 else {
                     LG.ajax({

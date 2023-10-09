@@ -27,7 +27,6 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
                             { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, upper: true, type: "text", options: {} },
                             {
                                 display: "出库日期", name: "_search_OUT_DATE", dbname: "OUT_DATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
@@ -46,7 +45,8 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
+
                             { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", },
                             { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", },
                             { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text", },
