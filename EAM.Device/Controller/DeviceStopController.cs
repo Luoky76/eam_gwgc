@@ -28,6 +28,7 @@ namespace EAM.Device.controller
             return AjaxResult.Success(new
             {
                 stopSource = comboxData["StopSource"],
+                repType = comboxData["RepType"],
                 deviceInfo = comboxData["DeviceInfo"],
                 malType = comboxData["MalType"],
             }, "成功");

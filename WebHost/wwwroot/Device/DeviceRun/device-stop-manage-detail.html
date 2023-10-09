@@ -25,7 +25,8 @@
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             runStatus: [],
-            stopSource : [],
+            stopSource: [],
+            repType: [],
             malType : [],
             deviceInfo: [],
             start : null,
@@ -94,7 +95,7 @@
                             { display: "分析人ID", name: "CHECK_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "分析部门", name: "CHECK_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "分析日期", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "故障分类", name: "MAL_TYPE_NAME", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.malType } },
+                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.repType } },
                             { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", validate: { required: true }, options: {} },
                             { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
                             { display: "后续措施", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
@@ -108,7 +109,7 @@
                             { display: "分类ID", name: "TYPE_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "故障报修ID", name: "REPORT_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "故障台账ID", name: "PROBLEM_ID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "故障分类ID", name: "MAL_TYPE_ID", newline: false, upper: true, type: "hidden", options: {} },
+                            //{ display: "故障分类ID", name: "MAL_TYPE_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "分析部门ID", name: "CHECK_DEPTID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "主键", name: "RUN_STOP_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "添加人ID", name: "CREATE_USERID", newline: false, upper: true, type: "hidden", options: {} },
@@ -160,6 +161,7 @@
                         me.stopSource = data.stopSource;
                         me.malType = data.malType;
                         me.deviceInfo = data.deviceInfo;
+                        me.repType = data.repType;
                     },
                     error: function (message) {
                         LG.showError(message);

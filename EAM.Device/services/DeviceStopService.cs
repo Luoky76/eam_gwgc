@@ -33,6 +33,7 @@ namespace EAM.Device.services
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "StopSource",null},
                 { "MalType",null},
+                { "RepType",null},
                 { "DeviceInfo",null},
             });
         }
