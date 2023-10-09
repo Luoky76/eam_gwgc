@@ -54,8 +54,8 @@
                     },
                     grid: {
                         columns: [
+                            { display: "已提交", name: "AUDITING_B", width: 100, type: "chk" },
 
-                            { display: "记录状态", name: "AUDITING_B", dbname: "AUDITING_B", width: 100, type: "select", format: { data: me.auditing } },
                             { display: "处理方式", name: "DISPOSE_TYPE", width: 100, type: "select", format: { data: me.disposeType } },
                             { display: "故障状态", name: "FAULT_STATUS", width: 100, type: "select", format: { data: me.faultStatus } },
                             { display: "故障单号", name: "FAULT_CODE", width: 100, type: "text", },

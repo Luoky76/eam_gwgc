@@ -51,7 +51,8 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING_EXE", dbname: "AUDITING_EXE", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "已提交", name: "AUDITING_EXE", width: 100, type: "chk" },
+
                             { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
                             { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
