@@ -43,6 +43,13 @@ namespace Gksyb.Server.Controllers.Message
             var result = await _service.GetDeviceRepairInfoEchart();
             return AjaxResult.Success(result);
         }
+        [HttpPost]
+        public async Task<AjaxResult> GetDeviceInfoInMonth(int month)
+        {
+            var result = await _service.GetDeviceInfoInMonth(month);
+            return AjaxResult.Success(result);
+        }
+
 
 
     }

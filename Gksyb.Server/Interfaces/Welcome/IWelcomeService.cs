@@ -17,6 +17,8 @@ namespace Gksyb.Server.Interfaces.Welcome
         #endregion
         #region Echart图表数据
         Task<GetDeviceRepairInfoEchartResponse> GetDeviceRepairInfoEchart();
+
+        Task<string> GetDeviceInfoInMonth(int month);
         #endregion
     }
 }
