@@ -57,7 +57,7 @@
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            debugger
+                                            
                                             $("#DEVICE_ID").val(g.selected.DEVICE_ID);
                                             $("#DEVICE_NAME").val(g.selected.DEVICE_NAME);
                                             $("#DEVICE_NO").val(g.selected.DEVICE_NO);
@@ -80,7 +80,7 @@
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             {
-                                display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", options: {
+                                display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {
                                     format: 'yyyy-MM-dd',
                                     onChangeValue: function (input, value, g) {
                                         me.updateWorkHours(value, $('#PLAN_END_DATE').val());
@@ -88,7 +88,7 @@
                                 }, group: "维修计划-指导确认信息"
                             },
                             {
-                                display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", options: {
+                                display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {
                                     format: 'yyyy-MM-dd',
                                     onChangeValue: function (input, value, g) {
                                         me.updateWorkHours($('#PLAN_START_DATE').val(), value);
