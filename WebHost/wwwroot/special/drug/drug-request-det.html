@@ -533,6 +533,7 @@
             //保存前验证
             vertifyBeforeSave: function () {
                 var me = this;
+                me.grid.endEdit();
                 var formData = me.mainform.getData();
                 var girdData = me.grid.getData();
                 for (let item of girdData) {

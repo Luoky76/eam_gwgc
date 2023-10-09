@@ -719,6 +719,8 @@
             //保存需求明细表前验证
             vertifyBeforeSaveRequest: function () {
                 var me = this;
+                me.requestGrid.endEdit();
+                me.collectGrid.endEdit();
                 //判断采购数量是否合理，是否全数购买
                 var data = me.requestGrid.getData();
                 for (let i = 0; i < data.length; ++i) {
