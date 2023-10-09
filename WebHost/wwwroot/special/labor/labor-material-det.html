@@ -282,7 +282,7 @@
                         onclick: function () {
                             me.save();
                             //子表有修改而未保存时，保存子表
-                            if (me.gird && me.grid.isDataChanged) me.saveGrid();
+                            if (me.grid && me.grid.isDataChanged) me.saveGrid();
                         }.bind(me)
                     });
                 }
@@ -333,7 +333,7 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {

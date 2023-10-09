@@ -23,6 +23,9 @@
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -34,7 +37,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk" },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk", hide: true },
                             { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
                             { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
@@ -69,10 +72,6 @@
             grid: null,
             searchForm: null,
             buttons: null,  
-            auditingData: [
-                { ID: "0", TEXT: "未提交", VALUE: "0" },
-                { ID: "1", TEXT: "已提交", VALUE: "1" }
-            ],
             devicetype: [
                 { ID: "1", TEXT: "船舶" },
                 { ID: "2", TEXT: "设备"}
@@ -203,7 +202,7 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function (rowdata) { //修改
+            view: function (rowdata) { //查看
                 var me = this;
                 var selected = me.grid.getSelectedRow();
 
@@ -212,10 +211,10 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
-                        title: '查看',
+                        title: '[查看]船舶卡片',
                         url: "device-card-detail.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
@@ -242,8 +241,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '设备随机资料',
                         url: "device-doc.html?MenuNo=" + me.menuNo,
@@ -272,8 +271,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '设备参数',
                         url: "device-param.html?MenuNo=" + me.menuNo,
@@ -302,8 +301,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1200,
-                        height: 650,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '重大改造履历',
                         url: "device-remould.html?MenuNo=" + me.menuNo,
@@ -361,10 +360,10 @@
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: 1200,
-                    height: 650,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]',
+                    title: '[新增]船舶卡片',
                     url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,
@@ -386,30 +385,27 @@
                     LG.showError("请选择一行")
                     return
                 }
-                if (selected.AUDITING == "1") {
-                    LG.tip('已提交，无法修改!');
-                } else {
-                    if (selected) {
-                        var sid = selected.DEVICE_ID;
-                        $.ligerDialog.open({
-                            width: 1200,
-                            height: 650,
-                            allowClose: true,
-                            title: '[修改]',
-                            url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                            isHidden: false,
-                            showMax: false,
-                            showToggle: false,
-                            showMin: false,
-                            isResize: true,
-                            slide: false,
-                            onClosed: me.reload.bind(me),
-                            data: { "sid": sid }
-                        });
-                    }
-                    else {
-                        LG.tip('请选择行!');
-                    }
+                //注：原为已提交不可修改，现改为均可修改，2023.10.07
+                if (selected) {
+                    var sid = selected.DEVICE_ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[修改]船舶卡片',
+                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
                 }
             },
             save: function () { //保存
@@ -448,20 +444,16 @@
                     var selected = me.grid.getSelectedRows();
                     if (selected.length > 0) {
                         for (var i = 0; i < selected.length; i++) {
-                            if (selected[i].AUDITING == "1") {
-                                LG.tip('已提交，无法删除!');
-                                break;
-                            }
-                            else {
-                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                                    if (confirm) {
-                                        for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                            me.grid.deleteRow(selected[i]);
-                                        }
-                                        me.save();
+                            //注：原为已提交不可修改，现改为均可修改，2023.10.07
+                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                if (confirm) {
+                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                        me.grid.deleteRow(selected[i]);
                                     }
-                                }); break;
-                            }
+                                    me.save();
+                                }
+                            });
+                            break;
                         }
                     } else {
                         LG.tip('请选择行!');

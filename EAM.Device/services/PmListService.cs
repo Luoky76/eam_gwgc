@@ -8,6 +8,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Http;
@@ -70,13 +71,13 @@ namespace EAM.Device.Services
                 {
                     zhouqi = c.CYCLE switch
                     {
-                        "每周" => "0.03",
-                        "月度" => "0.1",
-                        "季度" => "0.3",
-                        "半年" => "0.5",
-                        "年度" => "1",
-                        "2.5年" => "2.5",
-                        "5年" => "2.5",
+                        "每周" => "每周",
+                        "月度" => "月度",
+                        "季度" => "季度",
+                        "半年" => "半年",
+                        "年度" => "年度",
+                        "2.5年" => "2.5年",
+                        "5年" => "5年",
                         _ => throw new MessageException($"序号为 {c.ID} 的周期数据异常"),
                     };
                 }
@@ -89,10 +90,14 @@ namespace EAM.Device.Services
                         _ => throw new MessageException($"序号为 {c.ID} 的是否附件判断数据异常"),
                     };
                 }
-                if (c.DEPARTMENT != "甲板部" && c.DEPARTMENT != "机舱部")
+
+                var list = await _dbContext.Query<BC_CODE>(d => d.CODE_TYPE == "ship_dept" && d.CODE_CN == c.DEPARTMENT)
+                    .ToListAsync();
+                if (!list.Any())
                 {
                     throw new MessageException($"序号为 {c.ID} 的部门数据异常");
                 }
+
                 //主键生成
                 //var mainKey = GuidHelper.NewSnowflakeId().ToString();
                 var pmlists = c.MapTo<PM_STD_LIST>();
@@ -190,7 +195,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="0.03"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="每周"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
                     foreach (var qrycard in qrycards)
@@ -265,7 +270,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="0.1"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="月度"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
                     foreach (var qrycard in qrycards)
@@ -340,7 +345,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="0.3"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="季度"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
 
@@ -416,7 +421,7 @@ namespace EAM.Device.Services
                 foreach (var department in departments)
                 {
                     var shipDept = department;
-                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="1"&&c.DEPARTMENT == department).ToListAsync();
+                    var qryPmlists = await _dbContext.Query<PM_STD_LIST>().Where(c => c.CYCLE=="年度"&&c.DEPARTMENT == department).ToListAsync();
                     if (!qryPmlists.Any())
                         continue;
                     foreach (var qrycard in qrycards)

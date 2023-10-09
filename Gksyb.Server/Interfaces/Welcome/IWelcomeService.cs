@@ -12,6 +12,11 @@ namespace Gksyb.Server.Interfaces.Welcome
         #region 顶部数据
         Task<GetDeviceRepairCountResponse> GetDeviceRepairCount(DateTime datetime);
 
+        Task<GetTodoListDataCountResponse> GetTodoListData();
+
+        #endregion
+        #region Echart图表数据
+        Task<GetDeviceRepairInfoEchartResponse> GetDeviceRepairInfoEchart();
         #endregion
     }
 }

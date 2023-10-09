@@ -32,6 +32,7 @@
                             { display: "人员编码", name: "_search_USER_CODE", dbname: "USER_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
+     
                     grid: {
                         columns: [
                             { display: "人员编码", name: "USER_CODE", width: 100, type: "text",  editor: { type: 'text'} },
@@ -57,11 +58,12 @@
                             { display: "性别", name: "SEX", width: 100, type: "select", editor: { type: 'select', data: sexselect } },
                             { display: "生日", name: "BIRTHDAY", width: 100, type: "date", editor: { type: 'date', format: "yyyy-MM-dd"} },
                             { display: "是否注销", name: "IS_NOVALID", width: 60, type: "chk", editor: { type: 'chkStr' } },
+                            { display: "尺码数量", name: "Count", width: 100, type: "text", hide: true, editor: { type: 'text' } },
                             {
                                 display: "尺码", name: "ROLE", isSort: false, width: 100, minWidth: 130, type: "text", align: "center", formatType: "select", format: {
                                     data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column) {
-                                        var strHref = `javascript:business.laborSizeSelect(${rowdata.USER_ID})`;
-                                        var strUrl = "<a style=\"color:blue\" href=" + strHref + ">设置</a>";
+                                        var strHref = `javascript:business.laborSizeSelect('${rowdata.USER_ID}')`;
+                                        var strUrl = `<a style=\"color:blue\" href="${strHref}">设置(${rowdata.Count??0})</a>`;
                                         return strUrl;
                                     }
                                 }, export: function (value, rowdata, column) {//导出处理

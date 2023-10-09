@@ -170,14 +170,14 @@
     <div class="content" style="background-color:#e4edf3;min-width:1400px">
         <div class="flex-parent" style="flex-direction: column">
             <div class="flex-parent" style="flex-direction:row-reverse">
-                <div id="mainsearch" style="width: 300px;">
+                <!--<div id="mainsearch" style="width: 300px;">
                     <div class="searchbox">
 
                         <form id="formsearch" class="l-form">
                         </form>
                     </div>
 
-                </div>
+                </div>-->
             </div>
 
             <div style="padding:0px 3px 15px 15px;">
@@ -191,7 +191,7 @@
                                 <span class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div class="font-size-desc" id="warehouseCount"> <span class="font-size-desc">10个</span></div>
+                            <div class="font-size-desc"> <span class="font-size-desc" id="deviceCount">10</span>个</div>
                         </div>
                     </div>
                     <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
@@ -202,7 +202,7 @@
                                 <span class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div id="warehousestorageSum" class="font-size-desc">  <span class="font-size-desc">10单</span> </div>
+                            <div  class="font-size-desc">  <span class="font-size-desc" id="repairCount">10</span>单 </div>
                         </div>
                     </div>
 
@@ -211,10 +211,9 @@
                         <div class="box flex-parent" style="position:relative;background-color:#e76452 ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
                             <div class="font-size-desc">
                                 委外维修单数
-                                <span data-name="累计箱量" class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div class="font-size-subtitle" id="goodsareaSum" style="display: inline">  <span class="font-size-desc">10单</span> </div>
+                            <div class="font-size-subtitle" style="display: inline">  <span class="font-size-desc" id="outrepairCount" >10</span>单 </div>
                         </div>
                     </div>
                     <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
@@ -225,7 +224,7 @@
                                 <span class="font-bigsize-data"></span>
                                 <span class="font-size-subtitle">&nbsp </span>
                             </div>
-                            <div id="warehousestorageSum" class="font-size-desc">  <span class="font-size-desc">10单</span> </div>
+                            <div class="font-size-desc">  <span class="font-size-desc" id="shiprepairCount">10</span> 单</div>
                         </div>
                     </div>
 
@@ -291,29 +290,29 @@
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/ff7b00/fff" alt="预约" style="margin-right: 10px; ">
                                         <div class="h4content">
-                                            <h4 id="warehousestorageSum">1</h4>
-                                            <p>维修单数量</p>
+                                            <h4 id="deviceCount">1</h4>
+                                            <p>设备数量</p>
                                         </div>
                                     </div>
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/ffd500/fff" alt="会议" style="margin-right: 10px;">
                                         <div class="h4content">
-                                            <h4 id="reserve">2</h4>
-                                            <p>委外维修单数量</p>
+                                            <h4 id="repairCount">2</h4>
+                                            <p>维修单数</p>
                                         </div>
                                     </div>
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/00aeff/fff" alt="任务" style="margin-right: 10px;">
                                         <div class="h4content">
-                                            <h4 id="innum">3</h4>
-                                            <p>码头维修单数量</p>
+                                            <h4 id="outrepairCount">3</h4>
+                                            <p>委外维修单数</p>
                                         </div>
                                     </div>
                                     <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
                                         <img src="https://dummyimage.com/50x50/9c27b0/fff" alt="报表" style="margin-right: 10px;">
                                         <div class="h4content">
-                                            <h4 id="outnum">4</h4>
-                                            <p>快修数量</p>
+                                            <h4 id="shiprepairCount">4</h4>
+                                            <p>码头维修单数 </p>
                                         </div>
                                     </div>
                                    
@@ -476,12 +475,11 @@
             outInEchartData: null,
             coalStorageEchartData: null,
             inventoryData: null,
-
+            //设备维修情况（月）图表
             percentEchart: function (data) {
                 var ChartPercent = echarts.init(document.getElementById("percent"));
                 ChartPercent.clear(this.option);//清空数据缓存
-               
-
+         
                 option = {
                     tooltip: {
                         trigger: 'axis',
@@ -501,7 +499,7 @@
                         }
                     },
                     legend: {
-                        data: ['蒸发量', '降水量', '平均温度']
+                        data: ['维修时长', '维修次数']
                     },
                     xAxis: [
                         {
@@ -515,42 +513,42 @@
                     yAxis: [
                         {
                             type: 'value',
-                            name: '水量',
+                            name: '维修时长',
                             min: 0,
                             max: 250,
                             interval: 50,
                             axisLabel: {
-                                formatter: '{value} ml'
+                                formatter: '{value} 小时'
                             }
                         },
                         {
                             type: 'value',
-                            name: '温度',
+                            name: '维修次数',
                             min: 0,
                             max: 25,
                             interval: 5,
                             axisLabel: {
-                                formatter: '{value} °C'
+                                formatter: '{value} 次'
                             }
                         }
                     ],
                     series: [
                         {
-                            name: '蒸发量',
+                            name: '维修时长',
                             type: 'bar',
-                            data: [2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3]
+                            data:  data!=null? data.hourList:[]
                         },
                         {
-                            name: '降水量',
+                            name: '维修次数',
                             type: 'bar',
-                            data: [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3]
+                            data: data != null ? data.RepairList : []
                         },
-                        {
-                            name: '平均温度',
-                            type: 'line',
-                            yAxisIndex: 1,
-                            data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
-                        }
+                        //{
+                        //    name: '平均温度',
+                        //    type: 'line',
+                        //    yAxisIndex: 1,
+                        //    data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+                        //}
                     ]
                 };
 
@@ -634,7 +632,6 @@
                 });
 
             },
-
             //可调配存煤
             coalStorageEchart: function (data) {
                 var ChartcoalStorage = echarts.init(document.getElementById("coalStorage"));
@@ -684,7 +681,6 @@
                     ChartcoalStorage.resize();
                 });
             },
-
             //堆场月均库存
             inventoryBarEchart: function (data) {
                 var ChartinventoryBar = echarts.init(document.getElementById("inventoryBar"));
@@ -804,7 +800,6 @@
                     ChartinventoryBar.resize();
                 });
             },
-
             outInEchartGetData: function () {
                 //var data = LG.ajax({
                 //    async: true,
@@ -820,6 +815,7 @@
                 //    }
                 //});
             },
+
             inventoryEchartGetData: function () {
                 app.inventoryBarEchart(null);
                 app.inventoryPieEchart(null);
@@ -839,52 +835,26 @@
                 //    }
                 //});
             },
+            //设备维修情况（月）图表
             percentEchartGetData: function () {
                 app.percentEchart(null);
-                //var data = LG.ajax({
-                //    async: true,
-                //    url: '/ExternalAPI/DataReport/GetWareHouseUseInfo',
-                //    loading: '正在获取中...',
-                //    data: { "QueryDate": QueryDate },
-                //    success: function (data, message) {
-                //        app.percentEchart(data);
-                //    },
-                //    error: function (message) {
-                //        LG.showError(message);
-                //    }
-                //});
+                var data = LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceRepairInfoEchart',
+                    loading: '正在获取中...',
+                    data: {  },
+                    success: function (data, message) {
+                        debugger;
+                        app.percentEchart(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             coalStorageEchartGetData: function () {
                 app.coalStorageEchart(null);
-                //var data = LG.ajax({
-                //    async: true,
-                //    url: '/ExternalAPI/DataReport/GetCoalStorage',
-                //    loading: '正在获取中...',
-                //    data: { "QueryDate": QueryDate },
-                //    success: function (data, message) {
-                //        var title1 = $(".h4content #warehousestorageSum")[0];
-                //        var title2 = $(".h4content #reserve")[0];
-                //        var title3 = $(".h4content #innum")[0];
-                //        var title4 = $(".h4content #outnum")[0];
-
-                //        title1.innerHTML = (data[title1.id] / 10000).toFixed(2) + "万吨";
-                //        title2.innerHTML = (data[title2.id] / 10000).toFixed(2) + "万吨";
-                //        title3.innerHTML = (data[title3.id] / 10000).toFixed(2) + "万吨";
-                //        title4.innerHTML = (data[title4.id] / 10000).toFixed(2) + "万吨";
-
-
-                //        var result = {};
-                //        result.remainingPercent = (data.residuenum / data.reserve).toFixed(0) * 100
-                //        result.usedPercent = (data.usednum / data.reserve).toFixed(0) * 100
-
-
-
-                //        app.coalStorageEchart(result);
-                //    },
-                //    error: function (message) {
-                //        LG.showError(message);
-                //    }
-                //});
+  
             },
             deviceUpBarEchart: function () {
                 var ChartinventoryBar = echarts.init(document.getElementById("deviceUpBar"));
@@ -962,11 +932,36 @@
             },
 
 
+            GetCarddata: function () {
+                var data = LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceRepairCount',
+                    loading: '正在获取中...',
+                    data: { },
+                    success: function (data, message) {
+                        for (let key in data) {
+                            document.getElementById(key).innerHTML = data[key];
+                        }
+
+
+                      
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+
+
+
             totalGetData: function () {
                 var me = this;
                 var startTime = $("#_search_STARTDATE").val();
 
+
                 //获取数据
+                me.GetCarddata();
+
 
                 me.outInEchartGetData();
                 me.inventoryEchartGetData();

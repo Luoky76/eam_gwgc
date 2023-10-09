@@ -105,7 +105,39 @@ namespace EAM.Special.Services
 
         public async Task<GridData> laborUserListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<LABOR_USER>().GetGridData(request);
+            //               //
+            var list = await _dbContext.Query<LABOR_USER>()
+                              .LeftJoin<LABOR_SIZE>((a, b) => a.USER_ID == b.USER_ID)
+                              .Select((a, b) => new {
+                                  a.USER_CODE,
+                                  a.USER_NAME,
+                                  a.DEPT_ID,
+                                  a.DEPT_NAME,
+                                  a.USER_ID,
+                                  a.SEX,
+                                  a.BIRTHDAY,
+                                  a.IS_NOVALID,
+                                  b.SIZE_ID
+                              }).GroupBy(g => new {
+                                  g.USER_CODE,
+                                  g.USER_NAME,
+                                  g.DEPT_ID,
+                                  g.DEPT_NAME,
+                                  g.USER_ID,
+                                  g.SEX,
+                                  g.BIRTHDAY,
+                                  g.IS_NOVALID,
+                              }).Select(x=> new {
+                                  x.USER_CODE,
+                                  x.USER_NAME,
+                                  x.DEPT_ID,
+                                  x.DEPT_NAME,
+                                  x.USER_ID,
+                                  x.SEX,
+                                  x.BIRTHDAY,
+                                  x.IS_NOVALID,
+                                  Count = Sql.Count(x.SIZE_ID)
+                              }).GetGridData(request);
             return list;
         }
 
