@@ -16,7 +16,7 @@ namespace Gksyb.Workflow.EventSubscriber
         }
 
         [EventSubscribe(WorkflowEventAction.AddTask)]
-        public async Task AddTaskAsync(MessageInfo info)
+        public async Task AddTaskAsync(MessageInfo<NodeInfo> info)
         {
             info.Code = "ToDo";
             info.Title = $"您有一条新的待办";
@@ -24,16 +24,15 @@ namespace Gksyb.Workflow.EventSubscriber
         }
 
         [EventSubscribe(WorkflowEventAction.ComplateTask)]
-        public async Task ComplateTaskAsync(MessageInfo info)
+        public async Task ComplateTaskAsync(MessageInfo<NodeInfo> info)
         {
-            var nodeInfo = info.Data as NodeInfo;
             info.Code = "ToDoComplate";
-            info.Content = $"您的《{info.Title}》申请已审批，结果为{NodeStatus.GetDesc(nodeInfo.NodeStatus)}";
+            info.Content = $"您的《{info.Title}》申请已审批，结果为{NodeStatus.GetDesc(info.Data?.NodeStatus)}";
             await _service.SendAsync(info, true);
         }
 
         [EventSubscribe(WorkflowEventAction.AddShare)]
-        public async Task AddShareAsync(MessageInfo info)
+        public async Task AddShareAsync(MessageInfo<NodeInfo> info)
         {
             info.Code = "ToRead";
             info.Content = $"您有一条新的待阅";

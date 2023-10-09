@@ -135,4 +135,16 @@
         /// </summary>
         public string Appname { get; set; }
     }
+
+    /// <summary>
+    /// 消息
+    /// </summary>
+    public class MessageInfo<T> : MessageInfo
+    {
+        public new T Data
+        {
+            get { return (T)base.Data; }
+            set { base.Data = value; }
+        }
+    }
 }

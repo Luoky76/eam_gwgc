@@ -190,7 +190,7 @@
                 }
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
                 if (me.nid) {
-                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")));
+                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
                 }
                 else {
                     if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
@@ -259,7 +259,7 @@
                     loading: '正在获取中...',
                     data: { Id: me.nid, FlowId: me.sid, FlowCode: me.code },
                     success: function (data) {
-                        me.data = data;
+                        me.data = data || {};
                         me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
                         if (data.NodeStatus && data.NodeStatus !== 1) {
                             me.isView = true;

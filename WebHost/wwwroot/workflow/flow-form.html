@@ -87,12 +87,14 @@
                 me.mainform.setOrginData({ FLOW_FORM: me.dialogData.FLOW_FORM },true);
                 me.mainform.focus();
             },
-            confirm: function () { //保存
+            save: function () { //保存
                 var me = this;
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
                 }
+                var data = me.mainform.getData();
+                if (me.callback) me.callback(data);
                 me.close(true);
             },
             closeQuery: function (callback) {

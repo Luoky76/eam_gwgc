@@ -224,9 +224,9 @@ namespace Gksyb.Workflow.Services.Workflow
         private async Task Init(FlowExecuteInfo info)
         {
             if (isInit) return;
-            var flow = await _dbContext.Query<WF_FLOW>().Where(c => c.FLAG == "1")
+            var flow = await _dbContext.Query<WF_FLOW>()
                 .WhereIfNotNullOrEmpty(info.FlowId, c => c.ID == info.FlowId)
-                .WhereIfNotNullOrEmpty(info.FlowCode, c => c.FLOW_CODE == info.FlowCode).FirstOrDefaultAsync();
+                .WhereIfNotNullOrEmpty(info.FlowCode, c => c.FLOW_CODE == info.FlowCode && c.FLAG == "1").FirstOrDefaultAsync();
             MessageException.ThrowIf(flow == null, $"找不到编号{info.FlowId ?? info.FlowCode}的流程");
             var graphData = flow.FLOW_CONTENT.ToObject<FlowGraphData>();
             Nodes.Clear();
