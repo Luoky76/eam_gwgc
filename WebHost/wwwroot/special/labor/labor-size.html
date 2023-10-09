@@ -174,7 +174,6 @@
                         { display: "物资名称", name: "SP_NAME", width: 300, type: "text" }
                     ],
                     callback: function (values, rows) {
-                        debugger;
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
                             if (!currentSet.has(item.SP_CODE)) {
