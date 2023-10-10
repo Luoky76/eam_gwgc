@@ -83,7 +83,7 @@
                                     },
                                 }
                             },
-                            { display: "维修工时", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
+                            { display: "维修工时(h)", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
                             { display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             {
@@ -156,9 +156,8 @@
                     LG.showError("实际完工时间不能大于当前时间！");
                     return;
                 }
-
                 var timeDiff = complete - start;
-                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                var minutesDiff = timeDiff / (1000 * 60 * 60).toFixed(2);
                 $('#EXE_HOUR').val(minutesDiff);
             },
             loadComboxData: function () {

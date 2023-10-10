@@ -22,6 +22,10 @@
         'use strict';
         var rootPath = "../";
         window["encryptUrl"] = ["/Apis/"];
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             dialogData: {},
             dialogData: null,
@@ -44,7 +48,6 @@
                             { display: "资料名称", name: "DOC_NAME", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "份数", name: "DOC_NUM", width: 100, type: "int",  editor: { type: 'int'} },
                             { display: "存放地点", name: "DOC_SITE", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "附件", name: "DOC_ATTACH", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "说明", name: "DOC_EXPLAIN", width: 100, type: "text",  editor: { type: 'text'} },
                             { display: "设备ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "主键", name: "DOC_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true }
@@ -140,6 +143,9 @@
                         case "modify":
                             me.modify();
                             break;
+                        case "upload":
+                            me.upload();
+                            break;
                         case "delete":
                             me.delete();
                             break;
@@ -161,6 +167,42 @@
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            upload: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        if (selected[0].DOC_ID != undefined) {
+                            me.f_rowAttachManage(selected[0].DOC_ID);
+                        } else {
+                            LG.showError("请先保存该记录再上传！");
+                        }
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                isView = false;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "DEVICE_DOC"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reload();
+                    }
+                });
             },
             add: function () { //新增
                 var me = this;

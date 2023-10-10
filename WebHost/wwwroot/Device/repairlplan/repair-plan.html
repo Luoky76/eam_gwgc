@@ -215,6 +215,7 @@
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
+                        debugger
                         LG.ajax({
                             jsToken: true,
                             url: 'Repair/RepairPlan/ItemList',
@@ -235,7 +236,7 @@
                                 LG.showError(message);
                             }
                         })
-                        if (flag)
+                        if (!flag)
                             return;
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));

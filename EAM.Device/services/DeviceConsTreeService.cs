@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class DeviceConsTreeService :  IDeviceConsTreeService
+    public class DeviceConsTreeService : IDeviceConsTreeService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -195,7 +195,8 @@ namespace EAM.Device.services
                 {
                     var queryType = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
                         .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID).FirstOrDefaultAsync();
-                    entity.TYPE_ID = queryType.TYPE_ID;
+                    if (queryType!=null)
+                        entity.TYPE_ID = queryType.TYPE_ID;
 
                 }
             }

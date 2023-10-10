@@ -1,7 +1,9 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -19,11 +21,13 @@ namespace EAM.Device.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICorpService _corpService;
 
-        public DeviceVaryService(IDbContext dbContext, IComboxDataService comboxDataService)
+        public DeviceVaryService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _corpService = corpService;
         }
 
         /// <summary>
@@ -35,6 +39,7 @@ namespace EAM.Device.Services
             var result = await _comboxDataService.Get(new Dictionary<string, object>(){
                     {"VaryType",null }
             });
+            result.TryAdd("Corp", await _corpService.ComboxDataAsync());
             return result;
         }
 
@@ -52,6 +57,8 @@ namespace EAM.Device.Services
                     c.AUDITING,
                     c.VARY_CODE,
                     c.EIDT_USER,
+                    c.DEPT_ID,
+                    c.WDEPT_ID,
                     c.DEPT_NAME,
                     c.WDEPT_NAME,
                     c.APPLY_DATE,
