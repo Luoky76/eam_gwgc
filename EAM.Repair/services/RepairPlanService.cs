@@ -134,6 +134,7 @@ namespace EAM.Repair.services
                     c.DEPT_NAME,
                     c.WSEC_DEPT,
                     c.MAINT_TYPE,
+                    c.AUDIT_TIME,
                     c.DEAL_TYPE,
                     c.FAULT_DESCRIBE,
                     c.PLAN_MEMO,
@@ -190,6 +191,7 @@ namespace EAM.Repair.services
                 exe.PLAN_MEMO = request.PLAN_MEMO;
                 exe.PLAN_ID = request.PLAN_ID;
                 exe.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
+                request.AUDIT_TIME = DateTime.Now;
 
                 string type = "WXSS" + DateTime.Now.ToString("yyyyMM");
                 string def = type + "0000";

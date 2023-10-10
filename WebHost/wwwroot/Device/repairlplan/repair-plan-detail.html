@@ -81,7 +81,7 @@
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             {
                                 display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {
-                                    format: 'yyyy-MM-dd',
+                                    format: 'yyyy-MM-dd HH:mm',
                                     onChangeValue: function (input, value, g) {
                                         me.updateWorkHours(value, $('#PLAN_END_DATE').val());
                                     },
@@ -89,7 +89,7 @@
                             },
                             {
                                 display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {
-                                    format: 'yyyy-MM-dd',
+                                    format: 'yyyy-MM-dd HH:mm',
                                     onChangeValue: function (input, value, g) {
                                         me.updateWorkHours($('#PLAN_START_DATE').val(), value);
                                     },

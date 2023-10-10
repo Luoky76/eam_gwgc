@@ -274,7 +274,7 @@
 
 
             <!--第五层  储煤情况-->
-            <div style="margin:0px 10px 50px 15px;">
+            <!--<div style="margin:0px 10px 50px 15px;">
                 <div>
                     <div class="box1 fade-in-up" style="width:100%;height:300px;">
                         <div class="box flex-parent" style="padding:8px;border-radius:5px;flex-direction:row">
@@ -326,9 +326,9 @@
 
                 </div>
 
-            </div>
+            </div>-->
             <!--第六层 堆场月均库存-->
-            <div style="margin:20px 10px 100px 15px;">
+            <!--<div style="margin:20px 10px 100px 15px;">
                 <div>
                     <div class="box1 fade-in-up" style="width:100%;height:300px;">
                         <div class="box flex-parent" style="padding:8px;border-radius:5px;flex-direction:row">
@@ -352,9 +352,9 @@
 
                 </div>
 
-            </div>
+            </div>-->
             <!--第七层 当前出入库情况-->
-            <div style="margin:30px 10px 80px 15px;">
+            <!--<div style="margin:30px 10px 80px 15px;">
                 <div>
                     <div class="flex-parent" style="width:100%;flex-direction:row">
                         <div class="box1 fade-in-up" style="height:330px;width:50%">
@@ -430,7 +430,7 @@
                     </div>
 
                 </div>
-            </div>
+            </div>-->
 
 
 
@@ -473,14 +473,13 @@
         var app = {
             percentEchartData: null,
             outInEchartData: null,
-            coalStorageEchartData: null,
             inventoryData: null,
             //设备维修情况（月）图表
             percentEchart: function (data) {
                 var ChartPercent = echarts.init(document.getElementById("percent"));
                 ChartPercent.clear(this.option);//清空数据缓存
          
-                option = {
+                let option = {
                     tooltip: {
                         trigger: 'axis',
                         axisPointer: {
@@ -536,7 +535,7 @@
                         {
                             name: '维修时长',
                             type: 'bar',
-                            data:  data!=null? data.hourList:[]
+                            data:  data!=null? data.HourList:[]
                         },
                         {
                             name: '维修次数',
@@ -553,287 +552,26 @@
                 };
 
 
-                ChartPercent.setOption(option);
+               option && ChartPercent.setOption(option,true);
+                ChartPercent.getZr().off('click');
+                ChartPercent.getZr().on('click', function (params) {
+                    let pointInPixel = [params.offsetX, params.offsetY];
+                    if (ChartPercent.containPixel('grid', pointInPixel)) {
+                        let pointInGrid = ChartPercent.convertFromPixel({
+                            seriesIndex: 0
+                        }, pointInPixel);
+                        let xIndex = pointInGrid[0]; 
+                        let handleIndex = Number(xIndex);
+                        var op = ChartPercent.getOption();
+                        var month = op.xAxis[0].data[handleIndex].replace("月", "");
+                        app.deviceUpBarGetData(month);
+                        ChartPercent.resize()
+                    };
+                });
                 window.addEventListener("resize", function () {
-
                     ChartPercent.resize();
                 });
-            },
-            //近7日出入库情况
-            outInEchart: function (data) {
-                var ChartoutIn = echarts.init(document.getElementById("outIn"));
-                ChartoutIn.clear(this.option);//清空数据缓存
-                let option = {
-                    color: ['#73c0de', '#fac858', '#5470c6'],
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: {
-                            type: 'shadow'
-                        }
-                    },
-                    legend: {},
-                    grid: {
-                        left: '3%',
-                        right: '4%',
-                        bottom: '3%',
-                        containLabel: true
-                    },
-                    xAxis: [
-                        {
-                            type: 'category',
-                            data: null
-                        }
-                    ],
-                    yAxis: [
-                        {
-                            type: 'value',
-                            axisLabel: { formatter: '{value}' },
-                            name: '(万吨)'
-                        }
-                    ],
-                    series: [
-                        {
-                            name: '出库量',
-                            type: 'bar',
-                            barGap: 0,
-                            emphasis: {
-                                focus: 'series'
-                            },
-                            data: null
-                        },
-                        {
-                            name: '入库量',
-                            type: 'bar',
-                            barGap: 0,
-                            emphasis: {
-                                focus: 'series'
-                            },
-                            data: null
-                        },
-                        {
-                            name: '库存量',
-                            type: 'bar',
-                            barGap: 0,
-                            emphasis: {
-                                focus: 'series'
-                            },
-                            data: null
-                        },
-
-
-
-
-                    ]
-                };
-                ChartoutIn.setOption(option);
-                window.addEventListener("resize", function () {
-
-                    ChartoutIn.resize();
-                });
-
-            },
-            //可调配存煤
-            coalStorageEchart: function (data) {
-                var ChartcoalStorage = echarts.init(document.getElementById("coalStorage"));
-                ChartcoalStorage.clear(this.option);//清空数据缓存
-
-
-                // 配置环形饼图
-                var option = {
-                    title: {
-                        left: 'center'
-                    },
-                    tooltip: {
-                        trigger: 'item',
-                        formatter: '{a} <br/>{b} : {c} ({d}%)'
-                    },
-                    legend: {
-                        top: 'top',
-                        data: ['维修单', '委外单', '码头维修单', '快修数量']
-                    },
-                    series: [
-                        {
-                            name: '访问来源',
-                            type: 'pie',
-                            radius: '55%',
-                            center: ['50%', '60%'],
-                            data: [
-                                { value: 335, name: '维修单' },
-                                { value: 310, name: '委外单' },
-                                { value: 234, name: '码头维修单' },
-                                { value: 135, name: '快修数量' },
-
-                            ],
-                            emphasis: {
-                                itemStyle: {
-                                    shadowBlur: 10,
-                                    shadowOffsetX: 0,
-                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                                }
-                            }
-                        }
-                    ]
-                };
-
-                ChartcoalStorage.setOption(option);
-                window.addEventListener("resize", function () {
-
-                    ChartcoalStorage.resize();
-                });
-            },
-            //堆场月均库存
-            inventoryBarEchart: function (data) {
-                var ChartinventoryBar = echarts.init(document.getElementById("inventoryBar"));
-                ChartinventoryBar.clear(this.option);//清空数据缓存
-                let option = {
-                    color: ['#73c0de', '#fac858', '#5470c6'],
-                    tooltip: {
-                        trigger: 'axis',
-                        axisPointer: {
-                            type: 'shadow'
-                        }
-                    },
-                    legend: {},
-                    grid: {
-                        left: '3%',
-                        right: '4%',
-                        bottom: '3%',
-                        containLabel: true
-                    },
-                    xAxis: [
-                        {
-                            type: 'category',
-                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-                        }
-                    ],
-                    yAxis: [
-                        {
-                            type: 'value',
-                            axisLabel: { formatter: '{value}' },
-                            name: '万吨'
-                        }
-                    ],
-                    series: [
-                        {
-                            name: '动力煤',
-                            type: 'bar',
-                            stack: 'Ad',
-                            emphasis: {
-                                focus: 'series'
-                            },
-                            data: null
-                        },
-                        {
-                            name: '炼焦煤',
-                            type: 'bar',
-                            stack: 'Ad',
-                            emphasis: {
-                                focus: 'series'
-                            },
-                            data: null
-                        },
-                        {
-                            name: '其他',
-                            type: 'bar',
-                            stack: 'Ad',
-                            emphasis: {
-                                focus: 'series'
-                            },
-                            data: null
-                        },
-
-
-
-
-                    ]
-                };
-                ChartinventoryBar.setOption(option);
-                window.addEventListener("resize", function () {
-
-                    ChartinventoryBar.resize();
-                });
-            },
-            inventoryPieEchart: function (data) {
-                var ChartinventoryBar = echarts.init(document.getElementById("inventoryPie"));
-                ChartinventoryBar.clear(this.option);//清空数据缓存
-                let option = {
-                    color: ['#73c0de', '#fac858', '#5470c6'],
-                    tooltip: {
-                        trigger: 'item'
-                    },
-                    legend: {
-                        top: '5%',
-                        left: 'center'
-                    },
-                    series: [
-                        {
-                            name: '',
-                            type: 'pie',
-                            radius: ['40%', '60%'],
-                            avoidLabelOverlap: false,
-                            itemStyle: {
-                                borderRadius: 10,
-                                borderColor: '#fff',
-                                borderWidth: 2
-                            },
-                            label: {
-                                show: false,
-                                position: 'center'
-                            },
-                            emphasis: {
-                                label: {
-                                    show: true,
-                                    fontSize: 40,
-                                    fontWeight: 'bold'
-                                }
-                            },
-                            labelLine: {
-                                show: false
-                            },
-                            data: null
-                        }
-                    ]
-                };
-                ChartinventoryBar.setOption(option);
-                window.addEventListener("resize", function () {
-
-                    ChartinventoryBar.resize();
-                });
-            },
-            outInEchartGetData: function () {
-                //var data = LG.ajax({
-                //    async: true,
-                //    url: '/ExternalAPI/DataReport/GetOutInData',
-                //    loading: '正在获取中...',
-                //    data: { "QueryDate": QueryDate },
-                //    success: function (data, message) {
-                //        app.outInEchartData = data;
-                //        app.outInEchart(app.outInEchartData);
-                //    },
-                //    error: function (message) {
-                //        LG.showError(message);
-                //    }
-                //});
-            },
-
-            inventoryEchartGetData: function () {
-                app.inventoryBarEchart(null);
-                app.inventoryPieEchart(null);
-                //var data = LG.ajax({
-                //    async: true,
-                //    url: '/ExternalAPI/DataReport/GetWarehouseMonthStock',
-                //    loading: '正在获取中...',
-                //    data: { "QueryDate": QueryDate },
-                //    success: function (data, message) {
-                //        app.inventoryData = data;
-                //        let echartdata = OrganaizationData(data);
-                //        app.inventoryBarEchart(echartdata.barData);
-                //        app.inventoryPieEchart(echartdata.pieData);
-                //    },
-                //    error: function (message) {
-                //        LG.showError(message);
-                //    }
-                //});
+         
             },
             //设备维修情况（月）图表
             percentEchartGetData: function () {
@@ -844,7 +582,6 @@
                     loading: '正在获取中...',
                     data: {  },
                     success: function (data, message) {
-                        debugger;
                         app.percentEchart(data);
                     },
                     error: function (message) {
@@ -852,15 +589,27 @@
                     }
                 });
             },
-            coalStorageEchartGetData: function () {
-                app.coalStorageEchart(null);
-  
+            deviceUpBarGetData: function (month) {
+                LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceInfoInMonth',
+                    loading: '正在获取中...',
+                    data: {month:month},
+                    success: function (data, message) {
+                        app.deviceUpBarEchart(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+
+                });
             },
-            deviceUpBarEchart: function () {
+           // 点击后触发月份的图表
+            deviceUpBarEchart: function (data) {
+                debugger;
                 var ChartinventoryBar = echarts.init(document.getElementById("deviceUpBar"));
                 ChartinventoryBar.clear(this.option);//清空数据缓存
-                let
-                    option = {
+                let option = {
                         color: ['#003366', '#006699', '#4cabce', '#e5323e'],
                         tooltip: {
                             trigger: 'axis',
@@ -869,7 +618,7 @@
                             }
                         },
                         legend: {
-                            data: ['设备A', '设备B', '设备C', '设备D']
+                            data: ['维修时长', '维修次数'] 
                         },
                         toolbox: {
                             show: true,
@@ -888,7 +637,7 @@
                             {
                                 type: 'category',
                                 axisTick: { show: false },
-                                data: ['2012', '2013', '2014', '2015', '2016']
+                                data: data != null ? data.DeviceNameList : [] 
                             }
                         ],
                         yAxis: [
@@ -898,40 +647,30 @@
                         ],
                         series: [
                             {
-                                name: '设备A',
+                                name: '维修时长',
                                 type: 'bar',
-                                barGap: 0,
-
-                                data: [320, 332, 301, 334, 390]
+                                data: data != null ? data.HourList : []
                             },
                             {
-                                name: '设备B',
+                                name: '维修次数',
                                 type: 'bar',
-
-                                data: [220, 182, 191, 234, 290]
+                                data: data != null ? data.RepairList : []
                             },
-                            {
-                                name: '设备C',
-                                type: 'bar',
-
-                                data: [150, 232, 201, 154, 190]
-                            },
-                            {
-                                name: '设备D',
-                                type: 'bar',
-
-                                data: [98, 77, 101, 99, 40]
-                            }
                         ]
                     };
-                ChartinventoryBar.setOption(option);
+               option && ChartinventoryBar.setOption(option,true);
+
+
+ 
+
                 window.addEventListener("resize", function () {
 
                     ChartinventoryBar.resize();
                 });
+           
             },
 
-
+            //4个卡片的数值
             GetCarddata: function () {
                 var data = LG.ajax({
                     async: true,
@@ -963,10 +702,9 @@
                 me.GetCarddata();
 
 
-                me.outInEchartGetData();
-                me.inventoryEchartGetData();
+              
                 me.percentEchartGetData();
-                me.coalStorageEchartGetData();
+
                 me.deviceUpBarEchart();
 
             },
@@ -974,9 +712,7 @@
 
                 app.totalGetData();
 
-                //app.coalStorageEchart();
-                //me.inventoryBarEchart();
-                //me.inventoryPieEchart();
+            
 
             }
         };

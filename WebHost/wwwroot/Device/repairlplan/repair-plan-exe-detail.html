@@ -78,8 +78,22 @@
                             { display: "采购方式", name: "COLLECT_METHOD", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "预估维修金额", name: "PLAN_MONEY", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维修内容", name: "REPAIR_MEMO", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "实际开工时间", name: "ACT_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {}, group: "维修实施" },
-                            { display: "实际完工时间", name: "ACT_END_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
+                            {
+                                display: "实际开工时间", name: "ACT_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {
+                                    format: 'yyyy-MM-dd HH:mm',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours(value, $('#ACT_END_DATE').val());
+                                    }
+                                }, group: "维修实施"
+                            },
+                            {
+                                display: "实际完工时间", name: "ACT_END_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {
+                                    format: 'yyyy-MM-dd HH:mm',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours($('#ACT_START_DATE').val(), value);
+                                    }
+                                }
+                            },
                             { display: "维修工时", name: "ACT_STOP_TIME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: true, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "实施提交日期", name: "EIDT_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
@@ -144,6 +158,20 @@
                         LG.showError(message);
                     }
                 });
+            },
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (start >= complete) {
+                    $('#ACT_START_DATE').val("");
+                    $('#ACT_END_DATE').val("");
+                    LG.showError("开始时间不能大于结束时间！");
+                    return;
+                }
+                var timeDiff = complete - start;
+                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                $('#ACT_STOP_TIME').val(minutesDiff);
             },
             loadData: function () {
                 var me = this;

@@ -23,6 +23,7 @@ namespace EAM.Device.Controller
             return AjaxResult.Success(new
             {
                 VaryType = comboxData["VaryType"],
+                Corp = comboxData["Corp"]
             }, "成功");
         }
 

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Gksyb.Server.Services.Services.Dto
 {
-    public class GetDeviceRepairInfoEchartResponse
+    public class GetDeviceInfoInMonthResponse
     {
-        public List<decimal> HourList { get; set; }
+        public List<string> DeviceNameList { get; set; }
         public List<int> RepairList { get; set; }
+        public List<decimal> HourList { get; set; }
     }
 }

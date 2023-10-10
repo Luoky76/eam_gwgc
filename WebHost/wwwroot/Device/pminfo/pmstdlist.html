@@ -40,7 +40,7 @@
                     grid: {
                         columns: [
                             { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
-                            { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", validate: { required: true }, },
+                            { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text" },
                             { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", validate: { required: true }, },
                             { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit }, validate: { required: true }, },
                             { display: "部门", name: "DEPARTMENT", minWidth: 100, type: "select", format: { data: me.maintDept }, validate: { required: true } },
