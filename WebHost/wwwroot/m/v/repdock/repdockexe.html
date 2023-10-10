@@ -231,7 +231,7 @@
 
             { display: "实际开工时间", name: "EXE_BDATE", validate: { required: true }, },
             { display: "实际完工时间", name: "EXE_EDATE", validate: { required: true }, },
-            { display: "维修工时", name: "EXE_HOUR", readOnly: true, },
+            { display: "维修工时(h)", name: "EXE_HOUR", readOnly: true, },
             { display: "实施人", name: "EXE_USER", },
             { display: "实施提交日期", name: "EXE_DATE", readOnly: true, },
             { display: "是否遗留问题", name: "IS_LEAVE", Option: isleave, validate: { required: true }, },
@@ -344,7 +344,7 @@
                         }
 
                         var timeDiff = complete - start;
-                        var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                        var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                         data.EXE_HOUR = minutesDiff;
 
 

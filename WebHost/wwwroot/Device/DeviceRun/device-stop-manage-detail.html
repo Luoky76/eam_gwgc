@@ -84,7 +84,7 @@
                                     },
                                 }
                             },
-                            { display: "总停机台时", name: "STOP_HOURS", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true } },
+                            { display: "总停机台时(h)", name: "STOP_HOURS", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true } },
                             { display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "编制部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
@@ -148,7 +148,7 @@
                 }
 
                 var timeDiff = complete - start;
-                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                 $('#STOP_HOURS').val(minutesDiff);
             },
             loadComboxData: function () {

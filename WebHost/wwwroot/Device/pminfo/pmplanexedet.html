@@ -251,7 +251,7 @@
                                                 // 计算时间差值（单位为毫秒）
                                                 var timeDiff = date2.getTime() - date1.getTime();
                                                 // 将时间差值转换为小时数
-                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 /60 / 60);
                                                 liger.get("workgird").updateCell("WORK_HOUR", minutesDiff, rowdata.record);
                                             }
                                         }
@@ -278,7 +278,7 @@
                                                 // 计算时间差值（单位为毫秒）
                                                 var timeDiff = date2.getTime() - date1.getTime();
                                                 // 将时间差值转换为小时数
-                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 /60 / 60);
                                                 liger.get("workgird").updateCell("WORK_HOUR", minutesDiff, rowdata.record);
 
                                             }
@@ -318,8 +318,8 @@
                 }
 
                 var timeDiff = complete - start;
-                var minutesDiff = Math.round(timeDiff / 1000 / 60);
-                $('#EXE_HOUR').val(minutesDiff);
+                //var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
+                //$('#EXE_HOUR').val(minutesDiff);
             },
             //实施附件管理
             f_exeAttachManage: function (dataid) {

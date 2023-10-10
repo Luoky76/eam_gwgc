@@ -340,7 +340,7 @@
             { display: "故障库编码", name: "FRDB_CODE" },
             { display: "开工时间", name: "ORDER_DATE", validate: { required: true } },
             { display: "完工时间", name: "COMPLETE_DATE", validate: { required: true } },
-            { display: "维修工时(H)", name: "REPAIR_HOURS", readOnly: true },
+            { display: "维修工时(h)", name: "REPAIR_HOURS", readOnly: true },
             { display: "故障及解决方法描述", name: "FAULT_REASON", validate: { required: true } },
             { display: "解决方法", name: "MEASURES", validate: { required: true } },
             { display: "故障处理备注", name: "FAULT_MEMO" }
@@ -513,9 +513,8 @@
                             app.dialog.error("完工时间不能大于当前时间！");
                             return;
                         }
-
                         var timeDiff = complete - start;
-                        var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                        var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                         data.REPAIR_HOURS = minutesDiff;
 
 

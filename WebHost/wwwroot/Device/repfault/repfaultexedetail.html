@@ -170,7 +170,7 @@
                                     },
                                 }
                             },
-                            { display: "维修工时(H)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float", editor: { disabled: true }, options: {} },
+                            { display: "维修工时(h)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float", editor: { disabled: true }, options: {} },
                             { display: "故障及解决方法描述", name: "FAULT_REASON", newline: true, upper: true, validate: { required: true }, width: 775, type: "textarea", options: {} },
                             { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: 775, validate: { required: true }, type: "textarea", options: {} },
                             { display: "故障处理备注", name: "FAULT_MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
@@ -239,7 +239,7 @@
                 }
 
                 var timeDiff = complete - start;
-                var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                 $('#REPAIR_HOURS').val(minutesDiff);
             },
             loadComboxData: function () {

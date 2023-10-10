@@ -256,7 +256,7 @@
             { display: "实际开工时间", name: "REAL_BEGINTIME", },
             { display: "实际完工时间", name: "REAL_ENDTIME", },
             { display: "验收人", name: "CHECK_USER", },
-            { display: "委外停机时间(H)", name: "ACT_STOP_TIME", readOnly: true, },
+            { display: "委外停机时间(h)", name: "ACT_STOP_TIME", readOnly: true, },
             { display: "验收情况", name: "CHECK_DESC", validate: { required: true }, },
         ];
         var detail_popup = app.popup.create({
@@ -369,7 +369,7 @@
                         }
 
                         var timeDiff = complete - start;
-                        var minutesDiff = Math.round(timeDiff / 1000 / 60);
+                        var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                         data.ACT_STOP_TIME = minutesDiff;
 
 
