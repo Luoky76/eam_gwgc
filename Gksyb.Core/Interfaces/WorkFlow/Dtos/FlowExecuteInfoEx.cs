@@ -28,6 +28,12 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public string Title { get; set; }
 
         /// <summary>
+        /// 节点处理人
+        /// </summary>
+        [JsonIgnore]
+        public long? NodeUserId { get; set; }
+
+        /// <summary>
         /// 目标节点信息
         /// </summary>
         [JsonIgnore]

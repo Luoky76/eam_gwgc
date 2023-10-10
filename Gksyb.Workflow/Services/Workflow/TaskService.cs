@@ -57,11 +57,46 @@ namespace Gksyb.Workflow.Services.Workflow
             {
                 await nodeService.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
                 await nodeService.Complate(info);
-                if (info.ToNodeIsEmpty) return;
-                var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
-                info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                toNodeService?.Execute(info);
+                if (!info.ToNodeIsEmpty)
+                {
+                    var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
+                    info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
+                    toNodeService?.Execute(info);
+                }
+                if (info.NodeStatus == NodeStatus.Agree)
+                {
+                    await AutoAgreeAsync(info);
+                }
             });
+        }
+
+        /// <summary>
+        /// 相同处理人自动同意
+        /// </summary>
+        private async Task AutoAgreeAsync(FlowExecuteInfo executeInfo)
+        {
+            var nodeInfos = executeInfo.ToNodeInfos.FindAll(c => c.NodeUserId == executeInfo.NodeUserId);
+            if (nodeInfos.Count < 1) return;
+            var info = executeInfo.MapTo<FlowExecuteInfo>();
+            info.NodeReason = "自动流转";
+            info.ToNodeInfos.Clear();
+            foreach (var nodeInfo in nodeInfos)
+            {
+                info.Id = nodeInfo.Id;
+                info.NodeId = nodeInfo.NodeId;
+                info.Users?.Clear();
+                info.ToNode = null;
+                var nodeService = Nodes.FirstOrDefault(c => c.Id == nodeInfo.NodeId);
+                await nodeService.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
+                await nodeService.Complate(info);
+                if (info.ToNodeIsEmpty)
+                {
+                    var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
+                    info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
+                    toNodeService?.Execute(info);
+                }
+            }
+            await AutoAgreeAsync(info);
         }
 
         /// <summary>
@@ -200,6 +235,7 @@ namespace Gksyb.Workflow.Services.Workflow
             info.FlowId = node.FLOW_ID;
             info.TaskId = node.TASK_ID;
             info.NodeId = node.NODE_ID;
+            info.NodeUserId = node.NODE_USERID;
             await Init(info);
             if (string.IsNullOrWhiteSpace(info.TaskKey) && info.FormData != null)
             {

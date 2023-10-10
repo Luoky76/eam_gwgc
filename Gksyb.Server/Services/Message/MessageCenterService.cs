@@ -77,16 +77,18 @@ namespace Gksyb.Server.Services.Message
                 info.Href = string.IsNullOrWhiteSpace(info.Href) ? model.MSG_HREF : info.Href;
                 info.MobileHref = string.IsNullOrWhiteSpace(info.MobileHref) ? model.MSG_MOBILE_HREF : info.MobileHref;
                 info.Receives ??= new List<string>();
-                if (string.IsNullOrWhiteSpace(model.NOTICE_TYPE)) return true;
-                var userService = _serviceProvider.GetService<IUserService>();
-                var receives = await userService.FindOperators(new FindOperatorInfo()
+                if (!string.IsNullOrWhiteSpace(model.NOTICE_TYPE))
                 {
-                    Type = model.NOTICE_TYPE,
-                    Corp = info.CorpId ?? _user.Corp?.CorpID,
-                    Operators = model.NOTICE_USERS
-                });
-                info.Receives.AddRange(receives.Select(c => c.Account));
-                info.Receives = info.Receives.DistinctAndOrderBy().ToList();
+                    var userService = _serviceProvider.GetService<IUserService>();
+                    var receives = await userService.FindOperators(new FindOperatorInfo()
+                    {
+                        Type = model.NOTICE_TYPE,
+                        Corp = info.CorpId ?? _user.Corp?.CorpID,
+                        Operators = model.NOTICE_USERS
+                    });
+                    info.Receives.AddRange(receives.Select(c => c.Account));
+                    info.Receives = info.Receives.DistinctAndOrderBy().ToList();
+                }
             }
             info.Handle();
             return hasCode;

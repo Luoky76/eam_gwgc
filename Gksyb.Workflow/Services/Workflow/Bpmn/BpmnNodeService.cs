@@ -210,7 +210,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
-        /// 节点转任务
+        /// 完成任务并发布事件
         /// </summary>
         protected async Task ComplateTask(FlowExecuteInfo info)
         {

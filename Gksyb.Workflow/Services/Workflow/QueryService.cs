@@ -211,6 +211,7 @@ namespace Gksyb.Workflow.Services.Workflow
             if (info == null) return info;
             info.Logs = await _dbContext.Query<T3>().Where(a => a.TASK_ID == info.TaskId).Select(a => new TaskLog()
             {
+                Id = a.ID,
                 NodeId = a.NODE_ID,
                 Operator = a.OPERATOR,
                 OperType = a.OPERTYPE,
@@ -218,7 +219,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 OperDetail = a.OPERDETAIL,
                 OperDate = a.OPERDATE
             }).ToListAsync();
-            info.Logs = info.Logs.OrderByDescending(c => c.OperDate).ToList();
+            info.Logs = info.Logs.OrderByDescending(c => c.OperDate).ThenByDescending(c=>c.Id).ToList();
             if (!info.ViewDate.HasValue && _user.UserID == info.NodeUserId)
             {
                 //更新查看时间
