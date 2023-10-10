@@ -272,7 +272,7 @@ namespace EAM.Material.Services
                              a.APPLY_NO,
                              a.USE_MEMO
                             })
-                            .First();
+                            .FirstOrDefault();
                         var req = det.MapTo<SP_ORDER_DETAIL>();
                         req.APPLY_NO = apply?.APPLY_NO;
                         req.USE_MEMO = apply?.USE_MEMO;
@@ -653,7 +653,7 @@ namespace EAM.Material.Services
             var colldet = _dbContext.Query<SP_COLLECT_DET>().Where(t => t.COLLECT_ID == Cid).ToList();
             foreach (var spId in spIds)
             {
-                var COLLECT_DET_ID = colldet.Count > 0 ? colldet.Where(t => t.SP_ID == spId).Select(t => t.COLLECT_DET_ID).First() : "";
+                var COLLECT_DET_ID = colldet.Count > 0 ? colldet.Where(t => t.SP_ID == spId).Select(t => t.COLLECT_DET_ID).FirstOrDefault() : "";
                 var data = appledet.Where(t => t.SP_ID == spId).ToList();
                 var det = data.First();
                 if (string.IsNullOrEmpty(COLLECT_DET_ID))
