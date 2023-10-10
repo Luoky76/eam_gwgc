@@ -33,27 +33,24 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING",   type: "select", editor: { type: 'select', data: me.auditingData, selectBoxHeight: 100 } },
-                            { display: "变动类型", name: "VARY_TYPE",   type: "select", editor: { type: 'select', data: me.varytype, selectBoxHeight: 100 } },
-                            { display: "变动单号", name: "VARY_CODE",   type: "text", editor: { type: 'text' } },
-                            { display: "登记人", name: "EIDT_USER",   type: "text", editor: { type: 'text' } },
-                            { display: "调出使用部门", name: "DEPT_NAME",   type: "text", editor: { type: 'text' } },
-                            { display: "调出二级单位", name: "SEC_DEPT",   type: "text", editor: { type: 'text' } },
-                            { display: "调入使用部门", name: "WDEPT_NAME",   type: "text", editor: { type: 'text' } },
-                            { display: "调入二级单位", name: "WSEC_DEPT",   type: "text", editor: { type: 'text' } },
-                            { display: "申请日期", name: "APPLY_DATE",   type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "变动完成日期", name: "VARY_DATE",   type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "计划启用日期", name: "PLAN_START_DATE",   type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "设备总原值(元)", name: "SUM_ORG_VALUE",   type: "decimal", editor: { type: 'decimal' } },
-                            { display: "设备总净值(元)", name: "SUM_NET_VALUE",   type: "decimal", editor: { type: 'decimal' } },
-                            { display: "总已提折旧(元)", name: "SUM_DEP_VALUE",   type: "decimal", editor: { type: 'decimal' } },
-                            { display: "变卖总金额(元)", name: "SUM_ALLOT_MONEY",   type: "decimal", editor: { type: 'decimal' } },
-                            { display: "变动原因", name: "REASONS",   type: "text", editor: { type: 'text' } },
-                            { display: "设备技术状态", name: "TECH_STATUS",   type: "text", editor: { type: 'text' } },
-                            { display: "备注", name: "MEMO", type: "text", editor: { type: 'text' } },
-                            { display: "鉴定结果", name: "RESULT", type: "text", editor: { type: 'text' } },
-                            { display: "主键", name: "VARY_ID",   type: "text", editor: { type: 'text' }, hide: true },
-                            
+                            { display: "主键", name: "VARY_ID", type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "已提交", name: "AUDITING", minWidth: 120, type: "chk" },
+                            { display: "变动类型", name: "VARY_TYPE", minWidth: 120,  type: "select", editor: { type: 'select', data: me.varytype, selectBoxHeight: 100 } },
+                            { display: "变动单号", name: "VARY_CODE", minWidth: 120,  type: "text", editor: { type: 'text' } },
+                            { display: "登记人", name: "EIDT_USER", minWidth: 120,  type: "text", editor: { type: 'text' } },
+                            { display: "调出使用部门", name: "DEPT_NAME", minWidth: 120,  type: "text", editor: { type: 'text' } },
+                            { display: "调入使用部门", name: "WDEPT_NAME", minWidth: 120,  type: "text", editor: { type: 'text' } },
+                            { display: "申请日期", name: "APPLY_DATE", minWidth: 120, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "变动完成日期", name: "VARY_DATE", minWidth: 120,  type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "计划启用日期", name: "PLAN_START_DATE",  minWidth: 120, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "设备总原值(元)", name: "SUM_ORG_VALUE",  minWidth: 120,  type: "decimal", editor: { type: 'decimal' } },
+                            { display: "设备总净值(元)", name: "SUM_NET_VALUE",  minWidth: 120,  type: "decimal", editor: { type: 'decimal' } },
+                            { display: "总已提折旧(元)", name: "SUM_DEP_VALUE",  minWidth: 120,  type: "decimal", editor: { type: 'decimal' } },
+                            { display: "变卖总金额(元)", name: "SUM_ALLOT_MONEY", minWidth: 120,   type: "decimal", editor: { type: 'decimal' } },
+                            { display: "变动原因", name: "REASONS", minWidth: 120,  type: "text", editor: { type: 'text' } },
+                            { display: "设备技术状态", name: "TECH_STATUS", minWidth: 120,   type: "text", editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", type: "text", minWidth: 120, editor: { type: 'text' } },
+                            { display: "鉴定结果", name: "RESULT", minWidth: 120, type: "text", editor: { type: 'text' } },
                         ]
                     }
                 };
@@ -86,7 +83,7 @@
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    autoWidth: true,
+                    autoWidth: false,
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
@@ -101,7 +98,7 @@
                     },
                     sortName: 'AUDITING',
                     sortOrder: 'asc',
-                    width: '98%',
+                    width: '100%',
                     height: '100%',
                     checkbox: true,
                     onBeforeEdit: function (editParm) {
@@ -147,6 +144,13 @@
                             break;
                         case "save":
                             me.save();
+                            break;
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
                             break;
                         case "Excel":
                             $.ligerDialog.open({
