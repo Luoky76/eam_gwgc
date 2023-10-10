@@ -170,15 +170,19 @@ namespace Gksyb.Server.Services.Message
                 RepairList.Add(info != null ? info.RepairCount : 0);
             }
             GetDeviceRepairInfoEchartResponse result =new GetDeviceRepairInfoEchartResponse ();
-            result.hourList = hourList;
+            result.HourList = hourList;
             result.RepairList = RepairList;
             return result;
 
         }
 
-        public async Task<string> GetDeviceInfoInMonth(int month)
+        public async Task<GetDeviceInfoInMonthResponse> GetDeviceInfoInMonth(int month)
         {
-            var query = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.ACT_END_DATE.HasValue)
+            var Now = await _dbContext.GetSysdate();
+
+            var startTime = new DateTime(Now.Value.Year, month, 1);
+            var endTime = startTime.AddMonths(1).AddMilliseconds(-1);
+            var query = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.ACT_END_DATE>=startTime && x.ACT_END_DATE<=endTime)
                                         .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                                         .Select((a, b) => new {
                                             b.DEVICE_NAME,
@@ -194,9 +198,14 @@ namespace Gksyb.Server.Services.Message
                                             RepairCount = Sql.Count(g.EXE_ID),
                                             TotalHours = (Sql.Sum(g.ACT_STOP_TIME) ?? (decimal)0.00) / (decimal)60.00 // 转换为小时
                                         }).ToListAsync();
-          
+            GetDeviceInfoInMonthResponse result = new GetDeviceInfoInMonthResponse();
 
-            return "";
+            result.DeviceNameList = query.Select(x => x.DEVICE_NAME).ToList();
+            result.RepairList = query.Select(x => x.RepairCount).ToList();
+            result.HourList = query.Select(x => x.TotalHours).ToList();
+
+
+            return result;
 
         }
 
