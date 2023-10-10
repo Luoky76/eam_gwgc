@@ -75,16 +75,16 @@
                                         var editParm = g.options.editParm.record;
                                         editParm["YG_MONEY"] = (value * (editParm.COUNT || 0)).toFixed(2);
                                     }
-                                }, validate: { required: true },
+                                }
                             },
                             {
-                                display: "预估金额(元)", name: "YG_MONEY", width: 120, type: "number", validate: { required: true }, totalSummary:
+                                display: "预估金额(元)", name: "YG_MONEY", width: 120, type: "number", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 }
                             },
-                            { display: "预估库龄(月)", name: "STORE_MONTH", width: 120, type: "number", validate: { required: true }, editor: { type: 'number' } },
+                            { display: "预估库龄(月)", name: "STORE_MONTH", width: 120, type: "number", editor: { type: 'number' } },
                             {
                                 display: "是否协议", name: "IS_XY", dbname: "IS_XY", width: 80, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
                             },
