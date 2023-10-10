@@ -127,12 +127,9 @@
 
 
         //点击待处理事项，打开功能菜单
-        function f_openMenu(value, text, data) {
-
-
-            var applyNO = data.TEXT.substr(14, 14);
-            if (applyNO && data.ValueFieldID)
-                deploy2(data.ValueFieldID, applyNO);
+        function f_openMenu(arg, ID, TEXT, data) {
+            var applyNO = TEXT.split(",")[0];
+            deploy2(data.MENUNAME, applyNO);
             createdata(dict[this.id], this.id, data);
         };
 
