@@ -34,7 +34,7 @@ namespace Gksyb.Server.Services.Services.Dto
         public int ExtMainteCheck { get; set; }
 
         public string ExtMainteCheckTitle { get; set; }
-        public List<todolist> ExtMainteList { get; set; }
+        public List<todolist> ExtMainteCheckList { get; set; }
         /// <summary>
         /// 码头维修实施 REP_DOCK_PLAN  c.AUDITING_PLAN=="1"
         /// </summary>

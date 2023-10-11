@@ -77,7 +77,7 @@ namespace EAM.Material.Services
                 .GetGridData(request);
             foreach (var item in (List<SpCollectRes>)res.Rows)
             {
-                item.DETAILCOUNT = _dbContext.Query<SP_COLLECT_DET>().Where(t => t.COLLECT_ID == item.COLLECT_ID).Count();
+                item.DETAILCOUNT = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_ID == item.COLLECT_ID).Count();
             }
             return res;
         }
@@ -272,7 +272,7 @@ namespace EAM.Material.Services
                              a.APPLY_NO,
                              a.USE_MEMO
                             })
-                            .First();
+                            .FirstOrDefault();
                         var req = det.MapTo<SP_ORDER_DETAIL>();
                         req.APPLY_NO = apply?.APPLY_NO;
                         req.USE_MEMO = apply?.USE_MEMO;
@@ -379,9 +379,9 @@ namespace EAM.Material.Services
         /// <param name="COLLECT_DET_ID"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GridData> RequestListAsync(string COLLECT_DET_ID,GridRequest request)
+        public async Task<GridData> RequestListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_DET_ID == COLLECT_DET_ID).GetGridData(request);
+            return await _dbContext.Query<SP_COLLECT_REQUEST>().GetGridData(request);
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace EAM.Material.Services
                     c.CHECK_NUM,
                     c.IS_FULLBUY
                 },
-                c => a => a.COLLECT_REQUEST_ID == c.COLLECT_REQUEST_ID, BeforeAddRequest, BeforeUpdateRequest, BeforeDeleteRequest, false, null, AfterSaveRequest);
+                c => a => a.COLLECT_REQUEST_ID == c.COLLECT_REQUEST_ID, BeforeAddRequest, BeforeUpdateRequest, BeforeDeleteRequest);
         }
         private async Task BeforeAddRequest(SP_COLLECT_REQUEST entity)
         {
@@ -456,20 +456,6 @@ namespace EAM.Material.Services
         }
         private async Task BeforeDeleteRequest(SP_COLLECT_REQUEST entity)
         {
-            var data = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_DET_ID == entity.COLLECT_DET_ID).Count();
-            if (data == 1)
-            {
-                _dbContext.DeleteByKey<SP_COLLECT_DET>(entity.COLLECT_DET_ID);
-            }
-            else
-            {
-                await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.COLLECT_DET_ID == entity.COLLECT_DET_ID,
-                    x => new SP_COLLECT_DET
-                    {
-                        COLLECT_NUM = x.COLLECT_NUM - entity.CHECK_NUM
-                    });
-            }
-
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID== entity.REQUEST_DET_ID,
                  x => new SP_APPLY_DETAIL
                  {
@@ -503,21 +489,21 @@ namespace EAM.Material.Services
                         NOTAX_MONEY = NOTAX_MONEY
                     });
 
-                var det = data.GroupBy(x => x.COLLECT_DET_ID)
-                    .Select(x => new
-                    {
-                        x.Key,
-                        CHECK_NUM = x.Sum(x => x.CHECK_NUM)
-                    });
+                //var det = data.GroupBy(x => x.COLLECT_DET_ID)
+                //    .Select(x => new
+                //    {
+                //        x.Key,
+                //        CHECK_NUM = x.Sum(x => x.CHECK_NUM)
+                //    });
 
-                foreach (var sp in det)
-                {
-                    await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.COLLECT_DET_ID == sp.Key,
-                   x => new SP_COLLECT_DET
-                   {
-                       COLLECT_NUM = sp.CHECK_NUM
-                   });
-                }
+                //foreach (var sp in det)
+                //{
+                //    await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.COLLECT_DET_ID == sp.Key,
+                //   x => new SP_COLLECT_DET
+                //   {
+                //       COLLECT_NUM = sp.CHECK_NUM
+                //   });
+                //}
             }
         }
 
@@ -645,47 +631,24 @@ namespace EAM.Material.Services
                     APPLY_USERID = b.APPLY_USERID
                 }).ToList();
 
-            var spIds = appledet.Select(t => t.SP_ID).Distinct().ToList();
-
-            var importResult = new List<SP_COLLECT_DET>();
-
             var importRequest = new List<SP_COLLECT_REQUEST>();
-            var colldet = _dbContext.Query<SP_COLLECT_DET>().Where(t => t.COLLECT_ID == Cid).ToList();
-            foreach (var spId in spIds)
+            foreach (var item in appledet)
             {
-                var COLLECT_DET_ID = colldet.Count > 0 ? colldet.Where(t => t.SP_ID == spId).Select(t => t.COLLECT_DET_ID).First() : "";
-                var data = appledet.Where(t => t.SP_ID == spId).ToList();
-                var det = data.First();
-                if (string.IsNullOrEmpty(COLLECT_DET_ID))
-                {
-                    var temp = det.MapTo<SP_COLLECT_DET>();
-                    await BeforeAddDet(temp);
-                    temp.COLLECT_ID = Cid;
-                    COLLECT_DET_ID = temp.COLLECT_DET_ID;
-                    importResult.Add(temp);
-                    await Task.CompletedTask;
-                }
-
-                foreach (var item in data)
-                {
-                    var req = item.MapTo<SP_COLLECT_REQUEST>();
-                    await BeforeAddRequest(req);
-                    req.COLLECT_ID = Cid;
-                    req.COLLECT_DET_ID = COLLECT_DET_ID;
-                    req.REQUEST_CODE = item.APPLY_NO;
-                    req.REQUEST_DET_ID = item.SPDET_ID;
-                    req.REQUEST_NUM = item.COUNT;
-                    req.REQUEST_USER = item.APPLY_USER;
-                    req.REQUEST_USERID = item.APPLY_USERID;
-                    importRequest.Add(req);
-                    await Task.CompletedTask;
-                }
+                var req = item.MapTo<SP_COLLECT_REQUEST>();
+                await BeforeAddRequest(req);
+                req.COLLECT_ID = Cid;
+                req.REQUEST_CODE = item.APPLY_NO;
+                req.REQUEST_DET_ID = item.SPDET_ID;
+                req.REQUEST_NUM = item.COUNT;
+                req.REQUEST_USER = item.APPLY_USER;
+                req.REQUEST_USERID = item.APPLY_USERID;
+                importRequest.Add(req);
+                await Task.CompletedTask;
             }
 
-            if (importResult.Count > 0)
+            if (importRequest.Count > 0)
             {
                 await _dbContext.InsertRangeAsync<SP_COLLECT_REQUEST>(importRequest);
-                await _dbContext.InsertRangeAsync<SP_COLLECT_DET>(importResult);
             }
 
             var appIds = appledet.Select(t => t.SPDET_ID).ToList();

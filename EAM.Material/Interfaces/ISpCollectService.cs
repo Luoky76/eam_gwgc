@@ -28,7 +28,7 @@ namespace EAM.Material.Interfaces
         Task<int> Submit(List<string> sids);
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request);
-        Task<GridData> RequestListAsync(string COLLECT_DET_ID,GridRequest request);
+        Task<GridData> RequestListAsync(GridRequest request);
         Task<AjaxResult> RequestSave(SaveRequest<SP_COLLECT_REQUEST> request);
         Task<GridData> SpApplyListAsync(GridRequest request);
 
