@@ -116,8 +116,6 @@
                     ],
                     space: 3,
                     validate: true,
-                    onAfterSetFields: function (g) {
-                    },
                     buttons: [
                         {
                             text: '同意', type: "success small", icon: "fa fa-check", newline: true, click: function () {
@@ -167,8 +165,7 @@
                 catch (e) {
                     return;
                 }
-                var isOper = me.isStart && !me.isView;
-                if (isOper) {
+                if (me.isOper) {
                     me.initDraft();
                     window._displayOptions = $.extend({
                         validate: true,
@@ -195,7 +192,29 @@
                 else {
                     if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
-                if (!isOper) me.mainForm._setDisabled(true);
+                if (!me.isOper) me.mainForm._setDisabled(true);
+            },
+            getNodes: function () {
+                var me = this;
+                var nodes = [], nodeInfos = me.data.Logs || [];
+                if (nodeInfos.length < 1) return nodes;
+                var first = nodeInfos[0];
+                if (first.OperType === "同意") {
+                    var outNodes = me.lf.getNodeOutgoingNode(first.NodeId);
+                    if (outNodes.length === 1 && outNodes[0].type === "bpmn:endEvent") {
+                        nodes.push(outNodes[0].id);
+                    }
+                }
+                else if (first.OperType === "拒绝") {
+                    setTimeout(function () {
+                        me.lf.setProperties(first.NodeId, { state: "reject" })
+                        me.lf.setProperties(me.lf.getNodeModelByType("bpmn:endEvent").id, { state: "finish" })
+                    }, 0);
+                }
+                for (var i = 0, l = nodeInfos.length; i < l; i++) {
+                    nodes.push(nodeInfos[i].NodeId);
+                }
+                return nodes;
             },
             initFlow: function () {
                 var me = this;
@@ -214,16 +233,10 @@
                 }
                 me.lf.render(graphData);
                 me.lf.setFirstNodeVisible(-80, -100);
-                var nodes = [], nodeInfos = me.data.Logs || [];
-                for (var i = 0, l = nodeInfos.length; i < l; i++) {
-                    nodes.push(nodeInfos[i].NodeId);
-                }
+                var nodes = me.getNodes();
                 me.data.NodeId = me.data.NodeId || me.lf.getNodeModelByType("bpmn:startEvent").id;
-                var nodeId = me.data.NodeId;
-                if ($.inArray(me.data.NodeId, nodes) >= 0) {
-                    var outNodes = me.lf.getNodeOutgoingNode(me.data.NodeId);
-                    if (outNodes.length === 1) nodeId = outNodes[0].id;
-                }
+                var nodeId = me.data.WorkNodeId || me.data.NodeId;
+                nodeId = !me.isStart && me.isView && $.inArray(nodeId, nodes) >= 0 ? nodes[0] : nodeId;
                 if (nodes.length < 1) nodes.push(nodeId);
                 me.lf.highLight(nodes, nodeId);
                 me.isAssign = me.lf.getNodeDataById(me.data.NodeId).properties.assign;
@@ -264,6 +277,7 @@
                         if (data.NodeStatus && data.NodeStatus !== 1) {
                             me.isView = true;
                         }
+                        me.isOper = me.isStart && !me.isView;
                     },
                     error: function (message) {
                         LG.showError(message);

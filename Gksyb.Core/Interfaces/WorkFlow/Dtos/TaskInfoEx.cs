@@ -33,6 +33,11 @@
         public string NodeId { get; set; }
 
         /// <summary>
+        /// 作业节点ID
+        /// </summary>
+        public string WorkNodeId { get; set; }
+
+        /// <summary>
         /// 节点标题
         /// </summary>
         public string NodeTitle { get; set; }

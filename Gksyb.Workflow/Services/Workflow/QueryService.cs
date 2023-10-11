@@ -209,6 +209,12 @@ namespace Gksyb.Workflow.Services.Workflow
                     CreateDate = task.CREATEDATE
                 }).FirstOrDefaultAsync();
             if (info == null) return info;
+            info.WorkNodeId = info.NodeId;
+            if (typeof(T1) == typeof(WF_NODE) && info.NodeStatus != NodeStatus.Active)
+            {
+                info.WorkNodeId = await _dbContext.Query<T1>().Where(c => c.TASK_ID == info.TaskId && c.NODE_STATUS == NodeStatus.Active)
+                    .Select(c => c.NODE_ID).FirstOrDefaultAsync() ?? info.NodeId;
+            }
             info.Logs = await _dbContext.Query<T3>().Where(a => a.TASK_ID == info.TaskId).Select(a => new TaskLog()
             {
                 Id = a.ID,
