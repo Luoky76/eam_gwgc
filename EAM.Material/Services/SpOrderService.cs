@@ -11,6 +11,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using static StackExchange.Redis.Role;
 
 namespace EAM.Material.Services
 {
@@ -252,6 +253,60 @@ namespace EAM.Material.Services
                         BUY_USERID = _userSession.UserID.ToString(),
                         BUY_USERDEPTID= _userSession.Corp.CorpID
                     });
+
+            //数据同步到物资收货中
+            var order = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.ORDER_ID)).ToList();         
+            foreach (var s in order)
+            {
+                var dets = _dbContext.Query<SP_ORDER_DETAIL>().Where(t => t.ORDER_ID == s.ORDER_ID).ToList();
+                var depts = dets.Select(t => new { t.DEPT_ID, t.DEPT_NAME }).Distinct().ToList();
+                foreach (var dept in depts)
+                {
+                    string type = "DJ" + DateTime.Now.ToString("yyyyMM");
+                    string def = type + "0000";
+                    var model = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_CODE.Contains(type)).Select(x => Sql.Max(x.RECEIVE_CODE) ?? def).FirstOrDefaultAsync();
+                    var index = model.SubStr(8, 4).CastTo<int>() + 1;
+
+                    var det = dets.Where(t => t.DEPT_ID == dept.DEPT_ID).ToList();
+                    var apply = det.FirstOrDefault();
+                    var data = new SP_RECEIVE
+                    {
+                        RECEIVE_ID = GuidHelper.NewSnowflakeId().ToString(),
+                        USER_NAME = _userSession.UserName.ToString(),
+                        USER_ID = _userSession.UserID.ToString(),
+                        RECEIVE_CODE = type + index.ToString("D4"),
+                        CREATEDATE = DateTime.Now,
+                        CREATE_USERID = _userSession.UserID.ToString(),
+                        AUDITING = "0",
+                        PROVIDER_NAME = s.PROVIDER_NAME,
+                        PROVIDER_ID = s.PROVIDER_ID,
+                        PUR_USER = s.BUY_USER,
+                        PUR_USERID = s.BUY_USERID,
+                        ORDER_ID = s.ORDER_ID,
+                        ORDER_CODE = s.ORDER_CODE,
+
+                        DEPT_NAME = dept.DEPT_ID,
+                        DEPT_ID = dept.DEPT_NAME,
+                        CHK_USER = apply?.APPLY_USER,
+                        CHK_USERID = apply?.APPLY_USERID
+                    };
+                    var spReceiveDet = new List<SP_RECEIVE_DET>();
+                    foreach (var item in det)
+                    {
+                        var req = item.MapTo<SP_RECEIVE_DET>();
+                        req.RECEIVE_ID = data.RECEIVE_ID;
+                        req.RECDET_ID = GuidHelper.NewSnowflakeId().ToString();
+                        req.CREATEDATE = DateTime.Now;
+                        req.CREATE_USERID = _userSession.UserID.ToString();
+
+                        spReceiveDet.Add(req);
+                    }
+                    await Task.CompletedTask;
+                    await _dbContext.InsertAsync<SP_RECEIVE>(data);
+                    await _dbContext.InsertRangeAsync<SP_RECEIVE_DET>(spReceiveDet);
+                }
+            }
+
             return updatedevice;
         }
         /// <summary>

@@ -54,12 +54,27 @@
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd", }, validate: { required: true }, },
                             { display: "申购公司", name: "DEPT_NAME", width: 180, type: "text", },
                             { display: "采购员", name: "BUY_USER", width: 120, type: "text", },
-                            { display: "订单金额(元)", name: "ORDER_MONEY", width: 120, type: "text", },
-
-                            { display: "供应商", name: "PROVIDER_NAME", width: 100, type: "text", },
+                            { display: "订单金额(元)", name: "ORDER_MONEY", width: 120, type: "number", editor: { type: 'number' }, },
+                            {
+                                display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: 120, width: 180, newline: true, type: "select", editor: {
+                                    type: 'select',
+                                    options: {
+                                        autocomplete: true,
+                                        data: me.gyData
+                                    },
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            liger.get("maingrid").updateCell("PROVIDER_NAME", me.gyData.find((a) => a.ID == rowdata.value).TEXT, rowdata.record);
+                                        } else {
+                                            liger.get("maingrid").updateCell("PROVIDER_NAME", "", rowdata.record);
+                                        }
+                                    }
+                                }
+                            },
                             { display: "相关流程", name: "REQUEST_NAME", width: 150, type: "text", },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
                             { display: "主键", name: "ORDER_ID", width: 100, type: "text", hide: true },
+                            { display: "供应商名", name: "PROVIDER_NAME", width: 100, type: "text", hide: true },
                         ],
                         columns2: [
                             {
@@ -72,6 +87,7 @@
                                     align: 'center'
                                 }
                             },
+                            { display: "要求交货日期", name: "REQ_DATE", type: "date", format: "yyyy-MM-dd", width: 120, editor: { format: "yyyy-MM-dd", type: 'date' }, },
                             { display: "申请人", name: "APPLY_USER", width: 150, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
                             { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
@@ -103,7 +119,6 @@
                                     align: 'center'
                                 }
                             },
-                            { display: "要求交货日期", name: "REQ_DATE", type: "date", format: "yyyy-MM-dd", width: 120, editor: { format: "yyyy-MM-dd", type: 'date' }, },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
                             { display: "ORDER_ID", name: "ORDER_ID", dbname: "ORDER_ID", width: 100, type: "text", hide: true },
                             { display: "主键", name: "ORDERDET_ID", dbname: "ORDERDET_ID", width: 100, type: "text", hide: true },
