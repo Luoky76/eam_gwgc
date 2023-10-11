@@ -77,9 +77,9 @@ namespace EAM.Material.Controllers
         }
 
         [HttpPost]
-        public async Task<AjaxResult<GridData>> RequestListAsync(string COLLECT_DET_ID, GridRequest request)
+        public async Task<AjaxResult<GridData>> RequestListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.RequestListAsync(COLLECT_DET_ID, request), "成功");
+            return AjaxResult<GridData>.Success(await _service.RequestListAsync(request), "成功");
         }
 
         [HttpPost]

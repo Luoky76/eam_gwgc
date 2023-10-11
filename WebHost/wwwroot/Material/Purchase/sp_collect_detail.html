@@ -19,16 +19,12 @@
     </div>
 
     <form action="" id="mainform">
-        <div style="float: left; width: 100%; height: 60%; ">
+        <div style="float: left; width: 100%; height: 98%; ">
             <div id="maingrid" position="center" title="物资请购-物资清单">
             </div>
         </div>
     </form>
 
-    <div style="float: left; width: 100%; height: 40%; ">
-        <div id="reqGrid" position="bottom" title="物资请购-需求明细">
-        </div>
-    </div>
     <script type="text/javascript">
         'use strict';
         var business = {
@@ -47,20 +43,6 @@
                     },
                     grid: {
                         columns: [
-                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
-                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
-                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
-                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
-                            { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
-                            { display: "库存数量", name: "STORE_NUM", width: 150, type: "decimal", },
-                            { display: "请购数量", name: "COLLECT_NUM", type: "decimal", width: 80, },
-                            { display: "说明", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
-                            { display: "物料ID", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
-                            { display: "COLLECT_ID", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
-                            { display: "主键", name: "COLLECT_DET_ID", dbname: "COLLECT_DET_ID", width: 100, type: "text", hide: true },
-                        ],
-                        columns2: [
                             {
                                 display: "需求计划单号", name: "REQUEST_CODE", width: 150, type: "text",
                                 totalSummary:
@@ -122,62 +104,8 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     toolbar: { group: "detail" },
-                    url: me.rootPath + 'DetailList',
-                    parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
-                    },
-                    sortName: 'CREATEDATE',
-                    sortOrder: 'DESC',
-                    width: '98%',
-                    height: '50%',
-                    checkbox: true,
-                    enabledEdit: !me.isView,
-                    clickToEdit: true,
-                    onSelectRow: function (rowdata, rowid) {
-                        if (rowdata.COLLECT_DET_ID != me.gridSelectId) {
-                            me.gridSelectId = rowdata.COLLECT_DET_ID;
-                            me.gridReq.options.parms = { COLLECT_DET_ID: me.gridSelectId };
-                            me.gridReq.loadData();
-                        }
-                    },
-                });
-                me.grid.isValid = true;
-                me.loadToolbar();
-            },
-            loadToolbar: function () {
-                var me = this;
-                me.toolbarBtnItemClick = function (item) {
-                    switch (item.id) {
-                        case "refresh":
-                            me.reload();
-                            break;
-                        case "add":
-                            me.add();
-                            break;
-                        case "save":
-                            me.save();
-                            break;
-                    }
-                }
-                if (!me.isView)
-                    LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            setGridReq: function () {
-                var me = this;
-                me.config.grid.columns2.removeNull();
-                me.gridReq = $("#reqGrid").ligerGrid({
-                    autoWidth: false,
-                    delayLoad: true,
-                    columns: me.config.grid.columns2,
-                    title: "物资请购-需求明细",
-                    usePager: false,
-                    toolbar: { group: "request" },
                     url: me.rootPath + 'RequestList',
                     parms: {
-                        COLLECT_DET_ID: "",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
@@ -200,26 +128,29 @@
                         return true;
                     }
                 });
-                me.gridReq.isValid = true;
-                me.loadReqToolbar();
+                me.grid.isValid = true;
+                me.loadToolbar();
             },
-            loadReqToolbar: function () {
+            loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
                         case "refresh":
                             me.reload();
                             break;
+                        case "add":
+                            me.add();
+                            break;
                         case "delete":
                             me.delete();
                             break;
-                        case "saveReq":
-                            me.saveReq();
+                        case "save":
+                            me.save();
                             break;
                     }
                 }
                 if (!me.isView)
-                    LG.loadToolbar(me.gridReq, me.toolbarBtnItemClick);
+                    LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             add: function () { //新增
                 var me = this;
@@ -245,7 +176,7 @@
                             data: { SpdetID: SpdetID, Cid: me.Cid },
                             success: function () {
                                 LG.showSuccess('保存成功');
-                                me.gridReq.isDataChanged = false;
+                                me.grid.isDataChanged = false;
                                 me.reload();
                             },
                             error: function (message) {
@@ -259,7 +190,7 @@
                     width: 980,
                     height: 600,
                     allowClose: true,
-                    title: "挑选物资编码",
+                    title: "挑选物资",
                     url: "applyDetailPop.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -286,40 +217,13 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: me.rootPath + 'DetailSave',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
-
-            },
-            saveReq: function () { //保存
-                var me = this;
-                if (me.gridReq.endEdit() != false) {
-                    if (!me.gridReq.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.gridReq.validChangeRows()) return false;
-
-                    var changeRow = me.gridReq.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
                         url: me.rootPath + 'RequestSave',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
                             LG.showSuccess('保存成功');
-                            me.gridReq.isDataChanged = false;
-                            me.gridReq.loadData();
+                            me.grid.isDataChanged = false;
+                            me.grid.loadData();
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -334,13 +238,13 @@
             },
             delete: function () { //删除
                 var me = this;
-                if (me.gridReq.endEdit() != false) {
-                    var selected = me.gridReq.getSelectedRows();
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
                                 for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.gridReq.deleteRow(selected[i]);
+                                    me.grid.deleteRow(selected[i]);
                                 }
                                 me.save();
                             }
@@ -384,7 +288,6 @@
                 me.setConfig();
                 me.setForm();
                 me.setGrid();
-                me.setGridReq();
                 me.reload();
                 return me;
             }
