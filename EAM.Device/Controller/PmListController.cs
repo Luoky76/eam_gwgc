@@ -31,6 +31,7 @@ namespace EAM.Device.Controller
             {
                 maintDept = comboxData["MaintDept"],
                 pmcycleUnit = comboxData["PmcycleUnit"],
+                deviceInfo = comboxData["DeviceInfo"],
                 pmShippost = comboxData["PmShippost"],
             }, "成功");
         }

@@ -25,6 +25,20 @@ namespace EAM.Device.services.Dto
         public string STD_CODE { get; set; }
 
         /// <summary>
+        ///  船舶编号
+        /// </summary>
+        [Display(Name = "船舶编号")]
+        [ImporterHeader(Name = "船舶编号")]
+        public string DEVICE_CODE { get; set; }
+
+        /// <summary>
+        ///  船舶名称
+        /// </summary>
+        [Display(Name = "船舶名称")]
+        [ImporterHeader(Name = "船舶名称")]
+        public string DEVICE_NAME { get; set; }
+
+        /// <summary>
         ///  维保项目
         /// </summary>
         [Display(Name = "维保项目")]

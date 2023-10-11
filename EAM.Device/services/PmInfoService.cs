@@ -118,6 +118,7 @@ namespace EAM.Device.services
                     c.INSTALL_SITE,
                     c.DEPT_NAME,
                     c.PM_TYPE,
+                    c.WDEPT_ID,
                     c.EDIT_DATE,
                     c.PLAN_FINISH_TIME,
                     c.EDIT_USER,

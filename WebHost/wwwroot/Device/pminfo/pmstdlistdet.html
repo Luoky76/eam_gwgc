@@ -28,6 +28,36 @@
                     form: {
                         fields: [
                             { display: "编号", name: "STD_CODE", newline: false, upper: true, width: 300, type: "text", options: {}, group: "维保标准明细" },
+                            {
+                                display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 300, type: "select", align: "left", validate: { required: true },
+                                options: {
+                                    data: me.deviceInfo,
+                                    autocomplete: true,
+                                    selectBoxWidth: 300,
+                                    valueField: "ID",
+                                    textField: "TEXT",
+                                    columns: [
+                                        { header: '船舶编号', name: 'VALUE', width: 150 },
+                                        { header: '船舶名称', name: 'TEXT' }
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
+                                            $('#ASSET_CODE').val(g.selected.EXTEND4 == null ? '' : g.selected.EXTEND4);
+                                            $('#INSTALL_SITE').val(g.selected.EXTEND5 == null ? '' : g.selected.EXTEND5);
+                                            $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "船舶编号", name: "DEVICE_CODE", newline: false, width: 300, upper: true, editor: { disabled: true }, options: {} },
                             { display: "部门", name: "DEPARTMENT", newline: false, width: 300, type: "select", options: { data: me.maintDept } },
                             { display: "周期", name: "CYCLE", newline: false, width: 300, type: "select", options: { data: me.pmcycleUnit } },
                             { display: "执行人", name: "EXE_USER", newline: false, width: 300, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },
@@ -52,6 +82,7 @@
                     loading: '正在获取中...',
                     success: function (data) {
                         me.maintDept = data.maintDept;
+                        me.deviceInfo = data.deviceInfo;
                         me.pmcycleUnit = data.pmcycleUnit;
                         me.pmShippost = data.pmShippost;
                     },
