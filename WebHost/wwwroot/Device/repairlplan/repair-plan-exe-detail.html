@@ -30,6 +30,10 @@
     </div>
     <script type="text/javascript">
         'use strict';
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             dialogData: {},
             menuNo: getQueryStringByName("MenuNo"),
@@ -51,6 +55,7 @@
             repairhandtype1: [{ "ID": "自修", "TEXT": "自修" }, { "ID": "厂修", "TEXT": "厂修" }],
             stopSource: [],
             malType: [],
+            repitemtype:[],
             deviceInfo: [],
             start: null,
             setConfig: function () {
@@ -94,10 +99,10 @@
                                     }
                                 }
                             },
-                            { display: "维修工时", name: "ACT_STOP_TIME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "维修工时", name: "ACT_STOP_TIME", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: true, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "实施提交日期", name: "EIDT_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", options: { data: me.iscomplete } },
                             { display: "协助人", name: "ASSIST_USER", newline: true, upper: true, type: "text", options: {} },
                             { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             { display: "实施情况登记", name: "EXE_DESC", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
@@ -105,13 +110,13 @@
                     },
                     grid: {
                         columns: [
+                            { display: "序号", name: "REP_INDEX", width: 150, type: "text", editor: { type: 'text' } },
                             {
                                 display: "是否完成", name: "IS_COMPLETE", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 }, validate: { required: true }
                             },
                             { display: "维修项目", name: "BOM_NAME", width: 150, type: "text", },
-                            { display: "序号", name: "REP_INDEX", width: 150, type: "text", },
-                            { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", },
-                            { display: "维修项目分类", name: "ITEM_TYPE", width: 150, type: "text", },
+                            { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", editor: { type: 'text' } },
+                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
                             {
                                 display: "是否月度询价", name: "IS_ASKBID", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 }, validate: { required: true }
                             },
@@ -124,7 +129,9 @@
                                 display: "实际完工时间", name: "END_TIME", width: 100, type: "date", editor: { type: 'date' }
                             },
                             { display: "花费时间", name: "TAKE_TIME", width: 100, type: "text" },
-                            { display: "备注", name: "MEMO", width: 100, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "维修部位ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "EXE_ITEM_ID", name: "EXE_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                         ]
                     }
                 };
@@ -141,6 +148,7 @@
                     success: function (data, message) {
                         me.maintdept = data.MaintDept;
                         me.repairtype = data.RepairType;
+                        me.repitemtype = data.RepitemType;
                         me.repairhandtype = data.RepairDealType;
                     },
                     error: function (message) {
@@ -309,7 +317,7 @@
                     usePager: true,
                     columns: me.config.grid.columns,
                     dataAction: 'local',
-                    toolbar: {},
+                    toolbar: { group:'item' },
                     url: 'Repair/RepairPlan/ExeItemList',
                     parms: {
                         where: JSON.stringify({
@@ -339,6 +347,143 @@
                 me.grid.isValid = true;
                 if (!me.isView) {
                     me.loadToolbar();
+                }
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "import": 
+                            me.add();
+                            break;
+                        case "upload":
+                            me.upload();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.BOM_ID);
+                }
+
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Repair/RepairPlan/GetDevice',
+                        rowKey: "DEVICE_ID",
+                        columns: [
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+
+                        ]
+                    },
+                    fields: [
+                        { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                        { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.DEVICE_ID)) {
+                                me.grid.addEditRow({
+                                    EXE_ID: me.sid,
+                                    BOM_ID: item.DEVICE_ID,
+                                    BOM_NAME: item.DEVICE_NAME
+                                });
+                            }
+                        }
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '选择设备',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+
+            },
+            upload: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        if (selected[0].EXE_ITEM_ID != undefined) {
+                            me.f_rowAttachManage(selected[0].EXE_ITEM_ID);
+                        } else {
+                            LG.showError("请先保存该记录再上传！");
+                        }
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                isView = false;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "REP_PLAN_EXE_ITEM"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.loadData();
+                    }
+                });
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
                 }
             },
             init: function () {

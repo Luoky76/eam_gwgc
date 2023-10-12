@@ -332,7 +332,7 @@ namespace EAM.Repair.services
 
         public async Task<GridData> GetDeviceAsync(GridRequest request)
         {
-            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "1").GetGridData(request);
+            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "2").GetGridData(request);
             return query;
         }
         #endregion
@@ -441,7 +441,6 @@ namespace EAM.Repair.services
             {
                 a.EXE_ITEM_ID,
                 a.EXE_ID,
-                a.PLAN_ITEM_ID,
                 a.BOM_ID,
                 a.PLAN_ID,
                 a.BOM_NAME,
@@ -510,7 +509,6 @@ namespace EAM.Repair.services
                          {
                              c.EXE_ITEM_ID,
                              c.EXE_ID,
-                             c.PLAN_ITEM_ID,
                              c.BOM_ID,
                              c.PLAN_ID,
                              c.BOM_NAME,
@@ -581,6 +579,7 @@ namespace EAM.Repair.services
         /// <returns></returns>
         private async Task BeforeAddDet(REP_PLAN_EXE_ITEM entity)
         {
+            entity.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
 
