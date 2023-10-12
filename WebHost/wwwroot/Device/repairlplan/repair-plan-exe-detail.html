@@ -79,10 +79,11 @@
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
                             { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
+                            { display: "计划停机时间(H)", name: "PLAN_STOP_TIME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "负责人", name: "CHARGE_USER", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "采购方式", name: "COLLECT_METHOD", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "预估维修金额", name: "PLAN_MONEY", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修内容", name: "REPAIR_MEMO", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修内容", name: "REPAIR_MEMO", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
                             {
                                 display: "实际开工时间", name: "ACT_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {
                                     format: 'yyyy-MM-dd HH:mm',

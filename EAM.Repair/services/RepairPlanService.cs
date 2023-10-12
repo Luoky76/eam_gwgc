@@ -186,6 +186,7 @@ namespace EAM.Repair.services
                 exe.FAULT_DESCRIBE = request.FAULT_DESCRIBE;
                 exe.PLAN_START_DATE = request.PLAN_START_DATE;
                 exe.PLAN_END_DATE = request.PLAN_END_DATE;
+                exe.PLAN_STOP_TIME = request.PLAN_STOP_TIME;
                 exe.CHARGE_USER = request.CHARGE_USER;
                 exe.REPAIR_MEMO = request.REPAIR_MEMO;
                 exe.PLAN_MEMO = request.PLAN_MEMO;
@@ -357,6 +358,7 @@ namespace EAM.Repair.services
                 a.DEAL_TYPE,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
+                a.PLAN_STOP_TIME,
                 a.ACT_START_DATE,
                 a.ACT_END_DATE,
                 a.ACT_STOP_TIME,
@@ -401,6 +403,7 @@ namespace EAM.Repair.services
                 a.DEAL_TYPE,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
+                a.PLAN_STOP_TIME,
                 a.FAULT_DESCRIBE,
                 a.REP_LEVEL,
                 a.PLAN_CODE,
