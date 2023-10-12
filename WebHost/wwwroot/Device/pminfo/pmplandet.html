@@ -472,7 +472,7 @@
             },
             //导入
             import: function () {
-                var me = this;
+                var me = this
                 var gridData = me.grid.getData();
                 var gridKeys = [];
                 for (var item of gridData) {
@@ -481,6 +481,8 @@
                 var dataOptions = {
                     values: gridKeys,
                     options: {
+                        deviceId: $("#DEVICE_ID").val(),
+                        deptId: $("#WDEPT_ID").val(),
                         url: 'Device/PmInfo/ImportList',/*
                         parms: {
                             where: JSON.stringify({
@@ -491,6 +493,8 @@
                         rowKey: "STD_CODE",
                         columns: [
                             { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
+                            { display: "船舶编号", name: "DEVICE_CODE", minWidth: 100, type: "text", },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", },
                             { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", },
                             { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", },
                             { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit } },
@@ -503,13 +507,18 @@
                         ]
                     },
                     fields: [
-                        { display: "编号", name: "STD_CODE", width: 150, type: "text" },
+                        //{ display: "编号", name: "STD_CODE", width: 150, type: "text" },
                         { display: "周期", name: "CYCLE", width: 150, type: "select", options: { data: me.pmcycleUnit } },
                         {
-                            display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left",
+                            display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 150, type: "select", align: "left",
                             options: {
                                 data: me.deviceInfo,
-                                defaultValue: "默认值"
+                                //defaultValue: deviceId
+                            }
+                        },
+                        {
+                            display: "维保部门", name: "DEPARTMENT", dbname: "DEPARTMENT", width: 150, type: "select", options: {
+                                data: me.maintDept,
                             }
                         },
                     ],
@@ -539,7 +548,7 @@
                     width: 1000,
                     height: 400,
                     title: '选择维保项目清单',
-                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    url: window.gksybConfigs.urlBase + "device/pminfo/pmcommon.html",
                     isResize: true,
                     slide: false,
                     data: dataOptions
