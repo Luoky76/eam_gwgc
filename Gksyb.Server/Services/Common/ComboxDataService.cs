@@ -970,7 +970,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DockInfo(Expression<Func<BASE_DOCK, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<BASE_DOCK>(c => c.AUDITING=="1")
+            return await dbContext.Query<BASE_DOCK>()
                 .Where(predicate)
                 .Select(c => new ComboxData() { ID = c.DOCK_ID, TEXT = c.DOCK_CODE, VALUE = c.DOCK_NAME, EXTEND1 = c.DOCK_ADDRESS })
                 .Distinct()

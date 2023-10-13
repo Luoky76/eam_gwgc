@@ -130,6 +130,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "unsubmit":
+                            me.unsubmit();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls",
@@ -147,6 +150,38 @@
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
 
+            unsubmit: function () {    //反提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING_CHECK == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.CHECK_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/RepDockInfo/UnSubmitRepDockCheck',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('反提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
             modify: function () { //码头维修验收单
                 var me = this;
                 var selected = me.grid.getSelectedRow();
