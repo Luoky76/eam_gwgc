@@ -22,6 +22,8 @@ namespace EAM.Material.Interfaces
 
         Task<int> Submit(List<string> sids);
 
+        Task<AjaxResult> CancelSubmit(List<string> sids);
+
         /// <summary>
         /// 获取明细列表信息
         /// </summary>

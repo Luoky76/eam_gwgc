@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -198,6 +199,56 @@ namespace EAM.Material.Services
             }
 
             return updatedevice;
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var updatedevice = await _dbContext.UpdateAsync<SP_ORDER_STOP>(x => sids.Contains(x.STOP_ID),
+                    x => new SP_ORDER_STOP
+                    {
+                        AUDITING = "0"
+                    });
+
+            var dets = _dbContext.Query<SP_STOP_DET>().Where(x => sids.Contains(x.STOP_ID)).ToList();
+
+            if (dets.Count > 0)
+            {
+                var orderIds = dets.Select(t => t.ORDER_ID).Distinct().ToList();
+                await _dbContext.UpdateAsync<SP_ORDER>(x => orderIds.Contains(x.ORDER_ID),
+                      x => new SP_ORDER
+                      {
+                          IS_STOP = "0"
+                      });
+
+                var detIds = dets.Select(t => t.ORDERDET_ID).Distinct().ToList();
+                var orderDet = _dbContext.Query<SP_ORDER_DETAIL>().Where(x => detIds.Contains(x.ORDERDET_ID)).ToList();
+                foreach (var item in orderDet)
+                {
+                    await _dbContext.UpdateAsync<SP_ORDER_DETAIL>(x =>x.ORDERDET_ID == item.ORDERDET_ID,
+                       x => new SP_ORDER_DETAIL
+                       {
+                           IS_STOP = "0",
+                           T_MEMO = "",
+                           STOP_USERID = "",
+                           STOP_USER = "",
+                           STOP_DATE = null,
+                           STOP_NUM = null
+                       });
+
+                    await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == item.SPDET_ID,
+                         x => new SP_APPLY_DETAIL
+                         {
+                             SP_STATUS = "50"//供货中
+                         });
+                }
+            }
+
+            return AjaxResult.Success("成功");
         }
 
         class SpOrderStopDetRes : SP_STOP_DET
