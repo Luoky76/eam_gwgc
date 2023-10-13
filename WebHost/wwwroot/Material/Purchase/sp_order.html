@@ -42,6 +42,8 @@
                 me.config = {
                     search: {
                         fields: [
+                            { display: "下单日期", name: "_search_BDATE", dbname: "ORDER_DATE", newline: false, showTime: false, labelWidth: 80, width: 140, op: 'greaterorequal', type: "date", vt: "datetime" },
+                            { display: "至", name: "_search_EDATE", dbname: "ORDER_DATE", newline: false, showTime: false, labelWidth: 20, width: 140, op: 'lessorequal', type: "date", vt: "datetime" },
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
                             { display: "申请单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
@@ -163,7 +165,7 @@
                     sortName: 'CREATEDATE',
                     sortOrder: 'DESC',
                     width: '98%',
-                    height: '50%',
+                    height: '60%',
                     checkbox: true,
                     enabledEdit: true,
                     clickToEdit: true,
@@ -212,6 +214,9 @@
                             break;
                         case "submit":
                             me.submit();
+                            break;
+                        case "export":
+                            me.export();
                             break;
                     }
                 }
@@ -292,6 +297,23 @@
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
+            },
+            export: function () { //模板导出
+                var me = this;
+                var rules = LG.bulidFilterGroup(me.searchForm.id);
+                LG.download({
+                    url: me.rootPath + 'ExportExcelTemplate',
+                    type: "post",
+                    loading: '正在导出中...',
+                    data: { where: JSON2.stringify(rules) },
+                    callback: function (status, data) {
+                        debugger
+                        if (status) {
+                            LG.showSuccess(data.Message);
+                        }
+                        else LG.showError(data.Message);
+                    }
+                });
             },
             submit: function () {    //提交
                 var me = this;
@@ -389,6 +411,13 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
+
+                        var nowDate = new Date();
+                        var beginDate = nowDate.getFullYear() + "-" + (nowDate.getMonth() + 1) + "-01";
+                        var day = new Date(nowDate.getFullYear(), nowDate.getMonth() + 1, 0);
+                        var endDate = nowDate.getFullYear() + "-" + (nowDate.getMonth() + 1) + "-" + day.getDate();
+                        me.searchForm.setData({ "_search_BDATE": beginDate });
+                        me.searchForm.setData({ "_search_EDATE": endDate });
                     }
                 });
             },

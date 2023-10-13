@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -449,6 +450,33 @@ namespace EAM.Material.Services
                     a.ORDERDET_ID,
                 })
                 .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 导出模板数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> ExportListAsync(GridRequest request)
+        {
+            var res = await _dbContext.Query<SP_ORDER>().Where(t => t.AUDITING == "1")
+                .Select(t => new OrderExportData
+                {
+                    ORDER_CODE = t.ORDER_CODE,
+                    ORDER_TYPE = t.ORDER_TYPE,
+                    ORDER_DATE = t.ORDER_DATE,
+                    DEPT_NAME = t.DEPT_NAME,
+                    ORDER_MONEY = t.ORDER_MONEY,
+                    PROVIDER_NAME = t.PROVIDER_NAME
+                })
+                .GetGridData(request);
+            var dic = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "order_src").ToList();
+            foreach (var item in (List<OrderExportData>)res.Rows)
+            {
+                item.ORDER_TYPE = dic.Where(t => t.CODE_EN == item.ORDER_TYPE).FirstOrDefault()?.CODE_CN;
+                item.ORDER_DATESTR = item.ORDER_DATE.Value.ToString("yyyy-MM-dd");
+            }
+            return res;
         }
     }
 }
