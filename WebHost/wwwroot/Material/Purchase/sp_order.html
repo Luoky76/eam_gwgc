@@ -215,8 +215,8 @@
                         case "submit":
                             me.submit();
                             break;
-                        case "export":
-                            me.export();
+                        case "report":
+                            me.report();
                             break;
                     }
                 }
@@ -298,7 +298,7 @@
                 var me = this;
                 me.buttons[0].click();
             },
-            export: function () { //模板导出
+            report: function () { //模板导出
                 var me = this;
                 var rules = LG.bulidFilterGroup(me.searchForm.id);
                 LG.download({
