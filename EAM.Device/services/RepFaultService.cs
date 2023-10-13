@@ -215,8 +215,8 @@ namespace EAM.Device.services
         {
             var qryfaultitem = await _dbContext.Query<REP_FAULT>(x => sid == x.FAULT_ID)
                 .Select(c => c.AUDITING_D)
-                .ToListAsync();
-            if (qryfaultitem.Contains("1"))
+                .FirstOrDefaultAsync();
+            if (qryfaultitem == "1" )
             {
                 throw new MessageException("故障已验收，不可反提交！");
             }
