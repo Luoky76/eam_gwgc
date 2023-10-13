@@ -160,6 +160,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "returned":
+                            me.returned();
+                            break;
                         case "unsubmit":
                             me.unsubmit();
                             break;
@@ -185,6 +188,38 @@
                 me.buttons[0].click();
             },
 
+            unsubmit: function () {    //反提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING_D == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.FAULT_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/RepFault/UnSubmitFaultCheck',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('反提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
             modify: function () { //填写合格与否
                 var me = this;
                 var selected = me.grid.getSelectedRow();
@@ -258,7 +293,7 @@
                 }
             },
 
-            unsubmit: function () {    //驳回
+            returned: function () {    //驳回
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 for (var i = 0; i < selected.length; i++) {
@@ -279,7 +314,7 @@
                         })
                         LG.ajax({
                             jsToken: true,
-                            url: 'Device/RepFault/SubmitFaultUnCheck',
+                            url: 'Device/RepFault/ReturnedFaultUnCheck',
                             loading: '正在保存中...',
                             data: { "sids": sids },
                             success: function () {
