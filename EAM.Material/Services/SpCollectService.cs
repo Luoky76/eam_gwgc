@@ -1,27 +1,13 @@
-﻿using Chloe;
-using Chloe.MySql;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Drawing.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.CodeAnalysis;
-using NPOI.OpenXmlFormats.Dml.Diagram;
-using NPOI.Util;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
-using System.Reflection.Emit;
-using WkHtmlToPdfDotNet;
 
 namespace EAM.Material.Services
 {
@@ -301,6 +287,40 @@ namespace EAM.Material.Services
             }
 
             return updatedevice;
+        }
+
+
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
+
+            if (list.Count > 0)
+            {
+                foreach (var item in list)
+                {
+                    if (_dbContext.Query<SP_ORDER>().Any(t => t.PURPLAN_ID == item.COLLECT_ID && t.AUDITING == "1"))
+                    {
+                        throw new Exception($"{item.COLLECT_CODE}采购中,不能撤销!");
+                    }
+                }
+
+                var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => sids.Contains(x.COLLECT_ID),
+                x => new SP_COLLECT
+                {
+                    AUDITING = "0"
+                });
+                var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => sids.Contains(t.COLLECT_ID)).Select(t => t.REQUEST_DET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
+                      x => new SP_APPLY_DETAIL
+                      {
+                          SP_STATUS = "30"//请购中
+                      });
+
+                var orderId = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.PURPLAN_ID)).Select(t => t.ORDER_ID).ToList();
+                await _dbContext.DeleteAsync<SP_ORDER>(x => orderId.Contains(x.ORDER_ID));
+                await _dbContext.DeleteAsync<SP_ORDER_DETAIL>(x => orderId.Contains(x.ORDER_ID));
+            }
+            return AjaxResult.Success("成功");
         }
 
         /// <summary>

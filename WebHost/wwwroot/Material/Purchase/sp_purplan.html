@@ -223,6 +223,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "cancelSubmit":
+                            me.cancelSubmit();
+                            break;
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
@@ -349,6 +352,43 @@
                         });
                     }
 
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            cancelSubmit: function () {    //撤销
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    var flag = true;
+                    var sids = [];
+                    selected.forEach((a) => {
+                        if (a.AUDITING != "1") {
+                            LG.tip(a.PLAN_NO + '未提交!');
+                            flag = false;
+                            return;
+                        }
+                        sids.push(a.PURPLAN_ID)
+                    })
+                    if (!flag) {
+                        return;
+                    }
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'CancelSubmit',
+                        loading: '正在撤销中...',
+                        data: { "sids": sids },
+                        success: function () {
+                            LG.showSuccess('撤销成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
                     LG.tip('请选择行!');

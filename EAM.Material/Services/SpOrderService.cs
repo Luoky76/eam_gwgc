@@ -34,10 +34,16 @@ namespace EAM.Material.Services
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="YEAR"></param>
         /// <returns></returns>
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<GridData> ListAsync(GridRequest request, string YEAR)
         {
-            return await _dbContext.Query<SP_ORDER>().GetGridData(request);
+            var res = _dbContext.Query<SP_ORDER>();
+            if (!string.IsNullOrEmpty(YEAR))
+            {
+                res = res.Where(t => t.ORDER_DATE.Value.Year.Equals(YEAR));
+            }
+            return await res.GetGridData(request);
         }
 
         class SpOrderRes : SP_ORDER
@@ -306,10 +312,58 @@ namespace EAM.Material.Services
                     await _dbContext.InsertAsync<SP_RECEIVE>(data);
                     await _dbContext.InsertRangeAsync<SP_RECEIVE_DET>(spReceiveDet);
                 }
+
+                var appledetId = dets.Select(t => t.SPDET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
+                 x => new SP_APPLY_DETAIL
+                 {
+                     SP_STATUS = "50"//供货中
+                 });
             }
 
             return updatedevice;
         }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var list = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.ORDER_ID)).ToList();
+
+            if (list.Count > 0)
+            {
+                foreach (var item in list)
+                {
+                    if (_dbContext.Query<SP_RECEIVE>().Any(t => t.ORDER_ID == item.ORDER_ID && t.AUDITING == "1"))
+                    {
+                        throw new Exception($"{item.ORDER_CODE}供货中,不能撤销!");
+                    }
+                }
+
+                var updatedevice = await _dbContext.UpdateAsync<SP_ORDER>(x => sids.Contains(x.ORDER_ID),
+                   x => new SP_ORDER
+                   {
+                       AUDITING = "0"
+                   });
+
+                var data = _dbContext.Query<SP_ORDER_DETAIL>().Where(x => sids.Contains(x.ORDER_ID)).Select(t => t.SPDET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => data.Contains(x.SPDET_ID),
+                x => new SP_APPLY_DETAIL
+                {
+                    SP_STATUS = "40"//请购中
+                });
+
+                var orderId = _dbContext.Query<SP_RECEIVE>().Where(t => sids.Contains(t.ORDER_ID)).Select(t => t.RECEIVE_ID).ToList();
+                await _dbContext.DeleteAsync<SP_RECEIVE>(x => orderId.Contains(x.RECEIVE_ID));
+                await _dbContext.DeleteAsync<SP_RECEIVE_DET>(x => orderId.Contains(x.RECEIVE_ID));
+
+            }
+            return AjaxResult.Success("成功");
+        }
+
         /// <summary>
         /// 获取明细列表信息
         /// </summary>
@@ -456,11 +510,16 @@ namespace EAM.Material.Services
         /// 导出模板数据
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="YEAR"></param>
         /// <returns></returns>
-        public async Task<GridData> ExportListAsync(GridRequest request)
+        public async Task<GridData> ExportListAsync(GridRequest request, string YEAR)
         {
-            var res = await _dbContext.Query<SP_ORDER>().Where(t => t.AUDITING == "1")
-                .Select(t => new OrderExportData
+            var query = _dbContext.Query<SP_ORDER>().Where(t => t.AUDITING == "1");
+            if (!string.IsNullOrEmpty(YEAR))
+            {
+                query = query.Where(t => t.ORDER_DATE.Value.Year.Equals(YEAR));
+            }
+            var res = await query.Select(t => new OrderExportData
                 {
                     ORDER_CODE = t.ORDER_CODE,
                     ORDER_TYPE = t.ORDER_TYPE,

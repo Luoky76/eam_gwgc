@@ -1,13 +1,10 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services
@@ -241,6 +238,45 @@ namespace EAM.Material.Services
             }
 
             return updatedevice;
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var list = _dbContext.Query<SP_PURPLAN>().Where(x => sids.Contains(x.PURPLAN_ID)).ToList();
+
+            if (list.Count > 0)
+            {
+                foreach (var item in list)
+                {
+                    if (_dbContext.Query<SP_ORDER>().Any(t => t.PURPLAN_ID == item.PURPLAN_ID && t.AUDITING == "1"))
+                    {
+                        throw new Exception($"{item.PLAN_NO}采购中,不能撤销!");
+                    }
+                }
+
+                var updatedevice = await _dbContext.UpdateAsync<SP_PURPLAN>(x => sids.Contains(x.PURPLAN_ID),
+                    x => new SP_PURPLAN
+                    {
+                        AUDITING = "0"
+                    });
+
+                var data = _dbContext.Query<SP_PURPLAN_DET>().Where(x => sids.Contains(x.PURPLAN_ID)).Select(t => t.SPDET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => data.Contains(x.SPDET_ID),
+                x => new SP_APPLY_DETAIL
+                {
+                    SP_STATUS = "30"//请购中
+                });
+
+                var orderId = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.PURPLAN_ID)).Select(t => t.ORDER_ID).ToList();
+                await _dbContext.DeleteAsync<SP_ORDER>(x => orderId.Contains(x.ORDER_ID));
+                await _dbContext.DeleteAsync<SP_ORDER_DETAIL>(x => orderId.Contains(x.ORDER_ID));
+            }
+            return AjaxResult.Success("成功");
         }
 
         public async Task<GridData> DetailListAsync(string PURPLAN_ID, GridRequest request)
