@@ -444,44 +444,69 @@ namespace EAM.Device.services
         /// 提交设备盈亏记录
         /// </summary>
         /// <returns></returns>
+        public async Task<AjaxResult> SubmitUpDown(string sid)
+        {
+            await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid,
+                x => new DEVICE_SCAN_RESULT
+                {
+                    AUDITING = "1",
+                });
+            var scanid = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid)
+                .Select(c => c.SCAN_ID).FirstOrDefaultAsync();
+            var qry = await _dbContext.Query<DEVICE_SCAN>()
+                .LeftJoin<DEVICE_SCAN_RESULT>((a, b) => a.SCAN_ID == b.SCAN_ID)
+                .Where((a, b) => a.SCAN_ID==scanid).Select((a, b) => b.AUDITING).ToListAsync();
+            if (!qry.Contains("0"))
+            {
+                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==scanid,
+                x => new DEVICE_SCAN
+                {
+                    STATUS = "4",
+                });
+            }
+            return AjaxResult.Success();
+        }
+
+        /// <summary>
+        /// 反提交设备盈亏记录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> UnSubmitUpDown(string sid)
+        {
+            await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid,
+                x => new DEVICE_SCAN_RESULT
+                {
+                    AUDITING = "0",
+                });
+            var scanid = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid)
+                .Select(c => c.SCAN_ID).FirstOrDefaultAsync();
+            var qry = await _dbContext.Query<DEVICE_SCAN>()
+                .LeftJoin<DEVICE_SCAN_RESULT>((a, b) => a.SCAN_ID == b.SCAN_ID)
+                .Where((a, b) => a.SCAN_ID==scanid).Select((a, b) => b.AUDITING).ToListAsync();
+            if (qry.Contains("0"))
+            {
+                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==scanid,
+                x => new DEVICE_SCAN
+                {
+                    STATUS = "3",
+                });
+            }
+            return AjaxResult.Success();
+        }
+
+        /// <summary>
+        /// 保存设备盈亏记录
+        /// </summary>
+        /// <returns></returns>
         public async Task<AjaxResult> ManageUpDown(SaveRequest<DEVICE_SCAN_RESULT> request)
         {
-            foreach (var entity in request.Updated)
-            {
-                await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.SCAN_ID==entity.SCAN_ID,
-                    x => new DEVICE_SCAN_RESULT
-                    {
-                        AUDITING = "1",
-                    });
-                var qry = await _dbContext.Query<DEVICE_SCAN>()
-                    .LeftJoin<DEVICE_SCAN_RESULT>((a, b) => a.SCAN_ID == b.SCAN_ID)
-                    .Where((a, b) => a.SCAN_ID==entity.SCAN_ID).Select((a, b) => b.AUDITING).ToListAsync();
-                if (!qry.Contains("0"))
-                {
-                    await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==entity.SCAN_ID,
-                    x => new DEVICE_SCAN
-                    {
-                        STATUS = "4",
-                    });
-                }
-            }
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
                     c.RESULT_ID,
                     c.RESULT_MEMO,
                 },
-                c => a => a.RESULT_ID == c.RESULT_ID, null, BeforeUpdate);
-        }
-
-        /// <summary>
-        /// 更新前验证
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        private async Task BeforeUpdate(DEVICE_SCAN_RESULT entity)
-        {
-            await Task.CompletedTask;
+                c => a => a.RESULT_ID == c.RESULT_ID);
         }
 
         #endregion 设备盈亏记录

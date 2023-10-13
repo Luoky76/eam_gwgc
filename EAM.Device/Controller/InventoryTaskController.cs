@@ -143,7 +143,27 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
-        /// 管理盈亏记录
+        /// 反提交盈亏记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitUpDownAsync(string sid)
+        {
+            return await _service.SubmitUpDown(sid);
+        }
+
+        /// <summary>
+        /// 提交盈亏记录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitUpDownAsync(string sid)
+        {
+            return await _service.UnSubmitUpDown(sid);
+        }
+
+        /// <summary>
+        /// 保存盈亏记录
         /// </summary>
         /// <returns></returns>
         [HttpPost]

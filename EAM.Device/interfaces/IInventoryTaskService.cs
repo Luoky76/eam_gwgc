@@ -69,7 +69,20 @@ namespace EAM.Device.interfaces
         public Task<GridData> GetUpDownList(GridRequest request);
 
         /// <summary>
-        /// 管理盈亏记录
+        /// 提交盈亏记录
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> SubmitUpDown(string sid);
+
+        /// <summary>
+        /// 反提交盈亏记录
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public Task<AjaxResult> UnSubmitUpDown(string sid);
+
+        /// <summary>
+        /// 保存盈亏记录
         /// </summary>
         /// <returns></returns>
         public Task<AjaxResult> ManageUpDown(SaveRequest<DEVICE_SCAN_RESULT> request);
