@@ -186,6 +186,7 @@ namespace EAM.Repair.services
                 exe.FAULT_DESCRIBE = request.FAULT_DESCRIBE;
                 exe.PLAN_START_DATE = request.PLAN_START_DATE;
                 exe.PLAN_END_DATE = request.PLAN_END_DATE;
+                exe.PLAN_STOP_TIME = request.PLAN_STOP_TIME;
                 exe.CHARGE_USER = request.CHARGE_USER;
                 exe.REPAIR_MEMO = request.REPAIR_MEMO;
                 exe.PLAN_MEMO = request.PLAN_MEMO;
@@ -332,7 +333,7 @@ namespace EAM.Repair.services
 
         public async Task<GridData> GetDeviceAsync(GridRequest request)
         {
-            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "1").GetGridData(request);
+            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "2").GetGridData(request);
             return query;
         }
         #endregion
@@ -357,6 +358,7 @@ namespace EAM.Repair.services
                 a.DEAL_TYPE,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
+                a.PLAN_STOP_TIME,
                 a.ACT_START_DATE,
                 a.ACT_END_DATE,
                 a.ACT_STOP_TIME,
@@ -401,6 +403,7 @@ namespace EAM.Repair.services
                 a.DEAL_TYPE,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
+                a.PLAN_STOP_TIME,
                 a.FAULT_DESCRIBE,
                 a.REP_LEVEL,
                 a.PLAN_CODE,
@@ -441,7 +444,6 @@ namespace EAM.Repair.services
             {
                 a.EXE_ITEM_ID,
                 a.EXE_ID,
-                a.PLAN_ITEM_ID,
                 a.BOM_ID,
                 a.PLAN_ID,
                 a.BOM_NAME,
@@ -510,7 +512,6 @@ namespace EAM.Repair.services
                          {
                              c.EXE_ITEM_ID,
                              c.EXE_ID,
-                             c.PLAN_ITEM_ID,
                              c.BOM_ID,
                              c.PLAN_ID,
                              c.BOM_NAME,
@@ -581,6 +582,7 @@ namespace EAM.Repair.services
         /// <returns></returns>
         private async Task BeforeAddDet(REP_PLAN_EXE_ITEM entity)
         {
+            entity.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
 

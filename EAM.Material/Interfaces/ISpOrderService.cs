@@ -50,5 +50,7 @@ namespace EAM.Material.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<GridData> OrderListAsync(GridRequest request);
+
+        Task<GridData> ExportListAsync(GridRequest request);
     }
 }

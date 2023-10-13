@@ -223,7 +223,11 @@
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
                     if (selected.length == 1) {
-                        me.f_rowAttachManage(selected[0].PLAN_ITEM_ID);
+                        if (selected[0].PLAN_ITEM_ID != undefined) {
+                            me.f_rowAttachManage(selected[0].PLAN_ITEM_ID);
+                        } else {
+                            LG.showError("请先保存该记录再上传！");
+                        }
                     }
                     else {
                         LG.tip('请选择一项记录!');
