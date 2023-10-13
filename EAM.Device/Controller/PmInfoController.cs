@@ -88,6 +88,17 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.SubmitPmPlan(sids), "成功");
         }
+
+        /// <summary>
+        /// 反提交维保计划
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitPmPlanAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitPmPlan(sid), "成功");
+        }
+
         /// <summary>
         /// 获取计划明细
         /// </summary>
@@ -194,6 +205,16 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> SubmitPmExeAsync(List<string> sids)
         {
             return AjaxResult.Success(await _service.SubmitPmExe(sids), "成功");
+        }
+
+        /// <summary>
+        /// 反提交维保实施
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitPmExeAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitPmExe(sid), "成功");
         }
 
         /// <summary>

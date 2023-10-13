@@ -45,6 +45,12 @@ namespace EAM.Device.interfaces
         public Task<AjaxResult> SubmitPmPlan(List<string> sids);
 
         /// <summary>
+        /// 反交维保计划
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> UnSubmitPmPlan(string sid);
+
+        /// <summary>
         /// 获取计划明细
         /// </summary>
         /// <returns></returns>
@@ -105,6 +111,12 @@ namespace EAM.Device.interfaces
         public Task<int> SubmitPmExe(List<string> sids);
 
         /// <summary>
+        /// 反提交维保实施
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitPmExe(string sid);
+
+        /// <summary>
         /// 管理维保实施结果
         /// </summary>
         /// <returns></returns>
@@ -124,7 +136,6 @@ namespace EAM.Device.interfaces
         /// <summary>
         /// 获取附件
         /// </summary>
-        /// <param name="request"></param>
         /// <param name="Id"></param>
         /// <returns></returns>
         public Task<AjaxResult> GetPmFileList(string Id);

@@ -85,7 +85,7 @@ namespace EAM.Device.services
                 .GetGridData(request);
         }
         //图片SRC
-        public class REP_FAULT_IMG: REP_FAULT
+        public class REP_FAULT_IMG : REP_FAULT
         {
             public List<string> ImageSrcList { get; set; }
 
@@ -164,7 +164,8 @@ namespace EAM.Device.services
             {
                 ID = request.Added[0].FAULT_ID;
             }
-            else {
+            else
+            {
                 ID = request.Updated[0].FAULT_ID;
             }
             return AjaxResult.Success(ID);
@@ -204,6 +205,30 @@ namespace EAM.Device.services
                     AUDITING_B = "1",
                     FAULT_STATUS = "40",
                 });
+        }
+
+        /// <summary>
+        /// 反提交故障处理
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitFaultExe(string sid)
+        {
+            var qryfaultitem = await _dbContext.Query<REP_FAULT>(x => sid == x.FAULT_ID)
+                .Select(c => c.AUDITING_D)
+                .FirstOrDefaultAsync();
+            if (qryfaultitem == "1" )
+            {
+                throw new MessageException("故障已验收，不可反提交！");
+            }
+            else
+            {
+                return await _dbContext.UpdateAsync<REP_FAULT>(x => sid == x.FAULT_ID,
+                x => new REP_FAULT
+                {
+                    AUDITING_B = "0",
+                    FAULT_STATUS = "30",
+                });
+            }
         }
 
         /// <summary>
@@ -284,7 +309,8 @@ namespace EAM.Device.services
             {
                 throw new MessageException("必须处理所有验收结果！");
             }
-            else {
+            else
+            {
                 var qrylists = _dbContext.Query<REP_FAULT>()
                  .Where(c => sids.Contains(c.FAULT_ID)).ToList();
                 foreach (var qrylist in qrylists)
@@ -323,10 +349,27 @@ namespace EAM.Device.services
             }
         }
         /// <summary>
+        /// 反提交验收
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitFaultCheck(string sid)
+        {
+            var qryCode = _dbContext.Query<REP_FAULT>()
+             .Where(c => sid == c.FAULT_ID).Select(c => c.FAULT_CODE).FirstOrDefault();
+            await _dbContext.DeleteAsync<REP_FRDB>(c => c.SRC_CODE == qryCode);
+            return await _dbContext.UpdateAsync<REP_FAULT>(x => sid == x.FAULT_ID,
+                x => new REP_FAULT
+                {
+                    AUDITING_D = "0",
+                    FAULT_STATUS = "40",
+                });
+        }
+
+        /// <summary>
         /// 驳回验收
         /// </summary>
         /// <returns></returns>
-        public async Task<int> SubmitFaultUnCheck(List<string> sids)
+        public async Task<int> ReturnedFaultUnCheck(List<string> sids)
         {
             return await _dbContext.UpdateAsync<REP_FAULT>(x => sids.Contains(x.FAULT_ID),
                 x => new REP_FAULT
