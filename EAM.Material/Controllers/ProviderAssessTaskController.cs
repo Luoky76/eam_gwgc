@@ -90,5 +90,16 @@ namespace EAM.Material.Controller
             var result = await _service.ResultListAsync(request);
             return AjaxResult<GridData>.Success(result);
         }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeAsync(string assessTaskId)
+        {
+            return await _service.RevokeAsync(assessTaskId);
+        }
     }
 }
