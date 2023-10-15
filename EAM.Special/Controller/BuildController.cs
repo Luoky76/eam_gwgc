@@ -1,8 +1,11 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.DTO;
+using EAM.Special.Interfaces;
 using Gksyb.Common;
+using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -62,6 +65,58 @@ namespace EAM.Special.Controller
         public async Task<AjaxResult> ImportAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile)
         {
             return await _service.ImportAsync(formFile);
+        }
+
+        /// <summary>
+        /// 查询年份
+        /// </summary>
+        /// <param name="year"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> QryYearAsync(DateTime year)
+        {
+            var result = await _service.QryYearAsync(year); 
+            return AjaxResult.Success(result);
+        }
+
+        /// <summary>
+        /// 模板导出
+        /// </summary>
+        /// <param name="webHostEnvironment"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet, HttpPost]
+        public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, GridRequest request)
+        {
+            try
+            {
+                var datas = await _service.ExportListAsync(request);
+                var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "采购订单导出模板.xlsx");
+                var list = (List<OrderExportData>)datas.Rows;
+                var zytimetotal = list.Select(t => t.ZYTIME).Sum();
+                var stoptimetotal = list.Select(t => t.STOPTIME).Sum();
+                var dailyconsumptiontotal = list.Select(t => t.DAILYCONSUMPTION).Sum();
+                var mastertotal = list.Select(t => t.MASTER).Sum();
+                var auxiliarytotal = list.Select(t => t.AUXILIARY).Sum();
+                var pumptotal = list.Select(t => t.PUMP).Sum();
+                var lubricatetotal = list.Select(t => t.LUBRICATE).Sum();
+                var data = new ExportTemplateData<OrderExportData> { 
+                    TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"), 
+                    DATEYEAR = DateTime.Now.ToString("yyyy"),
+                    ZYTIMETOTAL = zytimetotal.Value.ToString("F2"),
+                    STOPTIMETOTAL = stoptimetotal.Value.ToString("F2"),
+                    DAILYCONSUMPTIONTOTAL = dailyconsumptiontotal.Value.ToString("F2"),
+                    MASTERTOTAL = mastertotal.Value.ToString("F2"),
+                    AUXILIARYTOTAL = auxiliarytotal.Value.ToString("F2"),
+                    PUMPTOTAL = pumptotal.Value.ToString("F2"),
+                    LUBRICATETOTAL = lubricatetotal.Value.ToString("F2"),
+                    List = list };
+                return await FileExport.ExportToExcelByTemplate(data, template, "采购订单年度报表.xlsx");
+            }
+            catch (Exception ex)
+            {
+                throw new MessageException(ex.Message);
+            }
         }
     }
 }

@@ -152,8 +152,8 @@
                         case "submit":
                             me.submit();
                             break;
-                        case "unsubmit":
-                            me.unsubmit();
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "save":
                             me.save();
@@ -210,7 +210,7 @@
             },
 
 
-            unsubmit: function () {    //反提交
+            revoke: function () {    //反提交
                 var me = this;
                 debugger
                 var selected = me.grid.getSelectedRows();

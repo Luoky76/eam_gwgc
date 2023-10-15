@@ -32,5 +32,12 @@ namespace EAM.Special.Interfaces
         /// <param name="formFile"></param>
         /// <returns></returns>
         Task<AjaxResult> ImportAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile);
+        /// <summary>
+        /// 查询年份
+        /// </summary>
+        /// <param name="year">年份</param>
+        /// <returns></returns>
+        Task<GridData> QryYearAsync(DateTime year);
+        Task<GridData> ExportListAsync(GridRequest request);
     }
 }

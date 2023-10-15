@@ -163,8 +163,8 @@
                         case "returned":
                             me.returned();
                             break;
-                        case "unsubmit":
-                            me.unsubmit();
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -188,7 +188,7 @@
                 me.buttons[0].click();
             },
 
-            unsubmit: function () {    //反提交
+            revoke: function () {    //反提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 if (selected.length !== 1) {

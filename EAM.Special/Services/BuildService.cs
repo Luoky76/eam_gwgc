@@ -19,6 +19,8 @@ using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Gksyb.Common.Data;
+using Gksyb.Core.Auth;
+using Gksyb.Model.Core;
 
 namespace EAM.Special.Services
 {
@@ -27,6 +29,7 @@ namespace EAM.Special.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly IUserService _userService;
+        private readonly UserSession _userSession;
 
         public BuildService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
         {
@@ -54,8 +57,10 @@ namespace EAM.Special.Services
         public async Task<GridData> ListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<BUILD_COUNT>()
-                .LeftJoin<DEVICE_CARD>((a,b) => a.DEVICE_ID == b.DEVICE_ID)
-                .Select((a,b) => new {
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
+                .Select((a, b) => new
+                {
+                    b.SEC_DEPTID,
                     a.BUILD_ID,
                     a.DEVICE_ID,
                     a.DEVICE_NAME,
@@ -80,6 +85,7 @@ namespace EAM.Special.Services
                     a.LUBRICATE,
                     a.MEMO
                 })
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
                 .GetGridData(request);
             return list;
         }
@@ -209,6 +215,40 @@ namespace EAM.Special.Services
             }
 
             return AjaxResult.Success(1);
+        }
+
+        /// <summary>
+        /// 年份查询
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> QryYearAsync(DateTime year)
+        {
+            return await _dbContext.Query<BUILD_COUNT>()
+                .Where(x => x.STARTDATE.Year == year.Year)
+                .GetGridData(null);
+        }
+        
+        /// <summary>
+         /// 导出模板数据
+         /// </summary>
+         /// <param name="request"></param>
+         /// <returns></returns>
+        public async Task<GridData> ExportListAsync(GridRequest request)
+        {
+            var res = await _dbContext.Query<BUILD_COUNT>()
+                .Select(t => new OrderExportData
+                {
+                    SHIPTIMES = t.SHIPTIMES,
+                    ZYTIME = t.DREDGETIME + t.SAILTIME,
+                    STOPTIME = t.STOPTIME,
+                    DAILYCONSUMPTION = t.DAILYCONSUMPTION,
+                    MASTER = t.MASTER,
+                    AUXILIARY = t.AUXILIARY,
+                    LUBRICATE = t.LUBRICATE,
+                    PUMP = t.PUMP,
+                })
+                .GetGridData(request);
+            return res;
         }
     }
 }
