@@ -25,11 +25,12 @@ namespace EAM.Material.Controllers
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="YEAR"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
+        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request,string YEAR)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult<GridData>.Success(await _service.ListAsync(request, YEAR), "成功");
         }
 
         /// <summary>
@@ -60,6 +61,17 @@ namespace EAM.Material.Controllers
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             return AjaxResult.Success(await _service.Submit(sids), "成功");
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> CancelSubmitAsync(List<string> sids)
+        {
+            return AjaxResult.Success(await _service.CancelSubmit(sids), "成功");
         }
 
         /// <summary>
@@ -109,13 +121,14 @@ namespace EAM.Material.Controllers
         /// </summary>
         /// <param name="webHostEnvironment"></param>
         /// <param name="request"></param>
+        /// <param name="YEAR"></param>
         /// <returns></returns>
         [HttpGet, HttpPost]
-        public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, GridRequest request)
+        public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, GridRequest request, string YEAR)
         {
             try
             {
-                var datas = await _service.ExportListAsync(request);
+                var datas = await _service.ExportListAsync(request, YEAR);
                 var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "采购订单导出模板.xlsx");
                 var list = (List<OrderExportData>)datas.Rows;
                 var count = list.Select(t => t.ORDER_MONEY).Sum();

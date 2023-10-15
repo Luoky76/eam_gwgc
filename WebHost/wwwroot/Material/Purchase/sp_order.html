@@ -42,8 +42,7 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "下单日期", name: "_search_BDATE", dbname: "ORDER_DATE", newline: false, showTime: false, labelWidth: 80, width: 140, op: 'greaterorequal', type: "date", vt: "datetime" },
-                            { display: "至", name: "_search_EDATE", dbname: "ORDER_DATE", newline: false, showTime: false, labelWidth: 20, width: 140, op: 'lessorequal', type: "date", vt: "datetime" },
+                            { display: "下单年份", name: "_search_BDATE", newline: false, userSearch: false, showTime: false, labelWidth: 80, width: 100, op: 'equal', type: "date", options: { format: "yyyy" }, },
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
                             { display: "申请单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
@@ -157,6 +156,7 @@
                     toolbar: { group: "list" },
                     url: me.rootPath + 'List',
                     parms: {
+                        YEAR:"",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
@@ -214,6 +214,9 @@
                             break;
                         case "submit":
                             me.submit();
+                            break;
+                        case "cancelSubmit":
+                            me.cancelSubmit();
                             break;
                         case "export":
                             me.export();
@@ -302,11 +305,16 @@
                 debugger
                 var me = this;
                 var rules = LG.bulidFilterGroup(me.searchForm.id);
+                var year = "";
+                var date = liger.get('_search_BDATE').getValue();
+                if (date) {
+                    year = date.getFullYear();
+                }
                 LG.download({
                     url: me.rootPath + 'ExportExcelTemplate',
                     type: "post",
                     loading: '正在导出中...',
-                    data: { where: JSON2.stringify(rules) },
+                    data: { where: JSON2.stringify(rules), YEAR: year },
                     callback: function (status, data) {
                         debugger
                         if (status) {
@@ -367,6 +375,43 @@
                     LG.tip('请选择行!');
                 }
             },
+            cancelSubmit: function () {    //撤销
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    var flag = true;
+                    var sids = [];
+                    selected.forEach((a) => {
+                        if (a.AUDITING != "1") {
+                            LG.tip(a.ORDER_CODE + '未提交!');
+                            flag = false;
+                            return;
+                        }
+                        sids.push(a.ORDER_ID)
+                    })
+                    if (!flag) {
+                        return;
+                    }
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'CancelSubmit',
+                        loading: '正在撤销中...',
+                        data: { "sids": sids },
+                        success: function () {
+                            LG.showSuccess('撤销成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
             saveDetail: function () { //保存
                 var me = this;
                 if (me.gridReq.endEdit() != false) {
@@ -406,6 +451,10 @@
                         text: '查询',
                         width: 60,
                         click: function () {
+                            var date = liger.get('_search_BDATE').getValue();
+                            if (date) {
+                                me.grid.options.parms.YEAR = date.getFullYear();
+                            }
                             LG.commonSearch($formsearch, me.grid);
                         }
                     }],
@@ -413,12 +462,7 @@
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
 
-                        var nowDate = new Date();
-                        var beginDate = nowDate.getFullYear() + "-" + (nowDate.getMonth() + 1) + "-01";
-                        var day = new Date(nowDate.getFullYear(), nowDate.getMonth() + 1, 0);
-                        var endDate = nowDate.getFullYear() + "-" + (nowDate.getMonth() + 1) + "-" + day.getDate();
-                        me.searchForm.setData({ "_search_BDATE": beginDate });
-                        me.searchForm.setData({ "_search_EDATE": endDate });
+                        me.searchForm.setData({ "_search_BDATE": new Date() });
                     }
                 });
             },

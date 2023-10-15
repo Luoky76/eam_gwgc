@@ -3,6 +3,7 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
 
@@ -199,7 +200,6 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost]
         public async Task<GridData> ResultListAsync(GridRequest request)
         {
             // 评估任务id 供应商id 供应商名 供应商产品 评估年度 总分 平均分 最高分 最低分 实际评分人数 计划评分人数
@@ -242,6 +242,37 @@ namespace EAM.Material.Services
             var list = await query1.GetGridData(request);
 
             return list;
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeAsync(string assessTaskId)
+        {
+            var list = await _dbContext.Query<PROVIDER_ASSESS>(c => c.ASSESS_TASK_ID == assessTaskId && c.AUDITING == "1")
+                .LeftJoin<CF_USER>((a, b) => a.EXAMINER_ID == b.USERID)
+                .Select((a, b) => new
+                {
+                    b.REALNAME
+                })
+                .ToListAsync();
+                
+            if (list.Any())
+            {
+                string message = "";
+                for (int i = 0; i < list.Count; ++i)
+                {
+                    message += i == 0 ? list[i].REALNAME : "、" + list[i].REALNAME;
+                }
+                return AjaxResult.Error("撤销失败！\n以下人员已提交该任务的评估：" + message);
+            }
+            _dbContext.Update<PROVIDER_ASSESS_TASK>(c => c.ASSESS_TASK_ID == assessTaskId, c => new PROVIDER_ASSESS_TASK
+            {
+                AUDITING = "0"
+            });
+            return AjaxResult.Success("撤销成功");
         }
     }
 }

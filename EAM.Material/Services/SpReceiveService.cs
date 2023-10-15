@@ -10,6 +10,7 @@ using Gksyb.Core.Grid;
 using EAM.Material.Interfaces;
 using NPOI.SS.Formula.PTG;
 using Gksyb.Core.Auth;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace EAM.Material.Services
 {
@@ -216,6 +217,14 @@ namespace EAM.Material.Services
 
                         await _dbContext.InsertAsync<SP_INSTORE_DET>(_indet);
                     }
+
+                    //采购申请进度更新
+                    var appledetId = recdet.Select(t => t.SPDET_ID).ToList();
+                    await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
+                     x => new SP_APPLY_DETAIL
+                     {
+                         SP_STATUS = "60"//供货中
+                     });
                 }
 
                 _in.INSTORE_MONEY = money;

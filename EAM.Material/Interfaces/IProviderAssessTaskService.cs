@@ -46,5 +46,12 @@ namespace EAM.Material.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         public Task<GridData> ResultListAsync(GridRequest request);
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="assessTaskId"></param>
+        /// <returns></returns>
+        public Task<AjaxResult> RevokeAsync(string assessTaskId);
     }
 }
