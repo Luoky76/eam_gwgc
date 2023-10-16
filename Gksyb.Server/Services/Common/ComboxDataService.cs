@@ -348,6 +348,16 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
+
+        private async Task<List<ComboxData>> PlanState(Expression<Func<BC_CODE, bool>> predicate)
+        {
+            using var dbContext = _dbContext.Clone();
+            return await dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "plan_state").Where(predicate)
+                .OrderBy(c => c.CODE_SEQ)
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+               .ToListAsync();
+        }
+
         /// <summary>
         /// 维修来源类型
         /// </summary>

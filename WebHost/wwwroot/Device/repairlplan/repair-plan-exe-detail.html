@@ -55,6 +55,7 @@
             repairhandtype1: [{ "ID": "自修", "TEXT": "自修" }, { "ID": "厂修", "TEXT": "厂修" }],
             stopSource: [],
             malType: [],
+            plan_state:[],
             repitemtype:[],
             deviceInfo: [],
             start: null,
@@ -65,8 +66,8 @@
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
                             { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {} },
-                            { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "select", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -77,8 +78,8 @@
                             { display: "安装地点", name: "INSTALL_SITE", newline: true, width: 880, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
-                            { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
+                            { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", editor: { disabled: true }, options: { format: 'yyyy-MM-dd HH:mm', } },
+                            { display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: { format: 'yyyy-MM-dd HH:mm', } },
                             { display: "计划停机时间(H)", name: "PLAN_STOP_TIME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "负责人", name: "CHARGE_USER", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "采购方式", name: "COLLECT_METHOD", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -151,6 +152,7 @@
                         me.repairtype = data.RepairType;
                         me.repitemtype = data.RepitemType;
                         me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);

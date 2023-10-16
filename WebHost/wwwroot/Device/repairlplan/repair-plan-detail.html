@@ -28,6 +28,7 @@
             runStatus: [],
             maintdept: [],
             repairtype: [],
+            plan_state: [],
             shiplist:[],
             repairhandtype: [],
             stopSource: [],
@@ -41,7 +42,7 @@
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
                             { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", newline: true, upper: true, type: "select", options: {
                                     data: me.shiplist,
@@ -52,8 +53,7 @@
                                     columns: [
                                         { header: "船舶名称", name: "DEVICE_NAME", width: 100 },
                                         { header: "设备编号", name: "DEVICE_NO", width: 100 },
-                                        { header: "使用部门", name: "DEPT_NAME", width: 100 },
-                                        { header: "维保部门", name: "WSEC_DEPT", width: 100 }
+                                        { header: "使用部门", name: "DEPT_NAME", width: 100 }
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
@@ -62,7 +62,7 @@
                                             $("#DEVICE_NAME").val(g.selected.DEVICE_NAME);
                                             $("#DEVICE_NO").val(g.selected.DEVICE_NO);
                                             $("#DEPT_NAME").val(g.selected.DEPT_NAME);
-                                            $("#WSEC_DEPT").val(g.selected.WSEC_DEPT);
+                                            $("#DEPT_ID").val(g.selected.DEPT_ID);
                                             $("#ASSET_CODE").val(g.selected.ASSET_CODE);
                                             $("#DEVICE_TYPE").val(g.selected.DEVICE_TYPE);
                                         }
@@ -72,7 +72,8 @@
                             { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "DEPT_ID", name: "DEPT_ID", newline: false, upper: true, type: "hidden", editor: { disabled: true }, options: {} },
                             { display: "维保部门", name: "WSEC_DEPT", newline: false, upper: true, type: "select", options: { data: me.maintdept } },
                             { display: "维修类型", name: "MAINT_TYPE", newline: true, upper: true, type: "select", options: { data: me.repairtype } },
                             { display: "维修处理方式", name: "DEAL_TYPE", newline: false, upper: true, type: "select", options: { data: me.repairhandtype } },
@@ -116,6 +117,7 @@
                         me.maintdept = data.MaintDept;
                         me.repairtype = data.RepairType;
                         me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -144,13 +146,14 @@
                     return;
                 }
                 var timeDiff = complete - start;
-                var minutesDiff = Math.round(timeDiff / 1000 / 60 /60 / 60);
-                $('#PLAN_STOP_TIME').val(minutesDiff);
+                
+                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                $('#PLAN_STOP_TIME').val(minutesDiff.toFixed(2));
             },
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    me.mainform.setOrginData({ AUDITING: "0" });
+                    me.mainform.setOrginData({ AUDITING: "0", PLAN_STATE:"10" });
                 }
                 else {
                     LG.ajax({

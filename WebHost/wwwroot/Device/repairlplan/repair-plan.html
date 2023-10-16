@@ -42,6 +42,7 @@
                             { display: "计划提交日期", name: "AUDIT_TIME", width: 100, type: "text", },
                             { display: "计划开工时间", name: "PLAN_START_DATE", width: 100, type: "text", },
                             { display: "计划完工时间", name: "PLAN_END_DATE", width: 100, type: "text", },
+                            { display: "计划停机时间(H)", name: "PLAN_STOP_TIME", width: 100, type: "float", hide: true },
                             { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", },
                             { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
                             { display: "计划单号", name: "PLAN_CODE", width: 100, type: "text", },
@@ -215,7 +216,7 @@
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
-                        debugger
+                        
                         LG.ajax({
                             jsToken: true,
                             url: 'Repair/RepairPlan/ItemList',
@@ -236,6 +237,7 @@
                                 LG.showError(message);
                             }
                         })
+                        
                         if (!flag)
                             return;
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));

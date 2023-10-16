@@ -43,7 +43,8 @@ namespace EAM.Repair.services
                     {"RepitemType",null },
                     {"RepairDealType",null },
                     { "Auditing", null },
-                    { "User", null }
+                    { "User", null },
+                    { "PlanState", null }
             });
             result.TryAdd("Corp", await _corpService.ComboxDataAsync());
             return result;
@@ -66,6 +67,7 @@ namespace EAM.Repair.services
                 a.AUDIT_TIME,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
+                a.PLAN_STOP_TIME,
                 a.PLAN_CODE,
                 a.DEPT_NAME,
                 a.CHARGE_USER,
@@ -181,6 +183,10 @@ namespace EAM.Repair.services
                 exe.PLAN_CODE = request.PLAN_CODE;
                 exe.DEVICE_ID = request.DEVICE_ID;
                 exe.MAINT_TYPE = request.MAINT_TYPE;
+                exe.DEPT_NAME = request.DEPT_NAME;
+                exe.DEPT_ID = request.DEPT_ID;
+                exe.WSEC_DEPT = request.WSEC_DEPT;
+                exe.PLAN_STATE = "20";//实施中
                 exe.DEAL_TYPE = request.DEAL_TYPE;
                 exe.REP_LEVEL = request.REP_LEVEL;
                 exe.FAULT_DESCRIBE = request.FAULT_DESCRIBE;
@@ -214,7 +220,7 @@ namespace EAM.Repair.services
                     exeitem.REP_LEADER = iten.REP_LEADER;
                     exeitem.PLAN_ID = iten.PLAN_ID;
                     exeitem.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
-                    exeitem.PLAN_ITEM_ID = iten.PLAN_ITEM_ID;
+                    //exeitem.PLAN_ITEM_ID = iten.PLAN_ITEM_ID;
                     exeitem.BOM_ID = iten.BOM_ID;
                     exeitem.EXE_ID = exe.EXE_ID;
 
@@ -244,7 +250,7 @@ namespace EAM.Repair.services
         {
             var result = await _dbContext.Query<DEVICE_CARD>(a=> a.TYPE_ID == "1")//设备类别为船舶
                 .OrderBy(c => c.DEVICE_ID)
-                .Select(c => new DEVICE_CARD { AUDITING = c.AUDITING, DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_NO = c.DEVICE_NO, DEPT_NAME = c.DEPT_NAME, WSEC_DEPT = c.WSEC_DEPT, DEVICE_TYPE = c.DEVICE_TYPE })
+                .Select(c => new DEVICE_CARD { AUDITING = c.AUDITING, DEVICE_ID = c.DEVICE_ID, DEVICE_NAME = c.DEVICE_NAME, DEVICE_NO = c.DEVICE_NO, DEPT_NAME = c.DEPT_NAME,DEPT_ID = c.DEPT_ID, DEVICE_TYPE = c.DEVICE_TYPE })
                .ToListAsync();
             return AjaxResult.Success(result, "成功");
         }
@@ -355,6 +361,7 @@ namespace EAM.Repair.services
                 a.CHECK_CODE,
                 a.WSEC_DEPT,
                 a.MAINT_TYPE,
+                a.PLAN_STATE,
                 a.DEAL_TYPE,
                 a.PLAN_START_DATE,
                 a.PLAN_END_DATE,
@@ -398,6 +405,7 @@ namespace EAM.Repair.services
                 a.AUDITING,
                 a.AUDITING_A,
                 a.EXE_CODE,
+                a.PLAN_STATE,
                 a.WSEC_DEPT,
                 a.MAINT_TYPE,
                 a.DEAL_TYPE,
@@ -478,6 +486,7 @@ namespace EAM.Repair.services
                          c.EXE_CODE,
                          c.MAINT_TYPE,
                          c.DEAL_TYPE,
+                         c.PLAN_STATE,
                          c.ACT_START_DATE,
                          c.ACT_END_DATE,
                          c.ACT_STOP_TIME,
@@ -566,6 +575,7 @@ namespace EAM.Repair.services
             {
                 request.EIDT_DATE = DateTime.Now;
                 request.AUDITING_A = "0";
+                request.PLAN_STATE = "40";//待验收
 
                 string type = "WXYS" + DateTime.Now.ToString("yyyyMM");
                 string def = type + "0000";
@@ -654,6 +664,7 @@ namespace EAM.Repair.services
                          c.AUDITING_A,
                          c.EXE_CODE,
                          c.MAINT_TYPE,
+                         c.PLAN_STATE,
                          c.DEAL_TYPE,
                          c.ACT_START_DATE,
                          c.ACT_END_DATE,
@@ -740,6 +751,8 @@ namespace EAM.Repair.services
         /// <returns></returns>
         private async Task BeforeUpdateCHK(REP_PLAN_EXE request)
         {
+            if (request.AUDITING_A == "1")
+                request.PLAN_STATE = "50";//已验收
             await Task.CompletedTask;
         }
 
