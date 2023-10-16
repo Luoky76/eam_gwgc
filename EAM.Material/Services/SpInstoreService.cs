@@ -275,7 +275,7 @@ namespace EAM.Material.Services
                     _WATER.IN_MONEY = iten.MONEY;
                     _WATER.CUR_NUM = iten.COUNT;
                     _WATER.CUR_MONEY = iten.MONEY;
-                    
+
 
                     await _dbContext.InsertAsync(_STORE);
                     await _dbContext.InsertAsync(_WATER);
@@ -285,6 +285,22 @@ namespace EAM.Material.Services
                         STORE_ID = _STORE.STORE_ID,
                     });
                 }
+            }
+            else if (request.AUDITING == "-1") //撤销提交
+            {
+                request.AUDITING = "0";
+                var detIds = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID).Select(t=>t.INDET_ID).ToListAsync();
+
+                await _dbContext.UpdateAsync<SP_INSTORE_DET>(x => detIds.Contains(x.INDET_ID),
+                    x => new SP_INSTORE_DET
+                    {
+                        STORE_ID = null,
+                    });
+
+                var store = await _dbContext.Query<SP_STORE>(x => detIds.Contains(x.INDET_ID)).ToListAsync();
+                var storeId = store.Select(t => t.STORE_ID).ToList();
+                await _dbContext.DeleteAsync<SP_STORE>(x => storeId.Contains(x.STORE_ID));
+                await _dbContext.DeleteAsync<STORE_WATER>(x => storeId.Contains(x.STORE_ID));
             }
             await Task.CompletedTask;
         }

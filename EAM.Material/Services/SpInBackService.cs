@@ -235,6 +235,26 @@ namespace EAM.Material.Services
                     });
                 }
             }
+            else if (request.AUDITING == "-1") //撤销提交
+            {
+                request.AUDITING = "0";
+                var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID).ToListAsync();
+
+                foreach (var iten in det)
+                {
+                    await _dbContext.UpdateAsync<SP_STORE>(x => iten.STORE_ID.Contains(x.STORE_ID),
+                    x => new SP_STORE
+                    {
+                        IS_BACK = "0",
+                    });
+
+                    await _dbContext.UpdateAsync<STORE_WATER>(x => iten.STORE_ID.Contains(x.STORE_ID),
+                    x => new STORE_WATER
+                    {
+                        IS_BACK = "0",
+                    });
+                }
+            }
             await Task.CompletedTask;
         }
 
