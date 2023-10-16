@@ -76,5 +76,16 @@ namespace EAM.Special.Controller
         {
             return await _service.ComboxData();
         }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeAsync(string requestId)
+        {
+            return await _service.RevokeAsync(requestId);
+        }
     }
 }

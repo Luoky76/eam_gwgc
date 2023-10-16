@@ -39,5 +39,12 @@ namespace EAM.Special.Interfaces
         /// 获取下拉框数据
         /// </summary>
         public Task<AjaxResult> ComboxData();
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        public Task<AjaxResult> RevokeAsync(string requestId);
     }
 }

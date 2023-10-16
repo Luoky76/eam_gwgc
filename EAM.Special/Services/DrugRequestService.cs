@@ -7,6 +7,7 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
 
@@ -292,6 +293,39 @@ namespace EAM.Special.Services
             {
                 throw new Exception("获取下拉数据失败！原因：" + e.Message);
             }
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="requestId"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeAsync(string requestId)
+        {
+            var list = await _dbContext.Query<DRUG_REQUEST_DET>(a => a.REQUEST_ID == requestId)
+                .InnerJoin<DRUG_COLLECT_REQUEST>((a, b) => a.REQUEST_DET_ID == b.REQUEST_DET_ID)
+                .InnerJoin<DRUG_COLLECT>((a, b, c) => b.COLLECT_ID == c.COLLECT_ID)
+                .Select((a, b, c) => new
+                {
+                    c.COLLECT_CODE
+                })
+                .Distinct()
+                .ToListAsync();
+
+            if (list.Any())
+            {
+                string message = "";
+                for (int i = 0; i < list.Count; ++i)
+                {
+                    message += i == 0 ? list[i].COLLECT_CODE : "、" + list[i].COLLECT_CODE;
+                }
+                return AjaxResult.Error("撤销失败！\n以下采购订单已包含该需求：" + message);
+            }
+            _dbContext.Update<DRUG_REQUEST>(c => c.REQUEST_ID == requestId, c => new DRUG_REQUEST
+            {
+                AUDITING = "0"
+            });
+            return AjaxResult.Success("撤销成功");
         }
     }
 }
