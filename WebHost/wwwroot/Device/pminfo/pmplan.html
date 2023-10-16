@@ -162,8 +162,8 @@
                         case "submit":
                             me.submit();
                             break;
-                        case "unsubmit":
-                            me.unsubmit();
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -182,7 +182,7 @@
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            unsubmit: function () {    //反提交
+            revoke: function () {    //反提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 if (selected.length !== 1) {
