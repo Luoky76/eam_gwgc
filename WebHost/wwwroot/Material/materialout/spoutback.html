@@ -45,8 +45,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditing, selectBoxHeight: 100 } },
                             { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date", },
                             { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "text", },
                             { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text", },
@@ -161,6 +160,39 @@
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            revoke: function () {    //反提交
+                var me = this;
+                debugger
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.OUT_BACK_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/UnSubmitSpOutBack',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
             },
             submit: function () {    //提交
                 var me = this;

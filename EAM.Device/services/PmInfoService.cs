@@ -194,7 +194,7 @@ namespace EAM.Device.services
                 .FirstOrDefaultAsync();
             if (qryexe == "1")
             {
-                throw new MessageException("实施已提交，计划不可反提交！");
+                throw new MessageException("实施已提交，计划不可撤销提交！");
             }
             else
             {
@@ -207,7 +207,7 @@ namespace EAM.Device.services
                         EXE_CODE = "",
                     });
             }
-            return AjaxResult.Success("反提交成功");
+            return AjaxResult.Success("撤回提交成功");
         }
 
         /// <summary>

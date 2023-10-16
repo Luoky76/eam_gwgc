@@ -218,7 +218,7 @@ namespace EAM.Device.services
                 .FirstOrDefaultAsync();
             if (qryfaultitem == "1" )
             {
-                throw new MessageException("故障已验收，不可反提交！");
+                throw new MessageException("故障已验收，不可撤销提交！");
             }
             else
             {

@@ -257,7 +257,7 @@ namespace EAM.Device.services
             }
             else
             {
-                throw new MessageException("该计划已实施，不可反提交！");
+                throw new MessageException("该计划已实施，不可撤销提交！");
             }
             return AjaxResult.Success("更新成功");
         }
@@ -403,7 +403,7 @@ namespace EAM.Device.services
                 .ToListAsync();
             if (qryexeitem.Contains("1"))
             {
-                throw new MessageException("确认单已提交，实施不可反提交！");
+                throw new MessageException("确认单已提交，实施不可撤销提交！");
             }
             else
             {

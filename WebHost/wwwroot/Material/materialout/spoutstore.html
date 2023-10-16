@@ -61,7 +61,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING_A", width: 100, type: "chk" },
+                            { display: "记录状态", name: "AUDITING_A", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditing, selectBoxHeight: 100 } },
                             {
                                 display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text",
                                 editor: { type: 'text' },
@@ -206,6 +206,39 @@
                 var me = this;
                 me.buttons[0].click();
             },
+            revoke: function () {    //反提交
+                var me = this;
+                debugger
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING_A == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.OUT_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/UnSubmitSpOutStore',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
             submit: function () {    //提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
@@ -235,7 +268,7 @@
                 }
             },
 
-            unsubmit: function () {    //未提交
+            unsubmit: function () {    //驳回提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 if (selected.length !== 1) {
@@ -248,7 +281,7 @@
                         var sid = selected[0].OUT_ID;
                         LG.ajax({
                             jsToken: true,
-                            url: 'Material/SpOut/UnSubmitSpOutStore',
+                            url: 'Material/SpOut/ReturnedSpOutStore',
                             loading: '正在保存中...',
                             data: { "sid": sid },
                             success: function () {
