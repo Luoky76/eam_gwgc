@@ -82,17 +82,15 @@ namespace EAM.Special.Controller
         /// <summary>
         /// 模板导出
         /// </summary>
-        /// <param name="webHostEnvironment"></param>
-        /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet, HttpPost]
-        public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, GridRequest request)
+        public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, string year)
         {
             try
             {
-                var datas = await _service.ExportListAsync(request);
-                var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "采购订单导出模板.xlsx");
-                var list = (List<OrderExportData>)datas.Rows;
+                var datas = await _service.ExportListAsync(year);
+                var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "施工能耗年度报表模板.xlsx");
+                var list = (List<BuildExportData>)datas.Rows;
                 var zytimetotal = list.Select(t => t.ZYTIME).Sum();
                 var stoptimetotal = list.Select(t => t.STOPTIME).Sum();
                 var dailyconsumptiontotal = list.Select(t => t.DAILYCONSUMPTION).Sum();
@@ -100,7 +98,8 @@ namespace EAM.Special.Controller
                 var auxiliarytotal = list.Select(t => t.AUXILIARY).Sum();
                 var pumptotal = list.Select(t => t.PUMP).Sum();
                 var lubricatetotal = list.Select(t => t.LUBRICATE).Sum();
-                var data = new ExportTemplateData<OrderExportData> { 
+                var boat = list.Select(t => t.DEVICE_NAME).FirstOrDefault();
+                var data = new ExportTemplateData<BuildExportData> { 
                     TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"), 
                     DATEYEAR = DateTime.Now.ToString("yyyy"),
                     ZYTIMETOTAL = zytimetotal.Value.ToString("F2"),
@@ -110,8 +109,10 @@ namespace EAM.Special.Controller
                     AUXILIARYTOTAL = auxiliarytotal.Value.ToString("F2"),
                     PUMPTOTAL = pumptotal.Value.ToString("F2"),
                     LUBRICATETOTAL = lubricatetotal.Value.ToString("F2"),
+                    TOTAL = (mastertotal + auxiliarytotal + pumptotal).Value.ToString("F2"),
+                    DEVICE_NAME = boat,
                     List = list };
-                return await FileExport.ExportToExcelByTemplate(data, template, "采购订单年度报表.xlsx");
+                return await FileExport.ExportToExcelByTemplate(data, template, "施工能耗年度报表.xlsx");
             }
             catch (Exception ex)
             {

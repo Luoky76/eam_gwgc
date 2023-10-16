@@ -231,13 +231,14 @@ namespace EAM.Special.Services
         /// <summary>
          /// 导出模板数据
          /// </summary>
-         /// <param name="request"></param>
          /// <returns></returns>
-        public async Task<GridData> ExportListAsync(GridRequest request)
+        public async Task<GridData> ExportListAsync(string year)
         {
             var res = await _dbContext.Query<BUILD_COUNT>()
-                .Select(t => new OrderExportData
+                .Where(x => x.STARTDATE.Year.Equals(year))
+                .Select(t => new BuildExportData
                 {
+                    DEVICE_NAME = t.DEVICE_NAME,
                     SHIPTIMES = t.SHIPTIMES,
                     ZYTIME = t.DREDGETIME + t.SAILTIME,
                     STOPTIME = t.STOPTIME,
@@ -247,7 +248,7 @@ namespace EAM.Special.Services
                     LUBRICATE = t.LUBRICATE,
                     PUMP = t.PUMP,
                 })
-                .GetGridData(request);
+                .GetGridData(null);
             return res;
         }
     }
