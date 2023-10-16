@@ -30,6 +30,7 @@ namespace EAM.Repair.Controller
                 Auditing = comboxData["Auditing"],
                 User = comboxData["User"],
                 Corp = comboxData["Corp"],
+                PlanState = comboxData["PlanState"],
             }, "成功");
         }
 
