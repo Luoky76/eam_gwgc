@@ -85,7 +85,12 @@
                             },
                             { display: "维修工时(h)", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
-                            { display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            {
+                                display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", 
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }    
+                            },
                             {
                                 display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' },
                                 options: {
@@ -113,7 +118,8 @@
                             { display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float" },
                             { display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float" },
                             { display: "检修负责人", name: "REP_LEADER", minWidth: 100, type: "text" },
-                            { display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            //{ display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" }, format: "yyyy-MM-dd" },
                             {
                                 display: "实际人员数量", name: "EXE_LABOR_NUM", minWidth: 100, type: "float",
                                 editor: {
