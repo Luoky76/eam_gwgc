@@ -86,7 +86,7 @@ namespace EAM.Special.Services
                     a.LUBRICATE,
                     a.MEMO
                 })
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.DEPT_ID)
                 .GetGridData(request);
             return list;
         }
