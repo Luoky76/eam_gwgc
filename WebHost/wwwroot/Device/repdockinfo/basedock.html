@@ -27,8 +27,8 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "码头编号", name: "_search_DOCK_CODE", dbname: "DOCK_CODE", newline: false, upper: true, type: "text",options:{} },
-                            { display: "码头名称", name: "_search_DOCK_NAME", dbname: "DOCK_NAME", newline: false, upper: true, type: "text",options:{} },
+                            { display: "码头编号", name: "_search_DOCK_CODE", dbname: "DOCK_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "码头名称", name: "_search_DOCK_NAME", dbname: "DOCK_NAME", newline: false, upper: true, type: "text", options: {} },
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
                         ]
                     },
@@ -37,12 +37,12 @@
                             //{ display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "码头名称", name: "DOCK_NAME", minWidth: 200, type: "text", editor: { type: 'text' } },
                             { display: "码头地址", name: "DOCK_ADDRESS", minWidth: 250, type: "text", editor: { type: 'text' } },
-                            { display: "码头编号", name: "DOCK_CODE", minWidth: 150, type: "text"},
+                            { display: "码头编号", name: "DOCK_CODE", minWidth: 150, type: "text" },
                             { display: "编辑人", name: "EDIT_USER", minWidth: 120, type: "text", },
-                            { display: "编辑日期", name: "EDIT_DATE", minWidth: 120, type: "date"},
-                            { display: "备注", name: "MEMO", minWidth: 400, type: "text",  editor: { type: 'text'} },
+                            { display: "编辑日期", name: "EDIT_DATE", minWidth: 120, type: "date" },
+                            { display: "备注", name: "MEMO", minWidth: 400, type: "text", editor: { type: 'text' } },
                             { display: "主键", name: "DOCK_ID", minWidth: 100, type: "text", hide: true },
-                            
+
                         ]
                     }
                 };
@@ -89,10 +89,6 @@
                     enabledEdit: true,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.AUDITING == "1") return false;
-                            else return true;
-                        }
                         switch (editParm.column.name) {
                             case "":
                                 if (editParm.record.__status == "add") return true;
@@ -166,29 +162,24 @@
                     LG.tip('请选择且仅选择一行！');
                 }
                 else {
-                    if (selected[0].AUDITING == "0") {
-                        LG.tip('未提交！');
-                    }
-                    else {
-                        var sid = [];
-                        selected.forEach((a) => {
-                            sid.push(a.DOCK_ID)
-                        })
-                        LG.ajax({
-                            jsToken: true,
-                            url: 'Device/RepDockInfo/UnSubmit',
-                            loading: '正在提交中...',
-                            data: { "sid": sid[0] },
-                            success: function () {
-                                LG.showSuccess('撤回提交成功');
-                                me.grid.isDataChanged = false;
-                                me.reload();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
-                    }
+                    var sid = [];
+                    selected.forEach((a) => {
+                        sid.push(a.DOCK_ID)
+                    })
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/RepDockInfo/UnSubmit',
+                        loading: '正在提交中...',
+                        data: { "sid": sid[0] },
+                        success: function () {
+                            LG.showSuccess('撤回提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
             },
             add: function () { //新增
@@ -208,7 +199,7 @@
                 //    onClosed: me.reload.bind(me),
                 //    data: { "sid": null }
                 //});
-                me.grid.addEditRow({ "AUDITING": "0" }, true);
+                me.grid.addEditRow({ "AUDITING": "1" }, true);
             },
             modify: function () { //修改
                 var me = this;
@@ -267,29 +258,17 @@
             delete: function () { //删除
                 var me = this;
                 var selected = me.grid.getSelectedRows();
-                for (var i = 0; i < selected.length; i++) {
-                    if (selected[i].AUDITING == "1") {
-                        me.alreadydeleteed = true;
-                        break;
-                    }
-                }
                 if (selected.length > 0) {
-                    if (me.alreadydeleteed) {
-                        LG.tip('已提交的无法删除!');
-                        me.alreadydeleteed = false;
-                    }
-                    else {
-                        if (me.grid.endEdit() != false) {
-                            if (selected.length > 0) {
-                                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                                    if (confirm) {
-                                        for (var i = 0, len = selected.length; i < len; i++) {
-                                            me.grid.deleteRow(selected[i]);
-                                        }
-                                        me.save();
+                    if (me.grid.endEdit() != false) {
+                        if (selected.length > 0) {
+                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                if (confirm) {
+                                    for (var i = 0, len = selected.length; i < len; i++) {
+                                        me.grid.deleteRow(selected[i]);
                                     }
-                                });
-                            } 
+                                    me.save();
+                                }
+                            });
                         }
                     }
                 }
