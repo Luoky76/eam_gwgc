@@ -263,7 +263,7 @@
             },
             modify: function (rowdata) { //修改
                 var me = this;
-                var selected = me.grid.getSelectedRow();
+                var selected = me.grid.getSelectedRows();
                 if (selected.length > 1) {
                     LG.showError("不能选择多行")
                     return

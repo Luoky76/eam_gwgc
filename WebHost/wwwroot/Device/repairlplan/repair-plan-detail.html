@@ -147,7 +147,7 @@
                 }
                 var timeDiff = complete - start;
                 
-                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60).toFixed(2);
                 $('#PLAN_STOP_TIME').val(minutesDiff.toFixed(2));
             },
             loadData: function () {

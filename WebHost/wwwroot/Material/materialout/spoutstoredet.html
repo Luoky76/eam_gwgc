@@ -19,7 +19,7 @@
     </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
-            <div class="l-group" style="width: 100%;"><span>物理出库明细</span></div>
+            <div class="l-group" style="width: 100%;"><span>物料出库明细</span></div>
             <ul style="display: block; width: 100%;" id="ulGrid">
                 <li style=" width: 100%;">
                     <div style="margin-bottom: 50px; width: 100%;" id="detgird">
@@ -95,11 +95,17 @@
                                 editor: {
                                     type: 'float',
                                     onChange: function (rowdata) {
+                                        debugger
                                         var tol = 0;
+                                        var allmoney = 0;
                                         for (var i = 0; i < business.grid.rows.length; i++) {
                                             tol += business.grid.rows[i].COUNT * business.grid.rows[i].PRICE
                                         };
+                                        var currentPrice = rowdata.record.PRICE;
+
+                                        allmoney = rowdata.value * currentPrice;
                                         me.mainform.setData({ 'SUM_MONEY': tol });
+                                        liger.get("detgird").updateCell("APPLY_MONEY", allmoney, rowdata.record);
                                         business.grid.updateTotalSummary();
                                     },
                                 }
