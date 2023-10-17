@@ -63,6 +63,7 @@ namespace EAM.Special.Services
                 {
                     b.SEC_DEPTID,
                     a.BUILD_ID,
+                    b.DEPT_ID,
                     a.DEVICE_ID,
                     a.DEVICE_NAME,
                     a.STARTDATE,
