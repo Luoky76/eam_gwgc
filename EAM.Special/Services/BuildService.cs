@@ -31,11 +31,12 @@ namespace EAM.Special.Services
         private readonly IUserService _userService;
         private readonly UserSession _userSession;
 
-        public BuildService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
+        public BuildService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userService = userService;
+            _userSession=  userSession;
         }
 
         /// <summary>
