@@ -1,0 +1,221 @@
+﻿<template>
+    <div class="page  page-with-subnavbar" data-name="workflow-todo">
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href='javascript:app.methods.toUrl("back")' class="link external">
+                        <i class="f7-icons">arrow_left</i>
+                        <span class="ios-only">返回</span>
+                    </a>
+                </div>
+                <div class="navbar-segmented segmented segmented-strong">
+                    <a class="button tab-link tab-link-active" href="#tab-to-do">待办</a>
+                    <a class="button tab-link" href="#tab-done">已办</a>
+                    <span class="segmented-highlight"></span>
+                </div>
+            </div>
+        </div>
+        <div class="tabs-animated-wrap">
+            <div class="tabs custom-tab">
+                <div id="tab-to-do" class="page-content tab tab-active">
+                    <div class="searchbar-wrap">
+                        <div class="searchbar-backdrop display-none"></div>
+                        <form data-search-container="#to-do-list" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                            <div class="searchbar-inner">
+                                <div class="searchbar-input-wrap">
+                                    <input type="search" placeholder="请输入" />
+                                    <i class="searchbar-icon"></i>
+                                    <span class="input-clear-button"></span>
+                                </div>
+                                <span class="searchbar-disable-button">取消</span>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="to-do-list" class="list virtual-list media-list chevron-center"></div>
+                </div>
+                <div id="tab-done" class="page-content tab">
+                    <div class="searchbar-wrap">
+                        <form data-search-container="#done-list" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                            <div class="searchbar-inner">
+                                <div class="searchbar-input-wrap">
+                                    <input type="search" placeholder="请输入" />
+                                    <i class="searchbar-icon"></i>
+                                    <span class="input-clear-button"></span>
+                                </div>
+                                <span class="searchbar-disable-button">取消</span>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="done-list" class="list virtual-list media-list chevron-center"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<style>
+    .custom-tab .virtual-list {
+        margin-top: 26px;
+    }
+
+        .custom-tab .virtual-list ul:after {
+            display: none;
+        }
+
+    .tabs-swipeable-wrap > .custom-tab.tabs > .tab-active.tab {
+        transform: none;
+    }
+
+    .custom-tab .searchbar-wrap {
+        position: fixed !important;
+        top: 50px;
+        background-color: #EAEEFA;
+        width: 100%;
+        z-index: 100;
+    }
+
+    .custom-tab .searchbar {
+        width: 95% !important;
+        --f7-searchbar-input-bg-color: #DBE2F9;
+        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
+    }
+
+    .custom-tab .searchbar-disable-button:after {
+        color: rgb(27, 27, 31);
+    }
+</style>
+<script>
+    'use strict';
+    var business = {
+        page: null,
+        data: [],
+        setContent: function (domId) {
+            var me = this;
+            domId = "#" + (domId || "to-do-list");
+            var $el = me.page.$el.find(domId);
+            app.virtualList.destroy($el);
+            app.virtualList.create({
+                el: $el,
+                items: me.data,
+                height: 75,
+                searchAll: function (query, items) {
+                    var found = [];
+                    query = (query || "").toLowerCase();
+                    for (var i = 0, l = items.length; i < l; i++) {
+                        var item = items[i];
+                        if (!item.Title) continue;
+                        if (item.Title.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                    }
+                    return found;
+                },
+                renderItem: function (item) {
+                    if (item.temp === true) return '<li style="height:48px">&nbsp;</li>';
+                    var isView = item.StatusHtml ? "1" : "0";
+                    return `<li style="height:75px;">
+                                <a href="/flow-detail/${item.Id}/${isView}" class="item-link item-content">
+                                    <div class="item-inner">
+                                        <div class="item-title-row">
+                                            <div class="item-title">${item.Title}</div>
+                                            <div class="item-after">${item.Elapsed}</div>
+                                        </div>
+                                        <div class="item-text">
+                                            ${item.Creator} ${item.StatusHtml}<span class="float-right">${item.CreateDate}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>`;
+                }
+            });
+        },
+        loadData: function (domId) {
+            var me = this;
+            var url = 'workflow/query/todo';
+            var hasStatus = false;
+            if (domId == "done-list") {
+                url = "workflow/query/done";
+                hasStatus = true;
+            }
+            app.ajax({
+                url: url,
+                data: {
+                    sortname: "Id",
+                    sortorder: "desc",
+                    changePage: "1"
+                },
+                success: function (data) {
+                    me.data = data.Rows || [];
+                    var time = new Date().getTime();
+                    for (var i = 0, l = me.data.length; i < l; i++) {
+                        var item = me.data[i];
+                        var minute = (time - item.StartDate.toDate().getTime()) / (1000 * 60);
+                        var hour = parseInt(minute / 60);
+                        item.Elapsed = (hour > 0 ? hour + "小时" : "") + parseInt(minute % 60) + "分钟";
+                        item.StatusHtml = "";
+                        if (hasStatus) {
+                            item.StatusHtml = me.getStatusHtml(item.NodeStatus);
+                        }
+                    }
+                    if (me.data.length > 0) me.data.push({ temp: true });
+                    me.setContent(domId);
+                }
+            });
+        },
+        getStatusHtml: function (status) {
+            var me = this;
+            status = (status || "").toString();
+            for (var i = 0, l = me.dataStatus.length; i < l; i++) {
+                var item = me.dataStatus[i];
+                if (item.ID === status) {
+                    var cls = ""
+                    switch (item.TEXT) {
+                        case "同意":
+                            cls = "color-green";
+                            break;
+                        case "拒绝":
+                            cls = "color-red";
+                            break;
+                        default:
+                            cls = "color-blue";
+                            break;
+                    }
+                    return '<span class="badge ' + cls + '">' + item.TEXT + '</span>';
+                }
+            }
+        },
+        loadComboxData: function () {
+            var me = this;
+            app.ajax({
+                async: false,
+                url: 'workflow/query/statusData',
+                success: function (data) {
+                    me.dataStatus = data;
+                }
+            });
+        },
+        bindEvent: function () {
+            var me = this;
+            var page = me.page.$el;
+            page.off("tab:show").on('tab:show', function (e) {
+                var domId = $$(e.target).find(".virtual-list").attr("id");
+                me.loadData(domId);
+            });
+        },
+        init: function (page, ctx) {
+            var me = this;
+            me.page = page;
+            me.ctx = ctx;
+            me.bindEvent();
+            me.loadComboxData();
+            me.loadData();
+        }
+    };
+    return function (props, ctx) {
+        ctx.$on('pageInit', function (_e, page) {
+            business.init(page, ctx);
+        });
+        ctx.$on('pageAfterIn', function (_e, page) {
+            business.loadData();
+        });
+        return $render;
+    };
+</script>

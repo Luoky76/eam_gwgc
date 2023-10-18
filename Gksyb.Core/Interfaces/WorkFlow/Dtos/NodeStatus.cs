@@ -53,6 +53,11 @@
         public const int Draft = 10;
 
         /// <summary>
+        /// 退回归档
+        /// </summary>
+        public const int BackArchived = 11;
+
+        /// <summary>
         /// 获取描述
         /// </summary>
         public static string GetDesc(int? status)

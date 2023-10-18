@@ -68,6 +68,14 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         public override async Task Complate(FlowExecuteInfo info)
         {
+            if(info.NodeStatus == NodeStatus.Back) //退回特殊处理
+            {
+                await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_STATUS == NodeStatus.Active, c =>
+                {
+                    c.NODE_STATUS = NodeStatus.BackArchived;
+                });
+                return;
+            }
             info.NodeStatus ??= NodeStatus.Agree;
             await ComplateTask(info);
             switch (info.NodeStatus)
@@ -75,14 +83,6 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 case NodeStatus.Agree:
                     if (!info.ToNodeIsEmpty) break;
                     await ExecuteOutputs(info);
-                    break;
-
-                case NodeStatus.Back:
-                    //退回同时完成同节点的其他任务
-                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == Id && c.NODE_STATUS == NodeStatus.Active, c =>
-                    {
-                        c.NODE_STATUS = NodeStatus.Archived;
-                    });
                     break;
 
                 case NodeStatus.Transfer:

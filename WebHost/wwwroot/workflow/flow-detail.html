@@ -84,12 +84,12 @@
                 if (me.isView || me.isStart) return;
                 var panel = me.auditPanel.panel;
                 $('<button></button>').appendTo(panel.winbtns).ligerButton({
-                    text: '转办', type: "warning small", icon: "fa fa-send", onClick: function () {
+                    text: '转办', type: "warning small", icon: "fa fa-share", onClick: function () {
                         me.transfer();
                     }
                 });
                 $('<button></button>').appendTo(panel.winbtns).ligerButton({
-                    text: '抄送', type: "primary small", icon: "fa fa-share", onClick: function () {
+                    text: '抄送', type: "primary small", icon: "fa fa-send", onClick: function () {
                         me.share();
                     }
                 });
@@ -343,7 +343,7 @@
                     });
                 };
                 if (nodeStatus == me.nodeStatus.Agree && me.isAssign && !skipAssign) {
-                    this.selectUser(function (values) {
+                    me.selectUser(function (values) {
                         if (values.length < 1) return;
                         data.Operators = values.join(me.split);
                         inner();
@@ -355,7 +355,7 @@
             share: function (url, isClose) {
                 var me = this;
                 url = url || 'workflow/task/share';
-                this.selectUser(function (values) {
+                me.selectUser(function (values) {
                     if (values.length < 1) return;
                     var formData = me.auditForm.getData();
                     LG.ajax({
@@ -379,7 +379,6 @@
                 me.share('workflow/task/transfer', true);
             },
             selectUser: function (callback) {
-                var me = this;
                 $.ligerDialog.open({
                     width: 500,
                     height: 600,
@@ -438,7 +437,7 @@
                     });
                 }
                 if (me.isAssign && !isDraft && !me.nid) {
-                    this.selectUser(function (values) {
+                    me.selectUser(function (values) {
                         if (values.length < 1) return;
                         inner(values.join(me.split));
                     });

@@ -44,6 +44,16 @@
                     name: "iframe",
                     path: "/iframe/:url/:title/:backType",
                     componentUrl: gksybConfigs.urlBase + "iframe.html",
+                }, {
+                    name: "flow-detail",
+                    title: "单据详情",
+                    path: "/flow-detail/:id/:isView",
+                    componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html"
+                }, {
+                    name: "flow-create",
+                    title: "单据详情",
+                    path: "/flow-create/:flowCode",
+                    componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html",
                 });
             },
             //退出

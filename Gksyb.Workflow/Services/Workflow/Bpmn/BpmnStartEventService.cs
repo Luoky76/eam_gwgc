@@ -17,31 +17,61 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         {
             if (info.NodeStatus == NodeStatus.Back)//退回
             {
-                await ReExec(info);
+                await ExecBackAsync(info);
                 return;
             }
-            var isNew = string.IsNullOrWhiteSpace(info.TaskId);
-            if (isNew)
+            if (string.IsNullOrWhiteSpace(info.TaskId))
             {
-                await AddWfTask(info);
-                info.Id = await AddTask(info, false);
+                await ExecNewAsync(info);
             }
             else
             {
-                await UpdateWfTask(info);
+                await ReExecAsync(info);
             }
-            if (info.NodeStatus == NodeStatus.Draft) return;
-            info.NodeStatus ??= NodeStatus.Agree;
-            await base.Complate(info);
-            await AddLog(info, isNew ? "发起" : "重新提交");
         }
 
-        private static string BuildTitle(FlowExecuteInfo info) => info.Title.Replace(null, info.FormData, FilterParmMatch.CurrentParmMatch);
+        /// <summary>
+        /// 发起流程
+        /// </summary>
+        private async Task ExecNewAsync(FlowExecuteInfo info)
+        {
+            await AddWfTask(info);
+            info.Id = await AddTask(info, false);
+            if (info.NodeStatus == NodeStatus.Draft)
+            {
+                info.ToNode = null;
+                return;
+            }
+            await Complate(info);
+            await AddLog(info, "发起");
+        }
+
+        /// <summary>
+        /// 重新提交流程
+        /// </summary>
+        private async Task ReExecAsync(FlowExecuteInfo info)
+        {
+            await UpdateWfTask(info);
+            if (info.NodeStatus == NodeStatus.Draft)
+            {
+                info.ToNode = null;
+                return;
+            }
+            info.NodeStatus ??= NodeStatus.Agree;
+            await Complate(info);
+            await AddLog(info, "重新提交");
+            await _dbContext.UpdateAsync<WF_NODE>(c => c.TASK_ID == info.TaskId && c.NODE_STATUS == NodeStatus.BackArchived, c => new WF_NODE()
+            {
+                NODE_STATUS = NodeStatus.Active,
+                FINISHDATE = null
+            });
+            info.ToNode = null;
+        }
 
         /// <summary>
         /// 退回等引起的重新进入
         /// </summary>
-        private async Task ReExec(FlowExecuteInfo info)
+        private async Task ExecBackAsync(FlowExecuteInfo info)
         {
             info.Users = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => new UserInfo
             {
@@ -108,5 +138,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 FLOW_TITLE = title
             });
         }
+
+        private static string BuildTitle(FlowExecuteInfo info) => info.Title.Replace(null, info.FormData, FilterParmMatch.CurrentParmMatch);
     }
 }
