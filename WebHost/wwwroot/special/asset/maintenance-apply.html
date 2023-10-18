@@ -60,6 +60,7 @@
                             { display: "申请备注", name: "APPLY_MEMO", minWidth: 100, type: "text" },
                             //隐藏
                             { display: "主键", name: "REPORT_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "实施已提交", name: "AUDITING_CHECK", minWidth: 100, type: "chk", hide: true },
                             { display: "修复状态", name: "REPORT_STATE", minWidth: 100, type: "text", hide: true },
                             { display: "IT设备ID", name: "ASSET_ID", minWidth: 100, type: "text", hide: true },
                             { display: "申请部门ID", name: "APPLY_DEPTID", minWidth: 100, type: "text", hide: true },
@@ -209,6 +210,10 @@
                                 }
                             });
                             break;
+                        case "revoke":
+                            if (!me.isSelectSingleRow()) break;
+                            me.revoke();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -345,6 +350,44 @@
                         }
                     });
                 }
+            },
+            revoke: function () { //撤销提交
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                var updatedarr = [];
+                var orginarr = [];
+                var ori = JSON.parse(JSON.stringify(selected));
+                var upd = JSON.parse(JSON.stringify(selected));
+                if (ori.AUDITING_APPLY == "0") {
+                    LG.tip("未提交数据无需撤销！");
+                    return;
+                }
+                else if (selected.AUDITING_CHECK == "1") {
+                    LG.tip("维修实施已提交，无法撤销！");
+                    return;
+                }
+                else {
+                    upd.AUDITING_APPLY = "0";
+                    orginarr.push(ori);
+                    updatedarr.push(upd)
+                }
+                var changeRow = new Object();
+                changeRow["updated"] = updatedarr;
+                changeRow["original"] = orginarr;
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/AssetReport/Save',
+                    loading: '正在撤销中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('撤销成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;
