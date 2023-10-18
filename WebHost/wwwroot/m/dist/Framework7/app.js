@@ -16,15 +16,12 @@
     window.gksybConfigs = {
         urlBase: urlBase + "m/v/", // url访问路径
         apiBase: urlBase, // api 接口的访问路径
-        getUrl: function (url) {
-            if (url.indexOf("http") < 0) { //url处理
-                if (this.apiBase) {
-                    url = url.replace(/\.\.\//g, "");
-                    if (url.indexOf(this.urlBase) === 0) return url;
-                    if (url.indexOf(this.apiBase) === 0) return url;
-                }
-                url = this.apiBase + url;
-            }
+        getUrl: function (url, baseUrl) {
+            if (url.toLowerCase().indexOf("http") === 0) return url;
+            url = url.replace(/\.\.\//g, "");
+            baseUrl = baseUrl || this.apiBase;
+            if (baseUrl && url.indexOf(baseUrl) === 0) return url;
+            url = baseUrl + url;
             return url;
         }
     };
@@ -95,7 +92,8 @@
         generateJsToken: function (jqXHR, opt) {//js票据 eval用到jqXHR
             opt = opt || { jsToken: "JsToken" };
             var tokenOptions = Framework7.utils.extend(true, {
-                noGlobal: true,
+                noGlobalBeforeOpen: true,
+                noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
                 data: {
@@ -326,6 +324,7 @@
         },
         calendar: {
             dateFormat: "yyyy-mm-dd",
+            timePickerLabel:"时间",
             timePickerPlaceholder: "时间选择",
             toolbarCloseText: "确定",
             headerPlaceholder: "请选择日期"
@@ -364,6 +363,7 @@
         },
         view: {
             stackPages: true,
+            componentCache:false
         },
         on: {
             calendarOpen: function (calendar) {
@@ -586,8 +586,15 @@
             }
             return true;
         },
-        //转向url
         toUrl: function (url, options) {
+            var me = this;
+            if (!me._toUrlDebounce) {
+                me._toUrlDebounce = $$.debounce(me._toUrl, 300, true);
+            }
+            me._toUrlDebounce(url, options);
+        },
+        //转向url
+        _toUrl: function (url, options) {
             var indexUrl = gksybConfigs.urlBase + "index.html";
             if (url === "/" || url === "/Index/") {
                 location.replace(indexUrl);
@@ -604,7 +611,6 @@
             } else {
                 if (url === "back") {
                     mainView.router.back();
-                    document.title = app.lastTitle;
                 } else {
                     mainView.router.navigate(url, options);
                 }
@@ -681,6 +687,7 @@
                         //'chooseCard',//拉取适用卡券列表并获取用户选择信息
                         //'openCard',//查看微信卡包中的卡券接口
                     ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2。详见：http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html
+                    , openTagList: ['wx-open-launch-weapp']
                 });
                 if (callback) wx.ready(callback);
             }
@@ -743,8 +750,17 @@
                 }, 30);
             }
         },
+        setTitle: function (title) {//处理微信浏览器只在页面首次加载时初始化了标题title，之后就没有再监听 window.title的change事件。
+            if (!window.isInWeixin()) {
+                document.title = title;
+                return;
+            }
+            document.title = title;
+            $$('<iframe src="about:blank" class="display-none" ></iframe>').appendTo($$("body")).remove();
+        },
         //初始化页面
         initPage: function (page, scriptEl) {
+            var me = this;
             if (!app._params) app._params = {};
             var attrs = [];
             for (var attr in app._params) {
@@ -760,9 +776,10 @@
             var lastTitle = app.lastTitle;
             app.lastTitle = document.title;
             if (page.direction !== "backward") { //后退按钮不触发执行js
-                document.title = page.route.route.title || lastTitle || document.title;
+                me.setTitle(page.route.route.title || $el.find("title").html() || document.title);
                 var script = $el.find(scriptEl).html();
                 if (script) {
+                    page.router.tempDom.innerHTML = '';
                     var name = 'app.methods["router_' + (page.router.currentRoute.name || page.router.currentRoute.path.replace(/\//g, '')) + '"]';
                     script = ";try{" + name + " = function(page){" + script + "};" + name + "(app._params.page);" + name + " = null;delete " + name + ";}catch (e) {console.log(JSON.stringify(e));}";
                     window.eval(script);
@@ -772,7 +789,7 @@
                     //$(scriptEl).remove();
                 }
             } else {
-                document.title = page.route.route.title || $el.find("title").html() || document.title;
+                me.setTitle(page.route.route.title || lastTitle || document.title);
             }
         }
     };
