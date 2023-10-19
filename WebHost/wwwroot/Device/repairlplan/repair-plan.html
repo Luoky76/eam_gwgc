@@ -139,13 +139,12 @@
                             break;
                         case "delete":
                             me.delete();
+                            break; 
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "sumbit":
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.sumbit();
-                                }
-                            });
+                            me.sumbit();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -207,6 +206,40 @@
                     });
                 }
 
+            },
+
+            revoke: function () {    //反提交
+                var me = this;
+                debugger
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.PLAN_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/UnSubmitUpDown',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
             },
             sumbit: function () { //提交
                 var me = this;

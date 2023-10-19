@@ -40,6 +40,13 @@ namespace Gksyb.Model
         public string AUDITING_B { get; set; }
 
         /// <summary>
+        /// 记录状态
+        /// </summary>
+        [Description("记录状态")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDITING_D { get; set; }
+        
+        /// <summary>
         /// 计划单号
         /// </summary>
         [Description("计划单号")]
@@ -459,6 +466,47 @@ namespace Gksyb.Model
         [Description("供应商ID")]
         [Column(DbType = DbType.AnsiString)]
         public string PROVIDER_ID { get; set; }
+
+        /// <summary>
+        /// 审核人Id
+        /// </summary>
+        [Description("审核人Id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDIT_USERID { get; set; }
+
+        /// <summary>
+        /// 报修人Id
+        /// </summary>
+        [Description("报修人Id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REPORT_USERID { get; set; }
+
+        /// <summary>
+        /// 报修人
+        /// </summary>
+        [Description("报修人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REPORT_USER { get; set; }
+
+        /// <summary>
+        /// 审核人
+        /// </summary>
+        [Description("审核人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDIT_USER { get; set; }
+
+        /// <summary>
+        /// 采购方式
+        /// </summary>
+        [Description("采购方式")]
+        [Column(DbType = DbType.AnsiString)]
+        public string COLLECT_METHOD { get; set; }
+
+        /// <summary>
+        /// 预估维修金额(元)
+        /// </summary>
+        [Description("预估维修金额(元)")]
+        public decimal? PLAN_MONEY { get; set; }
 
     }
 }

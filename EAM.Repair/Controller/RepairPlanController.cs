@@ -111,10 +111,5 @@ namespace EAM.Repair.Controller
             return await _service.SaveExeItem(requestdet);
         }
 
-        [HttpPost]
-        public async Task<AjaxResult> SaveCheck(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
-        {
-            return await _service.SaveCheck(request, requestdet);
-        }
     }
 }
