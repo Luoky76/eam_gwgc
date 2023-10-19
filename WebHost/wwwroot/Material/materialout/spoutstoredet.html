@@ -95,7 +95,6 @@
                                 editor: {
                                     type: 'float',
                                     onChange: function (rowdata) {
-                                        debugger
                                         var tol = 0;
                                         var allmoney = 0;
                                         for (var i = 0; i < business.grid.rows.length; i++) {
@@ -263,7 +262,8 @@
                 function inner(callback) {
                     var data = me.mainform.getData();
                     var updateFields = LG.getFormCombChanges(data, me.orginData, true);
-                    if (updateFields) {
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);

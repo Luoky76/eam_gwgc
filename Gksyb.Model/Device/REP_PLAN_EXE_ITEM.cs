@@ -179,5 +179,39 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string ITEM_TYPE { get; set; }
 
+        /// <summary>
+        /// 设备编号
+        /// </summary>
+        [Description("设备编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NO { get; set; }
+
+        /// <summary>
+        /// 设备规格
+        /// </summary>
+        [Description("设备规格")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_SIZE { get; set; }
+
+        /// <summary>
+        /// 设备型号
+        /// </summary>
+        [Description("设备型号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_TYPE { get; set; }
+
+        /// <summary>
+        /// 设备数量
+        /// </summary>
+        [Description("设备数量")]
+        public decimal? DEVICE_NUM { get; set; }
+
+        /// <summary>
+        /// 检修负责人
+        /// </summary>
+        [Description("检修负责人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string STOCK_NAME { get; set; }
+
     }
 }

@@ -405,5 +405,33 @@ namespace Gksyb.Model
         [Description("提交时间")]
         public DateTime? AUDIT_TIME { get; set; }
 
+        /// <summary>
+        /// 审核人Id
+        /// </summary>
+        [Description("审核人Id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDIT_USERID { get; set; }
+
+        /// <summary>
+        /// 报修人Id
+        /// </summary>
+        [Description("报修人Id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REPORT_USERID { get; set; }
+
+        /// <summary>
+        /// 报修人
+        /// </summary>
+        [Description("报修人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REPORT_USER { get; set; }
+
+        /// <summary>
+        /// 审核人
+        /// </summary>
+        [Description("审核人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDIT_USER { get; set; }
+
     }
 }
