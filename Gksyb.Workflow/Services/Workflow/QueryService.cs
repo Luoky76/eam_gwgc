@@ -209,7 +209,8 @@ namespace Gksyb.Workflow.Services.Workflow
                     FormMobileUrl = flow.FLOW_FORM_MOBILE_URL,
                     FormData = task.FLOW_FORM_DATA,
                     Creator = task.CREATEUSER,
-                    CreateDate = task.CREATEDATE
+                    CreateDate = task.CREATEDATE,
+                    FinishDate = task.FINISHDATE
                 }).FirstOrDefaultAsync();
             if (info == null) return info;
             info.WorkNodeId = info.NodeId;

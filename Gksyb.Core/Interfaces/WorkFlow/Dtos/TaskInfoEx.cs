@@ -61,5 +61,10 @@
         /// 查看时间
         /// </summary>
         public DateTime? ViewDate { get; set; }
+
+        /// <summary>
+        /// 任务完成时间
+        /// </summary>
+        public DateTime? FinishDate { get; set; }
     }
 }

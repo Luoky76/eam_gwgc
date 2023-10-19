@@ -200,9 +200,8 @@
                 if (nodeInfos.length < 1) return nodes;
                 var first = nodeInfos[0];
                 if (first.OperType === "同意") {
-                    var outNodes = me.lf.getNodeOutgoingNode(first.NodeId);
-                    if (outNodes.length === 1 && outNodes[0].type === "bpmn:endEvent") {
-                        nodes.push(outNodes[0].id);
+                    if (me.data.FinishDate) {
+                        nodes.push(me.lf.getNodeModelByType("bpmn:endEvent").id);
                     }
                 }
                 else if (first.OperType === "拒绝") {
