@@ -2801,7 +2801,18 @@ table.l-filter-group-alt table.l-filter-group {
     background-color: rgba(0, 0, 0, 0.02);
     border: 1px dashed #dddee1;
     cursor: pointer;
+    display: inline-table;
 }
+
+    .l-upload-item.l-upload-select .l-upload-select-content {
+        display: table-cell;
+        vertical-align: middle;
+        word-wrap: break-word;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        font-size: 14px;
+        line-height: normal;
+    }
 
 .l-upload-item-display {
     border: 1px solid #dddee1;
