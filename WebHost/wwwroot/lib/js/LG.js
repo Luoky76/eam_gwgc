@@ -134,6 +134,9 @@
                 if (!result) return;
                 if (result.IsError) {
                     if (options.errorInner) options.errorInner(result.Message, result.Data);
+                    else {
+                        LG.showError(result.Message);
+                    }
                     return;
                 }
                 if (options.successInner) options.successInner(result.Data, result.Message);

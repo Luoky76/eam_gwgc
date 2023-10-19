@@ -14,7 +14,7 @@ namespace Gksyb.Common
             set { base.Data = value; }
         }
 
-        public new static AjaxResult<T> Error(string message = default)
+        public static new AjaxResult<T> Error(string message = default)
         {
             return new AjaxResult<T>()
             {
@@ -23,7 +23,7 @@ namespace Gksyb.Common
             };
         }
 
-        public new static AjaxResult<T> Error(string message, object data)
+        public static new AjaxResult<T> Error(string message, object data)
         {
             return new AjaxResult<T>()
             {
@@ -33,7 +33,7 @@ namespace Gksyb.Common
             };
         }
 
-        public new static AjaxResult<T> Success(string message)
+        public static new AjaxResult<T> Success(string message)
         {
             return new AjaxResult<T>()
             {
@@ -42,7 +42,7 @@ namespace Gksyb.Common
             };
         }
 
-        public new static AjaxResult<T> Success(object data = default, string message = "成功")
+        public static new AjaxResult<T> Success(object data = default, string message = "成功")
         {
             return new AjaxResult<T>()
             {

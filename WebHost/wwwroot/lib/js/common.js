@@ -29,8 +29,9 @@
 
     $.extend(window, {//全局方法扩展
         encrypt: window.encryptFront,
-        getQueryString: function () {
-            var result = location.search.match(new RegExp("[\?\&][^\?\&]+=[^\?\&]+", "g"));
+        getQueryString: function (url) {
+            url = url || location.search;
+            var result = url.match(new RegExp("[\?\&][^\?\&]+=[^\?\&]+", "g"));
             if (result == null) {
                 return "";
             }
@@ -39,8 +40,9 @@
             }
             return result;
         },
-        getQueryStringByName: function (name) {
-            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+        getQueryStringByName: function (name, url) {
+            url = url || location.search;
+            var result = url.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
             if (result == null || result.length < 1) {
                 return "";
             }
