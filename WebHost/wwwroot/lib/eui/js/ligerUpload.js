@@ -1,9 +1,11 @@
 ﻿(function ($) {
     $.ligerDefaults.Upload = {
         type: 'card' //类型 text,card
+        , itemWidth: null //单项宽度 不设置默认取宽度
         , width: 100 //宽度
         , height: 100 //高度
-        , hasTitle: true //显示标题
+        , showName: true //显示上传文件名称
+        , title: "<p>支持拖拽上传</p><p>格式：{extensions}</p>" //上传文字描述
         , extensions: "jpg,jpeg,png,gif,bmp"//允许上传的文件后缀
         , mimeTypes: 'image/*' //允许上传的文件类型
         , compress: {//压缩格式
@@ -20,6 +22,7 @@
         , fileSizeLimit: 3 * 1024 * 1024 //文件限制大小，单位字节，默认3M
         , fileNumLimit: 0 //最大上传的文件数，默认不限制
         , multiple: false //是否允许多文件上传
+        , onSuccess: null //上传后回调
     };
     $.ligerDefaults.UploadString = {
         typeDeniedText: '只能上传文件类型为{extensions}的文件'
