@@ -33,7 +33,7 @@
                 comment = changeName[item.Name];
                 editor = "";
             }
-            columns.Add($@"{{ display: ""{comment}"", name: ""{item.Name}"", type: ""{colType}""{((item.IsNullable == true) ? "" : ", validate: { required: true }")}{editor} }}");
+            columns.Add($@"{{ display: "*"{comment}"", name: ""{item.Name}"", type: ""{colType}""{((item.IsNullable == true) ? "" : ", validate: { required: true }")}{editor} }}");
         }
     }
 }

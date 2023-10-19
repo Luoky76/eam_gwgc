@@ -58,7 +58,7 @@
                             },
                             { display: "设备编号", name: "DEVICE_NO", dbname: "DEVICE_NO", labelWidth: 130, width: 200, type: "hidden", options: {} },
                             { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, width: 200, type: "text", options: {}, editor: { disabled: true }, },
-                            { display: "状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", width: 200, validate: { required: true }, minWidth: 150, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" } },
+                            { display: "*状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", width: 200, validate: { required: true }, minWidth: 150, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" } },
                             { display: "原状态", name: "RUN_STATUS", newline: false, upper: true, width: 200, type: "text", options: {}, editor: { disabled: true }, },
                             { display: "现状态", name: "NEW_RUN_STATUS", newline: false, upper: true, width: 200, type: "select", options: { data: me.runStatus } },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, width: 200, type: "hidden", options: {} },
