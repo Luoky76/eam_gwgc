@@ -36,7 +36,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("船次")]
         [Column(DbType = DbType.AnsiString)]
-        public string SHIPTIMES { get; set; }
+        public int? SHIPTIMES { get; set; }
 
         /// <summary>
         /// 船方
@@ -49,7 +49,7 @@ namespace Gksyb.Model
         /// </summary>
         [Description("施工准备")]
         [Column(DbType = DbType.AnsiString)]
-        public string CONPLAN { get; set; }
+        public decimal? CONPLAN { get; set; }
 
         /// <summary>
         /// 挖泥时间

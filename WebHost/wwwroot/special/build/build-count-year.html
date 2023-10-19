@@ -54,7 +54,7 @@
                                         display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text"
                                     },
                                     {
-                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "text", editor: { type: 'text' }, totalSummary:
+                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'text' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
@@ -71,7 +71,7 @@
                             },
                             {
                                 display: "", columns: [
-                                    { display: "施工准备", name: "CONPLAN", minWidth: 100, type: "text", editor: { type: 'text' } },
+                                    { display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' } },
                                     {
                                         display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -279,6 +279,9 @@
                         case "export":
                             me.export();
                             break;
+                        case "export-month":
+                            me.exportmonth();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -300,7 +303,25 @@
                 var me = this;
                // var rules = LG.bulidFilterGroup(me.searchForm.id);
                 LG.download({
-                    url: 'Special/Build/ExportExcelTemplate',
+                    url: 'Special/Build/ExportYearList',
+                    type: "post",
+                    loading: '正在导出中...',
+                    data: { year: date.getFullYear() },
+                    callback: function (status, data) {
+                        if (status) {
+                            LG.showSuccess(data.Message);
+                        }
+                        else LG.showError(data.Message);
+                    }
+                });
+            },
+            exportmonth: function () { //模板导出
+                debugger
+                var date = new Date($("#_search_STARTDATE").val());
+                var me = this;
+                // var rules = LG.bulidFilterGroup(me.searchForm.id);
+                LG.download({
+                    url: 'Special/Build/ExportMonthList',
                     type: "post",
                     loading: '正在导出中...',
                     data: { year: date.getFullYear() },

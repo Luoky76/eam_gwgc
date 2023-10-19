@@ -80,15 +80,15 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
-        /// 模板导出
+        /// 模板年度导出
         /// </summary>
         /// <returns></returns>
         [HttpGet, HttpPost]
-        public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, string year)
+        public async Task<FileResult> ExportYearList([FromServices] IWebHostEnvironment webHostEnvironment, string year)
         {
             try
             {
-                var datas = await _service.ExportListAsync(year);
+                var datas = await _service.ExportYearListAsync(year);
                 var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "施工能耗年度报表模板.xlsx");
                 var list = (List<BuildExportData>)datas.Rows;
                 var zytimetotal = list.Select(t => t.ZYTIME).Sum();
@@ -101,7 +101,7 @@ namespace EAM.Special.Controller
                 var boat = list.Select(t => t.DEVICE_NAME).FirstOrDefault();
                 var data = new ExportTemplateData<BuildExportData> { 
                     TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"), 
-                    DATEYEAR = DateTime.Now.ToString("yyyy"),
+                    DATEYEAR = year,
                     ZYTIMETOTAL = zytimetotal.Value.ToString("F2"),
                     STOPTIMETOTAL = stoptimetotal.Value.ToString("F2"),
                     DAILYCONSUMPTIONTOTAL = dailyconsumptiontotal.Value.ToString("F2"),
@@ -113,6 +113,50 @@ namespace EAM.Special.Controller
                     DEVICE_NAME = boat,
                     List = list };
                 return await FileExport.ExportToExcelByTemplate(data, template, "施工能耗年度报表.xlsx");
+            }
+            catch (Exception ex)
+            {
+                throw new MessageException(ex.Message);
+            }
+        }
+        /// <summary>
+        /// 模板月度导出
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet, HttpPost]
+        public async Task<FileResult> ExportMonthList([FromServices] IWebHostEnvironment webHostEnvironment, string year)
+        {
+            try
+            {
+                var datas = await _service.ExportMonthListAsync(year);
+                var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "施工能耗月度报表模板.xlsx");
+                var list = (List<BuildMonthExportData>)datas.Rows;
+                var shiptotal = list.Select(t => t.SHIPTIMES).Sum();
+                var zytimetotal = list.Select(t => t.ZYTIME).Sum();
+                var stoptimetotal = list.Select(t => t.STOPTIME).Sum();
+                var dailyconsumptiontotal = list.Select(t => t.DAILYCONSUMPTION).Sum();
+                var mastertotal = list.Select(t => t.MASTER).Sum();
+                var auxiliarytotal = list.Select(t => t.AUXILIARY).Sum();
+                var pumptotal = list.Select(t => t.PUMP).Sum();
+                var lubricatetotal = list.Select(t => t.LUBRICATE).Sum();
+                var boat = list.Select(t => t.DEVICE_NAME).FirstOrDefault();
+                var data = new ExportMonthTemplateData<BuildMonthExportData>
+                {
+                    TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"),
+                    DATEYEAR = year,
+                    SHIPTOTAL = shiptotal.Value.ToString("F2"),
+                    ZYTIMETOTAL = zytimetotal.Value.ToString("F2"),
+                    STOPTIMETOTAL = stoptimetotal.Value.ToString("F2"),
+                    DAILYCONSUMPTIONTOTAL = dailyconsumptiontotal.Value.ToString("F2"),
+                    MASTERTOTAL = mastertotal.Value.ToString("F2"),
+                    AUXILIARYTOTAL = auxiliarytotal.Value.ToString("F2"),
+                    PUMPTOTAL = pumptotal.Value.ToString("F2"),
+                    LUBRICATETOTAL = lubricatetotal.Value.ToString("F2"),
+                    TOTAL = (mastertotal + auxiliarytotal + pumptotal).Value.ToString("F2"),
+                    DEVICE_NAME = boat,
+                    List = list
+                };
+                return await FileExport.ExportToExcelByTemplate(data, template, "施工能耗月度报表.xlsx");
             }
             catch (Exception ex)
             {

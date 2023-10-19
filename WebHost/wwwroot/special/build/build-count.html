@@ -55,7 +55,7 @@
                                         display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text"
                                     },
                                     {
-                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "text", editor: { type: 'text' }, totalSummary:
+                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'text' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
@@ -72,7 +72,13 @@
                             },
                             {
                                 display: "", columns: [
-                                    { display: "施工准备", name: "CONPLAN", minWidth: 100, type: "text", editor: { type: 'text' } },
+                                    {
+                                        display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
                                     {
                                         display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -324,7 +330,7 @@
                 var me = this;
                 $.ligerDialog.open({
                     width: 1100,
-                    height: 520,
+                    height: 620,
                     allowClose: true,
                     title: '[新增]',
                     url: "build-count-detail.html?MenuNo=" + me.menuNo,
@@ -349,7 +355,7 @@
                 var sid = selected.BUILD_ID;
                 $.ligerDialog.open({
                     width: 1100,
-                    height: 520,
+                    height: 620,
                     allowClose: true,
                     title: '[修改]',
                     url: "build-count-detail.html?MenuNo=" + me.menuNo,

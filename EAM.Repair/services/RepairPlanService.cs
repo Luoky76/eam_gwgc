@@ -229,7 +229,7 @@ namespace EAM.Repair.services
                 foreach (var iten in item)
                 {
                     REP_PLAN_EXE_ITEM exeitem = new();
-                    exeitem.BOM_NAME = iten.BOM_NAME;
+                    exeitem.DEVICE_NAME = iten.DEVICE_NAME;
                     exeitem.REP_INDEX = iten.REP_INDEX;
                     exeitem.REP_CONTENT = iten.REP_CONTENT;
                     exeitem.DEAL_TYPE = iten.DEAL_TYPE;
@@ -239,7 +239,7 @@ namespace EAM.Repair.services
                     exeitem.PLAN_ID = iten.PLAN_ID;
                     exeitem.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
                     //exeitem.PLAN_ITEM_ID = iten.PLAN_ITEM_ID;
-                    exeitem.BOM_ID = iten.BOM_ID;
+                    exeitem.DEVICE_ID = iten.DEVICE_ID;
                     exeitem.EXE_ID = exe.EXE_ID;
 
                     await _dbContext.InsertAsync<REP_PLAN_EXE_ITEM>(exeitem);
@@ -290,9 +290,9 @@ namespace EAM.Repair.services
             }).Select((a, b) => new
             {
                 a.PLAN_ITEM_ID,
-                a.BOM_ID,
+                a.DEVICE_ID,
                 a.PLAN_ID,
-                a.BOM_NAME,
+                a.DEVICE_NAME,
                 a.REP_CONTENT,
                 a.REP_METHOD,
                 a.USE_TOOL,
@@ -321,7 +321,7 @@ namespace EAM.Repair.services
                 {
                     a.PLAN_ITEM_ID,
                     a.PLAN_ID,
-                    a.BOM_NAME,
+                    a.DEVICE_NAME,
                     a.REP_CONTENT,
                     a.MEMO,
                     a.DEAL_TYPE,
@@ -497,9 +497,9 @@ namespace EAM.Repair.services
             {
                 a.EXE_ITEM_ID,
                 a.EXE_ID,
-                a.BOM_ID,
+                a.DEVICE_ID,
                 a.PLAN_ID,
-                a.BOM_NAME,
+                a.DEVICE_NAME,
                 a.REP_CONTENT,
                 a.IS_COMPLETE,
                 a.USE_TOOL,
@@ -586,9 +586,9 @@ namespace EAM.Repair.services
                          {
                              c.EXE_ITEM_ID,
                              c.EXE_ID,
-                             c.BOM_ID,
+                             c.DEVICE_ID,
                              c.PLAN_ID,
-                             c.BOM_NAME,
+                             c.DEVICE_NAME,
                              c.REP_CONTENT,
                              c.IS_COMPLETE,
                              c.USE_TOOL,
@@ -745,9 +745,9 @@ namespace EAM.Repair.services
                     c.EXE_ITEM_ID,
                     c.EXE_ID,
                     c.PLAN_ITEM_ID,
-                    c.BOM_ID,
+                    c.DEVICE_ID,
                     c.PLAN_ID,
-                    c.BOM_NAME,
+                    c.DEVICE_NAME,
                     c.REP_CONTENT,
                     c.IS_COMPLETE,
                     c.USE_TOOL,

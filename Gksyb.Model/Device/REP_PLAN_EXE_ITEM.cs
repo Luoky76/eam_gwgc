@@ -80,6 +80,20 @@ namespace Gksyb.Model
         public string BOM_ID { get; set; }
 
         /// <summary>
+        /// 设备ID
+        /// </summary>
+        [Description("设备ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_ID { get; set; }
+
+        /// <summary>
+        /// 设备名字
+        /// </summary>
+        [Description("设备名字")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NAME { get; set; }   
+
+        /// <summary>
         /// 外键
         /// </summary>
         [Description("外键")]

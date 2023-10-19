@@ -34,20 +34,20 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "维修部位", name: "_search_BOM_NAME", dbname: "BOM_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "维修部位", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                             { display: "维修内容", name: "_search_REP_CONTENT", dbname: "REP_CONTENT", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "序号", name: "REP_INDEX", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维修部位", name: "BOM_NAME", width: 100, type: "text" },
+                            { display: "维修部位", name: "DEVICE_NAME", width: 100, type: "text" },
                             { display: "维修设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
                             { display: "*维修内容", name: "REP_CONTENT", width: 300, type: "text", validate: { required: true },  editor: { type: 'text' } },
                             { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
                             { display: "外键", name: "PLAN_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "主键", name: "PLAN_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "维修部位ID", name: "BOM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "维修部位ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "检修负责人", name: "REP_LEADER", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "是否月度询价", name: "IS_ASKBID", width: 100, type: "select", editor: { type: 'select', data: me.isaskbid, selectBoxHeight: 100 } },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
@@ -170,7 +170,7 @@
                 var gridData = me.grid.getData();
                 var gridKeys = [];
                 for (var item of gridData) {
-                    gridKeys.push(item.BOM_ID);
+                    gridKeys.push(item.DEVICE_ID);
                 }
 
                 var dataOptions = {
@@ -199,8 +199,8 @@
                                 
                                 me.grid.addEditRow({
                                     PLAN_ID: me.sid,
-                                    BOM_ID: item.DEVICE_ID,
-                                    BOM_NAME: item.DEVICE_NAME,
+                                    DEVICE_ID: item.DEVICE_ID,
+                                    DEVICE_NAME: item.DEVICE_NAME,
                                     DEVICE_TYPE: item.DEVICE_TYPE,
                                 });
                             }

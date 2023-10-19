@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using Gksyb.Common.Data;
 using Gksyb.Core.Auth;
 using Gksyb.Model.Core;
+using DocumentFormat.OpenXml.InkML;
 
 namespace EAM.Special.Services
 {
@@ -57,6 +58,9 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
+            var ship = await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "shipdepartmentpermission")
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .FirstOrDefaultAsync();
             var list = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new
@@ -87,7 +91,7 @@ namespace EAM.Special.Services
                     a.LUBRICATE,
                     a.MEMO
                 })
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && !(_userSession.Corp.CName == ship.TEXT), a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .GetGridData(request);
             return list;
         }
@@ -231,10 +235,10 @@ namespace EAM.Special.Services
         }
         
         /// <summary>
-         /// 导出模板数据
+         /// 导出年度模板数据
          /// </summary>
          /// <returns></returns>
-        public async Task<GridData> ExportListAsync(string year)
+        public async Task<GridData> ExportYearListAsync(string year)
         {
             var res = await _dbContext.Query<BUILD_COUNT>()
                 .Where(x => x.STARTDATE.Year.Equals(year))
@@ -243,6 +247,30 @@ namespace EAM.Special.Services
                     DEVICE_NAME = t.DEVICE_NAME,
                     SHIPTIMES = t.SHIPTIMES,
                     ZYTIME = t.DREDGETIME + t.SAILTIME,
+                    STOPTIME = t.STOPTIME,
+                    DAILYCONSUMPTION = t.DAILYCONSUMPTION,
+                    MASTER = t.MASTER,
+                    AUXILIARY = t.AUXILIARY,
+                    LUBRICATE = t.LUBRICATE,
+                    PUMP = t.PUMP,
+                })
+                .GetGridData(null);
+            return res;
+        }
+
+        /// <summary>
+        /// 导出月度模板数据
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ExportMonthListAsync(string year)
+        {
+            var res = await _dbContext.Query<BUILD_COUNT>()
+                .Where(x => x.STARTDATE.Year.Equals(year))
+                .Select(t => new BuildMonthExportData
+                {
+                    DEVICE_NAME = t.DEVICE_NAME,
+                    SHIPTIMES = t.SHIPTIMES,
+                    ZYTIME = t.DREDGETIME + t.SAILTIME + t.CONPLAN,
                     STOPTIME = t.STOPTIME,
                     DAILYCONSUMPTION = t.DAILYCONSUMPTION,
                     MASTER = t.MASTER,
