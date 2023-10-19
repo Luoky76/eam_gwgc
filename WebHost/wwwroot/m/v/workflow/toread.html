@@ -1,0 +1,209 @@
+﻿<template>
+    <div class="page" data-name="workflow-my-flow">
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href='javascript:app.methods.toUrl("back")' class="link external">
+                        <i class="f7-icons">arrow_left</i>
+                        <span class="ios-only">返回</span>
+                    </a>
+                </div>
+                <div class="title">知会我的</div>
+                <div class="right">
+                    <a id="view-all" href='javascript:void(0);' class="link external">
+                        <i class="f7-icons">eye</i>
+                        <span>全部已阅</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="page-content custom-tab">
+            <div class="searchbar-wrap">
+                <form data-search-container="#my-flow" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                    <div class="searchbar-inner">
+                        <div class="searchbar-input-wrap">
+                            <input type="search" placeholder="标题或通知时间" />
+                            <i class="searchbar-icon"></i>
+                            <span class="input-clear-button"></span>
+                        </div>
+                        <span class="searchbar-disable-button">取消</span>
+                    </div>
+                </form>
+            </div>
+            <div id="my-flow" class="list no-hairlines virtual-list media-list chevron-center"></div>
+        </div>
+    </div>
+</template>
+<style>
+    .custom-tab .virtual-list {
+        margin-top: 76px;
+        --f7-badge-font-size: 14px;
+        --f7-badge-padding: 14px;
+    }
+
+    .custom-tab .searchbar-wrap {
+        position: fixed !important;
+        top: 50px;
+        background-color: #EAEEFA;
+        width: 100%;
+        z-index: 100;
+    }
+
+    .custom-tab .searchbar {
+        width: 95% !important;
+        --f7-searchbar-input-bg-color: #DBE2F9;
+        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
+    }
+
+    .custom-tab .searchbar-disable-button:after {
+        color: rgb(27, 27, 31);
+    }
+
+    .custom-tab .card-footer .button {
+        min-width: 100px;
+    }
+    .visibility-hidden {
+        visibility: hidden;
+    }
+</style>
+<script>
+    'use strict';
+    var business = {
+        page: null,
+        data: [],
+        setContent: function () {
+            var me = this;
+            var $el = me.page.$el.find("#my-flow");
+            app.virtualList.destroy($el);
+            app.virtualList.create({
+                el: $el,
+                items: me.data,
+                height: 202,
+                searchAll: function (query, items) {
+                    var found = [];
+                    query = (query || "").toLowerCase();
+                    for (var i = 0, l = items.length; i < l; i++) {
+                        var item = items[i];
+                        var search = (item.Title || "") + "@#" + (item.StartDate || "");
+                        if (search.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                    }
+                    return found;
+                },
+                renderItem: function (item) {
+                    return `<li style="height:202px;">
+                                <div class="card card-outline">
+                                    <div class="card-header">${item.Title}<div class="${item.isRead ? "text-color-green" :"text-color-blue"}">${item.readStatus}</div></div>
+                                    <div class="card-content list simple-list">
+                                        <ul class="no-padding">
+                                            <li>
+                                                通知时间
+                                                <div>
+                                                   ${item.StartDate}
+                                                </div>
+                                            </li>
+                                            <li>
+                                                通知人
+                                                <div>
+                                                   ${item.Creator}
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div index="${item._index}" class="${item.isRead ? "visibility-hidden" : ""} button button-fill l-button-icon color-orange flow-read"><i class="f7-icons">eye</i>&nbsp;已阅</div>
+                                        <a href="/flow-detail/${item.Id}/1" class="link"><div class="button button-fill l-button-icon"><i class="f7-icons">info_round</i>&nbsp;详情</div></a>
+                                    </div>
+                                </div>
+                            </li>`;
+                }
+            });
+        },
+        loadData: function () {
+            var me = this;
+            app.ajax({
+                url: 'workflow/query/toread',
+                data: {
+                    sortname: "CreateDate",
+                    sortorder: "desc",
+                    changePage: "1"
+                },
+                success: function (data) {
+                    me.data = data.Rows || [];
+                    for (var i = 0, l = me.data.length; i < l; i++) {
+                        var item = me.data[i];
+                        item._index = i;
+                        item.isRead = item.NodeStatus === 1;
+                        item.readStatus = item.isRead ? "已阅" : "待阅";
+                    }
+                    me.setContent();
+                }
+            });
+        },
+        loadComboxData: function () {
+            var me = this;
+            app.ajax({
+                async: false,
+                url: 'workflow/query/statusData',
+                success: function (data) {
+                    me.dataStatus = data;
+                }
+            });
+        },
+        readAll: function () {
+            var me = this;
+            app.ajax({
+                jsToken: true,
+                url: 'workflow/task/readAll',
+                success: function () {
+                    me.loadData();
+                }
+            });
+        },
+        read: function (selected) {
+            var me = this;
+            app.ajax({
+                jsToken: true,
+                url: 'workflow/task/read',
+                data: [selected.TaskId],
+                success: function () {
+                    me.loadData();
+                }
+            });
+        },
+        bindEvent: function () {
+            var me = this, page = me.page.$el;
+            page.find("#view-all").off("click").on("click", function () {
+                me.readAll();
+            });
+            page.off("click", ".flow-read").on("click", ".flow-read", function () {
+                var i = this.getAttribute("index");
+                if (me.data.length <= i) return;
+                var item = me.data[i];
+                me.read(item);
+            });
+        },
+        destroy: function () {
+            var me = this, page = me.page.$el;
+            page.find("#view-all").off("click");
+            page.off("click", ".flow-read");
+        },
+        init: function (page, ctx) {
+            var me = this;
+            me.page = page;
+            me.ctx = ctx;
+            me.bindEvent();
+            me.loadComboxData();
+            me.loadData();
+        }
+    };
+    return function (props, ctx) {
+        ctx.$on('pageInit', function (_e, page) {
+            business.init(page, ctx);
+        });
+        ctx.$on('pageAfterOut', function (_e, page) {
+            business.destroy();
+        });
+        return $render;
+    };
+</script>

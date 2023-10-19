@@ -357,6 +357,7 @@
             me.ctx = ctx;
             me.param = param || {};
             me.nid = me.param.id;
+            me.isView = me.param.isView === "1";
             me.initAuditForm();
             me.initForm();
             me.initTimeline();

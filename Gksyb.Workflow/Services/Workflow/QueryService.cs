@@ -46,7 +46,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         public async Task<GridData> DoneAsync(GridRequest request)
         {
-            var query = _dbContext.Query<WF_NODE>().Where(node => node.FINISHDATE.HasValue)
+            var query = _dbContext.Query<WF_NODE>().Where(node => node.FINISHDATE.HasValue && node.NODE_STATUS != NodeStatus.BackArchived)
                .InnerJoin<WF_TASK>((node, task) => node.TASK_ID == task.ID)
                .CorpFilter(_user).SelectNodeInfo();
             var data = await query.GetGridDataList(request);
@@ -150,11 +150,14 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         public async Task<TaskInfoEx> TaskInfoAsync(TaskInfoRequest request)
         {
+            TaskInfoEx info;
             if (string.IsNullOrWhiteSpace(request.Id))
             {
-                return await GetTaskInfoInnerAsync(request);
+                info = await GetTaskInfoInnerAsync(request);
+                MessageException.ThrowIf(info == null, $"找不到编号为{request.FlowCode ?? request.FlowId}的流程");
+                return info;
             }
-            var info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(request.Id) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(request.Id);
+            info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(request.Id) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(request.Id);
             MessageException.ThrowIf(info == null, $"找不到ID为{request.Id}的节点");
             return info;
         }
@@ -166,7 +169,7 @@ namespace Gksyb.Workflow.Services.Workflow
         {
             return await _dbContext.Query<WF_FLOW>().Where(FilterCorp)
                 .WhereIfNotNullOrEmpty(request.FlowId, c => c.ID == request.FlowId)
-                .WhereIfNotNullOrEmpty(request.FlowCode, c => c.FLOW_CODE == request.FlowCode)
+                .WhereIfNotNullOrEmpty(request.FlowCode, c => c.FLOW_CODE == request.FlowCode || c.ID == request.FlowCode)
                 .Select(flow => new TaskInfoEx()
                 {
                     FlowId = flow.ID,
@@ -186,7 +189,7 @@ namespace Gksyb.Workflow.Services.Workflow
         {
             var info = await _dbContext.Query<T1>().Where(node => node.ID == id)
                 .InnerJoin<T2>((node, task) => node.TASK_ID == task.ID)
-                .CorpFilter(_user)
+                .CorpFilter(_user, true)
                 .InnerJoin<WF_FLOW>((node, task, flow) => task.FLOW_ID == flow.ID)
                 .Select((node, task, flow) => new TaskInfoEx()
                 {
@@ -225,7 +228,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 OperDetail = a.OPERDETAIL,
                 OperDate = a.OPERDATE
             }).ToListAsync();
-            info.Logs = info.Logs.OrderByDescending(c => c.OperDate).ThenByDescending(c=>c.Id).ToList();
+            info.Logs = info.Logs.OrderByDescending(c => c.OperDate).ThenByDescending(c => c.Id).ToList();
             if (!info.ViewDate.HasValue && _user.UserID == info.NodeUserId)
             {
                 //更新查看时间

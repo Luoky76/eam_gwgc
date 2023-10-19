@@ -10,21 +10,21 @@
                     </a>
                 </div>
                 <div class="navbar-segmented segmented segmented-strong">
-                    <a class="button tab-link tab-link-active" href="#tab-to-do">待办</a>
-                    <a class="button tab-link" href="#tab-done">已办</a>
+                    <a class="button tab-link ${isDone?" ":" tab-link-active"}" href="#tab-to-do">待办</a>
+                    <a class="button tab-link ${isDone?" tab-link-active":""}" href="#tab-done">已办</a>
                     <span class="segmented-highlight"></span>
                 </div>
             </div>
         </div>
         <div class="tabs-animated-wrap">
             <div class="tabs custom-tab">
-                <div id="tab-to-do" class="page-content tab tab-active">
+                <div id="tab-to-do" class="page-content tab ${isDone?" ":" tab-active"}">
                     <div class="searchbar-wrap">
                         <div class="searchbar-backdrop display-none"></div>
                         <form data-search-container="#to-do-list" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
                             <div class="searchbar-inner">
                                 <div class="searchbar-input-wrap">
-                                    <input type="search" placeholder="请输入" />
+                                    <input type="search" placeholder="标题或发起时间" />
                                     <i class="searchbar-icon"></i>
                                     <span class="input-clear-button"></span>
                                 </div>
@@ -34,12 +34,12 @@
                     </div>
                     <div id="to-do-list" class="list virtual-list media-list chevron-center"></div>
                 </div>
-                <div id="tab-done" class="page-content tab">
+                <div id="tab-done" class="page-content tab ${isDone?" tab-active":""}">
                     <div class="searchbar-wrap">
                         <form data-search-container="#done-list" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
                             <div class="searchbar-inner">
                                 <div class="searchbar-input-wrap">
-                                    <input type="search" placeholder="请输入" />
+                                    <input type="search" placeholder="标题或发起时间" />
                                     <i class="searchbar-icon"></i>
                                     <span class="input-clear-button"></span>
                                 </div>
@@ -103,8 +103,8 @@
                     query = (query || "").toLowerCase();
                     for (var i = 0, l = items.length; i < l; i++) {
                         var item = items[i];
-                        if (!item.Title) continue;
-                        if (item.Title.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                        var search = (item.Title || "") + "@#" + (item.CreateDate || "");
+                        if (search.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
                     }
                     return found;
                 },
@@ -200,18 +200,19 @@
                 me.loadData(domId);
             });
         },
-        init: function (page, ctx) {
+        init: function (page, ctx, isDone) {
             var me = this;
             me.page = page;
             me.ctx = ctx;
             me.bindEvent();
             me.loadComboxData();
-            me.loadData();
+            me.loadData(isDone ? "done-list" : "");
         }
     };
     return function (props, ctx) {
+        var isDone = getQueryStringByName("type", ctx.$f7route.route.componentUrl) === "2";
         ctx.$on('pageInit', function (_e, page) {
-            business.init(page, ctx);
+            business.init(page, ctx, isDone);
         });
         ctx.$on('pageAfterIn', function (_e, page) {
             business.loadData();

@@ -15,7 +15,7 @@ namespace Gksyb.Workflow.Controllers.Api
     {
         private readonly IFlowEngineService _service;
         private readonly IUserService _userService;
-        private ScopeUser _user;
+        private readonly ScopeUser _user;
 
         public FlowEngineController(IFlowEngineService service, IUserService userService, ScopeUser user)
         {

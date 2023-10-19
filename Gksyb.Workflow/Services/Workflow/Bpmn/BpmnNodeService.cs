@@ -68,7 +68,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         public override async Task Complate(FlowExecuteInfo info)
         {
-            if(info.NodeStatus == NodeStatus.Back) //退回特殊处理
+            if (info.NodeStatus == NodeStatus.Back) //退回特殊处理
             {
                 await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_STATUS == NodeStatus.Active, c =>
                 {

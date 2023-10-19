@@ -25,10 +25,13 @@ namespace Gksyb.Workflow.Controllers.Workflow.Dtos
                 TaskFinishDate = task.FINISHDATE
             });
 
-        public static IJoinQuery<T1, T2> CorpFilter<T1, T2>(this IJoinQuery<T1, T2> source, UserSession user) where T1 : WF_NODE where T2 : WF_TASK
+        public static IJoinQuery<T1, T2> CorpFilter<T1, T2>(this IJoinQuery<T1, T2> source, UserSession user, bool fromMe = false) where T1 : WF_NODE where T2 : WF_TASK
         {
             var corpId = (user.ParentCompany ?? user.Corp).CorpID;
-            return source.Where(user.IsSuper ? ((node, task) => task.COMPANY == corpId) : ((node, task) => node.NODE_USERID == user.UserID || task.CREATEUSERID == user.UserID));
+            return source.Where(user.IsSuper ?
+                ((node, task) => task.COMPANY == corpId) :
+                fromMe ? ((node, task) => node.NODE_USERID == user.UserID || task.CREATEUSERID == user.UserID) :
+                ((node, task) => node.NODE_USERID == user.UserID));
         }
     }
 }

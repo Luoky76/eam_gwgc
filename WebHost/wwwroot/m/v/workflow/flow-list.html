@@ -1,0 +1,134 @@
+﻿<template>
+    <div class="page" data-name="workflow-my-flow">
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href='javascript:app.methods.toUrl("back")' class="link external">
+                        <i class="f7-icons">arrow_left</i>
+                        <span class="ios-only">返回</span>
+                    </a>
+                </div>
+                <div class="title">发起流程</div>
+                <div class="right">
+                    <a href='javascript:app.methods.toUrl("/")' class="link external">
+                        <i class="f7-icons">home</i>
+                        <span class="ios-only">主页</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="page-content custom-tab">
+            <div class="searchbar-wrap">
+                <form data-search-container="#my-flow" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                    <div class="searchbar-inner">
+                        <div class="searchbar-input-wrap">
+                            <input type="search" placeholder="标题" />
+                            <i class="searchbar-icon"></i>
+                            <span class="input-clear-button"></span>
+                        </div>
+                        <span class="searchbar-disable-button">取消</span>
+                    </div>
+                </form>
+            </div>
+            <div id="my-flow" class="list virtual-list"></div>
+        </div>
+    </div>
+</template>
+<style>
+    .custom-tab .virtual-list {
+        margin-top: 66px;
+        --f7-badge-font-size: 14px;
+        --f7-badge-padding: 14px;
+    }
+
+    .custom-tab .searchbar-wrap {
+        position: fixed !important;
+        top: 50px;
+        background-color: #EAEEFA;
+        width: 100%;
+        z-index: 100;
+    }
+
+    .custom-tab .searchbar {
+        width: 95% !important;
+        --f7-searchbar-input-bg-color: #DBE2F9;
+        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
+    }
+
+    .custom-tab .searchbar-disable-button:after {
+        color: rgb(27, 27, 31);
+    }
+
+    .custom-tab .card-footer .button {
+        min-width: 100px;
+    }
+
+    .visibility-hidden {
+        visibility: hidden;
+    }
+</style>
+<script>
+    'use strict';
+    var business = {
+        page: null,
+        data: [],
+        setContent: function () {
+            var me = this;
+            var $el = me.page.$el.find("#my-flow");
+            app.virtualList.destroy($el);
+            app.virtualList.create({
+                el: $el,
+                items: me.data,
+                height: 48,
+                searchAll: function (query, items) {
+                    var found = [];
+                    query = (query || "").toLowerCase();
+                    for (var i = 0, l = items.length; i < l; i++) {
+                        var item = items[i];
+                        var search = (item.FLOW_NAME || "");
+                        if (search.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                    }
+                    return found;
+                },
+                renderItem: function (item) {
+                    return `<li style="height:48px;">
+                                <a href="/flow-create/${item.ID}" class="item-link item-content">
+                                    <div class="item-inner">
+                                      <div>${item.FLOW_NAME}</div>
+                                      <span class="badge color-blue">V${item.FLOW_VERSION}</span>
+                                    </div>
+                                </a>
+                            </li>`;
+                }
+            });
+        },
+        loadData: function () {
+            var me = this;
+            app.ajax({
+                url: 'workflow/query/flowlist',
+                data: {
+                    sortname: "FLOW_ORDER",
+                    sortorder: "asc",
+                    changePage: "1"
+                },
+                success: function (data) {
+                    me.data = data.Rows || [];
+                    me.setContent();
+                }
+            });
+        },
+        init: function (page, ctx) {
+            var me = this;
+            me.page = page;
+            me.ctx = ctx;
+            me.loadData();
+        }
+    };
+    return function (props, ctx) {
+        ctx.$on('pageInit', function (_e, page) {
+            business.init(page, ctx);
+        });
+        return $render;
+    };
+</script>
