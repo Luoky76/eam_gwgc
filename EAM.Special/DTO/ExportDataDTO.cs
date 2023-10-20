@@ -34,7 +34,7 @@ namespace EAM.Special.DTO
         [ExporterHeader(DisplayName = "船次")]
         public int? SHIPTIMES { get; set; }
 
-        [ExporterHeader(DisplayName = "作业时间")]
+        [ExporterHeader(DisplayName = "施工时间")]
         public decimal? ZYTIME { get; set; }
 
         [ExporterHeader(DisplayName = "停工时间")]

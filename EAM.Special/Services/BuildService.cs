@@ -233,11 +233,11 @@ namespace EAM.Special.Services
                 .Where(x => x.STARTDATE.Year == year.Year)
                 .GetGridData(null);
         }
-        
+
         /// <summary>
-         /// 导出年度模板数据
-         /// </summary>
-         /// <returns></returns>
+        /// 导出年度模板数据
+        /// </summary>
+        /// <returns></returns>
         public async Task<GridData> ExportYearListAsync(string year)
         {
             var res = await _dbContext.Query<BUILD_COUNT>()
@@ -247,7 +247,7 @@ namespace EAM.Special.Services
                     DEVICE_NAME = t.DEVICE_NAME,
                     SHIPTIMES = t.SHIPTIMES,
                     ZYTIME = t.DREDGETIME + t.SAILTIME,
-                    STOPTIME = t.STOPTIME,
+                    STOPTIME = t.REPAIRTIME + t.WEATHEREFFECT + t.OTHERSTOP,
                     DAILYCONSUMPTION = t.DAILYCONSUMPTION,
                     MASTER = t.MASTER,
                     AUXILIARY = t.AUXILIARY,
@@ -258,28 +258,55 @@ namespace EAM.Special.Services
             return res;
         }
 
-        /// <summary>
-        /// 导出月度模板数据
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> ExportMonthListAsync(string year)
+        public async Task<List<BuildMonthExportData>> ExportMonthListAsync(string year)
         {
-            var res = await _dbContext.Query<BUILD_COUNT>()
-                .Where(x => x.STARTDATE.Year.Equals(year))
-                .Select(t => new BuildMonthExportData
+            var monthlyData = await _dbContext.Query<BUILD_COUNT>()
+                .Where(x => x.STARTDATE.Year.ToString() == year)
+                .GroupBy(x => x.STARTDATE.Month)  // 按月份分组
+                .Select(group => new BuildMonthExportData
                 {
-                    DEVICE_NAME = t.DEVICE_NAME,
-                    SHIPTIMES = t.SHIPTIMES,
-                    ZYTIME = t.DREDGETIME + t.SAILTIME + t.CONPLAN,
-                    STOPTIME = t.STOPTIME,
-                    DAILYCONSUMPTION = t.DAILYCONSUMPTION,
-                    MASTER = t.MASTER,
-                    AUXILIARY = t.AUXILIARY,
-                    LUBRICATE = t.LUBRICATE,
-                    PUMP = t.PUMP,
+                    Month = group.STARTDATE.Month,
+                    SHIPTIMES = Sql.Sum(group.SHIPTIMES),
+                    ZYTIME = Sql.Sum(group.DREDGETIME + group.SAILTIME + group.CONPLAN),
+                    STOPTIME = Sql.Sum(group.REPAIRTIME + group.WEATHEREFFECT + group.OTHERSTOP),
+                    DAILYCONSUMPTION = Sql.Sum(group.DAILYCONSUMPTION),
+                    MASTER = Sql.Sum(group.MASTER),
+                    AUXILIARY = Sql.Sum(group.AUXILIARY),
+                    LUBRICATE = Sql.Sum(group.LUBRICATE),
+                    PUMP = Sql.Sum(group.PUMP),
                 })
-                .GetGridData(null);
-            return res;
+                .OrderBy(x => x.Month)  // 按月份排序
+                .ToListAsync();
+
+            var allMonths = Enumerable.Range(1, 12);
+            var monthNames = new string[]
+    {
+        "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"
+    };
+
+            var dataDictionary = monthlyData.ToDictionary(x => x.Month);
+
+            var result = new List<BuildMonthExportData>();
+            var boat = _dbContext.Query<BUILD_COUNT>().Select(c => c.DEVICE_NAME).ToList();
+            foreach (var month in allMonths)
+            {
+                if (dataDictionary.TryGetValue(month, out var data))
+                {
+                    data.DEVICE_NAME = boat[0]??"";
+                    data.MonthName = monthNames[month - 1];
+                    result.Add(data);
+                }
+                else
+                {
+                    result.Add(new BuildMonthExportData
+                    {
+                        Month = month,
+                        MonthName = monthNames[month - 1]
+                    });
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -75,7 +75,7 @@ namespace EAM.Special.Controller
         [HttpPost]
         public async Task<AjaxResult> QryYearAsync(DateTime year)
         {
-            var result = await _service.QryYearAsync(year); 
+            var result = await _service.QryYearAsync(year);
             return AjaxResult.Success(result);
         }
 
@@ -99,10 +99,11 @@ namespace EAM.Special.Controller
                 var pumptotal = list.Select(t => t.PUMP).Sum();
                 var lubricatetotal = list.Select(t => t.LUBRICATE).Sum();
                 var boat = list.Select(t => t.DEVICE_NAME).FirstOrDefault();
-                var data = new ExportTemplateData<BuildExportData> { 
-                    TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"), 
+                var data = new ExportTemplateData<BuildExportData>
+                {
+                    TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"),
                     DATEYEAR = year,
-                    ZYTIMETOTAL = zytimetotal.Value.ToString("F2"),
+                    ZYTIMETOTAL = zytimetotal.Value.ToString(),
                     STOPTIMETOTAL = stoptimetotal.Value.ToString("F2"),
                     DAILYCONSUMPTIONTOTAL = dailyconsumptiontotal.Value.ToString("F2"),
                     MASTERTOTAL = mastertotal.Value.ToString("F2"),
@@ -111,7 +112,8 @@ namespace EAM.Special.Controller
                     LUBRICATETOTAL = lubricatetotal.Value.ToString("F2"),
                     TOTAL = (mastertotal + auxiliarytotal + pumptotal).Value.ToString("F2"),
                     DEVICE_NAME = boat,
-                    List = list };
+                    List = list
+                };
                 return await FileExport.ExportToExcelByTemplate(data, template, "施工能耗年度报表.xlsx");
             }
             catch (Exception ex)
@@ -130,7 +132,7 @@ namespace EAM.Special.Controller
             {
                 var datas = await _service.ExportMonthListAsync(year);
                 var template = Path.Combine(webHostEnvironment.WebRootPath, "eam", "basexlsx", "施工能耗月度报表模板.xlsx");
-                var list = (List<BuildMonthExportData>)datas.Rows;
+                var list = datas;
                 var shiptotal = list.Select(t => t.SHIPTIMES).Sum();
                 var zytimetotal = list.Select(t => t.ZYTIME).Sum();
                 var stoptimetotal = list.Select(t => t.STOPTIME).Sum();
@@ -138,13 +140,14 @@ namespace EAM.Special.Controller
                 var mastertotal = list.Select(t => t.MASTER).Sum();
                 var auxiliarytotal = list.Select(t => t.AUXILIARY).Sum();
                 var pumptotal = list.Select(t => t.PUMP).Sum();
-                var lubricatetotal = list.Select(t => t.LUBRICATE).Sum();
-                var boat = list.Select(t => t.DEVICE_NAME).FirstOrDefault();
+                var lubricatetotal = list.Select(t => t.LUBRICATE).Sum(); var boat = list.Select(item => item?.DEVICE_NAME).FirstOrDefault(item => !string.IsNullOrEmpty(item)) ?? "";
+
+
                 var data = new ExportMonthTemplateData<BuildMonthExportData>
                 {
                     TABLEDATE = DateTime.Now.ToString("yyyy-MM-dd"),
                     DATEYEAR = year,
-                    SHIPTOTAL = shiptotal.Value.ToString("F2"),
+                    SHIPTOTAL = shiptotal,
                     ZYTIMETOTAL = zytimetotal.Value.ToString("F2"),
                     STOPTIMETOTAL = stoptimetotal.Value.ToString("F2"),
                     DAILYCONSUMPTIONTOTAL = dailyconsumptiontotal.Value.ToString("F2"),

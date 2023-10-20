@@ -54,24 +54,36 @@
                                         display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text"
                                     },
                                     {
-                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'text' }, totalSummary:
+                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
                                         {
                                             type: 'sum',
-                                            align: 'center'
+                                            align: 'center',
+                                            render: function (data) {
+                                                return Math.round(data.sum);
+                                            }
                                         }
                                     },
                                     {
                                         display: "船方", name: "SHIPNUM", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
                                         {
                                             type: 'sum',
-                                            align: 'center'
+                                            align: 'center',
+                                            render: function (data) {
+                                                return Math.round(data.sum);
+                                            }
                                         }
                                     },
                                 ]
                             },
                             {
                                 display: "", columns: [
-                                    { display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' } },
+                                    {
+                                        display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
                                     {
                                         display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {

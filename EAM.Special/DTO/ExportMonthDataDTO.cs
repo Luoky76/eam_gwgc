@@ -11,7 +11,7 @@ namespace EAM.Special.DTO
         public string TABLEDATE { get; set; }
         public string DATEYEAR { get; set; }
         public List<T> List { get; set; }
-        public string SHIPTOTAL { get; set; }
+        public int? SHIPTOTAL { get; set; }
         public string ZYTIMETOTAL { get; set; }
         public string STOPTIMETOTAL { get; set; }
         public string DAILYCONSUMPTIONTOTAL { get; set; }
@@ -28,14 +28,19 @@ namespace EAM.Special.DTO
     [PdfExporter(Orientation = Orientation.Landscape, PaperKind = PaperKind.A4, IsWriteHtml = true, IsEnablePagesCount = false)]
     public class BuildMonthExportData
     {
+        [ExporterHeader(DisplayName = "月份")]
+        public int Month { get; set; }
+
+        [ExporterHeader(DisplayName = "月份名字")]
+        public string MonthName { get; set; }
 
         [ExporterHeader(DisplayName = "船名")]
         public string DEVICE_NAME { get; set; }
 
         [ExporterHeader(DisplayName = "船次")]
-        public decimal? SHIPTIMES { get; set; }
+        public int? SHIPTIMES { get; set; }
 
-        [ExporterHeader(DisplayName = "作业时间")]
+        [ExporterHeader(DisplayName = "施工时间")]
         public decimal? ZYTIME { get; set; }
 
         [ExporterHeader(DisplayName = "停工时间")]

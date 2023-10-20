@@ -1,4 +1,5 @@
-﻿using Gksyb.Common;
+﻿using EAM.Special.DTO;
+using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -39,6 +40,6 @@ namespace EAM.Special.Interfaces
         /// <returns></returns>
         Task<GridData> QryYearAsync(DateTime year);
         Task<GridData> ExportYearListAsync(string year);
-        Task<GridData> ExportMonthListAsync(string year);
+        Task<List<BuildMonthExportData>> ExportMonthListAsync(string year);
     }
 }
