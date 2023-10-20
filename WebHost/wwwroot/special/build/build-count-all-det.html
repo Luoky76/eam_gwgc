@@ -20,7 +20,7 @@
             isView: true,
             sid: getQueryStringByName("sid"),
             dataCorp: [],
-            shipinfo:[],
+            shipinfo: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -28,9 +28,9 @@
                         fields: [
                             { display: "主键", name: "BUILD_ID", type: "hidden" },
                             { display: "日期", name: "STARTDATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
-                            
+
                             { display: "船舶名称", name: "DEVICE_ID", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true }, group: "产量" },
-                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {}, group: "产量" },
                             { display: "船次", name: "SHIPTIMES", newline: false, upper: true, type: "int", options: {} },
                             { display: "船方", name: "SHIPNUM", newline: false, upper: true, type: "float", options: {} },
                             { display: "施工准备", name: "CONPLAN", newline: true, upper: true, type: "float", options: {}, group: "" },
@@ -61,7 +61,7 @@
                                 }
                             },
                             {
-                                display: "泵机日耗", name: "PUMP", newline: false, upper: true, value:0, type: "float", options: {
+                                display: "泵机日耗", name: "PUMP", newline: false, upper: true, value: 0, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -73,7 +73,7 @@
                             { display: "补充", name: "SUPPLEMENT2", newline: false, upper: true, type: "float", options: {} },
                             { display: "库存", name: "STOCK2", newline: false, upper: true, type: "float", options: {} },
                             { display: "日耗", name: "LUBRICATE", newline: true, upper: true, type: "float", options: {}, group: "滑油" },
-                            { display: "简要说明", name: "MEMO", newline: false, upper: true, type: "text", width:500, options: {} }
+                            { display: "简要说明", name: "MEMO", newline: false, upper: true, type: "text", width: 500, options: {} }
                         ]
                     }
                 };
@@ -87,7 +87,7 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        
+
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {
@@ -96,7 +96,7 @@
                 });
             },
             sum: function (zhu, fu, ban) {
-                
+
                 var total = Number(zhu) + Number(fu) + Number(ban);
                 $('#SUBTOTAL').val(total);
             },

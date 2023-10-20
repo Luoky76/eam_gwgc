@@ -74,7 +74,21 @@
                                 ]
                             },
                             {
-                                display: "", columns: [
+                                display: "施工时间", columns: [
+                                    {
+                                        display: "作业时间", name: "WORK_TIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "锚泊时间", name: "ANCHOR_TIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                        }
+                                    },
                                     {
                                         display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -116,6 +130,49 @@
                                     },
                                     {
                                         display: "其他停工", name: "OTHERSTOP", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "待工", name: "WAIT_WORK", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "主发电机运行时间", columns: [
+                                    {
+                                        display: "运行时间", name: "MAIN_RUNTIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "累计时间", name: "MAIN_CUMTIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "停泊发电机运行时间", columns: [
+                                    {
+                                        display: "运行时间", name: "MOORING_RUNTIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "累计时间", name: "MOORING_CUMTIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
@@ -209,7 +266,7 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        
+
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {
@@ -226,7 +283,7 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'local',
-                    toolbar: {group:"list"},
+                    toolbar: { group: "list" },
                     url: 'Special/Build/list',
                     parms: {
                         where: JSON.stringify({
@@ -309,7 +366,6 @@
                     server: "Special/Build/Import",
                     //mouldFileName: "contract/ExportExcelHeader",
                     mouldFileName: function () {
-                        debugger
                         window.open(gksybConfigs.urlBase + "base/施工统计表数据导入.xlsx");
                     },
                     multiple: false,
@@ -321,7 +377,7 @@
                     showSuccess: false,
                     data: { folder: '../../Adv' },
                     callback: function (status, data) {
-                        
+
                         if (status) {
                             LG.showSuccess("导入成功");
                             me.reload();
