@@ -167,8 +167,8 @@ namespace EAM.Special.Services
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
             //获取艘船的部门的所有货位中柴油物料的库存量的和
-            var hw =await _dbContext.Query<SP_STORE>()
-                .LeftJoin<SP_HOUSE>((a, b) => a.HOUSE_ID == b.HOUSE_ID)
+            var hw =await _dbContext.Query<SP_STORE>(a => a.SP_CODE == "017001-0001")
+                .LeftJoin<SP_HOUSE>((a, b) => a.STOCK_ID == b.HOUSE_ID)
                 .Where((a, b) =>_userSession.Corp.CorpID == b.DEPT_ID)
                 .Select((a, b) => new
                 {
