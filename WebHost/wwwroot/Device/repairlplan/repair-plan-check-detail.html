@@ -52,16 +52,17 @@
             stopSource: [],
             malType: [],
             deviceInfo: [],
+            plan_state: [],
             start: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
-                            { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {} },
-                            { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "select", editor: { disabled: true }, options: {} },
+                            { display: "记录状态", name: "AUDITING_D", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
+                            { display: "故障申报单号", name: "EXE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -98,7 +99,7 @@
                             {
                                 display: "是否完成", name: "IS_COMPLETE", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 }, validate: { required: true }
                             },
-                            { display: "维修项目", name: "BOM_NAME", width: 150, type: "text", },
+                            { display: "维修项目", name: "DEVICE_NAME", width: 150, type: "text", },
                             { display: "序号", name: "REP_INDEX", width: 150, type: "text", },
                             { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", },
                             { display: "维修项目分类", name: "ITEM_TYPE", width: 150, type: "text", },
@@ -129,6 +130,7 @@
                         me.maintdept = data.MaintDept;
                         me.repairtype = data.RepairType;
                         me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -196,7 +198,7 @@
                 var changeRowDet = me.grid.getChangedRows();
                 LG.ajax({
                     jsToken: true,
-                    url: 'Repair/RepairPlan/SaveCheck',
+                    url: 'Repair/RepairPlan/SaveExe',
                     loading: '正在保存中...',
                     data: { request: changeRow, requestdet: changeRowDet },
                     success: function () {
@@ -332,6 +334,13 @@
                 me.setForm();
                 me.loadData();
                 me.setGrid();
+
+                if (me.dialogData.isView != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

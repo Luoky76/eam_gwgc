@@ -312,7 +312,9 @@ namespace EAM.Special.Services
                     //无形资产产品类型
                     { "AssetProductType", null },
                     //固定资产设备类型
-                    { "AssetDeviceType", null }
+                    { "AssetDeviceType", null },
+                    //供应商
+                    { "ProviderName", null }
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());

@@ -44,6 +44,12 @@ namespace EAM.Device.interfaces
         public Task<int> SubmitFaultExe(List<string> sids);
 
         /// <summary>
+        /// 反提交故障处理
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitFaultExe(string sid);
+
+        /// <summary>
         /// 获取人员明细
         /// </summary>
         /// <returns></returns>
@@ -73,10 +79,16 @@ namespace EAM.Device.interfaces
         public Task<int> SubmitFaultCheck(List<string> sids);
 
         /// <summary>
+        /// 反提交验收
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitFaultCheck(string sid);
+
+        /// <summary>
         /// 驳回验收
         /// </summary>
         /// <returns></returns>
-        public Task<int> SubmitFaultUnCheck(List<string> sids);
+        public Task<int> ReturnedFaultUnCheck(List<string> sids);
 
         /// <summary>
         /// 管理验收结果

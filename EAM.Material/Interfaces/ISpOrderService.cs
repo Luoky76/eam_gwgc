@@ -9,8 +9,9 @@ namespace EAM.Material.Interfaces
         /// 获取列表信息
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="YEAR"></param>
         /// <returns></returns>
-        Task<GridData> ListAsync(GridRequest request);
+        Task<GridData> ListAsync(GridRequest request, string YEAR);
 
         /// <summary>
         /// 保存
@@ -27,6 +28,7 @@ namespace EAM.Material.Interfaces
 
 
         Task<int> Submit(List<string> sids);
+        Task<AjaxResult> CancelSubmit(List<string> sids);
 
         /// <summary>
         /// 获取明细列表信息
@@ -50,5 +52,7 @@ namespace EAM.Material.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<GridData> OrderListAsync(GridRequest request);
+
+        Task<GridData> ExportListAsync(GridRequest request, string YEAR);
     }
 }

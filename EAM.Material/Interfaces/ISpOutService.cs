@@ -49,6 +49,12 @@ namespace EAM.Material.Interfaces
         public Task<int> SubmitSpOutApp(string sid);
 
         /// <summary>
+        /// 撤销提交物料领用申请
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitSpOutApp(string sid);
+
+        /// <summary>
         /// 获取申请明细
         /// </summary>
         /// <returns></returns>
@@ -79,6 +85,12 @@ namespace EAM.Material.Interfaces
         public Task<int> SubmitSpOutStore(string sid);
 
         /// <summary>
+        /// 撤销提交物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> ReturnedSpOutStore(string sid);
+
+        /// <summary>
         /// 注销物料领用出库
         /// </summary>
         /// <returns></returns>
@@ -106,11 +118,18 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <returns></returns>
         public Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request);
+        
         /// <summary>
         /// 提交
         /// </summary>
         /// <returns></returns>
         public Task<int> SubmitSpOutBack(string sid);
+        
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitSpOutBack(string sid);
 
         /// <summary>
         /// 导入功能

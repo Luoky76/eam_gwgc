@@ -27,15 +27,15 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            //{ display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "故障申报单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "EXE_ID", name: "EXE_ID", width: 100, type: "text", hide: true },
-                            { display: "已提交", name: "AUDITING_A", width: 100, type: "chk" },
+                            { display: "已提交", name: "AUDITING_D", width: 100, type: "chk" },
                             { display: "维修验收单号", name: "CHECK_CODE", width: 100, type: "text", },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
@@ -44,11 +44,11 @@
                             { display: "实际开工时间", name: "ACT_START_DATE", width: 100, type: "text", },
                             { display: "实际完工时间", name: "ACT_END_DATE", width: 100, type: "text", },
                             { display: "维修实施单号", name: "EXE_CODE", width: 100, type: "text", },
-                            { display: "计划单号", name: "PLAN_CODE", width: 100, type: "text", },
+                            { display: "故障申报单号", name: "EXE_CODE", width: 100, type: "text", },
                             { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", },
                             { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
                             { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
-                            { display: "负责人", name: "CHARGE_USER", width: 100, type: "text", },
+                            { display: "验收时间", name: "CHECK_DATE", width: 100, type: "date", },
                             { display: "备注", name: "PLAN_MEMO", width: 100, type: "text", }
                         ],
                     }
@@ -95,7 +95,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'AUDITING', op: 'equal', value: "1" }, { field: 'DEAL_TYPE', op: 'equal', value: "自修" }]
+                            rules: [{ field: 'AUDITING', op: 'equal', value: "1" }]
                         })
                     },
                     sortName: '',
@@ -154,6 +154,12 @@
                             break;
                         case "delete":
                             me.delete();
+                            break; 
+                        case "sumbit":
+                            me.sumbit();
+                            break;
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -170,6 +176,44 @@
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            revoke: function () { //撤销提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length > 0) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING_D == "0") {
+                            LG.showError("该数据未提交，无法撤销！");
+                            return;
+                        }
+                        upd.AUDITING_D = null;
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/SaveExe',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('撤销提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
             },
             add: function () { //新增
                 var me = this;
@@ -193,17 +237,21 @@
             sumbit: function () { //提交
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
+                if (selecteds.length > 0) {
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        if (ori.AUDITING_A == "1") {
+                        if (ori.CHECK_DATE == null) {
+                            LG.showError("请选择验收时间！");
+                            return;
+                        }
+                        if (ori.AUDITING_D == "1") {
                             LG.showError("该数据已提交，无法重复提交！");
                             return;
                         }
-                        upd.AUDITING_A = "1";
+                        upd.AUDITING_D = "1";
                         orginarr.push(ori);
                         updatedarr.push(upd)
                     }
@@ -212,7 +260,7 @@
                     changeRow["original"] = orginarr;
                     LG.ajax({
                         jsToken: true,
-                        url: 'Repair/RepairPlan/SaveCheck',
+                        url: 'Repair/RepairPlan/SaveExe',
                         loading: '正在提交中...',
                         data: { request: changeRow, requestdet: null },
                         success: function () {
@@ -265,7 +313,7 @@
                     LG.showError("请选择一行")
                     return
                 }
-                if (selected.AUDITING_A == "1") {
+                if (selected.AUDITING_D == "1") {
                     LG.tip('已提交，无法修改!');
                 } else {
                     if (rowdata) {

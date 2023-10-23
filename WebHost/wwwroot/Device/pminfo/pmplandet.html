@@ -67,7 +67,7 @@
                             { display: "保养计划单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "保养来源", name: "SOURCE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.bySource, } },
                             {
-                                display: "设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.deviceInfo,
                                     autocomplete: true,
@@ -75,13 +75,13 @@
                                     valueField: "ID",
                                     textField: "TEXT",
                                     columns: [
-                                        { header: '设备编号', name: 'TEXT', width: 150 },
-                                        { header: '设备名称', name: 'VALUE' }
+                                        { header: '船舶编号', name: 'VALUE', width: 150 },
+                                        { header: '船舶名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
-                                            $('#DEVICE_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
-                                            $('#DEVICE_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#ASSET_CODE').val(g.selected.EXTEND4 == null ? '' : g.selected.EXTEND4);
                                             $('#INSTALL_SITE').val(g.selected.EXTEND5 == null ? '' : g.selected.EXTEND5);
@@ -90,9 +90,9 @@
                                     }
                                 }
                             },
-                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维护类别", name: "PM_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.pmType } },
@@ -136,10 +136,10 @@
                                 }
                             },
                             { display: "标准编号", name: "STD_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "保养项目", name: "OBJECT_NAME", minWidth: 150, validate: { required: true }, type: "text", editor: { type: 'text' } },
-                            { display: "保养内容", name: "CONTENT", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
-                            { display: "保养类型", name: "STD_LEVEL", minWidth: 100, validate: { required: true }, type: "select", editor: { type: 'select', data: me.stdLevel } },
-                            { display: "作业时设备状态", name: "WORK_STATE", minWidth: 100, validate: { required: true }, type: "select", editor: { type: 'select', data: me.workState } },
+                            { display: "*保养项目", name: "OBJECT_NAME", minWidth: 150, validate: { required: true }, type: "text", editor: { type: 'text' } },
+                            { display: "*保养内容", name: "CONTENT", minWidth: 200, validate: { required: true }, type: "text", editor: { type: 'text' } },
+                            { display: "*保养类型", name: "STD_LEVEL", minWidth: 100, validate: { required: true }, type: "select", editor: { type: 'select', data: me.stdLevel } },
+                            { display: "*作业时设备状态", name: "WORK_STATE", minWidth: 100, validate: { required: true }, type: "select", editor: { type: 'select', data: me.workState } },
                             { display: "保养周期", name: "MAINT_CYCLE", minWidth: 100, type: "select", editor: { type: 'select', data: me.maintCycle } },
                             { display: "计划保养月份", name: "PLAN_MONTH", minWidth: 100, type: "text", type: "select", editor: { type: 'select', data: me.planMonth } },
                             { display: "执行岗位", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -472,7 +472,7 @@
             },
             //导入
             import: function () {
-                var me = this;
+                var me = this
                 var gridData = me.grid.getData();
                 var gridKeys = [];
                 for (var item of gridData) {
@@ -481,10 +481,20 @@
                 var dataOptions = {
                     values: gridKeys,
                     options: {
-                        url: 'Device/PmInfo/ImportList',
+                        deviceId: $("#DEVICE_ID").val(),
+                        deptId: $("#WDEPT_ID").val(),
+                        url: 'Device/PmInfo/ImportList',/*
+                        parms: {
+                            where: JSON.stringify({
+                                op: 'and',
+                                rules: [{ field: 'DEVICE_ID', op: 'equal', value: $('#DEVICE_ID').val() }, { field: 'DEPARTMENT', op: 'equal', value: $('#WDEPT_ID').val() }]
+                            })
+                        },*/
                         rowKey: "STD_CODE",
                         columns: [
                             { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
+                            { display: "船舶编号", name: "DEVICE_CODE", minWidth: 100, type: "text", },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", },
                             { display: "维保项目", name: "PART_NAME", minWidth: 300, type: "text", },
                             { display: "维保内容", name: "CONTENT", minWidth: 400, type: "text", },
                             { display: "周期", name: "CYCLE", minWidth: 100, type: "select", format: { data: me.pmcycleUnit } },
@@ -497,8 +507,20 @@
                         ]
                     },
                     fields: [
-                        { display: "编号", name: "STD_CODE", width: 150, type: "text" },
-                        { display: "周期", name: "CYCLE", width: 150, type: "select", options: { data: me.pmcycleUnit } }
+                        //{ display: "编号", name: "STD_CODE", width: 150, type: "text" },
+                        { display: "周期", name: "CYCLE", width: 150, type: "select", options: { data: me.pmcycleUnit } },
+                        {
+                            display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 150, type: "select", align: "left",
+                            options: {
+                                data: me.deviceInfo,
+                                //defaultValue: deviceId
+                            }
+                        },
+                        {
+                            display: "维保部门", name: "DEPARTMENT", dbname: "DEPARTMENT", width: 150, type: "select", options: {
+                                data: me.maintDept,
+                            }
+                        },
                     ],
                     callback: function (values, rows) {
                         var currentSet = new Set(gridKeys);
@@ -526,7 +548,7 @@
                     width: 1000,
                     height: 400,
                     title: '选择维保项目清单',
-                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    url: window.gksybConfigs.urlBase + "device/pminfo/pmcommon.html",
                     isResize: true,
                     slide: false,
                     data: dataOptions

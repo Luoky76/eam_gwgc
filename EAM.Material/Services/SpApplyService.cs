@@ -1,9 +1,4 @@
-﻿using Chloe;
-using Chloe.MySql;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Drawing.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -11,15 +6,7 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Magicodes.ExporterAndImporter.Core.Models;
-using NPOI.OpenXmlFormats.Dml.Diagram;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Reflection.Emit;
-using WkHtmlToPdfDotNet;
 
 namespace EAM.Material.Services
 {
@@ -290,6 +277,65 @@ namespace EAM.Material.Services
             }
 
             return updatedevice;
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var list = _dbContext.Query<SP_APPLY>().Where(x => sids.Contains(x.APPLY_ID)).ToList();
+
+            if (list.Count > 0)
+            {
+                //状态
+                var dic = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "pur_state").ToList();
+                var appid = new List<string>();
+                foreach (var item in list)
+                {
+                 
+                    if (item.CGFS == "逐单采购")
+                    {
+                        if (_dbContext.Query<SP_PURPLAN>().Any(t => t.APPLY_ID == item.APPLY_ID && t.AUDITING == "1"))
+                        {
+                            throw new Exception($"{item.APPLY_NO}采购中,不能撤销!");
+                        }
+                        else
+                        {
+                            appid.Add(item.APPLY_ID);
+                        }
+                    }
+                    else
+                    {
+                        var detStatus = _dbContext.Query<SP_APPLY_DETAIL>().Where(t => t.APPLY_ID == item.APPLY_ID && t.SP_STATUS != "20").Select(t => t.SP_STATUS).FirstOrDefault();
+                        if (!string.IsNullOrEmpty(detStatus))
+                        {
+                            throw new Exception($"{item.APPLY_NO}{(dic.Where(t => t.CODE_EN == detStatus).FirstOrDefault()?.CODE_CN)},不能撤销!");
+                        }
+                    }
+                }
+                var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
+                     x => new SP_APPLY
+                     {
+                         AUDITING = "0"
+                     });
+
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID),
+                       x => new SP_APPLY_DETAIL
+                       {
+                           SP_STATUS = "10"//计划APPLY_ID
+                       });
+
+                if (appid.Count > 0)
+                {
+                    await _dbContext.DeleteAsync<SP_PURPLAN>(x => appid.Contains(x.APPLY_ID));
+                    await _dbContext.DeleteAsync<SP_PURPLAN_DET>(x => appid.Contains(x.APPLY_ID));
+                }
+            }
+            return AjaxResult.Success("成功");
         }
 
         /// <summary>

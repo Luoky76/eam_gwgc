@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -126,6 +127,20 @@ namespace EAM.Device.services
                 });
         }
 
+        /// <summary>
+        /// 反提交
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmit(string sid)
+        {
+            return await _dbContext.UpdateAsync<BASE_DOCK>(x => sid == x.DOCK_ID,
+                x => new BASE_DOCK
+                {
+                    AUDITING = "0",
+                });
+
+        }
+
         #endregion 码头基础信息
 
         #region 码头维修计划
@@ -222,6 +237,31 @@ namespace EAM.Device.services
             }
             return AjaxResult.Success("更新成功");
         }
+
+        /// <summary>
+        /// 反提交维修计划
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> UnSubmitRepDockPlan(string sid)
+        {
+            var qryplan =await _dbContext.Query<REP_DOCK_PLAN>(c => c.PLAN_ID == sid && c.AUDITING_EXE == "1").FirstOrDefaultAsync();
+            if (qryplan == null) {
+                await _dbContext.UpdateAsync<REP_DOCK_PLAN>(
+                    x => x.PLAN_ID == sid,
+                    x => new REP_DOCK_PLAN
+                    {
+                        AUDITING_PLAN = "0",
+                        AUDITING_EXE = "",
+                        EXE_CODE = "",
+                    });
+            }
+            else
+            {
+                throw new MessageException("该计划已实施，不可撤销提交！");
+            }
+            return AjaxResult.Success("更新成功");
+        }
+
         /// <summary>
         /// 获取计划明细
         /// </summary>
@@ -353,6 +393,32 @@ namespace EAM.Device.services
         }
 
         /// <summary>
+        /// 反提交维修实施
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitRepDockExe(string sid)
+        {
+            var qryexeitem = await _dbContext.Query<REP_DOCK_CHECK>(c => c.EXE_CODE == sid)
+                .Select(c=>c.AUDITING_CONFIRM)
+                .ToListAsync();
+            if (qryexeitem.Contains("1"))
+            {
+                throw new MessageException("确认单已提交，实施不可撤销提交！");
+            }
+            else
+            {
+                await _dbContext.DeleteAsync<REP_DOCK_CHECK>(c => c.EXE_CODE == sid);
+                return await _dbContext.UpdateAsync<REP_DOCK_PLAN>(
+                   x => x.EXE_CODE == sid,
+                   x => new REP_DOCK_PLAN
+                   {
+                       AUDITING_EXE = "0",
+                       EXE_DATE = null,
+                   });
+            }
+        }
+
+        /// <summary>
         /// 管理维修实施结果
         /// </summary>
         /// <returns></returns>
@@ -430,6 +496,21 @@ namespace EAM.Device.services
         }
 
         /// <summary>
+        /// 反提交码头维修确认
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitRepDockConfirm(string sid)
+        {
+            var updaterepout = await _dbContext.UpdateAsync<REP_DOCK_CHECK>(x => sid==x.CHECK_ID,
+                 x => new REP_DOCK_CHECK
+                 {
+                     AUDITING_CHECK = "",
+                     AUDITING_CONFIRM = "0",
+                 });
+            return updaterepout;
+        }
+
+        /// <summary>
         /// 获取码头维修确认列表
         /// </summary>
         /// <returns></returns>
@@ -482,6 +563,21 @@ namespace EAM.Device.services
                 });
             return updaterepout;
         }
+
+        /// <summary>
+        /// 反提交码头维修验收
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitRepDockCheck(string sid)
+        {
+            var updaterepout = await _dbContext.UpdateAsync<REP_DOCK_CHECK>(x => sid.Contains(x.CHECK_ID),
+                x => new REP_DOCK_CHECK
+                {
+                    AUDITING_CHECK = "0",
+                });
+            return updaterepout;
+        }
+
 
         /// <summary>
         /// 管理码头维修验收，确认

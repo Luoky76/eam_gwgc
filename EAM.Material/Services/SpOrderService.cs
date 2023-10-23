@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -11,6 +12,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using static StackExchange.Redis.Role;
 
 namespace EAM.Material.Services
 {
@@ -32,10 +34,16 @@ namespace EAM.Material.Services
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="YEAR"></param>
         /// <returns></returns>
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<GridData> ListAsync(GridRequest request, string YEAR)
         {
-            return await _dbContext.Query<SP_ORDER>().GetGridData(request);
+            var res = _dbContext.Query<SP_ORDER>();
+            if (!string.IsNullOrEmpty(YEAR))
+            {
+                res = res.Where(t => t.ORDER_DATE.Value.Year.Equals(YEAR));
+            }
+            return await res.GetGridData(request);
         }
 
         class SpOrderRes : SP_ORDER
@@ -252,8 +260,110 @@ namespace EAM.Material.Services
                         BUY_USERID = _userSession.UserID.ToString(),
                         BUY_USERDEPTID= _userSession.Corp.CorpID
                     });
+
+            //数据同步到物资收货中
+            var order = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.ORDER_ID)).ToList();         
+            foreach (var s in order)
+            {
+                var dets = _dbContext.Query<SP_ORDER_DETAIL>().Where(t => t.ORDER_ID == s.ORDER_ID).ToList();
+                var depts = dets.Select(t => new { t.DEPT_ID, t.DEPT_NAME }).Distinct().ToList();
+                foreach (var dept in depts)
+                {
+                    string type = "DJ" + DateTime.Now.ToString("yyyyMM");
+                    string def = type + "0000";
+                    var model = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_CODE.Contains(type)).Select(x => Sql.Max(x.RECEIVE_CODE) ?? def).FirstOrDefaultAsync();
+                    var index = model.SubStr(8, 4).CastTo<int>() + 1;
+
+                    var det = dets.Where(t => t.DEPT_ID == dept.DEPT_ID).ToList();
+                    var apply = det.FirstOrDefault();
+                    var data = new SP_RECEIVE
+                    {
+                        RECEIVE_ID = GuidHelper.NewSnowflakeId().ToString(),
+                        USER_NAME = _userSession.UserName.ToString(),
+                        USER_ID = _userSession.UserID.ToString(),
+                        RECEIVE_CODE = type + index.ToString("D4"),
+                        CREATEDATE = DateTime.Now,
+                        CREATE_USERID = _userSession.UserID.ToString(),
+                        AUDITING = "0",
+                        PROVIDER_NAME = s.PROVIDER_NAME,
+                        PROVIDER_ID = s.PROVIDER_ID,
+                        PUR_USER = s.BUY_USER,
+                        PUR_USERID = s.BUY_USERID,
+                        ORDER_ID = s.ORDER_ID,
+                        ORDER_CODE = s.ORDER_CODE,
+
+                        DEPT_NAME = dept.DEPT_ID,
+                        DEPT_ID = dept.DEPT_NAME,
+                        CHK_USER = apply?.APPLY_USER,
+                        CHK_USERID = apply?.APPLY_USERID
+                    };
+                    var spReceiveDet = new List<SP_RECEIVE_DET>();
+                    foreach (var item in det)
+                    {
+                        var req = item.MapTo<SP_RECEIVE_DET>();
+                        req.RECEIVE_ID = data.RECEIVE_ID;
+                        req.RECDET_ID = GuidHelper.NewSnowflakeId().ToString();
+                        req.CREATEDATE = DateTime.Now;
+                        req.CREATE_USERID = _userSession.UserID.ToString();
+
+                        spReceiveDet.Add(req);
+                    }
+                    await Task.CompletedTask;
+                    await _dbContext.InsertAsync<SP_RECEIVE>(data);
+                    await _dbContext.InsertRangeAsync<SP_RECEIVE_DET>(spReceiveDet);
+                }
+
+                var appledetId = dets.Select(t => t.SPDET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
+                 x => new SP_APPLY_DETAIL
+                 {
+                     SP_STATUS = "50"//供货中
+                 });
+            }
+
             return updatedevice;
         }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var list = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.ORDER_ID)).ToList();
+
+            if (list.Count > 0)
+            {
+                foreach (var item in list)
+                {
+                    if (_dbContext.Query<SP_RECEIVE>().Any(t => t.ORDER_ID == item.ORDER_ID && t.AUDITING == "1"))
+                    {
+                        throw new Exception($"{item.ORDER_CODE}供货中,不能撤销!");
+                    }
+                }
+
+                var updatedevice = await _dbContext.UpdateAsync<SP_ORDER>(x => sids.Contains(x.ORDER_ID),
+                   x => new SP_ORDER
+                   {
+                       AUDITING = "0"
+                   });
+
+                var data = _dbContext.Query<SP_ORDER_DETAIL>().Where(x => sids.Contains(x.ORDER_ID)).Select(t => t.SPDET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => data.Contains(x.SPDET_ID),
+                x => new SP_APPLY_DETAIL
+                {
+                    SP_STATUS = "40"//请购中
+                });
+
+                var orderId = _dbContext.Query<SP_RECEIVE>().Where(t => sids.Contains(t.ORDER_ID)).Select(t => t.RECEIVE_ID).ToList();
+                await _dbContext.DeleteAsync<SP_RECEIVE>(x => orderId.Contains(x.RECEIVE_ID));
+                await _dbContext.DeleteAsync<SP_RECEIVE_DET>(x => orderId.Contains(x.RECEIVE_ID));
+
+            }
+            return AjaxResult.Success("成功");
+        }
+
         /// <summary>
         /// 获取明细列表信息
         /// </summary>
@@ -394,6 +504,38 @@ namespace EAM.Material.Services
                     a.ORDERDET_ID,
                 })
                 .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 导出模板数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="YEAR"></param>
+        /// <returns></returns>
+        public async Task<GridData> ExportListAsync(GridRequest request, string YEAR)
+        {
+            var query = _dbContext.Query<SP_ORDER>().Where(t => t.AUDITING == "1");
+            if (!string.IsNullOrEmpty(YEAR))
+            {
+                query = query.Where(t => t.ORDER_DATE.Value.Year.Equals(YEAR));
+            }
+            var res = await query.Select(t => new OrderExportData
+                {
+                    ORDER_CODE = t.ORDER_CODE,
+                    ORDER_TYPE = t.ORDER_TYPE,
+                    ORDER_DATE = t.ORDER_DATE,
+                    DEPT_NAME = t.DEPT_NAME,
+                    ORDER_MONEY = t.ORDER_MONEY,
+                    PROVIDER_NAME = t.PROVIDER_NAME
+                })
+                .GetGridData(request);
+            var dic = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "order_src").ToList();
+            foreach (var item in (List<OrderExportData>)res.Rows)
+            {
+                item.ORDER_TYPE = dic.Where(t => t.CODE_EN == item.ORDER_TYPE).FirstOrDefault()?.CODE_CN;
+                item.ORDER_DATESTR = item.ORDER_DATE.Value.ToString("yyyy-MM-dd");
+            }
+            return res;
         }
     }
 }

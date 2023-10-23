@@ -10,6 +10,7 @@ using Gksyb.Core.Grid;
 using EAM.Material.Interfaces;
 using NPOI.SS.Formula.PTG;
 using Gksyb.Core.Auth;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace EAM.Material.Services
 {
@@ -216,13 +217,45 @@ namespace EAM.Material.Services
 
                         await _dbContext.InsertAsync<SP_INSTORE_DET>(_indet);
                     }
+
+                    //采购申请进度更新
+                    var appledetId = recdet.Select(t => t.SPDET_ID).ToList();
+                    await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
+                     x => new SP_APPLY_DETAIL
+                     {
+                         SP_STATUS = "60"//供货中
+                     });
                 }
 
                 _in.INSTORE_MONEY = money;
 
                 await _dbContext.InsertAsync<SP_INSTORE>(_in);
             }
+           
+            if (entity.AUDITING_CHK == "-1") //撤销提交
+            {
+                entity.AUDITING_CHK = "0";
+                entity.CHK_DATE = null;
+                entity.EDIT_USER = _userSession.UserName;
 
+                if (_dbContext.Query<SP_INSTORE>().Any(t => t.RECEIVE_ID == entity.RECEIVE_ID && t.AUDITING != "0"))
+                {
+                    errMsg = $"{entity.RECEIVE_CODE}已采购入库,不能撤销!";
+                    throw new MessageException(errMsg);
+                }
+                await _dbContext.DeleteAsync<SP_INSTORE>(x => x.RECEIVE_ID.Equals(entity.RECEIVE_ID));
+                var recdet = await _dbContext.Query<SP_RECEIVE_DET>(x => x.RECEIVE_ID == entity.RECEIVE_ID).ToListAsync();
+                //采购申请进度更新
+                var appledetId = recdet.Select(t => t.SPDET_ID).ToList();
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
+                 x => new SP_APPLY_DETAIL
+                 {
+                     SP_STATUS = "50"//供货中
+                 });
+                var Ids = recdet.Select(t => t.RECDET_ID).ToList();
+                await _dbContext.DeleteAsync<SP_INSTORE_DET>(x => Ids.Contains(x.RECDET_ID));
+
+            }
             await Task.CompletedTask;
         }
 

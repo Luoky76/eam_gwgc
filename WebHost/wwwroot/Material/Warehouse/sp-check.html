@@ -128,6 +128,9 @@
                                 }
                             });
                             break;
+                        case "cancelSumbit":
+                            me.cancelSumbit();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -211,6 +214,44 @@
                             return;
                         }
                         upd.AUDITING_CHK = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpReceive/Save',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            cancelSumbit: function () { //撤销提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING_CHK == "0") {
+                            LG.showError("该数据未提交，无法撤销！");
+                            return;
+                        }
+                        upd.AUDITING_CHK = "-1";
                         orginarr.push(ori);
                         updatedarr.push(upd)
                     }

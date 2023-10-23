@@ -191,5 +191,11 @@ namespace Gksyb.Model.Core
         [Column(DbType = DbType.AnsiString, Size = 30)]
         public string C_TERMINAL { get; set; }
 
+        /// <summary>
+        /// 用户在岗状态
+        /// </summary>
+        [Description("用户在岗状态")]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
+        public string USER_STATE { get; set; }
     }
 }

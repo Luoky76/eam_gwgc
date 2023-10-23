@@ -31,13 +31,13 @@
                         fields: [
                             { display: "用户名", name: "_search_LOGINNAME", width: 100, upper: true, type: "text" },
                             { display: "名称", name: "_search_REALNAME", width: 100, upper: true, type: "text" },
-                            { display: "角色", name: "_search_ROLE", width: 180, userSearch: false, type: "select", options: { data: [], autocomplete: true } },
-                            { display: "组织", name: "_search_CORP", width: 180, userSearch: false, type: "select", options: { data: [], autocomplete: true } }
+                            { display: "角色", name: "_search_ROLE", width: 180, userSearch: false, type: "select", options: { data: me.dataRole, autocomplete: true } },
+                            { display: "组织", name: "_search_CORP", width: 180, userSearch: false, type: "select", options: { data: me.dataCorp, autocomplete: true } }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "用户名", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { upper: true, type: 'text' } },
+                            { display: "*用户名", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { upper: true, type: 'text' } },
                             {
                                 display: "隶属角色", name: "ROLE", isSort: false, width: 100, minWidth: 130, type: "text", align: "center", formatType: "select", format: {
                                     data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column) {
@@ -53,7 +53,7 @@
                                     });
                                 }
                             },
-                            { display: "名称", name: "REALNAME", width: 100, type: "text", validate: { required: true, maxlength: 100 }, editor: { type: 'text' } },
+                            { display: "*名称", name: "REALNAME", width: 100, type: "text", validate: { required: true, maxlength: 100 }, editor: { type: 'text' } },
                             { display: "本司否", name: "CLASS", width: 60, type: "chk", editor: { type: 'chkStr' } },
                             {
                                 display: "组织岗位", name: "CORP", isSort: false, width: 120, type: "text", align: "center", formatType: "select", format: {
@@ -76,6 +76,13 @@
                                 }
                             },
                             { display: "所属组", name: "STATION", width: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "在岗状态", name: "USER_STATE", width: 100, type: "select", editor: {
+                                    type: 'select',
+                                    data: me.userState
+                                }
+                            },
+                            { display: "联系电话", name: "PHONE", width: 100, type: "text", editor: { type: 'text' } },
                             {
                                 display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "text", align: "left", render: function (rowdata, rowindex, value, column) {
                                     return value ? "绑定" : "未绑定";
@@ -101,16 +108,17 @@
                         me.dataCorp = data.corp;
                         me.dataStation = data.station;
                         me.initPassword = data.initPassword;
+                        me.userState = data.UserState;
                         if (me.grid) {
                             me.grid.set('title', '<span style="color: Red; ">初始密码为' + me.initPassword + '</span>');
                         }
-                        var editor = null;
+                        /*var editor = null;
                         if (me.searchForm) {
                             editor = me.searchForm.getEditor("_search_ROLE");
                             if (editor) editor.setData(me.dataRole);
                             editor = me.searchForm.getEditor("_search_CORP");
                             if (editor) editor.setData(me.dataCorp);
-                        }
+                        }*/
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -455,10 +463,11 @@
             },
             init: function () {
                 var me = this;
+                me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
-                me.loadComboxData();
+                //me.loadComboxData();
                 me.buttons[0].click(); //查询
                 return me;
             }

@@ -74,6 +74,16 @@ namespace EAM.Device.controller
             return AjaxResult.Success(await _service.Submit(sids), "成功");
         }
 
+        /// <summary>
+        /// 反提交
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmit(sid), "成功");
+        }
+
         #endregion
 
         /// <summary>
@@ -117,6 +127,17 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.SubmitRepDockPlan(sids), "成功");
         }
+
+        /// <summary>
+        /// 反提交维修计划
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitRepDockPlanAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitRepDockPlan(sid), "成功");
+        }
+
         /// <summary>
         /// 获取计划明细
         /// </summary>
@@ -145,6 +166,16 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> SubmitRepDockExeAsync(List<string> sids)
         {
             return AjaxResult.Success(await _service.SubmitRepDockExe(sids), "成功");
+        }
+        
+        /// <summary>
+        /// 反提交维修实施
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitRepDockExeAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitRepDockExe(sid), "成功");
         }
 
         /// <summary>
@@ -188,6 +219,16 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
+        /// 反提交码头维修确认
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitRepDockConfirmAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitRepDockConfirm(sid), "成功");
+        }
+
+        /// <summary>
         /// 根据码头维修ID获取信息
         /// </summary>
         /// <param name="ID"></param>
@@ -207,6 +248,16 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> SubmitRepDockCheckAsync(List<string> sids)
         {
             return AjaxResult.Success(await _service.SubmitRepDockCheck(sids), "成功");
+        }
+
+        /// <summary>
+        /// 反提交码头维修验收
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitRepDockCheckAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitRepDockCheck(sid), "成功");
         }
 
         /// <summary>

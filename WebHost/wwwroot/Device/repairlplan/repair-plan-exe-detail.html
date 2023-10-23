@@ -30,6 +30,10 @@
     </div>
     <script type="text/javascript">
         'use strict';
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             dialogData: {},
             menuNo: getQueryStringByName("MenuNo"),
@@ -51,6 +55,8 @@
             repairhandtype1: [{ "ID": "自修", "TEXT": "自修" }, { "ID": "厂修", "TEXT": "厂修" }],
             stopSource: [],
             malType: [],
+            plan_state: [],
+            repitemtype: [],
             deviceInfo: [],
             start: null,
             setConfig: function () {
@@ -59,25 +65,26 @@
                     form: {
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
-                            { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {} },
-                            { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "select", editor: { disabled: true }, options: {} },
+                            { display: "故障申报单号", name: "EXE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维保部门", name: "WSEC_DEPT", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.maintdept } },
-                            { display: "维修类型", name: "MAINT_TYPE", newline: true, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
+                            { display: "维修类型", name: "MAINT_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
                             { display: "维修处理方式", name: "DEAL_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repairhandtype } },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: true, width: 880, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
-                            { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
+                            { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, upper: true, type: "date", editor: { disabled: true }, options: { format: 'yyyy-MM-dd HH:mm', } },
+                            { display: "计划完工时间", name: "PLAN_END_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: { format: 'yyyy-MM-dd HH:mm', } },
+                            { display: "计划停机时间(H)", name: "PLAN_STOP_TIME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "负责人", name: "CHARGE_USER", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "采购方式", name: "COLLECT_METHOD", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "预估维修金额", name: "PLAN_MONEY", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修内容", name: "REPAIR_MEMO", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修内容", name: "REPAIR_MEMO", newline: true, width: 880, upper: true, type: "textarea", editor: { disabled: true }, options: { rows: "2" } },
                             {
                                 display: "实际开工时间", name: "ACT_START_DATE", newline: true, upper: true, type: "date", validate: { required: true }, options: {
                                     format: 'yyyy-MM-dd HH:mm',
@@ -94,10 +101,9 @@
                                     }
                                 }
                             },
-                            { display: "维修工时", name: "ACT_STOP_TIME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "维修工时(H)", name: "ACT_STOP_TIME", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: true, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "实施提交日期", name: "EIDT_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", options: { data: me.iscomplete } },
                             { display: "协助人", name: "ASSIST_USER", newline: true, upper: true, type: "text", options: {} },
                             { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             { display: "实施情况登记", name: "EXE_DESC", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
@@ -105,33 +111,100 @@
                     },
                     grid: {
                         columns: [
+                            { display: "序号", name: "REP_INDEX", width: 150, type: "text", editor: { type: 'text' } },
                             {
                                 display: "是否完成", name: "IS_COMPLETE", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 }, validate: { required: true }
                             },
-                            { display: "维修项目", name: "BOM_NAME", width: 150, type: "text", },
-                            { display: "序号", name: "REP_INDEX", width: 150, type: "text", },
-                            { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", },
-                            { display: "维修项目分类", name: "ITEM_TYPE", width: 150, type: "text", },
+                            { display: "设备编号", name: "DEVICE_NO", width: 150, type: "text", },
+                            //{ display: "设备名称", name: "DEVICE_NAME", width: 150, type: "text", editor: { type: 'text' } },
+                            { display: "设备规格", name: "DEVICE_SIZE", width: 150, type: "text" },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 150, type: "text" },
+                            //{ display: "设备分类", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 150, type: "text", },
                             {
-                                display: "是否月度询价", name: "IS_ASKBID", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 }, validate: { required: true }
+                                display: "设备数量", name: "DEVICE_NUM", width: 150, type: "float", editor: {
+                                    type: 'float',
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value < 0) {
+                                            LG.showError("数量不可为负数！");
+                                        }
+                                    }
+                                },
+                            },
+                            { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", editor: { type: 'text' } },
+                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
+                            {
+                                display: "是否月度询价", name: "IS_ASKBID", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 },
                             },
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 }, validate: { required: true } },
-                            { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, validate: { required: true } },
+                            { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, },
+                            
                             {
-                                display: "实际开工时间", name: "BEGIN_TIME", width: 120, type: "date", editor: { type: 'date' }
+                                display: "实际开工时间", name: "BEGIN_TIME", minWidth: 100, validate: { required: true }, type: "date",
+                                editor: {
+                                    type: 'date', showTime: true,
+                                    format: "yyyy-MM-dd hh:mm",
+                                    onChange: function (rowdata, rowIndex) {
+                                        me.btime = rowdata.value
+                                        if (me.etime == null) {
+                                            LG.showError("请选实际完工时间！");
+                                        }
+                                        else {
+                                            if (me.etime < me.btime) {
+                                                LG.showError("开始时间不可大于实际完工时间！");
+                                            }
+                                            else {
+                                                var date1 = new Date(me.btime);
+                                                var date2 = new Date(me.etime);
+                                                // 计算时间差值（单位为毫秒）
+                                                var timeDiff = date2.getTime() - date1.getTime();
+                                                // 将时间差值转换为小时数
+                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60 / 60).toFixed(2);
+                                                liger.get("maingrid").updateCell("TAKE_TIME", minutesDiff, rowdata.record);
+                                            }
+                                        }
+                                    },
+                                }
                             },
                             {
-                                display: "实际完工时间", name: "END_TIME", width: 100, type: "date", editor: { type: 'date' }
+                                display: "实际完工时间", name: "END_TIME", minWidth: 100, validate: { required: true }, type: "date",
+                                editor: {
+                                    type: 'date',
+                                    showTime: true, format: "yyyy-MM-dd hh:mm",
+                                    onChange: function (rowdata, rowIndex) {
+                                        me.etime = rowdata.value
+                                        if (me.btime == null) {
+                                            LG.showError("请选开始时间！");
+                                        }
+                                        else {
+                                            if (me.etime < me.btime) {
+                                                LG.showError("实际完工时间不小于开始时间！");
+                                            }
+                                            else {
+                                                var date1 = new Date(me.btime);
+                                                var date2 = new Date(me.etime);
+                                                // 计算时间差值（单位为毫秒）
+                                                var timeDiff = date2.getTime() - date1.getTime();
+                                                // 将时间差值转换为小时数
+                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60 ).toFixed(2);
+                                                liger.get("maingrid").updateCell("TAKE_TIME", minutesDiff, rowdata.record);
+
+                                            }
+                                        }
+                                    },
+                                }
                             },
-                            { display: "花费时间", name: "TAKE_TIME", width: 100, type: "text" },
-                            { display: "备注", name: "MEMO", width: 100, type: "text" },
+                            { display: "花费时间(H)", name: "TAKE_TIME", width: 100, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "维修部位ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "EXE_ITEM_ID", name: "EXE_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                         ]
                     }
                 };
             },
             mainform: null,
             buttons: null,
-            grid:null,
+            grid: null,
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -141,7 +214,9 @@
                     success: function (data, message) {
                         me.maintdept = data.MaintDept;
                         me.repairtype = data.RepairType;
+                        me.repitemtype = data.RepitemType;
                         me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -166,17 +241,24 @@
                 if (start >= complete) {
                     $('#ACT_START_DATE').val("");
                     $('#ACT_END_DATE').val("");
-                    LG.showError("开始时间不能大于结束时间！");
+                    LG.showError("开始时间不能大于实际完工时间！");
                     return;
                 }
                 var timeDiff = complete - start;
-                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60);
+                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60).toFixed(2);
                 $('#ACT_STOP_TIME').val(minutesDiff);
             },
             loadData: function () {
                 var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
                 if (!me.sid) {
-                    me.mainform.setOrginData({ AUDITING: "0" });
+                    me.mainform.setOrginData({ AUDITING: "0"});
+                    inner();
                 }
                 else {
                     LG.ajax({
@@ -186,6 +268,7 @@
                         data: { id: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data[0]);
+                            inner();
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -197,43 +280,76 @@
                 }
                 me.mainform.focus();
             },
+
             save: function () { //保存
                 var me = this;
+                var flag = true;
+                var formEdit = false, gridEdit = false;
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    formEdit = false;
+                }
+                else formEdit = true;
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
                 }
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        gridEdit = false;
+                    }
+                    else gridEdit = true;
+                }
+                if (!me.grid.validChangeRows()) return false;
                 function handle(data) {
                     return data;
                 }
-                var data = handle(me.mainform.getData());
-                var original = handle(me.mainform.getOrginData());
-                var changeRow = new Object();
-                if (!me.sid) {
-                    changeRow["added"] = [data];
-                }
-                else {
-                    changeRow["updated"] = [data];
-                    changeRow["original"] = [original];
-                }
-                var changeRowDet = me.grid.getChangedRows();
-                LG.ajax({
-                    jsToken: true,
-                    url: 'Repair/RepairPlan/SaveExe',
-                    loading: '正在保存中...',
-                    data: { request: changeRow, requestdet: changeRowDet },
-                    success: function () {
-                        LG.showSuccess('保存成功', function () { if (me.dialog) { me.dialog.close(); } });
-                    },
-                    error: function (message) {
-                        LG.showError(message);
+
+                if (formEdit || gridEdit) {
+                    var data = handle(me.mainform.getData());
+                    var original = handle(me.mainform.getOrginData());
+                    var changeRow = new Object();
+                    if (!me.sid) {
+                        changeRow["added"] = [data];
                     }
-                });
+                    else {
+                        changeRow["updated"] = [data];
+                        changeRow["original"] = [original];
+                    }
+                    var changeRowDet = me.grid.getChangedRows();
+                    for (var i = 0; i < changeRowDet.updated.length; i++) {
+                        var row = changeRowDet.updated[i];
+                        if (row.DEVICE_NUM < 0) {
+                            flag = false;
+                            LG.showSuccess('数量不可为负数！');
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Repair/RepairPlan/SaveExe',
+                            loading: '正在保存中...',
+                            data: { request: changeRow, requestdet: changeRowDet },
+                            success: function () {
+                                LG.showSuccess('保存成功', function () {
+                                    if (me.dialog) me.dialog.close();
+                                });
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+                else { LG.showSuccess('无修改'); }
             },
-            close: function (skipConfirm) {
+            close: function () {
                 var me = this;
                 function inner(callback) {
-                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
                                 if (callback) callback(2);
@@ -250,13 +366,8 @@
                 }
                 inner(function (status) {
                     if (status > 0) {
-                        if (me.dialog) {
-                            me.dialog.close();
-                            return;
-                        }
-                        var win = parent || window;
-                        if (win.closeCurrentTab) win.closeCurrentTab();
-                        else win.close();
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
                     }
                 });
             },
@@ -309,7 +420,7 @@
                     usePager: true,
                     columns: me.config.grid.columns,
                     dataAction: 'local',
-                    toolbar: {},
+                    toolbar: { group: 'item' },
                     url: 'Repair/RepairPlan/ExeItemList',
                     parms: {
                         where: JSON.stringify({
@@ -341,6 +452,156 @@
                     me.loadToolbar();
                 }
             },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "add":
+                            me.add();
+                            break;
+                        case "import":
+                            me.import();
+                            break;
+                        case "upload":
+                            me.upload();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            //新增
+            add: function () {
+                var me = this;
+                me.grid.addEditRow({ "EXE_ID": $('#EXE_ID').val(), DEAL_TYPE: $('#DEAL_TYPE').val() });
+                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
+            },
+            import: function () { //新增
+                var me = this;
+
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.DEVICE_ID);
+                }
+
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Repair/RepairPlan/GetDevice',
+                        rowKey: "DEVICE_ID",
+                        columns: [
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+
+                        ]
+                    },
+                    fields: [
+                        { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                        { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.DEVICE_ID)) {
+                                me.grid.addEditRow({
+                                    EXE_ID: me.sid,
+                                    DEAL_TYPE: $("#DEAL_TYPE").val(),
+                                    DEVICE_NO: item.DEVICE_NO,
+                                    DEVICE_TYPE: item.DEVICE_TYPE,
+                                    DEVICE_SIZE: item.DEVICE_SIZE,
+                                    DEVICE_ID: item.DEVICE_ID,
+                                    DEVICE_NAME: item.DEVICE_NAME
+                                });
+                            }
+                        }
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '选择设备',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+
+            },
+            upload: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        if (selected[0].EXE_ITEM_ID != undefined) {
+                            me.f_rowAttachManage(selected[0].EXE_ITEM_ID);
+                        } else {
+                            LG.showError("请先保存该记录再上传！");
+                        }
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                isView = false;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "REP_PLAN_EXE_ITEM"; // 表名
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //data: { "tableName": tableName, "dataId": dataid, "isView": isView },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.loadData();
+                    }
+                });
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
             init: function () {
                 var me = this;
                 if (frameElement && frameElement.dialog) {
@@ -355,6 +616,13 @@
                 me.setForm();
                 me.loadData();
                 me.setGrid();
+
+                if (me.dialogData.isView != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

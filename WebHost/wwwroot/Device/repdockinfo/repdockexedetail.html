@@ -85,7 +85,12 @@
                             },
                             { display: "维修工时(h)", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
-                            { display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            {
+                                display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", 
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }    
+                            },
                             {
                                 display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' },
                                 options: {
@@ -97,7 +102,7 @@
                                     }
                                 }
                             },
-                            { display: "是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, editor: { type: 'select', data: me.isLose } },
+                            { display: "*是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, editor: { type: 'select', data: me.isLose } },
                             { display: "遗留问题描述", name: "LEAVE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
                             { display: "实施情况描述", name: "EXE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
 
@@ -106,14 +111,15 @@
                     },
                     grid: {
                         columns: [
-                            { display: "是否完成", name: "IS_COMPLETE", minWidth: 100, type: "select", validate: { required: true }, editor: { type: 'select', data: me.complete } },
+                            { display: "*是否完成", name: "IS_COMPLETE", minWidth: 100, type: "select", validate: { required: true }, editor: { type: 'select', data: me.complete } },
                             { display: "维修项目", name: "REP_ITEM", minWidth: 200, validate: { required: true }, type: "text" },
                             { display: "维修内容", name: "REP_CONTENT", minWidth: 200, validate: { required: true }, type: "text" },
                             { display: "维修方案", name: "REP_METHOD", minWidth: 200, type: "text" },
                             { display: "预计人员数量", name: "LABOR_NUM", minWidth: 100, type: "float" },
                             { display: "预计花费时间（h）", name: "TAKE_TIME", minWidth: 100, type: "float" },
                             { display: "检修负责人", name: "REP_LEADER", minWidth: 100, type: "text" },
-                            { display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            //{ display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "实施日期", name: "EXE_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" }, format: "yyyy-MM-dd" },
                             {
                                 display: "实际人员数量", name: "EXE_LABOR_NUM", minWidth: 100, type: "float",
                                 editor: {

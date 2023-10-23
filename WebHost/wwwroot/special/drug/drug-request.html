@@ -234,6 +234,10 @@
                                 }
                             });
                             break;
+                        case "revoke":
+                            if (!me.isSelectSingleRow()) break;
+                            me.revoke();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -350,6 +354,10 @@
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.CREATE_USERID != window.session.UserID) {
+                            LG.tip("您不是该需求登记的申请人！");
+                            return;
+                        }
                         upd.AUDITING = "1";
                         orginarr.push(ori);
                         updatedarr.push(upd)
@@ -374,6 +382,32 @@
                 } else {
                     LG.tip('请选择行!');
                 }
+            },
+            revoke: function () { //撤销提交
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected.CREATE_USERID != window.session.UserID) {
+                    LG.showError("您不是该需求登记的申请人！");
+                    return;
+                }
+                if (selected.AUDITING == "0") {
+                    LG.tip("未提交数据无需撤销！");
+                    return;
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/DrugRequest/Revoke',
+                    loading: '正在撤销中...',
+                    data: { requestId: selected.REQUEST_ID },
+                    success: function () {
+                        LG.showSuccess('撤销成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;

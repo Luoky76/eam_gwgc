@@ -27,28 +27,29 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            //{ display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "故障申报单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "EXE_ID", name: "EXE_ID", width: 100, type: "text", hide: true },
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
-                            { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
-                            { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "select", options: { data: me.repairhandtype } },
-                            { display: "实际开工时间", name: "PLAN_START_DATE", width: 100, type: "text", },
-                            { display: "实际完工时间", name: "PLAN_END_DATE", width: 100, type: "text", },
-                            { display: "维修实施单号", name: "EXE_CODE", width: 100, type: "text", },
-                            { display: "计划单号", name: "PLAN_CODE", width: 100, type: "text", },
-                            { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", },
-                            { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
-                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
-                            { display: "负责人", name: "CHARGE_USER", width: 100, type: "text", },
-                            { display: "备注", name: "PLAN_MEMO", width: 100, type: "text", }
+                            { display: "EXE_ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "AUDITING_B", name: "AUDITING_B", minWidth: 100, type: "text", hide: true },
+                            { display: "已提交", name: "AUDITING", minWidth: 100, type: "chk" },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", },
+                            { display: "维保部门", name: "WSEC_DEPT", minWidth: 100, type: "text", },
+                            { display: "维修类型", name: "MAINT_TYPE", minWidth: 100, type: "text", },
+                            { display: "维修处理方式", name: "DEAL_TYPE", minWidth: 100, type: "select", options: { data: me.repairhandtype } },
+                            { display: "实际开工时间", name: "ACT_START_DATE", minWidth: 100, type: "text", },
+                            { display: "实际完工时间", name: "ACT_END_DATE", minWidth: 100, type: "text", },
+                            //{ display: "维修实施单号", name: "EXE_CODE", minWidth: 100, type: "text", },
+                            { display: "故障申报单号", name: "EXE_CODE", minWidth: 100, type: "text", },
+                            { display: "船舶编号", name: "DEVICE_NO", minWidth: 100, type: "text", },
+                            { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            //{ display: "负责人", name: "CHARGE_USER", minWidth: 100, type: "text", },
+                            { display: "备注", name: "PLAN_MEMO", minWidth: 100, type: "text", }
                         ],
                     }
                 };
@@ -94,7 +95,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'AUDITING_B', op: 'equal', value: "1" }]
                         })
                     },
                     sortName: '',
@@ -152,14 +153,13 @@
                             me.modify();
                             break;
                         case "sumbit":
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.sumbit();
-                                }
-                            });
+                            me.sumbit();
                             break;
                         case "delete":
                             me.delete();
+                            break;
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -176,6 +176,45 @@
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            revoke: function () { //撤销提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length>0) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "0") {
+                            LG.showError("该数据未提交，无法撤销！");
+                            return;
+                        }
+                        upd.AUDITING = null;
+                        upd.AUDITING_D = null;
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/SaveExe',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('撤销提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
             },
             add: function () { //新增
                 var me = this;
@@ -199,12 +238,20 @@
             sumbit: function () { //提交
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
+                if (selecteds.length > 0) {
                     var updatedarr = [];
                     var orginarr = [];
                     for (var i = 0; i < selecteds.length; i++) {
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.ACT_START_DATE == null) {
+                            LG.showError("请选择实际开工时间！");
+                            return;
+                        }
+                        if (ori.ACT_END_DATE == null) {
+                            LG.showError("请选择实际完工时间！");
+                            return;
+                        }
                         if (ori.AUDITING == "1") {
                             LG.showError("该数据已提交，无法重复提交！");
                             return;
@@ -263,7 +310,7 @@
             },
             modify: function (rowdata) { //修改
                 var me = this;
-                var selected = me.grid.getSelectedRow();
+                var selected = me.grid.getSelectedRows();
                 if (selected.length > 1) {
                     LG.showError("不能选择多行")
                     return
@@ -271,14 +318,14 @@
                     LG.showError("请选择一行")
                     return
                 }
-                if (selected.AUDITING == "1") {
+                if (selected[0].AUDITING == "1") {
                     LG.tip('已提交，无法修改!');
                 } else {
                     if (rowdata) {
                         selected = rowdata;
                     }
                     if (selected) {
-                        var sid = selected.EXE_ID;
+                        var sid = selected[0].EXE_ID;
                         $.ligerDialog.open({
                             width: 1200,
                             height: 640,

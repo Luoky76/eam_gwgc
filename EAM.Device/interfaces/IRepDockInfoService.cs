@@ -39,6 +39,12 @@ namespace EAM.Device.interfaces
         public Task<int> Submit(List<string> sids);
 
         /// <summary>
+        /// 反提交
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmit(string sid);
+
+        /// <summary>
         /// 获取维修计划记录
         /// </summary>
         /// <returns></returns>
@@ -63,6 +69,12 @@ namespace EAM.Device.interfaces
         public Task<AjaxResult> SubmitRepDockPlan(List<string> sids);
 
         /// <summary>
+        /// 反提交维修计划
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> UnSubmitRepDockPlan(string sid);
+
+        /// <summary>
         /// 获取计划明细
         /// </summary>
         /// <returns></returns>
@@ -79,6 +91,12 @@ namespace EAM.Device.interfaces
         /// </summary>
         /// <returns></returns>
         public Task<int> SubmitRepDockExe(List<string> sids);
+
+        /// <summary>
+        /// 反提交维修实施
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitRepDockExe(string sid);
 
         /// <summary>
         /// 管理维修实施结果
@@ -99,6 +117,12 @@ namespace EAM.Device.interfaces
         public Task<int> SubmitRepDockConfirm(List<string> sids);
 
         /// <summary>
+        /// 反提交码头维修确认
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitRepDockConfirm(string sid);
+
+        /// <summary>
         /// 获取码头维修确认列表
         /// </summary>
         /// <returns></returns>
@@ -115,6 +139,12 @@ namespace EAM.Device.interfaces
         /// </summary>
         /// <returns></returns>
         public Task<int> SubmitRepDockCheck(List<string> sids);
+
+        /// <summary>
+        /// 反提交码头维修验收
+        /// </summary>
+        /// <returns></returns>
+        public Task<int> UnSubmitRepDockCheck(string sid);
 
         /// <summary>
         /// 获取码头维修验收列表

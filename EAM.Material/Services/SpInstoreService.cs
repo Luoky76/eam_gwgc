@@ -275,7 +275,7 @@ namespace EAM.Material.Services
                     _WATER.IN_MONEY = iten.MONEY;
                     _WATER.CUR_NUM = iten.COUNT;
                     _WATER.CUR_MONEY = iten.MONEY;
-                    
+
 
                     await _dbContext.InsertAsync(_STORE);
                     await _dbContext.InsertAsync(_WATER);
@@ -286,6 +286,7 @@ namespace EAM.Material.Services
                     });
                 }
             }
+          
             await Task.CompletedTask;
         }
 

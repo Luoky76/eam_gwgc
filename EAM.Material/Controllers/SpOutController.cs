@@ -85,6 +85,16 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 撤销提交物料领用申请
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitSpOutAppAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitSpOutApp(sid), "成功");
+        }
+
+        /// <summary>
         /// 获取物料领用申请明细
         /// </summary>
         /// <returns></returns>
@@ -137,13 +147,23 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 注销物料领用出库
+        /// 撤销提交物料领用出库
         /// </summary>
         /// <returns></returns>
         [HttpPost]
         public async Task<AjaxResult> UnSubmitSpOutStoreAsync(string sid)
         {
             return AjaxResult.Success(await _service.UnSubmitSpOutStore(sid), "成功");
+        }
+
+        /// <summary>
+        /// 注销物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ReturnedSpOutStoreAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.ReturnedSpOutStore(sid), "成功");
         }
 
         /// <summary>
@@ -196,6 +216,16 @@ namespace EAM.Material.Controllers
         public async Task<AjaxResult> SubmitSpOutBackAsync(string sid)
         {
             return AjaxResult.Success(await _service.SubmitSpOutBack(sid), "成功");
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitSpOutBackAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitSpOutBack(sid), "成功");
         }
 
         /// <summary>

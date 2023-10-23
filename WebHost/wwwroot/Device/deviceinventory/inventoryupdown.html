@@ -43,7 +43,7 @@
                                     format: "yyyy-MM-dd"
                                 }
                             },
-                            { display: "盘点结果类型", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { data: me.scanresult } },
+                            { display: "盘点结果", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { data: me.scanresult } },
                             { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                             { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
@@ -53,7 +53,7 @@
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "盘点单号", name: "SCAN_CODE", width: 100, type: "text", },
                             { display: "盘点日期", name: "SCAN_DATE", width: 100, type: "date", },
-                            { display: "盘点结果类型", name: "SCAN_TYPE", width: 100, type: "text" },
+                            { display: "盘点结果", name: "SCAN_TYPE", width: 100, type: "text" },
                             { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text" },
                             { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text" },
                             { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text" },
@@ -152,6 +152,12 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "revoke":
+                            me.revoke();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls",
@@ -168,6 +174,75 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+
+
+            submit: function () {    //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING == "1") {
+                        LG.tip('已提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.RESULT_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/SubmitUpDown',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
+
+
+            revoke: function () {    //反提交
+                var me = this;
+                debugger
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.RESULT_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/UnSubmitUpDown',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },/*
             submit: function () {    //提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();
@@ -202,6 +277,33 @@
                         }
                     }
                 }
+            },*/
+
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/InventoryTask/ManageUpDown',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
             },
 
             reload: function () { //刷新

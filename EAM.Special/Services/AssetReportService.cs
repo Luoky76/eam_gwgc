@@ -40,7 +40,7 @@ namespace EAM.Special.Services
                 .Select((a, b) => new
                 {
                     a.REPORT_ID,
-                    a.AUDITING_ACCEPT,
+                    a.AUDITING_APPLY,
                     a.REPORT_STATE,
                     a.APPLY_CODE,
                     a.APPLY_DATE,
@@ -54,6 +54,7 @@ namespace EAM.Special.Services
                     a.FAILURE_DESCRIBE,
                     a.APPLY_MEMO,
 
+                    a.AUDITING_CHECK,
                     a.CHECK_USERID,
                     a.CHECK_USER,
                     a.CHECK_DEPTID,
@@ -65,12 +66,14 @@ namespace EAM.Special.Services
                     a.CHECK_METH,
                     a.CHECK_MEMO,
 
+                    a.AUDITING_OUTSOURCE,
                     a.OUTSOURCE_DATE,
                     a.IS_UNDER_WARRANTY,
                     a.PROVIDER,
                     a.PROVIDER_TEL,
                     a.OUTSOURCE_MEMO,
 
+                    a.AUDITING_ACCEPT,
                     a.ACCEPT_DATE,
                     a.ACCEPT_DESC,
                     a.ACCEPT_APPRAISE,
@@ -104,6 +107,7 @@ namespace EAM.Special.Services
                 {
                     a.REPORT_ID,
                     a.AUDITING_APPLY,
+                    a.AUDITING_CHECK,
                     a.REPORT_STATE,
                     a.APPLY_CODE,
                     a.APPLY_DATE,
@@ -147,6 +151,8 @@ namespace EAM.Special.Services
                 {
                     a.REPORT_ID,
                     a.AUDITING_CHECK,
+                    a.AUDITING_OUTSOURCE,
+                    a.AUDITING_ACCEPT,
                     a.REPORT_STATE,
                     a.APPLY_CODE,
                     a.APPLY_DATE,
@@ -197,6 +203,7 @@ namespace EAM.Special.Services
                 {
                     a.REPORT_ID,
                     a.AUDITING_OUTSOURCE,
+                    a.AUDITING_ACCEPT,
                     a.APPLY_CODE,
                     a.OUTSOURCE_DATE,
                     a.ASSET_ID,

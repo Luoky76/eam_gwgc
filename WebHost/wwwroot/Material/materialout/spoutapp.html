@@ -47,8 +47,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING_A", width: 100, type: "chk" },
-
+                            { display: "记录状态", name: "AUDITING_A", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditing, selectBoxHeight: 100 } },
                             {
                                 display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text",
                                 editor: { type: 'text' },
@@ -163,6 +162,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "revoke":
+                            me.revoke();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
@@ -183,6 +185,38 @@
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
+            },
+            revoke: function () {    //反提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING_A == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.OUT_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/InventoryTask/UnSubmitSpOutApp',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
             },
             submit: function () {    //提交
                 var me = this;

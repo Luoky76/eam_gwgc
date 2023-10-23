@@ -37,14 +37,14 @@ namespace EAM.Special.DTO
         /// </summary>
         [ImporterHeader(Name = "船次")]
         [Display(Name = "船次")]
-        public string SHIPTIMES { get; set; }
+        public int? SHIPTIMES { get; set; }
 
         /// <summary>
         /// 船方
         /// </summary>
         [ImporterHeader(Name = "船方")]
         [Display(Name = "船方")]
-        public int? SHIPNUM { get; set; }
+        public decimal? SHIPNUM { get; set; }
 
         /// <summary>
         /// 施工准备
@@ -93,21 +93,21 @@ namespace EAM.Special.DTO
         /// </summary>
         [ImporterHeader(Name = "日耗")]
         [Display(Name = "日耗")]
-        public int? DAILYCONSUMPTION { get; set; }
+        public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
         /// 补充
         /// </summary>
         [ImporterHeader(Name = "补充")]
         [Display(Name = "补充")]
-        public int? SUPPLEMENT { get; set; }
+        public decimal? SUPPLEMENT { get; set; }
 
         /// <summary>
         /// 库存
         /// </summary>
         [ImporterHeader(Name = "库存")]
         [Display(Name = "库存")]
-        public int? STOCK { get; set; }
+        public decimal? STOCK { get; set; }
 
         /// <summary>
         /// 主机日耗
@@ -137,12 +137,14 @@ namespace EAM.Special.DTO
         [Display(Name = "小计")]
         public decimal? SUBTOTAL { get; set; }
 
+        
+
         /// <summary>
-        /// 补充
+        /// 柴油补充
         /// </summary>
-        [ImporterHeader(Name = "补充2")]
-        [Display(Name = "补充2")]
-        public int? SUPPLEMENT2 { get; set; }
+        [ImporterHeader(Name = "柴油补充")]
+        [Display(Name = "柴油补充")]
+        public decimal? SUPPLEMENT2 { get; set; }
 
         /// <summary>
         /// 滑油日耗
@@ -152,11 +154,11 @@ namespace EAM.Special.DTO
         public decimal? LUBRICATE { get; set; }
 
         /// <summary>
-        /// 库存
+        /// 柴油库存
         /// </summary>
-        [ImporterHeader(Name = "库存2")]
-        [Display(Name = "库存2")]
-        public int? STOCK2 { get; set; }
+        [ImporterHeader(Name = "柴油库存")]
+        [Display(Name = "柴油库存")]
+        public decimal? STOCK2 { get; set; }
 
         /// <summary>
         /// 简要说明
@@ -164,5 +166,55 @@ namespace EAM.Special.DTO
         [ImporterHeader(Name = "简要说明")]
         [Display(Name = "简要说明")]
         public string MEMO { get; set; }
+
+        /// <summary>
+        /// 待工
+        /// </summary>
+        [ImporterHeader(Name = "待工")]
+        [Display(Name = "待工")]
+        public decimal? WAIT_WORK { get; set; }
+
+        /// <summary>
+        /// 作业时间
+        /// </summary>
+        [ImporterHeader(Name = "作业时间")]
+        [Display(Name = "作业时间")]
+        public decimal? WORK_TIME { get; set; }
+
+
+        /// <summary>
+        /// 锚泊时间
+        /// </summary>
+        [ImporterHeader(Name = "锚泊时间")]
+        [Display(Name = "锚泊时间")]
+        public decimal? ANCHOR_TIME { get; set; }
+
+        /// <summary>
+        /// 主发电机运行时间
+        /// </summary>
+        [ImporterHeader(Name = "主发电机运行时间")]
+        [Display(Name = "主发电机运行时间")]
+        public decimal? MAIN_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 主发电机累计时间
+        /// </summary>
+        [ImporterHeader(Name = "主发电机累计时间")]
+        [Display(Name = "主发电机累计时间")]
+        public decimal? MAIN_CUMTIME { get; set; }
+
+        /// <summary>
+        /// 停泊发电机运行时间
+        /// </summary>
+        [ImporterHeader(Name = "停泊发电机运行时间")]
+        [Display(Name = "停泊发电机运行时间")]
+        public decimal? MOORING_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 停泊发电机累计时间
+        /// </summary>
+        [ImporterHeader(Name = "停泊发电机累计时间")]
+        [Display(Name = "停泊发电机累计时间")]
+        public decimal? MOORING_CUMTIME { get; set; }
     }
 }

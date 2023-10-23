@@ -19,6 +19,10 @@ using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Gksyb.Common.Data;
+using Gksyb.Core.Auth;
+using Gksyb.Model.Core;
+using DocumentFormat.OpenXml.InkML;
+using NPOI.SS.Formula.Functions;
 
 namespace EAM.Special.Services
 {
@@ -27,12 +31,14 @@ namespace EAM.Special.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly IUserService _userService;
+        private readonly UserSession _userSession;
 
-        public BuildService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService)
+        public BuildService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userService = userService;
+            _userSession=  userSession;
         }
 
         /// <summary>
@@ -52,11 +58,17 @@ namespace EAM.Special.Services
         /// <param name="request"></param>
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
-        {
+        {/*
+            var ship = await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "shipdepartmentpermission")
+                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .FirstOrDefaultAsync();*/
             var list = await _dbContext.Query<BUILD_COUNT>()
-                .LeftJoin<DEVICE_CARD>((a,b) => a.DEVICE_ID == b.DEVICE_ID)
-                .Select((a,b) => new {
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
+                .Select((a, b) => new
+                {
+                    b.SEC_DEPTID,
                     a.BUILD_ID,
+                    b.DEPT_ID,
                     a.DEVICE_ID,
                     a.DEVICE_NAME,
                     a.STARTDATE,
@@ -78,8 +90,16 @@ namespace EAM.Special.Services
                     a.SUPPLEMENT2,
                     a.STOCK2,
                     a.LUBRICATE,
-                    a.MEMO
+                    a.MEMO,
+                    a.WAIT_WORK,
+                    a.WORK_TIME,
+                    a.ANCHOR_TIME,
+                    a.MAIN_RUNTIME,
+                    a.MAIN_CUMTIME,
+                    a.MOORING_RUNTIME,
+                    a.MOORING_CUMTIME,
                 })
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .GetGridData(request);
             return list;
         }
@@ -122,7 +142,14 @@ namespace EAM.Special.Services
                     c.SUPPLEMENT2,
                     c.STOCK2,
                     c.LUBRICATE,
-                    c.MEMO
+                    c.MEMO,
+                    c.WAIT_WORK,
+                    c.WORK_TIME,
+                    c.ANCHOR_TIME,
+                    c.MAIN_RUNTIME,
+                    c.MAIN_CUMTIME,
+                    c.MOORING_RUNTIME,
+                    c.MOORING_CUMTIME,
                 },
                 c => a => a.BUILD_ID == c.BUILD_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);
         }
@@ -133,8 +160,34 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeAdd(BUILD_COUNT entity)
         {
+            var card = _dbContext.Query<DEVICE_CARD>()
+                .Select(b => new { b.DEVICE_NAME, b.DEVICE_ID, b.DEPT_ID })
+                .Where(x=>_userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
+            entity.DEVICE_ID = card.DEVICE_ID;
+            entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
-            var isex = await _dbContext.Query<BUILD_COUNT>(x => x.STARTDATE == entity.STARTDATE).ToListAsync();
+            //获取艘船的部门的所有货位中柴油物料的库存量的和
+            var hw =await _dbContext.Query<SP_STORE>(a => a.SP_CODE == "017001-0001")
+                .LeftJoin<SP_HOUSE>((a, b) => a.STOCK_ID == b.HOUSE_ID)
+                .Where((a, b) =>_userSession.Corp.CorpID == b.DEPT_ID)
+                .Select((a, b) => new
+                {
+                    b.DEPT_ID,
+                    a.NUM,
+                })
+                .GroupBy(b => b.DEPT_ID)
+                .Select(x => new
+                {
+                    SUM = Sql.Sum(x.NUM),
+                }).FirstOrDefaultAsync();
+            if (hw !=null)
+            {
+                entity.STOCK2 = hw.SUM;
+            }
+            var isex = await _dbContext.Query<BUILD_COUNT>()
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
+                .Select((a, b) => new { b.DEPT_ID,a.STARTDATE})
+                .Where(x => x.STARTDATE == entity.STARTDATE && _userSession.Corp.CorpID == x.DEPT_ID).ToListAsync();
             if (isex.Count() > 0)
             {
                 throw new MessageException("已存在此日期数据，无法重复添加！");
@@ -209,6 +262,92 @@ namespace EAM.Special.Services
             }
 
             return AjaxResult.Success(1);
+        }
+
+        /// <summary>
+        /// 年份查询
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> QryYearAsync(DateTime year)
+        {
+            return await _dbContext.Query<BUILD_COUNT>()
+                .Where(x => x.STARTDATE.Year == year.Year)
+                .GetGridData(null);
+        }
+
+        /// <summary>
+        /// 导出年度模板数据
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> ExportYearListAsync(string year)
+        {
+            var res = await _dbContext.Query<BUILD_COUNT>()
+                .Where(x => x.STARTDATE.Year.Equals(year))
+                .Select(t => new BuildExportData
+                {
+                    DEVICE_NAME = t.DEVICE_NAME,
+                    SHIPTIMES = t.SHIPTIMES,
+                    ZYTIME = t.DREDGETIME + t.SAILTIME,
+                    STOPTIME = t.REPAIRTIME + t.WEATHEREFFECT + t.OTHERSTOP,
+                    DAILYCONSUMPTION = t.DAILYCONSUMPTION,
+                    MASTER = t.MASTER,
+                    AUXILIARY = t.AUXILIARY,
+                    LUBRICATE = t.LUBRICATE,
+                    PUMP = t.PUMP,
+                })
+                .GetGridData(null);
+            return res;
+        }
+
+        public async Task<List<BuildMonthExportData>> ExportMonthListAsync(string year)
+        {
+            var monthlyData = await _dbContext.Query<BUILD_COUNT>()
+                .Where(x => x.STARTDATE.Year.ToString() == year)
+                .GroupBy(x => x.STARTDATE.Month)  // 按月份分组
+                .Select(group => new BuildMonthExportData
+                {
+                    Month = group.STARTDATE.Month,
+                    SHIPTIMES = Sql.Sum(group.SHIPTIMES),
+                    ZYTIME = Sql.Sum(group.DREDGETIME + group.SAILTIME + group.CONPLAN),
+                    STOPTIME = Sql.Sum(group.REPAIRTIME + group.WEATHEREFFECT + group.OTHERSTOP),
+                    DAILYCONSUMPTION = Sql.Sum(group.DAILYCONSUMPTION),
+                    MASTER = Sql.Sum(group.MASTER),
+                    AUXILIARY = Sql.Sum(group.AUXILIARY),
+                    LUBRICATE = Sql.Sum(group.LUBRICATE),
+                    PUMP = Sql.Sum(group.PUMP),
+                })
+                .OrderBy(x => x.Month)  // 按月份排序
+                .ToListAsync();
+
+            var allMonths = Enumerable.Range(1, 12);
+            var monthNames = new string[]
+    {
+        "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"
+    };
+
+            var dataDictionary = monthlyData.ToDictionary(x => x.Month);
+
+            var result = new List<BuildMonthExportData>();
+            var boat = _dbContext.Query<BUILD_COUNT>().Select(c => c.DEVICE_NAME).ToList();
+            foreach (var month in allMonths)
+            {
+                if (dataDictionary.TryGetValue(month, out var data))
+                {
+                    data.DEVICE_NAME = boat[0]??"";
+                    data.MonthName = monthNames[month - 1];
+                    result.Add(data);
+                }
+                else
+                {
+                    result.Add(new BuildMonthExportData
+                    {
+                        Month = month,
+                        MonthName = monthNames[month - 1]
+                    });
+                }
+            }
+
+            return result;
         }
     }
 }

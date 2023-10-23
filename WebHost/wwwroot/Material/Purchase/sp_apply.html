@@ -189,6 +189,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "cancelSubmit":
+                            me.cancelSubmit();
+                            break;
                         case "detail":
                             me.detail();
                             break;
@@ -233,7 +236,7 @@
                             if (data && data.length > 0) {
                                 LG.showSuccess('保存成功,请添加采购申请明细', function (confim) {
                                     $.ligerDialog.open({
-                                        width: 1100,
+                                        width: 1200,
                                         height: 750,
                                         allowClose: true,
                                         title: '[新增采购明细]',
@@ -338,6 +341,43 @@
                     LG.tip('请选择行!');
                 }
             },
+            cancelSubmit: function () {    //撤销
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    var flag = true;
+                    var sids = [];
+                    selected.forEach((a) => {
+                        if (a.AUDITING != "1") {
+                            LG.tip(a.APPLY_NO + '未提交!');
+                            flag = false;
+                            return;
+                        }
+                        sids.push(a.APPLY_ID)
+                    })
+                    if (!flag) {
+                        return;
+                    }
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'CancelSubmit',
+                        loading: '正在撤销中...',
+                        data: { "sids": sids },
+                        success: function () {
+                            LG.showSuccess('撤销成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
             detail: function () { //明细
                 var me = this;
                 if (me.grid.getSelectedRows().length != 1) {
@@ -352,7 +392,7 @@
                 }
 
                 $.ligerDialog.open({
-                    width: 1100,
+                    width: 1200,
                     height: 750,
                     allowClose: true,
                     title: '[修改采购明细]',

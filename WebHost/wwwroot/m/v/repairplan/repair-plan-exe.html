@@ -521,7 +521,7 @@
                 isShow: false
             },
             { display: "是否完成", name: "IS_COMPLETE", Option: business.iscomplete, },
-            { display: "维修项目", name: "BOM_NAME",  },
+            { display: "维修项目", name: "DEVICE_NAME",  },
             { display: "维修内容", name: "REP_CONTENT",  },
             { display: "维修项目分类", name: "ITEM_TYPE", },
             { display: "是否月度询价", name: "IS_ASKBID", Option: business.iscomplete, },
@@ -568,7 +568,7 @@
                 isShow: false
             },
             { display: "是否完成", name: "IS_COMPLETE", Option: business.iscomplete, validate: { required: true } },
-            { display: "维修项目", name: "BOM_NAME", readOnly: true, },
+            { display: "维修项目", name: "DEVICE_NAME", readOnly: true, },
             { display: "序号", name: "REP_INDEX", readOnly: true, },
             { display: "维修内容", name: "REP_CONTENT", readOnly: true, },
             { display: "维修项目分类", name: "ITEM_TYPE", readOnly: true, },
@@ -582,7 +582,7 @@
             { display: "备注", name: "MEMO" },
             { display: "外键", name: "EXE_ID", isShow: false },
             { display: "外键", name: "PLAN_ITEM_ID", isShow: false },
-            { display: "外键", name: "BOM_ID", isShow: false },
+            { display: "外键", name: "DEVICE_ID", isShow: false },
             { display: "外键", name: "PLAN_ID", isShow: false },
         ];
         var detail_popup = app.popup.create({

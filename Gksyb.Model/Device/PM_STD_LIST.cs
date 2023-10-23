@@ -113,5 +113,53 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string IS_ATTACH { get; set; }
 
+        /// <summary>
+        /// 设备ID
+        /// </summary>
+        [Description("设备ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_ID { get; set; }
+
+        /// <summary>
+        /// 设备名称
+        /// </summary>
+        [Description("设备名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NAME { get; set; }
+
+        /// <summary>
+        /// 设备编号
+        /// </summary>
+        [Description("设备编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_CODE { get; set; }
+
+        /// <summary>
+        /// 船舶型号
+        /// </summary>
+        [Description("船舶型号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_TYPE { get; set; }
+        /// <summary>
+        /// 资产编号
+        /// </summary>
+        [Description("资产编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ASSET_CODE { get; set; }
+
+        /// <summary>
+        /// 安装地点
+        /// </summary>
+        [Description("安装地点")]
+        [Column(DbType = DbType.AnsiString)]
+        public string INSTALL_SITE { get; set; }
+
+        /// <summary>
+        /// 使用部门
+        /// </summary>
+        [Description("使用部门")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_NAME { get; set; }
+
     }
 }

@@ -55,24 +55,33 @@
                                         display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text"
                                     },
                                     {
-                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "text", editor: { type: 'text' }, totalSummary:
+                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
                                         {
                                             type: 'sum',
-                                            align: 'center'
+                                            align: 'center',
+                                            render: function (data) {
+                                                return Math.round(data.sum);
+                                            }
                                         }
                                     },
                                     {
-                                        display: "船方", name: "SHIPNUM", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
+                                        display: "船方", name: "SHIPNUM", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
-                                            align: 'center'
+                                            align: 'center',
                                         }
                                     },
                                 ]
                             },
                             {
                                 display: "", columns: [
-                                    { display: "施工准备", name: "CONPLAN", minWidth: 100, type: "text", editor: { type: 'text' } },
+                                    {
+                                        display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
                                     {
                                         display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -90,7 +99,7 @@
                                 ]
                             },
                             {
-                                display: "停工时间", columns: [
+                                display: "停工时间（小时）", columns: [
                                     {
                                         display: "检修时间", name: "REPAIRTIME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -115,26 +124,26 @@
                                 ]
                             },
                             {
-                                display: "淡水", columns: [
+                                display: "淡水（吨）", columns: [
                                     {
-                                        display: "日耗", name: "DAILYCONSUMPTION", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
+                                        display: "日耗", name: "DAILYCONSUMPTION", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
                                         }
                                     },
                                     {
-                                        display: "补充", name: "SUPPLEMENT", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
+                                        display: "补充", name: "SUPPLEMENT", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
                                         }
                                     },
-                                    { display: "库存", name: "STOCK", minWidth: 100, type: "int", editor: { type: 'int' } },
+                                    { display: "库存", name: "STOCK", minWidth: 100, type: "float", editor: { type: 'float' } },
                                 ]
                             },
                             {
-                                display: "柴油", columns: [
+                                display: "柴油（吨）", columns: [
                                     {
                                         display: "主机日耗", name: "MASTER", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -164,17 +173,17 @@
                                         }
                                     },
                                     {
-                                        display: "补充", name: "SUPPLEMENT2", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
+                                        display: "补充", name: "SUPPLEMENT2", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
                                         }
                                     },
-                                    { display: "库存", name: "STOCK2", minWidth: 100, type: "int", editor: { type: 'int' } },
+                                    { display: "库存", name: "STOCK2", minWidth: 100, type: "float", editor: { type: 'float' } },
                                 ]
                             },
                             {
-                                display: "滑油", columns: [
+                                display: "滑油（吨）", columns: [
                                     {
                                         display: "日耗", name: "LUBRICATE", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
@@ -184,7 +193,7 @@
                                     },
                                 ]
                             },
-                            { display: "简要说明", name: "MEMO", minWidth: 100, type: "text", editor: { type: 'text' } }
+                            { display: "简要说明", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } }
                         ]
                     }
                 };
@@ -300,6 +309,7 @@
                     server: "Special/Build/Import",
                     //mouldFileName: "contract/ExportExcelHeader",
                     mouldFileName: function () {
+                        debugger
                         window.open(gksybConfigs.urlBase + "base/施工统计表数据导入.xlsx");
                     },
                     multiple: false,
@@ -324,7 +334,7 @@
                 var me = this;
                 $.ligerDialog.open({
                     width: 1100,
-                    height: 520,
+                    height: 620,
                     allowClose: true,
                     title: '[新增]',
                     url: "build-count-detail.html?MenuNo=" + me.menuNo,
@@ -349,7 +359,7 @@
                 var sid = selected.BUILD_ID;
                 $.ligerDialog.open({
                     width: 1100,
-                    height: 520,
+                    height: 620,
                     allowClose: true,
                     title: '[修改]',
                     url: "build-count-detail.html?MenuNo=" + me.menuNo,

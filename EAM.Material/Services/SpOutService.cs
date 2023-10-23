@@ -336,8 +336,8 @@ namespace EAM.Material.Services
                 var appmoney = 0m;
                 foreach (var qryoutappdet in qryoutappdets)
                 {
-                    var qrypcs = await _dbContext.Query<SP_STORE>(c=>c.NUM>0)
-                        .Where(c=>c.SP_CODE==qryoutappdet.SP_CODE&&c.SP_ID == qryoutappdet.SP_ID&&c.STOCK_ID == qryoutappdet.STOCK_ID
+                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.NUM>0)
+                        .Where(c => c.SP_CODE==qryoutappdet.SP_CODE&&c.SP_ID == qryoutappdet.SP_ID&&c.STOCK_ID == qryoutappdet.STOCK_ID
                              &&c.SP_SIZE == qryoutappdet.SP_SIZE&&c.UNIT == qryoutappdet.UNIT&&c.SP_NAME == qryoutappdet.SP_NAME&&c.STOCK_NAME == qryoutappdet.STOCK_NAME)
                         .OrderBy(c => c.IN_DATE)
                         .ToListAsync();
@@ -385,6 +385,31 @@ namespace EAM.Material.Services
                       {
                           AUDITING_A = "1",
                       });
+            }
+        }
+
+        /// <summary>
+        /// 撤销提交物料领用申请
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitSpOutApp(string sid)
+        {
+            var qrystore = await _dbContext.Query<SP_OUTSTORE>(x => sid == x.OUT_ID)
+                .Select(c => c.AUDITING_A)
+                .FirstOrDefaultAsync();
+            if (qrystore == "1")
+            {
+                throw new MessageException("已领用出库，不可撤销提交！");
+            }
+            else
+            {
+                await _dbContext.DeleteAsync<SP_OUTSTORE>(c => c.OUT_ID == sid);
+                await _dbContext.DeleteAsync<SP_OUTSTORE_DET>(c => c.OUT_ID == sid);
+                return await _dbContext.UpdateAsync<SP_OUT_APP>(x => sid == x.OUT_ID,
+                  x => new SP_OUT_APP
+                  {
+                      AUDITING_A = "0",
+                  });
             }
         }
 
@@ -602,7 +627,7 @@ namespace EAM.Material.Services
                     }
                 }
                 await _dbContext.InsertRangeAsync(stwater);
-                
+
                 transaction.Commit();
             }
             catch (Exception)
@@ -618,10 +643,90 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 注销物料领用出库
+        /// 撤销物料领用出库
         /// </summary>
         /// <returns></returns>
         public async Task<int> UnSubmitSpOutStore(string sid)
+        {
+            //获取出库明细对应的数据
+            var qryoutstdets = await _dbContext.Query<SP_OUTSTORE_DET>()
+                 .Where(c => sid == c.OUT_ID)
+                 .Select(c => new
+                 {
+                     c.COUNT,
+                     c.STORE_CODE,
+                     c.STORE_ID,
+                     c.WATER_ID,
+                 })
+                 .ToListAsync();
+            //获取出库对应的数据
+            var qryoutst = await _dbContext.Query<SP_OUTSTORE>()
+                 .Where(c => sid == c.OUT_ID)
+                 .Select(c => new
+                 {
+                     c.OUT_CODE,
+                 }).FirstOrDefaultAsync();
+            //获取出库明细库存id
+            var outstoreDetIds = qryoutstdets.Select(q => q.STORE_ID).ToList();
+            //获取出库明细的库存数据
+            var qryStores = await _dbContext.Query<SP_STORE>()
+                .Where(s => outstoreDetIds.Contains(s.STORE_ID))
+                .ToListAsync();
+            using var transaction = _dbContext.BeginTransaction();
+
+            try
+            {
+                foreach (var qryoutstdet in qryoutstdets)
+                {
+                    //获取库存数据
+                    var qrystore = qryStores.FirstOrDefault(s =>
+                        s.STORE_ID == qryoutstdet.STORE_ID);
+
+                    //剩余库存数量
+                    var surnum = qrystore.NUM + qryoutstdet.COUNT;
+                    //剩余库存金额
+                    var surmoney = surnum * qrystore.PRICE;
+                    //剩余不含税金额
+                    var surnomoney = surnum * qrystore.NOTAX_PRICE;
+                    //更新库存表
+                    var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
+                         x => new SP_STORE
+                         {
+                             NUM = surnum,
+                             MONEY = surmoney,
+                             TAX_MONEY = surmoney,
+                             NOTAX_MONEY = surnomoney,
+                         });
+
+                    //往流水表插数据
+                    await _dbContext.DeleteAsync<SP_OUTSTORE>(c => c.OUT_ID == sid);
+
+                    await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
+                              x => new SP_OUTSTORE_DET
+                              {
+                                  WATER_ID = "",
+                              });
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw;
+            }
+            return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
+                      x => new SP_OUTSTORE
+                      {
+                          AUDITING_A = "0",
+                      });
+        }
+
+        /// <summary>
+        /// 注销物料领用出库
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> ReturnedSpOutStore(string sid)
         {
             return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
                       x => new SP_OUTSTORE
@@ -686,7 +791,7 @@ namespace EAM.Material.Services
                 })
                 .ToList();
 
-                int index = 0; 
+                int index = 0;
                 foreach (var request1 in request2)
                 {
                     request1.BACK_DATE = Sysdate;
@@ -809,6 +914,21 @@ namespace EAM.Material.Services
                           AUDITING = "1",
                       });
         }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitSpOutBack(string sid)
+        {
+            
+            return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_BACK_ID,
+                      x => new SP_OUT_BACK
+                      {
+                          AUDITING = "0",
+                      });
+        }
+
         /// <summary>
         /// 导入功能
         /// </summary>

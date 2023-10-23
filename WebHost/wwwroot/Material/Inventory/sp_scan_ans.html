@@ -48,7 +48,7 @@
                             { display: "库存数量", name: "STORE_NUM", dbname: "NUM", width: 150, type: "text", },
                             { display: "盘点数量", name: "SCAN_NUM", dbname: "SCAN_NUM", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true }, },
                             {
-                                display: "盘点结果", name: "SCAN_RESULT", dbname: "SCAN_RESULT", width: 150, type: "text", validate: { required: true }, editor: {
+                                display: "*盘点结果", name: "SCAN_RESULT", dbname: "SCAN_RESULT", width: 150, type: "text", validate: { required: true }, editor: {
                                     type: 'select',
                                     data: me.scanResult
                                 }

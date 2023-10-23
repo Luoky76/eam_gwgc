@@ -124,6 +124,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "revoke":
+                            me.revoke();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls",
@@ -168,6 +171,38 @@
                 }
             },
 
+            revoke: function () {    //反提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING_CONFIRM == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.CHECK_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/RepDockInfo/UnSubmitRepDockConfirm',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
             submit: function () {    //提交
                 var me = this;
                 var selected = me.grid.getSelectedRows();

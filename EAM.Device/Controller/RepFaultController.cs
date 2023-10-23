@@ -92,6 +92,16 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
+        /// 反提交故障处理
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitFaultExeAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitFaultExe(sid), "成功");
+        }
+
+        /// <summary>
         /// 获取人员明细
         /// </summary>
         /// <returns></returns>
@@ -142,13 +152,23 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
+        /// 反提交验收
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> UnSubmitFaultCheckAsync(string sid)
+        {
+            return AjaxResult.Success(await _service.UnSubmitFaultCheck(sid), "成功");
+        }
+
+        /// <summary>
         /// 驳回验收
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> SubmitFaultUnCheckAsync(List<string> sids)
+        public async Task<AjaxResult> ReturnedFaultUnCheckAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.SubmitFaultUnCheck(sids), "成功");
+            return AjaxResult.Success(await _service.ReturnedFaultUnCheck(sids), "成功");
         }
 
         /// <summary>

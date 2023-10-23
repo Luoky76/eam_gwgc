@@ -201,7 +201,7 @@
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text", },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
                             { display: "库存数量", name: "CUR_NUM", minWidth: 100, type: "float", },
-                            { display: "实际消耗数量", name: "REAL_OUT_NUM", validate: { required: true }, minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "*实际消耗数量", name: "REAL_OUT_NUM", validate: { required: true }, minWidth: 100, type: "float", editor: { type: 'float' } },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
                             //{ display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
                             { display: "主键", name: "FAULT_SP_ID", minWidth: 100, hide: true },
@@ -881,6 +881,57 @@
                 });
 
             },
+
+            //选择故障知识库
+            f_select_fault: function () {
+                var me = this;
+                var codeId = me.mainform.getData().FRDB_CODE || "";
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 500,
+                    title: '选择故障知识库',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [codeId],
+                        options: {
+                            url: 'Device/RepInfo/GetRepFrdbList',
+                            parms: {
+                                where: JSON.stringify({
+                                    op: 'and',
+                                    rules: [{ field: 'AUDITING', op: 'equal', value: "1" }]
+                                })
+                            },
+                            sortName: 'FRDB_CODE', rowKey: "FRDB_CODE", isSingleCheck: true,
+                            columns: [
+                                { display: "故障库编码", name: "FRDB_CODE", width: 100, type: "text", },
+                                { display: "船舶编码", name: "DEVICE_CODE", width: 100, type: "text", },
+                                { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
+                                { display: "故障现象", name: "FAULT_DESCRIBE", minWidth: 250, type: "text", },
+                                { display: "故障原因", name: "FAULT_REASON", minWidth: 200, type: "text", },
+                                { display: "解决方法", name: "MEASURES", minWidth: 200, type: "text", },
+                            ]
+                        },
+                        fields: [
+                            { display: "故障库编码", name: "FRDB_CODE", type: "text" },
+                            { display: "船舶名称", name: "DEVICE_NAME", type: "text" }
+                        ],
+                        callback: function (values, rows) {
+                            if (rows.length < 1) {
+                                me.mainform.setData({
+                                    "FRDB_CODE": null,
+                                });
+                                return;
+                            }
+                            me.mainform.setData({
+                                "FRDB_CODE": rows[0].FRDB_CODE,
+                            });
+                        }
+                    }
+                });
+
+            },
             init: function () {
                 var me = this;
                 if (frameElement && frameElement.dialog) {
@@ -905,6 +956,9 @@
                 if (me.dialogData.view == undefined) {
                     $('#REPAIR_USER').bind('click', function () {
                         me.f_select_man();
+                    });
+                    $('#FRDB_CODE').bind('click', function () {
+                        me.f_select_fault();
                     });
                 }
                 me.reloadPep();

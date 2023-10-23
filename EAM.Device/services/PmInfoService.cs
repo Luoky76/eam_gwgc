@@ -118,6 +118,7 @@ namespace EAM.Device.services
                     c.INSTALL_SITE,
                     c.DEPT_NAME,
                     c.PM_TYPE,
+                    c.WDEPT_ID,
                     c.EDIT_DATE,
                     c.PLAN_FINISH_TIME,
                     c.EDIT_USER,
@@ -181,16 +182,45 @@ namespace EAM.Device.services
             }
             return AjaxResult.Success("更新成功");
         }
+
+        /// <summary>
+        /// 反提交维保计划
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> UnSubmitPmPlan(string sid)
+        {
+            var qryexe = await _dbContext.Query<PM_PLAN_EXE>(x => sid == x.EXE_ID)
+                .Select(c => c.AUDITING_EXE)
+                .FirstOrDefaultAsync();
+            if (qryexe == "1")
+            {
+                throw new MessageException("实施已提交，计划不可撤销提交！");
+            }
+            else
+            {
+                await _dbContext.UpdateAsync<PM_PLAN_EXE>(
+                    x => x.EXE_ID == sid,
+                    x => new PM_PLAN_EXE
+                    {
+                        AUDITING = "0",
+                        AUDITING_EXE = "",
+                        EXE_CODE = "",
+                    });
+            }
+            return AjaxResult.Success("撤回提交成功");
+        }
+
         /// <summary>
         /// 查询附件
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> GetPmFileList(string Id) 
+        public async Task<AjaxResult> GetPmFileList(string Id)
         {
-           var query = await _dbContext.Query<PM_PLAN_DONEITEM>(c=>c.DONEITEM_ID.ToString() == Id).ToListAsync();
+            var query = await _dbContext.Query<PM_PLAN_DONEITEM>(c => c.DONEITEM_ID.ToString() == Id).ToListAsync();
 
-            var list = query.Select(c=>new {
+            var list = query.Select(c => new
+            {
                 ATTACH_EXE_FILE = string.Join(",", _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_EXE").Select(a => a.attach_path).ToList()),
                 ATTACH_PLAN_FILE = string.Join(",", _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_DONEITEM").Select(a => a.attach_path).ToList())
             }).ToList();
@@ -292,7 +322,7 @@ namespace EAM.Device.services
         /// 获取维保物资明细
         /// </summary>
         /// <returns></returns>
-        public async Task<GridData> GetPmSpList(GridRequest request,string exeId,string doneitemId)
+        public async Task<GridData> GetPmSpList(GridRequest request, string exeId, string doneitemId)
         {
             return await _dbContext.Query<PM_PLAN_SP>(c => c.EXE_ID.Equals(exeId)&&c.DONEITEM_ID.Equals(doneitemId))
                 .GetGridData(request);
@@ -412,7 +442,8 @@ namespace EAM.Device.services
         {
             var querys = _dbContext.Query<PM_PLAN_EXE>()
                  .Where(c => sids.Contains(c.EXE_ID)).Select(c =>
-                 new {
+                 new
+                 {
                      c.IS_LOSE,
                      c.EXE_ID
                  }).ToList();
@@ -425,7 +456,8 @@ namespace EAM.Device.services
                 var qrydet = _dbContext.Query<PM_PLAN_DONEITEM>()
                  .Where(c => c.EXE_ID == query.EXE_ID && (c.CHECK_USER == null || c.EXECUTE_USER == null|| c.COMPLETE == null))
                  .Select(c =>
-                 new {
+                 new
+                 {
                      c.CHECK_USER,
                      c.EXECUTE_USER,
                      c.COMPLETE,
@@ -445,6 +477,21 @@ namespace EAM.Device.services
         }
 
         /// <summary>
+        /// 反提交维保实施
+        /// </summary>
+        /// <returns></returns>
+        public async Task<int> UnSubmitPmExe(string sid)
+        {
+            return await _dbContext.UpdateAsync<PM_PLAN_EXE>(x => sid == x.EXE_ID,
+                        x => new PM_PLAN_EXE
+                        {
+                            AUDITING_EXE = "0",
+                            AUDIT_TIME = null,
+                        });
+
+        }
+
+        /// <summary>
         /// 管理维保实施结果
         /// </summary>
         /// <returns></returns>
@@ -459,7 +506,7 @@ namespace EAM.Device.services
                     c.BEGIN_DATE,
                     c.END_DATE,
                 },
-                c => a => a.EXE_ID == c.EXE_ID,null, BeforeUpdateExe);
+                c => a => a.EXE_ID == c.EXE_ID, null, BeforeUpdateExe);
         }
 
         public async Task BeforeUpdateExe(PM_PLAN_EXE entity)
@@ -478,7 +525,7 @@ namespace EAM.Device.services
         {
             return await _dbContext.Query<PM_PLAN_EXE>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
-                .Where(c =>c.AUDITING=="1")
+                .Where(c => c.AUDITING=="1")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);

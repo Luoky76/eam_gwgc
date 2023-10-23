@@ -1,4 +1,5 @@
-﻿using Gksyb.Common;
+﻿using EAM.Special.DTO;
+using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -32,5 +33,13 @@ namespace EAM.Special.Interfaces
         /// <param name="formFile"></param>
         /// <returns></returns>
         Task<AjaxResult> ImportAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile);
+        /// <summary>
+        /// 查询年份
+        /// </summary>
+        /// <param name="year">年份</param>
+        /// <returns></returns>
+        Task<GridData> QryYearAsync(DateTime year);
+        Task<GridData> ExportYearListAsync(string year);
+        Task<List<BuildMonthExportData>> ExportMonthListAsync(string year);
     }
 }

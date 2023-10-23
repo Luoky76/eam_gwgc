@@ -221,6 +221,10 @@
                                 }
                             });
                             break;
+                        case "revoke":
+                            if (!me.isSelectRow()) break;
+                            me.revoke();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../System/Export.html?exporttype=xls",
@@ -355,6 +359,42 @@
                         }
                     });
                 }
+            },
+            revoke: function () { //撤销提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                var updatedarr = [];
+                var orginarr = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                    var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                    if (ori.AUDITING == "1") {
+                        upd.AUDITING = "0";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    else {
+                        LG.tip("未提交数据无需撤销！");
+                        return;
+                    }
+                }
+                var changeRow = new Object();
+                changeRow["updated"] = updatedarr;
+                changeRow["original"] = orginarr;
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/AssetCard/Save',
+                    loading: '正在撤销中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('撤销成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;

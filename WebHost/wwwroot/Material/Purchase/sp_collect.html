@@ -58,8 +58,8 @@
                                    
                                 }
                             },
-                            { display: "总金额(元)", name: "COLLECT_PRICE", width: 120, type: "text", },
-                            { display: "询价供应商", name: "CONSULT_PROVIDER", width: 180, type: "select", editor: { type: 'select', data: me.gyData }, validate: { required: true }, },
+                            { display: "总金额(元)", name: "COLLECT_PRICE", width: 120, type: "number", editor: { type: 'number' }, },
+                            { display: "询价供应商", name: "CONSULT_PROVIDER", width: 180, type: "select", editor: { type: 'select', data: me.gyData }, },
                             { display: "采购人", name: "COLLECT_USER", width: 100, type: "text", },
                             { display: "采购部门", name: "DEPT_NAME", width: 100, type: "text", },
                             { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text", },
@@ -135,6 +135,15 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onBeforeSubmitEdit: function (e) {
+                        if (e.column.name == "COLLECT_PRICE") {
+                            if (e.value < 0) {
+                                LG.showError("不可为负数！");
+                                return false;
+                            }
+                        }
+                        return true;
                     }
                 });
 
@@ -161,6 +170,9 @@
                             break;
                         case "submit":
                             me.submit();
+                            break;
+                        case "cancelSubmit":
+                            me.cancelSubmit();
                             break;
                         case "detail":
                             me.detail();
@@ -306,6 +318,43 @@
                         });
                     }
 
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            cancelSubmit: function () {    //撤销
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    var flag = true;
+                    var sids = [];
+                    selected.forEach((a) => {
+                        if (a.AUDITING != "1") {
+                            LG.tip(a.COLLECT_CODE + '未提交!');
+                            flag = false;
+                            return;
+                        }
+                        sids.push(a.COLLECT_ID)
+                    })
+                    if (!flag) {
+                        return;
+                    }
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'CancelSubmit',
+                        loading: '正在撤销中...',
+                        data: { "sids": sids },
+                        success: function () {
+                            LG.showSuccess('撤销成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
                     LG.tip('请选择行!');

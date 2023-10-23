@@ -41,7 +41,7 @@
                     search: {
                         fields: [
                             {
-                                display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                             {
                                 display: "保养计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
@@ -53,8 +53,8 @@
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
                             { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "实施人员", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -162,6 +162,9 @@
                         case "submit":
                             me.submit();
                             break;
+                        case "revoke":
+                            me.revoke();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({
                                 url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
@@ -178,6 +181,38 @@
                 }
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            revoke: function () {    //反提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = [];
+                        selected.forEach((a) => {
+                            sid.push(a.EXE_ID)
+                        })
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/PmInfo/UnSubmitPmPlan',
+                            loading: '正在提交中...',
+                            data: { "sid": sid[0] },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
             },
             attach: function () {
                 var me = this;

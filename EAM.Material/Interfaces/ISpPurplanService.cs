@@ -26,6 +26,7 @@ namespace EAM.Material.Interfaces
         Task<AjaxResult> ComboxData();
 
         Task<int> Submit(List<string> sids);
+        Task<AjaxResult> CancelSubmit(List<string> sids);
         /// <summary>
         /// 明细-列表
         /// </summary>
