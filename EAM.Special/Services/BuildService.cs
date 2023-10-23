@@ -166,6 +166,24 @@ namespace EAM.Special.Services
             entity.DEVICE_ID = card.DEVICE_ID;
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
+            //获取艘船的部门的所有货位中柴油物料的库存量的和
+            var hw =await _dbContext.Query<SP_STORE>()
+                .LeftJoin<SP_HOUSE>((a, b) => a.HOUSE_ID == b.HOUSE_ID)
+                .Where((a, b) =>_userSession.Corp.CorpID == b.DEPT_ID)
+                .Select((a, b) => new
+                {
+                    b.DEPT_ID,
+                    a.NUM,
+                })
+                .GroupBy(b => b.DEPT_ID)
+                .Select(x => new
+                {
+                    SUM = Sql.Sum(x.NUM),
+                }).FirstOrDefaultAsync();
+            if (hw !=null)
+            {
+                entity.STOCK2 = hw.SUM;
+            }
             var isex = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new { b.DEPT_ID,a.STARTDATE})
