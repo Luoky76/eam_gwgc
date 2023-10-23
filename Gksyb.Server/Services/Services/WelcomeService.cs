@@ -43,7 +43,8 @@ namespace Gksyb.Server.Services.Message
                                                    ID = a.EXE_ID,
                                                    TEXT = a.EXE_CODE + "," + a.WDEPT_NAME??" " + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
                                                    TYPENAME = "维修计划",
-                                                   MENUNAME = "exe"
+                                                   MENUNAME = "exe",
+                                                   IDKEY = "EXE_ID",
                                                }).ToListAsync();
 
 
@@ -58,7 +59,8 @@ namespace Gksyb.Server.Services.Message
                                                     ID = a.EXE_ID,
                                                     TEXT = a.EXE_CODE + "," + (a.WDEPT_NAME ?? " ") + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
                                                     TYPENAME = "维修验收",
-                                                    MENUNAME = "check"
+                                                    MENUNAME = "check",
+                                                    IDKEY = "EXE_ID",
                                                 }).ToListAsync();
 
             result.ExtMainteCheck = await _dbContext.Query<REP_OUT>(x => x.AUDITING == "1").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
@@ -71,7 +73,8 @@ namespace Gksyb.Server.Services.Message
                                                        ID = a.OUT_ID,
                                                        TEXT = a.OUT_CODE + "," + (a.WDEPT_NAME ?? " ") + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
                                                        TYPENAME = "委外维修验收",
-                                                       MENUNAME = "ExtMainteCheck"
+                                                       MENUNAME = "ExtMainteCheck",
+                                                       IDKEY = "OUT_ID",
                                                    }).ToListAsync();
 
             result.ExtCheck = await _dbContext.Query<REP_OUT>().WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
@@ -84,7 +87,8 @@ namespace Gksyb.Server.Services.Message
                                                       ID = a.OUT_ID,
                                                       TEXT = a.OUT_CODE + "," + (a.WDEPT_NAME ?? " ") + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
                                                       TYPENAME = "委外维修确认",
-                                                      MENUNAME = "ExtCheck"
+                                                      MENUNAME = "ExtCheck",
+                                                      IDKEY = "OUT_ID"
                                                   }).ToListAsync();
 
             result.RepDockExe = await _dbContext.Query<REP_DOCK_PLAN>(x => x.AUDITING_PLAN == "1").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
@@ -96,7 +100,8 @@ namespace Gksyb.Server.Services.Message
                                                         ID = x.PLAN_ID,
                                                         TEXT = x.EXE_CODE + "," + (x.DEPT_NAME ?? " ") + "," + x.DOCK_NAME + "," + x.REP_DESC,
                                                         TYPENAME = "码头维修实施",
-                                                        MENUNAME = "RepDockExe"
+                                                        MENUNAME = "RepDockExe",
+                                                        IDKEY = "PLAN_ID"
                                                     }).ToListAsync();
 
             result.RepDockConfirm = await _dbContext.Query<REP_DOCK_CHECK>().WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
@@ -108,7 +113,8 @@ namespace Gksyb.Server.Services.Message
                                                                              ID = x.CHECK_ID,
                                                                              TEXT = x.EXE_CODE + "," + (x.DEPT_NAME ?? " ") + "," + x.REP_ITEM + "," + x.MEMO,
                                                                              TYPENAME = "码头维修确认",
-                                                                             MENUNAME = "RepDockConfirm"
+                                                                             MENUNAME = "RepDockConfirm",
+                                                                             IDKEY = "CHECK_ID"
                                                                          }).ToListAsync();
 
             result.PmPlanExe = await _dbContext.Query<PM_PLAN_EXE>(x => x.AUDITING == "1").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
@@ -121,7 +127,9 @@ namespace Gksyb.Server.Services.Message
                                                        ID = a.EXE_ID,
                                                        TEXT = a.EXE_CODE + "," + (a.WDEPT_NAME ?? " ") + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
                                                        TYPENAME = "维保实施",
-                                                       MENUNAME = "PmPlanExe"
+                                                       MENUNAME = "PmPlanExe",
+                                                       IDKEY = "EXE_ID"
+
                                                    }).ToListAsync();
 
 

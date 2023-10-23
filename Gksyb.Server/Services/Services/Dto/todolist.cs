@@ -12,5 +12,7 @@ namespace Gksyb.Server.Services.Services.Dto
         public string TEXT { get; set; }
         public string TYPENAME { get; set; }
         public string MENUNAME { get; set; }
+
+        public string IDKEY { get; set; }
     }
 }
