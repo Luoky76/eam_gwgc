@@ -35,37 +35,12 @@ namespace EAM.Repair.Controller
         }
 
         [HttpPost]
-        public async Task<AjaxResult> ListAsync(GridRequest request)
-        {
-            var result = await _service.ListAsync(request);
-            return AjaxResult.Success(result);
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult> ItemListAsync(GridRequest request)
-        {
-            var result = await _service.ItemListAsync(request);
-            return AjaxResult.Success(result);
-        }
-
-        [HttpPost]
         public async Task<AjaxResult> GetDeviceAsync(GridRequest request)
         {
             var result = await _service.GetDeviceAsync(request);
             return AjaxResult.Success(result);
         }
 
-        [HttpPost]
-        public async Task<AjaxResult> GetDetailAsync(string ID)
-        {
-            return await _service.GetDetailAsync(ID);
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult> Save(SaveRequest<REP_PLAN> request)
-        {
-            return await _service.Save(request);
-        }
 
         [HttpPost]
         public async Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request)

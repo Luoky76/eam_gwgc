@@ -9,17 +9,10 @@ namespace EAM.Repair.interfaces
     public interface IRepairPlanService : IService
     {
         Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
-        Task<GridData> ListAsync(GridRequest request);
-
-        Task<AjaxResult> GetDetailAsync(string ID);
-
-        Task<AjaxResult> Save(SaveRequest<REP_PLAN> request);
 
         Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request);
 
         Task<AjaxResult> ShipList();
-
-        Task<GridData> ItemListAsync(GridRequest request);
 
         Task<GridData> GetDeviceAsync(GridRequest request);
 

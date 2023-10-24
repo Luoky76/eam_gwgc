@@ -155,8 +155,8 @@ namespace Gksyb.Server.Services.Message
             //DateTime startTime = new DateTime(datetime.Year, datetime.Month, 1);
             GetDeviceRepairCountResponse result = new GetDeviceRepairCountResponse();
             result.deviceCount = await _dbContext.Query<DEVICE_CARD>(x => x.TYPE_NAME == "船舶" && x.AUDITING == "0").CountAsync();
-            result.repairCount = await _dbContext.Query<REP_PLAN>(x => x.DEAL_TYPE == "自修" && x.AUDITING == "0").CountAsync();
-            result.outrepairCount = await _dbContext.Query<REP_PLAN>(x => x.DEAL_TYPE == "外协" && x.AUDITING == "0").CountAsync();
+            result.repairCount = await _dbContext.Query<REP_PLAN_EXE>(x => x.DEAL_TYPE == "自修" && x.AUDITING == "0").CountAsync();
+            result.outrepairCount = await _dbContext.Query<REP_PLAN_EXE>(x => x.DEAL_TYPE == "外协" && x.AUDITING == "0").CountAsync();
             result.shiprepairCount = await _dbContext.Query<REP_DOCK_PLAN>(x => x.AUDITING_PLAN == "0").CountAsync();
 
             return result;

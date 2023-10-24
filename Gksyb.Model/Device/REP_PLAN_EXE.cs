@@ -298,13 +298,6 @@ namespace Gksyb.Model
         public string WSEC_DEPT { get; set; }
 
         /// <summary>
-        /// 维修计划单ID
-        /// </summary>
-        [Description("维修计划单ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PLAN_ID { get; set; }
-
-        /// <summary>
         /// 使用二级单位ID
         /// </summary>
         [Description("使用二级单位ID")]
