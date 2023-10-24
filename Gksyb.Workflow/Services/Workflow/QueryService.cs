@@ -195,6 +195,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 {
                     Id = node.ID,
                     NodeId = node.NODE_ID,
+                    NodeUserId = node.NODE_USERID,
                     NodeTitle = node.NODE_TITLE,
                     NodeType = node.NODE_TYPE,
                     NodeStatus = node.NODE_STATUS,
