@@ -149,6 +149,9 @@
                     LG.tip('请选择行!');
                     return;
                 }
+                if (!row.READDATE) {
+                    me.read();
+                }
                 LG.toDetail(row.MSG_TITLE, row.MSG_HREF, row.MSG_HREF_TARGET);
             },
             read: function () {

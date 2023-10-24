@@ -6,6 +6,11 @@
     public class MessageInfoBase
     {
         /// <summary>
+        /// 消息主键
+        /// </summary>
+        public long Id { get; set; }
+
+        /// <summary>
         /// 标题
         /// </summary>
         public string Title { get; set; }

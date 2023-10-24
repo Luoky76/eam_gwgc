@@ -23,7 +23,7 @@ namespace Gksyb.Common.Weixin
 
     public static class WeixinHelper
     {
-        internal static readonly string ApiHost = "https://api.weixin.qq.com";//微信api地址
+        internal static readonly string ApiHost = WeixinSetting.ApiHost;
 
         /// <summary>
         /// 获取验证地址

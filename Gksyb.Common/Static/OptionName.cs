@@ -23,6 +23,11 @@
         public static readonly string Weixin = "Weixin";
 
         /// <summary>
+        /// 微信小程序配置
+        /// </summary>
+        public static readonly string MiniProgram = "MiniProgram";
+
+        /// <summary>
         /// 安全类型
         /// </summary>
         public static readonly string SafeContentType = "SafeContentType";
