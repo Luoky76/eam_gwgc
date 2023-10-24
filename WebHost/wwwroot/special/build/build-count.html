@@ -49,11 +49,9 @@
                                 display: "日期", name: "STARTDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
                                 totalSummary: { render: function (column, data) { return "<span style='color:red'>&emsp;合计：</span>" } }
                             },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text" },
                             {
                                 display: "产量", columns: [
-                                    {
-                                        display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text"
-                                    },
                                     {
                                         display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
                                         {
@@ -74,7 +72,7 @@
                                 ]
                             },
                             {
-                                display: "", columns: [
+                                display: "施工时间（小时）", columns: [
                                     {
                                         display: "施工准备", name: "CONPLAN", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
