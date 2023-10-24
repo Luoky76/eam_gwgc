@@ -1,5 +1,4 @@
-﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
-using Gksyb.Common.Weixin;
+﻿using Gksyb.Common.Weixin;
 using Gksyb.Core.Auth;
 using Gksyb.Model.Dtos;
 using Gksyb.Server.Services.Auth;
@@ -78,4 +77,3 @@ namespace Gksyb.Server.Controllers.Auth
         }
     }
 }
-#pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问
