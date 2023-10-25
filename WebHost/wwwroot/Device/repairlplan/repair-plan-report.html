@@ -259,7 +259,7 @@
                             }
                         })
 
-                        if (flag)
+                        if (!flag)
                             return;
                         var ori = JSON.parse(JSON.stringify(selecteds[i]));
                         var upd = JSON.parse(JSON.stringify(selecteds[i]));
@@ -275,21 +275,23 @@
                     var changeRow = new Object();
                     changeRow["updated"] = updatedarr;
                     changeRow["original"] = orginarr;
-                    
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Repair/RepairPlan/SaveExe',
-                        loading: '正在提交中...',
-                        data: { request: changeRow, requestdet: null },
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
+
+                    if (flag) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Repair/RepairPlan/SaveExe',
+                            loading: '正在提交中...',
+                            data: { request: changeRow, requestdet: null },
+                            success: function () {
+                                LG.showSuccess('提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
                 } else {
                     LG.tip('请选择行!');
                 }
