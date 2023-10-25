@@ -161,18 +161,11 @@
                     $('#PLAN_START_DATE').val("");
                     $('#PLAN_END_DATE').val("");
                     $('#PLAN_STOP_TIME').val("");
-                    LG.showError("计划开工时间不能大于计划完工时间或者当前时间！请重新选择！");
-                    return;
-                }
-
-                var now = new Date();
-                if (complete > now) {
-                    $('#PLAN_END_DATE').val("");
-                    LG.showError("计划完工时间不能大于当前时间！");
+                    LG.showError("计划开工时间不能大于计划完工时间！请重新选择！");
                     return;
                 }
                 var timeDiff = complete - start;
-                var minutesDiff = timeDiff / (1000 * 60 * 60).toFixed(2);
+                var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                 $('#PLAN_STOP_TIME').val(minutesDiff);
             },
             loadComboxData: function () {
@@ -549,7 +542,7 @@
                                 for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.save();
+                                //me.save();
                             }
                         });
                     } else {

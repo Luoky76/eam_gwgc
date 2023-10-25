@@ -20,6 +20,7 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            plan_state: [],
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             setConfig: function () {
@@ -37,6 +38,10 @@
                             { display: "EXE_ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },
                             { display: "AUDITING_B", name: "AUDITING_B", minWidth: 100, type: "text", hide: true },
                             { display: "已提交", name: "AUDITING", minWidth: 100, type: "chk" },
+                            { display: "故障申报单号", name: "EXE_CODE", minWidth: 100, type: "text", },
+                            {
+                                display: "维修状态", name: "PLAN_STATE", minWidth: 100, type: "select", format: { data: me.plan_state }
+                            },
                             { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", minWidth: 100, type: "text", },
                             { display: "维修类型", name: "MAINT_TYPE", minWidth: 100, type: "text", },
@@ -44,10 +49,10 @@
                             { display: "实际开工时间", name: "ACT_START_DATE", minWidth: 100, type: "text", },
                             { display: "实际完工时间", name: "ACT_END_DATE", minWidth: 100, type: "text", },
                             //{ display: "维修实施单号", name: "EXE_CODE", minWidth: 100, type: "text", },
-                            { display: "故障申报单号", name: "EXE_CODE", minWidth: 100, type: "text", },
-                            { display: "船舶编号", name: "DEVICE_NO", minWidth: 100, type: "text", },
-                            { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", },
-                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            
+                            //{ display: "船舶编号", name: "DEVICE_NO", minWidth: 100, type: "text", },
+                            //{ display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", },
+                            //{ display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
                             //{ display: "负责人", name: "CHARGE_USER", minWidth: 100, type: "text", },
                             { display: "备注", name: "PLAN_MEMO", minWidth: 100, type: "text", }
                         ],
@@ -73,6 +78,7 @@
                         me.maintdept = data.MaintDept;
                         me.repairtype = data.RepairType;
                         me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);

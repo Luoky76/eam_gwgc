@@ -68,11 +68,6 @@
                             { display: "故障申报单号", name: "EXE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维保部门", name: "WSEC_DEPT", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.maintdept } },
                             { display: "维修类型", name: "MAINT_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
                             { display: "维修处理方式", name: "DEAL_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repairhandtype } },
@@ -594,7 +589,7 @@
                                 for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.save();
+                                //me.save();
                             }
                         });
                     } else {

@@ -163,7 +163,7 @@
                     return;
                 }
                 var timeDiff = complete - start;
-                var minutesDiff = timeDiff / (1000 * 60 * 60).toFixed(2);
+                var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
                 $('#EXE_HOUR').val(minutesDiff);
             },
             loadComboxData: function () {
