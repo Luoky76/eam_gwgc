@@ -35,6 +35,7 @@ namespace EAM.Device.Services
                 {
                     { "Auditing", null },
                     { "User", null },
+                    { "BCCode", "deviceType" },
                 });
                 //data.TryAdd("User", await _userService.ComboxDataAsync());
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());

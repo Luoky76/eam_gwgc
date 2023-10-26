@@ -86,5 +86,6 @@ namespace EAM.Device.interfaces
         /// </summary>
         /// <returns></returns>
         public Task<AjaxResult> ManageUpDown(SaveRequest<DEVICE_SCAN_RESULT> request);
+
     }
 }

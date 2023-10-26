@@ -53,6 +53,7 @@ namespace EAM.Device.services
         public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
+                { "BCCode", "deviceType" },
                 { "ScanStatus",(Expression<Func<BC_CODE, bool>>)(c => "1" == "1")},
                 { "DeviceTypeName",(Expression<Func<BASE_DEVICETYPE, bool>>)(c => "1" == "1")},
                 { "AssetStatus",(Expression<Func<BC_CODE, bool>>)(c => "1" == "1")},
@@ -184,11 +185,10 @@ namespace EAM.Device.services
             var corpPath = _dbContext.Query<CF_CORP>().Where(a => a.CORPID==deptid)
                 .Select(c => c.CORP_PATH).ToList().Join();
             //获取分类及其子分类的ID集合
-            var typeIds = GetChildTypeIds(typeid);
             var qry = _dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
-                .WhereIf(!string.IsNullOrWhiteSpace(typeid), c => typeIds.Contains(c.TYPE_ID))
-                .LeftJoin<CF_CORP>((a, b) => a.SEC_DEPTID==b.CORPID)
+                .WhereIf(!string.IsNullOrWhiteSpace(typeid), c => typeid == c.TYPE_ID)
+                .LeftJoin<CF_CORP>((a, b) => a.DEPT_ID==b.CORPID)
                 .Where((a, b) => b.CORP_PATH.StartsWith(corpPath));
             if (qry != null)
             {
