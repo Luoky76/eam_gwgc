@@ -436,7 +436,7 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             var qry = dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID);
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID);
             return await qry.Where(predicate).Where(c => c.AUDITING=="1")
                 .Select(c => new ComboxData()
                 {
@@ -463,7 +463,7 @@ namespace Gksyb.Server.Services.Common
             //公司换成部门过滤
             using var dbContext = _dbContext.Clone();
             var qry = dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID);
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID);
             return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_ID=="1")
                 .Select(c => new ComboxData()
                 {

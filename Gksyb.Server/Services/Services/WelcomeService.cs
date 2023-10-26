@@ -106,7 +106,7 @@ namespace Gksyb.Server.Services.Message
 
             result.RepDockConfirm = await _dbContext.Query<REP_DOCK_CHECK>().WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
             result.RepDockConfirmTitle = "码头维修确认";
-            //  .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+            //  .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
             result.RepDockConfirmList = await _dbContext.Query<REP_DOCK_CHECK>().WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                                                          .Select(x => new todolist
                                                                          {

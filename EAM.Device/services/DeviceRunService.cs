@@ -72,7 +72,7 @@ namespace EAM.Device.services
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING=="1")
                 .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="1"&&a.TYPE_ID=="2");
@@ -96,7 +96,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetRun(GridRequest request)
         {
             var qry = _dbContext.Query<RUN_TRANS>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.TRANS_DATE);
             return await qry.GetGridData(request);
@@ -181,7 +181,7 @@ namespace EAM.Device.services
             });
 
             var qry = _dbContext.Query<DEVICE_CARD>()
-                 .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                  .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE &&c.AUDITING=="1")
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)

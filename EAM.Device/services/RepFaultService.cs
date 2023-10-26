@@ -79,7 +79,7 @@ namespace EAM.Device.services
         {
 
             return await _dbContext.Query<REP_FAULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderBy(c => c.AUDITING_B)
                 .ThenByDesc(c => c.FAULT_CODE)
                 .GetGridData(request);
@@ -408,7 +408,7 @@ namespace EAM.Device.services
         {
 
             return await _dbContext.Query<REP_FAULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.DISPOSE_TYPE=="2"&&(c.AUDITING_B=="1"||c.AUDITING_C=="1"))
                 .OrderBy(c => c.AUDITING_D)
                 .ThenByDesc(c => c.FAULT_CODE)
@@ -424,7 +424,7 @@ namespace EAM.Device.services
         {
 
             return await _dbContext.Query<REP_FAULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderBy(c => c.FAULT_STATUS)
                 .ThenByDesc(c => c.FAULT_CODE)
                 .GetGridData(request);
