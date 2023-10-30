@@ -115,5 +115,23 @@ namespace Gksyb.Server.Controllers.Auth
             var userInfo = await _service.UserInfoAsync(request.Data);
             return AjaxResult.Success(userInfo);
         }
+
+        /// <summary>
+        /// 单点登录
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<AjaxResult> Check([FromHeader] string code)
+        {
+            var userName = await _service.GetUserNameAsync(code);
+            var request = new LoginRequest()
+            {
+                Username = userName,
+                IP = Request.GetRealIP(),
+                UserAgent = Request.GetUserAgent()
+            };
+            return await _service.OauthAsync(request);
+        }
     }
 }

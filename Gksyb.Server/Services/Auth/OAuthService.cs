@@ -1,7 +1,9 @@
-﻿using Gksyb.Core.Auth;
+﻿using Flurl.Http;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
+using Gksyb.Model.Dtos;
 using Gksyb.Model.Grid;
 using Gksyb.Server.Controllers.Auth.Dtos;
 using Microsoft.Extensions.Caching.Distributed;
@@ -18,13 +20,15 @@ namespace Gksyb.Server.Services.Auth
         private readonly IDistributedCache _distributedCache;
         private readonly UserSession _user;
         private readonly SysContextOptions _options;
+        private readonly IAuthService _authService;
 
-        public OAuthService(IDbContext dbContext, IDistributedCache distributedCache, UserSession userSession, IOptions<SysContextOptions> sysContext)
+        public OAuthService(IDbContext dbContext, IDistributedCache distributedCache, UserSession userSession, IOptions<SysContextOptions> sysContext, IAuthService authService)
         {
             _dbContext = dbContext;
             _distributedCache = distributedCache;
             _user = userSession;
             _options = sysContext.Value;
+            _authService = authService;
         }
 
         /// <summary>
@@ -217,6 +221,38 @@ namespace Gksyb.Server.Services.Auth
             MessageException.ThrowIf(model == null, $"找不到{request.AppId}的记录");
             request.Check(model.SECRET, model.IP);
             return model;
+        }
+
+        public async Task<string> GetAuthorizeUrlAsync()
+        {
+            var url = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "AuthorizeUrl" && c.CODE_EN == "AuthorizeUrl").Select(c => c.CODE_CN).FirstOrDefaultAsync();
+            return url.TrimEnd('/');
+        }
+
+        public async Task<string> GetUserNameAsync(string code)
+        {
+            var url = await GetAuthorizeUrlAsync();
+            url = $"{url}/oauth/userinfo";
+            var response = await url.PostUrlEncodedAsync(new { ticketCode = code }).ReceiveString();
+            var result = response.ToObject<AjaxResult<dynamic>>();
+            if (result.IsError) throw new MessageException(result.Message);
+            return result.Data.WorkCode;
+        }
+
+        /// <summary>
+        /// 单点登录
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> OauthAsync(LoginRequest request)
+        {
+            var user = await _dbContext.Query<CF_USER>().Where(c => c.WORK_CODE == request.Username && c.APPNAME == _options.UserAppName).FirstOrDefaultAsync();
+            if (user == null) return AjaxResult.Error("-1");
+            request.Username = user.LOGINNAME;
+            request.Password = user.LOGINPASSWORD;
+            request.MenuAppname = _options.AppName;
+            var result = await _authService.LoginAsync(request, null, false);
+            if (result.IsError) return result;
+            return result;
         }
     }
 }
