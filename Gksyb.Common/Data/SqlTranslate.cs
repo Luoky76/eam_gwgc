@@ -146,6 +146,8 @@ namespace Gksyb.Common.Data
             sql = Regex.Replace(sql, @":(\w+)", "@$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "DATETIME('now','localtime')", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(from)\b\s*\b(dual)\b", "", RegexOptions.IgnoreCase);
+            sql = Regex.Replace(sql, @"\b(nvl)\b", "IFNULL", RegexOptions.IgnoreCase);
+            sql = Regex.Replace(sql, @"\b(isnull)\b\s*\((?<f1>[^(\(|,)]*),", "IFNULL(${f1},", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(wm_concat)\b", "group_concat", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(len)\b", "LENGTH", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(substring)\b", "substr", RegexOptions.IgnoreCase);

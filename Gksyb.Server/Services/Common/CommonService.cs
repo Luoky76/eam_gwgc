@@ -147,7 +147,7 @@ namespace Gksyb.Server.Services.Common
         {
             var view = request.ViewName;
             if (string.IsNullOrWhiteSpace(view)) throw new MessageException("请传递视图参数");
-            await HttpContext.Current.ValidViewAsync(view);
+            view = await HttpContext.Current.ValidViewAsync(view);
             var dbContext = isClone ? _dbContext.Clone() : _dbContext;
             var entity = await GetViewAsync(dbContext, view)
                 ?? throw new MessageException($"视图{view}不存在");

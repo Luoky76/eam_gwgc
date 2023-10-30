@@ -50,6 +50,10 @@
                                         else url += "?";
                                         url += "MenuNo=" + rowdata.MENUNO;
                                         url += "&ver=" + new Date().format("yyyyMMddhhmmss");
+                                        if (rowdata.IsMobile === "1") {
+                                            var path = rowdata.MENUURL.toLocaleLowerCase().indexOf("report.") >= 0 ? "report" : "query";
+                                            url = window.gksybConfigs.getUrl("m/v/index.html#!/common-" + path + "/" + rowdata.MENUNO + "@/");
+                                        }
                                         var strHref = "javascript:business.addTab('" + rowdata.MENUNO + "','" + rowdata.MENUNAME + "','" + url + "')";
                                         return '<a class="l-grid-row-button" style="color:Red" href=' + strHref + '>' + value + '->' + rowdata.MENUNAME + '</a>';
                                     }

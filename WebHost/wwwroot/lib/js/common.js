@@ -237,11 +237,14 @@
     Date.prototype.format || (Date.prototype.format = dateFormat);
 
     //去除数组空元素
-    var arrayRemoveNull = function () {
+    var arrayRemoveNull = function (fn) {
         if (Object.prototype.toString.apply(this) !== "[object Array]") return null;
+        fn = fn || function (item) {
+            return item !== 0 && !item;
+        };
         for (var i = this.length - 1; i >= 0; i--) {
             var item = this[i];
-            if (item !== 0 && !this[i]) this.splice(i, 1);
+            if (fn(item)) this.splice(i, 1);
         }
         return this;
     };

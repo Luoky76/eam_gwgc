@@ -160,7 +160,7 @@
             init: function () {
                 var me = this;
                 var pageParm = app.utils.parseUrlQuery(page.router.currentRoute.route.url);
-                me.view = getQueryStringByName("v") || pageParm.v || page.router.currentRoute.name;
+                me.view = getQueryStringByName("v") || pageParm.v || (page.router.currentRoute.params || {}).view || page.router.currentRoute.name;
                 if (!me.view) {
                     app.dialog.error("请传递参数");
                     return;

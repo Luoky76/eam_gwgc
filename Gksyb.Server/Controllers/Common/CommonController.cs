@@ -69,7 +69,7 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous]
         public async Task<AjaxResult> QueryConfigAsync([Required] string viewName)
         {
-            await HttpContext.ValidViewAsync(viewName);
+            viewName = await HttpContext.ValidViewAsync(viewName);
             return await _commonService.QueryConfigAsync(viewName);
         }
 
@@ -82,7 +82,7 @@ namespace Gksyb.Server.Controllers.Auth
         public async Task<AjaxResult> QueryAsync(GridRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.View)) return AjaxResult.Error("视图名称不能为空");
-            await HttpContext.ValidViewAsync(request.View);
+            request.View = await HttpContext.ValidViewAsync(request.View);
             return AjaxResult.Success(await _commonService.QueryAsync(request), "");
         }
     }

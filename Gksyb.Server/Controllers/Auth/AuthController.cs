@@ -204,7 +204,7 @@ namespace Gksyb.Server.Controllers.Auth
             var user = CurrentUser;
             await service.ChangeCorp(user, corpid);
             await user.SaveAsync();
-            return AjaxResult.Success(user.Corp);
+            return AjaxResult.Success(user.ToUserResponse(null));
         }
 
         /// <summary>

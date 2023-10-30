@@ -47,8 +47,8 @@
                             <ul class="dropdown-menu">
                                 <li class="user-header">
                                     <img src="lib/dist/img/user.png" class="img-circle" alt="User Image">
-                                    <p>
-                                    </p>
+                                    <p id="user-realname"></p>
+                                    <p><small id="user-corp"></small></p>
                                 </li>
                                 <li class="user-footer">
                                     <div class="pull-left">
@@ -58,7 +58,7 @@
                                     </div>
                                     <div class="pull-left" style="padding-left: 5px;">
                                         <a href="#" class="btn btn-default btn-flat" data-toggle="modal" data-target="#myModal1">
-                                            当前组织
+                                            切换组织
                                         </a>
                                     </div>
                                     <div class="pull-right">
@@ -292,7 +292,8 @@
                                 "corpid": ids
                             },
                             loading: '正在切换中...',
-                            success: function (data, message) {
+                            success: function (data) {
+                                window.session = data;
                                 location.reload(true);
                             },
                             error: function (message) {
@@ -736,6 +737,8 @@
             init: function () {
                 var me = this;
                 $("#realname").text(window.session.RealName);
+                $("#user-realname").text(window.session.RealName);
+                $("#user-corp").text(window.session.CorpName);
                 me.bindEvent();
                 me.initMessageCenter();
             }

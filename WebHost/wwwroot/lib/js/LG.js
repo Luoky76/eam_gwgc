@@ -599,17 +599,19 @@
             success: function (data, message) {
                 dataRev.ID = data.Sysdate.toDate();
                 dataRev.TEXT = data.Adddate.toDate();
+                window.__dataRev = dataRev;
                 var inner = function (now, field) {
                     now = now.replace(/-/g, " + -").replace(/\+/g, ",").replace(/trunc/ig, "LG.truncDate");
                     now = field + " = LG.addDays(" + now.replace(/sysdate/ig, field) + ");";
                     eval(now);
                 };
                 if (oldData.idfield) {
-                    inner(oldData.idfield, "dataRev.ID");
+                    inner(oldData.idfield, "window.__dataRev.ID");
                 }
                 if (oldData.textfield) {
-                    inner(oldData.textfield, "dataRev.TEXT");
+                    inner(oldData.textfield, "window.__dataRev.TEXT");
                 }
+                delete window.__dataRev;
             }
         };
         LG.ajax(options);

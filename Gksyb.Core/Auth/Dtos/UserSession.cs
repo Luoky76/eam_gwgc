@@ -211,6 +211,11 @@ namespace Gksyb.Core.Auth
         public UserResponse ToUserResponse(string ticket)
         {
             var response = this.MapTo<UserResponse>();
+            if (Corp != null)
+            {
+                response.CorpId = Corp.CorpID;
+                response.CorpName = Corp.CName;
+            }
             response.Ticket = ticket;
             return response;
         }

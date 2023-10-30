@@ -23,7 +23,7 @@ namespace Gksyb.Core.Grid
         /// <param name="source"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static async Task<GridData<IList>> GetGridData(this IDbContext source, GridRequest request)
+        public static async Task<GridData<IList>> GetGridData(this IDbContext source, GridRequest request, Action<IList<DbParam>> action = null)
         {
             var whereTranslator = request.GetFilterTranslator();
             request.Where = whereTranslator.CommandText;
@@ -65,6 +65,7 @@ namespace Gksyb.Core.Grid
                 }
                 request.View = Regex.Replace(request.View, @"{(\w+)}", $"{paramPrefix}$1");
             }
+            action?.Invoke(whereTranslator.Parms);
             int? total = null;
             if (request.IsTotal)
             {
@@ -191,6 +192,23 @@ namespace Gksyb.Core.Grid
         public static IQuery<T> Where<T>(this IQuery<T> source, string where, ParameterExpression[] parameterExpressions = null)
         {
             if (string.IsNullOrWhiteSpace(where)) return source;
+            return source.Where(ToExpression<T>(where, parameterExpressions));
+        }
+
+        /// <summary>
+        /// 获取where条件
+        /// </summary>
+        public static Expression<Func<T, bool>> GetWhereExpression<T>(this GridRequest request, ParameterExpression[] parameterExpressions = null)
+        {
+            return ToExpression<T>(request.Where, parameterExpressions);
+        }
+
+        /// <summary>
+        /// 字符串转表达式
+        /// </summary>
+        private static Expression<Func<T, bool>> ToExpression<T>(string where, ParameterExpression[] parameterExpressions = null)
+        {
+            if (string.IsNullOrWhiteSpace(where)) return null;
             if (parameterExpressions == null)
             {
                 var type = typeof(T);
@@ -208,7 +226,7 @@ namespace Gksyb.Core.Grid
                 return ExpressionExtension.MakeWrapperAccess(c.Value, c.Value == null ? null : c.Type);
             }).ToArray();
             var exp = DynamicExpressionParser.ParseLambda(parameterExpressions, typeof(bool), expression, values);
-            return source.Where((Expression<Func<T, bool>>)exp);
+            return (Expression<Func<T, bool>>)exp;
         }
 
         /// <summary>

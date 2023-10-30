@@ -20342,8 +20342,64 @@
     display: none !important;
 }
 
+/* === 通用虚拟报表 === */
+.common-virtual-list {
+    --f7-searchbar-top: 48px;
+}
+
+    .common-virtual-list .content-wrapper {
+        margin-top: calc(var(--f7-searchbar-top) + 26px);
+    }
+
+    .common-virtual-list .virtual-list {
+        --f7-badge-font-size: 14px;
+        --f7-badge-padding: 14px;
+    }
+
+    .common-virtual-list .searchbar-wrap {
+        position: fixed !important;
+        top: var(--f7-searchbar-top);
+        background-color: #EAEEFA;
+        width: 100%;
+        z-index: 100;
+    }
+
+    .common-virtual-list .searchbar {
+        width: 95% !important;
+        --f7-searchbar-input-bg-color: #DBE2F9;
+        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
+    }
+
+    .common-virtual-list .searchbar-disable-button:after {
+        color: rgb(27, 27, 31);
+    }
+
+    .common-virtual-list .card-footer .button {
+        min-width: 100px;
+    }
+
+    .common-virtual-list .simple-list li {
+        height: auto;
+        align-items: baseline;
+        white-space: normal;
+    }
+
+        .common-virtual-list .simple-list li div.title {
+            white-space: nowrap;
+            padding-right: var(--f7-typography-padding);
+        }
+
+        .common-virtual-list .simple-list li div.content {
+            word-break: break-all;
+            word-wrap: break-word;
+            line-height: normal;
+        }
 
 /* === 扩展 === */
+.visibility-hidden {
+    visibility: hidden;
+}
+
 .left50 {
     width: 50%;
     float: left;

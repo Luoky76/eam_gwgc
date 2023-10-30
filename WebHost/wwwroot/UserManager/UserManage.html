@@ -20,6 +20,7 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            class: getQueryStringByName("c"),
             dataRole: [],
             dataCorp: [],
             initPassword: "",
@@ -57,7 +58,7 @@
                             { display: "本司否", name: "CLASS", width: 60, type: "chk", editor: { type: 'chkStr' } },
                             {
                                 display: "组织岗位", name: "CORP", isSort: false, width: 120, type: "text", align: "center", formatType: "select", format: {
-                                    data: function () { return me.dataCorp; }, split: ",", formatRender: function (value, rowdata, column,ids) {
+                                    data: function () { return me.dataCorp; }, split: ",", formatRender: function (value, rowdata, column, ids) {
                                         var strHref = "javascript:business.corpSelect('组织','" + column.name + "','user/corpData')";
                                         var strUrl = "<a style=\"color:Red\" href=" + strHref + ">设置</a>";
                                         if (value.length < 1) return strUrl;
@@ -78,16 +79,20 @@
                             { display: "所属组", name: "STATION", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "工号", name: "DEPARTCODE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "手机", name: "PHONE", width: 100, type: "text", editor: { type: 'long' } },
-                            {
-                                display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "text", align: "left", render: function (rowdata, rowindex, value, column) {
-                                    return value ? "绑定" : "未绑定";
-                                }
-                            },
+                            { display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "chk", align: "center" },
                             { display: "最后登录时间", name: "LASTLOGINTIME", width: 140, type: "date", format: "yyyy-MM-dd hh:mm", align: "left" },
                             { display: "有效否", name: "FLAG", width: 80, type: "chk", editor: { type: 'chkStr' } }
                         ]
                     }
                 };
+                if (me.class === "1") {
+                    me.config.search.fields.push({ display: "本司否", name: "_search_CLASS", width: 70, upper: true, type: "select", options: { data: me.dataFlag, autocomplete: true } });
+                }
+                if (me.class === "0") {
+                    me.config.grid.columns.removeNull(function (item) {
+                        return item.name === "CLASS";
+                    });
+                }
             },
             grid: null,
             searchForm: null,
@@ -121,6 +126,12 @@
             },
             setGrid: function () {
                 var me = this;
+                var group = (me.class === "0") ? {
+                    op: 'or', rules: [
+                        { field: 'CLASS', op: 'equal', value: me.class },
+                        { field: 'CLASS', op: 'isnull', value: "" }
+                    ]
+                } : { op: 'and', rules: [] };
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
                     title: '<span style="color: Red; ">初始密码为' + me.initPassword + '</span>',
@@ -132,10 +143,7 @@
                     toolbar: {},
                     url: 'user/list',
                     parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
+                        where: JSON.stringify(group)
                     },
                     sortName: 'LOGINNAME',
                     sortOrder: 'asc',
@@ -226,8 +234,8 @@
                         columns: [
                             { display: "组织", name: "TEXT", type: "text" },
                             {
-                                display: "岗位", name: "Station", type: "select",minWidth:180, editor: {
-                                    isMultiSelect: true, split:",",
+                                display: "岗位", name: "Station", type: "select", minWidth: 180, editor: {
+                                    isMultiSelect: true, split: ",",
                                     type: 'select', data: me.dataStation
                                 }
                             }
@@ -237,6 +245,7 @@
             },
             transferGridSelect: function (detailType, name, url, width, height, options) {
                 var me = this;
+                options = options || {};
                 var row = me.grid.getSelectedRow();
                 options = $.extend({
                     url: url,
@@ -278,6 +287,9 @@
                         case "initPassword":
                             me.doInitPassword();
                             break;
+                        case "unbind":
+                            me.unbind();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({ url: "../System/Export.html?exporttype=xls", modal: true });
                             break;
@@ -290,47 +302,77 @@
             },
             doInitPassword: function () {
                 var me = this;
-                var grid = me.grid;
-                if (grid.endEdit() != false) {
-                    var selected = grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        if (selected.length != 1) {
-                            LG.tip('只能选择一行做密码初始化服务!');
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                if (rows.length != 1) {
+                    LG.tip('只能选择一行做密码初始化服务!');
+                    return;
+                }
+                $.ligerDialog.confirm('确定初始化密码为' + me.initPassword + '吗?', function (confirm) {
+                    if (!confirm) return;
+                    for (var i = 0, len = rows.length; i < len; i++) {
+                        var row = rows[i];
+                        if (!row.USERID) {
+                            LG.tip('此记录还未保存,无法进行密码初始化!');
                             return;
                         }
-                        jQuery.ligerDialog.confirm('确定初始化密码为' + me.initPassword + '吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    if (selected[i].USERID) {
-                                        LG.ajax({
-                                            jsToken: true,
-                                            url: 'user/doInitPassword',
-                                            loading: '正在保存中...',
-                                            data: { id: selected[i].USERID },
-                                            success: function () {
-                                                LG.showSuccess('密码被初始化为' + me.initPassword);
-                                            },
-                                            error: function (message) {
-                                                LG.showError(message);
-                                            }
-                                        });
-                                    }
-                                    else {
-                                        LG.tip('此记录还未保存,无法进行密码初始化!');
-                                        return;
-                                    }
-                                }
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'user/doInitPassword',
+                            loading: '正在保存中...',
+                            data: { id: row.USERID },
+                            success: function () {
+                                LG.showSuccess('密码被初始化为' + me.initPassword);
+                            },
+                            error: function (message) {
+                                LG.showError(message);
                             }
                         });
                     }
-                    else {
-                        LG.tip('请选择行!');
-                    }
+                });
+            },
+            unbind: function () {
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
                 }
+                if (rows.length != 1) {
+                    LG.tip('只能选择一行做微信解绑!');
+                    return;
+                }
+                var row = rows[0];
+                if (row.QQ !== "1") {
+                    LG.tip('微信未绑定');
+                    return;
+                }
+                $.ligerDialog.confirm('确定解绑微信吗?', function (confirm) {
+                    if (!confirm) return;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'user/unbind',
+                        loading: '正在保存中...',
+                        data: { "openid": row.LOGINNAME },
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });;
+                });
             },
             add: function () { //新增
                 var me = this;
-                me.grid.addEditRow({ "CLASS": "0", "FLAG": "1" }, true);
+                me.grid.addEditRow({ "CLASS": (me.class === "1" ? "1" : "0"), "FLAG": "1" }, true);
             },
             save: function () { //保存
                 var me = this;
@@ -364,21 +406,17 @@
             },
             delete: function () { //删除
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
                 }
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    me.grid.deleteRange(rows);
+                    me.save();
+                });
             },
             bindGridEvent: function () {
                 var me = this;
@@ -452,6 +490,9 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
+                        if (me.class === "1") {
+                            me.searchForm.setData({ _search_CLASS: "1" });
+                        }
                     }
                 });
             },

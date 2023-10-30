@@ -80,7 +80,8 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<GridData> ListAsync(UserRequest user, GridRequest request)
         {
-            var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options));
+            var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
+                .WhereIf(!_user.IsOurCompany, c => (c.CLASS ?? "0") == "0");
             if (user.ROLE != null)
             {
                 var roleid = user.ROLE.CastTo<long>();
@@ -107,6 +108,7 @@ namespace Gksyb.Server.Services.Auth
                 {
                     c.QQ = ports.Where(a => a.OPTYPE == _weixinType).Select(a => a.CORPID).FirstOrDefault();
                 }
+                c.QQ = string.IsNullOrWhiteSpace(c.QQ) ? "0" : "1";
             }
             return data;
         }
@@ -149,6 +151,8 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task BeforeAdd(UserRequest entity)
         {
+            entity.CLASS ??= "0";
+            MessageException.ThrowIf(!_user.IsOurCompany && entity.CLASS != "0", "您无权设置用户属性");
             if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME).AnyAsync())
                 throw new MessageException($"已经存在用户{entity.LOGINNAME}");
             if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME).AnyAsync())
@@ -167,10 +171,13 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task BeforeUpdate(UserRequest entity)
         {
+            var old = await _dbContext.Query<CF_USER>().Where(c => c.USERID == entity.USERID).Select(c => new CF_USER() { CLASS = c.CLASS }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(!_user.IsOurCompany && ((entity.CLASS ?? "0") != (old.CLASS ?? "0")), "您无权设置用户属性");
             if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME && c.USERID != entity.USERID).AnyAsync())
                 throw new MessageException($"已经存在用户{entity.LOGINNAME}");
             if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME && c.USERID != entity.USERID).AnyAsync())
                 throw new MessageException($"已经存在用户名{entity.REALNAME}");
+
             entity.RECORDSTATUS = Oper.Modify;
             await RoleHandle(entity);
             await CorpHandle(entity);
@@ -183,6 +190,8 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task BeforeDelete(UserRequest entity)
         {
+            var old = await _dbContext.Query<CF_USER>().Where(c => c.USERID == entity.USERID).Select(c => new CF_USER() { CLASS = c.CLASS }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(!_user.IsOurCompany && (old.CLASS ?? "0") != "0", "您无权删除此用户");
             var corps = await _dbContext.Query<CF_USER_PORT>()
                 .Where(c => c.LOGINNAME == entity.LOGINNAME && c.OPTYPE == _opertype && c.APPNAME == _options.UserAppName).Select(c => c.CORPID).ToListAsync();
             if (!_user.IsAdmin)
@@ -257,7 +266,7 @@ namespace Gksyb.Server.Services.Auth
                 condition = (Expression<Func<CF_USER_PORT, bool>>)condition.And(conditionAppend);
             }, corpid =>
             {
-                return entity.CorpStation.ContainsKey(corpid) ? entity.CorpStation[corpid] : null;
+                return entity.CorpStation?.ContainsKey(corpid) == true ? entity.CorpStation[corpid] : null;
             });
         }
 
