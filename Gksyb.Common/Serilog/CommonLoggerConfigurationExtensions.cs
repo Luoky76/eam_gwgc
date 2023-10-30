@@ -24,7 +24,7 @@ namespace Serilog
                 .Build();
             directory ??= Path.Combine(AppContext.BaseDirectory, configuration.GetValue("Serilog:File:FileName", defaultValue: "logs"));
             var isWriteToFile = configuration.GetValue("Serilog:WriteToFile", defaultValue: true);
-            var retainedFileCountLimit = configuration.GetValue("Serilog:File:CountLimit", defaultValue: 2 * 31);
+            var retainedFileCountLimit = configuration.GetValue("Serilog:File:CountLimit", defaultValue: 6 * 31);
             var fileSizeLimitBytes = configuration.GetValue("Serilog:File:SizeLimitBytes", defaultValue: 20) * 1024 * 1024;
             loggerConfiguration
             .WriteTo.Map(le =>//支持分路径写入文件 必须在最前面 因为会更新LogPath
