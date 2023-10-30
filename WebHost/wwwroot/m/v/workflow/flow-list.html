@@ -18,9 +18,9 @@
                 </div>
             </div>
         </div>
-        <div class="page-content custom-tab">
+        <div class="page-content common-virtual-list">
             <div class="searchbar-wrap">
-                <form data-search-container="#my-flow" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                <form data-search-container="#my-flow" class="searchbar searchbar-init">
                     <div class="searchbar-inner">
                         <div class="searchbar-input-wrap">
                             <input type="search" placeholder="标题" />
@@ -31,41 +31,13 @@
                     </div>
                 </form>
             </div>
-            <div id="my-flow" class="list virtual-list"></div>
+            <div id="my-flow" class="content-wrapper list virtual-list"></div>
         </div>
     </div>
 </template>
 <style>
-    .custom-tab .virtual-list {
-        margin-top: 66px;
-        --f7-badge-font-size: 14px;
-        --f7-badge-padding: 14px;
-    }
-
-    .custom-tab .searchbar-wrap {
-        position: fixed !important;
-        top: 50px;
-        background-color: #EAEEFA;
-        width: 100%;
-        z-index: 100;
-    }
-
-    .custom-tab .searchbar {
-        width: 95% !important;
-        --f7-searchbar-input-bg-color: #DBE2F9;
-        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
-    }
-
-    .custom-tab .searchbar-disable-button:after {
-        color: rgb(27, 27, 31);
-    }
-
-    .custom-tab .card-footer .button {
-        min-width: 100px;
-    }
-
-    .visibility-hidden {
-        visibility: hidden;
+    .common-virtual-list .virtual-list {
+        margin-top: 64px;
     }
 </style>
 <script>
@@ -86,8 +58,7 @@
                     query = (query || "").toLowerCase();
                     for (var i = 0, l = items.length; i < l; i++) {
                         var item = items[i];
-                        var search = (item.FLOW_NAME || "");
-                        if (search.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                        if (item._info.indexOf(query) >= 0 || query.trim() === '') found.push(i);
                     }
                     return found;
                 },
@@ -114,6 +85,10 @@
                 },
                 success: function (data) {
                     me.data = data.Rows || [];
+                    for (var i = 0, l = me.data.length; i < l; i++) {
+                        var item = me.data[i];
+                        item._info = castString(item.FLOW_NAME).toLowerCase();
+                    }
                     me.setContent();
                 }
             });

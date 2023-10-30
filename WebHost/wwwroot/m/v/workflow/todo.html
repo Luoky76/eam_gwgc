@@ -17,11 +17,11 @@
             </div>
         </div>
         <div class="tabs-animated-wrap">
-            <div class="tabs custom-tab">
+            <div class="tabs common-virtual-list">
                 <div id="tab-to-do" class="page-content tab ${isDone?" ":" tab-active"}">
                     <div class="searchbar-wrap">
                         <div class="searchbar-backdrop display-none"></div>
-                        <form data-search-container="#to-do-list" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                        <form data-search-container="#to-do-list" class="searchbar searchbar-init">
                             <div class="searchbar-inner">
                                 <div class="searchbar-input-wrap">
                                     <input type="search" placeholder="标题或发起时间" />
@@ -32,11 +32,11 @@
                             </div>
                         </form>
                     </div>
-                    <div id="to-do-list" class="list virtual-list media-list chevron-center"></div>
+                    <div id="to-do-list" class="content-wrapper list virtual-list media-list chevron-center"></div>
                 </div>
                 <div id="tab-done" class="page-content tab ${isDone?" tab-active":""}">
                     <div class="searchbar-wrap">
-                        <form data-search-container="#done-list" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                        <form data-search-container="#done-list" class="searchbar searchbar-init">
                             <div class="searchbar-inner">
                                 <div class="searchbar-input-wrap">
                                     <input type="search" placeholder="标题或发起时间" />
@@ -47,41 +47,23 @@
                             </div>
                         </form>
                     </div>
-                    <div id="done-list" class="list virtual-list media-list chevron-center"></div>
+                    <div id="done-list" class="content-wrapper list virtual-list media-list chevron-center"></div>
                 </div>
             </div>
         </div>
     </div>
 </template>
 <style>
-    .custom-tab .virtual-list {
-        margin-top: 26px;
+    .common-virtual-list .virtual-list {
+        margin-top: 24px;
     }
 
-        .custom-tab .virtual-list ul:after {
+        .common-virtual-list .virtual-list ul:after {
             display: none;
         }
 
-    .tabs-swipeable-wrap > .custom-tab.tabs > .tab-active.tab {
+    .tabs-swipeable-wrap > .common-virtual-list.tabs > .tab-active.tab {
         transform: none;
-    }
-
-    .custom-tab .searchbar-wrap {
-        position: fixed !important;
-        top: 50px;
-        background-color: #EAEEFA;
-        width: 100%;
-        z-index: 100;
-    }
-
-    .custom-tab .searchbar {
-        width: 95% !important;
-        --f7-searchbar-input-bg-color: #DBE2F9;
-        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
-    }
-
-    .custom-tab .searchbar-disable-button:after {
-        color: rgb(27, 27, 31);
     }
 </style>
 <script>
@@ -103,8 +85,7 @@
                     query = (query || "").toLowerCase();
                     for (var i = 0, l = items.length; i < l; i++) {
                         var item = items[i];
-                        var search = (item.Title || "") + "@#" + (item.CreateDate || "");
-                        if (search.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                        if (item._info.indexOf(query) >= 0 || query.trim() === '') found.push(i);
                     }
                     return found;
                 },
@@ -147,6 +128,7 @@
                     var time = new Date().getTime();
                     for (var i = 0, l = me.data.length; i < l; i++) {
                         var item = me.data[i];
+                        item._info = (castString(item.Title) + "@#" + castString(item.CreateDate)).toLowerCase();
                         var minute = (time - item.StartDate.toDate().getTime()) / (1000 * 60);
                         var hour = parseInt(minute / 60);
                         item.Elapsed = (hour > 0 ? hour + "小时" : "") + parseInt(minute % 60) + "分钟";
@@ -155,7 +137,7 @@
                             item.StatusHtml = me.getStatusHtml(item.NodeStatus);
                         }
                     }
-                    if (me.data.length > 0) me.data.push({ temp: true });
+                    if (me.data.length > 0) me.data.push({ temp: true, _info: "" });
                     me.setContent(domId);
                 }
             });

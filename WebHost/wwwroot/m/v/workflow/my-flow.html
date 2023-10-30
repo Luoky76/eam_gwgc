@@ -18,9 +18,9 @@
                 </div>
             </div>
         </div>
-        <div class="page-content custom-tab">
+        <div class="page-content common-virtual-list">
             <div class="searchbar-wrap">
-                <form data-search-container="#my-flow" data-search-item="li" data-search-in=".item-title" class="searchbar searchbar-init">
+                <form data-search-container="#my-flow" class="searchbar searchbar-init">
                     <div class="searchbar-inner">
                         <div class="searchbar-input-wrap">
                             <input type="search" placeholder="标题或发起时间" />
@@ -31,42 +31,10 @@
                     </div>
                 </form>
             </div>
-            <div id="my-flow" class="list no-hairlines virtual-list media-list chevron-center"></div>
+            <div id="my-flow" class="content-wrapper list no-hairlines virtual-list media-list chevron-center"></div>
         </div>
     </div>
 </template>
-<style>
-    .custom-tab .virtual-list {
-        margin-top: 76px;
-        --f7-badge-font-size: 14px;
-        --f7-badge-padding: 14px;
-    }
-
-    .custom-tab .searchbar-wrap {
-        position: fixed !important;
-        top: 50px;
-        background-color: #EAEEFA;
-        width: 100%;
-        z-index: 100;
-    }
-
-    .custom-tab .searchbar {
-        width: 95% !important;
-        --f7-searchbar-input-bg-color: #DBE2F9;
-        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
-    }
-
-    .custom-tab .searchbar-disable-button:after {
-        color: rgb(27, 27, 31);
-    }
-
-    .custom-tab .card-footer .button {
-        min-width: 100px;
-    }
-    .visibility-hidden {
-        visibility: hidden;
-    }
-</style>
 <script>
     'use strict';
     var business = {
@@ -85,8 +53,7 @@
                     query = (query || "").toLowerCase();
                     for (var i = 0, l = items.length; i < l; i++) {
                         var item = items[i];
-                        var search = (item.Title || "") + "@#" + (item.CreateDate || "");
-                        if (search.toLowerCase().indexOf(query) >= 0 || query.trim() === '') found.push(i);
+                        if (item._info.indexOf(query) >= 0 || query.trim() === '') found.push(i);
                     }
                     return found;
                 },
@@ -97,28 +64,34 @@
                                     <div class="card-content list simple-list">
                                         <ul class="no-padding">
                                             <li>
-                                                ${item.NodeName}
-                                                <div>
+                                                <div class="title">
+                                                   ${item.NodeName}
+                                                </div>
+                                                <div class="content">
                                                    处理人：${item.Operator}
                                                 </div>
                                             </li>
                                             <li>
-                                                <div>
+                                                <div class="title">
                                                    状态：${item.TaskStatusHtml}
                                                 </div>
-                                                <div>
+                                                <div class="content">
                                                    结果：${item.StatusHtml}
                                                 </div>
                                             </li>
                                             <li>
-                                                发起时间
-                                                <div>
+                                                <div class="title">
+                                                    发起时间
+                                                </div>
+                                                <div class="content">
                                                    ${item.CreateDate}
                                                 </div>
                                             </li>
                                             <li>
-                                                完成时间
-                                                <div>
+                                                <div class="title">
+                                                    完成时间
+                                                </div>
+                                                <div class="content">
                                                    ${item.CreateDate}
                                                 </div>
                                             </li>
@@ -148,6 +121,7 @@
                     for (var i = 0, l = me.data.length; i < l; i++) {
                         var item = me.data[i];
                         item._index = i;
+                        item._info = (castString(item.Title) + "@#" + castString(item.CreateDate)).toLowerCase();
                         item.isFinish = item.TaskFinishFlag === "1";
                         var minute = (time - item.StartDate.toDate().getTime()) / (1000 * 60);
                         var hour = parseInt(minute / 60);
