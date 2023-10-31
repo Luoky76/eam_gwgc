@@ -60,7 +60,7 @@ namespace Gksyb.Common.Data
         /// <summary>
         /// 获取oracle视图
         /// </summary>
-        private static async Task<List<DbTableInfo>> GetOracleViews(IDbContext source,string owner)
+        private static async Task<List<DbTableInfo>> GetOracleViews(IDbContext source, string owner)
         {
             var sql = $@"SELECT a.view_name ""Name"", b.comments ""Comment"", a.owner ""Schema"",'{ViewType}' ""Type""
                           FROM all_views a

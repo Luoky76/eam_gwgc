@@ -19,8 +19,16 @@ namespace Gksyb.Common
         /// </summary>
         public static void AddIBaseService(this Assembly source)
         {
+            source.GetTypes().AddIBaseService();
+        }
+
+        /// <summary>
+        /// 批量注册IBaseService的派生类
+        /// </summary>
+        public static void AddIBaseService(this Type[] types)
+        {
             var type = typeof(IBaseService);
-            source.GetTypes().Where(t => type.IsAssignableFrom(t) && !t.IsAbstract).ForEach(c =>//动态注册
+            types.Where(t => type.IsAssignableFrom(t) && !t.IsAbstract).ForEach(c =>//动态注册
             {
                 var lifeTime = c.GetAttribute<ServiceLifetimeAttribute>()?.Lifetime;
                 switch (lifeTime)
