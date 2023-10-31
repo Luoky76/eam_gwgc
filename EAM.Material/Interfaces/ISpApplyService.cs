@@ -33,5 +33,8 @@ namespace EAM.Material.Interfaces
         Task<GridData> ApplyListAsync(GridRequest request);
         Task<AjaxResult> ApplyComboxData();
         Task<AjaxResult> ApplyDetFlowAsync(string SPDET_ID);
+
+        Task<int> CheckSubmit(List<string> sids);
+        Task<AjaxResult> CheckCancelSubmit(List<string> sids);
     }
 }

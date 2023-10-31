@@ -87,6 +87,28 @@ namespace EAM.Material.Controllers
             return await _service.DetailSave(request);
         }
 
+        /// <summary>
+        /// 确认提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> CheckSubmitAsync(List<string> sids)
+        {
+            return AjaxResult.Success(await _service.CheckSubmit(sids), "成功");
+        }
+
+        /// <summary>
+        /// 确认提交撤销
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> CheckCancelSubmitAsync(List<string> sids)
+        {
+            return AjaxResult.Success(await _service.CheckCancelSubmit(sids), "成功");
+        }
+
         #region 采购进度跟踪
         [HttpPost]
         public async Task<AjaxResult<GridData>> ApplyListAsync(GridRequest request)

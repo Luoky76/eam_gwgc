@@ -43,6 +43,7 @@ namespace EAM.Material.Services
                 {
                     APPLY_ID = c.APPLY_ID,
                     AUDITING = c.AUDITING,
+                    AUDITING_CHECK = c.AUDITING_CHECK,
                     APPLY_NO = c.APPLY_NO,
                     TYPE_ID = c.TYPE_ID,
                     USE_MEMO = c.USE_MEMO,
@@ -55,10 +56,10 @@ namespace EAM.Material.Services
                     APPLY_DATE = c.APPLY_DATE,
                     CREATE_USERID = c.CREATE_USERID,
                     CREATEDATE = c.CREATEDATE,
-                    TYPE_ID2=c.TYPE_ID2,
-                    CGFS=c.CGFS,
-                    TYPE_CODE=c.TYPE_CODE,
-                    TYPE_NAME=c.TYPE_NAME,
+                    TYPE_ID2 = c.TYPE_ID2,
+                    CGFS = c.CGFS,
+                    TYPE_CODE = c.TYPE_CODE,
+                    TYPE_NAME = c.TYPE_NAME,
                     MEMO = c.MEMO
                 })
                 .GetGridData(request);
@@ -174,7 +175,7 @@ namespace EAM.Material.Services
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
-
+            entity.AUDITING_CHECK = "0";
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
@@ -194,12 +195,49 @@ namespace EAM.Material.Services
             await _dbContext.DeleteAsync<SP_APPLY_DETAIL>(x => x.APPLY_ID == entity.APPLY_ID);
         }
 
+        /// <summary>
+        /// 申请提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
         public async Task<int> Submit(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                     x => new SP_APPLY
                     {
                         AUDITING = "1"
+                    });
+
+            return updatedevice;
+        }
+
+        /// <summary>
+        /// 申请提交撤销
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        {
+            var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
+                     x => new SP_APPLY
+                     {
+                         AUDITING = "0"
+                     });
+            return AjaxResult.Success("成功");
+        }
+
+        /// <summary>
+        /// 确认提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> CheckSubmit(List<string> sids)
+        {
+            var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
+                    x => new SP_APPLY
+                    {
+                        AUDITING_CHECK = "1"
                     });
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID),
                    x => new SP_APPLY_DETAIL
@@ -218,10 +256,14 @@ namespace EAM.Material.Services
                 string type = $"XJ{dt.Value.ToString("yyyyMM")}";
                 string def = type + "0000";
                 var model = await _dbContext.Query<SP_PURPLAN>(x => x.PLAN_NO.Contains(type)).Select(x => Sql.Max(x.PLAN_NO) ?? def).FirstOrDefaultAsync();
-               
+
                 var i = 1;
                 foreach (var item in list)
                 {
+                    if (_dbContext.Query<SP_PURPLAN_DET>().Any(x => x.APPLY_ID == item.APPLY_ID))
+                    {
+                        continue;
+                    }
                     var index = model.SubStr(8, 4).CastTo<int>() + i;
                     //形成物资询价方案
                     var temp = item.MapTo<SP_PURPLAN>();
@@ -269,7 +311,7 @@ namespace EAM.Material.Services
 
                         det.SP_STATUS = "30";
                         await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(det);
-                    }                 
+                    }
                 }
 
                 await _dbContext.InsertRangeAsync<SP_PURPLAN>(importList);
@@ -280,12 +322,12 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 撤销提交
+        /// 确认提交撤销
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        public async Task<AjaxResult> CheckCancelSubmit(List<string> sids)
         {
             var list = _dbContext.Query<SP_APPLY>().Where(x => sids.Contains(x.APPLY_ID)).ToList();
 
@@ -296,7 +338,7 @@ namespace EAM.Material.Services
                 var appid = new List<string>();
                 foreach (var item in list)
                 {
-                 
+
                     if (item.CGFS == "逐单采购")
                     {
                         if (_dbContext.Query<SP_PURPLAN>().Any(t => t.APPLY_ID == item.APPLY_ID && t.AUDITING == "1"))
@@ -320,7 +362,7 @@ namespace EAM.Material.Services
                 var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                      x => new SP_APPLY
                      {
-                         AUDITING = "0"
+                         AUDITING_CHECK = "0"
                      });
 
                 await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID),
