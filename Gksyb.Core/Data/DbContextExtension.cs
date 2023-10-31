@@ -328,25 +328,33 @@ namespace Chloe
         /// <summary>
         /// 树形节点处理
         /// </summary>
-        public static async Task<string> TreeHandle<T>(this IDbContext source, T entity, string oldTreeNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable, new()
+        public static async Task<string> TreeHandle<T>(this IDbContext source, T entity, string oldTreeNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable<string>, new()
+        {
+            return await source.TreeHandle<T, string>(entity, oldTreeNode, predicate, length);
+        }
+
+        /// <summary>
+        /// 树形节点处理
+        /// </summary>
+        public static async Task<string> TreeHandle<T, T1>(this IDbContext source, T entity, string oldTreeNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable<T1>, new() where T1 : IEquatable<T1>
         {
             var parentNode = "";
-            if (!string.IsNullOrWhiteSpace(entity.PARENTID))//有父节点
+            if (entity.PARENTID is string parentId ? !string.IsNullOrWhiteSpace(parentId) : entity.PARENTID != null)//有父节点
             {
-                parentNode = await source.Query<T>().Where(c => c.ID == entity.PARENTID).Select(c => c.TREENODE).FirstOrDefaultAsync();
+                parentNode = await source.Query<T>().Where(c => c.ID.Equals(entity.PARENTID)).Select(c => c.TREENODE).FirstOrDefaultAsync();
             }
-            entity.TREENODE = await source.GetTreeNode(parentNode, predicate, length);
+            entity.TREENODE = await source.GetTreeNode<T, T1>(parentNode, predicate, length);
             if (string.IsNullOrWhiteSpace(oldTreeNode)) return entity.TREENODE;
             if (parentNode.StartsWith(oldTreeNode))
             {
                 throw new MessageException("层级关系错误，上级不能直接改成下级");
             }
-            var childs = (await source.Query<T>().Where(c => c.TREENODE.StartsWith(oldTreeNode) && c.ID != entity.ID).ToListAsync()).OrderBy(c => c.TREENODE.Length);
+            var childs = (await source.Query<T>().Where(c => c.TREENODE.StartsWith(oldTreeNode) && !c.ID.Equals(entity.ID)).ToListAsync()).OrderBy(c => c.TREENODE.Length);
             foreach (var child in childs)
             {
-                var parent = childs.FirstOrDefault(c => c.ID == child.PARENTID) ?? (new T() { TREENODE = entity.TREENODE });
-                var corpPath = await source.GetTreeNode(parent.TREENODE, predicate, length);
-                await source.UpdateAsync<T>(c => c.ID == child.ID, c => new T()
+                var parent = childs.FirstOrDefault(c => c.ID.Equals(child.PARENTID)) ?? (new T() { TREENODE = entity.TREENODE });
+                var corpPath = await source.GetTreeNode<T, T1>(parent.TREENODE, predicate, length);
+                await source.UpdateAsync<T>(c => c.ID.Equals(child.ID), c => new T()
                 {
                     TREENODE = corpPath
                 });
@@ -357,7 +365,7 @@ namespace Chloe
         /// <summary>
         /// 获取树形节点的节点值
         /// </summary>
-        private static async Task<string> GetTreeNode<T>(this IDbContext source, string parentNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable, new()
+        private static async Task<string> GetTreeNode<T, T1>(this IDbContext source, string parentNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable<T1>, new() where T1 : IEquatable<T1>
         {
             var len = parentNode.Length + length;
             var nodes = await source.Query<T>().Where(c => c.TREENODE.StartsWith(parentNode) && c.TREENODE.Length == len)

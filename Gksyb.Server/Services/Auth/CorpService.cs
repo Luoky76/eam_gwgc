@@ -115,7 +115,7 @@ namespace Gksyb.Server.Services.Auth
     }
 
     [Table("CF_CORP")]
-    public class CF_CORP_TREE : ITreeable
+    public class CF_CORP_TREE : ITreeable<string>
     {
         [Column("CORPID")]
         public string ID { get; set; }
