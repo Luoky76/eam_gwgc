@@ -30,26 +30,26 @@
                             { display: "日期", name: "STARTDATE", newline: false, width: 200, type: "date", validate: { required: true }, options: {}, group: "基础信息" },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, width: 200, type: "text", options: {}, editor: { disabled: true } },
                             { display: "设备ID", name: "DEVICE_ID", newline: false, width: 200, type: "hidden", options: {} },
-                            { display: "作业时间", name: "WORK_TIME", newline: false, width: 200, type: "float", options: {}, group: "施工时间" },
-                            { display: "锚泊时间", name: "ANCHOR_TIME", newline: false, width: 200, type: "float", options: {} },
-                            { display: "检修时间", name: "REPAIRTIME", newline: true, width: 200, type: "float", options: {}, group: "停工时间" },
-                            { display: "天气影响", name: "WEATHEREFFECT", newline: false, width: 200, type: "float", options: {} },
-                            { display: "待工", name: "WAIT_WORK", newline: false, width: 200, type: "float", options: {} },
+                            { display: "作业时间(小时)", name: "WORK_TIME", newline: false, width: 200, type: "float", options: {}, group: "施工时间" },
+                            { display: "锚泊时间(小时)", name: "ANCHOR_TIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "检修时间(小时)", name: "REPAIRTIME", newline: true, width: 200, type: "float", options: {}, group: "停工时间" },
+                            { display: "天气影响(小时)", name: "WEATHEREFFECT", newline: false, width: 200, type: "float", options: {} },
+                            { display: "待工(小时)", name: "WAIT_WORK", newline: false, width: 200, type: "float", options: {} },
 
-                            { display: "运行时间", name: "MAIN_RUNTIME", newline: false, width: 200, type: "float", options: {}, group: "主发电机运行时间" },
-                            { display: "累计时间", name: "MAIN_CUMTIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "运行时间(小时)", name: "MAIN_RUNTIME", newline: false, width: 200, type: "float", options: {}, group: "主发电机运行时间" },
+                            { display: "累计时间(小时)", name: "MAIN_CUMTIME", newline: false, width: 200, type: "float", options: {} },
 
-                            { display: "运行时间", name: "MOORING_RUNTIME", newline: false, width: 200, type: "float", options: {}, group: "停泊发电机运行时间" },
-                            { display: "累计时间", name: "MOORING_CUMTIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "运行时间(小时)", name: "MOORING_RUNTIME", newline: false, width: 200, type: "float", options: {}, group: "停泊发电机运行时间" },
+                            { display: "累计时间(小时)", name: "MOORING_CUMTIME", newline: false, width: 200, type: "float", options: {} },
 
-                            { display: "日耗", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
-                            { display: "补充", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
-                            { display: "库存", name: "STOCK", newline: false, width: 200, type: "float", options: {} },
+                            { display: "日耗(吨)", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
+                            { display: "补充(吨)", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
+                            { display: "库存(吨)", name: "STOCK", newline: false, width: 200, type: "float", options: {} },
                             
-                            { display: "柴油日耗", name: "DAILY_USAGE", newline: false, width: 200, type: "float", options: {}, group: "柴油" },
-                            { display: "补充", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
-                            { display: "库存", name: "STOCK2", newline: false, width: 200, type: "float", options: {},  editor: { disabled: true }, },
-                            { display: "日耗", name: "LUBRICATE", newline: true, width: 200, type: "float", options: {}, group: "滑油" },
+                            { display: "柴油日耗(吨)", name: "DAILY_USAGE", newline: false, width: 200, type: "float", options: {}, group: "柴油" },
+                            { display: "补充(吨)", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
+                            { display: "库存(吨)", name: "STOCK2", newline: false, width: 200, type: "float", options: {},  editor: { disabled: true }, },
+                            { display: "日耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: {}, group: "滑油" },
 
                             { display: "简要说明", name: "MEMO", newline: true, width: 846, type: "textarea", options: {}, group: "其它信息" }
                         ]
