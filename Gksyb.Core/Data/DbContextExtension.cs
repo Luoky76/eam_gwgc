@@ -342,6 +342,7 @@ namespace Chloe
             if (entity.PARENTID is string parentId ? !string.IsNullOrWhiteSpace(parentId) : entity.PARENTID != null && !entity.PARENTID.Equals(0))//有父节点
             {
                 parentNode = await source.Query<T>().Where(c => c.ID.Equals(entity.PARENTID)).Select(c => c.TREENODE).FirstOrDefaultAsync();
+                if (string.IsNullOrWhiteSpace(parentNode)) return parentNode;
             }
             entity.TREENODE = await source.GetTreeNode<T, T1>(parentNode, predicate, length);
             if (string.IsNullOrWhiteSpace(oldTreeNode)) return entity.TREENODE;
