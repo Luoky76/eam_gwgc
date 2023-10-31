@@ -75,6 +75,7 @@ namespace Gksyb.Common.Data
                 if (fieldType == "string" && column.DbType.StartsWith("real", StringComparison.OrdinalIgnoreCase)) fieldType = "decimal";
                 if (fieldType == "int64") fieldType = "long";
                 if (fieldType == "int32") fieldType = "int";
+                if (fieldType == "int16") fieldType = "int";
                 column.CsType = fieldType;
             }
             columns.ForEach(c =>
