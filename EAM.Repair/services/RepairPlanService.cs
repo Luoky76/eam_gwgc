@@ -53,213 +53,6 @@ namespace EAM.Repair.services
         }
         #region 维修计划
 
-        public async Task<GridData> ListAsync(GridRequest request)
-        {
-            var query = await _dbContext.JoinQuery<REP_PLAN, DEVICE_CARD>((a, b) => new object[]
-            {
-                JoinType.LeftJoin,a.DEVICE_ID.Equals(b.DEVICE_ID)
-            })
-            .Select((a, b) => new
-            {
-                a.PLAN_ID,
-                a.AUDITING,
-                a.AUDITING_A,
-                a.AUDITING_B,
-                a.WSEC_DEPT,
-                a.MAINT_TYPE,
-                a.DEAL_TYPE,
-                a.AUDIT_TIME,
-                a.PLAN_START_DATE,
-                a.PLAN_END_DATE,
-                a.PLAN_STOP_TIME,
-                a.PLAN_CODE,
-                a.AUDIT_USER,
-                a.REPORT_USER,
-                a.AUDIT_USERID,
-                a.REPORT_USERID,
-                a.DEPT_NAME,
-                a.CHARGE_USER,
-                a.PLAN_MEMO,
-                a.EIDT_DATE,
-                b.DEVICE_ID,
-                b.DEVICE_NAME,
-                b.DEVICE_TYPE,
-                b.DEVICE_NO,
-                b.ASSET_CODE,
-                AUDITINGSORT = Case.When(a.AUDITING.Equals("6")).Then("1.5").Else(a.AUDITING)
-            }).GetGridData(request);
-            return query;
-        }
-
-        public async Task<AjaxResult> GetDetailAsync(string ID)
-        {
-            var query = await _dbContext.JoinQuery<REP_PLAN, DEVICE_CARD>((a, b) => new object[]
-            {
-                JoinType.LeftJoin,a.DEVICE_ID.Equals(b.DEVICE_ID)
-            })
-            .Select((a, b) => new
-            {
-                a.PLAN_ID,
-                a.AUDITING,
-                a.WSEC_DEPT,
-                a.MAINT_TYPE,
-                a.DEAL_TYPE,
-                a.AUDIT_TIME,
-                a.PLAN_START_DATE,
-                a.AUDIT_USER,
-                a.REPORT_USER,
-                a.AUDIT_USERID,
-                a.REPORT_USERID,
-                a.PLAN_END_DATE,
-                a.PLAN_STOP_TIME,
-                a.PLAN_CODE,
-                a.FAULT_DESCRIBE,
-                a.COLLECT_METHOD,
-                a.PLAN_MONEY,
-                a.REPAIR_MEMO,
-                a.DEPT_NAME,
-                a.CHARGE_USER,
-                a.PLAN_MEMO,
-                a.EIDT_DATE,
-                b.DEVICE_ID,
-                b.DEVICE_NAME,
-                b.DEVICE_TYPE,
-                b.DEVICE_NO,
-                b.INSTALL_SITE,
-                b.ASSET_CODE,
-                AUDITINGSORT = Case.When(a.AUDITING.Equals("6")).Then("1.5").Else(a.AUDITING)
-            }).Where(x => x.PLAN_ID == ID).ToListAsync();
-
-            return AjaxResult.Success(query);
-        }
-
-        /// <summary>
-        /// 保存
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<REP_PLAN> request)
-        {
-            return await _dbContext.SaveEntityAnsyc(request,
-                c => new
-                {
-                    c.AUDITING,
-                    c.AUDITING_A,
-                    c.AUDITING_B,
-                    c.PLAN_CODE,
-                    c.PLAN_STATE,
-                    c.DEPT_NAME,
-                    c.WSEC_DEPT,
-                    c.MAINT_TYPE,
-                    c.AUDIT_USER,
-                    c.REPORT_USER,
-                    c.AUDIT_USERID,
-                    c.REPORT_USERID,
-                    c.AUDIT_TIME,
-                    c.DEAL_TYPE,
-                    c.FAULT_DESCRIBE,
-                    c.PLAN_MEMO,
-                    c.DEVICE_ID,
-                    c.PLAN_START_DATE,
-                    c.PLAN_END_DATE,
-                    c.PLAN_STOP_TIME,
-                    c.CHARGE_USER,
-                    c.COLLECT_METHOD,
-                    c.PLAN_MONEY,
-                    c.REPAIR_MEMO
-                },
-                c => a => a.PLAN_ID == c.PLAN_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);
-        }
-
-        /// <summary>
-        /// 新增
-        /// </summary>
-        /// <returns></returns>
-        private async Task BeforeAdd(REP_PLAN entity)
-        {
-            entity.PLAN_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            string type = "WXJH" + DateTime.Now.ToString("yyyyMM");
-            string def = type + "0000";
-            var model = await _dbContext.Query<REP_PLAN>(x => x.PLAN_CODE.Contains(type)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
-            entity.PLAN_CODE = type + index.ToString("D4");
-
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 更新
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        private async Task BeforeUpdate(REP_PLAN request)
-        {
-            if (request.AUDITING == "1")
-            {
-                REP_PLAN_EXE exe = new();
-                exe.AUDITING = "0";
-                exe.PLAN_CODE = request.PLAN_CODE;
-                exe.DEVICE_ID = request.DEVICE_ID;
-                exe.MAINT_TYPE = request.MAINT_TYPE;
-                exe.DEPT_NAME = request.DEPT_NAME;
-                exe.DEPT_ID = request.DEPT_ID;
-                exe.WSEC_DEPT = request.WSEC_DEPT;
-                exe.PLAN_STATE = "20";//实施中
-                exe.DEAL_TYPE = request.DEAL_TYPE;
-                exe.REP_LEVEL = request.REP_LEVEL;
-                exe.FAULT_DESCRIBE = request.FAULT_DESCRIBE;
-                exe.PLAN_START_DATE = request.PLAN_START_DATE;
-                exe.PLAN_END_DATE = request.PLAN_END_DATE;
-                exe.PLAN_STOP_TIME = request.PLAN_STOP_TIME;
-                exe.CHARGE_USER = request.CHARGE_USER;
-                exe.REPAIR_MEMO = request.REPAIR_MEMO;
-                exe.PLAN_MEMO = request.PLAN_MEMO;
-                exe.PLAN_ID = request.PLAN_ID;
-                exe.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
-                request.AUDIT_TIME = DateTime.Now;
-
-                string type = "WXSB" + DateTime.Now.ToString("yyyyMM");
-                string def = type + "0000";
-                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.EXE_CODE.Contains(type)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
-                var index = model.SubStr(10, 4).CastTo<int>() + 1;
-                exe.EXE_CODE = type + index.ToString("D4");
-
-                var item = await _dbContext.Query<REP_PLAN_ITEM>(x => x.PLAN_ID == request.PLAN_ID).ToListAsync();
-
-                foreach (var iten in item)
-                {
-                    REP_PLAN_EXE_ITEM exeitem = new();
-                    exeitem.DEVICE_NAME = iten.DEVICE_NAME;
-                    exeitem.REP_INDEX = iten.REP_INDEX;
-                    exeitem.REP_CONTENT = iten.REP_CONTENT;
-                    exeitem.DEAL_TYPE = iten.DEAL_TYPE;
-                    exeitem.ITEM_TYPE = iten.ITEM_TYPE;
-                    exeitem.IS_ASKBID = iten.IS_ASKBID;
-                    exeitem.REP_LEADER = iten.REP_LEADER;
-                    exeitem.PLAN_ID = iten.PLAN_ID;
-                    exeitem.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
-                    //exeitem.PLAN_ITEM_ID = iten.PLAN_ITEM_ID;
-                    exeitem.DEVICE_ID = iten.DEVICE_ID;
-                    exeitem.EXE_ID = exe.EXE_ID;
-
-                    await _dbContext.InsertAsync<REP_PLAN_EXE_ITEM>(exeitem);
-                }
-
-                await _dbContext.InsertAsync<REP_PLAN_EXE>(exe);
-            }
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// 删除
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        private async Task BeforeDelete(REP_PLAN request)
-        {
-            await Task.CompletedTask;
-        }
-
         /// <summary>
         /// 船舶列表
         /// </summary>
@@ -281,33 +74,6 @@ namespace EAM.Repair.services
                 })
                .ToListAsync();
             return AjaxResult.Success(result, "成功");
-        }
-
-        public async Task<GridData> ItemListAsync(GridRequest request)
-        {
-            var query = await _dbContext.JoinQuery<REP_PLAN_ITEM, REP_PLAN>((a, b) => new object[] {
-                JoinType.LeftJoin,a.PLAN_ID.Equals(b.PLAN_ID)
-            }).Select((a, b) => new
-            {
-                a.PLAN_ITEM_ID,
-                a.DEVICE_ID,
-                a.PLAN_ID,
-                a.DEVICE_NAME,
-                a.REP_CONTENT,
-                a.REP_METHOD,
-                a.USE_TOOL,
-                a.LABOR_NUM,
-                a.TAKE_TIME,
-                a.MEMO,
-                a.DEAL_TYPE,
-                a.REP_LEADER,
-                a.REP_INDEX,
-                a.IS_ASKBID,
-                a.ITEM_TYPE,
-                a.DEVICE_TYPE,
-            }).GetGridData(request);
-
-            return query;
         }
 
         /// <summary>
@@ -382,7 +148,6 @@ namespace EAM.Repair.services
             })
             .Select((a, b) => new
             {
-                a.PLAN_ID,
                 a.AUDITING,
                 a.AUDITING_A,
                 a.AUDITING_B,
@@ -438,7 +203,6 @@ namespace EAM.Repair.services
             })
             .Select((a, b) => new
             {
-                a.PLAN_ID,
                 a.AUDITING,
                 a.AUDITING_A,
                 a.AUDITING_B,
@@ -531,7 +295,6 @@ namespace EAM.Repair.services
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
                      {
-                         c.PLAN_ID,
                          c.AUDITING,
                          c.AUDITING_A,
                          c.AUDITING_B,

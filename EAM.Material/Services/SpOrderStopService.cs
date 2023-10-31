@@ -269,7 +269,6 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取明细列表信息
         /// </summary>
-        /// <param name="STOP_ID"></param>
         /// <param name="request"></param>
         /// <returns></returns>
         public async Task<GridData> DetailListAsync(GridRequest request)

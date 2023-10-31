@@ -64,11 +64,11 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
-                            { display: "故障申报单号", name: "EXE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "记录状态", name: "AUDITING_A", width: 200, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
+                            { display: "故障申报单号", name: "EXE_CODE", width: 200, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
                             {
-                                display: "船舶名称", name: "DEVICE_ID", newline: true, upper: true, type: "select", options: {
+                                display: "船舶名称", name: "DEVICE_ID", width: 200, newline: true, type: "select", options: {
                                     data: me.shiplist,
                                     autocomplete: true,
                                     selectBoxWidth: 400,
@@ -94,18 +94,18 @@
                                     }
                                 }
                             },
-                            { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "报修人", name: "REPORT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "DEPT_ID", name: "DEPT_ID", newline: false, upper: true, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "维保部门", name: "WSEC_DEPT", newline: false, upper: true, type: "select", options: { data: me.maintdept } },
-                            { display: "维修类型", name: "MAINT_TYPE", newline: false, upper: true, type: "select", options: { data: me.repairtype } },
-                            { display: "维修处理方式", name: "DEAL_TYPE", newline: false, upper: true, type: "select", options: { data: me.repairhandtype } },
-                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
-                            { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
+                            { display: "船舶编号", name: "DEVICE_NO", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "船舶型号", name: "DEVICE_TYPE", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", width: 200, newline: true, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "使用部门ID", name: "DEPT_ID", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "安装地点", name: "INSTALL_SITE", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "报修人", name: "REPORT_USER", width: 200, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维保部门", name: "WSEC_DEPT", width: 200, type: "select", options: { data: me.maintdept } },
+                            { display: "维修类型", name: "MAINT_TYPE", width: 200, type: "select", options: { data: me.repairtype } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: 200, type: "select", options: { data: me.repairhandtype } },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 846, type: "textarea", options: { rows: "2" } },
+                            { display: "备注", name: "PLAN_MEMO", newline: true, width: 846, type: "textarea", options: { rows: "2" } },
                             { display: "EXE_ID", name: "EXE_ID", type: "hidden", },
                         ]
                     },
@@ -119,7 +119,6 @@
                             //{ display: "设备名称", name: "DEVICE_NAME", width: 150, type: "text", editor: { type: 'text' } },
                             { display: "设备规格", name: "DEVICE_SIZE", width: 150, type: "text", editor: { type: 'text' } },
                             { display: "设备型号", name: "DEVICE_TYPE", width: 150, type: "text", editor: { type: 'text' } },
-                            //{ display: "设备分类", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
                             { display: "设备名称", name: "DEVICE_NAME", width: 150, type: "text", editor: { type: 'text' } },
                             {
                                 display: "设备数量", name: "DEVICE_NUM", width: 150, type: "float", editor: {
@@ -454,15 +453,15 @@
                             { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
                             { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "select", editor: { type: 'select', data: me.devicetype, selectBoxHeight: 100 } },
+                            { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "设备规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
 
                         ]
                     },
                     fields: [
-                        { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                        { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
+                        { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", width: 200, type: "text", options: {} },
+                        { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", width: 200, type: "text", options: {} }
                     ],
                     callback: function (values, rows) {
                         var currentSet = new Set(gridKeys);
@@ -539,7 +538,7 @@
                                 for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.save();
+                                //me.save();
                             }
                         });
                     } else {

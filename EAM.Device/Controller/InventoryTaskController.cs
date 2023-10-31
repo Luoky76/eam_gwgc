@@ -40,6 +40,7 @@ namespace EAM.Device.controller
                 deviceType = comboxData["DeviceTypeName"],
                 deptData = comboxData["DeptData"],
                 status = comboxData["AssetStatus"],
+                BCCode = comboxData["BCCode"],
             }, "成功");
         }
 

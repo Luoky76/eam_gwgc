@@ -396,7 +396,6 @@ namespace EAM.Material.Services
         /// <summary>
         /// 需求列表
         /// </summary>
-        /// <param name="COLLECT_DET_ID"></param>
         /// <param name="request"></param>
         /// <returns></returns>
         public async Task<GridData> RequestListAsync(GridRequest request)

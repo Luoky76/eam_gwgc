@@ -164,7 +164,10 @@
     </style>
 
 
+
+
     <div class="content" style="background-color:#e4edf3;min-width:1400px">
+
         <div id="layout" style="margin: 2px; margin-left: 29px; height: 300px ">
             <div position="center" class="l-portal" id="portalMain" style="width: 100%; height: 100%">
 
@@ -734,7 +737,7 @@
                                 formatter: '{value}'
                             }
                         },
-                       
+
                     ],
                     series: [
                         {
@@ -742,8 +745,8 @@
                             type: 'line',
                             data: data != null ? data : []
                         },
-                     
-                     
+
+
                     ]
                 };
 
@@ -879,6 +882,7 @@
                 });
             },
 
+       
 
             percentEchartGetData: function () {
                 app.percentEchart(null);
@@ -958,13 +962,12 @@
                 me.percentEchartGetData();
                 me.deviceUpBarEchart();
                 me.GetConstructionEchartData();
-
             },
             init: function () {
                 app.totalGetData();
                 var CorpInfo = JSON2.parse(window.localStorage.GksybData);
                 if (CorpInfo.Corp) {
-                    if (CorpInfo.Corp.CName =="经营层") {
+                    if (CorpInfo.Corp.CName == "经营层") {
                         $("#layout").hide()
                     }
                 }

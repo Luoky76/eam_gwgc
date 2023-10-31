@@ -35,20 +35,18 @@ namespace Gksyb.Model
         /// 船次
         /// </summary>
         [Description("船次")]
-        [Column(DbType = DbType.AnsiString)]
         public int? SHIPTIMES { get; set; }
 
         /// <summary>
         /// 船方
         /// </summary>
         [Description("船方")]
-        public int? SHIPNUM { get; set; }
+        public decimal? SHIPNUM { get; set; }
 
         /// <summary>
         /// 施工准备
         /// </summary>
         [Description("施工准备")]
-        [Column(DbType = DbType.AnsiString)]
         public decimal? CONPLAN { get; set; }
 
         /// <summary>
@@ -85,19 +83,19 @@ namespace Gksyb.Model
         /// 日耗
         /// </summary>
         [Description("日耗")]
-        public int? DAILYCONSUMPTION { get; set; }
+        public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
         /// 补充
         /// </summary>
         [Description("补充")]
-        public int? SUPPLEMENT { get; set; }
+        public decimal? SUPPLEMENT { get; set; }
 
         /// <summary>
         /// 库存
         /// </summary>
         [Description("库存")]
-        public int? STOCK { get; set; }
+        public decimal? STOCK { get; set; }
 
         /// <summary>
         /// 主机日耗
@@ -127,13 +125,13 @@ namespace Gksyb.Model
         /// 补充
         /// </summary>
         [Description("补充")]
-        public int? SUPPLEMENT2 { get; set; }
+        public decimal? SUPPLEMENT2 { get; set; }
 
         /// <summary>
         /// 库存
         /// </summary>
         [Description("库存")]
-        public int? STOCK2 { get; set; }
+        public decimal? STOCK2 { get; set; }
 
         /// <summary>
         /// 滑油日耗
@@ -208,11 +206,53 @@ namespace Gksyb.Model
         public string DEVICE_ID { get; set; }
 
         /// <summary>
-        /// 船舶名称
+        /// 设备名称
         /// </summary>
-        [Description("船舶名称")]
+        [Description("设备名称")]
         [Column(DbType = DbType.AnsiString)]
         public string DEVICE_NAME { get; set; }
+
+        /// <summary>
+        /// 待工
+        /// </summary>
+        [Description("待工")]
+        public decimal? WAIT_WORK { get; set; }
+
+        /// <summary>
+        /// 作业时间
+        /// </summary>
+        [Description("作业时间")]
+        public decimal? WORK_TIME { get; set; }
+
+        /// <summary>
+        /// 锚泊时间
+        /// </summary>
+        [Description("锚泊时间")]
+        public decimal? ANCHOR_TIME { get; set; }
+
+        /// <summary>
+        /// 主发电机运行时间
+        /// </summary>
+        [Description("主发电机运行时间")]
+        public decimal? MAIN_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 主发电机累计时间
+        /// </summary>
+        [Description("主发电机累计时间")]
+        public decimal? MAIN_CUMTIME { get; set; }
+
+        /// <summary>
+        /// 停泊发电机运行时间
+        /// </summary>
+        [Description("停泊发电机运行时间")]
+        public decimal? MOORING_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 停泊发电机累计时间
+        /// </summary>
+        [Description("停泊发电机累计时间")]
+        public decimal? MOORING_CUMTIME { get; set; }
 
     }
 }

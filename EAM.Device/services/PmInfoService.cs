@@ -79,7 +79,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetPmPlanList(GridRequest request)
         {
             return await _dbContext.Query<PM_PLAN_EXE>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.PM_TYPE=="20")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
@@ -524,7 +524,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetPmExeList(GridRequest request)
         {
             return await _dbContext.Query<PM_PLAN_EXE>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.AUDITING=="1")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
@@ -542,7 +542,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetPmExeQryList(GridRequest request)
         {
             return await _dbContext.Query<PM_PLAN_EXE>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.ParentCompany.CorpID == a.SEC_DEPTID)
+                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
         }

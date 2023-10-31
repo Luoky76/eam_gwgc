@@ -32,17 +32,20 @@
                             { display: "设备ID", name: "DEVICE_ID", newline: false, width: 200, type: "hidden", options: {} },
                             { display: "船次", name: "SHIPTIMES", newline: false, width: 200, type: "int", options: {}, group: "产量" },
                             { display: "船方", name: "SHIPNUM", newline: false, width: 200, type: "float", options: {} },
-                            { display: "施工准备(小时)", name: "CONPLAN", newline: true, width: 200, type: "float", options: {}, group: "施工时间" },
-                            { display: "挖泥时间(小时)", name: "DREDGETIME", newline: false, width: 200, type: "float", options: {} },
-                            { display: "航行时间(小时)", name: "SAILTIME", newline: false, width: 200, type: "float", options: {} },
-                            { display: "检修时间(小时)", name: "REPAIRTIME", newline: true, width: 200, type: "float", options: {}, group: "停工时间" },
-                            { display: "天气影响(小时)", name: "WEATHEREFFECT", newline: false, width: 200, type: "float", options: {} },
-                            { display: "其他停工(小时)", name: "OTHERSTOP", newline: false, width: 200, type: "float", options: {} },
-                            { display: "日耗(吨)", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
-                            { display: "补充(吨)", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
-                            { display: "库存(吨)", name: "STOCK", newline: false, width: 200, type: "float", options: {} },
+                            { display: "作业时间", name: "WORK_TIME", newline: false, width: 200, type: "float", options: {}, group: "施工时间" },
+                            { display: "锚泊时间", name: "ANCHOR_TIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "施工准备", name: "CONPLAN", newline: true, width: 200, type: "float", options: {} },
+                            { display: "挖泥时间", name: "DREDGETIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "航行时间", name: "SAILTIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "检修时间", name: "REPAIRTIME", newline: true, width: 200, type: "float", options: {}, group: "停工时间" },
+                            { display: "天气影响", name: "WEATHEREFFECT", newline: false, width: 200, type: "float", options: {} },
+                            { display: "其他停工", name: "OTHERSTOP", newline: false, width: 200, type: "float", options: {} },
+                            { display: "待工", name: "WAIT_WORK", newline: false, width: 200, type: "float", options: {} },
+                            { display: "日耗", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
+                            { display: "补充", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
+                            { display: "库存", name: "STOCK", newline: false, width: 200, type: "float", options: {} },
                             {
-                                display: "主机日耗(吨)", name: "MASTER", newline: false, width: 200, type: "float", options: {
+                                display: "主机日耗", name: "MASTER", newline: false, width: 200, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -51,7 +54,7 @@
                                 }, group: "柴油"
                             },
                             {
-                                display: "辅机日耗(吨)", name: "AUXILIARY", newline: false, width: 200, type: "float", options: {
+                                display: "辅机日耗", name: "AUXILIARY", newline: false, width: 200, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -60,7 +63,7 @@
                                 }
                             },
                             {
-                                display: "泵机日耗(吨)", name: "PUMP", newline: false, width: 200, value: 0, type: "float", options: {
+                                display: "泵机日耗", name: "PUMP", newline: false, width: 200, value: 0, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -68,10 +71,10 @@
                                     }
                                 }
                             },
-                            { display: "小计(吨)", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, editor: { disabled: true } },
-                            { display: "补充(吨)", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
-                            { display: "库存(吨)", name: "STOCK2", newline: false, width: 200, type: "float", options: {} },
-                            { display: "日耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: {}, group: "滑油" },
+                            { display: "小计", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, editor: { disabled: true } },
+                            { display: "补充", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
+                            { display: "库存", name: "STOCK2", newline: false, width: 200, type: "float", options: {} },
+                            { display: "日耗", name: "LUBRICATE", newline: true, width: 200, type: "float", options: {}, group: "滑油" },
                             { display: "简要说明", name: "MEMO", newline: true, width: 846, type: "textarea", options: {}, group: "其它信息" }
                         ]
                     }
@@ -86,7 +89,7 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        
+
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {
@@ -95,7 +98,7 @@
                 });
             },
             sum: function (zhu, fu, ban) {
-                
+
                 var total = Number(zhu) + Number(fu) + Number(ban);
                 $('#SUBTOTAL').val(total);
             },

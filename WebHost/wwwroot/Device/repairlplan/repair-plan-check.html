@@ -20,6 +20,7 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            plan_state: [],
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             setConfig: function () {
@@ -36,18 +37,16 @@
                         columns: [
                             { display: "EXE_ID", name: "EXE_ID", width: 100, type: "text", hide: true },
                             { display: "已提交", name: "AUDITING_D", width: 100, type: "chk" },
-                            { display: "维修验收单号", name: "CHECK_CODE", width: 100, type: "text", },
+                            { display: "故障申报单号", name: "EXE_CODE", minWidth: 100, type: "text", },
+                            {
+                                display: "维修状态", name: "PLAN_STATE", minWidth: 100, type: "select", format: { data: me.plan_state }
+                            },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
                             { display: "维修类型", name: "MAINT_TYPE", width: 100, type: "text", },
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 100, type: "select", options: { data: me.repairhandtype } },
                             { display: "实际开工时间", name: "ACT_START_DATE", width: 100, type: "text", },
                             { display: "实际完工时间", name: "ACT_END_DATE", width: 100, type: "text", },
-                            { display: "维修实施单号", name: "EXE_CODE", width: 100, type: "text", },
-                            { display: "故障申报单号", name: "EXE_CODE", width: 100, type: "text", },
-                            { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", },
-                            { display: "资产编号", name: "ASSET_CODE", width: 100, type: "text", },
-                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "text", },
                             { display: "验收时间", name: "CHECK_DATE", width: 100, type: "date", },
                             { display: "备注", name: "PLAN_MEMO", width: 100, type: "text", }
                         ],
@@ -73,6 +72,7 @@
                         me.maintdept = data.MaintDept;
                         me.repairtype = data.RepairType;
                         me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);

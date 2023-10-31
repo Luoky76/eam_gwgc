@@ -197,5 +197,14 @@ namespace Gksyb.Model.Core
         [Description("用户在岗状态")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
         public string USER_STATE { get; set; }
+
+
+        /// <summary>
+        /// 用户在岗状态
+        /// </summary>
+        [Description("工会号")]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
+        public string WORK_CODE { get; set; }
+
     }
 }
