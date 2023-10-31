@@ -87,12 +87,12 @@
 		<ItemGroup>
 			<AboveFile Include="$(TargetDir)\*.*"></AboveFile>
 		</ItemGroup>
-		<Delete Files="@(AboveFile->'$(TargetDir)\plugins\%(filename)%(extension)')" />
+		<Delete Files="@(AboveFile->'$(TargetDir)\plugins\%(filename)%(extension)');@(AboveFile->'$(TargetDir)\plugins\%(filename).pdb');@(AboveFile->'$(TargetDir)\plugins\%(filename).xml')" />
 	</Target>
 	<Target Name="CorpPlugins" AfterTargets="Publish">
 		<Message Text="开始发布插件" Importance="high" />
 		<ItemGroup>
-			<PublishFile Include="$(TargetDir)\plugins\*.dll;$(TargetDir)\plugins\*.pdb;$(TargetDir)\plugins\*.xml;"></PublishFile>
+			<PublishFile Include="$(TargetDir)\plugins\*.dll;$(TargetDir)\plugins\*.pdb;"></PublishFile>
 		</ItemGroup>
 		<Copy SourceFiles="@(PublishFile)" DestinationFolder="$(PublishDir)\plugins\" />
 	</Target>

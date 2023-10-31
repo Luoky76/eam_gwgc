@@ -36,22 +36,23 @@ namespace Gksyb.Common.Data
         /// </summary>
         private static async Task<List<DbTableInfo>> GetOracleTables(IDbContext source, string type)
         {
-            if (type == ViewType) return await GetOracleViews(source);
+            var owner = await source.Session.ExecuteScalarAsync("SELECT username FROM user_users") as string;
+            if (type == ViewType) return await GetOracleViews(source, owner);
             var sql = $@"SELECT a.table_name ""Name"", b.comments ""Comment"", a.owner ""Schema"",'{TableType}' ""Type""
                           FROM all_tables a
                           LEFT JOIN all_tab_comments b
                             ON a.table_name = b.table_name
                            AND a.owner = b.owner
-                         WHERE (a.owner IN (SELECT username FROM user_users) OR EXISTS
+                         WHERE (a.owner = :owner OR EXISTS
                                 (SELECT 1
                                    FROM user_tab_privs t
                                   WHERE a.table_name = t.table_name
                                     AND a.owner = t.owner
                                     AND t.privilege = 'SELECT'))";
-            var tables = await source.SqlQueryAsync<DbTableInfo>(sql);
+            var tables = await source.SqlQueryAsync<DbTableInfo>(sql, new DbParam("owner", owner));
             if (string.IsNullOrWhiteSpace(type))
             {
-                tables.AddRange(await GetOracleViews(source));
+                tables.AddRange(await GetOracleViews(source, owner));
             }
             return tables;
         }
@@ -59,20 +60,20 @@ namespace Gksyb.Common.Data
         /// <summary>
         /// 获取oracle视图
         /// </summary>
-        private static async Task<List<DbTableInfo>> GetOracleViews(IDbContext source)
+        private static async Task<List<DbTableInfo>> GetOracleViews(IDbContext source,string owner)
         {
             var sql = $@"SELECT a.view_name ""Name"", b.comments ""Comment"", a.owner ""Schema"",'{ViewType}' ""Type""
                           FROM all_views a
                           LEFT JOIN all_tab_comments b
                             ON a.view_name = b.table_name
                            AND a.owner = b.owner
-                         WHERE (a.owner IN (SELECT username FROM user_users) OR EXISTS
+                         WHERE (a.owner = :owner OR EXISTS
                                 (SELECT 1
                                    FROM user_tab_privs t
                                   WHERE a.view_name = t.table_name
                                     AND a.owner = t.owner
                                     AND t.privilege = 'SELECT'))";
-            return await source.SqlQueryAsync<DbTableInfo>(sql);
+            return await source.SqlQueryAsync<DbTableInfo>(sql, new DbParam("owner", owner));
         }
 
         /// <summary>

@@ -339,7 +339,7 @@ namespace Chloe
         public static async Task<string> TreeHandle<T, T1>(this IDbContext source, T entity, string oldTreeNode, Expression<Func<T, bool>> predicate = null, int length = 3) where T : ITreeable<T1>, new() where T1 : IEquatable<T1>
         {
             var parentNode = "";
-            if (entity.PARENTID is string parentId ? !string.IsNullOrWhiteSpace(parentId) : entity.PARENTID != null)//有父节点
+            if (entity.PARENTID is string parentId ? !string.IsNullOrWhiteSpace(parentId) : entity.PARENTID != null && !entity.PARENTID.Equals(0))//有父节点
             {
                 parentNode = await source.Query<T>().Where(c => c.ID.Equals(entity.PARENTID)).Select(c => c.TREENODE).FirstOrDefaultAsync();
             }
