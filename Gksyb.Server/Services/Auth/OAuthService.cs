@@ -243,13 +243,13 @@ namespace Gksyb.Server.Services.Auth
         /// 单点登录
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> OauthAsync(LoginRequest request)
+        public async Task<AjaxResult> OauthAsync(LoginRequest request, string appName = "EAM")
         {
-            var user = await _dbContext.Query<CF_USER>().Where(c => c.WORK_CODE == request.Username && c.APPNAME == _options.UserAppName).FirstOrDefaultAsync();
+            var user = await _dbContext.Query<CF_USER>().Where(c => c.WORK_CODE == request.Username).FirstOrDefaultAsync();
             if (user == null) return AjaxResult.Error("-1");
             request.Username = user.LOGINNAME;
             request.Password = user.LOGINPASSWORD;
-            request.MenuAppname = _options.AppName;
+            request.MenuAppname = appName;
             var result = await _authService.LoginAsync(request, null, false);
             if (result.IsError) return result;
             return result;

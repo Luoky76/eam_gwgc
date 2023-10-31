@@ -19,6 +19,8 @@
                 return decodeURIComponent(result[1]);
             },
             to: function () {
+                var me = this;
+                $("#msg").html(location.href.substring(0, location.href.lastIndexOf("/") + 1) + (me.getQueryStringByName("to") || "index.html"));
                 location.href = location.href.substring(0, location.href.lastIndexOf("/") + 1) + (me.getQueryStringByName("to") || "index.html");
             },
             getBaseUrl: function (root) {
@@ -32,17 +34,28 @@
                     url: '../../oauth/check',
                     async:false,
                     headers: {
-                        code: code
+                        code: code,
+                        appName:"EAM_MOBILE"
                     },
                     success: function (result) {
-                        if (result.IsError) {
-                            $("#msg").html("单点验证失败，原因" + result.Message);
-                            return;
+                        try {
+                            debugger;
+                            if (result.IsError) {
+                                $("#msg").html("单点验证失败，原因" + data.Message);
+                                return;
+                            }
+                            var data = result.Data;
+                            window.localStorage.setItem("GksybTicket", data.Ticket);
+                            delete data.Ticket;
+                            window.localStorage.setItem("GksybData", JSON.stringify(data));
+                            var fromUrl = me.getQueryStringByName("FromUrl");
+                            if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
+                            fromUrl = fromUrl || "index.html";
+                            location.replace(fromUrl);
                         }
-                        window.ticket = result.Data.Ticket;
-                        delete result.Data.Ticket;
-                        window.session = result.Data;
-                        me.to();
+                        catch (e) {
+                            $("#msg").html("单点验证失败，原因" + e.message);
+                        }
                     }
                 });
             },
@@ -50,7 +63,7 @@
                 var me = this;
                 var code = me.getQueryStringByName("ticketCode");
                 if (!code) {
-                    $("#msg").html("缺少必要参数，单点验证失败。");
+                    $("#msg").html("缺少必要参数，单点验证失败。" + code);
                     return;
                 }
                 me.oauth(code);

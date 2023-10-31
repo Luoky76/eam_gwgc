@@ -122,7 +122,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<AjaxResult> Check([FromHeader] string code)
+        public async Task<AjaxResult> Check([FromHeader] string code, [FromHeader] string appName = "EAM")
         {
             var userName = await _service.GetUserNameAsync(code);
             var request = new LoginRequest()
@@ -131,7 +131,7 @@ namespace Gksyb.Server.Controllers.Auth
                 IP = Request.GetRealIP(),
                 UserAgent = Request.GetUserAgent()
             };
-            return await _service.OauthAsync(request);
+            return await _service.OauthAsync(request, appName);
         }
     }
 }
