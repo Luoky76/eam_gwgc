@@ -29,18 +29,20 @@
             typeData: [],
             exigData: [],
             cgfsData: [],
+            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text", hide: true },
+                            { display: "记录状态", name: "_search_AUDITING_CHECK", dbname: "AUDITING_CHECK", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
                             { display: "申请单号", name: "_search_APPLY_NO", dbname: "APPLY_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
+                            { display: "已提交", name: "AUDITING_CHECK", width: 100, type: "chk" },
                             { display: "申请单号", name: "APPLY_NO", width: 180, type: "text" },
                             {
                                 display: "采购分类", name: "TYPE_ID", minWidth: 150, type: "select", validate: { required: true },
@@ -141,6 +143,10 @@
                     enabledEdit: true,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
+                        if (editParm.record.__status == "nochanged") {
+                            if (editParm.record.AUDITING_CHECK == "1") return false;
+                            else return true;
+                        }
                         switch (editParm.column.name) {
                             case "":
                                 if (editParm.record.__status == "add") return true;
@@ -174,6 +180,12 @@
                             break;
                         case "save":
                             me.save();
+                            break;
+                        case "submit":
+                            me.submit();
+                            break;
+                        case "cancelSubmit":
+                            me.cancelSubmit();
                             break;
                         case "detail":
                             me.detail();
@@ -271,8 +283,95 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": apply.APPLY_ID, "view": "0" }
+                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING_CHECK }
                 });
+            },
+            submit: function () {    //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    
+                    if (selected[0].AUDITING_CHECK != null && selected[0].AUDITING_CHECK != "0" ) {
+                        LG.tip('已提交，无法再次提交!');
+                    }
+                    else {
+                        var flag = true;
+                        var sids = [];
+                        selected.forEach((a) => {
+                            if (a.AUDITING_CHECK != null && a.AUDITING_CHECK != "0") {
+                                LG.tip(a.APPLY_NO + '已提交，无法再次提交!');
+                                flag = false;
+                                return;
+                            }
+
+                            if (a.DETAILCOUNT == 0) {
+                                LG.tip(a.APPLY_NO + '未填写明细，无法提交!');
+                                flag = false;
+                                return;
+                            }
+                            sids.push(a.APPLY_ID)
+                        })
+                        if (!flag) {
+                            return;
+                        }
+
+                        LG.ajax({
+                            jsToken: true,
+                            url: me.rootPath + 'CheckSubmit',
+                            loading: '正在保存中...',
+                            data: { "sids": sids },
+                            success: function () {
+                                LG.showSuccess('提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            cancelSubmit: function () {    //撤销
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    var flag = true;
+                    var sids = [];
+                    selected.forEach((a) => {
+                        if (a.AUDITING_CHECK != "1") {
+                            LG.tip(a.APPLY_NO + '未提交!');
+                            flag = false;
+                            return;
+                        }
+                        sids.push(a.APPLY_ID)
+                    })
+                    if (!flag) {
+                        return;
+                    }
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'CheckCancelSubmit',
+                        loading: '正在撤销中...',
+                        data: { "sids": sids },
+                        success: function () {
+                            LG.showSuccess('撤销成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
             },
             bindGridEvent: function () {
                 var me = this;

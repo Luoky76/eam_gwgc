@@ -26,6 +26,13 @@ namespace Gksyb.Model
         public string AUDITING { get; set; }
 
         /// <summary>
+        /// 确认记录状态
+        /// </summary>
+        [Description("确认记录状态")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDITING_CHECK { get; set; }
+
+        /// <summary>
         /// 申请单号
         /// </summary>
         [Description("申请单号")]
