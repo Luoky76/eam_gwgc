@@ -83,11 +83,12 @@
                                 }
                             },
                             { display: "联系电话", name: "PHONE", width: 100, type: "text", editor: { type: 'text' } },
-                            {
-                                display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "text", align: "left", render: function (rowdata, rowindex, value, column) {
-                                    return value ? "绑定" : "未绑定";
-                                }
-                            },
+                            { display: "工会号", name: "WORK_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            //{
+                            //    display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "text", align: "left", render: function (rowdata, rowindex, value, column) {
+                            //        return value ? "绑定" : "未绑定";
+                            //    }
+                            //},
                             { display: "最后登录时间", name: "LASTLOGINTIME", width: 140, type: "date", format: "yyyy-MM-dd hh:mm", align: "left" },
                             { display: "有效否", name: "FLAG", width: 80, type: "chk", editor: { type: 'chkStr' } }
                         ]
