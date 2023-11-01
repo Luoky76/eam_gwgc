@@ -39,7 +39,7 @@
         }
 
         .ant-col {
-            display: block;
+            display: flex;
             width: 100%;
             position: relative;
             min-height: 1px;
@@ -124,12 +124,12 @@
     <div class="width:100%;padding:20px 10px 0;overflow-y:auto;height:calc(100% - 100px);">
         <div class="ant-row">
             <div class="ant-col" style="padding: 0px 10px;" id="Device">
+                <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
+                    <span style="line-height: 36px; font-size: 20px;" class="vertical-text-content">设备数据</span>
+                </div>
                 <div>
-                    <div style="padding: 5px 0px 25px; " class="ant-card ant-card-bordered vertical-text title">
-                        <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">设备数据</span>
-                    </div>
                     <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255);" id="DeviceRun">
-                       <div class="wf-card-type-name">
+                        <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">设备运行情况</span>
@@ -146,7 +146,7 @@
                         </div>
 
                     </div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255);"  id="Repair">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255);" id="Repair">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
@@ -159,10 +159,10 @@
                                     <div class="fontItem" style="width: 100%;" id="Audit">
                                         <a href="javascript:void(0);" title="故障核验" onclick="business.gzhy()">故障核验</a>
                                     </div>
-                                    <div class="fontItem" style="width: 100%;"id="exe">
+                                    <div class="fontItem" style="width: 100%;" id="exe">
                                         <a href="javascript:void(0);" title="维修计划实施" onclick="business.wxjhshh()">维修计划实施</a>
                                     </div>
-                                    <div class="fontItem" style="width: 100%;"id="check">
+                                    <div class="fontItem" style="width: 100%;" id="check">
                                         <a href="javascript:void(0);" title="维修计划验收" onclick="business.wxjhys()">维修计划验收</a>
                                     </div>
                                 </div>
@@ -176,27 +176,27 @@
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">故障快修</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="RepFaultExe">
+                                    <div class="fontItem" style="width: 100%;" id="RepFaultExe">
                                         <a href="javascript:void(0);" title="故障处理" onclick="business.gzcl()">故障处理</a>
                                     </div>
-                                    <div class="fontItem" style="width: 100%;"id="RepFaultChk">
+                                    <div class="fontItem" style="width: 100%;" id="RepFaultChk">
                                         <a href="javascript:void(0);" title="故障验收" onclick="business.gzys()">故障验收</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255); "  id="PmManage">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255); " id="PmManage">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">维保管理</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="PmPlan">
+                                    <div class="fontItem" style="width: 100%;" id="PmPlan">
                                         <a href="javascript:void(0);" title="维保计划" onclick="business.wbjh()">维保计划</a>
                                     </div>
-                                    <div class="fontItem" style="width: 100%;"id="PmPlanExe">
+                                    <div class="fontItem" style="width: 100%;" id="PmPlanExe">
                                         <a href="javascript:void(0);" title="维保实施" onclick="business.wbshh()">维保实施</a>
                                     </div>
                                 </div>
@@ -204,10 +204,9 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="ant-col" style="padding: 0px 10px;" id="Material">
-                <div style="padding: 5px 0px 25px; " class="ant-card ant-card-bordered vertical-text title">
+                <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
                     <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">物资数据</span>
                 </div>
                 <div>
@@ -244,10 +243,7 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
-                </div>
-                <div>
                     <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); "id="MaterialWarehouse">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
@@ -277,8 +273,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div>
                     <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialStore">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
@@ -298,8 +292,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div>
                     <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialOut">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
@@ -326,9 +318,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div>
                     <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialInventory">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
@@ -340,7 +329,6 @@
                                         <a href="javascript:void(0);" title="物资盘点任务" onclick="business.wzpdrw()">物资盘点任务</a>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -348,7 +336,7 @@
             </div>
         </div>
         <div class="ant-col" style="padding: 0px 10px;" id="Special">
-            <div style="padding: 5px 0px 25px; " class="ant-card ant-card-bordered vertical-text title">
+            <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
                 <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">专项数据</span>
             </div>
             <div>
@@ -397,12 +385,10 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
         <div class="ant-col" style="padding: 0px 10px;" id="Build">
-            <div style="padding: 5px 0px 25px; " class="ant-card ant-card-bordered vertical-text title">
+            <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
                 <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">能耗数据</span>
             </div>
             <div>
