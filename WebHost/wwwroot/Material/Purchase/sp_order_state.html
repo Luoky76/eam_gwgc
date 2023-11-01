@@ -42,13 +42,13 @@
                     search: {
                         fields: [
                             { display: "订单状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.statusData } },
-                            { display: "申请单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "订单状态", name: "STATUS", labelWidth: 100, width: 100, newline: true, type: "select", format: { data: me.statusData } },
-                            { display: "申请单号", name: "ORDER_CODE", width: 180, type: "text" },
+                            { display: "订单号", name: "ORDER_CODE", width: 180, type: "text" },
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
 
                             { display: "订单类型", name: "ORDER_TYPE", width: 180, type: "select", format: { data: me.typeData } },

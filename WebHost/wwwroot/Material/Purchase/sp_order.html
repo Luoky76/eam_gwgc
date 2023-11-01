@@ -44,13 +44,13 @@
                         fields: [
                             { display: "下单年份", name: "_search_BDATE", newline: false, userSearch: false, showTime: false, labelWidth: 80, width: 100, op: 'equal', type: "date", options: { format: "yyyy" }, },
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
-                            { display: "申请单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            { display: "申请单号", name: "ORDER_CODE", width: 180, type: "text" },
+                            { display: "订单号", name: "ORDER_CODE", width: 180, type: "text" },
                             { display: "订单类型", name: "ORDER_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.typeData }, validate: { required: true }, },
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd", }, validate: { required: true }, },
                             { display: "申购公司", name: "DEPT_NAME", width: 180, type: "text", },
