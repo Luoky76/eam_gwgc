@@ -208,7 +208,7 @@ namespace Gksyb.Core.Filter
                     break;
 
                 default:
-                    param = new DbParam(paramName, value);
+                    param = value == null ? new DbParam(paramName, value, typeof(string)) : new DbParam(paramName, value);
                     break;
             }
             Parms.Add(param);

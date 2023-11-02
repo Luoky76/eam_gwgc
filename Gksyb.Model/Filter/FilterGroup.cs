@@ -28,5 +28,21 @@ namespace Gksyb.Model.Filter
                 }
             }
         }
+
+        /// <summary>
+        /// 根据名称获取规则
+        /// </summary>
+        public FilterRule GetRule(string name)
+        {
+            var rule = Rules?.FirstOrDefault(c => c.Field == name);
+            if (rule != null) return rule;
+            if (Groups == null) return null;
+            foreach (var group in Groups)
+            {
+                rule = group.GetRule(name);
+                if (rule != null) return rule;
+            }
+            return rule;
+        }
     }
 }

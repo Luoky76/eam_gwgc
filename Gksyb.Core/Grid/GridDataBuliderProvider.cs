@@ -246,5 +246,16 @@ namespace Gksyb.Core.Grid
             whereTranslator.Translate();
             return whereTranslator;
         }
+
+        /// <summary>
+        /// 获取指定名称的规则的值
+        /// </summary>
+        public static T GetRuleValue<T>(this GridRequest request, string name)
+        {
+            if (string.IsNullOrWhiteSpace(request.Where)) return default;
+            var rule = request.Where.ToObject<FilterGroup>()?.GetRule(name);
+            if (rule == null) return default;
+            return rule.Value.CastTo<T>(default);
+        }
     }
 }
