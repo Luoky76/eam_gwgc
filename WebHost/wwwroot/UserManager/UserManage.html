@@ -29,15 +29,15 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "用户名", name: "_search_LOGINNAME", width: 100, upper: true, type: "text" },
-                            { display: "名称", name: "_search_REALNAME", width: 100, upper: true, type: "text" },
+                            { display: "用户名", name: "_search_LOGINNAME", width: 100, type: "text" },
+                            { display: "名称", name: "_search_REALNAME", width: 100, type: "text" },
                             { display: "角色", name: "_search_ROLE", width: 180, userSearch: false, type: "select", options: { data: me.dataRole, autocomplete: true } },
                             { display: "组织", name: "_search_CORP", width: 180, userSearch: false, type: "select", options: { data: me.dataCorp, autocomplete: true } }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "*用户名", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { upper: true, type: 'text' } },
+                            { display: "*用户名", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { type: 'text' } },
                             {
                                 display: "隶属角色", name: "ROLE", isSort: false, width: 100, minWidth: 130, type: "text", align: "center", formatType: "select", format: {
                                     data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column) {

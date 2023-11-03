@@ -34,7 +34,7 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "统计时间", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: 90, width: 130, op: 'lessorequal', type: "date" },
+                            { display: "统计日期", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: 90, width: 130, op: 'lessorequal', type: "date" },
                             { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { data: me.stockData } },
                             { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.typeData } },
                             { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { data: me.purtypeData } },
@@ -42,7 +42,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "创建时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 120, type: "date", format: "yyyy-MM-dd" },
+                            { display: "创建日期", name: "CREATEDATE", dbname: "CREATEDATE", width: 120, type: "date", format: "yyyy-MM-dd" },
                             { display: "申请单号", name: "APPLY_NO", width: 150, type: "text", },
                             { display: "送货单号", name: "DELIVERY_CODE", dbname: "DELIVERY_CODE", width: 150, type: "text", },
 
