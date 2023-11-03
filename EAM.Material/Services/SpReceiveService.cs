@@ -11,6 +11,8 @@ using EAM.Material.Interfaces;
 using NPOI.SS.Formula.PTG;
 using Gksyb.Core.Auth;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
 
 namespace EAM.Material.Services
 {
@@ -27,6 +29,25 @@ namespace EAM.Material.Services
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userSession = userSession;
+        }
+        /// <summary>
+        /// 获取下拉框信息
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> ComboxData()
+        {
+            try
+            {
+                var dic = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)null}
+                });
+                return AjaxResult.Success(dic);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("获取下拉数据失败！原因：" + e.Message);
+            }
         }
 
         public async Task<GridData> ListAsync(GridRequest request)
@@ -51,6 +72,7 @@ namespace EAM.Material.Services
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = false, detSuccess = false;
+                request = request ?? new SaveRequest<SP_RECEIVE>();
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
                      {
@@ -123,8 +145,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(SP_RECEIVE entity)
         {
-            entity.RECEIVE_ID = GuidHelper.NewSnowflakeId().ToString();
-            masterID = entity.RECEIVE_ID;
+            entity.RECEIVE_ID = masterID = GuidHelper.NewSnowflakeId().ToString();
             entity.USER_NAME = _userSession.UserName.ToString();
 
             string type = "DJ" + DateTime.Now.ToString("yyyyMM");
@@ -145,8 +166,7 @@ namespace EAM.Material.Services
                 errMsg = "数量，送货单号，收货库位为必填项！";
                 throw new MessageException(errMsg);
             }
-
-            entity.RECEIVE_ID = masterID;
+            entity.RECEIVE_ID = entity.RECEIVE_ID ?? masterID; 
             entity.RECDET_ID = GuidHelper.NewSnowflakeId().ToString();
 
             await Task.CompletedTask;
@@ -159,6 +179,13 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeUpdate(SP_RECEIVE entity)
         {
+            if (entity.AUDITING.Equals("0"))
+            {
+                var sysDate = await _dbContext.GetSysdate();
+                masterID = entity.RECEIVE_ID;
+                entity.MODIFY_USERID = _userSession.UserID.ToString();
+                entity.MODIFYDATE = sysDate;
+            }
             if (entity.AUDITING_CHK == "1")
             {
                 entity.CHK_DATE = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd"));
@@ -280,15 +307,118 @@ namespace EAM.Material.Services
         /// 采购订单列表
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> OrderList()
+        public AjaxResult OrderList()
         {
-            var result = await _dbContext.JoinQuery<SP_ORDER, SP_ORDER_DETAIL>((a, b) => new object[]
-               {
-                   JoinType.LeftJoin,a.ORDER_ID.Equals(b.ORDER_ID)
-               })
-               .Select((a,b)=> new { a.ORDER_ID,a.ORDER_CODE,b.SP_CODE, b.SP_NAME, b.SP_SIZE, b.APPLY_USER ,a.BUY_USER,b.DEPT_NAME, a.PROVIDER_NAME })
-               .ToListAsync();
-            return AjaxResult.Success(result, "成功");
+            try
+            {
+                var result = _dbContext.JoinQuery<SP_ORDER, SP_ORDER_DETAIL, SP_RECEIVE_DET, SP_RECEIVE>((a, b, c, d) => new object[]
+                    {
+                    JoinType.LeftJoin, a.ORDER_ID.Equals(b.ORDER_ID),
+                    JoinType.LeftJoin, b.ORDERDET_ID.Equals(c.ORDERDET_ID),
+                    JoinType.LeftJoin, d.RECEIVE_ID.Equals(c.RECEIVE_ID)
+                    })
+                    .Where((a, b, c, d)=>a.AUDITING == "1" )
+                   .Select((a, b, c, d) => new
+                   {
+                       Order = a,
+                       OrderDet = b,
+                       a.ORDER_ID,
+                       a.ORDER_CODE,
+                       c.ORDERDET_ID,
+                       detcount = c.COUNT,
+                       actcount = b.COUNT - b.STOP_NUM,
+                   })
+                   .GroupBy(c => new
+                   {
+                       c.ORDER_ID,
+                       c.ORDER_CODE,
+                       c.ORDERDET_ID,
+                       c.detcount,
+                       c.actcount,
+                   })
+                   .Select(c => new
+                   {
+                       c.ORDER_ID,
+                       c.ORDER_CODE,
+                       c.ORDERDET_ID,
+                       c.actcount,
+                       sumdetcount = Sql.Sum(c.detcount)?? 0,
+                       ORDER_DATE = c.Order.ORDER_DATE,
+                       BUY_USER = c.Order.BUY_USER?? "",
+                       ORDER_MONEY = c.Order.ORDER_MONEY?? 0,
+                       PROVIDER_NAME = c.Order.PROVIDER_NAME?? "",
+                       DEPT_NAME = c.Order.DEPT_NAME?? "",
+                   })
+                   .Where(c => (c.actcount -c.sumdetcount)>0)
+                   .ToList()
+                   .DistinctBy(c => c.ORDER_CODE);
+
+                return AjaxResult.Success(result, "成功");
+            }
+            catch (Exception ex)
+            {
+                throw new MessageException(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 物料
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GridData> SpList(GridRequest request)
+        {
+            try
+            {
+                return await _dbContext.JoinQuery<SP_ORDER_DETAIL,  SP_RECEIVE_DET, SP_RECEIVE, SP_ORDER>((a, b, c, d) => new object[]
+                    {
+                    JoinType.LeftJoin, a.ORDERDET_ID.Equals(b.ORDERDET_ID),
+                    JoinType.LeftJoin, c.RECEIVE_ID.Equals(b.RECEIVE_ID),
+                    JoinType.LeftJoin, a.ORDER_ID.Equals(d.ORDER_ID),
+                    })
+                    .Where((a, b, c, d) => c.AUDITING == "1")
+                   .Select((a, b, c, d) => new
+                   {
+                       OrderDet = a,
+                       a.ORDERDET_ID,
+                       detcount = b.COUNT,
+                       actcount = a.COUNT - a.STOP_NUM,
+                   })
+                   .GroupBy(c => new
+                   {
+                       c.ORDERDET_ID,
+                       c.detcount,
+                       c.actcount,
+                   })
+                   .Select(c => new
+                   {
+                       c.ORDERDET_ID,
+                       c.actcount,
+                       sumdetcount = Sql.Sum(c.detcount)?? 0,
+                       c.OrderDet.SP_CODE,
+                       c.OrderDet.SP_NAME,
+                       c.OrderDet.SP_SIZE,
+                       c.OrderDet.APPLY_NO,
+                       c.OrderDet.APPLY_USER,
+                       c.OrderDet.DEPT_NAME,
+                       c.OrderDet.PRODUCE,
+                       c.OrderDet.UNIT,
+                       c.OrderDet.TYPE_NAME,
+                       c.OrderDet.COUNT,
+                       c.OrderDet.STOP_NUM,
+                       c.OrderDet.PRICE,
+                       c.OrderDet.MONEY,
+                       c.OrderDet.REQ_DATE,
+                       c.OrderDet.MEMO,
+                       c.OrderDet.ORDER_ID,
+                   })
+                   .Where(c => (c.actcount-c.sumdetcount)>0)
+                   .GetGridData(request);
+
+            }
+            catch (Exception ex)
+            {
+                throw new MessageException(ex.Message);
+            }
         }
 
         /// <summary>
@@ -308,9 +438,42 @@ namespace EAM.Material.Services
 
         public async Task<GridData> DetListAsync(GridRequest request)
         {
-            var query = await _dbContext.Query<SP_RECEIVE_DET>().GetGridData(request);
+            try
+            {
+                return await _dbContext.JoinQuery<SP_RECEIVE_DET, SP_ORDER_DETAIL>((a, b) => new object[]
+                    {
+                    JoinType.LeftJoin, a.ORDERDET_ID.Equals(b.ORDERDET_ID),
+                    })
+                   .Select((a, b) => new
+                   {
+                       a.ORDERDET_ID,
+                       DDCOUNT = b.COUNT,
+                       ZZCOUNT = b.STOP_NUM,
+                       a.COUNT,
+                       a.SP_CODE,
+                       a.SP_NAME,
+                       a.SP_SIZE,
+                       a.APPLY_NO,
+                       a.APPLY_USER,
+                       a.DEPT_NAME,
+                       a.PRODUCE,
+                       a.UNIT,
+                       a.TYPE_NAME,
+                       a.PRICE,
+                       a.MONEY,
+                       a.MEMO,
+                       a.RECEIVE_ID,
+                   })
+                   .GetGridData(request);
 
-            return query;
+            }
+            catch (Exception ex)
+            {
+                throw new MessageException(ex.Message);
+            }
+            /*var query = await _dbContext.Query<SP_RECEIVE_DET>().GetGridData(request);
+
+            return query;*/
         }
 
         /// <summary>

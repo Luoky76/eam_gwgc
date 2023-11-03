@@ -44,7 +44,9 @@
             maintDept: [],
             workState: [],
             maintCycle: [],
+            spHouse: [],
             start: null,
+            orderid: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -69,15 +71,33 @@
                                     textField: "ORDER_CODE",
                                     columns: [
                                         { header: "订单号", name: "ORDER_CODE", width: 100 },
-                                        { header: "物料编码", name: "SP_CODE", width: 100 },
-                                        { header: "物料名称", name: "SP_NAME", width: 100 },
-                                        { header: "规格型号", name: "SP_SIZE", width: 100 },
-                                        { header: "申请人", name: "APPLY_USER", width: 100 },
+                                        { header: "下单日期", name: "ORDER_DATE", width: 100, },
+                                        { header: "订单金额", name: "ORDER_MONEY", width: 100 },
+                                        { header: "采购员", name: "BUY_USER", width: 100 },
                                         { header: "申请部门", name: "DEPT_NAME", width: 100 },
                                         { header: "供应商", name: "PROVIDER_NAME", width: 100 },
                                     ],
                                     onChangeValue: function (input, value, g) {
+                                        if (value == "") {
+                                            $("#ORDER_ID").val(""); // 清空相关字段
+                                            $("#ORDER_CODE").val("");
+                                            $("#CHK_USER").val("");
+                                            $("#PROVIDER_NAME").val("");
+                                            $("#DEPT_NAME").val("");
+                                            $("#PUR_USER").val("");
+                                            return
+                                        }
                                         if (g.selected != undefined) {
+                                            debugger
+                                            if (value != me.orderid) {
+                                                var selected = me.grid.getData();
+                                                if (selected.length > 0) {
+                                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                                        me.grid.deleteRow(selected[i]);
+                                                    }
+                                                    me.savedet();
+                                                }
+                                            }
                                             $("#ORDER_ID").val(g.selected.ORDER_ID);
                                             $("#ORDER_CODE").val(g.selected.ORDER_CODE);
                                             $("#CHK_USER").val(g.selected.APPLY_USER);
@@ -108,7 +128,28 @@
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             {
-                                display: "数量", name: "COUNT", width: 150, type: "int", editor: { type: 'int' }, validate: { required: true }, totalSummary:
+                                display: "订单数量", name: "DDCOUNT", minWidth: 80, type: "int",  totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                },
+                            },
+                            {
+                                display: "中止数量", name: "ZZCOUNT", minWidth: 80, type: "int",  totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                },
+                            },
+                            {
+                                display: "待收数量", name: "DSCOUNT", minWidth: 80, type: "int",  totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                },
+                            },
+                            {
+                                display: "数量", name: "COUNT", minWidth: 80, type: "int", editor: { type: 'int' }, validate: { required: true }, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
@@ -122,8 +163,8 @@
                                     }
                                 }
                             },
-                            { display: "送货单号", name: "DELIVERY_CODE", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "收货库位", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, validate: { required: true } },
+                            { display: "送货单号", name: "DELIVERY_CODE", minWidth: 150, type: "text", editor: { type: 'text' }, validate: { required: true } },
+                            { display: "收货库位", name: "STOCK_NAME", type: "select", minWidth: 150, editor: { type: 'select', data: me.spHouse, }, validate: { required: true } },
                             {
                                 display: "成交单价", name: "PRICE", width: 120, type: "text", totalSummary:
                                 {
@@ -136,10 +177,12 @@
                                 {
                                     type: 'sum',
                                     align: 'center'
-                                } },
+                                }
+                            },
                             { display: "申请人", name: "APPLY_USER", width: 100, type: "text" },
                             { display: "申请单号", name: "APPLY_NO", width: 100, type: "text" },
-                            { display: "用途", name: "USE_MEMO", width: 100, type: "text" },
+                            { display: "用途", name: "USE_MEMO", minWidth: 200, type: "text" },
+                            { display: "外键", name: "RECEIVE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                         ]
                     }
                 };
@@ -154,7 +197,21 @@
                     url: 'Material/SpReceive/OrderList',
                     loading: '正在获取中...',
                     success: function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            data[i].ORDER_DATE = data[i].ORDER_DATE.substr(0, 10);
+                        }
                         me.order = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpReceive/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.spHouse = data.SpHouseName;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -180,6 +237,7 @@
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
+                            me.orderid = data[0].ORDER_ID;
                             me.mainform.setData(data[0]);
                             inner();
                         },
@@ -227,6 +285,22 @@
                             me.isAddNew = false;
                             if (me.dialog) me.dialog.close();
                         });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            //保存
+            savedet: function () { //保存
+                var me = this;
+                var changeRowDet = me.grid.getChangedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpReceive/Save',
+                    data: { request: null, requestdet: changeRowDet },
+                    success: function (result) {
+                        me.reloadDet();
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -402,22 +476,66 @@
                 var me = this;
                 me.grid.loadData();
             },
-            //导入
+            //新增
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    EXE_ID: me.EXE_ID,
+                    DONEITEM_ID: me.DONEITEM_ID,
+                });
+                me.grid.addEditRow(row, true);
+            },
+
+            //增加
             add: function () {
                 var me = this;
+                var gridData = me.grid.getData();
+                var orderdet_id = [];
+                for (var item of gridData) {
+                    orderdet_id.push(item.ORDERDET_ID);
+                }
                 $.ligerDialog.open({
-                    width: 860,
-                    height: 450,
-                    allowClose: true,
-                    title: '导入',
-                    url: "sp-receive-det-select.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
+                    width: 820,
+                    height: 500,
+                    title: '物料挑选',
+                    url: "sp-select.html",
                     isResize: true,
                     slide: false,
-                    data: { "sid": $("#ORDER_ID").val(), "callback": me.f_callback }
+                    data: {
+                        values: orderdet_id,
+                        sid: $('#ORDER_ID').val(),
+                        options: {
+                            sortName: 'NAME', rowKey: "ORDERDET_ID",
+                        },
+                        callback: function (values, rows) {
+                            var currentSet = new Set(orderdet_id);
+                            for (let item of rows) {
+                                if (!currentSet.has(item.ORDERDET_ID)) {
+                                    var row = {
+                                        SP_CODE: item.SP_CODE,
+                                        SP_NAME: item.SP_NAME,
+                                        SP_SIZE: item.SP_SIZE,
+                                        PRODUCE: item.PRODUCE,
+                                        UNIT: item.UNIT,
+                                        DDCOUNT: item.COUNT,
+                                        ZZCOUNT: item.STOP_NUM,
+                                        DSCOUNT: item.COUNT - item.STOP_NUM,
+                                        COUNT: "",
+                                        DELIVERY_CODE: "",
+                                        MEMO: "",
+                                        PRICE: item.PRICE,
+                                        MONEY: 0,
+                                        APPLY_USER: item.APPLY_USER,
+                                        APPLY_NO: item.APPLY_NO,
+
+                                        SP_ID: item.SP_ID,
+                                        ORDERDET_ID: item.ORDERDET_ID,
+                                    };
+                                    me.grid.addEditRow(row, true);
+                                }
+                            }
+                        },
+                    }
                 });
             },
             f_callback: function (id, data) {

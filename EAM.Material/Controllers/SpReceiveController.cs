@@ -19,7 +19,15 @@ namespace EAM.Material.Controllers
         {
             _service = service;
         }
-
+        /// <summary>
+		/// 获取下拉框数据
+		/// </summary>
+		/// <returns></returns>
+		[HttpPost]
+        public async Task<AjaxResult> ComboxData()
+        {
+            return await _service.ComboxData();
+        }
         public async Task<AjaxResult> ListAsync(GridRequest request)
         {
             var result = await _service.ListAsync(request);
@@ -46,9 +54,14 @@ namespace EAM.Material.Controllers
         {
             return await _service.SaveDet(request);
         }
-        public async Task<AjaxResult> OrderList()
+        public AjaxResult OrderList()
         {
-            return await _service.OrderList();
+            return  _service.OrderList();
+        }
+        public async Task<AjaxResult> SpList(GridRequest request)
+        {
+            var result = await _service.SpList(request);
+            return AjaxResult.Success(result);
         }
     }
 }

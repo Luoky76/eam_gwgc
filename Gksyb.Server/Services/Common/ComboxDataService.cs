@@ -622,7 +622,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> SpHouseName(Expression<Func<SP_HOUSE, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<SP_HOUSE>().Where(predicate)
+            return await dbContext.Query<SP_HOUSE>(c=>c.AUDITING =="1").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.HOUSE_CODE, TEXT = c.HOUSE_NAME, VALUE = c.HOUSE_ID })
                 .Distinct()
                .ToListAsync();

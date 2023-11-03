@@ -25,7 +25,13 @@ namespace Gksyb.Model
         [Description("申请ID")]
         [Column(DbType = DbType.AnsiString)]
         public string APPLY_ID { get; set; }
-
+        /// <summary>
+        /// 物资采购明细表ID
+        /// </summary>
+        [Description("物资采购明细表ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string ORDERDET_ID { get; set; }
+        
         /// <summary>
         /// 物料ID
         /// </summary>

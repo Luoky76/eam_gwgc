@@ -11,6 +11,11 @@ namespace EAM.Material.Interfaces
     public interface ISpReceiveService : IService
     {
         Task<GridData> ListAsync(GridRequest request);
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
+        /// <returns></returns>
+        Task<AjaxResult> ComboxData();
 
         Task<AjaxResult> GetAsync(string ID);
 
@@ -18,7 +23,8 @@ namespace EAM.Material.Interfaces
 
         Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request);
 
-        Task<AjaxResult> OrderList();
+        AjaxResult OrderList();
+        Task<GridData> SpList(GridRequest request);
 
         Task<GridData> DetListAsync(GridRequest request);
     }
