@@ -84,6 +84,27 @@
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             {
+                                display: "订单数量", name: "DDCOUNT", minWidth: 80, type: "int", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                },
+                            },
+                            {
+                                display: "中止数量", name: "ZZCOUNT", minWidth: 80, type: "int", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                },
+                            },
+                            {
+                                display: "待收数量", name: "DSCOUNT", minWidth: 80, type: "int", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                },
+                            },
+                            {
                                 display: "登记数量", name: "COUNT", width: 150, type: "text", totalSummary:
                                 {
                                     type: 'sum',

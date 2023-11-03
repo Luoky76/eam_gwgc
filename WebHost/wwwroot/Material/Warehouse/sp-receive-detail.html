@@ -149,7 +149,15 @@
                                 },
                             },
                             {
-                                display: "数量", name: "COUNT", minWidth: 80, type: "int", editor: { type: 'int' }, validate: { required: true }, totalSummary:
+                                display: "数量", name: "COUNT", minWidth: 80, type: "int",
+                                editor: {
+                                    type: 'int',
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value < 0) {
+                                            LG.showError("数量不能为负数！");
+                                        }
+                                    },
+                                }, validate: { required: true }, totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
@@ -164,7 +172,25 @@
                                 }
                             },
                             { display: "送货单号", name: "DELIVERY_CODE", minWidth: 150, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                            { display: "收货库位", name: "STOCK_NAME", type: "select", minWidth: 150, editor: { type: 'select', data: me.spHouse, }, validate: { required: true } },
+                            {
+                                display: "收货库位", name: "STOCK_ID", type: "select", minWidth: 150, editor: {
+                                    type: 'select',
+                                    data: me.spHouse,
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.spHouse.length; i++) {
+                                                if (rowdata.value == me.spHouse[i].ID) {
+                                                    liger.get("maingrid").updateCell("STOCK_NAME", me.spHouse[i].TEXT, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("STOCK_NAME", "", rowdata.record);
+                                        }
+                                    },
+                                }, validate: { required: true }
+                            },
+
                             {
                                 display: "成交单价", name: "PRICE", width: 120, type: "text", totalSummary:
                                 {
@@ -182,6 +208,7 @@
                             { display: "申请人", name: "APPLY_USER", width: 100, type: "text" },
                             { display: "申请单号", name: "APPLY_NO", width: 100, type: "text" },
                             { display: "用途", name: "USE_MEMO", minWidth: 200, type: "text" },
+                            { display: "收货库位", name: "STOCK_NAME", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "外键", name: "RECEIVE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                         ]
                     }
@@ -200,7 +227,7 @@
                         for (var i = 0; i < data.length; i++) {
                             data[i].ORDER_DATE = data[i].ORDER_DATE.substr(0, 10);
                         }
-                        me.order = data;
+                        me.order = data.Rows;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -256,6 +283,7 @@
             //保存
             save: function () { //保存
                 var me = this;
+                var flag = true;
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
@@ -275,21 +303,31 @@
                     changeRow["original"] = [original];
                 }
                 var changeRowDet = me.grid.getChangedRows();
-                LG.ajax({
-                    jsToken: true,
-                    url: 'Material/SpReceive/Save',
-                    loading: '正在保存中...',
-                    data: { request: changeRow, requestdet: changeRowDet },
-                    success: function (result) {
-                        LG.showSuccess('保存成功', function () {
-                            me.isAddNew = false;
-                            if (me.dialog) me.dialog.close();
-                        });
-                    },
-                    error: function (message) {
-                        LG.showError(message);
+                for (var i = 0; i < changeRowDet.updated.length; i++) {
+                    var row = changeRow.updated[i];
+                    if (row.DSCOUNT < row.COUNT) {
+                        flag = false;
+                        LG.showSuccess('数量不可大于待收数量！');
+                        break;
                     }
-                });
+                }
+                if (flag) {
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpReceive/Save',
+                        loading: '正在保存中...',
+                        data: { request: changeRow, requestdet: changeRowDet },
+                        success: function (result) {
+                            LG.showSuccess('保存成功', function () {
+                                me.isAddNew = false;
+                                if (me.dialog) me.dialog.close();
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
             },
             //保存
             savedet: function () { //保存

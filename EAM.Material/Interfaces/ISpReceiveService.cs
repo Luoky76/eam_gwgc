@@ -23,7 +23,7 @@ namespace EAM.Material.Interfaces
 
         Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request);
 
-        AjaxResult OrderList();
+        Task<GridData> OrderList();
         Task<GridData> SpList(GridRequest request);
 
         Task<GridData> DetListAsync(GridRequest request);
