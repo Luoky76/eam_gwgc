@@ -13,6 +13,7 @@ using Gksyb.Core.Auth;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
+using NPOI.SS.Formula.Functions;
 
 namespace EAM.Material.Services
 {
@@ -307,17 +308,18 @@ namespace EAM.Material.Services
         /// 采购订单列表
         /// </summary>
         /// <returns></returns>
-        public AjaxResult OrderList()
+        public async Task<AjaxResult> OrderList()
         {
-            try
+            /*try
             {
-                var result = _dbContext.JoinQuery<SP_ORDER, SP_ORDER_DETAIL, SP_RECEIVE_DET, SP_RECEIVE>((a, b, c, d) => new object[]
+                var result =
+                    _dbContext.JoinQuery<SP_ORDER, SP_ORDER_DETAIL, SP_RECEIVE_DET, SP_RECEIVE>((a, b, c, d) => new object[]
                     {
                     JoinType.LeftJoin, a.ORDER_ID.Equals(b.ORDER_ID),
                     JoinType.LeftJoin, b.ORDERDET_ID.Equals(c.ORDERDET_ID),
                     JoinType.LeftJoin, d.RECEIVE_ID.Equals(c.RECEIVE_ID)
                     })
-                    .Where((a, b, c, d)=>a.AUDITING == "1" )
+                    .Where((a, b, c, d) => a.AUDITING == "1")
                    .Select((a, b, c, d) => new
                    {
                        Order = a,
@@ -342,23 +344,55 @@ namespace EAM.Material.Services
                        c.ORDER_CODE,
                        c.ORDERDET_ID,
                        c.actcount,
-                       sumdetcount = Sql.Sum(c.detcount)?? 0,
+                       sumdetcount = Sql.Sum(c.detcount) ?? 0,
                        ORDER_DATE = c.Order.ORDER_DATE,
-                       BUY_USER = c.Order.BUY_USER?? "",
-                       ORDER_MONEY = c.Order.ORDER_MONEY?? 0,
-                       PROVIDER_NAME = c.Order.PROVIDER_NAME?? "",
-                       DEPT_NAME = c.Order.DEPT_NAME?? "",
+                       BUY_USER = c.Order.BUY_USER ?? "",
+                       ORDER_MONEY = c.Order.ORDER_MONEY ?? 0,
+                       PROVIDER_NAME = c.Order.PROVIDER_NAME ?? "",
+                       DEPT_NAME = c.Order.DEPT_NAME ?? "",
                    })
-                   .Where(c => (c.actcount -c.sumdetcount)>0)
-                   .ToList()
-                   .DistinctBy(c => c.ORDER_CODE);
-
+                   .Where(c => (c.actcount - c.sumdetcount) > 0)
+                   .ToList().DistinctBy(c => c.ORDER_CODE);
                 return AjaxResult.Success(result, "成功");
             }
             catch (Exception ex)
             {
                 throw new MessageException(ex.Message);
-            }
+            }*/
+
+            var orderQuery = await _dbContext.JoinQuery<SP_ORDER_DETAIL, SP_ORDER>((a, b) => new object[] {
+                JoinType.LeftJoin,a.ORDER_ID==b.ORDER_ID
+            }).Where((a, b) => b.AUDITING == "1").Select((a, b) => new
+            {
+                b.ORDER_CODE,
+                b.PROVIDER_NAME,
+                a.ORDERDET_ID,
+                a.COUNT
+            }).ToListAsync();
+            var receiveQuery = await _dbContext.JoinQuery<SP_RECEIVE_DET, SP_RECEIVE>((a, b) => new object[] {
+                JoinType.LeftJoin,a.RECEIVE_ID==b.RECEIVE_ID
+            }).Where((a, b) => b.AUDITING == "1").Select((a, b) => new
+            {
+                b.ORDER_CODE,
+                b.PROVIDER_NAME,
+                a.ORDERDET_ID,
+                RCOUNT = Sql.Sum(a.COUNT)
+            }).GroupBy(a => new { a.ORDER_CODE, a.PROVIDER_NAME, a.ORDERDET_ID })
+            .Select(a => a).ToListAsync();
+
+            var result = (from orderdet in orderQuery
+                          join receivedet in receiveQuery on orderdet.ORDERDET_ID equals receivedet.ORDERDET_ID into joindata
+                          from receivedet in joindata.DefaultIfEmpty()
+                          where orderdet.COUNT.Value > (receivedet != null ? receivedet.RCOUNT : 0)
+                          group orderdet by orderdet.ORDER_CODE into groupedData
+                          where groupedData.Any()
+                          select new
+                          {
+                              ORDER_CODE = groupedData.Key,
+                              groupedData.First().PROVIDER_NAME
+                          }).ToList();
+
+            return AjaxResult.Success(result);
         }
 
         /// <summary>
@@ -369,7 +403,7 @@ namespace EAM.Material.Services
         {
             try
             {
-                return await _dbContext.JoinQuery<SP_ORDER_DETAIL,  SP_RECEIVE_DET, SP_RECEIVE, SP_ORDER>((a, b, c, d) => new object[]
+                return await _dbContext.JoinQuery<SP_ORDER_DETAIL, SP_RECEIVE_DET, SP_RECEIVE, SP_ORDER>((a, b, c, d) => new object[]
                     {
                     JoinType.LeftJoin, a.ORDERDET_ID.Equals(b.ORDERDET_ID),
                     JoinType.LeftJoin, c.RECEIVE_ID.Equals(b.RECEIVE_ID),
@@ -393,7 +427,7 @@ namespace EAM.Material.Services
                    {
                        c.ORDERDET_ID,
                        c.actcount,
-                       sumdetcount = Sql.Sum(c.detcount)?? 0,
+                       sumdetcount = Sql.Sum(c.detcount) ?? 0,
                        c.OrderDet.SP_CODE,
                        c.OrderDet.SP_NAME,
                        c.OrderDet.SP_SIZE,
@@ -411,7 +445,7 @@ namespace EAM.Material.Services
                        c.OrderDet.MEMO,
                        c.OrderDet.ORDER_ID,
                    })
-                   .Where(c => (c.actcount-c.sumdetcount)>0)
+                   .Where(c => (c.actcount - c.sumdetcount) > 0)
                    .GetGridData(request);
 
             }

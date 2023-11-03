@@ -54,9 +54,9 @@ namespace EAM.Material.Controllers
         {
             return await _service.SaveDet(request);
         }
-        public AjaxResult OrderList()
+        public async Task<AjaxResult> OrderList()
         {
-            return  _service.OrderList();
+            return await _service.OrderList();
         }
         public async Task<AjaxResult> SpList(GridRequest request)
         {
