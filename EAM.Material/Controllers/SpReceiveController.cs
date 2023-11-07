@@ -44,7 +44,6 @@ namespace EAM.Material.Controllers
         {
             return await _service.GetAsync(ID);
         }
-
         public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
         {
             return await _service.Save(request,requestdet);
@@ -56,13 +55,11 @@ namespace EAM.Material.Controllers
         }
         public async Task<AjaxResult> OrderList()
         {
-            var result = await _service.OrderList();
-            return AjaxResult.Success(result);
+            return await _service.OrderList();
         }
         public async Task<AjaxResult> SpList(GridRequest request)
         {
-            var result = await _service.SpList(request);
-            return AjaxResult.Success(result);
+            return await _service.SpList(request);
         }
     }
 }

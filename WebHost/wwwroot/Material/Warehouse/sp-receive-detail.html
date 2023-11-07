@@ -88,7 +88,6 @@
                                             return
                                         }
                                         if (g.selected != undefined) {
-                                            debugger
                                             if (value != me.orderid) {
                                                 var selected = me.grid.getData();
                                                 if (selected.length > 0) {
@@ -98,12 +97,12 @@
                                                     me.savedet();
                                                 }
                                             }
-                                            $("#ORDER_ID").val(g.selected.ORDER_ID);
-                                            $("#ORDER_CODE").val(g.selected.ORDER_CODE);
-                                            $("#CHK_USER").val(g.selected.APPLY_USER);
-                                            $("#PROVIDER_NAME").val(g.selected.PROVIDER_NAME);
-                                            $("#DEPT_NAME").val(g.selected.DEPT_NAME);
-                                            $("#PUR_USER").val(g.selected.BUY_USER);
+                                            $("#ORDER_ID").val(g.selected.ORDER_ID == null ? '' : g.selected.ORDER_ID);
+                                            $("#ORDER_CODE").val(g.selected.ORDER_CODE == null ? '' : g.selected.ORDER_CODE);
+                                            $("#CHK_USER").val(g.selected.APPLY_USER == null ? '' : g.selected.APPLY_USER);
+                                            $("#PROVIDER_NAME").val(g.selected.PROVIDER_NAME == null ? '' : g.selected.PROVIDER_NAME);
+                                            $("#DEPT_NAME").val(g.selected.DEPT_NAME == null ? '' : g.selected.DEPT_NAME);
+                                            $("#PUR_USER").val(g.selected.BUY_USER == null ? '' : g.selected.BUY_USER);
                                         }
                                     }
                                 }
@@ -128,21 +127,21 @@
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             {
-                                display: "订单数量", name: "DDCOUNT", minWidth: 80, type: "int",  totalSummary:
+                                display: "订单数量", name: "DDCOUNT", minWidth: 80, type: "int", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 },
                             },
                             {
-                                display: "中止数量", name: "ZZCOUNT", minWidth: 80, type: "int",  totalSummary:
+                                display: "中止数量", name: "STOP_NUM", minWidth: 80, type: "int", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 },
                             },
                             {
-                                display: "待收数量", name: "DSCOUNT", minWidth: 80, type: "int",  totalSummary:
+                                display: "待收数量", name: "DSCOUNT", minWidth: 80, type: "int", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
@@ -227,7 +226,7 @@
                         for (var i = 0; i < data.length; i++) {
                             data[i].ORDER_DATE = data[i].ORDER_DATE.substr(0, 10);
                         }
-                        me.order = data.Rows;
+                        me.order = data;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -304,10 +303,15 @@
                 }
                 var changeRowDet = me.grid.getChangedRows();
                 for (var i = 0; i < changeRowDet.updated.length; i++) {
-                    var row = changeRow.updated[i];
+                    var row = changeRowDet.updated[i];
                     if (row.DSCOUNT < row.COUNT) {
                         flag = false;
                         LG.showSuccess('数量不可大于待收数量！');
+                        break;
+                    }
+                    if (row.COUNT < 0) {
+                        flag = false;
+                        LG.showSuccess('数量不可为负数！');
                         break;
                     }
                 }
@@ -333,6 +337,10 @@
             savedet: function () { //保存
                 var me = this;
                 var changeRowDet = me.grid.getChangedRows();
+                if (changeRowDet.deleted.length > 0 && changeRowDet.updated.length > 0) {
+                    changeRowDet["updated"] = [];
+                    changeRowDet["original"] = [];
+                }
                 LG.ajax({
                     jsToken: true,
                     url: 'Material/SpReceive/Save',
@@ -556,8 +564,8 @@
                                         PRODUCE: item.PRODUCE,
                                         UNIT: item.UNIT,
                                         DDCOUNT: item.COUNT,
-                                        ZZCOUNT: item.STOP_NUM,
-                                        DSCOUNT: item.COUNT - item.STOP_NUM,
+                                        STOP_NUM: item.STOP_NUM,
+                                        DSCOUNT: item.DSCOUNT,
                                         COUNT: "",
                                         DELIVERY_CODE: "",
                                         MEMO: "",
@@ -574,25 +582,6 @@
                             }
                         },
                     }
-                });
-            },
-            f_callback: function (id, data) {
-                var me = this;
-                data.forEach((a) => {
-                    business.grid.addEditRow({
-                        "SP_CODE": a.SP_CODE,
-                        "SP_NAME": a.SP_NAME,
-                        "SP_SIZE": a.SP_SIZE,
-                        "PRODUCE": a.PRODUCE,
-                        "UNIT": a.UNIT,
-                        "COUNT": "",
-                        "DELIVERY_CODE": "",
-                        "MEMO": "",
-                        "PRICE": a.PRICE,
-                        "MONEY": 0,
-                        "APPLY_USER": a.APPLY_USER,
-                        "APPLY_NO": a.APPLY_NO
-                    });
                 });
             },
             //删除
@@ -624,7 +613,6 @@
                     if (me.dialogData.isAddNew != undefined) me.isAddNew = me.dialogData.isAddNew;
                     if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
-
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
@@ -632,6 +620,12 @@
                 me.setGrid();
                 me.reloadDet();
 
+                if (me.dialogData.isView != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

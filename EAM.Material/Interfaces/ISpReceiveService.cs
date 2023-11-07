@@ -18,13 +18,12 @@ namespace EAM.Material.Interfaces
         Task<AjaxResult> ComboxData();
 
         Task<AjaxResult> GetAsync(string ID);
-
         Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet);
 
         Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request);
 
-        Task<GridData> OrderList();
-        Task<GridData> SpList(GridRequest request);
+        Task<AjaxResult> OrderList();
+        Task<AjaxResult> SpList(GridRequest request);
 
         Task<GridData> DetListAsync(GridRequest request);
     }
