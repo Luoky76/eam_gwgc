@@ -352,7 +352,7 @@ namespace EAM.Material.Services
         {
             var orderQuery = _dbContext.JoinQuery<SP_ORDER_DETAIL, SP_ORDER>((a, b) => new object[] {
                 JoinType.LeftJoin,a.ORDER_ID==b.ORDER_ID
-            }).Where((a, b) => b.AUDITING == "1" && a.COUNT > (a.RECEIVE_COUNT2 ?? 0)).Select((a, b) => new
+            }).Where((a, b) => b.AUDITING == "1" && (a.COUNT - a.STOP_NUM) > (a.RECEIVE_COUNT2 ?? 0)).Select((a, b) => new
             {
                 b.ORDER_CODE,
                 b.ORDER_ID,
