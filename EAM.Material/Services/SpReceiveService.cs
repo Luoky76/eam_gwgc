@@ -257,7 +257,7 @@ namespace EAM.Material.Services
                     if (orderDetail != null)
                     {
                         var num = orderDetail.RECEIVE_COUNT2.HasValue ? orderDetail.RECEIVE_COUNT2.Value - receiveCount : 0;
-
+                        orderDetail.OVERDUE = "0";
                         orderDetail.RECEIVE_COUNT2 = num > 0 ? num : 0;
                         await _dbContext.UpdateAsync(orderDetail);
                     }
