@@ -313,7 +313,7 @@
                             LG.showError("该数据已验收，无法撤销！");
                             return;
                         }
-                        upd.AUDITING = "0";
+                        upd.AUDITING = "-1";
                         orginarr.push(ori);
                         updatedarr.push(upd)
                     }
@@ -323,10 +323,10 @@
                     LG.ajax({
                         jsToken: true,
                         url: 'Material/SpReceive/Save',
-                        loading: '正在提交中...',
+                        loading: '正在撤销中...',
                         data: { request: changeRow, requestdet: null },
                         success: function () {
-                            LG.showSuccess('提交成功');
+                            LG.showSuccess('撤销成功');
                             me.grid.isDataChanged = false;
                             me.reload();
                         },

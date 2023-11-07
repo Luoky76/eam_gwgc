@@ -188,19 +188,21 @@ namespace EAM.Material.Services
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }
-            if (entity.AUDITING.Equals("1")&&entity.AUDITING_CHK == null)
+            //收货登记提交和撤销
+            if (entity.AUDITING.Equals("1") && entity.AUDITING_CHK == null)
             {
-                entity.AUDITING_CHK ="0";
+                entity.AUDITING_CHK = "0";
                 var detquery = await _dbContext.Query<SP_RECEIVE_DET>()
                     .Where(x => x.RECEIVE_ID == entity.RECEIVE_ID)
                     .LeftJoin<SP_ORDER_DETAIL>((a, b) => a.ORDERDET_ID == b.ORDERDET_ID)
-                    .Select((a, b) => new {
-                        DSCOUNT = b.COUNT-(b.STOP_NUM ?? 0)-(b.RECEIVE_COUNT2 ?? 0),
+                    .Select((a, b) => new
+                    {
+                        DSCOUNT = b.COUNT - (b.STOP_NUM ?? 0) - (b.RECEIVE_COUNT2 ?? 0),
                         a.COUNT,
                         a.ORDERDET_ID,
                     })
                     .ToListAsync();
-                
+
                 foreach (var result in detquery)
                 {
                     if (result.COUNT > result.DSCOUNT)
@@ -216,6 +218,12 @@ namespace EAM.Material.Services
 
                     if (orderDetail != null)
                     {
+                        //超期
+                        if (orderDetail.REQ_DATE.HasValue && entity.RECEIVE_DATE > orderDetail.REQ_DATE) 
+                        {
+                            orderDetail.OVERDUE = "1";
+                        }
+
                         if (orderDetail.RECEIVE_COUNT2 == null)
                         {
                             orderDetail.RECEIVE_COUNT2 = 0;
@@ -227,6 +235,37 @@ namespace EAM.Material.Services
                 }
 
             }
+            if (entity.AUDITING.Equals("-1"))
+            {
+                entity.AUDITING_CHK = null;
+                entity.AUDITING = "0";
+                var detquery = await _dbContext.Query<SP_RECEIVE_DET>()
+                    .Where(x => x.RECEIVE_ID == entity.RECEIVE_ID)
+                    .LeftJoin<SP_ORDER_DETAIL>((a, b) => a.ORDERDET_ID == b.ORDERDET_ID)
+                    .Select((a, b) => new {
+                        DSCOUNT = b.COUNT - (b.STOP_NUM ?? 0) - (b.RECEIVE_COUNT2 ?? 0),
+                        a.COUNT,
+                        a.ORDERDET_ID,
+                    })
+                    .ToListAsync();
+
+                foreach (var result in detquery)
+                {
+                    var receiveCount = result.COUNT;
+                    var orderDetail = await _dbContext.Query<SP_ORDER_DETAIL>(x => x.ORDERDET_ID == result.ORDERDET_ID).FirstOrDefaultAsync();
+
+                    if (orderDetail != null)
+                    {
+                        var num = orderDetail.RECEIVE_COUNT2.HasValue ? orderDetail.RECEIVE_COUNT2.Value - receiveCount : 0;
+
+                        orderDetail.RECEIVE_COUNT2 = num > 0 ? num : 0;
+                        await _dbContext.UpdateAsync(orderDetail);
+                    }
+                }
+
+            }
+
+            //到货验收提交和撤销
             if (entity.AUDITING_CHK == "1")
             {
                 entity.CHK_DATE = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd"));
