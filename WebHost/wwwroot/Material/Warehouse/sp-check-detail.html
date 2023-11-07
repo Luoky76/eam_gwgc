@@ -71,6 +71,9 @@
                             { display: "收货备注", name: "REG_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: {}, editor: { disabled: true } },
                             { display: "验收意见", name: "MEMO", newline: true, width: 880, upper: true, type: "textarea", options: {}, validate: { required: true } },
                             { display: "主键", name: "RECEIVE_ID", newline: false, upper: true, type: "hidden", options: {} },
+                            {
+                                display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "hidden", options: { }, 
+                            },
                         ]
                     },
                     grid: {
@@ -91,19 +94,19 @@
                                 },
                             },
                             {
-                                display: "中止数量", name: "ZZCOUNT", minWidth: 80, type: "int", totalSummary:
+                                display: "中止数量", name: "STOP_NUM", minWidth: 80, type: "int", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 },
-                            },
+                            },/*
                             {
                                 display: "待收数量", name: "DSCOUNT", minWidth: 80, type: "int", totalSummary:
                                 {
                                     type: 'sum',
                                     align: 'center'
                                 },
-                            },
+                            },*/
                             {
                                 display: "登记数量", name: "COUNT", width: 150, type: "text", totalSummary:
                                 {

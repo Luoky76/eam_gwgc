@@ -44,6 +44,7 @@
             maintDept: [],
             workState: [],
             maintCycle: [],
+            spHouse: [],
             start: null,
             setConfig: function () {
                 var me = this;
@@ -91,10 +92,26 @@
                                     align: 'center'
                                 }
                             },
-                            { display: "送货单号", name: "DELIVERY_CODE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "送货单号", name: "DELIVERY_CODE", width: 100, type: "text" },
                             {
-                                display: "收货库位", name: "STOCK_NAME", width: 120, type: "text"
+                                display: "收货库位", name: "STOCK_ID", type: "select", minWidth: 150, editor: {
+                                    type: 'select',
+                                    data: me.spHouse,
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.spHouse.length; i++) {
+                                                if (rowdata.value == me.spHouse[i].ID) {
+                                                    liger.get("maingrid").updateCell("STOCK_NAME", me.spHouse[i].TEXT, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("STOCK_NAME", "", rowdata.record);
+                                        }
+                                    },
+                                }, validate: { required: true }
                             },
+                            { display: "收货库位", name: "STOCK_NAME", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "成交单价", name: "PRICE", width: 150, type: "text", },
                             {
                                 display: "成交金额", name: "MONEY", type: "text", width: 80, totalSummary:
@@ -126,6 +143,17 @@
                     loading: '正在获取中...',
                     success: function (data) {
                         me.order = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpReceive/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.spHouse = data.SpHouseName;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -423,6 +451,12 @@
                 me.setGrid();
                 me.reloadDet();
 
+                if (me.dialogData.isView == true) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                }
                 return me;
             }
         };

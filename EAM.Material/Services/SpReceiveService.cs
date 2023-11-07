@@ -188,8 +188,9 @@ namespace EAM.Material.Services
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }
-            if (entity.AUDITING.Equals("1"))
+            if (entity.AUDITING.Equals("1")&&entity.AUDITING_CHK == null)
             {
+                entity.AUDITING_CHK ="0";
                 var detquery = await _dbContext.Query<SP_RECEIVE_DET>()
                     .Where(x => x.RECEIVE_ID == entity.RECEIVE_ID)
                     .LeftJoin<SP_ORDER_DETAIL>((a, b) => a.ORDERDET_ID == b.ORDERDET_ID)
@@ -208,15 +209,21 @@ namespace EAM.Material.Services
                         throw new MessageException(errMsg);
                     }
                 }
-
                 foreach (var result in detquery)
                 {
                     var receiveCount = result.COUNT;
-                    await _dbContext.UpdateAsync<SP_ORDER_DETAIL>(x => x.ORDERDET_ID == result.ORDERDET_ID,
-                     x => new SP_ORDER_DETAIL
-                     {
-                          RECEIVE_COUNT2 = receiveCount
-                     });
+                    var orderDetail = await _dbContext.Query<SP_ORDER_DETAIL>(x => x.ORDERDET_ID == result.ORDERDET_ID).FirstOrDefaultAsync();
+
+                    if (orderDetail != null)
+                    {
+                        if (orderDetail.RECEIVE_COUNT2 == null)
+                        {
+                            orderDetail.RECEIVE_COUNT2 = 0;
+                        }
+                        orderDetail.RECEIVE_COUNT2 += receiveCount;
+
+                        await _dbContext.UpdateAsync(orderDetail);
+                    }
                 }
 
             }
