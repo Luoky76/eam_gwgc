@@ -339,7 +339,15 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 过滤超管
         /// </summary>
-        private static Expression<Func<CF_USER, bool>> FilterSuper(SysContextOptions options) =>
-            c => c.APPNAME == options.UserAppName && Sql.IsNotEqual(c.USERID, options.AdminUserID);
+        private Expression<Func<CF_USER, bool>> FilterSuper(SysContextOptions options)
+        {
+            if (_hasSuper) return c => c.APPNAME == options.UserAppName;
+            return c => c.APPNAME == options.UserAppName && Sql.IsNotEqual(c.USERID, options.AdminUserID);
+        }
+
+        /// <summary>
+        /// 包含超管
+        /// </summary>
+        private bool _hasSuper = false;
     }
 }

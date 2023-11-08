@@ -77,6 +77,7 @@ namespace Gksyb.Server.Services.Auth
             var operators = (info.Operators ?? "").Split(UserInfo.DefaultSplit).DistinctAndOrderBy().ToList();
             var users = new List<UserInfo>();
             if (operators.Count < 1) return users;
+            _hasSuper = info.HasSuper;
             switch (info.Type)
             {
                 case "Station":
