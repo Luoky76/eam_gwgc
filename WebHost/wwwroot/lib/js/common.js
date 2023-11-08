@@ -449,11 +449,11 @@
             }
         });
     }
-    if (!window.session) initStorage("session", "GksybData");
-    if (!window.tempStorage) initStorage("tempStorage", "GksybTemp");
-    if (!window.ticket) initStorageString("ticket", "GksybTicket");
+    if (window.session === undefined) initStorage("session", "GksybData");
+    if (window.tempStorage === undefined) initStorage("tempStorage", "GksybTemp");
+    if (window.ticket === undefined) initStorageString("ticket", "GksybTicket");
 
-    if (!window.topWindow) {
+    if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;

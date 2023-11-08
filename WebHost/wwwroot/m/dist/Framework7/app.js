@@ -27,7 +27,7 @@
     };
 
     //会话变量
-    if (!window.session) {
+    if (window.session === undefined) {
         var sessionKey = "GksybData";
         Object.defineProperty(window, 'session', {
             get: function () {
@@ -48,7 +48,7 @@
         });
     }
     //票据
-    if (!window.ticket) {
+    if (window.ticket === undefined) {
         var ticketKey = "GksybTicket";
         Object.defineProperty(window, 'ticket', {
             get: function () {
@@ -64,7 +64,7 @@
         });
     }
     //顶层窗口
-    if (!window.topWindow) {
+    if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;
