@@ -245,10 +245,10 @@
                         return;
                     }
                     if (me.currentNode.data.TYPE == "1") {
-                        me.grid.addEditRow({ "PRE_CATALOGID": nodeId, "TYPE_CODE": item.VALUE, "TYPE_ID": me.currentNode.data.TYPE_ID, "STATUS": "1" });
+                        me.grid.addEditRow({ "PRE_CATALOGID": nodeId, "TYPE_CODE": item.VALUE, "TYPE_NAME": item.TEXT, "TYPE_ID": me.currentNode.data.TYPE_ID, "STATUS": "1" });
                     }
                     if (me.currentNode.data.TYPE == "0") {
-                        me.grid.addEditRow({ "TYPE_ID": nodeId, "TYPE_CODE": item.VALUE, "IS_RECOVERY": "0", "IS_CANCEL": "0" });
+                        me.grid.addEditRow({ "TYPE_ID": nodeId, "TYPE_CODE": item.VALUE, "TYPE_NAME": item.TEXT, "IS_RECOVERY": "0", "IS_CANCEL": "0" });
                     }
                 }
             },

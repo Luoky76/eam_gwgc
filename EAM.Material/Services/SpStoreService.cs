@@ -53,7 +53,8 @@ namespace EAM.Material.Services
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode", "store_src" },
-                    { "ProviderName", (Expression<Func<PROVIDER, bool>>)null}
+                    { "ProviderName", (Expression<Func<PROVIDER, bool>>)null},
+                    { "DeptData", (Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.Corp.CorpID)}
                 });
                 return AjaxResult.Success(dic);
             }
@@ -153,6 +154,13 @@ namespace EAM.Material.Services
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
+
+            string type = "PC" + DateTime.Now.ToString("yyyyMM");
+            string def = type + "0000";
+            var model = await _dbContext.Query<SP_STORE>(x => x.STORE_CODE.Contains(type)).Select(x => Sql.Max(x.STORE_CODE) ?? def).FirstOrDefaultAsync();
+            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            entity.STORE_CODE = type + index.ToString("D4");
+
 
             //存入流水库存中
             var temp = entity.MapTo<STORE_WATER>();

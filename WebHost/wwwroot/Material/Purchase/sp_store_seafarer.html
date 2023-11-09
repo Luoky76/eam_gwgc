@@ -41,6 +41,7 @@
             providerName: [],
             storeSou: [],
             stockData: [],
+            dataCorp:[],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -97,6 +98,7 @@
                     success: function (data, message) {
                         me.providerName = data.ProviderName;
                         me.storeSou = data.BCCode;
+                        me.dataCorp = data.DeptData;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -302,12 +304,28 @@
                             }
                         },
                         { display: "申请单号", name: "APPLY_NO", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' } },
+                        {
+                            display: "部门", name: "DEPT_ID", labelWidth: 120, newline: true, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                onChangeValue: function (input, value, g) {
+                                    if (value) {
+                                        for (var i = 0; i < me.dataCorp.length; i++) {
+                                            if (value == me.dataCorp[i].ID) {
+                                                $("#DEPT_NAME").val(me.dataCorp[i].VALUE);
+                                            }
+                                        }
+                                    } else {
+                                        $("#DEPT_NAME").val('');
+                                    }
+                                }
+                            }, validate: { required: true }
+                        },
                         //隐藏
                         { display: "SP_ID", name: "SP_ID", dbname: "SP_ID", width: 180, type: "hidden" },
                         { display: "TYPE_ID", name: "TYPE_ID", dbname: "TYPE_ID", width: 180, type: "hidden" },
                         { display: "TYPE_CODE", name: "TYPE_CODE", dbname: "TYPE_CODE", width: 180, type: "hidden" },
                         { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 180, type: "hidden" },
                         { display: "仓库名", name: "STOCK_NAME", dbname: "STOCK_NAME", width: 180, type: "hidden" },
+                        { display: "部门名", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 180, type: "hidden" },
                         { display: "仓库CODE", name: "STOCK_CODE", dbname: "STOCK_CODE", width: 180, type: "hidden" }
                     ],
                     space: 3,

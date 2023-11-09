@@ -11,6 +11,7 @@ using EAM.Material.Interfaces;
 using NPOI.SS.Formula.PTG;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml.Office.CustomUI;
+using Gksyb.Core.Auth;
 
 namespace EAM.Material.Services
 {
@@ -18,12 +19,14 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly UserSession _userSession;
         private string errMsg = string.Empty;
 
-        public SpInstoreService(IDbContext dbContext, IComboxDataService comboxDataService)
+        public SpInstoreService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _userSession = userSession;
         }
 
         /// <summary>
@@ -208,6 +211,10 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(SP_INSTORE entity)
         {
+            entity.CREATE_USERID = _userSession.UserID.ToString();
+            entity.CREATEDATE = DateTime.Now;
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
+            entity.MODIFYDATE = DateTime.Now;
             await Task.CompletedTask;
         }
 
@@ -228,7 +235,37 @@ namespace EAM.Material.Services
             }
             else if (request.AUDITING == "1")
             {
-                var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID).ToListAsync();
+                var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID)
+                    .LeftJoin<SP_APPLY>((a,b)=>a.APPLY_NO == b.APPLY_NO)
+                    .Select((a, b) => new
+                    {
+                        b.DEPT_NAME,
+                        b.DEPT_ID,
+                        b.DEPT_CODE,
+                        a.SP_CODE,
+                        a.PRICE,
+                        a.SP_ID,
+                        a.SP_NAME,
+                        a.SP_SIZE,
+                        a.APPLY_NO,
+                        a.DELIVERY_CODE,
+                        a.STOCK_NAME,
+                        a.RECDET_ID,
+                        a.STOCK_ID,
+                        a.APPLY_USER,
+                        a.COUNT,
+                        a.PRODUCE,
+                        a.UNIT,
+                        a.TYPE_NAME,
+                        a.TYPE_CODE,
+                        a.TYPE_ID,
+                        a.MONEY,
+                        a.MEMO,
+                        a.NOTAX_PRICE,
+                        a.UNTAX_MONEY,
+                        a.INDET_ID,
+                    })
+                    .ToListAsync();
 
                 foreach (var iten in det)
                 {
@@ -237,10 +274,15 @@ namespace EAM.Material.Services
                     _STORE.SRC_TYPE = "2";
                     _STORE.IS_BACK = "0";
                     _STORE.SP_CODE = iten.SP_CODE;
+                    _STORE.SP_ID = iten.SP_ID;
                     _STORE.SP_NAME = iten.SP_NAME;
                     _STORE.SP_SIZE = iten.SP_SIZE;
                     _STORE.STOCK_NAME = iten.STOCK_NAME;
                     _STORE.UNIT = iten.UNIT;
+                    _STORE.PRODUCE = iten.PRODUCE;
+                    _STORE.TYPE_NAME = iten.TYPE_NAME;
+                    _STORE.TYPE_CODE = iten.TYPE_CODE;
+                    _STORE.TYPE_ID = iten.TYPE_ID;
                     _STORE.NUM = iten.COUNT;
                     _STORE.PRICE = iten.PRICE;
                     _STORE.MONEY = iten.MONEY;
@@ -252,6 +294,12 @@ namespace EAM.Material.Services
                     _STORE.INDET_ID = iten.INDET_ID;
                     _STORE.STORE_ID = GuidHelper.NewSnowflakeId().ToString();
                     _STORE.IN_CODE = request.IN_CODE;
+                    _STORE.DEPT_ID = iten.DEPT_ID;
+                    _STORE.DEPT_NAME = iten.DEPT_NAME;
+                    _STORE.CREATE_USERID = _userSession.UserID.ToString();
+                    _STORE.CREATEDATE = DateTime.Now;
+                    _STORE.MODIFY_USERID = _userSession.UserID.ToString();
+                    _STORE.MODIFYDATE = DateTime.Now;
 
                     string type = "PC" + DateTime.Now.ToString("yyyyMM");
                     string def = type + "0000";
@@ -286,7 +334,8 @@ namespace EAM.Material.Services
                     });
                 }
             }
-          
+            request.MODIFY_USERID = _userSession.UserID.ToString();
+            request.MODIFYDATE = DateTime.Now;
             await Task.CompletedTask;
         }
 

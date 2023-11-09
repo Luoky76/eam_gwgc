@@ -116,6 +116,26 @@
                                 </li>
                                 <li class="onlyshow" style="display:none;">
                                     <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">部门<span style="color:red">*</span></div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="SHOW_DEPT_NAME" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="editshow">
+                                    <div class="item-link smart-select smart-select-init" data-open-in="popup" data-searchbar="true" data-searchbar-placeholder="选择部门">
+                                        <select name="DEPT_ID" id="DEPT_ID">
+                                        </select>
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title">部门<span style="color:red">*</span></div>
+                                                <input type="hidden" id="DEPT_NAME" name="DEPT_NAME" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li class="onlyshow" style="display:none;">
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
                                         <div class="item-title" style="color: #666666">库位名称<span style="color:red">*</span></div>
                                         <div class="item-after" style="text-align:right">
                                             <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="SHOW_STOCK_NAME" readonly />
@@ -248,6 +268,7 @@
             spList: [], //物资
             stockList: [], //库位
             providerList: [],//供应商
+            corpList: [], //部门
             orginData: null,
             getCombox: function () {
                 var me = this;
@@ -256,11 +277,19 @@
                     type: 'post',
                     url: 'Material/SpStore/ComboxData',
                     success: function (data) {
+                        me.providerList = data.ProviderName;
                         var str = ""
                         data.ProviderName.forEach((a) => {
                             str += "<option value=" + a.ID + ">" + a.TEXT + "</option>";
                         });
                         $("#PROVIDER_ID").html(str);
+
+                        me.corpList = data.DeptData;
+                        var corp = ""
+                        data.DeptData.forEach((a) => {
+                            corp += "<option value=" + a.ID + ">" + a.TEXT + "</option>";
+                        });
+                        $("#DEPT_ID").html(corp);
                     },
                     error: function (message, data) {
                         app.dialog.error(message, function () { });
@@ -316,6 +345,7 @@
                             me.detail.SHOW_SP_NAME = me.detail.SP_NAME;
                             me.detail.SHOW_STOCK_NAME = me.detail.STOCK_NAME;
                             me.detail.SHOW_PROVIDER_NAME = me.detail.PROVIDER_NAME;
+                            me.detail.SHOW_DEPT_NAME = me.detail.DEPT_NAME;
                             app.form.fillFromData('#detail-form', me.detail);
                         }
                     },
@@ -439,6 +469,13 @@
                     var num = $("#NUM").val();
                     if (value != null && value != '') {
                         $("#NOTAX_MONEY").val(parseFloat(num * value));
+                    }
+                });
+
+                $('#DEPT_ID').on('change', function (e) {
+                    var da = me.corpList.find((va) => va.ID == e.target.value);
+                    if (da != null) {
+                        $("#DEPT_NAME").val(da.TEXT);
                     }
                 });
             },
