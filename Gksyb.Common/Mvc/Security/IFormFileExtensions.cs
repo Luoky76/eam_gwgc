@@ -7,6 +7,7 @@ using SixLabors.ImageSharp;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 
 namespace Microsoft.AspNetCore.Http
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Http
         public static async Task<string> SaveAs(this IFormFile source, string folder = null, string fileName = null, bool isCreateDayDirectory = false)
         {
             folder ??= "";
+            folder = new Regex(@"[\\\/\:\*\?\042\<\>\|]").Replace(folder, "");
             var now = DateTime.Now;
             var path = Path.Combine(folder, now.ToString("yyyyMM"), isCreateDayDirectory ? now.ToString("dd") : "");
             if (string.IsNullOrWhiteSpace(fileName)) fileName = $"{GuidHelper.NewShortId()}_{source.FileName[Math.Max(0, source.FileName.Length - 120)..]}";
