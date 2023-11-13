@@ -265,11 +265,11 @@
                     else if (duration.length == 3) {
                         minutes = Number(duration[0]) * 1440 + Number(duration[1]) * 60 + Number(duration[2]);
                     }
-                    return minutes;
+                    return parseInt(minutes);
                 },
                 setValue: function (editor, value, editParm) {
                     if (value) {
-                        value = parseInt(value / 60) + ":" + (value % 60);
+                        value = parseInt(value / 60) + ":" + parseInt(value % 60);
                     }
                     editor.setValue(value, editParm.isTriggerEvent);
                 }
