@@ -50,45 +50,6 @@ namespace Gksyb.Model
         public decimal? CONPLAN { get; set; }
 
         /// <summary>
-        /// 施工准备 hh:mm格式
-        /// </summary>
-        [NotMapped]
-        [Description("施工准备 hh:mm格式")]
-        public string CONPLAN_TYPE {
-            get
-            {
-                decimal? val = CONPLAN;
-                if (val > 0)
-                {
-                    return (Convert.ToInt32(val / 60)) + ":" + Convert.ToInt32(val) % 60;
-                }
-                else
-                {
-                    val = - val;
-                    return "-" + (Convert.ToInt32(val / 60)) + ":" + Convert.ToInt32(val) % 60;
-                }
-            }
-            set
-            {
-                if (value == null) return;
-                //格式：mm hh:mm dd:hh:mm
-                string[] duration = value.Split(':');
-                if (duration.Length == 1 )
-                {
-                    CONPLAN = decimal.Parse(duration[0]);
-                }
-                else if (duration.Length == 2 )
-                {
-                    CONPLAN = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
-                }
-                else if (duration.Length == 3)
-                {
-                    CONPLAN = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
-                }
-            }
-        }
-
-        /// <summary>
         /// 挖泥时间
         /// </summary>
         [Description("挖泥时间")]

@@ -30,17 +30,17 @@
                             { display: "日期", name: "STARTDATE", newline: false, width: 200, type: "date", validate: { required: true }, options: {}, group: "基础信息" },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, width: 200, type: "text", options: {}, editor: { disabled: true } },
                             { display: "设备ID", name: "DEVICE_ID", newline: false, width: 200, type: "hidden", options: {} },
-                            { display: "作业时间(小时)", name: "WORK_TIME", newline: false, width: 200, type: "float", options: {}, group: "施工时间" },
-                            { display: "锚泊时间(小时)", name: "ANCHOR_TIME", newline: false, width: 200, type: "float", options: {} },
-                            { display: "检修时间(小时)", name: "REPAIRTIME", newline: true, width: 200, type: "float", options: {}, group: "停工时间" },
-                            { display: "天气影响(小时)", name: "WEATHEREFFECT", newline: false, width: 200, type: "float", options: {} },
-                            { display: "待工(小时)", name: "WAIT_WORK", newline: false, width: 200, type: "float", options: {} },
+                            { display: "作业时间(分钟)", name: "WORK_TIME", newline: false, width: 200, type: "duration", options: {}, group: "施工时间" },
+                            { display: "锚泊时间(分钟)", name: "ANCHOR_TIME", newline: false, width: 200, type: "duration", options: {} },
+                            { display: "检修时间(分钟)", name: "REPAIRTIME", newline: true, width: 200, type: "duration", options: {}, group: "停工时间" },
+                            { display: "天气影响(分钟)", name: "WEATHEREFFECT", newline: false, width: 200, type: "duration", options: {} },
+                            { display: "待工(分钟)", name: "WAIT_WORK", newline: false, width: 200, type: "duration", options: {} },
 
-                            { display: "运行时间(小时)", name: "MAIN_RUNTIME", newline: false, width: 200, type: "float", options: {}, group: "主发电机运行时间" },
-                            { display: "累计时间(小时)", name: "MAIN_CUMTIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "运行时间(分钟)", name: "MAIN_RUNTIME", newline: false, width: 200, type: "duration", options: {}, group: "主发电机运行时间" },
+                            { display: "累计时间(分钟)", name: "MAIN_CUMTIME", newline: false, width: 200, type: "duration", options: {} },
 
-                            { display: "运行时间(小时)", name: "MOORING_RUNTIME", newline: false, width: 200, type: "float", options: {}, group: "停泊发电机运行时间" },
-                            { display: "累计时间(小时)", name: "MOORING_CUMTIME", newline: false, width: 200, type: "float", options: {} },
+                            { display: "运行时间(分钟)", name: "MOORING_RUNTIME", newline: false, width: 200, type: "duration", options: {}, group: "停泊发电机运行时间" },
+                            { display: "累计时间(分钟)", name: "MOORING_CUMTIME", newline: false, width: 200, type: "duration", options: {} },
 
                             { display: "日耗(吨)", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
                             { display: "补充(吨)", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
@@ -227,6 +227,32 @@
             }
         };
         $(function () {
+            liger.editors['duration'] = {
+                control: 'TextBox',
+                getValue: function (editor) {
+                    debugger
+                    var val = editor.inputText.val();
+                    if (!val) return 0;
+                    var duration = val.split(/:|：/);
+                    var minutes = 0;
+                    if (duration.length == 1) {
+                        minutes = Number(duration[0]);
+                    }
+                    else if (duration.length == 2) {
+                        minutes = Number(duration[0]) * 60 + Number(duration[1]);
+                    }
+                    else if (duration.length == 3) {
+                        minutes = Number(duration[0]) * 1440 + Number(duration[1]) * 60 + Number(duration[2]);
+                    }
+                    return minutes;
+                },
+                setValue: function (editor, value, editParm) {
+                    if (value) {
+                        value = parseInt(value / 60) + ":" + (value % 60);
+                    }
+                    editor.setValue(value, editParm.isTriggerEvent);
+                }
+            };
             business.init();
         });
     </script>
