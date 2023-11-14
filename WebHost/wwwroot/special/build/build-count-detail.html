@@ -251,27 +251,39 @@
             liger.editors['duration'] = {
                 control: 'TextBox',
                 getValue: function (editor) {
-                    debugger
                     var val = editor.inputText.val();
                     if (!val) return 0;
                     var duration = val.split(/:|：/);
-                    var minutes = 0;
+                    duration = duration.map(Number);
+                    var minutes = 0, isNeg = false;
+                    if (duration.length > 0 && duration[0] < 0) {
+                        isNeg = true;
+                        duration[0] = - duration[0];
+                    }
                     if (duration.length == 1) {
-                        minutes = Number(duration[0]);
+                        minutes = duration[0];
                     }
                     else if (duration.length == 2) {
-                        minutes = Number(duration[0]) * 60 + Number(duration[1]);
+                        minutes = duration[0] * 60 + duration[1];
                     }
                     else if (duration.length == 3) {
-                        minutes = Number(duration[0]) * 1440 + Number(duration[1]) * 60 + Number(duration[2]);
+                        minutes = duration[0] * 1440 + duration[1] * 60 + duration[2];
                     }
-                    return parseInt(minutes);
+                    return isNeg ? parseInt(-minutes) : parseInt(minutes);
                 },
                 setValue: function (editor, value, editParm) {
-                    if (value) {
-                        value = parseInt(value / 60) + ":" + parseInt(value % 60);
+                    var text = "";
+                    if (value >= 0) {
+                        if (value >= 60) text += parseInt(value / 60) + ":";
+                        text += parseInt(value % 60);
                     }
-                    editor.setValue(value, editParm.isTriggerEvent);
+                    else if (value < 0) {
+                        text += "-";
+                        value = -value;
+                        if (value >= 60) text += parseInt(value / 60) + ":";
+                        text += parseInt(value % 60);
+                    }
+                    editor.setValue(text, editParm.isTriggerEvent);
                 }
             };
             business.init();
