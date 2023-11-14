@@ -111,7 +111,8 @@ namespace Gksyb.Core.Filter
             }
             if (op == "in" || op == "notin")
             {
-                var values = rule.Value.ToString().Split(',');
+                var split = string.IsNullOrWhiteSpace(rule.Split) ? "," : rule.Split;
+                var values = rule.Value.ToString().Split(split);
                 var appended = false;
                 bulider.Append('(');
                 foreach (var value in values)
