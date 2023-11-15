@@ -123,3 +123,42 @@ $.ligerDialog.open = function (p, wid) {
     });
     return dialog;
 };
+
+liger.editors['duration'] = {
+    control: 'TextBox',
+    getValue: function (editor) {
+        var val = editor.inputText.val();
+        if (!val) return 0;
+        var duration = val.split(/:|：/);
+        duration = duration.map(Number);
+        var minutes = 0, isNeg = false;
+        if (duration.length > 0 && duration[0] < 0) {
+            isNeg = true;
+            duration[0] = - duration[0];
+        }
+        if (duration.length == 1) {
+            minutes = duration[0];
+        }
+        else if (duration.length == 2) {
+            minutes = duration[0] * 60 + duration[1];
+        }
+        else if (duration.length == 3) {
+            minutes = duration[0] * 1440 + duration[1] * 60 + duration[2];
+        }
+        return isNeg ? parseInt(-minutes) : parseInt(minutes);
+    },
+    setValue: function (editor, value, editParm) {
+        var text = "";
+        if (value >= 0) {
+            if (value >= 60) text += parseInt(value / 60) + ":";
+            text += parseInt(value % 60);
+        }
+        else if (value < 0) {
+            text += "-";
+            value = -value;
+            if (value >= 60) text += parseInt(value / 60) + ":";
+            text += parseInt(value % 60);
+        }
+        editor.setValue(text, editParm.isTriggerEvent);
+    }
+};
