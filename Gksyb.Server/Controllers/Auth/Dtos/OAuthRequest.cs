@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
@@ -65,6 +66,28 @@ namespace Gksyb.Model.Core
         /// 模型检查
         /// </summary>
         public bool Check(string secret, string ips, bool isThrow = true) => CheckBody(secret, isThrow) && CheckIP(ips, isThrow);
+
+        /// <summary>
+        /// 参数检查
+        /// </summary>
+        public async Task<SYS_OAUTH> Check(HttpContext context)
+        {
+            context ??= Common.Static.HttpContext.Current;
+            Init(context.Request);
+            var dbContext = context.RequestServices.GetRequiredService<IDbContext>();
+            return await Check(dbContext);
+        }
+
+        /// <summary>
+        /// 参数检查
+        /// </summary>
+        public async Task<SYS_OAUTH> Check(IDbContext dbContext)
+        {
+            var model = await dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == AppId && c.FLAG == "1").FirstOrDefaultAsync();
+            MessageException.ThrowIf(model == null, $"找不到{AppId}的记录");
+            Check(model.SECRET, model.IP);
+            return model;
+        }
 
         /// <summary>
         /// 参数检查
