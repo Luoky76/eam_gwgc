@@ -182,7 +182,7 @@
                     var isFirst = true;
                     for (var j = 0, l1 = subMenus.length; j < l1; j++) {
                         var subMenu = subMenus[j] || [];
-                        if (subMenu.children.length > 0) {
+                        if (subMenu.children && subMenu.children.length > 0) {
                             var $grid = $$('<div class="small-card card"><div class="card-header">' +
                                 subMenu.MENUNAME +
                                 '</div><div class="card-content"><div class="actions-grid"><div class="actions-group"></div></div></div></div>'

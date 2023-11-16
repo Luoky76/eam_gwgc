@@ -45,6 +45,11 @@ namespace Gksyb.Core.Auth
         public string Class { get; set; }
 
         /// <summary>
+        /// 工号 单点以此为凭据
+        /// </summary>
+        public string WorkerCode { get; set; }
+
+        /// <summary>
         /// 所属组织
         /// </summary>
         public CorpInfo Corp { get; set; }

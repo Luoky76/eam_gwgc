@@ -10,6 +10,7 @@ namespace Gksyb.Common.Data
         static SQLiteConnectionFactory()//初始化
         {
             SQLiteContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            SQLiteContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
         }
 
         private readonly string _connString = null;

@@ -10,6 +10,7 @@ namespace Gksyb.Common.Data
         static PostgreSQLConnectionFactory()//初始化
         {
             PostgreSQLContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            PostgreSQLContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
         }
 
         private readonly string _connString = null;

@@ -85,6 +85,7 @@ namespace Gksyb.Server.Services.Auth
                 UserName = user.LOGINNAME,
                 RealName = user.REALNAME,
                 Class = user.CLASS,
+                WorkerCode = user.DEPARTCODE,
                 Group = user.STATION ?? "",
                 Roles = roles.Select(c => c.ROLENAME).Distinct().ToList(),
                 IsSuper = isSuper,
@@ -154,7 +155,7 @@ namespace Gksyb.Server.Services.Auth
                 SUPPLIERID = ticks,
                 LOGINPASSWORD = request.NewPassword
             });
-            await _dbContext.UserLogAsync("密码修改", "密码修改", "密码修改");
+            await _dbContext.UserLogAsync("密码修改", $"{user.LOGINNAME}密码修改", $"{user.LOGINNAME}修改自己的密码");
             return AjaxResult.Success();
         }
 

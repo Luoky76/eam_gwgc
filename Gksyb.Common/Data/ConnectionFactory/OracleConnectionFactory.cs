@@ -12,6 +12,7 @@ namespace Gksyb.Common.Data
         static OracleConnectionFactory()//初始化
         {
             OracleContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            OracleContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
         }
 
         private readonly string _connString = null;

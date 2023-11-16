@@ -1,5 +1,5 @@
-﻿using Chloe.Infrastructure;
-using Chloe.MySql;
+﻿using Chloe.Dameng;
+using Chloe.Infrastructure;
 using Dm;
 using System.Data;
 
@@ -9,7 +9,8 @@ namespace Gksyb.Common.Data
     {
         static DamengConnectionFactory()//初始化
         {
-            MySqlContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            DamengContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            DamengContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
         }
 
         private readonly string _connString = null;

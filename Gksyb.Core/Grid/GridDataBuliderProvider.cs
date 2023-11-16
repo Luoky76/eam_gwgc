@@ -69,7 +69,7 @@ namespace Gksyb.Core.Grid
             int? total = null;
             if (request.IsTotal)
             {
-                total = (await source.Session.ExecuteScalarAsync($"select count(1) from ({request.View})", whereTranslator.Parms)).CastTo<int>();
+                total = (await source.Session.ExecuteScalarAsync($"select count(1) from ({request.View}) tmptableinner", whereTranslator.Parms)).CastTo<int>();
             }
             var order = request.HasSort ? $"ORDER BY {request.SortName} {request.SortOrder}" : "";
             string sql;

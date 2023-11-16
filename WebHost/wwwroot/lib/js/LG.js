@@ -31,7 +31,7 @@
     });
 
     $.extend($.ligerui.controls.Grid.prototype, {
-        getChangedRows: function (trim) {
+        getChangedRows: function (trim, skipXss) {
             var g = this, changedRows = {};
             if (trim === undefined) trim = false;
             var added = g.getAdded();
@@ -50,6 +50,9 @@
                 if (updated) {
                     $.trimAll(updated);
                 }
+            }
+            if (deleted && skipXss === undefined) {
+                deleted = JSON.parse(JSON.stringify(deleted).replace(/<[^>]+>/g, ""));
             }
             changedRows["added"] = added;
             changedRows["updated"] = updated;

@@ -10,6 +10,7 @@ namespace Gksyb.Common.Data
         static MySqlConnectionFactory()//初始化
         {
             MySqlContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            MySqlContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
         }
 
         private readonly string _connString = null;
