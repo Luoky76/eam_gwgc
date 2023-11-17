@@ -123,6 +123,11 @@ namespace Gksyb.Server.Controllers.Auth
                 ip = Request.GetRealIP();
                 var request = json.ToObject<OAuthRequest<TokenRequest>>();
                 await request.Check(HttpContext);
+                if (string.IsNullOrWhiteSpace(request.Data.Key))
+                {
+                    response = "请传递字段Key";
+                    return AjaxResult.Error(response);
+                }
                 response = await _service.TokenAsync(request.Data);
                 return AjaxResult.Success(response, default);
             }

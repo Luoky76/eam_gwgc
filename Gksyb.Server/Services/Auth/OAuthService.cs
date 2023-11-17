@@ -142,6 +142,9 @@ namespace Gksyb.Server.Services.Auth
                 var token = await _distributedCache.GetAsync<TokenRequest>(request.Key);
                 MessageException.ThrowIf(string.IsNullOrWhiteSpace(token?.Key), "验证失败：1001");
                 var error = string.Empty;
+                var hasIp = !string.IsNullOrWhiteSpace(token.IP);
+                var hasUA = !string.IsNullOrWhiteSpace(token.UA);
+                if (!hasIp && !hasUA) return token.Key;
                 var times = 0;
                 if (!string.IsNullOrWhiteSpace(token.IP))
                 {
@@ -177,7 +180,7 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 获取用户信息
         /// </summary>
-        public async Task<UserInfoResponse> GetUserAsync(string userName = null,bool hasCorp = false)
+        public async Task<UserInfoResponse> GetUserAsync(string userName = null, bool hasCorp = false)
         {
             userName ??= _user.UserName;
             var userInfo = await _dbContext.Query<CF_USER>()
