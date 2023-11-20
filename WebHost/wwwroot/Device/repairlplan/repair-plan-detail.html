@@ -148,17 +148,18 @@
                 var timeDiff = complete - start;
                 
                 var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60).toFixed(2);
-                $('#PLAN_STOP_TIME').val(minutesDiff.toFixed(2));
+                $('#PLAN_STOP_TIME').val(minutesDiff);
             },
             loadData: function () {
                 var me = this;
+                debugger
                 if (!me.sid) {
                     me.mainform.setOrginData({ AUDITING: "0", PLAN_STATE:"10" });
                 }
                 else {
                     LG.ajax({
                         async: false,
-                        url: 'Repair/RepairPlan/GetDetail',
+                        url: 'Repair/RepairPlan/GetExeDetail',
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
@@ -199,7 +200,7 @@
                 }
                 LG.ajax({
                     jsToken: true,
-                    url: 'Repair/RepairPlan/Save',
+                    url: 'Repair/RepairPlan/SaveExe',
                     loading: '正在保存中...',
                     data: changeRow,
                     success: function () {
