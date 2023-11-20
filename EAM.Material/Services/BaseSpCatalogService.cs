@@ -68,7 +68,11 @@ namespace EAM.Material.Services
                 ICON = "fa fa-cog"
             }).OrderBy(c => c.SP_CODE).ToList();
 
-            spcatalogList = spcatalogList.Concat(typeList).ToList();
+            /*
+             * 原有左侧物资目录树中会包含物资节点，现只含物资类别节点
+             */
+            //spcatalogList = spcatalogList.Concat(typeList).ToList();
+            spcatalogList = typeList;
 
             spcatalogList.Add(new
             {
