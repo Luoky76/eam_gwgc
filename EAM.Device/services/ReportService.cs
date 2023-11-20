@@ -79,7 +79,7 @@ namespace EAM.Device.services
 
             //BUILD_COUNT ,REP_PLAN_EXE, PM_PLAN_EXE-PM_PLAN_SP,SP_ORDER,SP_OUTSTORE
 
-            var query = _dbContext.Query<DEVICE_CARD>().Where(x => _userSession.Corp.CorpID == x.DEPT_ID)
+            var query = await _dbContext.Query<DEVICE_CARD>().Where(x => _userSession.Corp.CorpID == x.DEPT_ID)
                 .Select(a => new
                 {
                     a.DEVICE_ID,
@@ -95,7 +95,7 @@ namespace EAM.Device.services
                     DEPT_ID = t.DEPT_ID,
                     DEVICE_ID = t.DEVICE_ID
                 })
-                .ToList();
+                .ToListAsync();
 
             if (query.Count > 0)
             {

@@ -189,17 +189,20 @@ namespace EAM.Special.Services
             }
             */
 
-            //将上次填报的库存数据带入
+            //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
             var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
                 .Select(a => new
                 {
                     a.STARTDATE,
+                    a.STOCK,
                     a.STOCK2
                 })
                 .OrderByDesc(b => b.STARTDATE)
                 .FirstAsync();
 
+            entity.STOCK = (last_data.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
             entity.STOCK2 = (last_data.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
+
 
             var isex = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
@@ -215,10 +218,23 @@ namespace EAM.Special.Services
         /// <summary>
         /// 更新
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeUpdate(BUILD_COUNT request)
+        private async Task BeforeUpdate(BUILD_COUNT entity)
         {
+            //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
+            var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
+                .Select(a => new
+                {
+                    a.STARTDATE,
+                    a.STOCK,
+                    a.STOCK2
+                })
+                .OrderByDesc(b => b.STARTDATE)
+                .FirstAsync();
+
+            entity.STOCK = (last_data.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
+            entity.STOCK2 = (last_data.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
             await Task.CompletedTask;
         }
 
