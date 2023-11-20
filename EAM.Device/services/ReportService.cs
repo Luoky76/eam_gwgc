@@ -1,0 +1,151 @@
+﻿using Chloe;
+using EAM.Device.interfaces;
+using Gksyb.Common;
+using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
+using Org.BouncyCastle.Asn1.Esf;
+using System.Collections.Concurrent;
+
+namespace EAM.Device.services
+{
+    public class ReportService : IReportService
+    {
+        private readonly IDbContext _dbContext;
+        private readonly UserSession _userSession;
+
+        public ReportService(IDbContext dbContext, UserSession userSession)
+        {
+            _dbContext = dbContext;
+            _userSession = userSession;
+        }
+
+        public class CostReportRes
+        {
+            /// <summary>
+            /// 部门
+            /// </summary>
+            public string DEPT_NAME { get; set; }
+            public string DEPT_ID { get; set; }
+            public string DEVICE_ID { get; set; }
+            /// <summary>
+            /// 维修成本
+            /// </summary>
+            public decimal? REP { get; set; }
+            /// <summary>
+            /// 维保
+            /// </summary>
+            public decimal? PM { get; set; }
+            /// <summary>
+            /// 订单
+            /// </summary>
+            public decimal? ORDER { get; set; }
+            /// <summary>
+            /// 物资消耗
+            /// </summary>
+            public decimal? OUTSTORE { get; set; }
+            /// <summary>
+            /// 淡水消耗量
+            /// </summary>
+            public decimal? DAILYCONSUMPTION { get; set; }
+            /// <summary>
+            /// 柴油消耗量
+            /// </summary>
+            public decimal? MASTER { get; set; }
+            /// <summary>
+            /// 滑油消耗量
+            /// </summary>
+            public decimal? LUBRICATE { get; set; }
+
+        }
+
+        /// <summary>
+        /// 单船成本统计
+        /// </summary>
+        /// <param name="dateFrom"></param>
+        /// <param name="dateTo"></param>
+        /// <returns></returns>
+        public async Task<GridData> CostReportAsync(string dateFrom, string dateTo)
+        {
+            DateTime b_time = Convert.ToDateTime(dateFrom + " 00:00:00");
+            DateTime e_time = Convert.ToDateTime(dateTo + " 23:59:59");
+
+            //var card = _dbContext.Query<DEVICE_CARD>()
+            //    .Select(b => new { b.DEVICE_NAME, b.DEVICE_ID, b.DEPT_ID })
+            //    .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
+
+            //BUILD_COUNT ,REP_PLAN_EXE, PM_PLAN_EXE-PM_PLAN_SP,SP_ORDER,SP_OUTSTORE
+
+            var query = _dbContext.Query<DEVICE_CARD>().Where(x => _userSession.Corp.CorpID == x.DEPT_ID)
+                .Select(a => new
+                {
+                    a.DEVICE_ID,
+                    DEPT_NAME = a.DEVICE_NAME+"("+ a.DEPT_NAME + ")",
+                    a.DEPT_ID
+                })
+                .GroupBy(t => t.DEPT_ID)
+                .AndBy(t => t.DEVICE_ID)
+                .AndBy(t => t.DEPT_NAME)
+                .Select(t => new CostReportRes
+                {
+                    DEPT_NAME = t.DEPT_NAME,
+                    DEPT_ID = t.DEPT_ID,
+                    DEVICE_ID = t.DEVICE_ID
+                })
+                .ToList();
+
+            if (query.Count > 0)
+            {
+                foreach (var item in query)
+                {
+                    //维修
+                    item.REP = _dbContext.Query<REP_PLAN_EXE>()
+                        .Where(a => a.DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.ACT_START_DATE >= b_time && a.ACT_START_DATE <= e_time)
+                        .Sum(t => t.ACT_MONEY);
+
+                    //维保
+                    item.PM = _dbContext.Query<PM_PLAN_SP>().LeftJoin<PM_PLAN_EXE>((a, b) => a.EXE_ID == b.EXE_ID)
+                        .Where((a, b) => b.DEPT_ID == item.DEPT_ID && b.AUDITING_EXE == "1" && b.BEGIN_DATE >= b_time && b.BEGIN_DATE <= e_time)
+                        .Select((a, b) => new
+                        {
+                            b.DEPT_ID,
+                            TAX_MONEY = a.TAX_MONEY.HasValue ? a.TAX_MONEY : 0
+                        })
+                        .Sum(t => t.TAX_MONEY);
+                    //订单
+                    item.ORDER = _dbContext.Query<SP_ORDER>()
+                       .Where(a=> a.DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.ORDER_DATE >= b_time && a.ORDER_DATE <= e_time)
+                       .Sum(t => t.ORDER_MONEY);
+
+                    //物资消耗
+                    item.OUTSTORE = _dbContext.Query<SP_OUTSTORE>()
+                       .Where(a => a.DEPT_ID == item.DEPT_ID && a.AUDITING_A == "1" && a.OUT_DATE >= b_time && a.OUT_DATE <= e_time)
+                       .Sum(t => t.SUM_MONEY);
+                    //耗能
+                    var cost = _dbContext.Query<BUILD_COUNT>()
+                       .Where(a => a.DEVICE_ID == item.DEVICE_ID && a.STARTDATE >= b_time && a.STARTDATE <= e_time)
+                       .GroupBy(t => t.DEVICE_ID)
+                       .Select(t => new
+                       {
+                           DAILYCONSUMPTION = Sql.Sum(t.DAILYCONSUMPTION),
+                           MASTER = Sql.Sum(t.MASTER),
+                           LUBRICATE = Sql.Sum(t.LUBRICATE),
+                       }).FirstOrDefault();
+
+                    item.DAILYCONSUMPTION = cost?.DAILYCONSUMPTION;
+                    item.MASTER = cost?.MASTER;
+                    item.LUBRICATE = cost?.LUBRICATE;
+                }
+            
+            }
+            return new GridData
+            {
+                Rows = query,
+                Total = query.Count
+            };
+        }
+    }
+}

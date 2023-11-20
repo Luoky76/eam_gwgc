@@ -33,7 +33,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "PLAN_ID", name: "PLAN_ID", width: 100, type: "text", hide: true },
+                            { display: "EXE_ID", name: "EXE_ID", width: 100, type: "text", hide: true },
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维保部门", name: "WSEC_DEPT", width: 100, type: "text", },
@@ -76,14 +76,14 @@
                     columns: me.config.grid.columns,
                     dataAction: 'server',
                     toolbar: { group: 'list' },
-                    url: 'Repair/RepairPlan/List',
+                    url: 'Repair/RepairPlan/ExeList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'AUDITINGSORT ASC,EIDT_DATE',
+                    sortName: 'EIDT_DATE',
                     sortOrder: 'DESC',
                     width: '100%',
                     height: '100%',
@@ -192,7 +192,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Repair/RepairPlan/Save',
+                        url: 'Repair/RepairPlan/SaveExe',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -252,7 +252,7 @@
                         
                         LG.ajax({
                             jsToken: true,
-                            url: 'Repair/RepairPlan/ItemList',
+                            url: 'Repair/RepairPlan/ExeItemList',
                             data: {
                                 where: JSON.stringify({
                                     op: 'and',
@@ -288,7 +288,7 @@
                     changeRow["original"] = orginarr;
                     LG.ajax({
                         jsToken: true,
-                        url: 'Repair/RepairPlan/Save',
+                        url: 'Repair/RepairPlan/SaveExe',
                         loading: '正在提交中...',
                         data: changeRow,
                         success: function () {
@@ -362,14 +362,15 @@
             },
             modify: function (rowdata) { //修改
                 var me = this;
-                var selected = me.grid.getSelectedRows();
-                if (selected.length > 1) {
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length > 1) {
                     LG.showError("不能选择多行")
                     return
-                } else if (selected.length == 0) {
+                } else if (selecteds.length == 0) {
                     LG.showError("请选择一行")
                     return
                 }
+                var selected = selecteds[0];
                 if (selected.AUDITING == "1") {
                     LG.tip('已提交，无法修改!');
                 } else {
@@ -377,7 +378,7 @@
                         selected = rowdata;
                     }
                     if (selected) {
-                        var sid = selected[0].PLAN_ID;
+                        var sid = selected.EXE_ID;
                         $.ligerDialog.open({
                             width: 1200,
                             height: 650,

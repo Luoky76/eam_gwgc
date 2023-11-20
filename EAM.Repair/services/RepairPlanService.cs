@@ -248,6 +248,7 @@ namespace EAM.Repair.services
                 a.EXE_ID,
                 a.COLLECT_METHOD,
                 a.PLAN_MONEY,
+                a.ACT_MONEY
             }).Where(x => x.EXE_ID == ID).ToListAsync();
 
             return AjaxResult.Success(query);
@@ -335,6 +336,7 @@ namespace EAM.Repair.services
                          c.PLAN_STOP_TIME,
                          c.COLLECT_METHOD,
                          c.PLAN_MONEY,
+                         c.ACT_MONEY
                      },
                      c => a => a.EXE_ID == c.EXE_ID
                      , BeforeAdd, BeforeUpdate);

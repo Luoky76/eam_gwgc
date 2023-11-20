@@ -501,5 +501,11 @@ namespace Gksyb.Model
         [Description("预估维修金额(元)")]
         public decimal? PLAN_MONEY { get; set; }
 
+
+        /// <summary>
+        /// 实际维修金额(元)
+        /// </summary>
+        [Description("实际维修金额(元)")]
+        public decimal? ACT_MONEY { get; set; }
     }
 }
