@@ -83,7 +83,8 @@ namespace EAM.Device.services
             {
                 req = req.Where(x => _userSession.Corp.CorpID == x.DEPT_ID);
             }
-            var query = req.Where(t=>t.STATUS == "1").Select(a => new
+            var query = await req.Where(t => t.STATUS == "1")
+                .Select(a => new
                 {
                     a.DEVICE_ID,
                     DEPT_NAME = a.DEVICE_NAME+"("+ a.DEPT_NAME + ")",
@@ -98,7 +99,7 @@ namespace EAM.Device.services
                     DEPT_ID = t.DEPT_ID,
                     DEVICE_ID = t.DEVICE_ID
                 })
-                .ToList();
+                .ToListAsync();
 
             if (query.Count > 0)
             {

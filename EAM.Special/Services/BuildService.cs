@@ -100,6 +100,7 @@ namespace EAM.Special.Services
                     a.MOORING_CUMTIME,
                 })
                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .OrderByDesc(a => a.STARTDATE)
                 .GetGridData(request);
             return list;
         }
@@ -166,8 +167,10 @@ namespace EAM.Special.Services
             entity.DEVICE_ID = card.DEVICE_ID;
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
+
+            /*
             //获取艘船的部门的所有货位中柴油物料的库存量的和
-            var hw =await _dbContext.Query<SP_STORE>(a => a.SP_CODE == "017001-0001")
+            var hw = await _dbContext.Query<SP_STORE>(a => a.SP_CODE == "017001-0001")
                 .LeftJoin<SP_HOUSE>((a, b) => a.STOCK_ID == b.HOUSE_ID)
                 .Where((a, b) =>_userSession.Corp.CorpID == b.DEPT_ID)
                 .Select((a, b) => new
@@ -180,10 +183,27 @@ namespace EAM.Special.Services
                 {
                     SUM = Sql.Sum(x.NUM),
                 }).FirstOrDefaultAsync();
-            if (hw !=null)
+            if (hw != null && !entity.STOCK2.HasValue)
             {
                 entity.STOCK2 = hw.SUM;
             }
+            */
+
+            //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
+            var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
+                .Select(a => new
+                {
+                    a.STARTDATE,
+                    a.STOCK,
+                    a.STOCK2
+                })
+                .OrderByDesc(b => b.STARTDATE)
+                .FirstAsync();
+
+            entity.STOCK = (last_data.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
+            entity.STOCK2 = (last_data.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
+
+
             var isex = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new { b.DEPT_ID,a.STARTDATE})
@@ -198,10 +218,23 @@ namespace EAM.Special.Services
         /// <summary>
         /// 更新
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="entity"></param>
         /// <returns></returns>
-        private async Task BeforeUpdate(BUILD_COUNT request)
+        private async Task BeforeUpdate(BUILD_COUNT entity)
         {
+            //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
+            var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
+                .Select(a => new
+                {
+                    a.STARTDATE,
+                    a.STOCK,
+                    a.STOCK2
+                })
+                .OrderByDesc(b => b.STARTDATE)
+                .FirstAsync();
+
+            entity.STOCK = (last_data.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
+            entity.STOCK2 = (last_data.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
             await Task.CompletedTask;
         }
 
