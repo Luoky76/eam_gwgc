@@ -40,9 +40,9 @@ namespace EAM.Special.Controller
             _service = service;
         }
 
-        public async Task<AjaxResult> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request, bool isAll = true)
         {
-            var result = await _service.ListAsync(request);
+            var result = await _service.ListAsync(request, isAll);
             return AjaxResult.Success(result);
         }
 

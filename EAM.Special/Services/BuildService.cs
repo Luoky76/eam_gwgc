@@ -56,8 +56,9 @@ namespace EAM.Special.Services
         /// 获取列表
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="isAll"></param>
         /// <returns></returns>
-        public async Task<GridData> ListAsync(GridRequest request)
+        public async Task<GridData> ListAsync(GridRequest request,bool isAll = true)
         {/*
             var ship = await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "shipdepartmentpermission")
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
@@ -99,7 +100,7 @@ namespace EAM.Special.Services
                     a.MOORING_RUNTIME,
                     a.MOORING_CUMTIME,
                 })
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && isAll, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderByDesc(a => a.STARTDATE)
                 .GetGridData(request);
             return list;
