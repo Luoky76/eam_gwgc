@@ -324,8 +324,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetPmSpList(GridRequest request, string exeId, string doneitemId)
         {
-            return await _dbContext.Query<PM_PLAN_SP>(c => c.EXE_ID.Equals(exeId)&&c.DONEITEM_ID.Equals(doneitemId))
-                .GetGridData(request);
+            var query = _dbContext.Query<PM_PLAN_SP>(c => c.EXE_ID.Equals(exeId));
+            if (!string.IsNullOrEmpty(doneitemId))
+            {
+                query = query.Where(c=> c.DONEITEM_ID.Equals(doneitemId));
+            }
+            return await query.GetGridData(request);
         }
 
         /// <summary>

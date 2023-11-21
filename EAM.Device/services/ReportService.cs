@@ -78,9 +78,12 @@ namespace EAM.Device.services
             //    .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
 
             //BUILD_COUNT ,REP_PLAN_EXE, PM_PLAN_EXE-PM_PLAN_SP,SP_ORDER,SP_OUTSTORE
-
-            var query = _dbContext.Query<DEVICE_CARD>().Where(x => _userSession.Corp.CorpID == x.DEPT_ID)
-                .Select(a => new
+            var req = _dbContext.Query<DEVICE_CARD>();
+            if (!_userSession.IsAdmin)
+            {
+                req = req.Where(x => _userSession.Corp.CorpID == x.DEPT_ID);
+            }
+            var query = req.Where(t=>t.STATUS == "1").Select(a => new
                 {
                     a.DEVICE_ID,
                     DEPT_NAME = a.DEVICE_NAME+"("+ a.DEPT_NAME + ")",
@@ -103,16 +106,15 @@ namespace EAM.Device.services
                 {
                     //维修
                     item.REP = _dbContext.Query<REP_PLAN_EXE>()
-                        .Where(a => a.DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.ACT_START_DATE >= b_time && a.ACT_START_DATE <= e_time)
+                        .Where(a => a.DEVICE_ID == item.DEVICE_ID && a.AUDITING == "1" && a.ACT_START_DATE >= b_time && a.ACT_START_DATE <= e_time)
                         .Sum(t => t.ACT_MONEY);
 
                     //维保
-                    item.PM = _dbContext.Query<PM_PLAN_SP>().LeftJoin<PM_PLAN_EXE>((a, b) => a.EXE_ID == b.EXE_ID)
-                        .Where((a, b) => b.DEPT_ID == item.DEPT_ID && b.AUDITING_EXE == "1" && b.BEGIN_DATE >= b_time && b.BEGIN_DATE <= e_time)
+                    item.PM = _dbContext.Query<PM_PLAN_EXE>().LeftJoin<PM_PLAN_SP>((a, b) => a.EXE_ID == b.EXE_ID)
+                        .Where((a, b) => a.DEVICE_ID == item.DEVICE_ID && a.AUDITING_EXE == "1" && a.BEGIN_DATE >= b_time && a.BEGIN_DATE <= e_time)
                         .Select((a, b) => new
                         {
-                            b.DEPT_ID,
-                            TAX_MONEY = a.TAX_MONEY.HasValue ? a.TAX_MONEY : 0
+                            TAX_MONEY = b.TAX_MONEY.HasValue ? b.TAX_MONEY : 0
                         })
                         .Sum(t => t.TAX_MONEY);
                     //订单
