@@ -97,7 +97,7 @@ namespace EAM.Special.Services
         public async Task<GridData> LaborUserCataLogList(string code)
         {
 
-            var list = await _dbContext.Query<BASE_SPCATALOG>(x=>x.TYPE_CODE==code).ToListAsync();
+            var list = await _dbContext.Query<BASE_SPCATALOG>(x => x.TYPE_CODE.StartsWith(code)).ToListAsync();
 
             return new GridData { Rows = list, Total = list.Count };
         }

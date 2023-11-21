@@ -34,7 +34,7 @@
                                 display: "USER_ID", name: "USER_ID", width: 150, hide: true, minWidth: 150, type: "text", render: function () {
                                     return me.sid;
                                 } },
-                            { display: "尺码", name: "SIZE_NAME", width: 60, minWidth: 60, type: "text", editor: { type: "float" } },
+                            { display: "尺码", name: "SIZE_NAME", width: 60, minWidth: 60, type: "text", editor: { type: "text" } },
                             
                         ]
                     },
@@ -153,7 +153,7 @@
                 var dataOptions = {
                     values: gridKeys,
                     options: {
-                        url: 'special/labor/LaborUserCataLogList?code=suit',
+                        url: 'special/labor/LaborUserCataLogList?code=015',
                         rowKey: "SP_CODE",
                         columns: [
                             { display: "物资编码", name: "SP_CODE", minWidth: 100, type: "text", },
@@ -183,6 +183,7 @@
                                 }, true);
                             }
                         }
+                        me.save();
                     }
                 }
                 $.ligerDialog.open({
