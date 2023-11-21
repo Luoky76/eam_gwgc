@@ -401,6 +401,7 @@
                         data: { id: me.sid },
                         success: function (data, message) {
                             data.OLDMODIFYDATE = data.MODIFYDATE;
+                            me.EXE_ID = data.EXE_ID;
                             me.mainform.setData(data);
                             inner();
                         },
@@ -669,6 +670,8 @@
                     toolbar: {},
                     url: 'Device/PmInfo/GetPmSpList',
                     parms: {
+                        exeId: "",
+                        doneitemId:"",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
@@ -909,11 +912,6 @@
                         });
                     }
                 }
-            },
-            //刷新
-            reloadSp: function () {
-                var me = this;
-                me.grid2.loadData();
             },
             //人员明细
             grid3: null,
@@ -1271,6 +1269,7 @@
             //刷新
             reloadSp: function () {
                 var me = this;
+                me.grid2.options.parms = { exeId: me.EXE_ID, doneitemId: me.DONEITEM_ID }
                 me.grid2.loadData();
             },
             //刷新
