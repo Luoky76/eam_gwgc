@@ -124,6 +124,7 @@ $.ligerDialog.open = function (p, wid) {
     return dialog;
 };
 
+//表单页面时长类型 支持 dd:hh:mm hh:mm mm 格式
 liger.editors['duration'] = {
     control: 'TextBox',
     getValue: function (editor) {
@@ -161,4 +162,20 @@ liger.editors['duration'] = {
         }
         editor.setValue(text, editParm.isTriggerEvent);
     }
+};
+
+//表格页面时长格式 支持 dd:hh:mm hh:mm mm 格式
+$.ligerDefaults.Grid.formatters['duration'] = function (value, column) {
+    var text = "";
+    if (value >= 0) {
+        if (value >= 60) text += parseInt(value / 60) + ":";
+        text += parseInt(value % 60);
+    }
+    else if (value < 0) {
+        text += "-";
+        value = -value;
+        if (value >= 60) text += parseInt(value / 60) + ":";
+        text += parseInt(value % 60);
+    }
+    return text;
 };
