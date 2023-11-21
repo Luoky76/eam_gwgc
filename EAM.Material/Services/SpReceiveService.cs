@@ -389,20 +389,25 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> OrderList()
         {
-            var orderQuery = _dbContext.JoinQuery<SP_ORDER_DETAIL, SP_ORDER>((a, b) => new object[] {
-                JoinType.LeftJoin,a.ORDER_ID==b.ORDER_ID
-            }).Where((a, b) => b.AUDITING == "1" && (a.COUNT - a.STOP_NUM) > (a.RECEIVE_COUNT2 ?? 0)).Select((a, b) => new
+            var orderQuery = await _dbContext.JoinQuery<SP_ORDER_DETAIL, SP_ORDER>((a, b) => new object[] {
+                JoinType.LeftJoin, a.ORDER_ID == b.ORDER_ID
+            })
+            .Where((a, b) => b.AUDITING == "1" && (a.COUNT - a.STOP_NUM) > (a.RECEIVE_COUNT2 ?? 0))
+            .Select((a, b) => new
             {
                 b.ORDER_CODE,
                 b.ORDER_ID,
                 b.PROVIDER_NAME,
-                b.ORDER_MONEY,
+                a.SP_NAME,
+                a.SP_CODE,
+                a.SP_SIZE,
                 b.BUY_USER,
                 b.DEPT_NAME,
                 b.ORDER_DATE,
             })
-            .ToList()
-            .DistinctBy(c => c.ORDER_CODE);
+            .OrderByDesc(x => x.ORDER_DATE)
+            .ToListAsync();
+            
             return AjaxResult.Success(orderQuery);
         }
 
