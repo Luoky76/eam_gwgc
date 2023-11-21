@@ -236,7 +236,8 @@
                 fileNumLimit: dialogData.fileNumLimit || dialogData.queueSizeLimit || 5,
                 fileSingleSizeLimit: fileSizeLimit,
                 duplicate: dialogData.duplicate || true,
-                jsToken: dialogData.jsToken
+                jsToken: dialogData.jsToken,
+                tokenOptions: dialogData.tokenOptions
             };
             if (!webUploaderOptions.pick.multiple) webUploaderOptions.fileNumLimit = 1;
             if (webUploaderOptions.fileNumLimit == 1) webUploaderOptions.auto = true;
