@@ -162,7 +162,7 @@ namespace EAM.Special.Services
                     c.BIRTHDAY,
                 },
                 c => a => a.USER_ID == c.USER_ID
-                , BeforeAdd, null, null, false, null, null);
+                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, null);
         }
 
         /// <summary>
@@ -193,7 +193,10 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeDelete(LABOR_USER entity)
         {
+            var sizeList = await _dbContext.DeleteAsync<LABOR_SIZE>(x=>x.USER_ID==entity.USER_ID);
+
             await Task.CompletedTask;
+
         }
 
 
