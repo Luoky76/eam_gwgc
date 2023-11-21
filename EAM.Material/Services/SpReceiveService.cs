@@ -395,11 +395,11 @@ namespace EAM.Material.Services
             .Where((a, b) => b.AUDITING == "1" && (a.COUNT - a.STOP_NUM) > (a.RECEIVE_COUNT2 ?? 0))
             .Select((a, b) => new
             {
-                b.ORDER_CODE,
                 b.ORDER_ID,
+                b.ORDER_CODE,
                 b.PROVIDER_NAME,
-                a.SP_NAME,
                 a.SP_CODE,
+                a.SP_NAME,
                 a.SP_SIZE,
                 b.BUY_USER,
                 b.DEPT_NAME,
