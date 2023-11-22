@@ -280,6 +280,9 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
@@ -324,6 +327,24 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            view: function (rowid) { //查看
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '[查看]施工能耗',
+                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": me.grid.getRow(rowid).BUILD_ID, "isNew": false, "isView": true }
+                });
+            },
             import: function () {
                 var me = this;
                 LG.showUpload({
@@ -367,7 +388,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": null }
+                    data: { "sid": null, "isNew": true, "isView": false }
                 });
                 //me.grid.addEditRow({}, true);
             },
@@ -392,7 +413,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
+                    data: { "sid": sid, "isNew": false, "isView": false }
                 });
             },
             save: function () { //保存

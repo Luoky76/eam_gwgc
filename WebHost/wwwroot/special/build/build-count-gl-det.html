@@ -219,9 +219,8 @@
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
+                    me.isView = me.dialogData.isView ?? true;
                 }
-                me.isView = false;
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
