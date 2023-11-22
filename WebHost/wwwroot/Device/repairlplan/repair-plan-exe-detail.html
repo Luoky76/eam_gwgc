@@ -154,7 +154,7 @@
                                                 // 计算时间差值（单位为毫秒）
                                                 var timeDiff = date2.getTime() - date1.getTime();
                                                 // 将时间差值转换为小时数
-                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60 / 60).toFixed(2);
+                                                var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60).toFixed(2);
                                                 liger.get("maingrid").updateCell("TAKE_TIME", minutesDiff, rowdata.record);
                                             }
                                         }
