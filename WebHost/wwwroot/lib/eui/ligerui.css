@@ -2884,6 +2884,13 @@ table.l-filter-group-alt table.l-filter-group {
     border-color: #19be6b !important;
 }
 
+.l-text-invalid .l-upload-item.l-upload-select {
+    border-color: red !important;
+}
+
+.l-text-invalid .l-upload-text {
+    border-color: red !important;
+}
 /* -----------------------
    * 表格 *
 * ----------------------- */

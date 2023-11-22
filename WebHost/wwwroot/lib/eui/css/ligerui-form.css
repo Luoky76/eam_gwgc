@@ -1492,3 +1492,11 @@
 .l-upload-drag-over {
     border-color: #19be6b !important;
 }
+
+.l-text-invalid .l-upload-item.l-upload-select {
+    border-color: red !important;
+}
+
+.l-text-invalid .l-upload-text {
+    border-color: red !important;
+}
