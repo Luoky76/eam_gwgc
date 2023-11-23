@@ -226,9 +226,20 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<string> GetPasswordAsync(string username)
         {
-            return await _dbContext.Query<CF_USER>()
+            string password = null;
+            if (username.IsMobileNumber())//手机号支持
+            {
+                password = await _dbContext.Query<CF_USER>()
+                .Where(c => c.PHONE == username && c.APPNAME == _options.UserAppName && c.FLAG == "1")
+                .Select(c => c.LOGINPASSWORD).FirstOrDefaultAsync();
+            }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                password = await _dbContext.Query<CF_USER>()
                 .Where(c => c.LOGINNAME == username && c.APPNAME == _options.UserAppName && c.FLAG == "1")
                 .Select(c => c.LOGINPASSWORD).FirstOrDefaultAsync();
+            }
+            return password;
         }
 
         /// <summary>

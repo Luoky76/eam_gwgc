@@ -155,10 +155,8 @@ namespace Gksyb.Server.Services.Auth
         {
             entity.CLASS ??= "0";
             MessageException.ThrowIf(!_user.IsOurCompany && entity.CLASS != "0", "您无权设置用户属性");
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME).AnyAsync())
-                throw new MessageException($"已经存在用户{entity.LOGINNAME}");
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME).AnyAsync())
-                throw new MessageException($"已经存在用户名{entity.REALNAME}");
+            await Handle(entity);
+
             entity.LOGINPASSWORD = UserSession.Encrypt(_options.InitPassWord);
             entity.RECORDSTATUS = Oper.Add;
             entity.APPNAME = _options.UserAppName;
@@ -175,10 +173,7 @@ namespace Gksyb.Server.Services.Auth
         {
             var old = await _dbContext.Query<CF_USER>().Where(c => c.USERID == entity.USERID).Select(c => new CF_USER() { CLASS = c.CLASS }).FirstOrDefaultAsync();
             MessageException.ThrowIf(!_user.IsOurCompany && ((entity.CLASS ?? "0") != (old.CLASS ?? "0")), "您无权设置用户属性");
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME && c.USERID != entity.USERID).AnyAsync())
-                throw new MessageException($"已经存在用户{entity.LOGINNAME}");
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME && c.USERID != entity.USERID).AnyAsync())
-                throw new MessageException($"已经存在用户名{entity.REALNAME}");
+            await Handle(entity);
 
             entity.RECORDSTATUS = Oper.Modify;
             await RoleHandle(entity);
@@ -213,6 +208,25 @@ namespace Gksyb.Server.Services.Auth
                 entity.USERID = await _dbContext.Query<CF_USER>().Where(c => c.LOGINNAME == entity.LOGINNAME &&
                 c.APPNAME == entity.APPNAME).Select(c => c.USERID).FirstAsync();
                 await RoleHandle(entity);
+            }
+        }
+
+        /// <summary>
+        /// 检查和预处理
+        /// </summary>
+        private async Task Handle(CF_USER entity)
+        {
+            var isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME)
+                .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            if (isExists) throw new MessageException($"已经存在用户{entity.LOGINNAME}");
+            isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME)
+                .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            if (isExists) throw new MessageException($"已经存在用户名{entity.REALNAME}");
+            if (!string.IsNullOrWhiteSpace(entity.PHONE))
+            {
+                isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.PHONE == entity.PHONE)
+                    .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+                if (isExists) throw new MessageException($"已经存在手机号{entity.PHONE}");
             }
         }
 
