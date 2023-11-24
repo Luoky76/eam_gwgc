@@ -47,6 +47,7 @@
             spHouse: [],
             start: null,
             orderid: null,
+            neworderid: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -63,7 +64,22 @@
                             { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
                             {
-                                display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "text",
+                                display: "订单号", name: "ORDER_CODE", newline: false, validate: { required: true }, upper: true, type: "text", options: {
+                                    disabled: true,
+                                    onChangeValue: function (input, value, g) {
+                                        if (me.neworderid != me.orderid) {
+                                            if (me.grid != null) {
+                                                var selected = me.grid.getData();
+                                                if (selected.length > 0) {
+                                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                                        me.grid.deleteRow(selected[i]);
+                                                    }
+                                                    me.savedet();
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             },
                             { display: "订单号", name: "ORDER_ID", newline: false, upper: true, type: "hidden", options: {} },
                             //{ display: "验收人", name: "CHK_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
@@ -379,7 +395,7 @@
                     columns: me.config.grid.columns,
                     dataAction: 'local',
                     toolbar: { group: "det" },
-                    url: 'Material/SpReceive/DetList', 
+                    url: 'Material/SpReceive/DetList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -581,12 +597,12 @@
                         options: {
                             url: 'Material/SpReceive/OrderList', rowKey: "ORDER_ID", isSingleCheck: true,
                             columns: [{ display: "订单号", name: "ORDER_CODE", dbname: "ORDER_CODE", minWidth: 300, type: "text", align: "center" },
-                                { display: "订单号ID", name: "ORDER_ID", dbname: "ORDER_ID", minWidth: 300, hide: true },
-                                { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", minWidth: 300, type: "text", align: "center" },
-                                { display: "型号规格", name: "SP_NAME", dbname: "SP_NAME", minWidth: 300, type: "text", align: "center" },
-                                { display: "申请部门", name: "SP_SIZE", dbname: "SP_SIZE", minWidth: 300, type: "text", align: "center" },
+                            { display: "订单号ID", name: "ORDER_ID", dbname: "ORDER_ID", minWidth: 300, hide: true },
+                            { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", minWidth: 300, type: "text", align: "center" },
+                            { display: "型号规格", name: "SP_NAME", dbname: "SP_NAME", minWidth: 300, type: "text", align: "center" },
+                            { display: "申请部门", name: "SP_SIZE", dbname: "SP_SIZE", minWidth: 300, type: "text", align: "center" },
                             { display: "下单日期", name: "ORDER_DATE", dbname: "ORDER_DATE", minWidth: 300, type: "date", align: "center" },
-                                { display: "申请部门", name: "DEPT_NAME", dbname: "DEPT_NAME", minWidth: 300, type: "date", align: "center" },
+                            { display: "申请部门", name: "DEPT_NAME", dbname: "DEPT_NAME", minWidth: 300, type: "date", align: "center" },
                             { display: "供应商", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", minWidth: 300, type: "text", align: "center" },
                             { display: "采购人", name: "BUY_USER", dbname: "BUY_USER", minWidth: 300, type: "text", align: "center" },],
                         },
@@ -597,7 +613,6 @@
                             { display: "物料编码", name: "SP_CODE", width: 100, type: "text" }
                         ],
                         callback: function (values, rows) {
-                            debugger
                             if (rows.length < 1) {
                                 me.mainform.setData({
                                     "ORDER_ID": null,
@@ -609,6 +624,7 @@
                                 return;
                             }
                             var row = rows[0];
+                            me.neworderid = row.ORDER_ID;
                             me.mainform.setData({
                                 "ORDER_ID": row.ORDER_ID,
                                 "PROVIDER_NAME": row.PROVIDER_NAME,
@@ -620,7 +636,7 @@
                     }
                 });
 
-            }, 
+            },
             init: function () {
                 var me = this;
                 if (frameElement && frameElement.dialog) {
