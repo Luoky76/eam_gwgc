@@ -103,7 +103,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeviceTypeName(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
         {
             var dbContext = _dbContext.Clone();
-            return await dbContext.Query<BASE_DEVICETYPE>(c =>c.STATUS!="0").Where(predicate)
+            return await dbContext.Query<BASE_DEVICETYPE>(c => c.STATUS!="0").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
                 .Distinct()
                .ToListAsync();
@@ -131,7 +131,7 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICE_COMPOSE>().Where(predicate)
-                .Select(c => new ComboxData() { ID = c.COMPOSE_ID, TEXT = c.COMPOSE_NAME, VALUE = c.COMPOSE_NAME })
+                .Select(c => new ComboxData() { ID = c.COMPOSE_ID, TEXT = c.COMPOSE_NAME, VALUE = c.TYPE_ID, EXTEND =c.TYPE_NAME, EXTEND1=c.TYPE_CODE })
                 .Distinct()
                .ToListAsync();
         }
@@ -149,7 +149,7 @@ namespace Gksyb.Server.Services.Common
                 .Distinct()
                .ToListAsync();
         }
-        
+
         /// <summary>
         /// 物资目录名称下拉框
         /// </summary>
@@ -288,7 +288,8 @@ namespace Gksyb.Server.Services.Common
                 .Where(predicate)
                 .Where(c => c.AUDITING == "1" && c.IS_TANGIBLE == "1")
                 .OrderBy(c => c.ASSET_CODE)
-                .Select(c => new ComboxData() {
+                .Select(c => new ComboxData()
+                {
                     ID = c.ASSET_ID,
                     TEXT = c.ASSET_CODE,
                     VALUE = c.ASSET_NAME,
@@ -475,7 +476,7 @@ namespace Gksyb.Server.Services.Common
                 })
                .ToListAsync();
         }
-        
+
         /// <summary>
         /// 停机分类
         /// </summary>
@@ -622,7 +623,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> SpHouseName(Expression<Func<SP_HOUSE, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<SP_HOUSE>(c=>c.AUDITING =="1").Where(predicate)
+            return await dbContext.Query<SP_HOUSE>(c => c.AUDITING =="1").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.HOUSE_CODE, TEXT = c.HOUSE_NAME, VALUE = c.HOUSE_ID })
                 .Distinct()
                .ToListAsync();
@@ -667,8 +668,8 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<CF_USER>()
-                .LeftJoin<CF_DEPT>((a,c)=>a.DEPARTCODE==c.DEPT_CODE)
-                .Select((a,c) => new ComboxData() { ID = a.USERID, TEXT = a.REALNAME, VALUE = c.DEPT_ID, EXTEND=c.DEPT_NAME})
+                .LeftJoin<CF_DEPT>((a, c) => a.DEPARTCODE==c.DEPT_CODE)
+                .Select((a, c) => new ComboxData() { ID = a.USERID, TEXT = a.REALNAME, VALUE = c.DEPT_ID, EXTEND=c.DEPT_NAME })
                 .Distinct()
                 .ToListAsync();
         }
@@ -774,7 +775,7 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
-        
+
         /// <summary>
         /// 故障状态
         /// </summary>
@@ -1000,7 +1001,7 @@ namespace Gksyb.Server.Services.Common
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                .ToListAsync();
         }
-        
+
         /// <summary>
         /// 劳保租借状态
         /// </summary>

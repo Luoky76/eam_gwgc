@@ -117,6 +117,33 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeAdd(BASE_DEVICETYPE entity)
         {
+            //默认值
+            var def = "000";
+            if (entity.PRE_TYPEID !=  "")
+            {
+                //取出父级节点的最大值
+                var pacode = await _dbContext.Query<BASE_DEVICETYPE>(x => x.TYPE_ID == entity.PRE_TYPEID)
+                    .Select(x => x.TYPE_CODE)
+                    .FirstOrDefaultAsync();
+                var newchild = pacode + def;
+
+                var childcode = await _dbContext.Query<BASE_DEVICETYPE>(x => x.PRE_TYPEID == entity.PRE_TYPEID)
+                    .Select(x => Sql.Max(x.TYPE_CODE) ?? newchild)
+                    .FirstOrDefaultAsync();
+                int parentCodeValue = childcode.CastTo<int>() + 1;
+                int numberOfDigits = childcode.ToString().Length;
+
+                entity.TYPE_CODE = $"{parentCodeValue}".PadLeft(numberOfDigits, '0');
+            }
+            else
+            {
+                var parentcode = await _dbContext.Query<BASE_DEVICETYPE>()
+                    .Select(x => Sql.Max(x.TYPE_CODE) ?? def)
+                    .FirstOrDefaultAsync();
+                entity.TYPE_CODE = (int.Parse(parentcode) + 1).ToString("D3");
+
+            }
+
             entity.TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
             var query = await _dbContext.Query<BASE_DEVICETYPE>()
                 .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
@@ -135,6 +162,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(BASE_DEVICETYPE entity)
         {
+
             var query = await _dbContext.Query<BASE_DEVICETYPE>()
                 .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
                 .FirstOrDefaultAsync();

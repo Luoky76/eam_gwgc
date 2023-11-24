@@ -120,9 +120,9 @@
                     sortOrder: 'asc',
                     width: '99%',
                     height: '100%',
-                    checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
+                    checkbox: false,
+                    enabledEdit: false,
+                    clickToEdit: false,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
                             case "":
@@ -140,9 +140,6 @@
                         }
                         return "";
                     },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.modify(rowid);
-                    }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
@@ -243,6 +240,16 @@
                         }
                     });
                 }
+            },
+            initSelect: function () {
+                var me = this;
+                var values = $.isArray(me.data.values) ? me.data.values : (me.data.values || "").split(me.data.split);
+                var select = {};
+                for (var i = 0, l = values.length; i < l; i++) {
+                    var item = values[i];
+                    select[item] = true;
+                }
+                me._storageSelect = select;
             },
             reloadTree: function () {
                 var me = this;
@@ -393,15 +400,83 @@
                     }
                 });
             },
+
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            save: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows() || [];
+                var values = [];
+                for (var i = 0, l = rows.length; i < l; i++) {
+                    var row = rows[i];
+                    values.push(row[me.data.options.rowKey]);
+                }
+                if (me.data.callback) {
+                    me.data.callback(values, rows);
+                }
+                me.close();
+            },
+            setFormButtons: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                buttons.push({ text: '确定', onclick: me.save.bind(me) });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
             init: function () {
                 var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.data = frameElement.dialog.get('data') || {};
+                    //me.data = {
+                    //    values: "123,456,789,",//[123,456,789]
+                    //    //split:",",
+                    //    options: {
+                    //        url: 'popup/users', sortName: 'Name', rowKey: "",
+                    //        columns: [
+                    //            { display: "表格列", name: "column", type: "text" }
+                    //        ]
+                    //    },
+                    //    fields: [
+                    //        { display: "查询条件", name: "name", type: "text" }
+                    //    ],
+                    //    callback: function (values, rows) {
+                    //    }
+                    //};
+                }
+                if (!me.data || !me.data.options) {
+                    LG.showError("参数不完整");
+                    return;
+                }
+                me.data.split = me.data.split || ",";
+                me.loadComboxData();
                 $("#layout").ligerLayout({ leftWidth: 240 });
                 me.iframeloading.show();
                 me.loadComboxData();
+                me.initSelect();
                 me.setConfig();
                 me.setGrid();
                 me.setTree();
                 me.setForm();
+                me.setFormButtons();
                 return me;
             }
         };

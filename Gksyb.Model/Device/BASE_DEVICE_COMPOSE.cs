@@ -39,6 +39,13 @@ namespace Gksyb.Model
         public string MEMO { get; set; }
 
         /// <summary>
+        /// 设备类别编码
+        /// </summary>
+        [Description("设备类别编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_CODE { get; set; }
+        
+        /// <summary>
         /// 设备结构名称
         /// </summary>
         [Description("设备结构名称")]

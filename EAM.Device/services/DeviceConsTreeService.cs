@@ -109,6 +109,7 @@ namespace EAM.Device.services
             {
                 c.TYPE_ID,
                 c.TYPE_NAME,
+                c.TYPE_CODE,
                 c.COMPOSE_ID,
                 c.COMPOSE_NAME,
                 c.COMPOSE_CODE,
@@ -136,6 +137,7 @@ namespace EAM.Device.services
                 {
                     c.TYPE_ID,
                     c.TYPE_NAME,
+                    c.TYPE_CODE,
                     c.COMPOSE_ID,
                     c.COMPOSE_NAME,
                     c.COMPOSE_CODE,
