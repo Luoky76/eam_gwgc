@@ -53,7 +53,7 @@ namespace Gksyb.Core.Auth
         {
             var user = source?.GetCurrentUserAsync().Result();
             if (user != null) return user;
-            var ip = source == null ? Gksyb.Common.Static.HttpContext.AddressList.ToStr(",") : source.Request?.GetRealIP();
+            var ip = source == null ? Gksyb.Common.Static.HttpContext.AddressList.FirstOrDefault() : source.Request?.GetRealIP();
             return new UserSession()
             {
                 RealName = ip,
