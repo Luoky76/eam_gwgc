@@ -40,25 +40,38 @@ namespace Quartz
                 _quartzTask.IsExcuted = false;
                 var key = _quartzTask.TaskID.ToString();
                 var isExcute = await distributedCache.GetStringAsync($"{key}{nameof(Expiry)}");
-                if (isExcute == "1") return;
+                if (isExcute == "1")
+                {
+                    _logger.LogInformation(_logPath, $"上次任务未完成，跳过本次调度");
+                    return;
+                }
                 _isDistributedLock = (_quartzTask.TaskIP ?? "").Split(",").DistinctAndOrderBy().Count() != 1;
                 if (_isDistributedLock)//不是单IP，分布式锁处理
                 {
-                    var address = HttpContext.AddressList.ToStr(",");
+                    var address = HttpContext.AddressList.ToStr(",").SubStr(0, 500, true); ;
                     var value = await DistributedLockHelper.LockQueryAsync(key);
-                    if (!string.IsNullOrWhiteSpace(value) && value != address) return;//已被其他服务器锁定
+                    if (!string.IsNullOrWhiteSpace(value) && value != address)
+                    {
+                        _logger.LogInformation(_logPath, $"任务已被{value}锁定");
+                        return;//已被其他服务器锁定
+                    }
                     var nextFireTimeUtc = context.NextFireTimeUtc ?? context.FireTimeUtc.AddSeconds(Expiry);
                     var expiry = (nextFireTimeUtc - context.FireTimeUtc).TotalSeconds * 3;
                     if (expiry < Expiry) expiry = Expiry;
                     expiry *= 1000;
                     //首次调度，为了延续之前IP，先锁定之前IP
                     var isChange = context.PreviousFireTimeUtc == null && !string.IsNullOrWhiteSpace(_quartzTask.LastRunIP) && _quartzTask.LastRunIP != address;
-                    address = isChange ? _quartzTask.LastRunIP : address;
-                    if (!await DistributedLockHelper.LockExtendAsync(key, address, expiry) && !await DistributedLockHelper.LockTakeAsync(key, address, expiry))//加入锁
+                    var runIP = isChange ? _quartzTask.LastRunIP : address;
+                    if (!await DistributedLockHelper.LockExtendAsync(key, runIP, expiry) && !await DistributedLockHelper.LockTakeAsync(key, runIP, expiry))//加入锁
                     {
+                        _logger.LogInformation(_logPath, $"锁定任务{key}:{runIP}失败");
                         return;
                     }
-                    if (isChange) return;
+                    if (isChange)
+                    {
+                        _logger.LogInformation(_logPath, $"首次调度跳过，当前{address}：延续{runIP}");
+                        return;
+                    }
                 }
                 taskKey = $"{key}{nameof(Expiry)}";
                 await distributedCache.SetStringAsync(taskKey, "1", new DistributedCacheEntryOptions()

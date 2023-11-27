@@ -6,12 +6,14 @@ using Quartz.Listener;
 
 namespace Gksyb.Common.Quartz
 {
+    /// <summary>
+    /// 单例注入 全局处理job
+    /// </summary>
     public class JobListener : JobListenerSupport
     {
         private readonly LogPath _logPath = new(nameof(JobListener));
         private readonly ILogger<JobListener> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private QuartzTask _quartzTask = null;
 
         public JobListener(ILogger<JobListener> logger, IServiceScopeFactory serviceScopeFactory)
         {
@@ -23,11 +25,7 @@ namespace Gksyb.Common.Quartz
 
         public override async Task JobToBeExecuted(IJobExecutionContext context, CancellationToken cancellationToken = default)
         {
-            _quartzTask = (context.JobDetail.JobDataMap["QuartzTask"] as QuartzTask) ?? new QuartzTask()
-            {
-                TaskID = GuidHelper.NewSnowflakeId()
-            };
-            _quartzTask.IsExcuted = false;
+            if (context.JobDetail.JobDataMap["QuartzTask"] is QuartzTask quartzTask) quartzTask.IsExcuted = false;
             await Task.CompletedTask;
         }
 
@@ -35,13 +33,18 @@ namespace Gksyb.Common.Quartz
         {
             try
             {
-                if (!_quartzTask.IsExcuted) return;
-                _quartzTask.LastRunTime = context.FireTimeUtc.ToLocalTime().DateTime;
-                _quartzTask.ElapsedTime = context.JobRunTime.TotalMilliseconds.CastTo<int>();
+                if (context.JobDetail.JobDataMap["QuartzTask"] is not QuartzTask quartzTask) return;
+                quartzTask.LastRunTime = context.FireTimeUtc.ToLocalTime().DateTime;
+                quartzTask.ElapsedTime = context.JobRunTime.TotalMilliseconds.CastTo<int>();
+                if (!quartzTask.IsExcuted)
+                {
+                    _logger.LogInformation(_logPath, $"任务未执行：{quartzTask.ToMiniJson()}");
+                    return;
+                }
                 if (jobException == null)
                 {
-                    _quartzTask.RunStatus = "正常";
-                    _quartzTask.LastRunResult = context.Result?.ToString();
+                    quartzTask.RunStatus = "正常";
+                    quartzTask.LastRunResult = context.Result?.ToString();
                 }
                 else
                 {
@@ -53,12 +56,12 @@ namespace Gksyb.Common.Quartz
                             ex = ex.InnerException;
                         }
                     }
-                    _quartzTask.RunStatus = "异常";
-                    _quartzTask.LastRunResult = ex.ToString();
+                    quartzTask.RunStatus = "异常";
+                    quartzTask.LastRunResult = ex.ToString();
                 }
                 using var scope = _serviceScopeFactory.CreateAsyncScope();
                 var quartzStore = scope.ServiceProvider.GetService<IQuartzStore>();
-                await quartzStore.SetTaskInfo(_quartzTask);
+                await quartzStore.SetTaskInfo(quartzTask);
             }
             catch (Exception ex)
             {
