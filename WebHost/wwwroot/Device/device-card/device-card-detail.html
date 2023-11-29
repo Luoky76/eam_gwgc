@@ -51,7 +51,7 @@
                             { display: "设备编号", name: "DEVICE_NO", newline: false, width: 300, type: "text", options: {}, validate: { required: true }, group: "基础信息" },
                             { display: "立卡日期", name: "CARD_DATE", newline: false, width: 300, type: "date", options: {} },
                             { display: "设备名称", name: "DEVICE_NAME", newline: false, width: 300, type: "text", options: {} },
-                            { display: "设备机型", name: "BOM_NAME", newline: false, width: 300, type: "text", options: {} },
+                            //{ display: "设备机型", name: "BOM_NAME", newline: false, width: 300, type: "text", options: {} },
                             {
                                 display: "设备类别", name: "TYPE_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.devicetype }, validate: { required: true }, options: {
                                     onChangeValue: function (input, value, g) {
@@ -67,7 +67,7 @@
                                     }
                                 }
                             },
-                            { display: "设备机型", name: "TYPE_NAME", newline: false, width: 300, type: "hidden" },
+                            { display: "设备类别", name: "TYPE_NAME", newline: false, width: 300, type: "hidden" },
                             { display: "设备型号", name: "DEVICE_TYPE", newline: false, width: 300, type: "text", options: {} },
                             {
                                 display: "使用部门", name: "DEPT_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
