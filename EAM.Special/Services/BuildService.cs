@@ -278,6 +278,7 @@ namespace EAM.Special.Services
                         throw new MessageException("船舶名称不能为空！");
                     }
 
+
                     var device = await _dbContext.Query<DEVICE_CARD>(x => x.DEVICE_NAME == c.DEVICE_NAME).FirstOrDefaultAsync();
 
                     BUILD_COUNT dto = c.MapTo<BUILD_COUNT>();

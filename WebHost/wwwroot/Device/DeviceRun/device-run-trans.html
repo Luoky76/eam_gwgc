@@ -120,8 +120,8 @@
                     pageSize: 50,
                     //isSingleCheck: true,
                     //usePager: false,
-                    onBeforeEdit: function (editParm) {
-
+                    onBeforeEdit: function (editParm, isSkip) {
+                        if (isSkip) return;
                     },
                     onSuccess: function (data, g) {
 
