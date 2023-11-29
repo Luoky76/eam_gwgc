@@ -131,10 +131,10 @@ namespace EAM.Special.DTO
         public decimal? PUMP { get; set; }
 
         /// <summary>
-        /// 小计
+        /// 柴油总日耗
         /// </summary>
-        [ImporterHeader(Name = "小计")]
-        [Display(Name = "小计")]
+        [ImporterHeader(Name = "柴油总日耗")]
+        [Display(Name = "柴油总日耗")]
         public decimal? SUBTOTAL { get; set; }
 
         
