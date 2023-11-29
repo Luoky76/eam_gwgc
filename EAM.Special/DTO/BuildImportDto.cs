@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace EAM.Special.DTO
 {
     [ExcelExporter(Name = "通用导出测试", Author = "港口事业部", AutoFitMaxRows = 5000)]
-    [ExcelImporter(MaxCount = 50000)]
+    [ExcelImporter(MaxCount = 50000, HeaderRowIndex = 2)]
     public class BuildImportDto
     {
         /// <summary>
@@ -89,24 +89,24 @@ namespace EAM.Special.DTO
         public decimal? OTHERSTOP { get; set; }
 
         /// <summary>
-        /// 日耗
+        /// 淡水日耗
         /// </summary>
-        [ImporterHeader(Name = "日耗")]
-        [Display(Name = "日耗")]
+        [ImporterHeader(Name = "淡水日耗")]
+        [Display(Name = "淡水日耗")]
         public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
-        /// 补充
+        /// 淡水补充
         /// </summary>
-        [ImporterHeader(Name = "补充")]
-        [Display(Name = "补充")]
+        [ImporterHeader(Name = "淡水补充")]
+        [Display(Name = "淡水补充")]
         public decimal? SUPPLEMENT { get; set; }
 
         /// <summary>
-        /// 库存
+        /// 淡水库存
         /// </summary>
-        [ImporterHeader(Name = "库存")]
-        [Display(Name = "库存")]
+        [ImporterHeader(Name = "淡水库存")]
+        [Display(Name = "淡水库存")]
         public decimal? STOCK { get; set; }
 
         /// <summary>
