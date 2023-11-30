@@ -11,13 +11,13 @@ namespace EAM.Material.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<GridData> ListAsync(GridRequest request);
-
+        Task<SP_COLLECT> GetCollectDetail(string ID);
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request);
+        Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet);
 
         /// <summary>
         /// 获取下拉框数据
