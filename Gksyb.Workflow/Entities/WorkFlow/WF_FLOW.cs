@@ -63,7 +63,7 @@ namespace Gksyb.Model.WorkFlow
         /// </summary>
         [ModelEncrypt]
         [Description("流程内容")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string FLOW_CONTENT { get; set; }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Gksyb.Model.WorkFlow
         /// </summary>
         [ModelEncrypt]
         [Description("流程表单")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string FLOW_FORM { get; set; }
 
         /// <summary>

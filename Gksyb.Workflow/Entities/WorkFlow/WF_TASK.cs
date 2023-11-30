@@ -62,7 +62,7 @@ namespace Gksyb.Model.WorkFlow
         /// 流程表单数据
         /// </summary>
         [Description("流程表单数据")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string FLOW_FORM_DATA { get; set; }
 
         /// <summary>
