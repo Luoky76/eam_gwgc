@@ -160,15 +160,16 @@
                                 break;
                         }
                     },
-                    onSuccess: function (data, g) {
+                    onSuccess: function (data) {
                         if (data && data.Rows) {
-                            var rows = data.Rows;
-                            for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDUSERID = rows[i].USERID;
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDUSERID = row.USERID;
                             }
                         }
                     },
-                    rowAttrRender: function (rowdata, rowid) {
+                    rowAttrRender: function (rowdata) {
                         if (rowdata && rowdata.FLAG && rowdata.FLAG == "0") {
                             return "style='color:red;'";
                         }
