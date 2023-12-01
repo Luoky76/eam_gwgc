@@ -6,15 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/*
+ * 使用 _TYPE 为后缀的字段进行 hh:mm 时长格式的识别
+ */
+
 namespace EAM.Special.DTO
 {
     [ExcelExporter(Name = "通用导出测试", Author = "港口事业部", AutoFitMaxRows = 5000)]
-    [ExcelImporter(MaxCount = 50000)]
+    [ExcelImporter(MaxCount = 50000, HeaderRowIndex = 2)]
     public class BuildImportDto
     {
         /// <summary>
@@ -49,64 +54,279 @@ namespace EAM.Special.DTO
         /// <summary>
         /// 施工准备
         /// </summary>
+        public decimal? CONPLAN { get; set; }
+
+        /// <summary>
+        /// 施工准备 hh:mm
+        /// </summary>
         [ImporterHeader(Name = "施工准备")]
-        [Display(Name = "施工准备")]
-        public string CONPLAN { get; set; }
+        [Display(Name = "施工准备 hh:mm")]
+        public string CONPLAN_TYPE {
+            get
+            {
+                return CONPLAN.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        CONPLAN = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        CONPLAN = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        CONPLAN = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("施工准备数据有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 挖泥时间
         /// </summary>
-        [ImporterHeader(Name = "挖泥时间")]
-        [Display(Name = "挖泥时间")]
         public decimal? DREDGETIME { get; set; }
+
+        /// <summary>
+        /// 挖泥时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "挖泥时间")]
+        [Display(Name = "挖泥时间 hh:mm")]
+        public string DREDGETIME_TYPE
+        {
+            get
+            {
+                return DREDGETIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        DREDGETIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        DREDGETIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        DREDGETIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("挖泥时间数据有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 航行时间
         /// </summary>
-        [ImporterHeader(Name = "航行时间")]
-        [Display(Name = "航行时间")]
         public decimal? SAILTIME { get; set; }
+
+        /// <summary>
+        /// 航行时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "航行时间")]
+        [Display(Name = "航行时间 hh:mm")]
+        public string SAILTIME_TYPE
+        {
+            get
+            {
+                return SAILTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        SAILTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        SAILTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        SAILTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("航行时间数据有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 检修时间
         /// </summary>
-        [ImporterHeader(Name = "检修时间")]
-        [Display(Name = "检修时间")]
         public decimal? REPAIRTIME { get; set; }
+
+        /// <summary>
+        /// 检修时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "检修时间")]
+        [Display(Name = "检修时间 hh:mm")]
+        public string REPAIRTIME_TYPE
+        {
+            get
+            {
+                return REPAIRTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        REPAIRTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        REPAIRTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        REPAIRTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("检修时间数据有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 天气影响
         /// </summary>
-        [ImporterHeader(Name = "天气影响")]
-        [Display(Name = "天气影响")]
         public decimal? WEATHEREFFECT { get; set; }
+
+        /// <summary>
+        /// 天气影响 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "天气影响")]
+        [Display(Name = "天气影响 hh:mm")]
+        public string WEATHEREFFECT_TYPE
+        {
+            get
+            {
+                return WEATHEREFFECT.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        WEATHEREFFECT = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        WEATHEREFFECT = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        WEATHEREFFECT = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("天气影响数据有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 其他停工
         /// </summary>
-        [ImporterHeader(Name = "其他停工")]
-        [Display(Name = "其他停工")]
         public decimal? OTHERSTOP { get; set; }
 
         /// <summary>
-        /// 日耗
+        /// 其他停工 hh:mm
         /// </summary>
-        [ImporterHeader(Name = "日耗")]
-        [Display(Name = "日耗")]
+        [ImporterHeader(Name = "其他停工")]
+        [Display(Name = "其他停工 hh:mm")]
+        public string OTHERSTOP_TYPE
+        {
+            get
+            {
+                return OTHERSTOP.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        OTHERSTOP = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        OTHERSTOP = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        OTHERSTOP = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("其他停工数据有误\n" + e.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 淡水日耗
+        /// </summary>
+        [ImporterHeader(Name = "淡水日耗")]
+        [Display(Name = "淡水日耗")]
         public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
-        /// 补充
+        /// 淡水补充
         /// </summary>
-        [ImporterHeader(Name = "补充")]
-        [Display(Name = "补充")]
+        [ImporterHeader(Name = "淡水补充")]
+        [Display(Name = "淡水补充")]
         public decimal? SUPPLEMENT { get; set; }
 
         /// <summary>
-        /// 库存
+        /// 淡水库存
         /// </summary>
-        [ImporterHeader(Name = "库存")]
-        [Display(Name = "库存")]
+        [ImporterHeader(Name = "淡水库存")]
+        [Display(Name = "淡水库存")]
         public decimal? STOCK { get; set; }
 
         /// <summary>
@@ -131,13 +351,11 @@ namespace EAM.Special.DTO
         public decimal? PUMP { get; set; }
 
         /// <summary>
-        /// 小计
+        /// 柴油总日耗
         /// </summary>
-        [ImporterHeader(Name = "小计")]
-        [Display(Name = "小计")]
+        [ImporterHeader(Name = "柴油总日耗")]
+        [Display(Name = "柴油总日耗")]
         public decimal? SUBTOTAL { get; set; }
-
-        
 
         /// <summary>
         /// 柴油补充
@@ -170,51 +388,303 @@ namespace EAM.Special.DTO
         /// <summary>
         /// 待工
         /// </summary>
-        [ImporterHeader(Name = "待工")]
-        [Display(Name = "待工")]
         public decimal? WAIT_WORK { get; set; }
+
+        /// <summary>
+        /// 待工 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "待工")]
+        [Display(Name = "待工 hh:mm")]
+        public string WAIT_WORK_TYPE
+        {
+            get
+            {
+                return WAIT_WORK.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        WAIT_WORK = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        WAIT_WORK = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        WAIT_WORK = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("待工数据有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 作业时间
         /// </summary>
-        [ImporterHeader(Name = "作业时间")]
-        [Display(Name = "作业时间")]
         public decimal? WORK_TIME { get; set; }
+
+        /// <summary>
+        /// 作业时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "作业时间")]
+        [Display(Name = "作业时间 hh:mm")]
+        public string WORK_TIME_TYPE
+        {
+            get
+            {
+                return WORK_TIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        WORK_TIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        WORK_TIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        WORK_TIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("作业时间有误\n" + e.Message);
+                }
+            }
+        }
 
 
         /// <summary>
         /// 锚泊时间
         /// </summary>
-        [ImporterHeader(Name = "锚泊时间")]
-        [Display(Name = "锚泊时间")]
         public decimal? ANCHOR_TIME { get; set; }
+
+        /// <summary>
+        /// 锚泊时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "锚泊时间")]
+        [Display(Name = "锚泊时间 hh:mm")]
+        public string ANCHOR_TIME_TYPE
+        {
+            get
+            {
+                return ANCHOR_TIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        ANCHOR_TIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        ANCHOR_TIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        ANCHOR_TIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("锚泊时间有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 主发电机运行时间
         /// </summary>
-        [ImporterHeader(Name = "主发电机运行时间")]
-        [Display(Name = "主发电机运行时间")]
         public decimal? MAIN_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 主发电机运行时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "主发电机运行时间")]
+        [Display(Name = "主发电机运行时间 hh:mm")]
+        public string MAIN_RUNTIME_TYPE
+        {
+            get
+            {
+                return MAIN_RUNTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        MAIN_RUNTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        MAIN_RUNTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        MAIN_RUNTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("主发电机运行时间有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 主发电机累计时间
         /// </summary>
-        [ImporterHeader(Name = "主发电机累计时间")]
-        [Display(Name = "主发电机累计时间")]
         public decimal? MAIN_CUMTIME { get; set; }
+
+        /// <summary>
+        /// 主发电机累计时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "主发电机累计时间")]
+        [Display(Name = "主发电机累计时间 hh:mm")]
+        public string MAIN_CUMTIME_TYPE
+        {
+            get
+            {
+                return MAIN_CUMTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        MAIN_CUMTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        MAIN_CUMTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        MAIN_CUMTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("主发电机累计时间有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 停泊发电机运行时间
         /// </summary>
-        [ImporterHeader(Name = "停泊发电机运行时间")]
-        [Display(Name = "停泊发电机运行时间")]
         public decimal? MOORING_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 停泊发电机运行时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "停泊发电机运行时间")]
+        [Display(Name = "停泊发电机运行时间 hh:mm")]
+        public string MOORING_RUNTIME_TYPE
+        {
+            get
+            {
+                return MOORING_RUNTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        MOORING_RUNTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        MOORING_RUNTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        MOORING_RUNTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("停泊发电机运行时间有误\n" + e.Message);
+                }
+            }
+        }
 
         /// <summary>
         /// 停泊发电机累计时间
         /// </summary>
-        [ImporterHeader(Name = "停泊发电机累计时间")]
-        [Display(Name = "停泊发电机累计时间")]
         public decimal? MOORING_CUMTIME { get; set; }
+
+        /// <summary>
+        /// 停泊发电机累计时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "停泊发电机累计时间")]
+        [Display(Name = "停泊发电机累计时间 hh:mm")]
+        public string MOORING_CUMTIME_TYPE
+        {
+            get
+            {
+                return MOORING_CUMTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        MOORING_CUMTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        MOORING_CUMTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        MOORING_CUMTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("停泊发电机累计时间有误\n" + e.Message);
+                }
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Org.BouncyCastle.Asn1.Esf;
@@ -78,8 +79,13 @@ namespace EAM.Device.services
             //    .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
 
             //BUILD_COUNT ,REP_PLAN_EXE, PM_PLAN_EXE-PM_PLAN_SP,SP_ORDER,SP_OUTSTORE
+
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             var req = _dbContext.Query<DEVICE_CARD>();
-            if (!_userSession.IsAdmin)
+            if (!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId)
             {
                 req = req.Where(x => _userSession.Corp.CorpID == x.DEPT_ID);
             }

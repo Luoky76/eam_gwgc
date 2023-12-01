@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.InkML;
 using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -70,9 +71,12 @@ namespace EAM.Device.services
                 x.DEVICE_ID,
                 SUBMITDATE = Sql.Max(x.SUBMITDATE),
             });
-
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             var qry = _dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING=="1")
                 .Where((a, b, c) => a.AUDITING=="1"&&a.STATUS=="1"&&a.TYPE_ID=="2");
@@ -95,8 +99,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetRun(GridRequest request)
         {
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             var qry = _dbContext.Query<RUN_TRANS>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.TRANS_DATE);
             return await qry.GetGridData(request);
@@ -179,9 +187,12 @@ namespace EAM.Device.services
                 x.DEVICE_ID,
                 SUBMITDATE = Sql.Max(x.SUBMITDATE),
             });
-
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             var qry = _dbContext.Query<DEVICE_CARD>()
-                 .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                  .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE &&c.AUDITING=="1")
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)

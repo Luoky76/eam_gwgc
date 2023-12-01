@@ -77,9 +77,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetFaultExeList(GridRequest request)
         {
-
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<REP_FAULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderBy(c => c.AUDITING_B)
                 .ThenByDesc(c => c.FAULT_CODE)
                 .GetGridData(request);
@@ -406,9 +409,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetFaultCheckList(GridRequest request)
         {
-
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<REP_FAULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.DISPOSE_TYPE=="2"&&(c.AUDITING_B=="1"||c.AUDITING_C=="1"))
                 .OrderBy(c => c.AUDITING_D)
                 .ThenByDesc(c => c.FAULT_CODE)
@@ -422,9 +428,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetFaultCheckQryList(GridRequest request)
         {
-
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<REP_FAULT>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderBy(c => c.FAULT_STATUS)
                 .ThenByDesc(c => c.FAULT_CODE)
                 .GetGridData(request);

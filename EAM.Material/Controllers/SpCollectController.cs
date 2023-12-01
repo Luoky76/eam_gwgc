@@ -28,6 +28,18 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 根据物料领用申请ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetCollectDetailAsync(string ID)
+        {
+            if (ID.IsNullOrEmpty()) return AjaxResult<SP_OUT_APP>.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetCollectDetail(ID), "成功");
+        }
+
+        /// <summary>
 		/// 获取下拉框数据
 		/// </summary>
 		/// <returns></returns>
@@ -41,14 +53,15 @@ namespace EAM.Material.Controllers
         /// 保存
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="requestdet"></param>
         /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request)
+        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.Save(request);
+            return await _service.Save(request, requestdet);
         }
         /// <summary>
         /// 提交

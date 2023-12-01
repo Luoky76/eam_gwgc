@@ -78,8 +78,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetPmPlanList(GridRequest request)
         {
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<PM_PLAN_EXE>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.PM_TYPE=="20")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
@@ -527,8 +531,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetPmExeList(GridRequest request)
         {
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<PM_PLAN_EXE>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.AUDITING=="1")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
@@ -545,8 +553,12 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetPmExeQryList(GridRequest request)
         {
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<PM_PLAN_EXE>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID)
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .OrderByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
         }

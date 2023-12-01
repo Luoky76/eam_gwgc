@@ -91,14 +91,14 @@
                             { display: "编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", options: {}, editor: { disabled: true } },
                             { display: "停机过程描述", name: "STOP_DESC", newline: true, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
 
-                            { display: "分析人", name: "CHECK_USER", newline: false, upper: true, type: "text", validate: { required: true }, options: {}, group: "停机分析报告" },
+                            { display: "分析人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: {}, group: "停机分析报告" },
                             { display: "分析人ID", name: "CHECK_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "分析部门", name: "CHECK_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "分析日期", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {} },
                             { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.repType } },
                             { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", validate: { required: true }, options: {} },
-                            { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
-                            { display: "后续措施", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
+                            { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "计划后续措施", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
 
                             { display: "使用部门ID", name: "DEPT_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "二级单位ID", name: "SEC_DEPTID", newline: false, upper: true, type: "hidden", options: {} },

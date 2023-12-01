@@ -436,8 +436,12 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeviceInfo(Expression<Func<DEVICE_CARD, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             var qry = dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID);
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID);
             return await qry.Where(predicate).Where(c => c.AUDITING=="1")
                 .Select(c => new ComboxData()
                 {
@@ -463,8 +467,12 @@ namespace Gksyb.Server.Services.Common
         {
             //公司换成部门过滤
             using var dbContext = _dbContext.Clone();
+            //从 BC_CODE 取船机部的部门 ID
+            var engineCorpId = (await dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
+                .FirstAsync()).CODE_EN;
+            //除超管和船机部外，按部门过滤数据
             var qry = dbContext.Query<DEVICE_CARD>()
-                .WhereIf(!_userSession.IsAdmin, a => _userSession.Corp.CorpID == a.DEPT_ID);
+                .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID);
             return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_ID=="1")
                 .Select(c => new ComboxData()
                 {

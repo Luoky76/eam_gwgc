@@ -348,12 +348,12 @@
             import: function () {
                 var me = this;
                 LG.showUpload({
-                    title: "施工统计表数据导入",
+                    title: "施工能耗数据导入",
                     server: "Special/Build/Import",
                     //mouldFileName: "contract/ExportExcelHeader",
                     mouldFileName: function () {
                         debugger
-                        window.open(gksybConfigs.urlBase + "base/施工统计表数据导入.xlsx");
+                        window.open(gksybConfigs.urlBase + "import-excel/施工能耗导入（001）.xlsx");
                     },
                     multiple: false,
                     extensions: 'xls,xlsx',
