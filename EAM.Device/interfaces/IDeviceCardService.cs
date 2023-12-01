@@ -14,7 +14,11 @@ namespace EAM.Device.Interfaces
         /// <param name="request"></param>
         /// <returns></returns>
         Task<GridData> ListAsync(GridRequest request);
-
+        /// <summary>
+        /// 获取树形结构
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> TreeAsync();
         Task<AjaxResult> ComboxData();
         Task<AjaxResult> GetAsync(string id);
 

@@ -11,7 +11,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
-    public class DeviceCardService :  IDeviceCardService
+    public class DeviceCardService : IDeviceCardService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -27,6 +27,7 @@ namespace EAM.Device.Services
         }
 
         #region 设备卡片
+
         public async Task<AjaxResult> ComboxData()
         {
             try
@@ -47,7 +48,50 @@ namespace EAM.Device.Services
                 throw new Exception("获取下拉数据失败！原因：" + e.Message);
             }
         }
+        /// <summary>
+        /// 获取树形结构
+        /// </summary>
+        /// <returns></returns>
+        public async Task<AjaxResult> TreeAsync()
+        {
+            var composeData = await _dbContext.Query<DEVICE_CARD>(c => c.TYPE_ID == "1").ToListAsync();
+            var deviceList = composeData.Select(c => new
+            {
+                c.DEVICE_NAME,
+                c.DEVICE_ID,
+                c.DEPT_ID,
+                c.DEPT_NAME,
+                TYPE = "1",
+                PARENTID = "ROOT",
+                ICON = "fa fa-group"
+            }).OrderBy(c => c.DEVICE_ID).ToList();
 
+            var typeData = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "2").ToListAsync();
+            var typeList = typeData.Select(c => new
+            {
+                c.DEVICE_NAME,
+                c.DEVICE_ID,
+                DEPT_ID = c.DEPT_ID+c.DEVICE_ID,
+                c.DEPT_NAME,
+                TYPE = "0",
+                PARENTID = c.DEPT_ID,
+                ICON = "fa fa-cog"
+            }).ToList();
+
+            deviceList = deviceList.Concat(typeList).ToList();
+
+            deviceList.Add(new
+            {
+                DEVICE_NAME = "船舶",
+                DEVICE_ID = "ROOT",
+                DEPT_ID = "ROOT",
+                DEPT_NAME = "船舶",
+                TYPE = "-1",
+                PARENTID = "",
+                ICON = "fa fa-sitemap"
+            });
+            return AjaxResult.Success(deviceList, "成功");
+        }
         /// <summary>
         /// 获取列表
         /// </summary>
@@ -59,7 +103,7 @@ namespace EAM.Device.Services
             return list;
         }
 
-        
+
 
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request)
         {
@@ -132,7 +176,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task<AjaxResult> GetAsync(string id)
         {
-            var query =  await _dbContext.Query<DEVICE_CARD>().Where(c => c.DEVICE_ID == id).ToListAsync();
+            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.DEVICE_ID == id).ToListAsync();
 
             return AjaxResult.Success(query);
         }

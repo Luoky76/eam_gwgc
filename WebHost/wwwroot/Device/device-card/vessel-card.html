@@ -9,38 +9,20 @@
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 2px; height: 100%;">
-    <div id="layout">
-        <div position="left" title="船舶" id="mainmenu">
-            <ul id="maintree" style="margin-top:5px;"></ul>
-        </div>
-        <div position="center" title="船舶列表">
-            <div id="mainsearch">
-                <form action="" id="formsearch" class="l-form">
-                </form>
-            </div>
-            <div id="iframeloading" class='l-loading'>
-            </div>
-            <form id="mainform">
-                <div id="maingrid" style="float: left">
-                </div>
-            </form>
-        </div>
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
     </div>
-    <!--<div id="mainsearch">
-            <form action="" id="formsearch" class="l-form">
-            </form>
+    <form action="" id="mainform">
+        <div id="maingrid">
         </div>
-        <form action="" id="mainform">
-            <div id="maingrid">
-            </div>
-        </form>-->
+    </form>
     <script type="text/javascript">
         'use strict';
         var business = {
             menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
-            iframeloading: $("#iframeloading"),
             //明细页面大小
             detailWidth: window.innerWidth * 0.9,
             detailHeight: window.innerHeight * 0.9,
@@ -49,24 +31,37 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
-                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "上一节点id", name: "_search_DEPT_ID", dbname: "DEPT_ID", op: "equal", type: "hidden", options: {} }
+                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "记录状态", name: "AUDITING", width: 100, type: "chk", hide: true },
                             { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
-                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            //{ display: "设备类别", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            //{ display: "船舶类别", name: "TYPE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶识别号", name: "SHIP_ID", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船长", name: "SHIP_LENGTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型宽", name: "SHIP_WIDTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型深", name: "SHIP_DEPTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "吃水", name: "SHIP_DRAFT", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶类型", name: "SHIP_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主机功率", name: "MAIN_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "副机功率", name: "SECOND_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "航速", name: "SPEED", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "拖力", name: "DRAG_FORCE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "总吨", name: "TOTAL_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "净吨", name: "PURE_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "启用日期", name: "REV_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "使用部门", name: "DEPT_NAME", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 100 } },
                             { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 100 } },
-                            { display: "供应商", name: "PROVIDER_NAME", width: 100, type: "text", editor: { type: 'text' } },
-                            { display: "制造厂", name: "FACTORY", width: 100, type: "text", editor: { type: 'text' }},
-
+                            { display: "立卡日期", name: "CARD_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "select", editor: { type: 'select', data: me.assetStatus, selectBoxHeight: 100 } },
+                            { display: "负责人", name: "CARD_USER", width: 100, type: "select", editor: { type: 'select', data: me.user, selectBoxHeight: 100 } }
                         ]
                     }
                 };
@@ -117,7 +112,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: "2" }]
+                            rules: [{ field: 'TYPE_ID', op: 'equal', value: "1" }]
                         })
                     },
                     sortName: '',
@@ -153,63 +148,6 @@
                 me.loadToolbar();
                 me.bindGridEvent();
             },
-
-            setTree: function () {
-                var me = this;
-                var rootValue = "ROOT";
-                me.tree = $("#maintree").ligerTree({
-                    url: "Device/DeviceCard/Tree",
-                    parms: {},
-                    nodeWidth: 160,
-                    slide: false,
-                    checkbox: false,
-                    single: true,
-                    needCancel: false,
-                    idFieldName: 'DEPT_ID',
-                    textFieldName: 'DEVICE_NAME',
-                    parentIDFieldName: 'PARENTID',
-                    iconClsFieldName: "ICON",
-                    isExpand: 2,
-                    onSuccess: function (data) {
-                        $(".l-tree .l-body span").each(function () {
-                            var $this = $(this);
-                            var text = $this.text();
-                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
-                        });
-                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.DEPT_ID);
-                        else me.tree.selectNode(rootValue);
-                    },
-                    onSelect: function (node) {
-                        me.iframeloading.hide();
-                        var nodeData = node.data;
-                        me.currentNode = node;
-                        var where = {};
-                        if (nodeData) {
-                            var parentNo = nodeData.DEPT_ID;
-                            $("#_search_DEPT_ID").val((parentNo == "ROOT" ? "" : parentNo));
-                            where = {
-                                rules: [],
-                                groups: [{
-                                    rules: [], op: "and"
-                                }], op: "and"
-                            };
-                            if (parentNo === rootValue) {
-                                parentNo = "";
-                                //where.groups[0].rules.push({ field: "DEPT_ID", op: "isnull" });
-                                //where.groups[0].rules.push({ field: "DEPT_ID", op: "equal", value: "0" });
-                            } else {
-                                where.rules.push({ field: "DEPT_ID", op: "equal", value: parentNo, },);
-                                where.rules.push({ field: "TYPE_ID", op: "equal", value: "2", });
-                                me.grid.options.NoFirstSearch = false;
-                            }
-
-                            me.grid.set('parms', { "where": JSON2.stringify(where) });
-                            me.currentMenuParentNo = parentNo;
-                            me.reload();
-                        }
-                    }
-                });
-            },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
@@ -225,6 +163,15 @@
                             break;
                         case "delete":
                             me.delete();
+                            break;
+                        case "doc":
+                            me.doc();
+                            break;
+                        case "param":
+                            me.param();
+                            break;
+                        case "remould":
+                            me.remould();
                             break;
                         case "save":
                             me.save();
@@ -265,7 +212,7 @@
                         height: me.detailHeight,
                         allowClose: true,
                         title: '[查看]船舶卡片',
-                        url: "device-card-detail.html?MenuNo=" + me.menuNo,
+                        url: "vessel-card-det.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
                         showToggle: false,
@@ -274,6 +221,96 @@
                         slide: false,
                         onClosed: me.buttons[0].click,
                         data: { "sid": selected.DEVICE_ID, "isView": true }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            doc: function () { //船舶随机资料
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '船舶随机资料',
+                        url: "device-doc.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected[0].DEVICE_ID }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            param: function () { //船舶参数
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '船舶参数',
+                        url: "device-param.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected[0].DEVICE_ID }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            remould: function () { //重大改造履历
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '重大改造履历',
+                        url: "device-remould.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected[0].DEVICE_ID }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -319,31 +356,21 @@
             },
             add: function () { //新增
                 var me = this;
-                if (me.currentNode.data.PARENTID == "") {
-                    LG.tip('请选择左侧船舶!');
-                }
-                else if (me.currentNode.data.TYPE == "0") {
-                    LG.tip('无法添加子设备!');
-                }
-                else {
-                    var deptid = me.currentNode.data.DEPT_ID;
-                    var deptname = me.currentNode.data.DEPT_NAME;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[新增]船舶卡片',
-                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": null, "deptid": deptid, "deptname": deptname }
-                    });
-                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]船舶卡片',
+                    url: "vessel-card-det.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null }
+                });
             },
             modify: function () { //修改
                 var me = this;
@@ -363,7 +390,7 @@
                         height: me.detailHeight,
                         allowClose: true,
                         title: '[修改]船舶卡片',
-                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        url: "vessel-card-det.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                         isHidden: false,
                         showMax: false,
                         showToggle: false,
@@ -499,13 +526,10 @@
             },
             init: function () {
                 var me = this;
-                me.iframeloading.show();
-                $("#layout").ligerLayout({ leftWidth: 200 });
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();
-                me.setTree();
                 me.reload();
                 return me;
             }
@@ -515,4 +539,4 @@
         });
     </script>
 </body>
-    </html>
+</html>

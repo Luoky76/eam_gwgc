@@ -24,7 +24,15 @@ namespace EAM.Device.Controller
         {
             return await _service.ComboxData();
         }
-
+        /// <summary>
+        /// 树形
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> TreeAsync()
+        {
+            return await _service.TreeAsync();
+        }
         /// <summary>
         /// 列表
         /// </summary>
