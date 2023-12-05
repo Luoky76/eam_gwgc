@@ -73,9 +73,9 @@ namespace EAM.Special.Controller
         /// <param name="year"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> QryYearAsync(DateTime year)
+        public async Task<AjaxResult> QryYearAsync(GridRequest request)
         {
-            var result = await _service.QryYearAsync(year);
+            var result = await _service.QryYearAsync(request);
             return AjaxResult.Success(result);
         }
 

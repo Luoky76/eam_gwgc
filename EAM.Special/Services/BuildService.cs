@@ -23,6 +23,8 @@ using Gksyb.Core.Auth;
 using Gksyb.Model.Core;
 using DocumentFormat.OpenXml.InkML;
 using NPOI.SS.Formula.Functions;
+using NPOI.HSSF.Record.Aggregates;
+using Newtonsoft.Json;
 
 namespace EAM.Special.Services
 {
@@ -58,7 +60,7 @@ namespace EAM.Special.Services
         /// <param name="request"></param>
         /// <param name="isAll"></param>
         /// <returns></returns>
-        public async Task<GridData> ListAsync(GridRequest request,bool isAll = true)
+        public async Task<GridData> ListAsync(GridRequest request, bool isAll = true)
         {/*
             var ship = await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "shipdepartmentpermission")
                 .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
@@ -164,7 +166,7 @@ namespace EAM.Special.Services
         {
             var card = _dbContext.Query<DEVICE_CARD>()
                 .Select(b => new { b.DEVICE_NAME, b.DEVICE_ID, b.DEPT_ID })
-                .Where(x=>_userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
+                .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
             entity.DEVICE_ID = card.DEVICE_ID;
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
@@ -207,7 +209,7 @@ namespace EAM.Special.Services
 
             var isex = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                .Select((a, b) => new { b.DEPT_ID,a.STARTDATE})
+                .Select((a, b) => new { b.DEPT_ID, a.STARTDATE })
                 .Where(x => x.STARTDATE == entity.STARTDATE && _userSession.Corp.CorpID == x.DEPT_ID).ToListAsync();
             if (isex.Count() > 0)
             {
@@ -303,11 +305,83 @@ namespace EAM.Special.Services
         /// 年份查询
         /// </summary>
         /// <returns></returns>
-        public async Task<GridData> QryYearAsync(DateTime year)
+        public async Task<GridData> QryYearAsync(GridRequest request)
         {
-            return await _dbContext.Query<BUILD_COUNT>()
-                .Where(x => x.STARTDATE.Year == year.Year)
-                .GetGridData(null);
+            var filterData = await _dbContext.Query<BUILD_COUNT>()
+                .WhereIf(request.EncrpyCondition == "{}", x => x.STARTDATE.Year == DateTime.Now.Year)
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
+                .Select((a, b) => new
+                {
+                    b.DEPT_ID,
+                    a.DEVICE_NAME,
+                    YEAR = a.STARTDATE.Year,
+                    MONTH = a.STARTDATE.Month,
+                    a.STARTDATE,
+                    a.SHIPTIMES,
+                    a.SHIPNUM,
+                    a.CONPLAN,
+                    a.DREDGETIME,
+                    a.SAILTIME,
+                    a.REPAIRTIME,
+                    a.WEATHEREFFECT,
+                    a.OTHERSTOP,
+                    a.DAILYCONSUMPTION,
+                    a.SUPPLEMENT,
+                    a.STOCK,
+                    a.MASTER,
+                    a.AUXILIARY,
+                    a.PUMP,
+                    a.SUBTOTAL,
+                    a.SUPPLEMENT2,
+                    a.STOCK2,
+                    a.LUBRICATE,
+                    a.WAIT_WORK,
+                    a.WORK_TIME,
+                    a.ANCHOR_TIME,
+                    a.MAIN_RUNTIME,
+                    a.MAIN_CUMTIME,
+                    a.MOORING_RUNTIME,
+                    a.MOORING_CUMTIME,
+                }).GetGridData(request);
+            var dataList = JsonConvert.DeserializeObject<List<dynamic>>(filterData.Rows.ToJson());
+
+            var returnList = dataList.GroupBy(a => new
+                {
+                    a.MONTH,
+                    a.YEAR,
+                    a.DEVICE_NAME,
+                    a.DEPT_ID,
+                })
+                .Select(c => new
+                {
+                    MONTH = c.Key.MONTH,
+                    YEAR = c.Key.YEAR,
+                    STARTDATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
+                    DEVICE_NAME = c.Key.DEVICE_NAME,
+                    SHIPTIMES = c.Sum(item =>item.SHIPTIMES),
+                    SHIPNUM = c.Sum(item => item.SHIPNUM),
+                    CONPLAN = c.Sum(item => item.CONPLAN),
+                    DREDGETIME = c.Sum(item => item.DREDGETIME),
+                    SAILTIME = c.Sum(item => item.SAILTIME),
+                    REPAIRTIME = c.Sum(item => item.REPAIRTIME),
+                    WEATHEREFFECT = c.Sum(item =>item.WEATHEREFFECT),
+                    OTHERSTOP = c.Sum(item =>item.OTHERSTOP),
+                    DAILYCONSUMPTION = c.Sum(item =>item.DAILYCONSUMPTION),
+                    SUPPLEMENT = c.Sum(item =>item.SUPPLEMENT),
+                    STOCK = c.Sum(item =>item.STOCK),
+                    MASTER = c.Sum(item =>item.MASTER),
+                    AUXILIARY = c.Sum(item =>item.AUXILIARY),
+                    PUMP = c.Sum(item =>item.PUMP),
+                    SUBTOTAL = c.Sum(item =>item.SUBTOTAL),
+                    SUPPLEMENT2 = c.Sum(item =>item.SUPPLEMENT2),
+                    STOCK2 = c.Sum(item =>item.STOCK2),
+                    LUBRICATE = c.Sum(item =>item.LUBRICATE),
+                }).ToList();
+            GridData gridData = new GridData()
+            {
+                Rows = returnList
+            };
+            return gridData;
         }
 
         /// <summary>

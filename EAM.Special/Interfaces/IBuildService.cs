@@ -38,7 +38,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <param name="year">年份</param>
         /// <returns></returns>
-        Task<GridData> QryYearAsync(DateTime year);
+        Task<GridData> QryYearAsync(GridRequest request);
         Task<GridData> ExportYearListAsync(string year);
         Task<List<BuildMonthExportData>> ExportMonthListAsync(string year);
     }

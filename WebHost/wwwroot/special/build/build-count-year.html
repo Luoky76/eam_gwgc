@@ -31,12 +31,15 @@
                     search: {
                         fields: [
                             {
-                                display: "年份", name: "_search_STARTDATE", dbname: "STARTDATE",
-                                width: 120, newline: false, type: "date",
+                                display: "日期", name: "_search_STARTDATE", dbname: "STARTDATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
                                 options: {
-                                    format: "yyyy",
-                                    minDate: new Date(2022, 0, 1).toISOString().substring(0, 10),
-                                    maxDate: new Date(currentYear, 11, 31).toISOString().substring(0, 10)
+                                    format: "yyyy-MM"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_ENDDATE", dbname: "STARTDATE", newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM"
                                 }
                             },
                         ]
@@ -45,7 +48,7 @@
                         columns: [
                             { display: "主键", name: "BUILD_ID", minWidth: 100, type: "text", hide: true },
                             {
-                                display: "日期", name: "STARTDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
+                                display: "月份", name: "STARTDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
                                 totalSummary: { render: function (column, data) { return "<span style='color:red'>&emsp;合计：</span>" } }
                             },
                             { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text" },
@@ -214,7 +217,7 @@
                                     },
                                 ]
                             },
-                            { display: "简要说明", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } }
+                            //{ display: "简要说明", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } }
                         ]
                     }
                 };
@@ -248,12 +251,9 @@
                     usePager: false,
                     dataAction: 'local',
                     toolbar: { group: "list" },
-                    url: 'Special/Build/list',
+                    url: 'Special/Build/QryYear',
                     parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
+                        where: JSON.stringify()
                     },
                     sortName: '',
                     sortOrder: '',
@@ -353,7 +353,7 @@
             export: function () { //模板导出
                 var date = new Date($("#_search_STARTDATE").val());
                 var me = this;
-               // var rules = LG.bulidFilterGroup(me.searchForm.id);
+                // var rules = LG.bulidFilterGroup(me.searchForm.id);
                 LG.download({
                     url: 'Special/Build/ExportYearList',
                     type: "post",
@@ -368,7 +368,6 @@
                 });
             },
             exportmonth: function () { //模板导出
-                debugger
                 var date = new Date($("#_search_STARTDATE").val());
                 var me = this;
                 // var rules = LG.bulidFilterGroup(me.searchForm.id);
@@ -378,7 +377,6 @@
                     loading: '正在导出中...',
                     data: { year: date.getFullYear() },
                     callback: function (status, data) {
-                        debugger
                         if (status) {
                             LG.showSuccess(data.Message);
                         }
@@ -562,7 +560,12 @@
                         text: '查询',
                         width: 60,
                         click: function () {
-                            var date = new Date($("#_search_STARTDATE").val());
+                            LG.commonSearch($formsearch, me.grid);
+                            //var year = date.getFullYear();
+                        },/*
+                        click: function () {
+                            var dateStart = new Date($("#_search_STARTDATE").val());
+                            var dateEnd = new Date($("#_search_STARTDATE").val());
                             //var year = date.getFullYear();
                             if (isNaN(date)) {
                                 LG.showError("请选择年份！");
@@ -581,13 +584,11 @@
                                     }
                                 });
                             }
-                        }
+                        }*/
                     }],
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
-                        var year = new Date(currentYear, 11, 31).toISOString().substring(0, 4)
-                        me.searchForm.setData({ "_search_STARTDATE": year });
                     }
                 });
             },
