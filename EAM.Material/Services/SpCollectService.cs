@@ -805,14 +805,31 @@ namespace EAM.Material.Services
             var taskId = GuidHelper.NewSnowflakeId().ToString();
             var corpId = _userSession.Corp.CorpID;
 
+            //获取附件
+            var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == collectId && c.table_name == "SP_COLLECT").ToList();
+            var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
+            string attachName = string.Empty, attachUrl = string.Empty;
+            if (fj != null && fj.Count() > 0)
+            {
+                foreach (var item in fj)
+                {
+                    attachName += item.attach_name + "|";
+                    attachUrl += webUrl + item.attach_path + "|";
+                }
+            }
+            string attach = attachName.TrimEnd('|') + "$$$" + attachUrl.TrimEnd('|');
+
             //获取相对方数据并生成json
-            var qd = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
+            var query = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
                 {
-                    
+                    primary_key = c.COLLECT_ID,
+                    bdmc = "物资请购审批表",
+                    bz = c.MEMO,
+                    fj = (attach == "$$$" ? "" : attach),
                 }).FirstAsync();
-            if (qd == null) return AjaxResult.Error("未找到该份采购记录", "失败");
-            string jsonData = qd.ToJson();
+            if (query == null) return AjaxResult.Error("未找到该份采购记录", "失败");
+            string jsonData = query.ToJson();
 
             /*
             //对接OA 取配置地址
