@@ -4,8 +4,10 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.CodeAnalysis;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Linq.Expressions;
@@ -271,6 +273,8 @@ namespace EAM.Material.Services
                     {
                         AUDITING = "1"
                     });
+
+
             var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => sids.Contains(t.COLLECT_ID)).Select(t => t.REQUEST_DET_ID).ToList();
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                   x => new SP_APPLY_DETAIL
@@ -789,5 +793,94 @@ namespace EAM.Material.Services
             return appledet.Count;
         }
         #endregion
+
+        /// <summary>
+        /// 创建流程
+        /// </summary>
+        /// <param name="collectId"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> CreateWorkFlow(string collectId)
+        {
+            #region 推送oa
+            var taskId = GuidHelper.NewSnowflakeId().ToString();
+            var corpId = _userSession.Corp.CorpID;
+
+            //获取相对方数据并生成json
+            var qd = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
+                .Select(c => new
+                {
+                    
+                }).FirstAsync();
+            if (qd == null) return AjaxResult.Error("未找到该份采购记录", "失败");
+            string jsonData = qd.ToJson();
+
+            /*
+            //对接OA 取配置地址
+            string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
+
+            OAHandle oa = new OAHandle(_dbContext);
+            string result = await oa.CreateFlow(url, "FZAJ", "案件审批-" + _userSession.RealName, _userSession.Phone, _userSession.OACode, jsonData, detailJson);
+            //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
+            await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
+            //await _dbContext.InsertAsync<SYS_LOG>(new SYS_LOG()
+            //{
+            //    LOGID = GuidHelper.NewSnowflakeId(),
+            //    LOGTYPE = "OA创建流程返回结果",
+            //    LOGSUMMARY = "案件审批流程创建",
+            //    LOGDATE = _dbContext.GetSysdate().Result,
+            //    LOGDETAIL = result,
+            //});
+
+            if (string.IsNullOrEmpty(result)) return AjaxResult.Error("推送OA异常", "失败");
+
+            JObject job = JObject.Parse(result);
+            if (job["success"] != null && job["success"].ToString().ToLower() == "true")
+            {
+                //对接成功后插入流程表及流程步骤表
+                var task = new WF_TASK()
+                {
+                    TASKID = taskId,
+                    TASKNAME = "案件审批-" + _userSession.RealName,
+                    STATUS = "0",
+                    DATAID = legalId,
+                    CORPID = corpId,
+                    CREATEDATE = _dbContext.GetSysdate().Result,
+                    CREATEUSER = _userSession.RealName,
+                    CREATEUSERID = _userSession.UserID.ToString(),
+                    OAID = job["code"].ToString()
+                };
+                await _dbContext.InsertAsync(task);
+
+                var prc = new WF_PROCESS()
+                {
+                    PRCID = GuidHelper.NewSnowflakeId().ToString(),
+                    TASKID = taskId,
+                    PRCMEMO = "",
+                    NODENAME = "发起申请",
+                    DEALTIME = _dbContext.GetSysdate().Result,
+                    DEALUSER = _userSession.RealName,
+                    DEALUSERID = _userSession.UserID.ToString(),
+                    OPERATION = "提交"
+                };
+                await _dbContext.InsertAsync(prc);
+
+                //更新主表流程信息
+                var caseinfo = await _dbContext.Query<LA_LEGAL_INFO>().Where(c => c.LEGALID == legalId).FirstAsync();
+                caseinfo.TASKID = taskId;
+                caseinfo.TASKSTATUS = "0";
+                caseinfo.WFTYPE = "1";
+                await _dbContext.UpdateAsync(caseinfo);
+            }
+            else
+            {
+                //return AjaxResult.Error("推送OA创建流程失败", "失败");
+                return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
+            }
+            */
+            #endregion
+
+            return AjaxResult.Success("创建流程成功", "成功");
+
+        }
     }
 }
