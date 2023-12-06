@@ -308,7 +308,6 @@ namespace EAM.Special.Services
         public async Task<GridData> QryYearAsync(GridRequest request)
         {
             var filterData = await _dbContext.Query<BUILD_COUNT>()
-                .WhereIf(request.EncrpyCondition == "{}", x => x.STARTDATE.Year == DateTime.Now.Year)
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
                 .Select((a, b) => new
                 {
