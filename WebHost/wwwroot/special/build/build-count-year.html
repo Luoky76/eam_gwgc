@@ -569,10 +569,10 @@
                         me.buttons = g.options.buttons;
                         var nowDate = new Date();
                         var nowDate = new Date(); // 获取当前日期
-                        var beginDate = nowDate.getFullYear() + "-01-01"; // 当前年份的第一天
+                        var beginDate = nowDate.getFullYear() + "-01"; // 当前年份的第一月
 
                         // 获取当前年份最后一天的日期
-                        var endDate = nowDate.getFullYear() + "-12-31"; // 当前年份的最后一天
+                        var endDate = nowDate.getFullYear() + "-12"; // 当前年份的最后一月
 
                         me.searchForm.setData({ "_search_STARTDATE": beginDate });
                         me.searchForm.setData({ "_search_ENDDATE": endDate });
