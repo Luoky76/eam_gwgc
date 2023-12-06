@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>设备停机记录</title>
+    <title>船舶停机管理</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 <body style="padding: 5px; height: 100%;">
@@ -41,7 +41,7 @@
                                 display: "停机编码", name: "_search_STOP_CODE", dbname: "STOP_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                             {
-                                display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                         ]
                     },
@@ -49,10 +49,10 @@
                         columns: [
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "停机编码", name: "STOP_CODE", dbname: "STOP_CODE", minWidth: 200, type: "text",  editor: { type: 'text' } },
-                            { display: "设备编号", name: "DEVICE_NO", dbname: "DEVICE_NO", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "船舶编号", name: "DEVICE_NO", dbname: "DEVICE_NO", minWidth: 200, type: "text",  editor: { type: 'text' } },
 
-                            { display: "设备名称", name: "DEVICE_NAME", dbname: "DEVICE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
-                            { display: "设备型号", name: "DEVICE_TYPE", dbname: "DEVICE_TYPE", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "船舶名称", name: "DEVICE_NAME", dbname: "DEVICE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
+                            { display: "船舶型号", name: "DEVICE_TYPE", dbname: "DEVICE_TYPE", minWidth: 200, type: "text",  editor: { type: 'text' } },
                             { display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' } },
                             { display: "停机分类名称", name: "STOP_SOURCE", dbname: "STOP_SOURCE", minWidth: 150, type: "select",  editor: { type: 'select', data: me.stopSource, } },
                             { display: "RUN_STOP_ID", name: "RUN_STOP_ID", hide: true },
