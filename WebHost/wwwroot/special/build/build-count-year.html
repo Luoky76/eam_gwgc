@@ -562,33 +562,20 @@
                         click: function () {
                             LG.commonSearch($formsearch, me.grid);
                             //var year = date.getFullYear();
-                        },/*
-                        click: function () {
-                            var dateStart = new Date($("#_search_STARTDATE").val());
-                            var dateEnd = new Date($("#_search_STARTDATE").val());
-                            //var year = date.getFullYear();
-                            if (isNaN(date)) {
-                                LG.showError("请选择年份！");
-                            }
-                            else {
-                                LG.ajax({
-                                    jsToken: true,
-                                    url: 'Special/Build/QryYear',
-                                    loading: '正在查询中...',
-                                    data: { year: date },
-                                    success: function (data) {
-                                        me.grid.loadData(data);
-                                    },
-                                    error: function (message) {
-                                        LG.showError(message);
-                                    }
-                                });
-                            }
-                        }*/
+                        },
                     }],
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
+                        var nowDate = new Date();
+                        var nowDate = new Date(); // 获取当前日期
+                        var beginDate = nowDate.getFullYear() + "-01-01"; // 当前年份的第一天
+
+                        // 获取当前年份最后一天的日期
+                        var endDate = nowDate.getFullYear() + "-12-31"; // 当前年份的最后一天
+
+                        me.searchForm.setData({ "_search_STARTDATE": beginDate });
+                        me.searchForm.setData({ "_search_ENDDATE": endDate });
                     }
                 });
             },
