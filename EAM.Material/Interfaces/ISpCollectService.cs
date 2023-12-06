@@ -26,6 +26,7 @@ namespace EAM.Material.Interfaces
         Task<AjaxResult> ComboxData();
 
         Task<int> Submit(List<string> sids);
+        Task<AjaxResult> ApprovalCompletedAsync(string sid);
         Task<AjaxResult> CancelSubmit(List<string> sids);
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request);

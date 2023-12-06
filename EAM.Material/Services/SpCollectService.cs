@@ -281,14 +281,30 @@ namespace EAM.Material.Services
                 await CreateWorkFlow(i);
             }
 
-            var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => sids.Contains(t.COLLECT_ID)).Select(t => t.REQUEST_DET_ID).ToList();
+            return updatedevice;
+        }
+
+        /// <summary>
+        /// 审批完成 OA回调接口
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> ApprovalCompletedAsync(string sid)
+        {
+            var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == sid,
+                x => new SP_COLLECT
+                {
+                    AUDITING = "3"
+                });
+
+            var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_ID == sid).Select(t => t.REQUEST_DET_ID).ToList();
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                   x => new SP_APPLY_DETAIL
                   {
                       SP_STATUS = "40"//采购中
                   });
 
-            var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
+            var list = _dbContext.Query<SP_COLLECT>().Where(x => x.COLLECT_ID == sid).ToList();
 
             if (list.Count > 0)
             {
@@ -299,7 +315,7 @@ namespace EAM.Material.Services
                 string def = type + "0000";
                 var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
                 var i = 1;
- 
+
                 foreach (var item in list)
                 {
                     var index = model.SubStr(8, 4).CastTo<int>() + i;
@@ -313,7 +329,7 @@ namespace EAM.Material.Services
                         ORDER_MONEY = item.COLLECT_PRICE,
                         BUY_USERID = item.COLLECT_USERID,
                         BUY_USER = item.COLLECT_USER,
-                        PROVIDER_ID= item.PROVIDER_ID,
+                        PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
                         CREATE_USERID = _userSession.UserID.ToString(),
                         CREATEDATE = dt,
@@ -330,11 +346,11 @@ namespace EAM.Material.Services
                     foreach (var det in data)
                     {
                         var apply = _dbContext.Query<SP_APPLY>()
-                            .LeftJoin<SP_APPLY_DETAIL>((a,b)=>a.APPLY_ID == b.APPLY_ID)
-                            .Where((a, b) =>b.SPDET_ID == det.REQUEST_DET_ID)
-                            .Select((a, b) => new { 
-                             a.APPLY_NO,
-                             a.USE_MEMO
+                            .LeftJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
+                            .Where((a, b) => b.SPDET_ID == det.REQUEST_DET_ID)
+                            .Select((a, b) => new {
+                                a.APPLY_NO,
+                                a.USE_MEMO
                             })
                             .FirstOrDefault();
                         var req = det.MapTo<SP_ORDER_DETAIL>();
@@ -364,9 +380,8 @@ namespace EAM.Material.Services
                 await _dbContext.InsertRangeAsync<SP_ORDER_DETAIL>(importDetail);
             }
 
-            return updatedevice;
+            return AjaxResult.Success("成功");
         }
-
 
         public async Task<AjaxResult> CancelSubmit(List<string> sids)
         {
