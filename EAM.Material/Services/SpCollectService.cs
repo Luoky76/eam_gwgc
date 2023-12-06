@@ -269,13 +269,11 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<int> Submit(List<string> sids)
         {
-            /*
             var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => sids.Contains(x.COLLECT_ID),
                     x => new SP_COLLECT
                     {
                         AUDITING = "1"
                     });
-            */
 
             //推送到OA
             foreach (var i in sids)
