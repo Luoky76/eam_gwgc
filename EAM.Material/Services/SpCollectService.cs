@@ -6,10 +6,8 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Gksyb.Server.Services.OA;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Linq.Expressions;
 
@@ -288,14 +286,27 @@ namespace EAM.Material.Services
         /// 审批完成 OA回调接口
         /// </summary>
         /// <param name="sid"></param>
+        /// <param name="isPass"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> ApprovalCompletedAsync(string sid)
+        public async Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass)
         {
-            var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == sid,
+            if (isPass)
+            {
+                var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == sid,
                 x => new SP_COLLECT
                 {
                     AUDITING = "3"
                 });
+            }
+            else
+            {
+                var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == sid,
+                x => new SP_COLLECT
+                {
+                    AUDITING = "4"
+                });
+                return AjaxResult.Success("审批否决");
+            }
 
             var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_ID == sid).Select(t => t.REQUEST_DET_ID).ToList();
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),

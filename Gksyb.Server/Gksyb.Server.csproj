@@ -27,8 +27,4 @@
 		</Reference>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Services\OA\" />
-	</ItemGroup>
-
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace Gksyb.Server.Services.OA
+﻿using System.Text;
+
+namespace EAM.Material.Services
 {
     public class HttpHandle
     {

@@ -74,17 +74,6 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(await _service.Submit(sids), "成功");
         }
 
-        /// <summary>
-        /// 审批完成 OA回调接口
-        /// </summary>
-        /// <param name="sid"></param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<AjaxResult> ApprovalCompletedAsync(string sid)
-        {
-            return AjaxResult.Success(await _service.ApprovalCompletedAsync(sid), "成功");
-        }
-
         [HttpPost]
         public async Task<AjaxResult> CancelSubmitAsync(List<string> sids)
         {
