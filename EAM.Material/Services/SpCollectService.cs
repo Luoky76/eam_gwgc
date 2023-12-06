@@ -269,12 +269,19 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<int> Submit(List<string> sids)
         {
+            /*
             var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => sids.Contains(x.COLLECT_ID),
                     x => new SP_COLLECT
                     {
                         AUDITING = "1"
                     });
+            */
 
+            //推送到OA
+            foreach (var i in sids)
+            {
+                await CreateWorkFlow(i);
+            }
 
             var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => sids.Contains(t.COLLECT_ID)).Select(t => t.REQUEST_DET_ID).ToList();
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
@@ -837,7 +844,7 @@ namespace EAM.Material.Services
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
             OAHandle oa = new OAHandle(_dbContext);
-            string result = await oa.CreateFlow(url, "FZAJ", "工作请示-采购" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "");
+            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "");
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 
@@ -846,9 +853,10 @@ namespace EAM.Material.Services
             JObject job = JObject.Parse(result);
             if (job["success"] != null && job["success"].ToString().ToLower() == "true")
             {
+                //成功后将记录状态改为审批中
                 _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
                 {
-                    AUDITING = "3"
+                    AUDITING = "2"
                 });
             }
             else
