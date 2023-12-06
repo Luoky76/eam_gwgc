@@ -330,7 +330,7 @@ namespace EAM.Material.Services
                 foreach (var item in list)
                 {
                     var index = model.SubStr(8, 4).CastTo<int>() + i;
-                    //形成物资询价方案
+                    //形成采购订单
                     var temp = new SP_ORDER
                     {
                         PURPLAN_ID = item.COLLECT_ID,
