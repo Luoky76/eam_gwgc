@@ -41,7 +41,7 @@
 
                             { display: "停机编码", name: "STOP_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
                             {
-                                display: "设备编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "船舶编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.deviceInfo,
                                     autocomplete: true,
@@ -49,8 +49,8 @@
                                     valueField: "ID",
                                     textField: "TEXT",
                                     columns: [
-                                        { header: '设备编号', name: 'VALUE', width: 150 },
-                                        { header: '设备名称', name: 'TEXT' }
+                                        { header: '船舶编号', name: 'VALUE', width: 150 },
+                                        { header: '船舶名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
@@ -62,8 +62,8 @@
                                     }
                                 }
                             },
-                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "设备分类", name: "TYPE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "停机分类名称", name: "STOP_SOURCE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.stopSource } },
                             {

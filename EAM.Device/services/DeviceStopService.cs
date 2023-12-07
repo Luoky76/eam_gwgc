@@ -5,9 +5,11 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
@@ -31,10 +33,10 @@ namespace EAM.Device.services
         public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
-                { "StopSource",null},
-                { "MalType",null},
-                { "RepType",null},
-                { "DeviceInfo",null},
+                { "StopSource", null },
+                { "MalType", null },
+                { "RepType", null },
+                { "DeviceInfo", (Expression<Func<DEVICE_CARD, bool>>)(a => a.TYPE_ID == "1") },
             });
         }
 

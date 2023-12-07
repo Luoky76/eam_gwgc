@@ -8,7 +8,6 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Linq.Expressions;
 
@@ -274,15 +273,49 @@ namespace EAM.Material.Services
                         AUDITING = "1"
                     });
 
+            //推送到OA
+            foreach (var i in sids)
+            {
+                await CreateWorkFlow(i);
+            }
 
-            var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => sids.Contains(t.COLLECT_ID)).Select(t => t.REQUEST_DET_ID).ToList();
+            return updatedevice;
+        }
+
+        /// <summary>
+        /// 审批完成 OA回调接口
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <param name="isPass"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass)
+        {
+            if (isPass)
+            {
+                var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == sid,
+                x => new SP_COLLECT
+                {
+                    AUDITING = "3"
+                });
+            }
+            else
+            {
+                var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == sid,
+                x => new SP_COLLECT
+                {
+                    AUDITING = "4"
+                });
+                return AjaxResult.Success("审批否决");
+            }
+
+            var appledetId = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_ID == sid).Select(t => t.REQUEST_DET_ID).ToList();
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                   x => new SP_APPLY_DETAIL
                   {
                       SP_STATUS = "40"//采购中
                   });
 
-            var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
+            var list = _dbContext.Query<SP_COLLECT>().Where(x => x.COLLECT_ID == sid).ToList();
 
             if (list.Count > 0)
             {
@@ -293,11 +326,11 @@ namespace EAM.Material.Services
                 string def = type + "0000";
                 var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
                 var i = 1;
- 
+
                 foreach (var item in list)
                 {
                     var index = model.SubStr(8, 4).CastTo<int>() + i;
-                    //形成物资询价方案
+                    //形成采购订单
                     var temp = new SP_ORDER
                     {
                         PURPLAN_ID = item.COLLECT_ID,
@@ -307,7 +340,7 @@ namespace EAM.Material.Services
                         ORDER_MONEY = item.COLLECT_PRICE,
                         BUY_USERID = item.COLLECT_USERID,
                         BUY_USER = item.COLLECT_USER,
-                        PROVIDER_ID= item.PROVIDER_ID,
+                        PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
                         CREATE_USERID = _userSession.UserID.ToString(),
                         CREATEDATE = dt,
@@ -324,11 +357,11 @@ namespace EAM.Material.Services
                     foreach (var det in data)
                     {
                         var apply = _dbContext.Query<SP_APPLY>()
-                            .LeftJoin<SP_APPLY_DETAIL>((a,b)=>a.APPLY_ID == b.APPLY_ID)
-                            .Where((a, b) =>b.SPDET_ID == det.REQUEST_DET_ID)
-                            .Select((a, b) => new { 
-                             a.APPLY_NO,
-                             a.USE_MEMO
+                            .LeftJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
+                            .Where((a, b) => b.SPDET_ID == det.REQUEST_DET_ID)
+                            .Select((a, b) => new {
+                                a.APPLY_NO,
+                                a.USE_MEMO
                             })
                             .FirstOrDefault();
                         var req = det.MapTo<SP_ORDER_DETAIL>();
@@ -358,9 +391,8 @@ namespace EAM.Material.Services
                 await _dbContext.InsertRangeAsync<SP_ORDER_DETAIL>(importDetail);
             }
 
-            return updatedevice;
+            return AjaxResult.Success("成功");
         }
-
 
         public async Task<AjaxResult> CancelSubmit(List<string> sids)
         {
@@ -831,69 +863,31 @@ namespace EAM.Material.Services
             if (query == null) return AjaxResult.Error("未找到该份采购记录", "失败");
             string jsonData = query.ToJson();
 
-            /*
+            
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
             OAHandle oa = new OAHandle(_dbContext);
-            string result = await oa.CreateFlow(url, "FZAJ", "案件审批-" + _userSession.RealName, _userSession.Phone, _userSession.OACode, jsonData, detailJson);
+            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "");
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
-            //await _dbContext.InsertAsync<SYS_LOG>(new SYS_LOG()
-            //{
-            //    LOGID = GuidHelper.NewSnowflakeId(),
-            //    LOGTYPE = "OA创建流程返回结果",
-            //    LOGSUMMARY = "案件审批流程创建",
-            //    LOGDATE = _dbContext.GetSysdate().Result,
-            //    LOGDETAIL = result,
-            //});
 
             if (string.IsNullOrEmpty(result)) return AjaxResult.Error("推送OA异常", "失败");
 
             JObject job = JObject.Parse(result);
             if (job["success"] != null && job["success"].ToString().ToLower() == "true")
             {
-                //对接成功后插入流程表及流程步骤表
-                var task = new WF_TASK()
+                //成功后将记录状态改为审批中
+                _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
                 {
-                    TASKID = taskId,
-                    TASKNAME = "案件审批-" + _userSession.RealName,
-                    STATUS = "0",
-                    DATAID = legalId,
-                    CORPID = corpId,
-                    CREATEDATE = _dbContext.GetSysdate().Result,
-                    CREATEUSER = _userSession.RealName,
-                    CREATEUSERID = _userSession.UserID.ToString(),
-                    OAID = job["code"].ToString()
-                };
-                await _dbContext.InsertAsync(task);
-
-                var prc = new WF_PROCESS()
-                {
-                    PRCID = GuidHelper.NewSnowflakeId().ToString(),
-                    TASKID = taskId,
-                    PRCMEMO = "",
-                    NODENAME = "发起申请",
-                    DEALTIME = _dbContext.GetSysdate().Result,
-                    DEALUSER = _userSession.RealName,
-                    DEALUSERID = _userSession.UserID.ToString(),
-                    OPERATION = "提交"
-                };
-                await _dbContext.InsertAsync(prc);
-
-                //更新主表流程信息
-                var caseinfo = await _dbContext.Query<LA_LEGAL_INFO>().Where(c => c.LEGALID == legalId).FirstAsync();
-                caseinfo.TASKID = taskId;
-                caseinfo.TASKSTATUS = "0";
-                caseinfo.WFTYPE = "1";
-                await _dbContext.UpdateAsync(caseinfo);
+                    AUDITING = "2"
+                });
             }
             else
             {
-                //return AjaxResult.Error("推送OA创建流程失败", "失败");
                 return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
             }
-            */
+            
             #endregion
 
             return AjaxResult.Success("创建流程成功", "成功");

@@ -16,6 +16,7 @@ namespace EAM.Material.Interfaces
         /// 保存
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="requestdet"></param>
         /// <returns></returns>
         Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet);
 
@@ -26,6 +27,7 @@ namespace EAM.Material.Interfaces
         Task<AjaxResult> ComboxData();
 
         Task<int> Submit(List<string> sids);
+        Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass);
         Task<AjaxResult> CancelSubmit(List<string> sids);
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request);
