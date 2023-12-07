@@ -31,13 +31,13 @@
                     search: {
                         fields: [
                             {
-                                display: "日期", name: "_search_STARTDATE", dbname: "STARTDATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                display: "日期", name: "_search_STARTDATE", dbname: "STARTDATE", newline: false, type: "date", op: 'greaterorequal', userSearch: false, vt: 'date',
                                 options: {
                                     format: "yyyy-MM"
                                 }
                             },
                             {
-                                display: "至", name: "_search_ENDDATE", dbname: "STARTDATE", newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "至", name: "_search_ENDDATE", dbname: "STARTDATE", newline: false, type: "date", op: 'lessorequal', userSearch: false, vt: 'date',
                                 options: {
                                     format: "yyyy-MM"
                                 }
@@ -560,7 +560,29 @@
                         text: '查询',
                         width: 60,
                         click: function () {
-                            LG.commonSearch($formsearch, me.grid);
+                             
+                            // 获取 _search_ENDDATE 的值
+                            var endDateValue = liger.get('_search_ENDDATE').getValue();
+
+                            // 将获取的字符串日期值转换为日期对象
+                            var endDate = new Date(endDateValue);
+
+                            // 增加一个月，处理跨年情况
+                            endDate.setMonth(endDate.getMonth() + 1);
+
+                            /*var where = {
+                                op: 'and',
+                                rules: [
+                                    { field: 'startdate', op: 'greaterorequal', value: new Date(liger.get('_search_STARTDATE').getValue()) },
+                                    { field: 'enddate', op: 'less', value: new Date(endDate)  }]
+                            };*/
+                            me.grid.options.NoFirstSearch = false;
+                            //me.grid.options.parms.startdate = "";
+                            //me.grid.options.parms.enddate = "";
+                            LG.commonSearch($formsearch, me.grid, function()  {
+                                me.grid.options.parms.startdate = "";
+                                me.grid.options.parms.enddate = "";
+                            });
                             //var year = date.getFullYear();
                         },
                     }],
@@ -571,7 +593,6 @@
                         var nowDate = new Date(); // 获取当前日期
                         var beginDate = nowDate.getFullYear() + "-01"; // 当前年份的第一月
 
-                        // 获取当前年份最后一天的日期
                         var endDate = nowDate.getFullYear() + "-12"; // 当前年份的最后一月
 
                         me.searchForm.setData({ "_search_STARTDATE": beginDate });
