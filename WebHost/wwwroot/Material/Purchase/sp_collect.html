@@ -36,13 +36,13 @@
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
-                            { display: "请购单号", name: "_search_COLLECT_CODE", dbname: "COLLECT_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "申请单号", name: "_search_COLLECT_CODE", dbname: "COLLECT_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            { display: "请购单号", name: "COLLECT_CODE", width: 180, type: "text" },
+                            { display: "申请单号", name: "COLLECT_CODE", width: 180, type: "text" },
                             //{
                             //    display: "采购方式", name: "COLLECT_METHOD", minWidth: 120, type: "select", validate: { required: true },
                             //    editor: {
@@ -63,7 +63,7 @@
                             { display: "采购人", name: "COLLECT_USER", width: 100, type: "text", },
                             { display: "采购部门", name: "DEPT_NAME", width: 100, type: "text", },
                             { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text", },
-                            { display: "请购日期", name: "COLLECT_DATE", width: 120, type: "date", format: "yyyy-MM-dd", },
+                            { display: "申请日期", name: "COLLECT_DATE", width: 120, type: "date", format: "yyyy-MM-dd", },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
                             { display: "主键", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
                         ]
