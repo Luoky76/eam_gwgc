@@ -11,10 +11,10 @@
 
 <body style="padding: 2px; height: 100%;">
     <div id="layout">
-        <div position="left" title="船舶" id="mainmenu">
+        <div position="left" title="设备" id="mainmenu">
             <ul id="maintree" style="margin-top:5px;"></ul>
         </div>
-        <div position="center" title="船舶列表">
+        <div position="center" title="设备列表">
             <div id="mainsearch">
                 <form action="" id="formsearch" class="l-form">
                 </form>
@@ -117,7 +117,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'DEVICE_ID', op: 'equal', value: "2" }]
+                            rules: [{ field: 'TYPE_ID', op: 'equal', value: "2" }]
                         })
                     },
                     sortName: '',
@@ -264,7 +264,7 @@
                         width: me.detailWidth,
                         height: me.detailHeight,
                         allowClose: true,
-                        title: '[查看]船舶卡片',
+                        title: '[查看]设备卡片',
                         url: "device-card-detail.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
@@ -320,7 +320,7 @@
             add: function () { //新增
                 var me = this;
                 if (me.currentNode.data.PARENTID == "") {
-                    LG.tip('请选择左侧船舶!');
+                    LG.tip('请选择左侧设备!');
                 }
                 else if (me.currentNode.data.TYPE == "0") {
                     LG.tip('无法添加子设备!');
@@ -332,7 +332,7 @@
                         width: me.detailWidth,
                         height: me.detailHeight,
                         allowClose: true,
-                        title: '[新增]船舶卡片',
+                        title: '[新增]设备卡片',
                         url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                         isHidden: false,
                         showMax: false,
@@ -362,7 +362,7 @@
                         width: me.detailWidth,
                         height: me.detailHeight,
                         allowClose: true,
-                        title: '[修改]船舶卡片',
+                        title: '[修改]设备卡片',
                         url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                         isHidden: false,
                         showMax: false,
