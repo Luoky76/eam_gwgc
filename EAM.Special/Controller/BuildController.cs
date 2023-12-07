@@ -70,12 +70,11 @@ namespace EAM.Special.Controller
         /// <summary>
         /// 查询年份
         /// </summary>
-        /// <param name="year"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> QryYearAsync(GridRequest request)
+        public async Task<AjaxResult> QryYearAsync(GridRequest request, string startdate, string enddate)
         {
-            var result = await _service.QryYearAsync(request);
+            var result = await _service.QryYearAsync(request, startdate, enddate);
             return AjaxResult.Success(result);
         }
 

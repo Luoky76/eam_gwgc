@@ -305,7 +305,7 @@ namespace EAM.Special.Services
         /// 年份查询
         /// </summary>
         /// <returns></returns>
-        public async Task<GridData> QryYearAsync(GridRequest request)
+        public async Task<GridData> QryYearAsync(GridRequest request,string startdate, string enddate)
         {
             var filterData = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
@@ -345,36 +345,36 @@ namespace EAM.Special.Services
             var dataList = JsonConvert.DeserializeObject<List<dynamic>>(filterData.Rows.ToJson());
 
             var returnList = dataList.GroupBy(a => new
-                {
-                    a.MONTH,
-                    a.YEAR,
-                    a.DEVICE_NAME,
-                    a.DEPT_ID,
-                })
+            {
+                a.MONTH,
+                a.YEAR,
+                a.DEVICE_NAME,
+                a.DEPT_ID,
+            })
                 .Select(c => new
                 {
                     MONTH = c.Key.MONTH,
                     YEAR = c.Key.YEAR,
                     STARTDATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
                     DEVICE_NAME = c.Key.DEVICE_NAME,
-                    SHIPTIMES = c.Sum(item =>item.SHIPTIMES),
-                    SHIPNUM = c.Sum(item => item.SHIPNUM),
-                    CONPLAN = c.Sum(item => item.CONPLAN),
-                    DREDGETIME = c.Sum(item => item.DREDGETIME),
-                    SAILTIME = c.Sum(item => item.SAILTIME),
-                    REPAIRTIME = c.Sum(item => item.REPAIRTIME),
-                    WEATHEREFFECT = c.Sum(item =>item.WEATHEREFFECT),
-                    OTHERSTOP = c.Sum(item =>item.OTHERSTOP),
-                    DAILYCONSUMPTION = c.Sum(item =>item.DAILYCONSUMPTION),
-                    SUPPLEMENT = c.Sum(item =>item.SUPPLEMENT),
-                    STOCK = c.Sum(item =>item.STOCK),
-                    MASTER = c.Sum(item =>item.MASTER),
-                    AUXILIARY = c.Sum(item =>item.AUXILIARY),
-                    PUMP = c.Sum(item =>item.PUMP),
-                    SUBTOTAL = c.Sum(item =>item.SUBTOTAL),
-                    SUPPLEMENT2 = c.Sum(item =>item.SUPPLEMENT2),
-                    STOCK2 = c.Sum(item =>item.STOCK2),
-                    LUBRICATE = c.Sum(item =>item.LUBRICATE),
+                    SHIPTIMES = c.Sum(item => item.SHIPTIMES ?? 0),
+                    SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0),
+                    CONPLAN = c.Sum(item => item.CONPLAN ?? 0),
+                    DREDGETIME = c.Sum(item => item.DREDGETIME ?? 0),
+                    SAILTIME = c.Sum(item => item.SAILTIME ?? 0),
+                    REPAIRTIME = c.Sum(item => item.REPAIRTIME ?? 0),
+                    WEATHEREFFECT = c.Sum(item => item.WEATHEREFFECT ?? 0),
+                    OTHERSTOP = c.Sum(item => item.OTHERSTOP ?? 0),
+                    DAILYCONSUMPTION = c.Sum(item => item.DAILYCONSUMPTION ?? 0),
+                    SUPPLEMENT = c.Sum(item => item.SUPPLEMENT ?? 0),
+                    STOCK = c.Sum(item => item.STOCK ?? 0),
+                    MASTER = c.Sum(item => item.MASTER ?? 0),
+                    AUXILIARY = c.Sum(item => item.AUXILIARY ?? 0),
+                    PUMP = c.Sum(item => item.PUMP ?? 0),
+                    SUBTOTAL = c.Sum(item => item.SUBTOTAL ?? 0),
+                    SUPPLEMENT2 = c.Sum(item => item.SUPPLEMENT2 ?? 0),
+                    STOCK2 = c.Sum(item => item.STOCK2 ?? 0),
+                    LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0),
                 }).ToList();
             GridData gridData = new GridData()
             {
