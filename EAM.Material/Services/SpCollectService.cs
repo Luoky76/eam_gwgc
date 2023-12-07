@@ -6,8 +6,11 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Magicodes.ExporterAndImporter.Core;
+using Magicodes.ExporterAndImporter.Excel;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
+using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
 
@@ -273,10 +276,15 @@ namespace EAM.Material.Services
                         AUDITING = "1"
                     });
 
-            //推送到OA
-            foreach (var i in sids)
+            var isDockOA = _dbContext.Query<BC_CODE>(c => c.CODE_TYPE == "对接OA").First().CODE_EN;
+
+            if (isDockOA == "1")
             {
-                await CreateWorkFlow(i);
+                //推送到OA
+                foreach (var i in sids)
+                {
+                    await CreateWorkFlow(i);
+                }
             }
 
             return updatedevice;
@@ -837,6 +845,10 @@ namespace EAM.Material.Services
             var taskId = GuidHelper.NewSnowflakeId().ToString();
             var corpId = _userSession.Corp.CorpID;
 
+            //获取主表数据
+            var query = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId).FirstAsync();
+            if (query == null) return AjaxResult.Error("未找到该份采购需求记录", "失败");
+
             //获取附件
             var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == collectId && c.table_name == "SP_COLLECT").ToList();
             var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
@@ -849,19 +861,51 @@ namespace EAM.Material.Services
                     attachUrl += webUrl + item.attach_path + "|";
                 }
             }
-            string attach = attachName.TrimEnd('|') + "$$$" + attachUrl.TrimEnd('|');
 
-            //获取相对方数据并生成json
-            var query = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
+            //生成物资明细附件
+            var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
+                .Select(c=>new SP_COLLECT_REQUEST_DTO
+                {
+                    SP_CODE = c.SP_CODE,
+                    SP_NAME = c.SP_NAME,
+                    SP_TYPE = c.SP_TYPE,
+                    BRAND = c.BRAND,
+                    UNIT = c.UNIT,
+                    REQUEST_NUM = c.REQUEST_NUM,
+                    TYPE_NAME = c.TYPE_NAME,
+                    MEMO = c.MEMO
+                }).ToListAsync();
+            string fileName = "";
+            string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
+            string fileUrl = "UploadDirectory/purchase/" + fileRealName;
+            if (detQuery.Count() > 0)
+            {
+                try
+                {
+                    IExporter exporter = new ExcelExporter();
+                    var fileResult = await exporter.Export(fileUrl, detQuery);
+                    fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
+                }
+                catch (Exception ex)
+                {
+                    return AjaxResult.Error("推送OA 创建物资清单失败：" + ex.Message, "失败");
+                }
+            }
+
+            string attach = attachName.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + fileName) + "$$$" 
+                + attachUrl.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + webUrl+ fileUrl);
+
+            var query1 = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
                 {
+                    c.COLLECT_CODE,
                     primary_key = c.COLLECT_ID,
-                    bdmc = "物资请购审批表",
+                    bdmc = c.DEPT_NAME + "物资需求申请",
                     bz = c.MEMO,
-                    fj = (attach == "$$$" ? "" : attach),
+                    fjsc = attach
                 }).FirstAsync();
-            if (query == null) return AjaxResult.Error("未找到该份采购记录", "失败");
-            string jsonData = query.ToJson();
+
+            string jsonData = query1.ToJson();
 
             
             //对接OA 取配置地址
@@ -894,4 +938,60 @@ namespace EAM.Material.Services
 
         }
     }
+
+    #region  SP_COLLECT_REQUEST DTO
+
+    public class SP_COLLECT_REQUEST_DTO
+    {
+
+        /// <summary>
+        /// 备件品种编码
+        /// </summary>
+        [Description("备件品种编码")]
+        public string SP_CODE { get; set; }
+
+        /// <summary>
+        /// 备件品种名称
+        /// </summary>
+        [Description("备件品种名称")]
+        public string SP_NAME { get; set; }
+
+        /// <summary>
+        /// 备件型号
+        /// </summary>
+        [Description("备件型号")]
+        public string SP_TYPE { get; set; }
+
+        /// <summary>
+        /// 品牌
+        /// </summary>
+        [Description("品牌")]
+        public string BRAND { get; set; }
+
+        /// <summary>
+        /// 计量单位
+        /// </summary>
+        [Description("计量单位")]
+        public string UNIT { get; set; }
+
+        /// <summary>
+        /// 申请数量
+        /// </summary>
+        [Description("申请数量")]
+        public decimal? REQUEST_NUM { get; set; }
+
+        /// <summary>
+        /// 备件类别名称
+        /// </summary>
+        [Description("备件类别名称")]
+        public string TYPE_NAME { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [Description("备注")]
+        public string MEMO { get; set; }
+    }
+
+    #endregion
 }

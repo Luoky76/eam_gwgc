@@ -42,8 +42,8 @@
                         labelwidth: 200,
                         fields: [
                             //基础信息
-                            { display: "请购单号", name: "COLLECT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "请购日期", name: "COLLECT_DATE", validate: { required: true }, newline: false, upper: true, type: "date", format: "yyyy-MM-dd", options: { type: 'date', disabled: true, format: "yyyy-MM-dd" } },
+                            { display: "申请单号", name: "COLLECT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "申请日期", name: "COLLECT_DATE", validate: { required: true }, newline: false, upper: true, type: "date", format: "yyyy-MM-dd", options: { type: 'date', disabled: true, format: "yyyy-MM-dd" } },
 
                             { display: "采购部门", name: "DEPT_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
                             { display: "采购人", name: "COLLECT_USER", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
@@ -58,39 +58,22 @@
                     },
                     grid: {
                         columns: [
+                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
+                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
+                            { display: "型号规格", name: "SP_TYPE", width: 150, type: "text", },
+                            { display: "品牌、厂家", name: "BRAND", width: 150, type: "text", },
+                            { display: "申请数量", name: "REQUEST_NUM", width: 150, type: "decimal", },
+                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
+                            { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
+                            { display: "申请人", name: "REQUEST_USER", width: 150, type: "text", },
+                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
                             {
-                                display: "需求计划单号", name: "REQUEST_CODE", width: 150, type: "text",
+                                display: "申请单号", name: "REQUEST_CODE", width: 150, type: "text",
                                 totalSummary:
                                 {
                                     render: function (suminf, column, cell) {
                                         return '<div>合计</div>';
                                     },
-                                    align: 'center'
-                                }
-                            },
-                            {
-                                display: "预计采购数量", name: "CHECK_NUM", type: "number", width: 120, editor: { type: 'number' },
-                                validate: { required: true }, totalSummary:
-                                {
-                                    type: 'sum',
-                                    align: 'center'
-                                }
-                            },
-                            { display: "申请数量", name: "REQUEST_NUM", width: 150, type: "decimal", },
-                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
-                            { display: "申请人", name: "REQUEST_USER", width: 150, type: "text", },
-                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
-                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
-                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
-                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
-                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
-                            { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
-
-                            {
-                                display: "预估金额(元)", name: "COLLECT_MONEY", width: 120, type: "number", editor: { type: 'number' }, totalSummary:
-                                {
-                                    type: 'sum',
                                     align: 'center'
                                 }
                             },

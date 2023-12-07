@@ -50,6 +50,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="wwwroot\lib\images\home\" />
+	  <Folder Include="wwwroot\UploadDirectory\purchase\" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
