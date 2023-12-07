@@ -93,7 +93,7 @@ namespace EAM.Material.Services
             sb.Append("\"billId\":\"" + billId + "\",");
             sb.Append("\"billTitle\":\"" + billTitle + "\",");
             sb.Append("\"creator\":\"" + loginid + "\",");
-            sb.Append("\"isAutoSubmit\":\"1\",");
+            sb.Append("\"isAutoSubmit\":\"0\",");
             sb.Append("\"oaRequest\":\"\",");
 
             // mainTable 主表信息 开始
