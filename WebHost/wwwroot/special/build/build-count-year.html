@@ -570,19 +570,9 @@
                             // 增加一个月，处理跨年情况
                             endDate.setMonth(endDate.getMonth() + 1);
 
-                            /*var where = {
-                                op: 'and',
-                                rules: [
-                                    { field: 'startdate', op: 'greaterorequal', value: new Date(liger.get('_search_STARTDATE').getValue()) },
-                                    { field: 'enddate', op: 'less', value: new Date(endDate)  }]
-                            };*/
                             me.grid.options.NoFirstSearch = false;
-                            //me.grid.options.parms.startdate = "";
-                            //me.grid.options.parms.enddate = "";
-                            LG.commonSearch($formsearch, me.grid, function()  {
-                                me.grid.options.parms.startdate = "";
-                                me.grid.options.parms.enddate = "";
-                            });
+                            me.grid.options.parms = { startdate: liger.get('_search_STARTDATE').getValue().format('yyyy-MM-dd'), enddate: endDate.format('yyyy-MM-dd') };
+                            LG.commonSearch($formsearch, me.grid);
                             //var year = date.getFullYear();
                         },
                     }],

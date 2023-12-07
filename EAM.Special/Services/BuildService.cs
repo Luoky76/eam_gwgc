@@ -25,6 +25,7 @@ using DocumentFormat.OpenXml.InkML;
 using NPOI.SS.Formula.Functions;
 using NPOI.HSSF.Record.Aggregates;
 using Newtonsoft.Json;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 
 namespace EAM.Special.Services
 {
@@ -307,7 +308,10 @@ namespace EAM.Special.Services
         /// <returns></returns>
         public async Task<GridData> QryYearAsync(GridRequest request,string startdate, string enddate)
         {
+            DateTime b_time = Convert.ToDateTime(startdate);
+            DateTime e_time = Convert.ToDateTime(enddate);
             var filterData = await _dbContext.Query<BUILD_COUNT>()
+                .Where(c=>c.STARTDATE >= b_time && c.STARTDATE < e_time)
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
                 .Select((a, b) => new
                 {
