@@ -1,6 +1,7 @@
 ﻿using Chloe.Data;
 using Chloe.Infrastructure;
 using Chloe.Oracle;
+using Chloe.RDBMS;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Text.RegularExpressions;
@@ -11,8 +12,17 @@ namespace Gksyb.Common.Data
     {
         static OracleConnectionFactory()//初始化
         {
-            OracleContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
-            OracleContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
+            var methodHandlerDic = new Dictionary<string, IMethodHandler>()
+            {
+                {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
+                {Compare_Handler.MethodName, new Compare_Handler()},
+                {Contains_Handler.MethodName, new Contains_Handler()},
+                {SumString_Handler.MethodName, new SumString_Handler("WM_CONCAT",null)}
+            };
+            foreach (var item in methodHandlerDic)
+            {
+                OracleContext.SetMethodHandler(item.Key, item.Value);
+            }
         }
 
         private readonly string _connString = null;
@@ -148,11 +158,12 @@ namespace Gksyb.Common.Data
             var paramNames = new List<string>();
             foreach (OracleParameter param in _oracleCommand.Parameters)
             {
+                if (!param.ParameterName.StartsWith(':')) continue;
                 if (!DateTimeTypes.Contains(param.OracleDbType)) continue;
                 paramNames.Add(param.ParameterName);
             }
             if (paramNames.Count < 1) return;
-            var pattern = $"({string.Join('|', paramNames.Select(c => $"({c}\\b)"))})";
+            var pattern = $"({string.Join('|', paramNames.Select(c => $"(\\s{c}\\b)"))})";
             var padding = string.Empty.PadLeft(rnd.Value.Next(50));
             _oracleCommand.CommandText = Regex.Replace(_oracleCommand.CommandText, pattern, $@"{padding}$1");
         }

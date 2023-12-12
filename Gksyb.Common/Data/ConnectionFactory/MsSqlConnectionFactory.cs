@@ -1,4 +1,4 @@
-﻿using Chloe.MySql;
+﻿using Chloe.RDBMS;
 using Chloe.SqlServer;
 
 namespace Gksyb.Common.Data
@@ -7,8 +7,17 @@ namespace Gksyb.Common.Data
     {
         static MsSqlConnectionFactory()//初始化
         {
-            MsSqlContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
-            MsSqlContext.SetMethodHandler(Compare_Handler.MethodName, new Compare_Handler());
+            var methodHandlerDic = new Dictionary<string, IMethodHandler>()
+            {
+                {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
+                {Compare_Handler.MethodName, new Compare_Handler()},
+                {Contains_Handler.MethodName, new Contains_Handler("+")},
+                {SumString_Handler.MethodName, new SumString_Handler(dis:"")}
+            };
+            foreach (var item in methodHandlerDic)
+            {
+                MsSqlContext.SetMethodHandler(item.Key, item.Value);
+            }
         }
 
         public MsSqlConnectionFactory(string connString) : base(connString)

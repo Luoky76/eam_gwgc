@@ -1,5 +1,6 @@
 ﻿using Chloe;
 using Chloe.Dameng;
+using Chloe.KingbaseES;
 using Chloe.MySql;
 using Chloe.Oracle;
 using Chloe.PostgreSQL;
@@ -45,14 +46,15 @@ namespace Gksyb.Common.Data
             dbType = (dbType ?? "").Trim().ToLower();
             IDbContext dbContext = dbType switch
             {
-                "oracle" => new OracleContext(new OracleConnectionFactory(connString)),
-                "mysql" => new MySqlContext(new MySqlConnectionFactory(connString)),
-                "mssql" => new MsSqlContext(new MsSqlConnectionFactory(connString), PagingMode.OFFSET_FETCH),
-                "sqlserver" => new MsSqlContext(new MsSqlConnectionFactory(connString)),
-                "sqlite" => new SQLiteContext(new SQLiteConnectionFactory(connString)),
-                "pgsql" => new PostgreSQLContext(new PostgreSQLConnectionFactory(connString)),
-                "dameng" => new DamengContext(new DamengConnectionFactory(connString)),
-                _ => new MsSqlContext(new MsSqlConnectionFactory(connString), PagingMode.OFFSET_FETCH),
+                "oracle" => new OracleContext(new OracleOptions { DbConnectionFactory = new OracleConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                "mysql" => new MySqlContext(new MySqlOptions { DbConnectionFactory = new MySqlConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                "mssql" => new MsSqlContext(new MsSqlOptions() { DbConnectionFactory = new MySqlConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString, PagingMode = PagingMode.OFFSET_FETCH }),
+                "sqlserver" => new MsSqlContext(new MsSqlOptions { DbConnectionFactory = new MsSqlConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                "sqlite" => new SQLiteContext(new SQLiteOptions { DbConnectionFactory = new SQLiteConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                "pgsql" => new PostgreSQLContext(new PostgreSQLOptions { DbConnectionFactory = new PostgreSQLConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                "dameng" => new DamengContext(new DamengOptions { DbConnectionFactory = new DamengConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                "kingbase" => new KingbaseESContext(new KingbaseESOptions { DbConnectionFactory = new KingbaseESConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString }),
+                _ => new MsSqlContext(new MsSqlOptions() { DbConnectionFactory = new MySqlConnectionFactory(connString), InsertStrategy = InsertStrategy.IgnoreNull | InsertStrategy.IgnoreEmptyString, PagingMode = PagingMode.OFFSET_FETCH })
             };
             return dbContext;
         }

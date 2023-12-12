@@ -1,38 +1,38 @@
-﻿using Chloe.Dameng;
-using Chloe.Infrastructure;
+﻿using Chloe.Infrastructure;
+using Chloe.KingbaseES;
 using Chloe.RDBMS;
-using Dm;
+using Kdbndp;
 using System.Data;
 
 namespace Gksyb.Common.Data
 {
-    public class DamengConnectionFactory : IDbConnectionFactory
+    public class KingbaseESConnectionFactory : IDbConnectionFactory
     {
-        static DamengConnectionFactory()//初始化
+        static KingbaseESConnectionFactory()//初始化
         {
             var methodHandlerDic = new Dictionary<string, IMethodHandler>()
             {
                 {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
                 {Compare_Handler.MethodName, new Compare_Handler()},
                 {Contains_Handler.MethodName, new Contains_Handler()},
-                {SumString_Handler.MethodName, new SumString_Handler("LISTAGG")}
+                {SumString_Handler.MethodName, new SumString_Handler()}
             };
             foreach (var item in methodHandlerDic)
             {
-                DamengContext.SetMethodHandler(item.Key, item.Value);
+                KingbaseESContext.SetMethodHandler(item.Key, item.Value);
             }
         }
 
         private readonly string _connString = null;
 
-        public DamengConnectionFactory(string connString)
+        public KingbaseESConnectionFactory(string connString)
         {
             this._connString = connString;
         }
 
         public IDbConnection CreateConnection()
         {
-            IDbConnection conn = new DmConnection(this._connString);
+            IDbConnection conn = new KdbndpConnection(this._connString);
             return conn;
         }
     }

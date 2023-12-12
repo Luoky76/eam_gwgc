@@ -58,6 +58,9 @@
 		<Reference Include="DmProvider">
 			<HintPath>..\dll\DmProvider.dll</HintPath>
 		</Reference>
+		<Reference Include="Kdbndp">
+			<HintPath>..\dll\Kdbndp.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 </Project>

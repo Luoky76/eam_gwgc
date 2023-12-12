@@ -30,7 +30,8 @@ namespace Chloe.Infrastructure.Interception
                 }
                 else
                 {
-                    if (!columns.TryGetValue(propertyDescriptor.Column, out var expression)) continue;
+                    var expression = columns.Where(c => c.Column == propertyDescriptor.Column).Select(c => c.Value).FirstOrDefault();
+                    if (expression == null) continue;
                     value = dbContext.Evaluate(expression);
                 }
                 var key = propertyDescriptor.GetDescription();
@@ -54,7 +55,8 @@ namespace Chloe.Infrastructure.Interception
             var isTrack = entityState != null;
             foreach (PrimitivePropertyDescriptor propertyDescriptor in typeDescriptor.PrimitivePropertyDescriptors)
             {
-                if (!columns.TryGetValue(propertyDescriptor.Column, out var expression)) continue;
+                var expression = columns.Where(c => c.Column == propertyDescriptor.Column).Select(c => c.Value).FirstOrDefault();
+                if (expression == null) continue;
                 var key = propertyDescriptor.GetDescription();
                 var value = dbContext.Evaluate(expression);
                 object oldValue = null;
