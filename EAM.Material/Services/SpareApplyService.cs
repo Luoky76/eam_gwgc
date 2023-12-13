@@ -318,7 +318,26 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> SpcatalogListAsync(GridRequest request)
         {
-            return await _dbContext.Query<BASE_SPCATALOG>().GetGridData(request);
+            return await _dbContext.Query<BASE_SPCATALOG>().Select(c => new
+            {
+                c.TYPE_ID,
+                c.TYPE_NAME,
+                c.SP_ID,
+                c.SP_NAME,
+                c.SP_CODE,
+                c.SP_SIZE,
+                c.PURTYPE_NAME,
+                c.MEMO,
+                c.UNIT,
+                c.PURTYPE_ID,
+                c.PRODUCE,
+                c.WARRANTY,
+                c.TYPE_CODE,
+                c.IS_RECOVERY,
+                c.IS_CANCEL,
+                c.CREATEDATE,
+                SEARCH = c.SP_CODE + c.SP_NAME + c.SP_SIZE + c.PRODUCE + c.UNIT+ c.TYPE_NAME
+            }).GetGridData(request);
         }
 
         class SpDisableRes : SP_DISABLE
