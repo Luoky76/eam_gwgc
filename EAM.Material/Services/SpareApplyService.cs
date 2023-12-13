@@ -336,6 +336,10 @@ namespace EAM.Material.Services
                 c.IS_RECOVERY,
                 c.IS_CANCEL,
                 c.CREATEDATE,
+                c.LAST_PROVIDERID,
+                c.LAST_PROVIDER,
+                c.STORE_NUM,
+                c.STORE_PRICE,
                 SEARCH = c.SP_CODE + c.SP_NAME + c.SP_SIZE + c.PRODUCE + c.UNIT+ c.TYPE_NAME
             }).GetGridData(request);
         }
