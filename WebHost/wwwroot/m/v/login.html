@@ -221,8 +221,8 @@
             //初始化
             init: function () {
                 var me = this;
-                me.innerHandler();
                 me.eventBind();
+                me.innerHandler();
                 me.initStorage();
                 setTimeout(me.initStorage, 100);
             }
