@@ -138,7 +138,7 @@ namespace Gksyb.Core.Filter
             {
                 type = property.PropertyType.GetUnNullableType().Name;
             }
-            return CreateFilterParam(value, type, rule.ParamName);
+            return CreateFilterParam(value, type, string.Empty);
         }
 
         /// <summary>

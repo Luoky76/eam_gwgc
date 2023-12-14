@@ -175,9 +175,16 @@ namespace Gksyb.Core.Filter
             return bulider.ToString();
         }
 
-        protected string CreateFilterParam(object value, string type, string pname)
+        protected string CreateFilterParam(object value, string type, string paramName)
         {
-            string paramName = string.IsNullOrEmpty(pname) ? (paramPrefix + (paramCounter++)) : pname;
+            if (string.IsNullOrWhiteSpace(paramName))
+            {
+                paramName = $"{paramPrefix}{paramCounter++}";
+            }
+            else
+            {
+                if (Parms.Any(c => c.Name == paramName)) return paramName;
+            }
             type = (type ?? "").ToLower();
             DbParam param;
             switch (type)

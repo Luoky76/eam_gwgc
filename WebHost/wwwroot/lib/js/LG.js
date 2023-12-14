@@ -205,12 +205,7 @@
     //创建过滤规则(查询表单)
     LG.bulidFilterGroup = function (form) {
         if (!form) return null;
-        var group = {
-            op: "and",
-            rules: []
-        };
-        group.rules = liger.get(form).toConditions();
-        return group;
+        return liger.get(form).getFilter();
     };
 
     //通用上方查询
@@ -251,7 +246,8 @@
                 return;
             }
             var parms = grid.options.parms;
-            if (rule.rules.length) {
+            var hasRule = (rule.rules && rule.rules.length) || (rule.groups && rule.groups.length)
+            if (hasRule) {
                 if (!grid.options.NoFirstSearch) {
                     grid.options.NoFirstSearch = true;
                     if (!parms.where) parms.where = "{}";
