@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Text;
+using Flurl;
+using Flurl.Http;
 
-namespace EAM.Material.Services
+namespace Gksyb.Core.OA
 {
     public class OAHandle
     {
@@ -22,8 +23,8 @@ namespace EAM.Material.Services
             string paras = "{\"mobile\":\"" + phone + "\"}";
             try
             {
-                HttpHandle http = new HttpHandle();
-                string result = await http.PostJSONAsync(url.TrimEnd('/') + "/hrm/HrmUserId/getUserId", paras);
+                var http = new Url(url.TrimEnd('/') + "/hrm/HrmUserId/getUserId");
+                string result = await http.PostJsonAsync(paras).ReceiveString();
 
                 //解析json 
                 JObject jObj = JObject.Parse(result);
@@ -51,8 +52,8 @@ namespace EAM.Material.Services
             //通过tojson转化的json  会含有null 的数据 需要替换成 ""    特殊处理掉日期带时间的问题
             json = json.Replace(":null", ":\"\"").Replace(" 00:00:00", "");
 
-            HttpHandle http = new HttpHandle();
-            string result = await http.PostJSONAsync(url.TrimEnd('/') + "/createWorkflow?method=getExternalData", json);
+            var http = new Url(url.TrimEnd('/') + "/createWorkflow?method=getExternalData");
+            string result = await http.PostJsonAsync(json).ReceiveString();
 
             await _dbContext.DBLog("创建OA流程结果", "", result + "\n" + json, "");
             return result;
@@ -124,8 +125,8 @@ namespace EAM.Material.Services
             //通过tojson转化的json  会含有null 的数据 需要替换成 ""    特殊处理掉日期带时间的问题
             json = json.Replace(":null", ":\"\"").Replace(" 00:00:00", "");
 
-            HttpHandle http = new HttpHandle();
-            string result = await http.PostJSONAsync(url.TrimEnd('/') + "/cusrequest/getrequestlog/getList", json);
+            var http = new Url(url.TrimEnd('/') + "/cusrequest/getrequestlog/getList");
+            string result = await http.PostJsonAsync(json).ReceiveString();
 
             await _dbContext.DBLog("获取OA实时审批进度结果", "", result + "\n" + json, "");
             return result;

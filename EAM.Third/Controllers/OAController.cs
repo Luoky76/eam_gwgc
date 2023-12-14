@@ -1,8 +1,8 @@
-﻿using EAM.Material.Services;
+﻿using EAM.Third.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EAM.Material.Controllers.OA
+namespace EAM.Third.Controllers.OA
 {
     public class OAController : BaseController
     {

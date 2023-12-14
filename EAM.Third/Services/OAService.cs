@@ -6,9 +6,11 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Gksyb.Model;
+using Gksyb.Common;
+using Chloe;
 using EAM.Material.Interfaces;
 
-namespace EAM.Material.Services
+namespace EAM.Third.Services
 {
     public class OAService: BaseService
     {
@@ -85,12 +87,12 @@ namespace EAM.Material.Services
             await LogAsync("oa回调", "开始", json);
 
             JObject jObj = JObject.Parse(json);
-            if (jObj["taskId"] == null || string.IsNullOrEmpty(jObj["taskId"].ToString()))
+            if (jObj["taskId"] == null || string.IsNullOrEmpty(jObj["taskId"]?.ToString()))
             {
                 msg = "回调参数taskId缺少值";
                 return "{\"status\":false,\"msg\":\"" + msg + "\"}";
             }
-            if (jObj["detail"] == null || string.IsNullOrEmpty(jObj["detail"].ToString()))
+            if (jObj["detail"] == null || string.IsNullOrEmpty(jObj["detail"]?.ToString()))
             {
                 msg = "回调参数detail缺少值";
                 return "{\"status\":false,\"msg\":\"" + msg + "\"}";
@@ -107,26 +109,26 @@ namespace EAM.Material.Services
                     _dbContext.Session.BeginTransaction();
                 }
 
-                var item = jObj["detail"][0];
+                var item = jObj["detail"]?[0] ?? JObject.Parse("");
 
                 //插入流程记录
                 await _dbContext.InsertAsync(new WF_PROCESS
                 {
                     PROCESS_ID = GuidHelper.NewSnowflakeId().ToString(),
-                    TASK_ID = jObj["taskId"].ToString(),
-                    OPERATION = item["operation"].ToString(),
-                    MEMO = item["memo"].ToString(),
-                    RECEIVE_TIME = Convert.ToDateTime(item["receiveTime"].ToString()),
-                    DEAL_TIME = Convert.ToDateTime(item["dealTime"].ToString()),
-                    DEAL_USER = item["delUser"].ToString(),
-                    NODE_NAME = item["nodeName"].ToString(),
-                    IS_REBACK = item["isReback"].ToString() == "true" ? "1" : "0"
+                    TASK_ID = jObj["taskId"]?.ToString() ?? "",
+                    OPERATION = item["operation"]?.ToString() ?? "",
+                    MEMO = item["memo"]?.ToString() ?? "",
+                    RECEIVE_TIME = Convert.ToDateTime(item["receiveTime"]?.ToString()),
+                    DEAL_TIME = Convert.ToDateTime(item["dealTime"]?.ToString()),
+                    DEAL_USER = item["delUser"]?.ToString() ?? "",
+                    NODE_NAME = item["nodeName"]?.ToString() ?? ""  ,
+                    IS_REBACK = item["isReback"]?.ToString() == "true" ? "1" : "0"
                 });
                 if (canTransationOper) _dbContext.Session.CommitTransaction();
 
                 //调用物资采购的回调函数
-                var isReject = item["operation"].ToString() == "退回";
-                await _spCollectservice.ApprovalCompletedAsync(jObj["taskId"].ToString(), isReject);
+                var isReject = item["operation"]?.ToString() == "退回";
+                await _spCollectservice.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
             }
             catch (Exception ex)
             {
