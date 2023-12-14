@@ -71,6 +71,7 @@
         name: null,             //字段name
         dbname: null,          //数据库实际名称
         userSearch: null,        //是否用于组成查询条件配合grid
+        filter: null, //组合过滤条件，用于多字段查询(格式为FilterGroup或者FilterRlue数组) [{op: "equal",field: "xxx", type: "string"},{op: "equal",field: "ROLEDESC",type: "string"}]
         textField: null,       //文本框name
         type: null,             //表单类型
         editor: null,           //编辑器扩展
