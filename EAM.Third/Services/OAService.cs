@@ -9,6 +9,7 @@ using Gksyb.Model;
 using Gksyb.Common;
 using Chloe;
 using EAM.Material.Interfaces;
+using EAM.Repair.interfaces;
 
 namespace EAM.Third.Services
 {
@@ -19,15 +20,18 @@ namespace EAM.Third.Services
         private readonly IMessageCenterService _messageCenterService;
         private DateTime? _Sysdate;
         private readonly SysContextOptions _options;
-        private readonly ISpCollectService _spCollectservice;
+        private readonly ISpCollectService _spCollectService;
+        private readonly IRepairPlanService _repairPlanService;
 
-        public OAService(IDbContext dbContext,UserSession userSession, IMessageCenterService messageCenterService, IOptions<SysContextOptions> sysContext, ISpCollectService spCollectsService)
+        public OAService(IDbContext dbContext,UserSession userSession, IMessageCenterService messageCenterService, IOptions<SysContextOptions> sysContext,
+            ISpCollectService spCollectsService, IRepairPlanService repairPlanService)
         {
             _dbContext = dbContext;
             _userSession = userSession;
             _messageCenterService = messageCenterService;
             _options = sysContext.Value;
-            _spCollectservice = spCollectsService;
+            _spCollectService = spCollectsService;
+            _repairPlanService = repairPlanService;
         }
 
         /// <summary>
@@ -128,7 +132,18 @@ namespace EAM.Third.Services
 
                 //调用物资采购的回调函数
                 var isReject = item["operation"]?.ToString() == "退回";
-                await _spCollectservice.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
+                var fun_name = item["fun_name"]?.ToString();
+                switch (fun_name)
+                {
+                    case "_spCollectService.ApprovalCompletedAsync":
+                        await _spCollectService.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
+                        break;
+                    case "_repairPlanService.ApprovalCompletedAsync":
+                        await _repairPlanService.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
+                        break;
+                    default:
+                        throw new MessageException("未找到匹配的回调函数");
+                }
             }
             catch (Exception ex)
             {

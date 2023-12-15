@@ -26,5 +26,6 @@ namespace EAM.Repair.interfaces
 
         Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
 
+        Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass);
     }
 }
