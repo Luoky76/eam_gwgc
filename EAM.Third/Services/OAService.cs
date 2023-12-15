@@ -8,8 +8,8 @@ using Microsoft.Extensions.Options;
 using Gksyb.Model;
 using Gksyb.Common;
 using Chloe;
-using EAM.Material.Interfaces;
-using EAM.Repair.interfaces;
+using Gksyb.Core.Interfaces.Material;
+using Gksyb.Core.Interfaces.Repair;
 
 namespace EAM.Third.Services
 {

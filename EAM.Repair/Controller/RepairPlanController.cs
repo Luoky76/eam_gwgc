@@ -1,4 +1,4 @@
-﻿using EAM.Repair.interfaces;
+﻿using Gksyb.Core.Interfaces.Repair;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;

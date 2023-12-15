@@ -2,13 +2,13 @@
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Presentation;
-using EAM.Repair.interfaces;
+using Gksyb.Core.Interfaces.Repair;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
-using Gksyb.Core.OA;
+using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;

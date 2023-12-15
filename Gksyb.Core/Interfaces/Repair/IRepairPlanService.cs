@@ -4,7 +4,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 
-namespace EAM.Repair.interfaces
+namespace Gksyb.Core.Interfaces.Repair
 {
     public interface IRepairPlanService : IService
     {

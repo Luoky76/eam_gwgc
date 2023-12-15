@@ -2,7 +2,7 @@
 using Flurl;
 using Flurl.Http;
 
-namespace Gksyb.Core.OA
+namespace Gksyb.Core.Interfaces.OA
 {
     public class OAHandle
     {
@@ -18,7 +18,7 @@ namespace Gksyb.Core.OA
         /// <param name="phone">手机号码</param>
         /// <param name="url">oa地址</param>
         /// <returns></returns>
-        public static async Task<string> GetUserIdAsync(string phone,string url)
+        public static async Task<string> GetUserIdAsync(string phone, string url)
         {
             string paras = "{\"mobile\":\"" + phone + "\"}";
             try
@@ -44,10 +44,10 @@ namespace Gksyb.Core.OA
         public async Task<string> CreateFlow(string url, string billId, string billTitle, string phone, string oaCode, string mainData, string detData)
         {
 
-            
+
             string json = await GetFlowJsonAsync(url, billId, billTitle, phone, oaCode, mainData, detData);
 
-            await _dbContext.DBLog("创建OA流程参数", "", "手机号码：" + phone + "====OA账号：" + oaCode + "\n" + json,"");
+            await _dbContext.DBLog("创建OA流程参数", "", "手机号码：" + phone + "====OA账号：" + oaCode + "\n" + json, "");
 
             //通过tojson转化的json  会含有null 的数据 需要替换成 ""    特殊处理掉日期带时间的问题
             json = json.Replace(":null", ":\"\"").Replace(" 00:00:00", "");
