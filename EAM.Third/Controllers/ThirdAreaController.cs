@@ -1,6 +1,7 @@
 ﻿namespace Microsoft.AspNetCore.Mvc
 {
-     [ApiController]
+    [Route("Third")]
+    [ApiController]
     public class ThirdAreaController<T> : BaseController<T>
     {
     }
