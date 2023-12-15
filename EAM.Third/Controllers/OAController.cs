@@ -1,10 +1,12 @@
 ﻿using EAM.Third.Services;
+using Gksyb.Core.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EAM.Third.Controllers.OA
+namespace EAM.Third.Controllers
 {
-    public class OAController : BaseController
+    [GksybAuthorize(true)]
+    public class OAController : ThirdAreaController
     {
         private readonly OAService _service;
         

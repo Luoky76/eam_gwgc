@@ -51,6 +51,7 @@
 		<PluginPublishProject Include="..\EAM.Material\EAM.Material.csproj" />
 		<PluginPublishProject Include="..\EAM.Special\EAM.Special.csproj" />
 		<PluginPublishProject Include="..\EAM.Energy\EAM.Energy.csproj" />
+		<PluginPublishProject Include="..\EAM.Third\EAM.Third.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="wwwroot\lib\images\home\" />
