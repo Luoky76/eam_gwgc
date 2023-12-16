@@ -12,7 +12,7 @@ namespace Gksyb.Common.Data
         private readonly string _delimiter;
         private readonly string _dis;
 
-        public SumString_Handler(string fn = "STRING_AGG", string delimiter = ",",string dis = "DISTINCT")
+        public SumString_Handler(string fn = "STRING_AGG", string delimiter = ",", string dis = "DISTINCT")
         {
             _fn = fn;
             _delimiter = delimiter;

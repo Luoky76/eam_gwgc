@@ -258,7 +258,7 @@ namespace Gksyb.Server.Services.Auth
             var roleCorps = entity.RoleCorp == null ? "" : roles.Where(c => entity.RoleCorp.ContainsKey(c.Value.ToString())).ToStr(",");
             await UserPortHandle(entity.LOGINNAME, roleCorps, _roletype, null, id =>
             {
-                if(entity.RoleCorp?.ContainsKey(id) == true)
+                if (entity.RoleCorp?.ContainsKey(id) == true)
                 {
                     var corps = (entity.RoleCorp[id] ?? "").Split(",").DistinctAndOrderBy().ToList();
                     if (corps.Count < 1) return null;
