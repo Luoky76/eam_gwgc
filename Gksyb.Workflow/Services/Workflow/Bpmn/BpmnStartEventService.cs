@@ -116,8 +116,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             await _dbContext.InsertAsync(entity);
             info.TaskId = entity.ID;
             info.Users = new List<UserInfo>(){
-                new UserInfo
-                {
+                new() {
                     Id= User.UserID,
                     Account = User.UserName,
                     Name= User.RealName

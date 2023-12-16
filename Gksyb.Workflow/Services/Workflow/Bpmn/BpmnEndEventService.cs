@@ -34,7 +34,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
 
             //删除并插入历史表
             var node = nodes.OrderBy(c => c.ID).First();
-            await EventPublish(WorkflowEventAction.ComplateTask, new List<WF_NODE>() { new WF_NODE()
+            await EventPublish(WorkflowEventAction.ComplateTask, new List<WF_NODE>() { new()
             {
                 TASK_ID = info.TaskId,
                 ID = node.ID,

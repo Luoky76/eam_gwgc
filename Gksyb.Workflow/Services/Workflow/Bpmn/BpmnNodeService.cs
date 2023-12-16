@@ -244,7 +244,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 获取来源节点的任务ID
         /// </summary>
-        protected List<string> GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs)
+        protected static List<string> GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs)
         {
             var nodes = new List<string>();
             GetPreviousNodeNames(inputs, nodes);
@@ -254,7 +254,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 获取来源节点的任务ID
         /// </summary>
-        private void GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs, List<string> nodes)
+        private static void GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs, List<string> nodes)
         {
             if (inputs == null || inputs.Count < 1) return;
             foreach (var input in inputs)
