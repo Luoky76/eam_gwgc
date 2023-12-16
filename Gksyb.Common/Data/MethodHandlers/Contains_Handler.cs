@@ -9,7 +9,7 @@ namespace Gksyb.Common.Data
         public static readonly string MethodName = nameof(string.Contains);
         private static readonly MethodInfo method = typeof(string).GetMethod(MethodName, new Type[] { typeof(char) });
 
-        private string _concat;
+        private readonly string _concat;
 
         public Contains_Handler(string concat = "||")
         {

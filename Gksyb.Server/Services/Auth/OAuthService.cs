@@ -89,7 +89,7 @@ namespace Gksyb.Server.Services.Auth
                 RealName = model.NAME,
                 IsApi = true,
                 Group = model.INFORMATION ?? "",
-                Roles = new List<string>(),
+                AllRoles = new List<string>(),
                 IP = request.IP,
                 UserAgent = request.UA,
                 UserAppName = _options.UserAppName,

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                     UserName = "UserName",
                     RealName = "RealName",
                     Group = "Group",
-                    Roles = new List<string>(),
+                    AllRoles = new List<string>(),
                     IsAdmin = true,
                     IsOurCompany = true,
                     IP = source.Request.GetRealIP(),

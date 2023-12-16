@@ -1,5 +1,6 @@
 ﻿using Gksyb.Common.Static;
 using Gksyb.Core.Interfaces.Auth;
+using Gksyb.Model.UI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,6 +78,7 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 显示名称
         /// </summary>
+        [JsonIgnore]
         public string Display
         {
             get
@@ -86,9 +88,32 @@ namespace Gksyb.Core.Auth
         }
 
         /// <summary>
-        /// 角色
+        /// 所有角色
         /// </summary>
-        public List<string> Roles { get; set; }
+        public List<string> AllRoles { get; set; }
+
+        /// <summary>
+        /// 角色归属公司
+        /// </summary>
+        public List<KeyValueItem> RoleCorps { get; set; }
+
+        /// <summary>
+        /// 可用角色
+        /// </summary>
+        [JsonIgnore]
+        public List<string> Roles
+        {
+            get
+            {
+                if (RoleCorps == null) return AllRoles;
+                return AllRoles.Where(c =>
+                {
+                    var corps = RoleCorps.Where(a => a.Key == c).ToList();
+                    if (corps.Count < 1) return true;
+                    return corps.Any(a => a.Value == Corp.CorpID);
+                }).ToList();
+            }
+        }
 
         /// <summary>
         /// 是否超级管理员
@@ -138,6 +163,7 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 微信Openid
         /// </summary>
+        [JsonIgnore]
         public string Openid
         {
             get

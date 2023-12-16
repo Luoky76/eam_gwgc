@@ -19,6 +19,7 @@ namespace Gksyb.Server.Services.Auth
         private readonly SysContextOptions _options;
         private DateTime? sysdate;
         private static readonly string _opertype = "用户公司";
+        private static readonly string _roletype = "角色公司";
         protected static readonly string _weixinType = "微信";
 
         /// <summary>
@@ -100,7 +101,11 @@ namespace Gksyb.Server.Services.Auth
             foreach (var c in list)
             {
                 var ports = userPorts.Where(a => a.LOGINNAME == c.LOGINNAME).ToList();
-                c.ROLE = userRoles.Where(a => a.USERID == c.USERID).Select(a => a.ROLEID).Join();
+                var roles = userRoles.Where(a => a.USERID == c.USERID).Select(a => a.ROLEID).ToList();
+                c.ROLE = roles.Join();
+                var roleCorps = ports.Where(a => a.OPTYPE == _roletype).DistinctBy(c => c.CORPID).ToList();
+                c.RoleCorp = roles.ToDictionary(c => c.Value.ToString(), c => roleCorps.Where(a => a.CORPID == c.Value.ToString()).Select(a => a.REMARK).FirstOrDefault());
+
                 var corps = ports.Where(a => a.OPTYPE == _opertype).DistinctBy(c => c.CORPID).ToList();
                 c.CORP = corps.Select(a => a.CORPID).Join();
                 c.CorpStation = corps.ToDictionary(c => c.CORPID, c => c.REMARK);
@@ -122,7 +127,7 @@ namespace Gksyb.Server.Services.Auth
         {
             sysdate = await _dbContext.GetSysdate();
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.REALNAME, c.TITLE, c.SEX, c.PHONE, c.FAX, c.EMAIL, c.NICKNAME, c.ADDRESS, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
+                c => new { c.REALNAME, c.TITLE, c.SEX, c.PHONE, c.FAX, c.EMAIL, c.NICKNAME, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
                 c => a => a.USERID == c.USERID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
         }
@@ -191,7 +196,7 @@ namespace Gksyb.Server.Services.Auth
             MessageException.ThrowIf(!_user.IsOurCompany && (old.CLASS ?? "0") != "0", "您无权删除此用户");
             var corps = await _dbContext.Query<CF_USER_PORT>()
                 .Where(c => c.LOGINNAME == entity.LOGINNAME && c.OPTYPE == _opertype && c.APPNAME == _options.UserAppName).Select(c => c.CORPID).ToListAsync();
-            if (!_user.IsAdmin)
+            if (!_user.IsAdmin && !(_user.IsOurCompany && (old.CLASS ?? "0") == "0"))//非管理员并且非内部用户操作外部用户
             {
                 if (corps.Count < 1 || corps.Exists(c => !_user.AllCorps.Exists(a => a.CorpID == c)))
                     throw new MessageException($"用户{entity.LOGINNAME}所属组织与您当前的组织不匹配，您无权进行此操作");
@@ -219,15 +224,15 @@ namespace Gksyb.Server.Services.Auth
             var isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME)
                 .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在用户{entity.LOGINNAME}");
-            isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME)
-                .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
-            if (isExists) throw new MessageException($"已经存在用户名{entity.REALNAME}");
-            if (!string.IsNullOrWhiteSpace(entity.PHONE))
-            {
-                isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.PHONE == entity.PHONE)
-                    .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
-                if (isExists) throw new MessageException($"已经存在手机号{entity.PHONE}");
-            }
+            //isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME)
+            //    .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            //if (isExists) throw new MessageException($"已经存在用户名{entity.REALNAME}");
+            //if (!string.IsNullOrWhiteSpace(entity.PHONE))
+            //{
+            //    isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.PHONE == entity.PHONE)
+            //        .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            //    if (isExists) throw new MessageException($"已经存在手机号{entity.PHONE}");
+            //}
         }
 
         /// <summary>
@@ -248,9 +253,23 @@ namespace Gksyb.Server.Services.Auth
             }
             var roles = await _dbContext.Query<CF_ROLE>().Where(roleCondition).Select(c => c.ROLEID).ToListAsync();
             roles = roles.Distinct().OrderBy(i => i).ToList();
+
+            //角色公司处理
+            var roleCorps = entity.RoleCorp == null ? "" : roles.Where(c => entity.RoleCorp.ContainsKey(c.Value.ToString())).ToStr(",");
+            await UserPortHandle(entity.LOGINNAME, roleCorps, _roletype, null, id =>
+            {
+                if(entity.RoleCorp?.ContainsKey(id) == true)
+                {
+                    var corps = (entity.RoleCorp[id] ?? "").Split(",").DistinctAndOrderBy().ToList();
+                    if (corps.Count < 1) return null;
+                    corps.RemoveAll(c => !_user.AllCorps.Exists(a => a.CorpID == c));
+                    return corps.ToStr(",");
+                }
+                return null;
+            });
+
             var oldRoles = (await _dbContext.Query<CF_USERROLE>().Where(condition).Select(c => c.ROLEID).ToListAsync()).Join();
-            entity.ADDRESS = roles.ToStr(",");
-            if (entity.ADDRESS == oldRoles) return;
+            if (roles.ToStr(",") == oldRoles) return;
             await _dbContext.DeleteAsync<CF_PRIVILEGE>(c => c.APPNAME == _options.AppName && c.PRIVILEGEMASTER == "CF_USER" && c.PRIVILEGEMASTERKEY == entity.LOGINNAME);
             await _dbContext.DeleteAsync(condition);
             foreach (var roleid in roles)
@@ -322,7 +341,7 @@ namespace Gksyb.Server.Services.Auth
             }
         }
 
-        private readonly string[] _optypes = new string[] { _opertype };
+        private readonly string[] _optypes = new string[] { _opertype, _roletype };
 
         /// <summary>
         /// 公司过滤

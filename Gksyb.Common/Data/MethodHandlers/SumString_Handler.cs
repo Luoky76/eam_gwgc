@@ -8,9 +8,9 @@ namespace Gksyb.Common.Data
     {
         public static readonly string MethodName = "Sum";
 
-        private string _fn;
-        private string _delimiter;
-        private string _dis;
+        private readonly string _fn;
+        private readonly string _delimiter;
+        private readonly string _dis;
 
         public SumString_Handler(string fn = "STRING_AGG", string delimiter = ",",string dis = "DISTINCT")
         {

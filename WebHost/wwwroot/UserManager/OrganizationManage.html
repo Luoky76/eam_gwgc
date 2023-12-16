@@ -150,7 +150,11 @@
             },
             add: function () { //新增
                 var me = this;
-                me.grid.addEditRow({}, true);
+                var row = {};
+                if (!window.session.IsAdmin) {
+                    row.CORPID = window.session.CorpId;
+                }
+                me.grid.addEditRow(row, true);
             },
             save: function () { //保存
                 var me = this;

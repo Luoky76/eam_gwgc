@@ -2,7 +2,9 @@
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Dtos;
+using Gksyb.Model.UI;
 using Microsoft.Extensions.Options;
+using System.Linq.Expressions;
 
 namespace Gksyb.Server.Services.Auth
 {
@@ -11,8 +13,9 @@ namespace Gksyb.Server.Services.Auth
         private readonly IDbContext _dbContext;
         private readonly IRoleModuleService _roleModuleService;
         private readonly SysContextOptions _options;
-        private static readonly string _guestRole = "微信访客";
-        private static readonly string _opertype = "用户公司";
+        private const string _guestRole = "微信访客";
+        private const string _opertype = "用户公司";
+        private const string _roletype = "角色公司";
 
         public AuthService(IDbContext dbContext, IRoleModuleService roleModuleService, IOptions<SysContextOptions> sysContext)
         {
@@ -77,8 +80,7 @@ namespace Gksyb.Server.Services.Auth
             var isSuper = user.USERID == _options.AdminUserID;
             var isAdmin = isSuper || roles.Contains(c => c.ROLEID == _options.AdminRole);
             var isOurCompany = isAdmin || ((user.CLASS ?? "0").CastTo(0) > 0);
-            var forbinMenus = await GetForbidMenu(user.LOGINNAME);
-            var forbinButtons = await GetForbidButtons(user.LOGINNAME);
+            var ports = await GetUserPortsAsync(user.LOGINNAME, c => c.OPTYPE == _roletype);
             var userSession = new UserSession()
             {
                 UserID = user.USERID.Value,
@@ -87,7 +89,8 @@ namespace Gksyb.Server.Services.Auth
                 Class = user.CLASS,
                 WorkerCode = user.DEPARTCODE,
                 Group = user.STATION ?? "",
-                Roles = roles.Select(c => c.ROLENAME).Distinct().ToList(),
+                AllRoles = roles.Select(c => c.ROLENAME).Distinct().ToList(),
+                RoleCorps = ToRoleCorps(roles, ports),
                 IsSuper = isSuper,
                 IsAdmin = isAdmin,
                 IsOurCompany = isOurCompany,
@@ -96,16 +99,16 @@ namespace Gksyb.Server.Services.Auth
                 UserAppName = _options.UserAppName,
                 RoleAppName = request.RoleAppname,
                 MenuAppname = request.MenuAppname,
-                ForbinMenus = forbinMenus,
-                ForbinButtons = forbinButtons
+                ForbinMenus = await GetForbidMenu(user.LOGINNAME),
+                ForbinButtons = await GetForbidButtons(user.LOGINNAME)
             };
-            if (isSuper) userSession.Roles.Add(UserSession.SuperRoleName);
+            if (isSuper) userSession.AllRoles.Add(UserSession.SuperRoleName);
             await LoginHandle(userSession, user);//当前系统登录的特殊处理
             action?.Invoke(userSession);
             //加入微信访客角色
-            if (!string.IsNullOrWhiteSpace(userSession.Openid) && !userSession.Roles.Contains(_guestRole))
+            if (!string.IsNullOrWhiteSpace(userSession.Openid) && !userSession.AllRoles.Contains(_guestRole))
             {
-                userSession.Roles.Add(_guestRole);
+                userSession.AllRoles.Add(_guestRole);
             }
             //登录成功，更新用户数据
             _dbContext.TrackEntity(user);
@@ -125,9 +128,9 @@ namespace Gksyb.Server.Services.Auth
             CF_USER user = null;
             if (loginName.IsMobileNumber())//手机号登录支持
             {
-                user = await _dbContext.Query<CF_USER>()
-                .Where(c => c.PHONE == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").FirstOrDefaultAsync();
-                user = (user != null && user.LOGINPASSWORD != password) ? null : user;
+                var users = await _dbContext.Query<CF_USER>()
+                .Where(c => c.PHONE == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").ToListAsync();
+                user = users.OrderByDescending(c => c.LASTLOGINTIME).FirstOrDefault(c => c.LOGINPASSWORD == password);
             }
             user ??= await _dbContext.Query<CF_USER>()
                     .Where(c => c.LOGINNAME == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").FirstOrDefaultAsync();
@@ -231,6 +234,7 @@ namespace Gksyb.Server.Services.Auth
             {
                 password = await _dbContext.Query<CF_USER>()
                 .Where(c => c.PHONE == username && c.APPNAME == _options.UserAppName && c.FLAG == "1")
+                .OrderByDesc(c => c.LASTLOGINTIME)
                 .Select(c => c.LOGINPASSWORD).FirstOrDefaultAsync();
             }
             if (string.IsNullOrWhiteSpace(password))
@@ -332,9 +336,32 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
+        /// 获取用户扩展数据
+        /// </summary>
+        private async Task<List<CF_USER_PORT>> GetUserPortsAsync(string userName, Expression<Func<CF_USER_PORT, bool>> predicate)
+        {
+            return await _dbContext.Query<CF_USER_PORT>().Where(c => c.LOGINNAME == userName && c.APPNAME == _options.UserAppName)
+                .WhereIfNotNull(predicate, predicate).ToListAsync();
+        }
+
+        /// <summary>
+        /// 获取用户扩展数据
+        /// </summary>
+        private static List<KeyValueItem> ToRoleCorps(List<CF_ROLE> roles, List<CF_USER_PORT> ports)
+        {
+            var roleCorps = ports.SelectMany(c =>
+            {
+                var name = roles.Where(a => a.ROLEID.Value.ToString() == c.CORPID).Select(a => a.ROLENAME).FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(name)) return new List<KeyValueItem>();
+                var corps = (c.REMARK ?? "").Split(",").DistinctAndOrderBy().ToList();
+                return corps.Select(a => new KeyValueItem(name, a)).ToList();
+            }).ToList();
+            return roleCorps.Count < 1 ? null : roleCorps;
+        }
+
+        /// <summary>
         /// 获取用户禁止菜单
         /// </summary>
-        /// <returns></returns>
         private async Task<List<MenuModule>> GetForbidMenu(string userName)
         {
             var list = await _dbContext.Query<SYS_MENU>().Where(s => _dbContext.Query<CF_PRIVILEGE>().Where(c => c.PRIVILEGEMASTER == "CF_USER"
@@ -350,7 +377,6 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 获取用户禁止按钮
         /// </summary>
-        /// <returns></returns>
         private async Task<SortedList<string, List<ButtonModule>>> GetForbidButtons(string userName)
         {
             var list = await _dbContext.Query<SYS_BUTTON>().Where(s => _dbContext.Query<CF_PRIVILEGE>().Where(c => c.PRIVILEGEMASTER == "CF_USER"

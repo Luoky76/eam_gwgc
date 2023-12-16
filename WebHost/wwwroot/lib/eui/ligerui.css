@@ -2213,6 +2213,7 @@ table.l-filter-group-alt table.l-filter-group {
     padding: 5px 3px;
     border: none;
     text-align: left;
+    user-select:none;
 }
 
 .l-box-select-visible .l-text-icon-transition {
