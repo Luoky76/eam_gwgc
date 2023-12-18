@@ -189,6 +189,10 @@ namespace EAM.Device.Services
         private async Task BeforeAdd(DEVICE_CARD entity)
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.TYPE_ID =="2")
+            {
+                entity.STATUS = "1";
+            }
             await Task.CompletedTask;
         }
 
