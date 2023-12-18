@@ -221,7 +221,11 @@
                         });
                     }
                 };
-
+                var selData = me.grid.getData();
+                var dataValue = "";
+                selData.forEach((a) => {
+                    dataValue += a.REQUEST_DET_ID + ",";
+                });
                 $.ligerDialog.open({
                     width: 980,
                     height: 600,
@@ -236,7 +240,8 @@
                     slide: false,
                     data: {
                         mainReloadBtn: me.reloadDet,
-                        callback: callback
+                        callback: callback,
+                        dataValue: dataValue
                     }
                 });
 

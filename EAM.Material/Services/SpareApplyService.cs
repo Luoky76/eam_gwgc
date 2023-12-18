@@ -2,7 +2,9 @@
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Wordprocessing;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
+using Gksyb.Common.Office;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -10,6 +12,7 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
 using NPOI.OpenXmlFormats.Vml.Spreadsheet;
 using System;
@@ -227,6 +230,74 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 导入
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <param name="folder"></param>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
+        {
+            var apply = _dbContext.QueryByKey<SPARE_APPLY>(sid);
+            if (apply == null) {
+                return AjaxResult.Error("参数错误");
+            }
+
+            var importResult = new List<SPARE_APPLY_DET>();
+
+            try
+            {
+                var type = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == "临时类别").FirstOrDefault();
+
+                await formFile.Import<SpDetailExportData>(async c =>
+                {
+                    var temp = c.MapTo<SPARE_APPLY_DET>();
+                    if (string.IsNullOrEmpty(c.TYPE_NAME))
+                    {
+                        temp.TYPE_NAME = type.TYPE_NAME;
+                        temp.TYPE_ID = type.TYPE_ID;
+                        temp.TYPE_CODE = type.TYPE_CODE;
+                    }
+                    else
+                    {
+                        var tp = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == temp.TYPE_NAME).FirstOrDefault();
+                        if (tp == null)
+                        {
+                            throw new MessageException(temp.TYPE_NAME + " 物资分类不存在，请检查!");
+
+                        }
+                        temp.TYPE_NAME = tp.TYPE_NAME;
+                        temp.TYPE_ID = tp.TYPE_ID;
+                        temp.TYPE_CODE = tp.TYPE_CODE;
+                    }
+
+                    temp.MEMO = c.MEMO;
+                    temp.APPLY_ID = apply.APPLY_ID;
+                    temp.IS_RECOVERY = "0";
+                  
+                    importResult.Add(temp);
+                 
+                });
+                if (importResult.Count > 0)
+                {
+                    foreach (var item in importResult)
+                    {
+                        await BeforeAddDet(item);
+                        await Task.CompletedTask;
+                        _dbContext.Insert(item);
+                    }
+                }
+
+                return AjaxResult.Success("成功");
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
+            }
+
+        }
+
+        /// <summary>
         /// 明细-列表
         /// </summary>
         /// <param name="request"></param>
@@ -280,14 +351,11 @@ namespace EAM.Material.Services
 
         private async Task BeforeAddDet(SPARE_APPLY_DET entity)
         {
-            if (_dbContext.Query<SPARE_APPLY_DET>().Where(t => t.SP_CODE == entity.SP_CODE).Count() > 0)
-            {
-                throw new MessageException("物资编码已存在!"); 
-            }
-
             DateTime? dt = await _dbContext.GetSysdate();
-    
+            var typeCount = _dbContext.Query<SPARE_APPLY_DET>().Where(t => t.TYPE_ID == entity.TYPE_ID).Count();
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
+
+            entity.SP_CODE = $"{entity.TYPE_CODE}-{(typeCount + 1).ToString("D4")}";
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.EDIT_DATE = dt;
@@ -299,10 +367,6 @@ namespace EAM.Material.Services
 
         private async Task BeforeUpdateDet(SPARE_APPLY_DET entity)
         {
-            if (_dbContext.Query<SPARE_APPLY_DET>().Where(t => t.SP_CODE == entity.SP_CODE && t.SP_ID != entity.SP_ID).Count() > 0)
-            {
-                throw new MessageException("物资编码已存在!");
-            }
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.MODIFY_USERID = _userSession.UserID.ToString();

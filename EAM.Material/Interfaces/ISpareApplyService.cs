@@ -1,5 +1,6 @@
 ﻿using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
 
 namespace EAM.Material.Interfaces
 {
@@ -33,7 +34,14 @@ namespace EAM.Material.Interfaces
         /// <returns></returns>
         Task<string> ApplySave(string memo);
         Task<int> Submit(List<string> sids);
-
+        /// <summary>
+        /// 导入
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <param name="folder"></param>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid);
         /// <summary>
         /// 明细
         /// </summary>

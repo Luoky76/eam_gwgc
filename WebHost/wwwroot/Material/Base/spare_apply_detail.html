@@ -43,7 +43,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "*物料编码", name: "SP_CODE", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "*物料编码", name: "SP_CODE", width: 150, type: "text", },
                             { display: "*物料名称", name: "SP_NAME", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", editor: { type: 'text' } },
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", editor: { type: 'text' } },
@@ -114,7 +114,7 @@
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    autoWidth: false,
+                    autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
@@ -152,6 +152,9 @@
                             break;
                         case "save":
                             me.save();
+                            break;
+                        case "import":
+                            me.import();
                             break;
                     }
                 }
@@ -221,6 +224,30 @@
                         LG.tip('请选择行!');
                     }
                 }
+            },
+            import: function () { //导入物资
+                var me = this;
+                LG.showUpload({
+                    title: "导入",
+                    server: me.rootPath + "ImportInDetail",
+                    mouldFileName: me.rootPath + "ExportExcelHeader",
+                    multiple: false,
+                    extensions: 'xlsx,xls',
+                    mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    compress: {
+                        width: 1920
+                    },
+                    showSuccess: false,
+                    data: { folder: '../../Adv', "sid": me.applyId },
+                    callback: function (status, data) {
+                        debugger
+                        if (status) {
+                            LG.showSuccess("导入成功");
+                            me.reload();
+                        }
+                        else LG.showError(data.Message);
+                    }
+                });
             },
             setForm: function () {
                 var me = this;

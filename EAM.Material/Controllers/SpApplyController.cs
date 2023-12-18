@@ -1,7 +1,10 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Material.Interfaces;
+using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controllers
@@ -38,18 +41,31 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 根据物料领用申请ID获取信息
+        /// </summary>
+        /// <param name="ID"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetApplyDetailAsync(string ID)
+        {
+            if (ID.IsNullOrEmpty()) return AjaxResult<SP_APPLY>.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetApplyDetail(ID), "成功");
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request)
+        public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.Save(request);
+            return await _service.Save(request, requestdet);
         }
+
         /// <summary>
         /// 提交
         /// </summary>
@@ -107,6 +123,25 @@ namespace EAM.Material.Controllers
         public async Task<AjaxResult> CheckCancelSubmitAsync(List<string> sids)
         {
             return AjaxResult.Success(await _service.CheckCancelSubmit(sids), "成功");
+        }
+
+        [HttpGet, HttpPost]
+        public async Task<FileResult> ExportExcelHeader(string filename)
+        {
+            return await FileExport.ExportToExcelHeader(new SpExportData(), filename);
+        }
+
+        /// <summary>
+        /// 导入
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <param name="folder"></param>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls", 20)] IFormFile formFile, string folder, string sid)
+        {
+            return await _service.ImportInDetail(formFile, folder, sid);
         }
 
         #region 采购进度跟踪

@@ -1,5 +1,6 @@
 ﻿using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
 
 namespace EAM.Material.Interfaces
 {
@@ -12,12 +13,15 @@ namespace EAM.Material.Interfaces
         /// <returns></returns>
         Task<GridData> ListAsync(GridRequest request);
 
+        Task<SP_APPLY> GetApplyDetail(string ID);
+
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="requestdet"></param>
         /// <returns></returns>
-        Task<AjaxResult> Save(SaveRequest<SP_APPLY> request);
+        Task<AjaxResult> Save(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet);
 
         /// <summary>
         /// 获取下拉框数据
@@ -36,5 +40,6 @@ namespace EAM.Material.Interfaces
 
         Task<int> CheckSubmit(List<string> sids);
         Task<AjaxResult> CheckCancelSubmit(List<string> sids);
+        Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid);
     }
 }
