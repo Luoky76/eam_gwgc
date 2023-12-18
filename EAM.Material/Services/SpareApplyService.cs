@@ -181,11 +181,17 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
             var list = _dbContext.Query<SPARE_APPLY>().Where(t => sids.Contains(t.APPLY_ID)).ToList();
             var det = _dbContext.Query<SPARE_APPLY_DET>().Where(t => sids.Contains(t.APPLY_ID)).ToList();
+
+            var importResult = new List<BASE_SPCATALOG>();
             foreach (var item in list)
             {
                 var dets = det.Where(t => t.APPLY_ID == item.APPLY_ID).ToList();
                 foreach (var d in dets)
                 {
+                    if (_dbContext.Query<BASE_SPCATALOG>().Any(t=>t.SP_CODE == d.SP_CODE))
+                    {
+                        throw new MessageException("物资编码不可重复！");
+                    }
                     var data = new BASE_SPCATALOG
                     {
                         SP_CODE = d.SP_CODE,
@@ -219,13 +225,18 @@ namespace EAM.Material.Services
                         MODIFY_USERID = _userSession.UserID.ToString(),
                         MODIFYDATE = dt
                     };
-                    _dbContext.Insert(data);
+                    importResult.Add(data);
                 }
-
-                item.AUDITING = "1";
-                await _dbContext.UpdateAsync(item);
-
             }
+
+            if (importResult.Count > 0)
+            {
+                _dbContext.InsertRange(importResult);
+            }
+            await _dbContext.UpdateAsync<SPARE_APPLY>(c => sids.Contains(c.APPLY_ID), c => new SPARE_APPLY
+            {
+                AUDITING = "1"
+            });
             return list.Count;
         }
 

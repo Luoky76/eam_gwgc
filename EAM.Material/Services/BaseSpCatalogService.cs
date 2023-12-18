@@ -166,13 +166,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(BASE_SPCATALOG entity)
         {
-            var qrycode = _dbContext.Query<BASE_SPCATALOG>().Select(c =>
-                         c.SP_CODE
-                     ).ToList();
-            if (qrycode.Contains(entity.SP_CODE))
-            {
-                throw new MessageException("物资编码不可重复！");
-            }
+            var typeCount = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.TYPE_ID == entity.TYPE_ID).Count();
+            entity.SP_CODE = $"{entity.TYPE_CODE}-{(typeCount + 1).ToString("D4")}";
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
