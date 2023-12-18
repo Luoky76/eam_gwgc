@@ -1,14 +1,21 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing.Charts;
-using EAM.Repair.interfaces;
+using DocumentFormat.OpenXml.Presentation;
+using Gksyb.Core.Interfaces.Repair;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Magicodes.ExporterAndImporter.Core;
+using Magicodes.ExporterAndImporter.Excel;
+using Newtonsoft.Json.Linq;
 using NPOI.SS.Formula.PTG;
 using System.Collections.Concurrent;
 using static StackExchange.Redis.Role;
@@ -339,7 +346,7 @@ namespace EAM.Repair.services
                          c.ACT_MONEY
                      },
                      c => a => a.EXE_ID == c.EXE_ID
-                     , BeforeAdd, BeforeUpdate);
+                     , BeforeAdd, BeforeUpdate, null, false, null, null, true, null);
 
                 mainSuccess = !execResult.IsError;
                 if (mainSuccess)  //主表是否保存成功
@@ -387,6 +394,18 @@ namespace EAM.Repair.services
                     return AjaxResult.Error(errMsg);
                 }
             }
+
+            //若保存中含有提交操作，则发送OA请求，创建OA审批流程
+            for (int i = 0; i < request.Updated.Count; i++)
+            {
+                var entity = request.Updated[i];
+                var old = request.Original.Count > i ? request.Original[i] : null;
+                if ((old == null || old.AUDITING == "0") && entity.AUDITING == "1")
+                {
+                    await CreateWorkFlow(entity.EXE_ID);
+                }
+            }
+
             return AjaxResult.Success("保存成功");
         }
 
@@ -530,8 +549,138 @@ namespace EAM.Repair.services
                 c => a => a.EXE_ITEM_ID == c.EXE_ITEM_ID, BeforeAddDet, BeforeUpdateDet);
         }
 
+        /// <summary>
+        /// 创建流程
+        /// </summary>
+        /// <param name="exeId"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> CreateWorkFlow(string exeId)
+        {
+            #region 推送oa
+            var taskId = GuidHelper.NewSnowflakeId().ToString();
+            var corpId = _userSession.Corp.CorpID;
+
+            //获取主表数据
+            var query = await _dbContext.Query<REP_PLAN_EXE>(c => c.EXE_ID == exeId).FirstAsync();
+            if (query == null) return AjaxResult.Error("未找到该份维修计划记录", "失败");
+
+            //获取附件
+            var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == exeId && c.table_name == "REP_PLAN_EXE").ToList();
+            var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
+            string attachName = string.Empty, attachUrl = string.Empty;
+            if (fj != null && fj.Count() > 0)
+            {
+                foreach (var item in fj)
+                {
+                    attachName += item.attach_name + "|";
+                    attachUrl += webUrl + item.attach_path + "|";
+                }
+            }
+
+            //生成维修项目明细附件
+            var detQuery = await _dbContext.Query<REP_PLAN_EXE_ITEM>(c => c.EXE_ID == exeId)
+                .Select(c => new REP_PLAN_EXE_ITEM
+                {
+                    REP_INDEX = c.REP_INDEX,
+                    DEVICE_NAME = c.DEVICE_NAME,
+                    DEVICE_TYPE = c.DEVICE_TYPE,
+                    REP_CONTENT = c.REP_CONTENT,
+                    ITEM_TYPE = c.ITEM_TYPE,
+                    REP_LEADER = c.REP_LEADER,
+                    IS_ASKBID = c.IS_ASKBID == "0" ? "否" : "是",
+                    MEMO = c.MEMO
+                }).ToListAsync();
+            string fileName = "";
+            string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
+            string fileUrl = "UploadDirectory/purchase/" + fileRealName;
+            if (detQuery.Count() > 0)
+            {
+                try
+                {
+                    IExporter exporter = new ExcelExporter();
+                    var fileResult = await exporter.Export(fileUrl, detQuery);
+                    fileName = "维修计划(" + query.PLAN_CODE + ").xlsx";
+                }
+                catch (Exception ex)
+                {
+                    return AjaxResult.Error("推送OA 创建维修项目明细失败：" + ex.Message, "失败");
+                }
+            }
+
+            string attach = attachName.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + fileName) + "$$$"
+                + attachUrl.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + webUrl + fileUrl);
+
+            var mainQuery = await _dbContext.Query<REP_PLAN_EXE>(c => c.EXE_ID == exeId)
+                .Select(c => new
+                {
+                    c.PLAN_CODE,
+                    primary_key = c.EXE_ID,
+                    fun_name = "_repairPlanService.ApprovalCompletedAsync",
+                    bdmc = c.DEPT_NAME + "维修计划申请",
+                    bz = c.PLAN_MEMO,
+                    fjsc = attach
+                }).FirstAsync();
+
+            string jsonData = mainQuery.ToJson();
 
 
+            //对接OA 取配置地址
+            string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
+
+            OAHandle oa = new OAHandle(_dbContext);
+            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "");
+            //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
+            await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
+
+            if (string.IsNullOrEmpty(result)) return AjaxResult.Error("推送OA异常", "失败");
+
+            JObject job = JObject.Parse(result);
+            if (job["success"] != null && job["success"].ToString().ToLower() == "true")
+            {
+                //成功后将记录状态改为审批中
+                _dbContext.Update<REP_PLAN_EXE>(a => a.EXE_ID == exeId, a => new REP_PLAN_EXE
+                {
+                    AUDITING = "2"
+                });
+            }
+            else
+            {
+                return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
+            }
+
+            #endregion
+
+            return AjaxResult.Success("创建流程成功", "成功");
+
+        }
+
+        /// <summary>
+        /// 审批完成 OA回调接口
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <param name="isPass"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass)
+        {
+            if (isPass)
+            {
+                var updatedevice = await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == sid,
+                x => new REP_PLAN_EXE
+                {
+                    AUDITING = "3"
+                });
+                return AjaxResult.Success("审批成功");
+            }
+            else
+            {
+                var updatedevice = await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == sid,
+                x => new REP_PLAN_EXE
+                {
+                    AUDITING = "4"
+                });
+                return AjaxResult.Success("审批否决");
+            }
+        }
 
         #endregion
 

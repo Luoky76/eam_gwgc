@@ -23,6 +23,7 @@
             </div>
         </div>
     </div>
+    <!--<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>-->
     <script type="text/javascript" src="../dist/Framework7/mobile.js?v=1"></script>
     <script type="text/javascript" src="../dist/Framework7/app.js?cache=1&v=1"></script>
     <script type="text/javascript" defer src="../../lib/echarts/echarts.js?ver=1"></script>
@@ -43,6 +44,24 @@
                     name: "iframe",
                     path: "/iframe/:url/:title/:backType",
                     componentUrl: gksybConfigs.urlBase + "iframe.html",
+                }, {
+                    name: "common-query",
+                    path: "/query/:view/",
+                    url: gksybConfigs.urlBase + "query.html",
+                }, {
+                    name: "common-report",
+                    path: "/report/:view/",
+                    componentUrl: gksybConfigs.urlBase + "report.html",
+                }, {
+                    name: "flow-detail",
+                    title: "单据详情",
+                    path: "/flow-detail/:id/:isView",
+                    componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html"
+                }, {
+                    name: "flow-create",
+                    title: "单据详情",
+                    path: "/flow-create/:flowCode",
+                    componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html",
                 });
             },
             //退出
@@ -184,6 +203,7 @@
             //初始化
             init: function () {
                 var me = this;
+                if (window.isInWeixin()) $$("#app").addClass("weixin-app");
                 me.handleUrl();
                 me.initRoutes();
                 me.loadMenu();

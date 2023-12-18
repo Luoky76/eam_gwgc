@@ -1,8 +1,9 @@
-﻿using EAM.Material.Interfaces;
+﻿using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -864,7 +865,7 @@ namespace EAM.Material.Services
 
             //生成物资明细附件
             var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
-                .Select(c=>new SP_COLLECT_REQUEST_DTO
+                .Select(c => new SP_COLLECT_REQUEST_DTO
                 {
                     SP_CODE = c.SP_CODE,
                     SP_NAME = c.SP_NAME,
@@ -895,17 +896,18 @@ namespace EAM.Material.Services
             string attach = attachName.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + fileName) + "$$$" 
                 + attachUrl.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + webUrl+ fileUrl);
 
-            var query1 = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
+            var mainQuery = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
                 {
                     c.COLLECT_CODE,
                     primary_key = c.COLLECT_ID,
+                    fun_name = "_spCollectService.ApprovalCompletedAsync",
                     bdmc = c.DEPT_NAME + "物资需求申请",
                     bz = c.MEMO,
                     fjsc = attach
                 }).FirstAsync();
 
-            string jsonData = query1.ToJson();
+            string jsonData = mainQuery.ToJson();
 
             
             //对接OA 取配置地址

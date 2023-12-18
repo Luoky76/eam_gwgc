@@ -12,6 +12,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="Services\FileName.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
@@ -25,10 +29,6 @@
 		<Reference Include="Chloe">
 			<HintPath>..\dll\Chloe.dll</HintPath>
 		</Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="interfaces\" />
 	</ItemGroup>
 
 </Project>

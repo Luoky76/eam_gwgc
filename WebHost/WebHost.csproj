@@ -12,8 +12,12 @@
 	<ItemGroup>
 		<Content Remove="wwwroot\code-gen\**" />
 		<None Include="wwwroot\code-gen\**;wwwroot\UploadDirectory\**" />
+		<Compile Remove="wwwroot\UploadDirectory\**" />
 		<Content Remove="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
+		<Content Remove="wwwroot\UploadDirectory\**" />
 		<None Include="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
+		<EmbeddedResource Remove="wwwroot\UploadDirectory\**" />
+		<None Remove="wwwroot\UploadDirectory\**" />
 		<Content Remove="wwwroot\lib\jquery\jquery.all.js" />
 	</ItemGroup>
 	
@@ -47,10 +51,10 @@
 		<PluginPublishProject Include="..\EAM.Material\EAM.Material.csproj" />
 		<PluginPublishProject Include="..\EAM.Special\EAM.Special.csproj" />
 		<PluginPublishProject Include="..\EAM.Energy\EAM.Energy.csproj" />
+		<PluginPublishProject Include="..\EAM.Third\EAM.Third.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="wwwroot\lib\images\home\" />
-	  <Folder Include="wwwroot\UploadDirectory\purchase\" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>

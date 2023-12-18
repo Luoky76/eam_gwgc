@@ -1,7 +1,7 @@
 ﻿using Gksyb.Model;
 using Gksyb.Model.Grid;
 
-namespace EAM.Material.Interfaces
+namespace Gksyb.Core.Interfaces.Material
 {
     public interface ISpCollectService : IService
     {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace EAM.Material
+namespace EAM.Third
 {
     internal class WebPlugin : IPlugin
     {

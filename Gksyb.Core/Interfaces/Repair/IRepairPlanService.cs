@@ -4,7 +4,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
 
-namespace EAM.Repair.interfaces
+namespace Gksyb.Core.Interfaces.Repair
 {
     public interface IRepairPlanService : IService
     {
@@ -26,5 +26,6 @@ namespace EAM.Repair.interfaces
 
         Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
 
+        Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass);
     }
 }

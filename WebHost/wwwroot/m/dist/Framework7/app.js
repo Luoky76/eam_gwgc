@@ -16,21 +16,18 @@
     window.gksybConfigs = {
         urlBase: urlBase + "m/v/", // url访问路径
         apiBase: urlBase, // api 接口的访问路径
-        getUrl: function (url) {
-            if (url.indexOf("http") < 0) { //url处理
-                if (this.apiBase) {
-                    url = url.replace(/\.\.\//g, "");
-                    if (url.indexOf(this.urlBase) === 0) return url;
-                    if (url.indexOf(this.apiBase) === 0) return url;
-                }
-                url = this.apiBase + url;
-            }
+        getUrl: function (url, baseUrl) {
+            if (url.toLowerCase().indexOf("http") === 0) return url;
+            url = url.replace(/\.\.\//g, "");
+            baseUrl = baseUrl || this.apiBase;
+            if (baseUrl && url.indexOf(baseUrl) === 0) return url;
+            url = baseUrl + url;
             return url;
         }
     };
 
     //会话变量
-    if (!window.session) {
+    if (window.session === undefined) {
         var sessionKey = "GksybData";
         Object.defineProperty(window, 'session', {
             get: function () {
@@ -51,7 +48,7 @@
         });
     }
     //票据
-    if (!window.ticket) {
+    if (window.ticket === undefined) {
         var ticketKey = "GksybTicket";
         Object.defineProperty(window, 'ticket', {
             get: function () {
@@ -67,7 +64,7 @@
         });
     }
     //顶层窗口
-    if (!window.topWindow) {
+    if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;
@@ -95,7 +92,8 @@
         generateJsToken: function (jqXHR, opt) {//js票据 eval用到jqXHR
             opt = opt || { jsToken: "JsToken" };
             var tokenOptions = Framework7.utils.extend(true, {
-                noGlobal: true,
+                noGlobalBeforeOpen: true,
+                noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
                 data: {
@@ -326,6 +324,7 @@
         },
         calendar: {
             dateFormat: "yyyy-mm-dd",
+            timePickerLabel:"时间",
             timePickerPlaceholder: "时间选择",
             toolbarCloseText: "确定",
             headerPlaceholder: "请选择日期"
@@ -364,6 +363,7 @@
         },
         view: {
             stackPages: true,
+            componentCache:false
         },
         on: {
             calendarOpen: function (calendar) {
@@ -586,8 +586,15 @@
             }
             return true;
         },
-        //转向url
         toUrl: function (url, options) {
+            var me = this;
+            if (!me._toUrlDebounce) {
+                me._toUrlDebounce = $$.debounce(me._toUrl, 300, true);
+            }
+            me._toUrlDebounce(url, options);
+        },
+        //转向url
+        _toUrl: function (url, options) {
             var indexUrl = gksybConfigs.urlBase + "index.html";
             if (url === "/" || url === "/Index/") {
                 location.replace(indexUrl);
@@ -604,7 +611,6 @@
             } else {
                 if (url === "back") {
                     mainView.router.back();
-                    document.title = app.lastTitle;
                 } else {
                     mainView.router.navigate(url, options);
                 }
@@ -681,6 +687,7 @@
                         //'chooseCard',//拉取适用卡券列表并获取用户选择信息
                         //'openCard',//查看微信卡包中的卡券接口
                     ] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2。详见：http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html
+                    , openTagList: ['wx-open-launch-weapp']
                 });
                 if (callback) wx.ready(callback);
             }
@@ -743,8 +750,17 @@
                 }, 30);
             }
         },
+        setTitle: function (title) {//处理微信浏览器只在页面首次加载时初始化了标题title，之后就没有再监听 window.title的change事件。
+            if (!window.isInWeixin()) {
+                document.title = title;
+                return;
+            }
+            document.title = title;
+            $$('<iframe src="about:blank" class="display-none" ></iframe>').appendTo($$("body")).remove();
+        },
         //初始化页面
         initPage: function (page, scriptEl) {
+            var me = this;
             if (!app._params) app._params = {};
             var attrs = [];
             for (var attr in app._params) {
@@ -760,9 +776,10 @@
             var lastTitle = app.lastTitle;
             app.lastTitle = document.title;
             if (page.direction !== "backward") { //后退按钮不触发执行js
-                document.title = page.route.route.title || lastTitle || document.title;
+                me.setTitle(page.route.route.title || $el.find("title").html() || document.title);
                 var script = $el.find(scriptEl).html();
                 if (script) {
+                    page.router.tempDom.innerHTML = '';
                     var name = 'app.methods["router_' + (page.router.currentRoute.name || page.router.currentRoute.path.replace(/\//g, '')) + '"]';
                     script = ";try{" + name + " = function(page){" + script + "};" + name + "(app._params.page);" + name + " = null;delete " + name + ";}catch (e) {console.log(JSON.stringify(e));}";
                     window.eval(script);
@@ -772,7 +789,7 @@
                     //$(scriptEl).remove();
                 }
             } else {
-                document.title = page.route.route.title || $el.find("title").html() || document.title;
+                me.setTitle(page.route.route.title || lastTitle || document.title);
             }
         }
     };
@@ -818,193 +835,6 @@
             });
         }
         return formData;
-    };
-
-    //自动生成详情编辑页
-    app.CreatePopupContentHtml = function (dict) {
-        var ul = document.createElement('ul');
-        for (var i = 0; i < dict.length; i++) {
-
-            if (dict[i].isPrimaryKey) {
-                continue;
-            }
-
-            if (dict[i].isShow == false) {
-                var input = document.createElement('input');
-                input.type = "hidden"
-                input.name = dict[i].name || "";
-                input.id = dict[i].name || "";
-                ul.appendChild(input);
-                continue;
-            }
-
-            var li = document.createElement('li');
-            var iteminner = document.createElement('div');
-            var itemtitle = document.createElement('div');
-            var itemafter = document.createElement('div');
-            var input = document.createElement('input');
-            var select = document.createElement('select');
-            var itemsmart = document.createElement('a');
-            var iselect = null;
-            if (dict[i].hasOwnProperty("Option")) {
-                select.name = dict[i].name || "";
-                select.id = dict[i].name || "";
-
-                select.disabled = dict[i].readOnly;
-                select.options.add(new Option("请选择", "-99")); //这个兼容IE与firefox
-                dict[i].Option.forEach(x => {
-                    select.options.add(new Option(x.TEXT, x.ID));
-                });
-                select.setAttribute("type", "select");
-                itemsmart.href = "#";
-                itemsmart.className = "item-link smart-select smart-select-init " + dict[i].name;
-                if (dict[i].Searched) {
-                    itemsmart.setAttribute("data-open-in", "popup");
-                    itemsmart.setAttribute("data-searchbar", "true");
-                } else {
-                    itemsmart.setAttribute("data-open-in", "sheet");
-                }
-                itemsmart.setAttribute("data-virtual-list", "true");
-                itemsmart.setAttribute("data-page-back-link-text", "Go back");
-                iselect = true;
-            }
-            else {
-                input.setAttribute("style", "text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)");
-                input.type = "text"
-                input.name = dict[i].name || "";
-                input.id = dict[i].name || "";
-                input.readOnly = dict[i].readOnly;
-                itemafter.appendChild(input);
-                itemafter.className = "item-after";
-                itemafter.setAttribute("style", "text-align:right;");
-            }
-
-
-            itemtitle.className = "item-title";
-            if (dict[i].readOnly) {
-                itemtitle.setAttribute("style", "color: #666666");
-            }
-            else {
-                itemtitle.setAttribute("style", "color: #2b73af");
-            }
-            itemtitle.textContent = dict[i].display || "";
-
-            //必填项
-            if (dict[i].hasOwnProperty("validate") && dict[i].validate.required) {
-                var $span = $('<span style="color:red">*</span>');
-                $(itemtitle).append($span);
-            }
-
-            iteminner.appendChild(itemtitle);
-
-            iteminner.className = "item-inner";
-            if (iselect) {
-                var itemContent = document.createElement('div');
-                itemContent.className = "item-content";
-                itemsmart.appendChild(select);
-
-                itemContent.appendChild(iteminner);
-                itemsmart.appendChild(itemContent);
-
-                li.appendChild(itemsmart);
-
-            }
-            else {
-                iteminner.appendChild(itemafter);
-                iteminner.setAttribute("style", "padding: 0px;padding-left: 16px;padding-right:16px;");
-
-                li.appendChild(iteminner)
-
-            }
-
-
-            ul.appendChild(li);
-
-        }
-
-        return ul.outerHTML;
-    };
-    //自动生成列表页
-    app.CreateListContentHtml = function (data, dict, iCheckBox) {
-        var ul = document.createElement('ul');
-        for (var i = 0; i < data.length; i++) {
-            var li = document.createElement('li');
-            var aitem = document.createElement('a');
-            var iteminner = document.createElement('div');
-            var itemrowList = document.createElement('div');
-            var itemcell = document.createElement('div');
-
-            //复选框
-            var checkLabel = document.createElement('label');
-            var checkinput = document.createElement('input');
-            var checki = document.createElement('i');
-            checkinput.type = "checkbox";
-            checki.className = "icon icon-checkbox";
-            checkLabel.className = "item-checkbox item-checkbox-icon-start item-content";
-
-            aitem.className = "item-link item-content";
-            aitem.href = "#";
-            iteminner.className = "item-inner item-cell";
-            itemrowList.className = "item-row";
-            itemcell.className = "item-cell";
-            for (var j = 0; j < dict.length; j++) {
-                if (dict[j].isPrimaryKey) {
-                    itemrowList.setAttribute("id", `list-${data[i][dict[j].PrimaryKey]}`);
-                    if (iCheckBox) {
-                        checkinput.value = data[i][dict[j].PrimaryKey]
-                    }
-                    continue;
-                }
-                if (dict[j].isShow == false)
-                    continue;
-                var itemnogap = document.createElement('div');
-                var itemcoltitle = document.createElement('div');
-                var itemcoldata = document.createElement('div');
-                var itemcol10 = document.createElement('div');
-                itemnogap.className = "row no-gap";
-                itemcoltitle.className = "col-33";
-                itemcoldata.className = "col-65";
-                itemcol10.className = "col-10";
-                itemcoltitle.setAttribute("style", "color: rgb(192,192,192)");
-                itemcoltitle.textContent = dict[j].display;
-                if (dict[j].hasOwnProperty("Option") && dict[j].Option) {
-                    let option = dict[j].Option.find(x => x.ID == data[i][(dict[j].name).toUpperCase()]);
-                    itemcoldata.textContent = option ? option.TEXT : "";
-                    let optionStyle = option ? option.style : "";
-                    itemcoldata.setAttribute("style", optionStyle || "white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left: 30px;");
-                }
-                else {
-                    itemcoldata.textContent = data[i][dict[j].name] || "";
-                    itemcoldata.setAttribute("style", "white-space: nowrap;overflow: hidden;text-overflow:ellipsis; padding-left:30px;");
-
-                }
-                itemnogap.appendChild(itemcoltitle);
-                itemnogap.appendChild(itemcoldata);
-                itemnogap.appendChild(itemcol10);
-                itemcell.appendChild(itemnogap);
-
-                itemrowList.appendChild(itemcell);
-
-
-                iteminner.appendChild(itemrowList)
-                if (iCheckBox) {
-                    checkLabel.appendChild(checkinput);
-                    checkLabel.appendChild(checki);
-                    checkLabel.appendChild(iteminner);
-                    li.appendChild(checkLabel);
-                }
-                else {
-                    li.appendChild(iteminner);
-                }
-                //aitem.appendChild(iteminner);
-
-                //li.appendChild(aitem);
-            }
-            ul.appendChild(li);
-
-
-        }
-        return ul.outerHTML;
     };
 
     //导出
