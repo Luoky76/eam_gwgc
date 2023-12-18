@@ -56,6 +56,7 @@ namespace EAM.Material.Controllers
         /// 保存
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="requestdet"></param>
         /// <returns></returns>
         [HttpPost]
         [JsToken]

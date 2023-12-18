@@ -271,7 +271,7 @@ namespace EAM.Material.Services
                     }
                     else
                     {
-                        var tp = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == temp.TYPE_NAME).FirstOrDefault();
+                        var tp = await _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == temp.TYPE_NAME).FirstOrDefaultAsync();
                         if (tp == null)
                         {
                             throw new MessageException(temp.TYPE_NAME + " 物资分类不存在，请检查!");

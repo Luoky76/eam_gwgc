@@ -15,7 +15,6 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
-        private DateTime? _Sysdate;
 
         public BaseSpCatalogService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
