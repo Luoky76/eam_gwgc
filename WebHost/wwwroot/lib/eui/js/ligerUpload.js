@@ -9,7 +9,8 @@
         , extensions: "jpg,jpeg,png,gif,bmp"//允许上传的文件后缀
         , mimeTypes: 'image/*' //允许上传的文件类型
         , compress: {//压缩格式
-            width: 1920
+            force: true //强制压缩，不管文件是否超过fileSizeLimit
+            , width: 1920
             , height: null
             , quality: 90
         }
