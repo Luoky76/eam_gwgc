@@ -114,7 +114,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         [AllowAnonymous]
-        public async Task<AjaxResult> TokenAsync([FromBody] string json)
+        public async Task<AjaxResult> TokenAsync(string json)
         {
             string ip = null;
             string response = null;
@@ -143,7 +143,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         [AllowAnonymous]
-        public async Task<AjaxResult> UserInfoAsync([FromBody] string json)
+        public async Task<AjaxResult> UserInfoAsync(string json)
         {
             string ip = null;
             string response = null;

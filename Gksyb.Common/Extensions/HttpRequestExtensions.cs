@@ -233,11 +233,9 @@ namespace Gksyb.Common
         }
 
         /// <summary>
-        /// 获取request内容
+        /// 获取request内容体
         /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static async Task<string> GetContent(this HttpRequest source)
+        internal static async Task<string> GetBodyAsync(this HttpRequest source)
         {
             var json = string.Empty;
             try

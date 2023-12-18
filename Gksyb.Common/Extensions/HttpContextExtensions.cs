@@ -137,13 +137,18 @@ namespace Gksyb.Common
             source.Items.Add(RequestBodyName, value is string ? value : value.ToMiniJson());
         }
 
-        public static string GetRequestBodyItem(this HttpContext source)
+        public static string GetRequestBodyItem(this HttpContext source) => source.Request.GetContent().Result();
+
+        /// <summary>
+        /// 获取request内容
+        /// </summary>
+        public static async Task<string> GetContent(this HttpRequest source)
         {
-            if (source.Items.ContainsKey(RequestBodyName))
+            if (source.HttpContext.Items.ContainsKey(RequestBodyName))
             {
-                return source.Items[RequestBodyName] as string;
+                return source.HttpContext.Items[RequestBodyName] as string;
             }
-            return source.Request.GetContent().Result();
+            return await source.GetBodyAsync();
         }
 
         public static void SetResponseBodyItem(this HttpContext source, object value)

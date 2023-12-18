@@ -85,6 +85,26 @@ namespace Gksyb.Server.Controllers.Auth
             request.View = await HttpContext.ValidViewAsync(request.View);
             return AjaxResult.Success(await _commonService.QueryAsync(request), "");
         }
+
+        /// <summary>
+        /// 缓存
+        /// </summary>
+        [HeadAuthorize]
+        [AllowAnonymous]
+        public async Task<AjaxResult> StoreAsync(string json)
+        {
+            var key = await _commonService.StoreAsync(json);
+            return AjaxResult.Success(key, default);
+        }
+
+        /// <summary>
+        /// 获取缓存
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> GetStoreAsync([FromHeader] string key)
+        {
+            return AjaxResult.Success(await _commonService.GetStoreAsync<string>(key), key);
+        }
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

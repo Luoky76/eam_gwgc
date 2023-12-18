@@ -331,6 +331,31 @@ namespace Gksyb.Server.Services.Common
             return true;
         }
 
+        /// <inheritdoc/>
+        public async Task<string> StoreAsync<T>(T data, TimeSpan? expiry = null)
+        {
+            var key = Guid.NewGuid().ToString("N").ToLower();
+            await _distributedCache.SetAsync(key, data, new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = expiry ?? TimeSpan.FromHours(3)
+            });
+            return key;
+        }
+
+        /// <inheritdoc/>
+        public async Task<T> GetStoreAsync<T>(string key)
+        {
+            try
+            {
+                return await _distributedCache.GetAsync<T>(key);
+            }
+            catch (Exception)
+            {
+                await _distributedCache.RemoveAsync(key);
+                throw;
+            }
+        }
+
         //缓存前缀
         private static readonly string CachePrefix = "View_";
     }

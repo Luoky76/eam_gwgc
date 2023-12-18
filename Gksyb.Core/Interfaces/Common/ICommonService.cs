@@ -55,5 +55,15 @@ namespace Gksyb.Core.Interfaces.Common
         /// </summary>
         /// <returns></returns>
         Task<bool> ClearAsync();
+
+        /// <summary>
+        /// 一次性寄存数据（被使用后就丢弃）
+        /// </summary>
+        Task<string> StoreAsync<T>(T data, TimeSpan? expiry = null);
+
+        /// <summary>
+        /// 获取寄存数据（获取后同时删除）
+        /// </summary>
+        Task<T> GetStoreAsync<T>(string key);
     }
 }

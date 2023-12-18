@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
             var description = context.ActionDescriptor;
             var paramters = description.Parameters.Where(c => c.BindingInfo == null).ToList();
             if (paramters.Count < 1) return false;
-            var json = await context.HttpContext.Request.GetContent();
+            var json = await context.HttpContext.Request.GetBodyAsync();
             var dic = json.StartsWith("{") ? json.ToObject<Dictionary<string, JToken>>() : null;
             var form = (dic ?? new Dictionary<string, JToken>()).ToIgnoreCaseDictionary();
             var isHandle = false;
@@ -78,8 +78,15 @@ namespace Microsoft.AspNetCore.Mvc
                     isHandle = true;
                     continue;
                 }
-                if (param.ParameterType.IsSimpleType()) continue;//简单类型或者已经解析过的类型
-                if (jsonType.Contains(param.ParameterType))
+                if (param.ParameterType.IsSimpleType())//简单类型
+                {
+                    if (param.Name == "json" && param.ParameterType == typeof(string))//参数名json特殊处理
+                    {
+                        context.ActionArguments[param.Name] = json;
+                    }
+                    continue;
+                }
+                if (jsonType.Contains(param.ParameterType))//已经解析过的类型
                 {
                     context.ActionArguments[param.Name] = null;
                     continue;
