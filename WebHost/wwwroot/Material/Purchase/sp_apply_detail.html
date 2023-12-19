@@ -75,7 +75,7 @@
                     grid: {
                         columns: [
                             {
-                                display: "物料编码", name: "SP_CODE", width: 150, type: "text",
+                                display: "物料编码", name: "SP_CODE", width: 150, type: "text", editor: { type: "text", },
                                 totalSummary:
                                 {
                                     render: function (suminf, column, cell) {
@@ -215,7 +215,7 @@
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.SP_CODE != "" && editParm.column.name != "COUNT")
+                            if (editParm.record.SP_ID != "" && editParm.column.name != "COUNT")
                                 return false;
                             else return true;
                         }

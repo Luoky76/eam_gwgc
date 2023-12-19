@@ -363,10 +363,14 @@ namespace EAM.Material.Services
         private async Task BeforeAddDet(SPARE_APPLY_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-            var typeCount = _dbContext.Query<SPARE_APPLY_DET>().Where(t => t.TYPE_ID == entity.TYPE_ID).Count();
+           
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            entity.SP_CODE = $"{entity.TYPE_CODE}-{(typeCount + 1).ToString("D4")}";
+            if (string.IsNullOrEmpty(entity.SP_CODE))
+            {
+                var typeCount = _dbContext.Query<SPARE_APPLY_DET>().Where(t => t.TYPE_ID == entity.TYPE_ID).Count();
+                entity.SP_CODE = $"{entity.TYPE_CODE}-{(typeCount + 1).ToString("D4")}";
+            }
+          
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.EDIT_DATE = dt;
