@@ -1,4 +1,6 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Material.Interfaces;
+using Gksyb.Common.Office;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -6,6 +8,8 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services
@@ -15,6 +19,7 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
+        private string _rentID = string.Empty, errMsg = string.Empty;
 
         public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
@@ -82,7 +87,8 @@ namespace EAM.Material.Services
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode", "exig_dev" },
-                    { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)null}
+                    { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)null},
+                    { "SpUnit", (Expression<Func<SP_UNIT, bool>>)null},
                 });
                 var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
@@ -97,69 +103,150 @@ namespace EAM.Material.Services
             }
         }
 
+        public async Task<SP_APPLY> GetApplyDetail(string ID)
+        {
+            return await _dbContext.QueryByKeyAsync<SP_APPLY>(ID);
+        }
 
         /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="requestdet"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request)
+        public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet)
         {
-            await _dbContext.SaveEntityAnsyc(request,
-                c => new
+            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            {
+                bool mainSuccess = true, detSuccess = true;
+                var execResult = await _dbContext.SaveEntityAnsyc(request,
+                         c => new
+                         {
+                             c.AUDITING,
+                             c.APPLY_NO,
+                             c.APPLY_DATE,
+                             c.APPLY_USERID,
+                             c.APPLY_USER,
+                             c.DEPT_ID,
+                             c.DEPT_CODE,
+                             c.DEPT_NAME,
+                             c.IS_REC,
+                             c.TIME_REQ,
+                             c.SOURCE_ID,
+                             c.SOURCE,
+                             c.USE_MEMO,
+                             c.TYPE_ID,
+                             c.TYPE_CODE,
+                             c.TYPE_NAME,
+                             c.EXIG_DEV,
+                             c.PROJECT_CODE,
+                             c.OA_CHECK,
+                             c.OA_DATE,
+                             c.OA_MEMO,
+                             c.SEC_DEPTID,
+                             c.REQUEST_ID,
+                             c.SEC_DEPT,
+                             c.MEMO,
+                             c.APPLY_ID,
+                             c.IS_GEN,
+                             c.CREATE_USERID,
+                             c.CREATEDATE,
+                             c.MODIFY_USERID,
+                             c.MODIFYDATE,
+                             c.SUM_MONEY,
+                             c.CGFS,
+                             c.TYPE_ID2,
+                             c.SSZT,
+                             c.SSZTID,
+                             c.BD_NAME
+                         },
+                          c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+
+                mainSuccess = !execResult.IsError;
+                if (mainSuccess)  //主表是否保存成功
                 {
-                    c.AUDITING,
-                    c.APPLY_NO,
-                    c.APPLY_DATE,
-                    c.APPLY_USERID,
-                    c.APPLY_USER,
-                    c.DEPT_ID,
-                    c.DEPT_CODE,
-                    c.DEPT_NAME,
-                    c.IS_REC,
-                    c.TIME_REQ,
-                    c.SOURCE_ID,
-                    c.SOURCE,
-                    c.USE_MEMO,
-                    c.TYPE_ID,
-                    c.TYPE_CODE,
-                    c.TYPE_NAME,
-                    c.EXIG_DEV,
-                    c.PROJECT_CODE,
-                    c.OA_CHECK,
-                    c.OA_DATE,
-                    c.OA_MEMO,
-                    c.SEC_DEPTID,
-                    c.REQUEST_ID,
-                    c.SEC_DEPT,
-                    c.MEMO,
-                    c.APPLY_ID,
-                    c.IS_GEN,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE,
-                    c.SUM_MONEY,
-                    c.CGFS,
-                    c.TYPE_ID2,
-                    c.SSZT,
-                    c.SSZTID,
-                    c.BD_NAME
-                },
-                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+                    requestdet ??= new SaveRequest<SP_APPLY_DETAIL>();
 
-            var id = "";
-            if (request.Added?.Count > 0)
-                id = request.Added[0].APPLY_ID;
+                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                      c => new
+                      {
+                          c.SPDET_ID,
+                          c.APPLY_ID,
+                          c.SP_ID,
+                          c.SP_CODE,
+                          c.SP_NAME,
+                          c.SP_SIZE,
+                          c.PRODUCE,
+                          c.UNIT,
+                          c.COUNT,
+                          c.STORE_NUM,
+                          c.YG_PRICE,
+                          c.YG_MONEY,
+                          c.LAST_PROVIDERID,
+                          c.LAST_PROVIDER,
+                          c.TYPE_ID,
+                          c.TYPE_CODE,
+                          c.TYPE_NAME,
+                          c.IS_STOP,
+                          c.MEMO,
+                          c.IS_GEN,
+                          c.CREATE_USERID,
+                          c.CREATEDATE,
+                          c.MODIFY_USERID,
+                          c.MODIFYDATE,
+                          c.TENANT_ID,
+                          c.PURTYPE_ID,
+                          c.PURTYPE_NAME,
+                          c.IS_CANCEL,
+                          c.NO_PRODUCE,
+                          c.COMP_CODE,
+                          c.STORE_MONTH,
+                          c.PUR_PERIOD,
+                          c.ONROAD_NUM,
+                          c.PRO_ID,
+                          c.PRO_DET_ID,
+                          c.PERIOD,
+                          c.IS_XY,
+                          c.WARRANTY,
+                          c.DELIVERY_CODE,
+                          c.XHZQ,
+                          c.SYDD,
+                          c.CGFS,
+                          c.SYDDDEPTID,
+                          c.COUNT2,
+                          c.CGFS2,
+                          c.SP_CODE2,
+                          c.COMP_CODE2,
+                          c.SP_NAME2,
+                          c.SYDD2,
+                          c.SYDDDEPTID2,
+                          c.SP_SIZE2,
+                          c.PRODUCE2,
+                          c.UNIT2,
+                          c.ZKCS,
+                          c.QYKCSL
+                      },
+                     c => a => a.SPDET_ID == c.SPDET_ID, BeforeAddDet, BeforeUpdateDet, null, false, null, AfterSaveDet);
 
-            return AjaxResult.Success(id);
+                    detSuccess = !execResult.IsError;  //明细表是否保存成功
+                }
+                if (mainSuccess && detSuccess)
+                    trans.Commit();
+                else
+                {
+                    trans.Rollback();
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    return AjaxResult.Error(errMsg);
+                }
+            }
+            return AjaxResult.Success("保存成功");
         }
 
         private async Task BeforeAdd(SP_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
+            entity.APPLY_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
 
             string type = $"SQ{DateTime.Now.ToString("yyyyMM")}";
             string def = type + "0000";
@@ -185,7 +272,7 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
+            _rentID = entity.APPLY_ID;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
@@ -285,6 +372,77 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
+        public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
+        {
+            var apply = string.IsNullOrEmpty(sid) ? new SP_APPLY { AUDITING = "0" } : _dbContext.QueryByKey<SP_APPLY>(sid);
+            if (string.IsNullOrEmpty(sid))
+            {
+                await BeforeAdd(apply);
+                _dbContext.Insert(apply);
+            }
+
+            var importResult = new List<SP_APPLY_DETAIL>();
+
+            try
+            {
+                DateTime? dt = await _dbContext.GetSysdate();
+                var type = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == "临时类别").FirstOrDefault();
+                var typeCount = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.TYPE_ID == type.TYPE_ID).Count();
+
+                await formFile.Import<SpExportData>(async c =>
+                {
+                  
+                    var sp = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.SP_NAME == c.SP_NAME && t.SP_SIZE == c.SP_SIZE).FirstOrDefault();
+                    if (sp == null)
+                    {
+                        typeCount++;
+                        sp = new BASE_SPCATALOG
+                        {
+                            SP_ID = GuidHelper.NewSnowflakeId().ToString(),
+                            SP_CODE = $"{type.TYPE_CODE}-{typeCount.ToString("D4")}",
+                            SP_NAME = c.SP_NAME,
+                            IS_CANCEL = "0",
+                            SP_SIZE = c.SP_SIZE,
+                            TYPE_NAME = type.TYPE_NAME,
+                            TYPE_ID = type.TYPE_ID,
+                            TYPE_CODE = type.TYPE_CODE,
+                            UNIT = c.UNIT,
+                            EDIT_USERID = _userSession.UserID.ToString(),
+                            DEPT_ID = _userSession.Corp.CorpID,
+                            DEPT_NAME = _userSession.Corp.CName,
+                            EDIT_USER = _userSession.RealName,
+                            SEC_DEPTID = _userSession.ParentCompany.CorpID,
+                            SEC_DEPT = _userSession.ParentCompany.CName,
+                            PURTYPE_ID = type.PURTYPE_ID,
+                            PURTYPE_NAME = type.PURTYPE_NAME,
+                            CREATE_USERID = _userSession.UserID.ToString(),
+                            CREATEDATE = dt,
+                            MODIFY_USERID = _userSession.UserID.ToString(),
+                            MODIFYDATE = dt
+                        };
+                        _dbContext.Insert(sp);
+                    }
+                    var temp = sp.MapTo<SP_APPLY_DETAIL>();
+
+                    temp.COUNT = c.COUNT;
+                    temp.MEMO = c.MEMO;
+                    temp.APPLY_ID = apply.APPLY_ID;
+                    await BeforeAddDet(temp);
+                    importResult.Add(temp);
+                    await Task.CompletedTask;
+                });
+
+                _dbContext.InsertRange<SP_APPLY_DETAIL>(importResult);
+
+                return AjaxResult.Success(apply);
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
+            }
+
+        }
+
         /// <summary>
         /// 明细-列表
         /// </summary>
@@ -367,13 +525,59 @@ namespace EAM.Material.Services
         private async Task BeforeAddDet(SP_APPLY_DETAIL entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
+            entity.APPLY_ID = string.IsNullOrEmpty(entity.APPLY_ID) ? _rentID : entity.APPLY_ID;
             entity.SPDET_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
             entity.SP_STATUS = "10";//计划
+
+            if (string.IsNullOrEmpty(entity.SP_CODE))
+            {
+                var sp = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.SP_NAME == entity.SP_NAME && t.SP_SIZE == entity.SP_SIZE).FirstOrDefault();
+                if (sp == null)
+                {
+                    var type = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == "临时类别").FirstOrDefault();
+                    var typeCount = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.TYPE_ID == type.TYPE_ID).Count();
+
+                    typeCount++;
+                    sp = new BASE_SPCATALOG
+                    {
+                        SP_ID = GuidHelper.NewSnowflakeId().ToString(),
+                        SP_CODE = $"{type.TYPE_CODE}-{typeCount.ToString("D4")}",
+                        SP_NAME = entity.SP_NAME,
+                        IS_CANCEL = "0",
+                        SP_SIZE = entity.SP_SIZE,
+                        TYPE_NAME = type.TYPE_NAME,
+                        TYPE_ID = type.TYPE_ID,
+                        TYPE_CODE = type.TYPE_CODE,
+                        UNIT = entity.UNIT,
+                        PRODUCE = entity.PRODUCE,
+                        EDIT_USERID = _userSession.UserID.ToString(),
+                        DEPT_ID = _userSession.Corp.CorpID,
+                        DEPT_NAME = _userSession.Corp.CName,
+                        EDIT_USER = _userSession.RealName,
+                        SEC_DEPTID = _userSession.ParentCompany.CorpID,
+                        SEC_DEPT = _userSession.ParentCompany.CName,
+                        PURTYPE_ID = type.PURTYPE_ID,
+                        PURTYPE_NAME = type.PURTYPE_NAME,
+                        CREATE_USERID = _userSession.UserID.ToString(),
+                        CREATEDATE = dt,
+                        MODIFY_USERID = _userSession.UserID.ToString(),
+                        MODIFYDATE = dt
+                    };
+                    _dbContext.Insert(sp);
+                }
+
+                entity.SP_ID = sp.SP_ID;
+                entity.SP_CODE = sp.SP_CODE;
+                entity.PURTYPE_ID = sp.PURTYPE_ID;
+                entity.PURTYPE_NAME = sp.PURTYPE_NAME;
+                entity.TYPE_NAME = sp.TYPE_NAME;
+                entity.TYPE_ID = sp.TYPE_ID;
+                entity.TYPE_CODE = sp.TYPE_CODE;
+            }
         }
 
         private async Task BeforeUpdateDet(SP_APPLY_DETAIL entity)

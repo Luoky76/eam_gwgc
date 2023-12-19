@@ -64,25 +64,25 @@
                                     },
                                 }
                             },
-                            {
-                                display: "采购方式", name: "TYPE_ID2", minWidth: 150, type: "select", validate: { required: true },
-                                editor: {
-                                    type: 'select',
-                                    data: me.cgfsData,
-                                    onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.cgfsData.length; i++) {
-                                                if (rowdata.value == me.cgfsData[i].ID) {
-                                                    liger.get("maingrid").updateCell("CGFS", me.cgfsData[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
-                                        } else {
-                                            liger.get("maingrid").updateCell("CGFS", "", rowdata.record);
-                                        }
-                                    },
-                                }
-                            },
+                            //{
+                            //    display: "采购方式", name: "TYPE_ID2", minWidth: 150, type: "select", validate: { required: true },
+                            //    editor: {
+                            //        type: 'select',
+                            //        data: me.cgfsData,
+                            //        onChange: function (rowdata, rowIndex) {
+                            //            if (rowdata.value) {
+                            //                for (var i = 0; i < me.cgfsData.length; i++) {
+                            //                    if (rowdata.value == me.cgfsData[i].ID) {
+                            //                        liger.get("maingrid").updateCell("CGFS", me.cgfsData[i].TEXT, rowdata.record);
+                            //                        break;
+                            //                    }
+                            //                }
+                            //            } else {
+                            //                liger.get("maingrid").updateCell("CGFS", "", rowdata.record);
+                            //            }
+                            //        },
+                            //    }
+                            //},
                             { display: "紧急程度", name: "EXIG_DEV", width: 120, type: "select", editor: { type: 'select', data: me.exigData }, validate: { required: true }, },
                             { display: "用途", name: "USE_MEMO", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true }, },
 
@@ -91,7 +91,7 @@
                             { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
                             { display: "申请日期", name: "APPLY_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
                             { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
-                            { display: "采购方式名", name: "CGFS", width: 100, type: "text", hide: true },
+                           /* { display: "采购方式名", name: "CGFS", width: 100, type: "text", hide: true },*/
                             { display: "采购分类名", name: "TYPE_NAME", width: 100, type: "text", hide: true },
                             { display: "采购分类编码", name: "TYPE_CODE", width: 100, type: "text", hide: true },
                             { display: "主键", name: "APPLY_ID", dbname: "APPLY_ID", width: 100, type: "text", hide: true },
@@ -122,7 +122,7 @@
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    autoWidth: false,
+                    autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
@@ -139,8 +139,8 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
-                    clickToEdit: true,
+                    enabledEdit: false,
+                    clickToEdit: false,
                     onBeforeEdit: function (editParm) {
                         if (editParm.record.__status == "nochanged") {
                             if (editParm.record.AUDITING == "1") return false;
@@ -180,8 +180,8 @@
                         case "add":
                             me.add();
                             break;
-                        case "save":
-                            me.save();
+                        case "modify":
+                            me.modify();
                             break;
                         case "delete":
                             me.delete();
@@ -214,7 +214,58 @@
             },
             add: function () { //新增
                 var me = this;
-                me.grid.addEditRow({ "AUDITING": "0" });
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 750,
+                    allowClose: true,
+                    title: '新增物资申请',
+                    url: "sp_apply_detail.html?MenuNo=" + me.MenuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "Sid": null, "view": true }
+                });
+            },
+            modify: function (rowdata) { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+
+                var selected = rows[0];
+                if (rowdata) {
+                    selected = rowdata;
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: 1100,
+                        height: 750,
+                        allowClose: true,
+                        title: '修改物资申请',
+                        url: "sp_apply_detail.html?MenuNo=" + me.MenuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "Sid": selected.APPLY_ID, "view": selected.AUDITING }
+                    });
+
+
+                } else {
+                    LG.tip('请选择行!');
+                }
             },
             save: function () { //保存
                 var me = this;
@@ -229,31 +280,11 @@
                         jsToken: true,
                         url: me.rootPath + 'Save',
                         loading: '正在保存中...',
-                        data: changeRow,
+                        data: { request: changeRow, requestdet: null },
                         success: function (message, data) {
                             me.grid.isDataChanged = false;
                             me.reload();
-                            if (data && data.length > 0) {
-                                LG.showSuccess('保存成功,请添加采购申请明细', function (confim) {
-                                    $.ligerDialog.open({
-                                        width: 1200,
-                                        height: 750,
-                                        allowClose: true,
-                                        title: '[新增采购明细]',
-                                        url: "sp_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
-                                        isHidden: false,
-                                        showMax: false,
-                                        showToggle: false,
-                                        showMin: false,
-                                        isResize: true,
-                                        slide: false,
-                                        onClosed: me.reload.bind(me),
-                                        data: { "Sid": data, "view": "0" }
-                                    });
-                                });
-                            } else {
-                                LG.showSuccess('保存成功');
-                            }
+                            LG.showSuccess('保存成功');
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -382,12 +413,6 @@
                 var me = this;
                 if (me.grid.getSelectedRows().length != 1) {
                     LG.showError("请选择一条记录");
-                    return
-                }
-
-                var apply = me.grid.getSelectedRows()[0];
-                if (apply.APPLY_ID == null) {
-                    LG.showError("请先保存再打开明细");
                     return
                 }
 

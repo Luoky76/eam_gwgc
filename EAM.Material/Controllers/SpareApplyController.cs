@@ -1,7 +1,10 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Material.Interfaces;
+using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controllers
@@ -63,6 +66,26 @@ namespace EAM.Material.Controllers
         {
             return AjaxResult.Success(await _service.Submit(sids), "成功");
         }
+
+        [HttpGet, HttpPost]
+        public async Task<FileResult> ExportExcelHeader(string filename)
+        {
+            return await FileExport.ExportToExcelHeader(new SpDetailExportData(), filename);
+        }
+
+        /// <summary>
+        /// 导入
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <param name="folder"></param>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls", 20)] IFormFile formFile, string folder, string sid)
+        {
+            return await _service.ImportInDetail(formFile, folder, sid);
+        }
+
         #endregion
 
         #region 明细

@@ -220,31 +220,11 @@
                         jsToken: true,
                         url: me.rootPath + 'Save',
                         loading: '正在保存中...',
-                        data: changeRow,
+                        data: { request: changeRow, requestdet: null },
                         success: function (message, data) {
                             me.grid.isDataChanged = false;
                             me.reload();
-                            if (data && data.length > 0) {
-                                LG.showSuccess('保存成功,请添加采购申请明细', function (confim) {
-                                    $.ligerDialog.open({
-                                        width: 1200,
-                                        height: 750,
-                                        allowClose: true,
-                                        title: '[新增采购明细]',
-                                        url: "sp_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
-                                        isHidden: false,
-                                        showMax: false,
-                                        showToggle: false,
-                                        showMin: false,
-                                        isResize: true,
-                                        slide: false,
-                                        onClosed: me.reload.bind(me),
-                                        data: { "Sid": data, "view": "0" }
-                                    });
-                                });
-                            } else {
-                                LG.showSuccess('保存成功');
-                            }
+                            LG.showSuccess('保存成功');
                         },
                         error: function (message) {
                             LG.showError(message);
