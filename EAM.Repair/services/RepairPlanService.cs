@@ -592,7 +592,13 @@ namespace EAM.Repair.services
                 }).ToListAsync();
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
-            string fileUrl = "UploadDirectory/purchase/" + fileRealName;
+            string directoryPath = "UploadDirectory/RepairPlan/";
+            string fileUrl = directoryPath + fileRealName;
+            //创建文件夹
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
             if (detQuery.Count() > 0)
             {
                 try

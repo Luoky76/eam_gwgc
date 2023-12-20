@@ -878,11 +878,18 @@ namespace EAM.Material.Services
                 }).ToListAsync();
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
-            string fileUrl = "UploadDirectory/purchase/" + fileRealName;
+            string directoryPath = "UploadDirectory/SpCollect/";
+            string fileUrl = directoryPath + fileRealName;
+            //创建文件夹
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
             if (detQuery.Count() > 0)
             {
                 try
                 {
+                    //创建EXCEL文件
                     IExporter exporter = new ExcelExporter();
                     var fileResult = await exporter.Export(fileUrl, detQuery);
                     fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
