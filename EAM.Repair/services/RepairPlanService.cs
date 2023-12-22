@@ -613,8 +613,8 @@ namespace EAM.Repair.services
                 }
             }
 
-            string attach = attachName.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + fileName) + "$$$"
-                + attachUrl.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + webUrl + fileUrl);
+            string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$"
+                + attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl + fileUrl);
 
             var mainQuery = await _dbContext.Query<REP_PLAN_EXE>(c => c.EXE_ID == exeId)
                 .Select(c => new

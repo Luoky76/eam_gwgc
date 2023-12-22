@@ -94,6 +94,7 @@ namespace EAM.Material.Services
                     { "BCCode", "CGtype" },
                     { "BaseSpType", (Expression<Func<BASE_SPTYPE, bool>>)null},
                     { "ProviderName", (Expression<Func<PROVIDER, bool>>)null},
+                    { "Auditing", null }
                 });
                 return AjaxResult.Success(dic);
             }
