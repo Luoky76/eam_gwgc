@@ -11,7 +11,12 @@ namespace Gksyb.Core.Interfaces.Auth
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true);
+        Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true, Func<LoginResponse, Task<AjaxResult>> handle = null);
+
+        /// <summary>
+        /// 设置用户的常用设备码（设备码变化，触发短信验证）
+        /// </summary>
+        Task SetUserImeiAsync(long id, string imei);
 
         /// <summary>
         /// 获取用户对象

@@ -1,9 +1,11 @@
-﻿using Gksyb.Common.Static;
+﻿using Gksyb.Common;
+using Gksyb.Common.Static;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.UI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Globalization;
 using System.Security.Claims;
@@ -15,6 +17,14 @@ namespace Gksyb.Core.Auth
     /// </summary>
     public partial class UserSession
     {
+        private static readonly string VERSION;
+
+        static UserSession()
+        {
+            var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>().Value;
+            VERSION = options.TicketVersion;
+        }
+
         /// <summary>
         /// 超级用户角色
         /// </summary>
@@ -23,31 +33,43 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// Token
         /// </summary>
+        [JsonProperty("T")]
         public string Token { get; set; }
+
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        [JsonProperty("V")]
+        public string Version { get; set; }
 
         /// <summary>
         /// 用户ID
         /// </summary>
+        [JsonProperty("UI")]
         public long UserID { get; set; }
 
         /// <summary>
         /// 用户名
         /// </summary>
+        [JsonProperty("UN")]
         public string UserName { get; set; }
 
         /// <summary>
         /// 昵称
         /// </summary>
+        [JsonProperty("RN")]
         public string RealName { get; set; }
 
         /// <summary>
         /// 班组
         /// </summary>
+        [JsonProperty("C")]
         public string Class { get; set; }
 
         /// <summary>
         /// 工号 单点以此为凭据
         /// </summary>
+        [JsonProperty("WC")]
         public string WorkerCode { get; set; }
 
         /// <summary>
@@ -58,6 +80,7 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// <see cref="Corp"/>的上级公司，如果<see cref="Corp"/>本身是公司，则取自己
         /// </summary>
+        [JsonProperty("PC")]
         public CorpInfo ParentCompany { get; set; }
 
         /// <summary>
@@ -68,11 +91,13 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 所有组织（包含子组织）
         /// </summary>
+        [JsonProperty("AC")]
         public List<CorpInfo> AllCorps { get; set; }
 
         /// <summary>
         /// 组 用于通知
         /// </summary>
+        [JsonProperty("G")]
         public string Group { get; set; }
 
         /// <summary>
@@ -90,11 +115,13 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 所有角色
         /// </summary>
+        [JsonProperty("AR")]
         public List<string> AllRoles { get; set; }
 
         /// <summary>
         /// 角色归属公司
         /// </summary>
+        [JsonProperty("RC")]
         public List<KeyValueItem> RoleCorps { get; set; }
 
         /// <summary>
@@ -105,8 +132,9 @@ namespace Gksyb.Core.Auth
         {
             get
             {
-                if (RoleCorps == null) return AllRoles;
-                return AllRoles.Where(c =>
+                var allRoles = AllRoles ?? new List<string>();
+                if (RoleCorps == null) return allRoles;
+                return allRoles.Where(c =>
                 {
                     var corps = RoleCorps.Where(a => a.Key == c).ToList();
                     if (corps.Count < 1) return true;
@@ -118,21 +146,25 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 是否超级管理员
         /// </summary>
+        [JsonProperty("IS")]
         public bool IsSuper { get; set; }
 
         /// <summary>
         /// 是否管理员
         /// </summary>
+        [JsonProperty("IA")]
         public bool IsAdmin { get; set; }
 
         /// <summary>
         /// 是否本公司
         /// </summary>
+        [JsonProperty("IOC")]
         public bool IsOurCompany { get; set; }
 
         /// <summary>
         /// 是否Api用户
         /// </summary>
+        [JsonProperty("API")]
         public bool IsApi { get; set; }
 
         /// <summary>
@@ -143,21 +175,25 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 用户代理
         /// </summary>
+        [JsonProperty("UA")]
         public string UserAgent { get; set; }
 
         /// <summary>
         /// 角色应用名
         /// </summary>
+        [JsonProperty("UAN")]
         public string UserAppName { get; set; }
 
         /// <summary>
         /// 角色应用名
         /// </summary>
+        [JsonProperty("RAN")]
         public string RoleAppName { get; set; }
 
         /// <summary>
         /// 菜单应用名
         /// </summary>
+        [JsonProperty("MAN")]
         public string MenuAppname { get; set; }
 
         /// <summary>
@@ -183,16 +219,19 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 禁止的菜单权限
         /// </summary>
+        [JsonProperty("FM")]
         public List<MenuModule> ForbinMenus { get; set; }
 
         /// <summary>
         /// 禁止的按钮权限
         /// </summary>
+        [JsonProperty("FB")]
         public SortedList<string, List<ButtonModule>> ForbinButtons { get; set; }
 
         /// <summary>
         /// 扩展数据
         /// </summary>
+        [JsonProperty("ED")]
         public Dictionary<string, object> ExtendData { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
@@ -222,13 +261,16 @@ namespace Gksyb.Core.Auth
         /// <returns></returns>
         public bool Check(Microsoft.AspNetCore.Http.HttpRequest request, IDistributedCache distributedCache = null)
         {
-            var ip = request.GetRealIP();
-            var userAgent = request.GetUserAgent();
-            var times = 0;
-            if (IP == ip) times += 1;
-            if (UserAgent == userAgent) times += 1;
-            if (times > 0 && Token == request.HttpContext.GetUID(false)) times += 1;
-            if (times > 1) return true;
+            if (VERSION == Version)
+            {
+                var ip = request.GetRealIP();
+                var userAgent = request.GetUserAgent();
+                var times = 0;
+                if (IP == ip) times += 1;
+                if (UserAgent == userAgent) times += 1;
+                if (times > 0 && Token == request.HttpContext.GetUID(false)) times += 1;
+                if (times > 1) return true;
+            }
             distributedCache ??= request.HttpContext.RequestServices.GetService<IDistributedCache>();
             distributedCache.Remove(Token);
             return false;
@@ -275,6 +317,7 @@ namespace Gksyb.Core.Auth
         public async Task<UserResponse> SaveAsync(SysContextOptions options)
         {
             Token = GuidHelper.NewShortId();
+            Version = options.TicketVersion;
             await SaveAsync();
             HttpContext.Current.SetClientID(Token);
             var ticket = new string[]

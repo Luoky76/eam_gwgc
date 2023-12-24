@@ -102,6 +102,9 @@
                 app.ajax({
                     noGlobal: true,
                     url: 'Auth/ChangePassword',
+                    jsToken: {
+                        url: "auth/logintoken"
+                    },
                     data: formData,
                     success: function (data) {
                         app.dialog.alert('密码修改成功', function () {
@@ -109,18 +112,6 @@
                             if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
                             fromUrl = fromUrl || "index.html";
                             location.href = fromUrl;
-                        });
-                    },
-                    beforeSend: function (jqXHR, options) {
-                        app.request({
-                            noGlobal: true,
-                            async: false,
-                            url: "Auth/LoginToken",
-                            type: 'post',
-                            dataType: "text",
-                            success: function (result) {
-                                eval(result);
-                            }
                         });
                     }
                 });

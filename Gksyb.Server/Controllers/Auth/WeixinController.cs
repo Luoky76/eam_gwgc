@@ -6,6 +6,7 @@ using Gksyb.Server.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 using System.Web;
@@ -134,13 +135,15 @@ namespace Gksyb.Server.Controllers.Auth
         /// 微信绑定
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> Bind(LoginRequest request)
+        public async Task<AjaxResult> Bind([FromServices] IDistributedCache distributedCache, LoginRequest request)
         {
             var user = await HttpContext.GetCurrentUserAsync();
             if (user != null) request.Verifycode = user.Openid;
             if (string.IsNullOrWhiteSpace(request.Verifycode)) return AjaxResult.Error("无法获取微信号,请退出后重试");
-            var result = await _service.Bind(request);
-            return result;
+            return await distributedCache.LimitRetry($"{request.Verifycode}_RC", "密码输错多次，请三分钟后重试", async () =>
+            {
+                return await _service.Bind(request);
+            });
         }
 
         /// <summary>

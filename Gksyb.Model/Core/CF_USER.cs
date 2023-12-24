@@ -5,7 +5,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
 
@@ -16,7 +15,7 @@ namespace Gksyb.Model.Core
     /// </summary>
     [Table("CF_USER")]
     [Description("用户")]
-    public class CF_USER
+    public partial class CF_USER
     {
 
         /// <summary>
@@ -76,9 +75,9 @@ namespace Gksyb.Model.Core
         public string PHONE { get; set; }
 
         /// <summary>
-        /// 传真
+        /// IP
         /// </summary>
-        [Description("传真")]
+        [Description("IP")]
         [Column(DbType = DbType.AnsiString, Size = 50)]
         public string FAX { get; set; }
 
@@ -97,16 +96,16 @@ namespace Gksyb.Model.Core
         public string QQ { get; set; }
 
         /// <summary>
-        /// 昵称
+        /// IMEI
         /// </summary>
-        [Description("昵称")]
+        [Description("IMEI")]
         [Column(DbType = DbType.AnsiString, Size = 100)]
         public string NICKNAME { get; set; }
 
         /// <summary>
-        /// 地址
+        /// UA
         /// </summary>
-        [Description("地址")]
+        [Description("UA")]
         [Column(DbType = DbType.AnsiString, Size = 4000)]
         public string ADDRESS { get; set; }
 
@@ -164,16 +163,16 @@ namespace Gksyb.Model.Core
         public string FLAG { get; set; }
 
         /// <summary>
-        /// 部门代码
+        /// 工号
         /// </summary>
-        [Description("部门代码")]
+        [Description("工号")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
         public string DEPARTCODE { get; set; }
 
         /// <summary>
-        /// 基本岗位
+        /// 所属组
         /// </summary>
-        [Description("基本岗位")]
+        [Description("所属组")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
         public string STATION { get; set; }
 

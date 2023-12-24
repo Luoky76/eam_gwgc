@@ -63,6 +63,26 @@
             }
         });
     }
+    if (window[imeiKey] === undefined) {
+        var imeiKey = "GksybIMEI";
+        Object.defineProperty(window, imeiKey, {
+            get: function () {
+                var val = window.localStorage.getItem(imeiKey);
+                if (val) return val;
+                val = new Date().getTime();
+                app.ajax({
+                    noGlobal: true,
+                    async: false,
+                    url: "auth/imei",
+                    success: function (data) {
+                        val = data;
+                    }
+                });
+                window.localStorage.setItem(imeiKey, val);
+                return val;
+            }
+        });
+    }
     //顶层窗口
     if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
@@ -91,21 +111,21 @@
         },
         generateJsToken: function (jqXHR, opt) {//js票据 eval用到jqXHR
             opt = opt || { jsToken: "JsToken" };
+            var key = (opt.jsToken === true) ? opt.url : opt.jsToken;
+            var data = (typeof key === "string" ? { key: key } : null);
             var tokenOptions = Framework7.utils.extend(true, {
                 noGlobalBeforeOpen: true,
                 noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
-                data: {
-                    key: (opt.jsToken === true) ? opt.url : opt.jsToken
-                },
+                data: data,
                 dataType: "text",
                 type: 'post',
                 success: function (result) {
                     eval(result);
                 },
                 error: function () { }
-            }, opt.tokenOptions);
+            }, opt.tokenOptions || (data === null ? key : null));
             app.request(tokenOptions);
         },
         setGksybToken: function (jqXHR) {//token验证

@@ -54,18 +54,19 @@
             if (key === true) {
                 key = gksybConfigs.getUrl(opt.url || "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "");
             }
+            var data = (typeof key === "string" ? { key: key } : null);
             var tokenOptions = $.extend(true, {
                 noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
-                data: { key: key },
+                data: data,
                 dataType: "text",
                 type: 'post',
                 success: function (result) {
                     eval(result);
                 },
                 error: function () { }
-            }, opt.tokenOptions);
+            }, opt.tokenOptions || (data === null ? key : null));
             $.ajax(tokenOptions);
         },
         setGksybToken: function (jqXHR) {//token验证
@@ -452,6 +453,29 @@
     if (window.session === undefined) initStorage("session", "GksybData");
     if (window.tempStorage === undefined) initStorage("tempStorage", "GksybTemp");
     if (window.ticket === undefined) initStorageString("ticket", "GksybTicket");
+    if (window[imeiKey] === undefined) {
+        var imeiKey = "GksybIMEI";
+        Object.defineProperty(window, imeiKey, {
+            get: function () {
+                var val = window.localStorage.getItem(imeiKey);
+                if (val) return val;
+                val = new Date().getTime();
+                $.ajax({
+                    noGlobalBeforeSend: true,
+                    url: 'auth/imei',
+                    async: false,
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (result) {
+                        if (!result || result.IsError) return;
+                        val = result.Data;
+                    }
+                });
+                window.localStorage.setItem(imeiKey, val);
+                return val;
+            }
+        });
+    }
 
     if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {

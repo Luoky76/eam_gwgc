@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
     <title>生产管理系统</title>
     <script src="lib/jquery/jquery.js" type="text/javascript"></script>
-    <script src="lib/js/common.js" type="text/javascript"></script>
+    <script src="lib/js/common.js?v=1" type="text/javascript"></script>
     <style type="text/css">
         * {
             padding: 0;
@@ -38,7 +38,7 @@
             height: 520px;
             background-image: url("lib/images/login/login-bg.jpg?v=1");
             background-position: center;
-            background-size:cover;
+            background-size: cover;
             position: relative;
             padding-top: 60px;
         }
@@ -76,7 +76,17 @@
             text-align: center;
             color: #2B2B2B;
             font-size: 12px;
-            z-index:-1;
+            z-index: -1;
+        }
+
+        .moda-input {
+            line-height: 30px;
+            display: block;
+            width: 230px;
+            height: 36px;
+            margin: 0 auto;
+            padding-left: 10px;
+            color: #333;
         }
 
         .login-input {
@@ -101,7 +111,7 @@
         }
 
         .login-null {
-            user-select:none;
+            user-select: none;
             font-size: 16px;
             color: #9B9B9B;
             cursor: text;
@@ -149,7 +159,7 @@
             z-index: 999;
             font-size: 20px;
             letter-spacing: 3px;
-            cursor:pointer;
+            cursor: pointer;
         }
 
         .none {
@@ -269,22 +279,22 @@
                 <div class="login-panel">
                     <div class="login-input">
                         <input type="text" name="txtUsername" id="txtUsername" value="" class="login-text" />
-                        <label class="login-text login-null">
+                        <span class="login-text login-null">
                             请输入用户名
-                        </label>
+                        </span>
                     </div>
                     <div class="login-input">
                         <input type="password" name="txtPassword" id="txtPassword" value="" class="login-text" />
-                        <label class="login-text login-null">
+                        <span class="login-text login-null">
                             请输入密码
-                        </label>
+                        </span>
                     </div>
                     <div id="verifyCode" class="login-input none">
                         <img id="imgcode" src="" width="80" height="40" alt="" />
                         <input type="text" name="txtVerifyCode" id="txtVerifyCode" value="" class="login-text" />
-                        <label class="login-text login-null">
+                        <span class="login-text login-null">
                             请输入验证码
-                        </label>
+                        </span>
                     </div>
                     <div id="btnLogin">
                         立即登录
@@ -317,9 +327,11 @@
                     $(this).click();
                 }
             }).click(function () {
+                if (option.handleValue) option.handleValue();
                 $('.myModa').remove();
                 option.callback()
             }).focus();
+            if (option.init) option.init();
         };
         var myLoadding = function (message) {
             var m = message || '加载中...';
@@ -336,11 +348,137 @@
         };
         var business = {
             _noInner: true,
+            success: function (data) {
+                var toUrl = getQueryStringByName("FromUrl");
+                if (((toUrl || "").toLowerCase().indexOf("http") >= 0) && (toUrl.indexOf(location.host) < 0)) toUrl = "";
+                toUrl = toUrl || "index.html";
+                window.ticket = data.Ticket;
+                delete data.Ticket;
+                window.session = data;
+                location.href = toUrl;
+            },
+            phoneSelect: function (phones) {
+                if (!phones || phones.length < 1) {
+                    myAlert({
+                        message: "找不到可选取的手机号",
+                        callback: function () {
+                            location.reload();
+                        }
+                    });
+                    return;
+                }
+                var me = this;
+                var htmls = [];
+                htmls.push('<select name="phone-select" id="phone-select" class="moda-input">');
+                htmls.push('<option value="">请选取手机</option>');
+                for (var i = 0, l = phones.length; i < l; i++) {
+                    var item = phones[i];
+                    htmls.push('<option value="' + item.Key + '">' + (item.Value || item.Key) + '</option>');
+                }
+                htmls.push('</select>');
+                var phone;
+                myAlert({
+                    message: htmls.join(""),
+                    handleValue: function () {
+                        phone = $("#phone-select").val();
+                    },
+                    callback: function () {
+                        if (!phone) {
+                            myAlert({
+                                message: "请选取手机号",
+                                callback: function () {
+                                    me.phoneSelect(phones);
+                                }
+                            });
+                            return;
+                        }
+                        $.ajax({
+                            noGlobal: true,
+                            type: 'post',
+                            cache: false,
+                            dataType: 'json',
+                            url: 'auth/phoneselect',
+                            jsToken: { url: "auth/logintoken" },
+                            data: {
+                                key: window.GksybIMEI,
+                                value: encrypt(phone)
+                            },
+                            success: function (result) {
+                                if (result.IsError) {
+                                    myAlert({
+                                        message: result.Message,
+                                        callback: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                    return;
+                                }
+                                me.smsAuth();
+                            }
+                        });
+                    }
+                });
+            },
+            smsAuth: function () {
+                var me = this;
+                var code;
+                myAlert({
+                    title: "验证码",
+                    message: '<input id="sms-code" name="sms-code" type="text" class="moda-input" />',
+                    init: function () {
+                        $("#sms-code").focus();
+                    },
+                    handleValue: function () {
+                        code = $("#sms-code").val();
+                    },
+                    callback: function () {
+                        if (!code) {
+                            myAlert({
+                                message: "请输入短信验证码",
+                                callback: function () {
+                                    me.smsAuth();
+                                }
+                            });
+                            return;
+                        }
+                        $.ajax({
+                            noGlobal: true,
+                            type: 'post',
+                            cache: false,
+                            dataType: 'json',
+                            url: 'auth/smsauth',
+                            jsToken: { url: "auth/logintoken" },
+                            data: {
+                                key: window.GksybIMEI,
+                                value: encrypt(code)
+                            },
+                            success: function (result) {
+                                if (result.IsError) {
+                                    myAlert({
+                                        message: result.Message,
+                                        callback: function () {
+                                            location.reload();
+                                        }
+                                    });
+                                    return;
+                                }
+                                if (result.Message === "99") {
+                                    myAlert({
+                                        message: result.Data,
+                                        callback: function () {
+                                            me.smsAuth();
+                                        }
+                                    });
+                                    return;
+                                }
+                                me.success(result.Data);
+                            }
+                        });
+                    }
+                });
+            },
             submit: function () { //提交
                 var me = this;
-                var FromUrl = getQueryStringByName("FromUrl");
-                if (((FromUrl || "").toLowerCase().indexOf("http") >= 0) && (FromUrl.indexOf(location.host) < 0)) FromUrl = "";
-                FromUrl = FromUrl || "index.html";
                 var formData = {
                     username: $.trim($("#txtUsername").val() || ""),
                     password: $.trim($("#txtPassword").val() || ""),
@@ -348,7 +486,7 @@
                 };
                 if (me._noInner && !formData.verifycode) {
                     myAlert({
-                        "message": '验证码不能为空!',
+                        message: '验证码不能为空!',
                         callback: function () {
                             $("#txtVerifyCode").focus();
                         }
@@ -357,7 +495,7 @@
                 }
                 if (!formData.username) {
                     myAlert({
-                        "message": '账号不能为空!',
+                        message: '账号不能为空!',
                         callback: function () {
                             $("#txtUsername").focus();
                         }
@@ -366,7 +504,7 @@
                 }
                 if (!formData.password) {
                     myAlert({
-                        "message": '密码不能为空!',
+                        message: '密码不能为空!',
                         callback: function () {
                             $("#txtPassword").focus();
                         }
@@ -375,61 +513,59 @@
                 }
                 formData.username = encrypt(formData.username);
                 formData.password = encrypt(formData.password);
+                formData.imei = window.GksybIMEI;
                 $.ajax({
                     noGlobal: true,
                     type: 'post',
                     cache: false,
                     dataType: 'json',
                     url: 'Auth/Login',
+                    jsToken: {
+                        url: "auth/logintoken"
+                    },
                     data: formData,
                     success: function (result) {
                         $('.myModa').remove();
                         if (result && !result.IsError) {
-                            window.ticket = result.Data.Ticket;
-                            delete result.Data.Ticket;
-                            window.session = result.Data;
-                            location.href = FromUrl;
-                            return;
-                        } else {
-                            if (result.Data === "1") {
-                                myAlert({
-                                    "message": result ? result.Message : "用户名密码错误",
-                                    callback: function () {
-                                        location.href = "change-pwd.html?FromUrl=" + encodeURIComponent(location.href);
-                                    }
-                                });
+                            if (result.Message === "99") {
+                                me.smsAuth();
                                 return;
                             }
-                            $("#txtVerifyCode").val("");
+                            if (result.Message === "999") {
+                                me.phoneSelect(result.Data);
+                                return;
+                            }
+                            me.success(result.Data);
+                            return;
+                        }
+                        if (result.Data === "1") {
                             myAlert({
-                                "message": result.Message,
+                                message: result ? result.Message : "用户名密码错误",
                                 callback: function () {
-                                    if (me._noInner) {
-                                        $("#imgcode").click();
-                                        $("#txtVerifyCode").focus().select();
-                                    } else {
-                                        $("#txtUsername").focus().select();
-                                    }
+                                    location.href = "change-pwd.html?FromUrl=" + encodeURIComponent(location.href);
                                 }
                             });
+                            return;
                         }
+                        $("#txtVerifyCode").val("");
+                        myAlert({
+                            message: result.Message,
+                            callback: function () {
+                                if (me._noInner) {
+                                    $("#imgcode").click();
+                                    $("#txtVerifyCode").focus().select();
+                                } else {
+                                    $("#txtUsername").focus().select();
+                                }
+                            }
+                        });
                     },
                     error: function () {
                         $('.myModa').remove();
                         myAlert('发送系统错误,请与系统管理员联系!');
                     },
-                    beforeSend: function (jqXHR, options) {
+                    beforeSend: function () {
                         myLoadding();
-                        $.ajax({
-                            noGlobal: true,
-                            async: false,
-                            url: "Auth/LoginToken",
-                            type: 'post',
-                            dataType: "text",
-                            success: function (result) {
-                                eval(result);
-                            }
-                        });
                     }
                 });
             },

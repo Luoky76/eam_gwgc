@@ -108,7 +108,15 @@ namespace Microsoft.Extensions.Caching.Distributed
         {
             var retryCount = await source.GetAsync<int?>(key) ?? 0;
             if (retryCount >= limit) return AjaxResult.Error(error);
-            var result = await func();
+            AjaxResult result;
+            try
+            {
+                result = await func();
+            }
+            catch (Exception ex)
+            {
+                result = AjaxResult.Error(ex.Message);
+            }
             if (result.IsError)
             {
                 await source.SetAsync(key, (++retryCount), new DistributedCacheEntryOptions()

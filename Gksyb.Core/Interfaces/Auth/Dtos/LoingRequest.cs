@@ -46,6 +46,11 @@ namespace Gksyb.Model.Dtos
         public string UserAgent { get; set; }
 
         /// <summary>
+        /// 设备唯一识别码
+        /// </summary>
+        public string IMEI { get; set; }
+
+        /// <summary>
         ///来源
         /// </summary>
         [JsonIgnore]

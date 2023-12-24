@@ -12,7 +12,7 @@ namespace Gksyb.Server.Services.Auth
     public class OAuthService : IBaseService
     {
         private const int ShortExpiration = 30;
-        private const string KEY = "eokW6j8@DZfwFBMiIa7ghzELcKYSuyAR";
+        private static readonly string KEY = OAuthRequest<object>.KEY;
         private static readonly string _opertype = "用户公司";
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
@@ -94,9 +94,7 @@ namespace Gksyb.Server.Services.Auth
                 UserAgent = request.UA,
                 UserAppName = _options.UserAppName,
                 RoleAppName = _options.RoleAppName,
-                MenuAppname = _options.AppName,
-                ForbinMenus = new List<MenuModule>(),
-                ForbinButtons = new SortedList<string, List<ButtonModule>>()
+                MenuAppname = _options.AppName
             };
             var key = CryptographyHelper.GetSM3($"{model.APPID}{model.IP}{nameof(AccessTokenAsync)}");
             var lastToken = await _distributedCache.GetAsync<string>(key);

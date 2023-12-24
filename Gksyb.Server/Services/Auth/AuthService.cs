@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace Gksyb.Server.Services.Auth
 {
-    public class AuthService : IAuthService
+    public class AuthService : IAuthService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IRoleModuleService _roleModuleService;
@@ -28,12 +28,12 @@ namespace Gksyb.Server.Services.Auth
         /// 登陆
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true)
+        public async Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true, Func<LoginResponse, Task<AjaxResult>> handle = null)
         {
             AjaxResult result = null;
             try
             {
-                result = await LoginInnerAsync(request, action, checkPassword);
+                result = await LoginInnerAsync(request, action, checkPassword, handle);
             }
             catch (Exception ex)
             {
@@ -58,7 +58,7 @@ namespace Gksyb.Server.Services.Auth
         /// 登陆
         /// </summary>
         /// <returns></returns>
-        private async Task<AjaxResult> LoginInnerAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true)
+        private async Task<AjaxResult> LoginInnerAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true, Func<LoginResponse, Task<AjaxResult>> handle = null)
         {
             request.RoleAppname = request.RoleAppname.HasValue() ? request.RoleAppname : _options.RoleAppName;
             request.MenuAppname = request.MenuAppname.HasValue() ? request.MenuAppname : _options.AppName;
@@ -110,6 +110,8 @@ namespace Gksyb.Server.Services.Auth
             {
                 userSession.AllRoles.Add(_guestRole);
             }
+            var imei = string.IsNullOrWhiteSpace(request.IMEI) ? user.NICKNAME : request.IMEI;
+            var isChange = _options.SmsAuth && imei != user.NICKNAME;
             //登录成功，更新用户数据
             _dbContext.TrackEntity(user);
             user.LASTLOGINTIME = await _dbContext.GetSysdate();
@@ -119,7 +121,31 @@ namespace Gksyb.Server.Services.Auth
             await _dbContext.UpdateAsync(user);
 
             var userResponse = await userSession.SaveAsync(_options);
-            return AjaxResult.Success(userResponse);
+            AjaxResult result = null;
+            if (handle != null)
+            {
+                var phone = (user.PHONE ?? "").Split(',').DistinctAndOrderBy()
+                    .Where(c => c.IsMobileNumber()).Select(c => new KeyValueItem(c, $"{c[..3]}****{c[7..]}")).ToList();
+                result = await handle(new LoginResponse()
+                {
+                    UserId = userSession.UserID,
+                    IMEI = imei,
+                    IsChange = isChange,
+                    Phone = phone,
+                    Response = userResponse,
+                    Session = userSession
+                });
+            }
+            return result ?? AjaxResult.Success(userResponse);
+        }
+
+        /// <inheritdoc/>
+        public async Task SetUserImeiAsync(long id, string imei)
+        {
+            await _dbContext.UpdateAsync<CF_USER>(a => a.USERID == id, a => new CF_USER()
+            {
+                NICKNAME = imei
+            });
         }
 
         /// <inheritdoc/>
@@ -186,7 +212,7 @@ namespace Gksyb.Server.Services.Auth
                 var list = await _roleModuleService.GetMenuModule(roleName, appname);
                 menus.AddRange(list);
             }
-            if (userSession.ForbinMenus.Count > 0)
+            if (userSession.ForbinMenus?.Count > 0)
             {
                 menus.RemoveAll(c => userSession.ForbinMenus.Exists(m => c.MENUNO == m.MENUNO && c.APPNAME == m.APPNAME));
             }
@@ -215,7 +241,7 @@ namespace Gksyb.Server.Services.Auth
                 buttons.AddRange(list);
             }
             var key = $"{menuNo}__{appname}";
-            if (userSession.ForbinButtons.ContainsKey(key))
+            if (userSession.ForbinButtons?.ContainsKey(key) == true)
             {
                 buttons.RemoveAll(c => userSession.ForbinButtons[key].Exists(m => c.MENUNO == m.MENUNO && c.BTNNO == m.BTNNO && c.APPNAME == m.APPNAME));
             }
@@ -371,7 +397,7 @@ namespace Gksyb.Server.Services.Auth
                                                    && Sql.IsEqual(c.APPNAME, s.APPNAME)
                                                    && Sql.IsEqual(c.PRIVILEGEACCESSKEY, s.MENUNO)).Any())
                                                   .ToListAsync<MenuModule>();
-            return list;
+            return list.Count > 0 ? list : null;
         }
 
         /// <summary>
@@ -391,7 +417,7 @@ namespace Gksyb.Server.Services.Auth
             {
                 sortList.Add(list.Key, list.ToList() ?? new List<ButtonModule>());
             });
-            return sortList;
+            return sortList.Count > 0 ? sortList : null;
         }
     }
 }

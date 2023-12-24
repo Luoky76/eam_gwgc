@@ -8,6 +8,7 @@ namespace Gksyb.Model.Core
 {
     public class OAuthRequest<T>
     {
+        internal const string KEY = "eokW6j8@DZfwFBMiIa7ghzELcKYSuyAR";
         private const double Expiry = 3 * 60;
 
         /// <summary>
@@ -85,7 +86,8 @@ namespace Gksyb.Model.Core
         {
             var model = await dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == AppId && c.FLAG == "1").FirstOrDefaultAsync();
             MessageException.ThrowIf(model == null, $"找不到{AppId}的记录");
-            Check(model.SECRET, model.IP);
+            var secret = CryptographyHelper.DecryptSM4(model.SECRET, KEY);
+            Check(secret, model.IP);
             return model;
         }
 

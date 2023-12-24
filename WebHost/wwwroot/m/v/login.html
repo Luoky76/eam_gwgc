@@ -84,12 +84,97 @@
         </div>
     </div>
     <script type="text/javascript" src="../dist/Framework7/mobile.js?v=1"></script>
-    <script type="text/javascript" src="../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" src="../dist/Framework7/app.js?cache=1&v=1"></script>
     <script type="text/javascript">
         'use strict';
         var business = {
             //内部ip否
             _noInner: true,
+            success: function (data) {
+                var toUrl = getQueryStringByName("FromUrl");
+                if (((toUrl || "").toLowerCase().indexOf("http") >= 0) && (toUrl.indexOf(location.host) < 0)) toUrl = "";
+                toUrl = toUrl || "index.html";
+                window.ticket = data.Ticket;
+                delete data.Ticket;
+                window.session = data;
+                location.href = toUrl;
+            },
+            phoneSelect: function (phones) {
+                if (!phones || phones.length < 1) {
+                    app.dialog.error("找不到可选取的手机号", function () {
+                        location.reload();
+                    });
+                    return;
+                }
+                var me = this;
+                var buttons = [{
+                    text: '请选择验证手机',
+                    label: true
+                }];
+                var btnClick = function () {
+                    var phone = this.phone;
+                    app.ajax({
+                        noGlobal: true,
+                        url: 'auth/phoneselect',
+                        jsToken: { url: "auth/logintoken" },
+                        data: {
+                            key: window.GksybIMEI,
+                            value: encrypt(phone)
+                        },
+                        success: function () {
+                            me.smsAuth();
+                        },
+                        error: function (message) {
+                            app.dialog.error(message, function () {
+                                location.reload();
+                            });
+                        }
+                    });
+                };
+                for (var i = 0, l = phones.length; i < l; i++) {
+                    var item = phones[i];
+                    buttons.push({
+                        phone: item.Key, text: item.Value, label: false, onClick: btnClick
+                    });
+                }
+                app.actions.create({
+                    buttons: [buttons, [{ text: '取消', color: 'red' }]]
+                }).open();
+            },
+            smsAuth: function () {
+                var me = this;
+                app.dialog.prompt("", "验证码", function (code) {
+                    if (!code) {
+                        app.dialog.error("请输入短信验证码", function () {
+                            me.smsAuth();
+                        });
+                        return;
+                    }
+                    app.ajax({
+                        noGlobal: true,
+                        url: 'auth/smsauth',
+                        jsToken: { url: "auth/logintoken" },
+                        data: {
+                            key: window.GksybIMEI,
+                            value: encrypt(code)
+                        },
+                        success: function (data, message) {
+                            if (message === "99") {
+                                app.dialog.error(data, function () {
+                                    me.smsAuth();
+                                });
+                                return;
+                            }
+                            me.success(data);
+                        },
+                        error: function (message) {
+                            app.dialog.error(message, function () {
+                                location.reload();
+                            });
+                        }
+                    });
+                });
+            },
             //提交
             submit: function () {
                 var form = $$("#my-form");
@@ -100,23 +185,29 @@
                 var formData = app.form.convertToData(form);
                 formData.username = encrypt(formData.username);
                 formData.password = encrypt(formData.password);
+                formData.imei = window.GksybIMEI;
                 formData.menuAppname = "ETOS_MOBILE";
                 var isRemember = $$("#remember").prop("checked");
                 app.ajax({
                     noGlobal: true,
                     url: 'Auth/Login',
+                    jsToken: {
+                        url: "auth/logintoken"
+                    },
                     data: formData,
-                    success: function (data) {
+                    success: function (data, message) {
                         localStorage.removeItem("GksybPw");
                         localStorage.setItem("GksybUn", formData.username);
                         if (isRemember) localStorage.setItem("GksybPw", formData.password);
-                        window.ticket = data.Ticket;
-                        delete data.Ticket;
-                        window.session = data;
-                        var fromUrl = getQueryStringByName("FromUrl");
-                        if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
-                        fromUrl = fromUrl || "index.html";
-                        location.href = fromUrl;
+                        if (message === "99") {
+                            me.smsAuth();
+                            return;
+                        }
+                        if (message === "999") {
+                            me.phoneSelect(data);
+                            return;
+                        }
+                        me.success(data);
                     },
                     error: function (message, data) {
                         message = message || "用户名密码错误";
@@ -135,18 +226,6 @@
                                 $$("#verifycode").focus();
                             } else {
                                 $$("#username").focus();
-                            }
-                        });
-                    },
-                    beforeSend: function (jqXHR, options) {
-                        app.request({
-                            noGlobal: true,
-                            async: false,
-                            url: "Auth/LoginToken",
-                            type: 'post',
-                            dataType: "text",
-                            success: function (result) {
-                                eval(result);
                             }
                         });
                     }
@@ -171,7 +250,6 @@
             //事件绑定
             eventBind: function () {
                 var me = this;
-
                 me.toggle = app.toggle.create({
                     el: '.toggle',
                     on: {

@@ -2,8 +2,11 @@
 using Chloe.Infrastructure;
 using Chloe.Oracle;
 using Chloe.RDBMS;
+using Chloe.Reflection;
+using Chloe.Reflection.Emit;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Gksyb.Common.Data
@@ -26,16 +29,19 @@ namespace Gksyb.Common.Data
         }
 
         private readonly string _connString = null;
+        private readonly bool _isInit = false;
 
         public OracleConnectionFactory(string connString)
         {
             _connString = connString;
+            _isInit = _connString.Contains("SessionInit");
+            if (_isInit) _connString = _connString.Replace("SessionInit", "");
         }
 
         public IDbConnection CreateConnection()
         {
             var oracleConnection = new OracleConnection(_connString);
-            IDbConnection conn = new OracleConnectionDecorator(oracleConnection);
+            IDbConnection conn = new OracleConnectionDecorator(oracleConnection, _isInit);
             return conn;
         }
     }
@@ -45,11 +51,21 @@ namespace Gksyb.Common.Data
     /// </summary>
     internal class OracleConnectionDecorator : DbConnectionDecorator
     {
-        private readonly OracleConnection _oracleConnection;
+        private static readonly MemberGetter IsNewConGetter;
 
-        public OracleConnectionDecorator(OracleConnection oracleConnection) : base(oracleConnection)
+        static OracleConnectionDecorator()
+        {
+            IsNewConGetter = DelegateGenerator.CreateGetter(typeof(OracleConnection).GetField("m_bNewConCreated",
+               BindingFlags.NonPublic | BindingFlags.Instance));
+        }
+
+        private readonly OracleConnection _oracleConnection;
+        private readonly bool _isInit = false;
+
+        public OracleConnectionDecorator(OracleConnection oracleConnection, bool isInit) : base(oracleConnection)
         {
             _oracleConnection = oracleConnection;
+            _isInit = isInit;
         }
 
         public override IDbCommand CreateCommand()
@@ -69,6 +85,37 @@ namespace Gksyb.Common.Data
                 {
                     return ConnectionState.Closed;
                 }
+            }
+        }
+
+        public override async Task OpenAsync()
+        {
+            await base.OpenAsync();
+            SessionInit();
+        }
+
+        public override void Open()
+        {
+            base.Open();
+            SessionInit();
+        }
+
+        /// <summary>
+        /// 当前会话参数初始化
+        /// </summary>
+        private void SessionInit()
+        {
+            if (!_isInit) return;
+            try
+            {
+                if (_oracleConnection.State != ConnectionState.Open) return;
+                var isNew = IsNewConGetter(_oracleConnection).CastTo(true);
+                if (!isNew) return;
+                using var cmd = _oracleConnection.CreateCommand();
+                cmd.CommandText = "ALTER SESSION SET \"_serial_direct_read\"=never";
+            }
+            catch (Exception)
+            {
             }
         }
     }

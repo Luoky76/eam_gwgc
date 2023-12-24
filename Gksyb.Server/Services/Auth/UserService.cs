@@ -127,7 +127,7 @@ namespace Gksyb.Server.Services.Auth
         {
             sysdate = await _dbContext.GetSysdate();
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.REALNAME, c.TITLE, c.SEX, c.PHONE, c.FAX, c.EMAIL, c.NICKNAME, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
+                c => new { c.REALNAME, c.PHONE, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
                 c => a => a.USERID == c.USERID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
         }

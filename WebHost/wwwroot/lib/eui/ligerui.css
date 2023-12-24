@@ -2213,7 +2213,7 @@ table.l-filter-group-alt table.l-filter-group {
     padding: 5px 3px;
     border: none;
     text-align: left;
-    user-select:none;
+    user-select: none;
 }
 
 .l-box-select-visible .l-text-icon-transition {
@@ -2591,6 +2591,14 @@ table.l-filter-group-alt table.l-filter-group {
 
 .l-form .l-fieldcontainer-first {
     clear: left;
+}
+
+.l-form .l-fieldcontainer-hide {
+    display: none;
+}
+
+.l-form .l-fieldcontainer-show {
+    display: inherit;
 }
 
 .l-form .l-field-required {

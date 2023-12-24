@@ -1,5 +1,4 @@
-﻿#pragma warning disable CA1822 // 将成员标记为 static
-
+﻿#pragma warning disable CA1822
 using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
@@ -28,14 +27,14 @@ namespace Gksyb.Server.Services.Auth
             var userPort = await _dbContext.Query<CF_USER_PORT>()
                 .Where(c => c.CORPID == openid && c.APPNAME == _options.UserAppName && c.OPTYPE == _opertype).FirstOrDefaultAsync();
             userPort ??= new CF_USER_PORT() { LOGINNAME = _guest };
-            var loginName = userPort.LOGINNAME;
-            var user = await _dbContext.Query<CF_USER>()
-                .Where(c => c.LOGINNAME == loginName && c.APPNAME == _options.UserAppName).FirstOrDefaultAsync();
-            if (user == null) return AjaxResult.Error("-1");
-            request.Username = user.LOGINNAME;
-            request.Password = user.LOGINPASSWORD;
+            request.Username = userPort.LOGINNAME;
             request.MenuAppname = string.IsNullOrWhiteSpace(request.MenuAppname) ? _options.MobileAppName : request.MenuAppname;
             request.Source = string.IsNullOrWhiteSpace(request.Source) ? "微信登录" : request.Source;
+
+            var user = await _dbContext.Query<CF_USER>()
+                .Where(c => c.LOGINNAME == request.Username && c.APPNAME == _options.UserAppName).FirstOrDefaultAsync();
+            if (user == null) return AjaxResult.Error("-1");
+            request.Password = user.LOGINPASSWORD;
             var result = await _authService.LoginAsync(request, userSession =>
             {
                 userSession.Openid = openid;
@@ -130,3 +129,4 @@ namespace Gksyb.Server.Services.Auth
         }
     }
 }
+#pragma warning restore CA1822
