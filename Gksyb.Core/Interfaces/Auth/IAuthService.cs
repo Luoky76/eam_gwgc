@@ -16,7 +16,7 @@ namespace Gksyb.Core.Interfaces.Auth
         /// <summary>
         /// 设置用户的常用设备码（设备码变化，触发短信验证）
         /// </summary>
-        Task SetUserImeiAsync(long id, string imei);
+        Task SetUserImeiAsync(string account, string imei);
 
         /// <summary>
         /// 获取用户对象

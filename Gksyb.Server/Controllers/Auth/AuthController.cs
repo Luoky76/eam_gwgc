@@ -86,7 +86,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 return await service.LoginAsync(request.PasswordHandle(), handle: async result =>
                 {
-                    if (!result.IsChange || result.Phone == null || result.Phone.Count < 1) return null;
+                    if (!result.IsAuth || (result.LastIMEI == request.IMEI) || result.Phone == null || result.Phone.Count < 1) return null;
                     return await SmsHandleAsync(distributedCache, result);
                 });
             });
@@ -141,7 +141,7 @@ namespace Gksyb.Server.Controllers.Auth
             var times = await smsService.CheckCodeAsync(phone, code);
             MessageException.ThrowIf(times < 0, $"验证码已失效，请重新登录");
             if (times > 0) return AjaxResult.Success($"验证失败，剩余次数:{times}", "99");
-            await service.SetUserImeiAsync(model.UserId, imei);
+            await service.SetUserImeiAsync(model.Account, imei);
             await distributedCache.RemoveAsync(imei);
             return AjaxResult.Success(model.Response);
         }

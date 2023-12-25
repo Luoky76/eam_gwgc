@@ -96,9 +96,9 @@ namespace Gksyb.Model.Core
         public string QQ { get; set; }
 
         /// <summary>
-        /// IMEI
+        /// 昵称
         /// </summary>
-        [Description("IMEI")]
+        [Description("昵称")]
         [Column(DbType = DbType.AnsiString, Size = 100)]
         public string NICKNAME { get; set; }
 

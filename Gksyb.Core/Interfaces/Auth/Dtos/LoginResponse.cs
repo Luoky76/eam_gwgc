@@ -7,9 +7,14 @@ namespace Gksyb.Model.Dtos
     public class LoginResponse
     {
         /// <summary>
-        /// 用户ID
+        /// 账号
         /// </summary>
-        public long UserId { get; set; }
+        public string Account { get; set; }
+
+        /// <summary>
+        /// 上次设备唯一识别码
+        /// </summary>
+        public string LastIMEI { get; set; }
 
         /// <summary>
         /// 设备唯一识别码
@@ -17,9 +22,9 @@ namespace Gksyb.Model.Dtos
         public string IMEI { get; set; }
 
         /// <summary>
-        /// 用户登录环境发生变化
+        /// 是否启用二次验证
         /// </summary>
-        public bool IsChange { get; set; }
+        public bool IsAuth { get; set; }
 
         /// <summary>
         /// 手机号

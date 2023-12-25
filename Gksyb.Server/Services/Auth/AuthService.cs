@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace Gksyb.Server.Services.Auth
 {
-    public class AuthService : IAuthService, IBaseService
+    public partial class AuthService : IAuthService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IRoleModuleService _roleModuleService;
@@ -110,8 +110,6 @@ namespace Gksyb.Server.Services.Auth
             {
                 userSession.AllRoles.Add(_guestRole);
             }
-            var imei = string.IsNullOrWhiteSpace(request.IMEI) ? user.NICKNAME : request.IMEI;
-            var isChange = _options.SmsAuth && imei != user.NICKNAME;
             //登录成功，更新用户数据
             _dbContext.TrackEntity(user);
             user.LASTLOGINTIME = await _dbContext.GetSysdate();
@@ -124,13 +122,16 @@ namespace Gksyb.Server.Services.Auth
             AjaxResult result = null;
             if (handle != null)
             {
+                var lastImei = await _dbContext.Query<CF_USER_PORT>().Where(c => c.LOGINNAME == user.LOGINNAME && c.APPNAME == _options.UserAppName & c.OPTYPE == "IMEI")
+                    .Select(c => c.CORPID).FirstOrDefaultAsync();
                 var phone = (user.PHONE ?? "").Split(',').DistinctAndOrderBy()
                     .Where(c => c.IsMobileNumber()).Select(c => new KeyValueItem(c, $"{c[..3]}****{c[7..]}")).ToList();
                 result = await handle(new LoginResponse()
                 {
-                    UserId = userSession.UserID,
-                    IMEI = imei,
-                    IsChange = isChange,
+                    Account = userSession.UserName,
+                    IMEI = request.IMEI,
+                    LastIMEI = lastImei,
+                    IsAuth = _options.SmsAuth,
                     Phone = phone,
                     Response = userResponse,
                     Session = userSession
@@ -140,12 +141,19 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <inheritdoc/>
-        public async Task SetUserImeiAsync(long id, string imei)
+        public async Task SetUserImeiAsync(string account, string imei)
         {
-            await _dbContext.UpdateAsync<CF_USER>(a => a.USERID == id, a => new CF_USER()
+            var now = (await _dbContext.GetSysdate()).Value.ToString("yyyy-MM-dd HH:mm:ss");
+            var entity = new CF_USER_PORT()
             {
-                NICKNAME = imei
-            });
+                LOGINNAME = account,
+                APPNAME = _options.UserAppName,
+                OPTYPE = "IMEI"
+            };
+            _dbContext.TrackEntity(entity);
+            entity.CORPID = imei;
+            entity.REMARK = now;
+            await _dbContext.InsertOrUpdateAsync(entity, c => c.LOGINNAME == entity.LOGINNAME && c.APPNAME == entity.APPNAME & c.OPTYPE == entity.OPTYPE);
         }
 
         /// <inheritdoc/>
