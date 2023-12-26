@@ -43,7 +43,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 if (info.ToNodeIsEmpty) return;
                 var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                 info.ToNode = null;
-                toNodeService?.Execute(info);
+                await toNodeService?.Execute(info);
             });
         }
 
@@ -61,7 +61,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 {
                     var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                    toNodeService?.Execute(info);
+                    await toNodeService?.Execute(info);
                 }
                 if (info.NodeStatus == NodeStatus.Agree)
                 {
@@ -93,7 +93,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 {
                     var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                    toNodeService?.Execute(info);
+                    await toNodeService?.Execute(info);
                 }
             }
             await AutoAgreeAsync(info);
