@@ -263,6 +263,13 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string BD_NO { get; set; }
 
+        /// <summary>
+        /// OA流程编码
+        /// </summary>
+        [Description("OA流程编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string OA_CODE { get; set; }
+
     }
 
 }

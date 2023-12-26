@@ -646,7 +646,8 @@ namespace EAM.Repair.services
                 //成功后将记录状态改为审批中
                 _dbContext.Update<REP_PLAN_EXE>(a => a.EXE_ID == exeId, a => new REP_PLAN_EXE
                 {
-                    AUDITING = "2"
+                    AUDITING = "2",
+                    OA_CODE = job["code"].ToString()
                 });
             }
             else

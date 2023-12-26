@@ -934,7 +934,8 @@ namespace EAM.Material.Services
                 //成功后将记录状态改为审批中
                 _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
                 {
-                    AUDITING = "2"
+                    AUDITING = "2",
+                    OA_CODE = job["code"].ToString()
                 });
             }
             else

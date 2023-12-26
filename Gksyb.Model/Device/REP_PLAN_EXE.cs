@@ -507,5 +507,12 @@ namespace Gksyb.Model
         /// </summary>
         [Description("实际维修金额(元)")]
         public decimal? ACT_MONEY { get; set; }
+
+        /// <summary>
+        /// OA流程编码
+        /// </summary>
+        [Description("OA流程编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string OA_CODE { get; set; }
     }
 }
