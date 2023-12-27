@@ -890,26 +890,16 @@ namespace EAM.Material.Services
             }
             if (detQuery.Count() > 0)
             {
-                try
-                {
-                    fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
+                fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
 
-                    //创建EXCEL文件
-                    IExporter exporter = new ExcelExporter();
-                    var content = await exporter.ExportAsByteArray(detQuery);
-                    using var stream = new MemoryStream();
-                    stream.Write(content, 0, content.Length);
-                    FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
+                //创建EXCEL文件
+                IExporter exporter = new ExcelExporter();
+                var content = await exporter.ExportAsByteArray(detQuery);
+                using var stream = new MemoryStream();
+                stream.Write(content, 0, content.Length);
+                FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
 
-                    await ff.SaveAs("SpCollect", fileRealName);
-
-
-                }
-                catch (Exception ex)
-                {
-                    fileName = "";
-                    return AjaxResult.Error("推送OA 创建物资清单失败：" + ex.Message, "失败");
-                }
+                await ff.SaveAs("SpCollect", fileRealName);
             }
 
             string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$" 
