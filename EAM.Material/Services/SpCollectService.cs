@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
 
 namespace EAM.Material.Services
 {
@@ -877,9 +878,10 @@ namespace EAM.Material.Services
                     TYPE_NAME = c.TYPE_NAME,
                     MEMO = c.MEMO
                 }).ToListAsync();
+
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
-            string directoryPath = "UploadDirectory/SpCollect/";
+            string directoryPath =  "UploadDirectory/SpCollect/";
             string fileUrl = directoryPath + fileRealName;
             //创建文件夹
             if (!Directory.Exists(directoryPath))
@@ -890,13 +892,22 @@ namespace EAM.Material.Services
             {
                 try
                 {
+                    fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
+
                     //创建EXCEL文件
                     IExporter exporter = new ExcelExporter();
-                    var fileResult = await exporter.Export(fileUrl, detQuery);
-                    fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
+                    var content = await exporter.ExportAsByteArray(detQuery);
+                    using var stream = new MemoryStream();
+                    stream.Write(content, 0, content.Length);
+                    FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
+
+                    await ff.SaveAs("SpCollect", fileRealName);
+
+
                 }
                 catch (Exception ex)
                 {
+                    fileName = "";
                     return AjaxResult.Error("推送OA 创建物资清单失败：" + ex.Message, "失败");
                 }
             }
@@ -911,7 +922,7 @@ namespace EAM.Material.Services
                     primary_key = c.COLLECT_ID,
                     fun_name = "_spCollectService.ApprovalCompletedAsync",
                     bdmc = c.DEPT_NAME + "物资需求申请",
-                    bz = c.MEMO,
+                    sm = c.MEMO,
                     fjsc = attach
                 }).FirstAsync();
 

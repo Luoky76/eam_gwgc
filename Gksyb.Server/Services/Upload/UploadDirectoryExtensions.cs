@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class UploadDirectoryExtensions
     {
         private static string Passport;
+        private static List<string> Whitelist;
         private static string MapPath;
 
         /// <summary>
@@ -25,6 +27,7 @@ namespace Microsoft.AspNetCore.Builder
             MapPath = configuration.GetValue<string>(OptionName.UploadDirectoryMapPath) ?? Path.Combine(webhost.WebRootPath, path);
             if (!Directory.Exists(MapPath)) return app;
             Passport = configuration.GetValue($"{OptionName.SysContext}:Passport", "t6VJoFPZwq7jGpyHi20ucv3eaW4NAz9IdkmLEX5Csr!fQKOSbD#hTBxU8R@Yl1gn");
+            Whitelist = configuration.GetValue($"{OptionName.SysContext}:Whitelist", "").Split(",").DistinctAndOrderBy().ToList();
             var staticFileOptions = new StaticFileOptions()
             {
                 RequestPath = new PathString($"/{path}"),
@@ -34,6 +37,8 @@ namespace Microsoft.AspNetCore.Builder
             {
                 if (ctx.File.PhysicalPath.Contains($"{IFormFileExtensions.Public}\\", StringComparison.OrdinalIgnoreCase)) return;//带有Public的文件夹不验证权限
                 if (ctx.Context.Request.Headers["Passport"] == Passport) return;//有通行证的不验证权限
+                var ip = ctx.Context.Request.GetRealIP();
+                if (Whitelist.Any(pattern => Regex.IsMatch(ip, pattern))) return;
                 if (Valid(ctx.Context, ctx.File)) return;
                 ctx.Context.Response.ClearWithStatusCode();
             }, noCache: false);
