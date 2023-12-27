@@ -1,20 +1,10 @@
-﻿using Gksyb.Core.Interfaces.Common;
-using Gksyb.Model.Grid;
-using Gksyb.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Gksyb.Core.Grid;
-using EAM.Material.Interfaces;
-using NPOI.SS.Formula.PTG;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
-using DocumentFormat.OpenXml.Spreadsheet;
+using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
 using System.Linq.Expressions;
-using Microsoft.Extensions.Logging;
-using NPOI.SS.Formula.Functions;
-using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace EAM.Material.Services
 {

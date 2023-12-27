@@ -1,8 +1,4 @@
-﻿using Chloe;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
-using EAM.Material.DTO;
+﻿using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Application;
@@ -10,17 +6,10 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
-using NPOI.OpenXmlFormats.Vml.Spreadsheet;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Numerics;
-using System.Reflection.Emit;
-using WkHtmlToPdfDotNet;
 
 namespace EAM.Material.Services
 {
