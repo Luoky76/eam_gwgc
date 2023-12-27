@@ -283,6 +283,8 @@
 
 .l-box-dropdown {
     position: absolute;
+    top: 0px;
+    left: 0px;
     z-index: 9999;
     display: none;
     float: left;
@@ -1489,4 +1491,12 @@
 
 .l-upload-drag-over {
     border-color: #19be6b !important;
+}
+
+.l-text-invalid .l-upload-item.l-upload-select {
+    border-color: red !important;
+}
+
+.l-text-invalid .l-upload-text {
+    border-color: red !important;
 }

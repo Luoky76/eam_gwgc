@@ -29,8 +29,9 @@
 
     $.extend(window, {//全局方法扩展
         encrypt: window.encryptFront,
-        getQueryString: function () {
-            var result = location.search.match(new RegExp("[\?\&][^\?\&]+=[^\?\&]+", "g"));
+        getQueryString: function (url) {
+            url = url || location.search;
+            var result = url.match(new RegExp("[\?\&][^\?\&]+=[^\?\&]+", "g"));
             if (result == null) {
                 return "";
             }
@@ -39,8 +40,9 @@
             }
             return result;
         },
-        getQueryStringByName: function (name) {
-            var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+        getQueryStringByName: function (name, url) {
+            url = url || location.search;
+            var result = url.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
             if (result == null || result.length < 1) {
                 return "";
             }
@@ -52,18 +54,19 @@
             if (key === true) {
                 key = gksybConfigs.getUrl(opt.url || "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "");
             }
+            var data = (typeof key === "string" ? { key: key } : null);
             var tokenOptions = $.extend(true, {
-                noGlobal: true,
+                noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
-                data: { key: key },
+                data: data,
                 dataType: "text",
                 type: 'post',
                 success: function (result) {
                     eval(result);
                 },
                 error: function () { }
-            }, opt.tokenOptions);
+            }, opt.tokenOptions || (data === null ? key : null));
             $.ajax(tokenOptions);
         },
         setGksybToken: function (jqXHR) {//token验证
@@ -235,11 +238,14 @@
     Date.prototype.format || (Date.prototype.format = dateFormat);
 
     //去除数组空元素
-    var arrayRemoveNull = function () {
+    var arrayRemoveNull = function (fn) {
         if (Object.prototype.toString.apply(this) !== "[object Array]") return null;
+        fn = fn || function (item) {
+            return item !== 0 && !item;
+        };
         for (var i = this.length - 1; i >= 0; i--) {
             var item = this[i];
-            if (item !== 0 && !this[i]) this.splice(i, 1);
+            if (fn(item)) this.splice(i, 1);
         }
         return this;
     };
@@ -281,8 +287,8 @@
         return targetData;
 
         function getKey(key) {
-            if (typeof key === "string") key = key.replace(/[.]/g, '').toLowerCase();
-            return key;
+            if (key === 0) return "0";
+            return (key || "").toString();
         }
     };
     try {
@@ -444,11 +450,34 @@
             }
         });
     }
-    if (!window.session) initStorage("session", "GksybData");
-    if (!window.tempStorage) initStorage("tempStorage", "GksybTemp");
-    if (!window.ticket) initStorageString("ticket", "GksybTicket");
+    if (window.session === undefined) initStorage("session", "GksybData");
+    if (window.tempStorage === undefined) initStorage("tempStorage", "GksybTemp");
+    if (window.ticket === undefined) initStorageString("ticket", "GksybTicket");
+    if (window[imeiKey] === undefined) {
+        var imeiKey = "GksybIMEI";
+        Object.defineProperty(window, imeiKey, {
+            get: function () {
+                var val = window.localStorage.getItem(imeiKey);
+                if (val) return val;
+                val = new Date().getTime();
+                $.ajax({
+                    noGlobalBeforeSend: true,
+                    url: 'auth/imei',
+                    async: false,
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (result) {
+                        if (!result || result.IsError) return;
+                        val = result.Data;
+                    }
+                });
+                window.localStorage.setItem(imeiKey, val);
+                return val;
+            }
+        });
+    }
 
-    if (!window.topWindow) {
+    if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;

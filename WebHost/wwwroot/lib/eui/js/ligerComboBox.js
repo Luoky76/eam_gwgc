@@ -15,6 +15,7 @@
         data: null, //数据源
         valueField: 'ID',//实际值
         textField: 'TEXT',//显示值
+        filter: null,//过滤(支持字段或函数function(item){})
         cancelable: true,//取消选择
         autocomplete: true,  //自动完成
         autocompleteAllowEmpty: false, //是否允许空值搜索

@@ -1657,6 +1657,8 @@ table.l-filter-group-alt table.l-filter-group {
 
 .l-box-dropdown {
     position: absolute;
+    top: 0px;
+    left: 0px;
     z-index: 9999;
     display: none;
     float: left;
@@ -2211,6 +2213,7 @@ table.l-filter-group-alt table.l-filter-group {
     padding: 5px 3px;
     border: none;
     text-align: left;
+    user-select: none;
 }
 
 .l-box-select-visible .l-text-icon-transition {
@@ -2590,6 +2593,14 @@ table.l-filter-group-alt table.l-filter-group {
     clear: left;
 }
 
+.l-form .l-fieldcontainer-hide {
+    display: none;
+}
+
+.l-form .l-fieldcontainer-show {
+    display: inherit;
+}
+
 .l-form .l-field-required {
     color: blue;
 }
@@ -2788,18 +2799,29 @@ table.l-filter-group-alt table.l-filter-group {
     line-height: inherit;
     text-align: center;
     border-radius: 8px;
-    margin-left: 8px;
+    margin: 0 8px 3px 0;
 }
 
-.l-upload-list .l-upload-item:first-child {
-    margin-left: 0px;
+.l-upload-list .l-upload-item:last-child {
+    margin-right: 0px;
 }
 
 .l-upload-item.l-upload-select {
     background-color: rgba(0, 0, 0, 0.02);
     border: 1px dashed #dddee1;
     cursor: pointer;
+    display: inline-table;
 }
+
+    .l-upload-item.l-upload-select .l-upload-select-content {
+        display: table-cell;
+        vertical-align: middle;
+        word-wrap: break-word;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        font-size: 14px;
+        line-height: normal;
+    }
 
 .l-upload-item-display {
     border: 1px solid #dddee1;
@@ -2871,6 +2893,13 @@ table.l-filter-group-alt table.l-filter-group {
     border-color: #19be6b !important;
 }
 
+.l-text-invalid .l-upload-item.l-upload-select {
+    border-color: red !important;
+}
+
+.l-text-invalid .l-upload-text {
+    border-color: red !important;
+}
 /* -----------------------
    * 表格 *
 * ----------------------- */

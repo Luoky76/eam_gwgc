@@ -12,9 +12,7 @@
 	<ItemGroup>
 		<Content Remove="wwwroot\code-gen\**" />
 		<None Include="wwwroot\code-gen\**;wwwroot\UploadDirectory\**" />
-		<Content Remove="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
 		<None Include="wwwroot\lib\eui\css\**;wwwroot\lib\eui\js\**" />
-		<Content Remove="wwwroot\lib\jquery\jquery.all.js" />
 	</ItemGroup>
 	
 	<ItemGroup>
@@ -51,6 +49,120 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="wwwroot\lib\images\home\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="wwwroot\lib\dist\fonts\fontawesome-webfont.svg" />
+	  <None Include="wwwroot\lib\dist\fonts\fontawesome-webfont.woff2" />
+	  <None Include="wwwroot\lib\dist\js\app-frame.js" />
+	  <None Include="wwwroot\lib\dist\js\bootstrap-treeview.js" />
+	  <None Include="wwwroot\lib\dist\js\bootstrap.js" />
+	  <None Include="wwwroot\lib\dist\js\shim.js" />
+	  <None Include="wwwroot\lib\echarts\echarts.expand.js" />
+	  <None Include="wwwroot\lib\echarts\echarts.js" />
+	  <None Include="wwwroot\lib\eflow\eflow.js" />
+	  <None Include="wwwroot\lib\eui\ligerui.js" />
+	  <None Include="wwwroot\lib\flow-boot.js" />
+	  <None Include="wwwroot\lib\jquery\jquery.all.js" />
+	  <None Include="wwwroot\lib\jquery\jquery.js" />
+	  <None Include="wwwroot\lib\js-export\Blob.js" />
+	  <None Include="wwwroot\lib\js-export\FileSaver.js" />
+	  <None Include="wwwroot\lib\js-export\ligerExcel.js" />
+	  <None Include="wwwroot\lib\js\common.js" />
+	  <None Include="wwwroot\lib\js\LG.js" />
+	  <None Include="wwwroot\lib\js\ui.expand.js" />
+	  <None Include="wwwroot\lib\lc.js" />
+	  <None Include="wwwroot\lib\LGboot.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\attachment\attachment.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\background\background.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\charts\chart.config.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\charts\charts.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\emotion\emotion.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\fonts\iconfont.svg" />
+	  <None Include="wwwroot\lib\neditor\dialogs\fonts\images\addfile.svg" />
+	  <None Include="wwwroot\lib\neditor\dialogs\fonts\images\selected.svg" />
+	  <None Include="wwwroot\lib\neditor\dialogs\help\help.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\image\image.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\internal.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\music\balls.svg" />
+	  <None Include="wwwroot\lib\neditor\dialogs\music\music.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\scrawl\scrawl.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\searchreplace\searchreplace.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\spechars\spechars.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\table\edittable.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\template\config.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\template\template.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\video\video.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\wordimage\fClipboard_ueditor.swf" />
+	  <None Include="wwwroot\lib\neditor\dialogs\wordimage\imageUploader.swf" />
+	  <None Include="wwwroot\lib\neditor\dialogs\wordimage\tangram.js" />
+	  <None Include="wwwroot\lib\neditor\dialogs\wordimage\wordimage.js" />
+	  <None Include="wwwroot\lib\neditor\i18n\en\en.js" />
+	  <None Include="wwwroot\lib\neditor\i18n\zh-cn\zh-cn.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.config.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.min.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.parse.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.parse.min.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.path.js" />
+	  <None Include="wwwroot\lib\neditor\neditor.service.js" />
+	  <None Include="wwwroot\lib\neditor\themes\notadd\fonts\iconfont.js" />
+	  <None Include="wwwroot\lib\neditor\themes\notadd\fonts\iconfont.svg" />
+	  <None Include="wwwroot\lib\neditor\third-party\browser-md5-file.min.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\codemirror\codemirror.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\adapters\mootools-adapter.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\adapters\mootools-adapter.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\adapters\prototype-adapter.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\adapters\prototype-adapter.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\adapters\standalone-framework.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\adapters\standalone-framework.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\highcharts-more.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\highcharts-more.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\highcharts.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\highcharts.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\annotations.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\annotations.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\canvas-tools.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\canvas-tools.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\data.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\data.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\drilldown.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\drilldown.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\exporting.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\exporting.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\funnel.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\funnel.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\heatmap.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\heatmap.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\map.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\map.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\no-data-to-display.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\modules\no-data-to-display.src.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\themes\dark-blue.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\themes\dark-green.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\themes\gray.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\themes\grid.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\highcharts\themes\skies.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\jquery.all.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\jquery.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\snapscreen\UEditorSnapscreen.exe" />
+	  <None Include="wwwroot\lib\neditor\third-party\SyntaxHighlighter\shCore.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\video-js\font\vjs.svg" />
+	  <None Include="wwwroot\lib\neditor\third-party\video-js\video-js.swf" />
+	  <None Include="wwwroot\lib\neditor\third-party\video-js\video.dev.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\video-js\video.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\webuploader\Uploader.swf" />
+	  <None Include="wwwroot\lib\neditor\third-party\webuploader\webuploader.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\webuploader\webuploader.min.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\zeroclipboard\ZeroClipboard.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\zeroclipboard\ZeroClipboard.min.js" />
+	  <None Include="wwwroot\lib\neditor\third-party\zeroclipboard\ZeroClipboard.swf" />
+	  <None Include="wwwroot\lib\third-party\broadcast\broadcast.js" />
+	  <None Include="wwwroot\lib\third-party\print\print.all.js" />
+	  <None Include="wwwroot\lib\third-party\print\print.js" />
+	  <None Include="wwwroot\lib\third-party\viewerjs\viewer.js" />
+	  <None Include="wwwroot\lib\Ueditorboot.js" />
+	  <None Include="wwwroot\lib\webuploader\Uploader.swf" />
+	  <None Include="wwwroot\lib\webuploader\webuploader.js" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
