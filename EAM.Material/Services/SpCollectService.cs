@@ -869,20 +869,20 @@ namespace EAM.Material.Services
             var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
                 .Select(c => new SP_COLLECT_REQUEST_DTO
                 {
-                    SP_CODE = c.SP_CODE,
-                    SP_NAME = c.SP_NAME,
-                    SP_TYPE = c.SP_TYPE,
-                    BRAND = c.BRAND,
-                    UNIT = c.UNIT,
-                    REQUEST_NUM = c.REQUEST_NUM,
-                    TYPE_NAME = c.TYPE_NAME,
-                    MEMO = c.MEMO
+                    物资编码 = c.SP_CODE,
+                    物资名称 = c.SP_NAME,
+                    型号规格 = c.SP_TYPE,
+                    品牌 = c.BRAND,
+                    计量单位 = c.UNIT,
+                    申请数量 = c.REQUEST_NUM,
+                    类别 = c.TYPE_NAME,
+                    备注 = c.MEMO
                 }).ToListAsync();
 
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
             string directoryPath =  "UploadDirectory/SpCollect/";
-            string fileUrl = directoryPath + fileRealName;
+            string fileUrl = "";
             //创建文件夹
             if (!Directory.Exists(directoryPath))
             {
@@ -899,7 +899,7 @@ namespace EAM.Material.Services
                 stream.Write(content, 0, content.Length);
                 FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
 
-                await ff.SaveAs("SpCollect", fileRealName);
+                fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
             string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$" 
@@ -960,49 +960,49 @@ namespace EAM.Material.Services
         /// 备件品种编码
         /// </summary>
         [Description("备件品种编码")]
-        public string SP_CODE { get; set; }
+        public string 物资编码 { get; set; }
 
         /// <summary>
         /// 备件品种名称
         /// </summary>
         [Description("备件品种名称")]
-        public string SP_NAME { get; set; }
+        public string 物资名称 { get; set; }
 
         /// <summary>
         /// 备件型号
         /// </summary>
         [Description("备件型号")]
-        public string SP_TYPE { get; set; }
+        public string 型号规格 { get; set; }
 
         /// <summary>
         /// 品牌
         /// </summary>
         [Description("品牌")]
-        public string BRAND { get; set; }
+        public string 品牌 { get; set; }
 
         /// <summary>
         /// 计量单位
         /// </summary>
         [Description("计量单位")]
-        public string UNIT { get; set; }
+        public string 计量单位 { get; set; }
 
         /// <summary>
         /// 申请数量
         /// </summary>
         [Description("申请数量")]
-        public decimal? REQUEST_NUM { get; set; }
+        public decimal? 申请数量 { get; set; }
 
         /// <summary>
         /// 备件类别名称
         /// </summary>
         [Description("备件类别名称")]
-        public string TYPE_NAME { get; set; }
+        public string 类别 { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
         [Description("备注")]
-        public string MEMO { get; set; }
+        public string 备注 { get; set; }
     }
 
     #endregion
