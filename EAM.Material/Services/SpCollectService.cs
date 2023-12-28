@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace EAM.Material.Services
 {
@@ -869,14 +870,14 @@ namespace EAM.Material.Services
             var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
                 .Select(c => new SP_COLLECT_REQUEST_DTO
                 {
-                    物资编码 = c.SP_CODE,
-                    物资名称 = c.SP_NAME,
-                    型号规格 = c.SP_TYPE,
-                    品牌 = c.BRAND,
-                    计量单位 = c.UNIT,
-                    申请数量 = c.REQUEST_NUM,
-                    类别 = c.TYPE_NAME,
-                    备注 = c.MEMO
+                    SP_CODE = c.SP_CODE,
+                    SP_NAME = c.SP_NAME,
+                    SP_TYPE = c.SP_TYPE,
+                    BRAND = c.BRAND,
+                    UNIT = c.UNIT,
+                    REQUEST_NUM = c.REQUEST_NUM,
+                    TYPE_NAME = c.TYPE_NAME,
+                    MEMO = c.MEMO
                 }).ToListAsync();
 
             string fileName = "";
@@ -959,50 +960,58 @@ namespace EAM.Material.Services
         /// <summary>
         /// 备件品种编码
         /// </summary>
+        [Display(Name = "物资编码")]
         [Description("备件品种编码")]
-        public string 物资编码 { get; set; }
+        public string SP_CODE { get; set; }
 
         /// <summary>
         /// 备件品种名称
         /// </summary>
+        [Display(Name = "物资名称")]
         [Description("备件品种名称")]
-        public string 物资名称 { get; set; }
+        public string SP_NAME { get; set; }
 
         /// <summary>
         /// 备件型号
         /// </summary>
+        [Display(Name = "规格型号")]
         [Description("备件型号")]
-        public string 型号规格 { get; set; }
+        public string SP_TYPE { get; set; }
 
         /// <summary>
         /// 品牌
         /// </summary>
+        [Display(Name = "品牌")]
         [Description("品牌")]
-        public string 品牌 { get; set; }
+        public string BRAND { get; set; }
 
         /// <summary>
         /// 计量单位
         /// </summary>
+        [Display(Name = "计量单位")]
         [Description("计量单位")]
-        public string 计量单位 { get; set; }
+        public string UNIT { get; set; }
 
         /// <summary>
         /// 申请数量
         /// </summary>
+        [Display(Name = "申请数量")]
         [Description("申请数量")]
-        public decimal? 申请数量 { get; set; }
+        public decimal? REQUEST_NUM { get; set; }
 
         /// <summary>
         /// 备件类别名称
         /// </summary>
+        [Display(Name = "物资类别")]
         [Description("备件类别名称")]
-        public string 类别 { get; set; }
+        public string TYPE_NAME { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
+        [Display(Name = "备注")]
         [Description("备注")]
-        public string 备注 { get; set; }
+        public string MEMO { get; set; }
     }
 
     #endregion
