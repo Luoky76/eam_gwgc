@@ -986,6 +986,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 申请日期
         /// </summary>
+        [ExporterHeader(DisplayName = "申请日期", Format = "yyyy-MM-dd hh:mm:ss")]
         [Display(Name = "申请日期")]
         [Description("申请日期")]
         public DateTime? REQUEST_DATE { get; set; }
