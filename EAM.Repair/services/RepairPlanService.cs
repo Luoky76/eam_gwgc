@@ -12,6 +12,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 
@@ -41,11 +42,11 @@ namespace EAM.Repair.services
         public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
         {
             var result = await _comboxDataService.Get(new Dictionary<string, object>(){
-                    {"ShipList",null },
-                    {"MaintDept", null},
-                    {"RepairType",null },
-                    {"RepitemType",null },
-                    {"RepairDealType",null },
+                    { "ShipList", null },
+                    { "MaintDept", null},
+                    { "RepairType", null },
+                    { "RepitemType", null },
+                    { "RepairDealType", null },
                     { "Auditing", null },
                     { "User", null },
                     { "PlanState", null },
@@ -588,7 +589,7 @@ namespace EAM.Repair.services
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
             string directoryPath = "UploadDirectory/RepairPlan/";
-            string fileUrl = directoryPath + fileRealName;
+            string fileUrl = "";
             //创建文件夹
             if (!Directory.Exists(directoryPath))
             {
@@ -596,16 +597,16 @@ namespace EAM.Repair.services
             }
             if (detQuery.Count() > 0)
             {
-                try
-                {
-                    IExporter exporter = new ExcelExporter();
-                    var fileResult = await exporter.Export(fileUrl, detQuery);
-                    fileName = "维修计划(" + query.PLAN_CODE + ").xlsx";
-                }
-                catch (Exception ex)
-                {
-                    return AjaxResult.Error("推送OA 创建维修项目明细失败：" + ex.Message, "失败");
-                }
+                fileName = "维修计划(" + query.PLAN_CODE + ").xlsx";
+
+                //创建EXCEL文件
+                IExporter exporter = new ExcelExporter();
+                var content = await exporter.ExportAsByteArray(detQuery);
+                using var stream = new MemoryStream();
+                stream.Write(content, 0, content.Length);
+                FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
+
+                fileUrl = await ff.SaveAs("RepairPlan", fileRealName);
             }
 
             string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$"
@@ -618,7 +619,7 @@ namespace EAM.Repair.services
                     primary_key = c.EXE_ID,
                     fun_name = "_repairPlanService.ApprovalCompletedAsync",
                     bdmc = c.DEPT_NAME + "维修计划申请",
-                    bz = c.PLAN_MEMO,
+                    sm = c.PLAN_MEMO,
                     fjsc = attach
                 }).FirstAsync();
 
