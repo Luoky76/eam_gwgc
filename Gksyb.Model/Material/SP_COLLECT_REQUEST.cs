@@ -7,6 +7,7 @@
 using Chloe.Annotations;
 using System;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 
 namespace Gksyb.Model
@@ -25,6 +26,13 @@ namespace Gksyb.Model
         [Description("需求计划单号")]
         [Column(DbType = DbType.AnsiString)]
         public string REQUEST_CODE { get; set; }
+
+        /// <summary>
+        /// 申请日期
+        /// </summary>
+        [Display(Name = "申请日期")]
+        [Description("申请日期")]
+        public DateTime? REQUEST_DATE { get; set; }
 
         /// <summary>
         /// 申请人

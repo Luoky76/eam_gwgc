@@ -169,6 +169,7 @@ namespace EAM.Material.Services
                       c => new
                       {
                           c.REQUEST_CODE,
+                          c.REQUEST_DATE,
                           c.REQUEST_USER,
                           c.REQUEST_USERID,
                           c.SP_CODE,
@@ -704,7 +705,8 @@ namespace EAM.Material.Services
                     a.TYPE_NAME,
                     a.COUNT,
                     b.APPLY_USER,
-                    b.DEPT_NAME
+                    b.DEPT_NAME,
+                    b.APPLY_DATE
                 })
                 .GetGridData(request);
         }
@@ -870,6 +872,10 @@ namespace EAM.Material.Services
             var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
                 .Select(c => new SP_COLLECT_REQUEST_DTO
                 {
+                    REQUEST_CODE = c.REQUEST_CODE,
+                    REQUEST_DATE = c.REQUEST_DATE,
+                    DEPT_NAME = c.DEPT_NAME,
+                    REQUEST_USER = c.REQUEST_USER,
                     SP_CODE = c.SP_CODE,
                     SP_NAME = c.SP_NAME,
                     SP_TYPE = c.SP_TYPE,
@@ -956,6 +962,33 @@ namespace EAM.Material.Services
 
     public class SP_COLLECT_REQUEST_DTO
     {
+        /// <summary>
+        /// 需求计划单号
+        /// </summary>
+        [Display(Name = "申请单号")]
+        [Description("需求计划单号")]
+        public string REQUEST_CODE { get; set; }
+
+        /// <summary>
+        /// 申请部门
+        /// </summary>
+        [Display(Name = "申请部门")]
+        [Description("申请部门")]
+        public string DEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 申请人
+        /// </summary>
+        [Display(Name = "申请人")]
+        [Description("申请人")]
+        public string REQUEST_USER { get; set; }
+
+        /// <summary>
+        /// 申请日期
+        /// </summary>
+        [Display(Name = "申请日期")]
+        [Description("申请日期")]
+        public DateTime? REQUEST_DATE { get; set; }
 
         /// <summary>
         /// 备件品种编码
