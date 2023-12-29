@@ -1001,6 +1001,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 备件品种名称
         /// </summary>
+        [ExporterHeader(DisplayName = "物资名称", Width = 30)]
         [Display(Name = "物资名称")]
         [Description("备件品种名称")]
         public string SP_NAME { get; set; }
@@ -1036,6 +1037,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 备件类别名称
         /// </summary>
+        [ExporterHeader(DisplayName = "物资类别", Width = 40)]
         [Display(Name = "物资类别")]
         [Description("备件类别名称")]
         public string TYPE_NAME { get; set; }
