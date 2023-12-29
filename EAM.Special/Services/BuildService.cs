@@ -323,7 +323,7 @@ namespace EAM.Special.Services
                     a.MOORING_RUNTIME,
                     a.MOORING_CUMTIME,
                 }).GetGridData(request);
-            var dataList = JsonConvert.DeserializeObject<List<dynamic>>(filterData.Rows.ToJson());
+            var dataList = JsonConvert.DeserializeObject<List<BUILDCOUNT>>(filterData.Rows.ToJson());
 
             var returnList = dataList.Cast<BUILDCOUNT>().GroupBy(a => new
             {
