@@ -275,6 +275,7 @@ namespace EAM.Special.Services
         public class BUILDCOUNT : BUILD_COUNT
         {
             public string START_DATE { get; set; }
+            public string DEPT_ID { get; set; }
             public int YEAR { get; set; }
             public int MONTH { get; set; }
         }
@@ -324,7 +325,7 @@ namespace EAM.Special.Services
                 }).GetGridData(request);
             var dataList = JsonConvert.DeserializeObject<List<dynamic>>(filterData.Rows.ToJson());
 
-            var returnList = dataList.GroupBy(a => new
+            var returnList = dataList.Cast<BUILDCOUNT>().GroupBy(a => new
             {
                 a.MONTH,
                 a.YEAR,
@@ -338,23 +339,23 @@ namespace EAM.Special.Services
                 START_DATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
                 DEVICE_NAME = c.Key.DEVICE_NAME,
                 SHIPTIMES = c.Sum(item => item.SHIPTIMES ?? 0),
-                SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0),
-                CONPLAN = c.Sum(item => item.CONPLAN ?? 0),
-                DREDGETIME = c.Sum(item => item.DREDGETIME ?? 0),
-                SAILTIME = c.Sum(item => item.SAILTIME ?? 0),
-                REPAIRTIME = c.Sum(item => item.REPAIRTIME ?? 0),
-                WEATHEREFFECT = c.Sum(item => item.WEATHEREFFECT ?? 0),
-                OTHERSTOP = c.Sum(item => item.OTHERSTOP ?? 0),
-                DAILYCONSUMPTION = c.Sum(item => item.DAILYCONSUMPTION ?? 0),
-                SUPPLEMENT = c.Sum(item => item.SUPPLEMENT ?? 0),
-                STOCK = c.Sum(item => item.STOCK ?? 0),
-                MASTER = c.Sum(item => item.MASTER ?? 0),
-                AUXILIARY = c.Sum(item => item.AUXILIARY ?? 0),
-                PUMP = c.Sum(item => item.PUMP ?? 0),
-                SUBTOTAL = c.Sum(item => item.SUBTOTAL ?? 0),
-                SUPPLEMENT2 = c.Sum(item => item.SUPPLEMENT2 ?? 0),
-                STOCK2 = c.Sum(item => item.STOCK2 ?? 0),
-                LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0),
+                SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0m),
+                CONPLAN = c.Sum(item => item.CONPLAN ?? 0m),
+                DREDGETIME = c.Sum(item => item.DREDGETIME ?? 0m),
+                SAILTIME = c.Sum(item => item.SAILTIME ?? 0m),
+                REPAIRTIME = c.Sum(item => item.REPAIRTIME ?? 0m),
+                WEATHEREFFECT = c.Sum(item => item.WEATHEREFFECT ?? 0m),
+                OTHERSTOP = c.Sum(item => item.OTHERSTOP ?? 0m),
+                DAILYCONSUMPTION = c.Sum(item => item.DAILYCONSUMPTION ?? 0m),
+                SUPPLEMENT = c.Sum(item => item.SUPPLEMENT ?? 0m),
+                STOCK = c.Sum(item => item.STOCK ?? 0m),
+                MASTER = c.Sum(item => item.MASTER ?? 0m),
+                AUXILIARY = c.Sum(item => item.AUXILIARY ?? 0m),
+                PUMP = c.Sum(item => item.PUMP ?? 0m),
+                SUBTOTAL = c.Sum(item => item.SUBTOTAL ?? 0m),
+                SUPPLEMENT2 = c.Sum(item => item.SUPPLEMENT2 ?? 0m),
+                STOCK2 = c.Sum(item => item.STOCK2 ?? 0m),
+                LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0m),
             }).ToList();
             GridData gridData = new GridData()
             {
