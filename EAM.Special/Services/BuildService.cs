@@ -162,7 +162,8 @@ namespace EAM.Special.Services
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
 
             //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
-            var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
+            var last_data = await _dbContext.Query<BUILD_COUNT>
+                (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
                 .Select(a => new
                 {
                     a.STARTDATE,
@@ -172,8 +173,8 @@ namespace EAM.Special.Services
                 .OrderByDesc(b => b.STARTDATE)
                 .FirstAsync();
 
-            entity.STOCK = (last_data.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
-            entity.STOCK2 = (last_data.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
+            entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
+            entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
 
 
             var isex = await _dbContext.Query<BUILD_COUNT>()
@@ -195,7 +196,8 @@ namespace EAM.Special.Services
         private async Task BeforeUpdate(BUILD_COUNT entity)
         {
             //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
-            var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
+            var last_data = await _dbContext.Query<BUILD_COUNT>
+                (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
                 .Select(a => new
                 {
                     a.STARTDATE,
@@ -205,8 +207,8 @@ namespace EAM.Special.Services
                 .OrderByDesc(b => b.STARTDATE)
                 .FirstAsync();
 
-            entity.STOCK = (last_data.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
-            entity.STOCK2 = (last_data.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
+            entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
+            entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
             await Task.CompletedTask;
         }
 
