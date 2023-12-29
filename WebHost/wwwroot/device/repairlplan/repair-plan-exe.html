@@ -1,0 +1,454 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>维修计划实施</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            plan_state: [],
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            //{ display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "故障申报单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "EXE_ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "AUDITING_B", name: "AUDITING_B", minWidth: 100, type: "text", hide: true },
+                            {
+                                display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.auditing
+                                }
+                            },
+                            { display: "故障申报单号", name: "EXE_CODE", minWidth: 100, type: "text", },
+                            {
+                                display: "维修状态", name: "PLAN_STATE", minWidth: 100, type: "select", format: { data: me.plan_state }
+                            },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", },
+                            { display: "维保部门", name: "WSEC_DEPT", minWidth: 100, type: "text", },
+                            { display: "维修类型", name: "MAINT_TYPE", minWidth: 100, type: "text", },
+                            { display: "维修处理方式", name: "DEAL_TYPE", minWidth: 100, type: "select", options: { data: me.repairhandtype } },
+                            { display: "实际开工时间", name: "ACT_START_DATE", minWidth: 100, type: "text", },
+                            { display: "实际完工时间", name: "ACT_END_DATE", minWidth: 100, type: "text", },
+                            //{ display: "维修实施单号", name: "EXE_CODE", minWidth: 100, type: "text", },
+                            
+                            //{ display: "船舶编号", name: "DEVICE_NO", minWidth: 100, type: "text", },
+                            //{ display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", },
+                            //{ display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
+                            //{ display: "负责人", name: "CHARGE_USER", minWidth: 100, type: "text", },
+                            { display: "备注", name: "PLAN_MEMO", minWidth: 100, type: "text", }
+                        ],
+                    }
+                };
+            },
+            grid: null,
+            repairhandtype:[],
+            auditingStatus: [
+                { ID: "0", TEXT: "未提交", VALUE: "0" },
+                { ID: "1", TEXT: "已提交", VALUE: "1" }
+            ],
+            searchForm: null,
+            buttons: null,
+            UserInfo:null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Repair/RepairPlan/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.maintdept = data.MaintDept;
+                        me.repairtype = data.RepairType;
+                        me.repairhandtype = data.RepairDealType;
+                        me.plan_state = data.PlanState;
+                        me.auditing = data.Auditing;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                var columns = me.config.grid.columns;
+                for (var i = columns.length - 1; i >= 0; i--) {
+                    if (!columns[i]) columns.splice(i, 1);
+                }
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: { group: 'list' },
+                    url: 'Repair/RepairPlan/ExeList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'AUDITING_B', op: 'equal', value: "1" }]
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '100%',
+                    height: '100%',
+                    dateFormat: 'yyyy-MM-dd HH:mm',
+                    checkbox: true,
+                    usePager: true,
+                    rownumbers: false,
+                    enabledEdit: false,
+                    clickToEdit: false,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows;
+                            for (var i = 0, len = (rows || []).length; i < len; i++) {
+                                rows[i].OLDSID = rows[i].SID;
+                                rows[i].OLDMODIFYDATE = rows[i].MODIFYDATE;
+                            }
+                        }
+                    },
+                    onDblClickRow: function (rowdata) {
+                        me.view(rowdata);
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "detail":
+                            me.detail();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "sumbit":
+                            me.sumbit();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "revoke":
+                            me.revoke();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: rootPath + "System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: rootPath + "System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            revoke: function () { //撤销提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length>0) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "0") {
+                            LG.showError("该数据未提交，无法撤销！");
+                            return;
+                        }
+                        upd.AUDITING = null;
+                        upd.AUDITING_D = null;
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/SaveExe',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('撤销提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1200,
+                    height: 640,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    isHidden: false,
+                    showMax: true,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    rownumbers: true,
+                    onClosed: null,
+                    data: { "sid": "" }
+                });
+            },
+            sumbit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length > 0) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.ACT_START_DATE == null) {
+                            LG.showError("请选择实际开工时间！");
+                            return;
+                        }
+                        if (ori.ACT_END_DATE == null) {
+                            LG.showError("请选择实际完工时间！");
+                            return;
+                        }
+                        if (ori.AUDITING == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Repair/RepairPlan/SaveExe',
+                        loading: '正在提交中...',
+                        data: { request: changeRow, requestdet: null },
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            view: function (rowdata) { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+
+                if (rowdata) {
+                    selected = rowdata;
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: 1200,
+                        height: 640,
+                        allowClose: true,
+                        title: '查看',
+                        url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected.EXE_ID, "isView": true }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            modify: function (rowdata) { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected[0].AUDITING == "1") {
+                    LG.tip('已提交，无法修改!');
+                } else {
+                    if (rowdata) {
+                        selected = rowdata;
+                    }
+                    if (selected) {
+                        var sid = selected[0].EXE_ID;
+                        $.ligerDialog.open({
+                            width: 1200,
+                            height: 640,
+                            allowClose: true,
+                            title: '[修改]',
+                            url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                            isHidden: false,
+                            showMax: false,
+                            showToggle: false,
+                            showMin: false,
+                            isResize: true,
+                            slide: false,
+                            onClosed: me.reload.bind(me),
+                            data: { "sid": sid }
+                        });
+                    }
+                    else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                var columns = me.config.search.fields;
+                for (var i = columns.length - 1; i >= 0; i--) {
+                    if (!columns[i]) columns.splice(i, 1);
+                }
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                            //var data = me.searchForm.getData();
+                            //me.setGrid(data._search_EVENTTIMEB.format("yyyy-MM"), data._search_DEPARTCODE, data._search_EMPLOYEENAME, data._search_DEPT);
+                        }
+                    },
+
+                    ],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.buttons[0].click(); //查询
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setGrid();
+                me.setForm();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>

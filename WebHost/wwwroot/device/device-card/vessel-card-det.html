@@ -1,0 +1,336 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>明细</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform" style="margin-bottom: 50px">
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialogData: {},
+            menuNo: getQueryStringByName("MenuNo"),
+            isView: false,
+            sid: getQueryStringByName("sid"),
+            dataCorp: [],
+            rootPath: "../",
+            dialog: null,
+            dialogData: null,
+            callback: null,
+            orginData: {},
+            devicetype: [],
+            assetStatus: [
+                { ID: "1", TEXT: "在用", VALUE: "1" }
+            ],
+            yesno: [
+                { "ID": "0", "TEXT": "否" }, { "ID": "1", "TEXT": "是" }
+            ],
+            purpose: [
+                { "ID": "0", "TEXT": "非生产" }, { "ID": "1", "TEXT": "生产" }
+            ],
+            dataCorp: [],
+            auditing: [],
+            user: [],
+            stopSource: [],
+            malType: [],
+            deviceInfo: [],
+            start: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            { display: "DEVICE_ID", name: "DEVICE_ID", type: "hidden" },
+                            { display: "记录状态", name: "AUDITING", type: "hidden" },
+                            { display: "船舶编号", name: "DEVICE_NO", newline: false, width: 300, type: "text", options: {}, validate: { required: true }, group: "基础信息" },
+                            { display: "立卡日期", name: "CARD_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, width: 300, type: "text", options: {} },
+                            { display: "船舶机型", name: "BOM_NAME", newline: false, width: 300, type: "text", options: {} },
+                            {
+                                display: "船舶类别", name: "TYPE_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.devicetype, disabled: true }, validate: { required: true }, options: {
+                                    onChangeValue: function (input, value, g) {
+                                        if (value) {
+                                            for (var i = 0; i < me.devicetype.length; i++) {
+                                                if (value == me.devicetype[i].ID) {
+                                                    $("#TYPE_NAME").val(me.devicetype[i].TEXT);
+                                                }
+                                            }
+                                        } else {
+                                            $("#TYPE_NAME").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "船舶机型", name: "TYPE_NAME", newline: false, width: 300, type: "hidden" },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, width: 300, type: "text", options: {} },
+                            {
+                                display: "使用部门", name: "DEPT_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                    onChangeValue: function (input, value, g) {
+
+                                        if (value) {
+                                            for (var i = 0; i < me.dataCorp.length; i++) {
+                                                if (value == me.dataCorp[i].ID) {
+                                                    $("#DEPT_NAME").val(me.dataCorp[i].VALUE);
+                                                }
+                                            }
+                                        } else {
+                                            $("#DEPT_NAME").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                display: "维保部门", name: "WDEPT_ID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                    onChangeValue: function (input, value, g) {
+
+                                        if (value) {
+                                            for (var i = 0; i < me.dataCorp.length; i++) {
+                                                if (value == me.dataCorp[i].ID) {
+                                                    $("#WDEPT_NAME").val(me.dataCorp[i].VALUE);
+                                                }
+                                            }
+                                        } else {
+                                            $("#WDEPT_NAME").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, width: 300, type: "hidden" },
+                            { display: "维保部门", name: "WDEPT_NAME", newline: false, width: 300, type: "hidden" },
+                            {
+                                display: "负责人", name: "CARD_USERID", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.user }, options: {
+                                    onChangeValue: function (input, value, g) {
+
+                                        if (value) {
+                                            for (var i = 0; i < me.user.length; i++) {
+                                                if (value == me.user[i].ID) {
+                                                    $("#CARD_USER").val(me.user[i].VALUE);
+                                                }
+                                            }
+                                        } else {
+                                            $("#CARD_USER").val('');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "负责人", name: "CARD_USER", newline: false, width: 300, type: "hidden" },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "启用日期", name: "REV_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "当前管理状态", name: "STATUS", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.assetStatus }, options: {} },
+                            { display: "状态变动日期", name: "STATUS_DATE", newline: false, width: 300, type: "date", options: { disabled: true } },
+                            { display: "供应商", name: "PROVIDER_NAME", newline: false, width: 300, type: "text", options: {}, group: "船舶信息" },
+                            { display: "制造厂", name: "FACTORY", newline: false, width: 300, type: "text", options: {} },
+                            { display: "出厂编号", name: "OUT_CODE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "出厂日期", name: "OUT_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "生产用途", name: "PURPOSE", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.purpose }, options: {} },
+                            { display: "图号", name: "GRAPH_NO", newline: false, width: 300, type: "text", options: {} },
+                            { display: "船舶类型", name: "SHIP_TYPE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "船舶识别号", name: "SHIP_ID", newline: false, width: 300, type: "text", options: {} },
+                            { display: "型长(米)", name: "SHIP_LENGTH", newline: false, width: 300, type: "float", options: {} },
+                            { display: "型宽(米)", name: "SHIP_WIDTH", newline: false, width: 300, type: "float", options: {} },
+                            { display: "型深(米)", name: "SHIP_DEPTH", newline: false, width: 300, type: "float", options: {} },
+                            { display: "吃水(米)", name: "SHIP_DRAFT", newline: false, width: 300, type: "float", options: {} },
+                            { display: "主机功率", name: "MAIN_POWER", newline: false, width: 300, type: "text", options: {} },
+                            { display: "副机功率", name: "SECOND_POWER", newline: false, width: 300, type: "text", options: {} },
+                            { display: "航速", name: "SPEED", newline: false, width: 300, type: "text", options: {} },
+                            { display: "拖力", name: "DRAG_FORCE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "总吨", name: "TOTAL_TON", newline: false, width: 300, type: "text", options: {} },
+                            { display: "净吨", name: "PURE_TON", newline: false, width: 300, type: "text", options: {} },
+                            { display: "坞修日期(三年)", name: "REP_DATE", newline: false, width: 300, type: "date", options: {} },
+                            { display: "是否环保", name: "IS_GREEN", newline: false, width: 300, type: "select", editor: { type: 'select', data: me.yesno }, options: {} },
+                            { display: "坞修日期(五年)", name: "REP_DATE5", newline: false, width: 300, type: "date", options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", newline: false, width: 300, type: "text", options: {}, group: "财务信息" },
+                            { display: "财务分类", name: "FINAN_TYPE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "当前折旧月度", name: "DEP_MONTH", newline: false, width: 300, type: "date", options: {} },
+                            { display: "当前累计折旧", name: "DEP_VALUE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "安装及杂费(元)", name: "INSTALL_FEE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "单价(元)", name: "PRICE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "原值(元)", name: "ORG_VALUE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "净值(元)", name: "NET_VALUE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "使用年限(年)", name: "USE_YEAR", newline: false, width: 300, type: "float", options: {} },
+                            { display: "净残值比例(%)", name: "NET_RATE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "年折旧率(%)", name: "DEP_RATE", newline: false, width: 300, type: "float", options: {} },
+                            { display: "资产来源", name: "ASSET_SOURCE", newline: false, width: 300, type: "text", options: {} },
+                            { display: "备注", name: "MEMO", newline: false, width: 1146, type: "textarea", options: {} },
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceCard/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.devicetype = data.BCCode;
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.dataCorp = data.Corp;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                if (!me.sid) {
+                    //注：原默认为未提交，现默认为已提交，2023.10.07
+                    me.mainform.setOrginData({ AUDITING: "1", TYPE_ID: "1", TYPE_NAME: "船舶" });
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/DeviceCard/Get',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            if (me.isView) {
+                                me.mainform.setReadonly(true);
+                            }
+                            me.mainform.setOrginData(data[0]);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                me.mainform.focus();
+            },
+            save: function () { //保存
+                var me = this;
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.mainform.getOrginData());
+                var changeRow = new Object();
+                if (!me.sid) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/DeviceCard/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () { if (me.dialog) { me.dialog.close(); } });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                function inner(callback) {
+                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+                    });
+                }
+                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', onclick: me.save.bind(me) });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.isView) me.isView = me.dialogData.isView;
+                }
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,542 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "船舶编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk", hide: true },
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "船舶编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            //{ display: "船舶类别", name: "TYPE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶规格", name: "DEVICE_SIZE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶识别号", name: "SHIP_ID", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型长", name: "SHIP_LENGTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型宽", name: "SHIP_WIDTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型深", name: "SHIP_DEPTH", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "吃水", name: "SHIP_DRAFT", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "船舶类型", name: "SHIP_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主机功率", name: "MAIN_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "副机功率", name: "SECOND_POWER", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "航速", name: "SPEED", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "拖力", name: "DRAG_FORCE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "总吨", name: "TOTAL_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "净吨", name: "PURE_TON", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "启用日期", name: "REV_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 100 } },
+                            { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 100 } },
+                            { display: "立卡日期", name: "CARD_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "select", editor: { type: 'select', data: me.assetStatus, selectBoxHeight: 100 } },
+                            { display: "负责人", name: "CARD_USER", width: 100, type: "select", editor: { type: 'select', data: me.user, selectBoxHeight: 100 } }
+                        ]
+                    }
+                };
+            },
+            dataCorp: [],
+            auditing: [],
+            user: [],
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            devicetype: [],
+            assetStatus: [
+                { ID: "1", TEXT: "在用", VALUE: "1" }
+            ],
+            yesno: [
+                { "ID": "0", "TEXT": "否" }, { "ID": "1", "TEXT": "是" }
+            ],
+            purpose: [
+                { "ID": "0", "TEXT": "非生产" }, { "ID": "1", "TEXT": "生产" }
+            ],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceCard/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.dataCorp = data.Corp;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: { group: "list" },
+                    url: 'Device/DeviceCard/List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'TYPE_ID', op: 'equal', value: "1" }]
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    },
+                    onDblClickRow: function (rowdata) {
+                        me.view(rowdata);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "doc":
+                            me.doc();
+                            break;
+                        case "param":
+                            me.param();
+                            break;
+                        case "remould":
+                            me.remould();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function (rowdata) { //查看
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+
+                if (rowdata) {
+                    selected = rowdata;
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[查看]船舶卡片',
+                        url: "vessel-card-det.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected.DEVICE_ID, "isView": true }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            doc: function () { //船舶随机资料
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '船舶随机资料',
+                        url: "device-doc.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected[0].DEVICE_ID }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            param: function () { //船舶参数
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '船舶参数',
+                        url: "device-param.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected[0].DEVICE_ID }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            remould: function () { //重大改造履历
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '重大改造履历',
+                        url: "device-remould.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected[0].DEVICE_ID }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            sumbit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/DeviceCard/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]船舶卡片',
+                    url: "vessel-card-det.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null }
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                //注：原为已提交不可修改，现改为均可修改，2023.10.07
+                if (selected) {
+                    var sid = selected.DEVICE_ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[修改]船舶卡片',
+                        url: "vessel-card-det.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/DeviceCard/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        for (var i = 0; i < selected.length; i++) {
+                            //注：原为已提交不可修改，现改为均可修改，2023.10.07
+                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                if (confirm) {
+                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                        me.grid.deleteRow(selected[i]);
+                                    }
+                                    me.save();
+                                }
+                            });
+                            break;
+                        }
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

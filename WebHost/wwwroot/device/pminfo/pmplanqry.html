@@ -1,0 +1,280 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>维保查询</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 100%">
+        <form action="" id="formsearch" class="l-form">
+            <div id="formsearch1">
+            </div>
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="gridform">
+            <div id="maingrid" hidetitle=true>
+            </div>
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            voyagecodedata: null,
+            isLose: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
+            alreadySubmitted: false,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            {
+                                display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, width: 150, upper: true, type: "text", options: {}
+                            },
+                            {
+                                display: "保养实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
+                            },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
+                            //{ display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "实施人员", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "实施完成时间", name: "AUDIT_TIME", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "是否有遗留问题", name: "IS_LOSE", dbname: "IS_LOSE", width: 100, type: "select", format: { data: me.isLose } },
+                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "EXE_ID", name: "EXE_ID", hide: true },
+                        ]
+                    },
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            searchForm2: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/PmInfo/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.faultStatus = data.faultStatus;
+                        me.disposeType = data.disposeType;
+                        me.faultSrc = data.faultSrc;
+                        me.deviceStatus = data.deviceStatus;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                //me.config.gridtop.columns.removeNull();
+                //me.config.gridcenter.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    fixedCellHeight: true,
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    toolbar: {},
+                    url: 'Device/PmInfo/GetPmExeList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    //sortName: 'RECEIVEDATE',
+                    //sortOrder: 'desc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: false,
+                    enabledEdit: false,
+                    clickToEdit: false,
+                    page: 1,
+                    pageSize: 50,
+                    //isSingleCheck: true,
+                    usePager: false,
+                    onBeforeEdit: function (editParm) {
+
+                    },
+                    onSuccess: function (data, g) {
+
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+
+                    },
+                    onDblClickRow: function (rowdata) {
+                        me.view(rowdata);
+                    }
+
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch1 = $("#formsearch1")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch1.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch1, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                LG.commonSearch($formsearch1, me.grid);
+            },
+
+            view: function (rowdata) { //查看
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+
+                if (rowdata) {
+                    selected = rowdata;
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: 1100,
+                        height: 620,
+                        allowClose: true,
+                        title: '查看明细',
+                        url: "pmplanexedet.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected.EXE_ID, "view": true, "qry": true }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            initSearchData: function () {
+
+            },
+
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setGrid();
+                me.setForm();
+                return me;
+            }
+        };
+        business.init();
+        $("#gridform").ligerLayout({
+            leftWidth: '58%',
+            allowRightCollapse: false,
+            allowLeftCollapse: false,
+        });</script>
+</body>
+</html>
