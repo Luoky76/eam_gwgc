@@ -77,6 +77,7 @@
                                     align: 'center'
                                 }
                             },
+                            { display: "申请日期", name: "REQUEST_DATE", width: 150, type: "date", },
                             { display: "物料ID", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
                             { display: "COLLECT_ID", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
                             { display: "REQUEST_DET_ID", name: "REQUEST_DET_ID", dbname: "REQUEST_DET_ID", width: 100, type: "text", hide: true },
@@ -207,6 +208,7 @@
                         me.addGrid({
                             REQUEST_DET_ID: item.SPDET_ID,
                             REQUEST_CODE: item.APPLY_NO,
+                            REQUEST_DATE: item.APPLY_DATE,
                             REQUEST_NUM: item.COUNT,
                             REQUEST_USER: item.APPLY_USER,
                             DEPT_NAME: item.DEPT_NAME,

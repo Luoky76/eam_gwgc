@@ -14,6 +14,8 @@ using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace EAM.Material.Services
 {
@@ -94,6 +96,7 @@ namespace EAM.Material.Services
                     { "BCCode", "CGtype" },
                     { "BaseSpType", (Expression<Func<BASE_SPTYPE, bool>>)null},
                     { "ProviderName", (Expression<Func<PROVIDER, bool>>)null},
+                    { "Auditing", null }
                 });
                 return AjaxResult.Success(dic);
             }
@@ -166,6 +169,7 @@ namespace EAM.Material.Services
                       c => new
                       {
                           c.REQUEST_CODE,
+                          c.REQUEST_DATE,
                           c.REQUEST_USER,
                           c.REQUEST_USERID,
                           c.SP_CODE,
@@ -701,7 +705,8 @@ namespace EAM.Material.Services
                     a.TYPE_NAME,
                     a.COUNT,
                     b.APPLY_USER,
-                    b.DEPT_NAME
+                    b.DEPT_NAME,
+                    b.APPLY_DATE
                 })
                 .GetGridData(request);
         }
@@ -867,6 +872,10 @@ namespace EAM.Material.Services
             var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
                 .Select(c => new SP_COLLECT_REQUEST_DTO
                 {
+                    REQUEST_CODE = c.REQUEST_CODE,
+                    REQUEST_DATE = c.REQUEST_DATE,
+                    DEPT_NAME = c.DEPT_NAME,
+                    REQUEST_USER = c.REQUEST_USER,
                     SP_CODE = c.SP_CODE,
                     SP_NAME = c.SP_NAME,
                     SP_TYPE = c.SP_TYPE,
@@ -876,25 +885,32 @@ namespace EAM.Material.Services
                     TYPE_NAME = c.TYPE_NAME,
                     MEMO = c.MEMO
                 }).ToListAsync();
+
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
-            string fileUrl = "UploadDirectory/purchase/" + fileRealName;
+            string directoryPath =  "UploadDirectory/SpCollect/";
+            string fileUrl = "";
+            //创建文件夹
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
             if (detQuery.Count() > 0)
             {
-                try
-                {
-                    IExporter exporter = new ExcelExporter();
-                    var fileResult = await exporter.Export(fileUrl, detQuery);
-                    fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
-                }
-                catch (Exception ex)
-                {
-                    return AjaxResult.Error("推送OA 创建物资清单失败：" + ex.Message, "失败");
-                }
+                fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
+
+                //创建EXCEL文件
+                IExporter exporter = new ExcelExporter();
+                var content = await exporter.ExportAsByteArray(detQuery);
+                using var stream = new MemoryStream();
+                stream.Write(content, 0, content.Length);
+                FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
+
+                fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
-            string attach = attachName.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + fileName) + "$$$" 
-                + attachUrl.TrimEnd('|') + (string.IsNullOrEmpty(fileName) ? "" : "|" + webUrl+ fileUrl);
+            string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$" 
+                + attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl+ fileUrl);
 
             var mainQuery = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
@@ -903,7 +919,7 @@ namespace EAM.Material.Services
                     primary_key = c.COLLECT_ID,
                     fun_name = "_spCollectService.ApprovalCompletedAsync",
                     bdmc = c.DEPT_NAME + "物资需求申请",
-                    bz = c.MEMO,
+                    sm = c.MEMO,
                     fjsc = attach
                 }).FirstAsync();
 
@@ -914,7 +930,7 @@ namespace EAM.Material.Services
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
             OAHandle oa = new OAHandle(_dbContext);
-            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "");
+            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "{}");
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 
@@ -926,7 +942,8 @@ namespace EAM.Material.Services
                 //成功后将记录状态改为审批中
                 _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
                 {
-                    AUDITING = "2"
+                    AUDITING = "2",
+                    OA_CODE = job["code"].ToString()
                 });
             }
             else
@@ -945,52 +962,90 @@ namespace EAM.Material.Services
 
     public class SP_COLLECT_REQUEST_DTO
     {
+        /// <summary>
+        /// 需求计划单号
+        /// </summary>
+        [Display(Name = "申请单号")]
+        [Description("需求计划单号")]
+        public string REQUEST_CODE { get; set; }
+
+        /// <summary>
+        /// 申请部门
+        /// </summary>
+        [Display(Name = "申请部门")]
+        [Description("申请部门")]
+        public string DEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 申请人
+        /// </summary>
+        [Display(Name = "申请人")]
+        [Description("申请人")]
+        public string REQUEST_USER { get; set; }
+
+        /// <summary>
+        /// 申请日期
+        /// </summary>
+        [ExporterHeader(DisplayName = "申请日期", Format = "yyyy-MM-dd hh:mm:ss")]
+        [Display(Name = "申请日期")]
+        [Description("申请日期")]
+        public DateTime? REQUEST_DATE { get; set; }
 
         /// <summary>
         /// 备件品种编码
         /// </summary>
+        [Display(Name = "物资编码")]
         [Description("备件品种编码")]
         public string SP_CODE { get; set; }
 
         /// <summary>
         /// 备件品种名称
         /// </summary>
+        [ExporterHeader(DisplayName = "物资名称", Width = 30)]
+        [Display(Name = "物资名称")]
         [Description("备件品种名称")]
         public string SP_NAME { get; set; }
 
         /// <summary>
         /// 备件型号
         /// </summary>
+        [Display(Name = "规格型号")]
         [Description("备件型号")]
         public string SP_TYPE { get; set; }
 
         /// <summary>
         /// 品牌
         /// </summary>
+        [Display(Name = "品牌")]
         [Description("品牌")]
         public string BRAND { get; set; }
 
         /// <summary>
         /// 计量单位
         /// </summary>
+        [Display(Name = "计量单位")]
         [Description("计量单位")]
         public string UNIT { get; set; }
 
         /// <summary>
         /// 申请数量
         /// </summary>
+        [Display(Name = "申请数量")]
         [Description("申请数量")]
         public decimal? REQUEST_NUM { get; set; }
 
         /// <summary>
         /// 备件类别名称
         /// </summary>
+        [ExporterHeader(DisplayName = "物资类别", Width = 40)]
+        [Display(Name = "物资类别")]
         [Description("备件类别名称")]
         public string TYPE_NAME { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
+        [Display(Name = "备注")]
         [Description("备注")]
         public string MEMO { get; set; }
     }

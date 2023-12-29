@@ -118,7 +118,33 @@
                                 ]
                             },
                             {
-                                display: "主发电机运行时间（小时:分钟）", columns: [
+                                display: "主机运行时间（小时:分钟）", columns: [
+                                    {
+                                        display: "运行时间", name: "MAIN_ENGINE_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    {
+                                        display: "累计时间", name: "MAIN_ENGINE_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "发电机运行时间（小时:分钟）", columns: [
                                     {
                                         display: "运行时间", name: "MAIN_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
                                         {
@@ -132,32 +158,6 @@
                                     },
                                     {
                                         display: "累计时间", name: "MAIN_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
-                                ]
-                            },
-                            {
-                                display: "停泊发电机运行时间（小时:分钟）", columns: [
-                                    {
-                                        display: "运行时间", name: "MOORING_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
-                                    {
-                                        display: "累计时间", name: "MOORING_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center',
@@ -256,7 +256,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'DEVICE_NAME', op: 'equal', value: '厦港工105' }]
                         })
                     },
                     sortName: '',
@@ -337,7 +337,7 @@
                     height: 620,
                     allowClose: true,
                     title: '[查看]施工能耗',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
+                    url: "build-count-105-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -383,7 +383,7 @@
                     height: 620,
                     allowClose: true,
                     title: '[新增]',
-                    url: "build-count-gl-det.html?MenuNo=" + me.menuNo,
+                    url: "build-count-105-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -407,7 +407,7 @@
                     height: 620,
                     allowClose: true,
                     title: '[修改]',
-                    url: "build-count-gl-det.html?MenuNo=" + me.menuNo,
+                    url: "build-count-105-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,

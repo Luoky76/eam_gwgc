@@ -1,17 +1,9 @@
-﻿using Gksyb.Core.Interfaces.Common;
-using Gksyb.Model.Grid;
-using Gksyb.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Gksyb.Core.Grid;
-using EAM.Material.Interfaces;
-using NPOI.SS.Formula.PTG;
-using DocumentFormat.OpenXml.Wordprocessing;
-using DocumentFormat.OpenXml.Office.CustomUI;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Common;
+using Gksyb.Model;
+using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {

@@ -254,5 +254,16 @@ namespace Gksyb.Model
         [Description("停泊发电机累计时间")]
         public decimal? MOORING_CUMTIME { get; set; }
 
+        /// <summary>
+        /// 主机运行时间
+        /// </summary>
+        [Description("主机运行时间")]
+        public decimal? MAIN_ENGINE_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 主机累计时间
+        /// </summary>
+        [Description("主机累计时间")]
+        public decimal? MAIN_ENGINE_CUMTIME { get; set; }
     }
 }

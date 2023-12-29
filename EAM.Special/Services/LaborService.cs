@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -9,9 +8,6 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.CodeAnalysis;
-using NPOI.OpenXmlFormats.Dml.Diagram;
-using System;
-using WkHtmlToPdfDotNet;
 
 namespace EAM.Special.Services
 {

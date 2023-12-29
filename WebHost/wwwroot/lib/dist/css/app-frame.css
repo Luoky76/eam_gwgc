@@ -1344,7 +1344,8 @@ a {
 
 				.navbar-nav > .user-menu > .dropdown-menu > li.user-header > p > small {
 					display: block;
-					font-size: 12px;
+					font-size: 15px;
+					margin-top: -8px;
 				}
 
 		.navbar-nav > .user-menu > .dropdown-menu > .user-body {

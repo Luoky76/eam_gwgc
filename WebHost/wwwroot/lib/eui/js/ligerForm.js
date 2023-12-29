@@ -71,19 +71,21 @@
         name: null,             //字段name
         dbname: null,          //数据库实际名称
         userSearch: null,        //是否用于组成查询条件配合grid
+        filter: null, //组合过滤条件，用于多字段查询(格式为FilterGroup或者FilterRlue数组) [{op: "equal",field: "xxx", type: "string"},{op: "equal",field: "ROLEDESC",type: "string"}]
         textField: null,       //文本框name
         type: null,             //表单类型
         editor: null,           //编辑器扩展
         label: null,            //Label
-        labelInAfter: null,  //label显示在后面
-        afterContent: null,  //后置内容
-        beforeContent: null, //前置内容
-        hideSpace: null,
-        hideLabel: null,
-        rightToken: null,
-        attrRender: null,
-        style: null,
-        containerCls: null,
+        labelInAfter: null,     //label显示在后面
+        afterContent: null,     //后置内容
+        beforeContent: null,    //前置内容
+        initHide: null,             //默认是否隐藏，设置后会出现展开和收缩的按钮
+        hideSpace: null,        //隐藏间隔
+        hideLabel: null,        //隐藏label
+        rightToken: null,       //label后面的分隔符
+        attrRender: null,       //追加输入域的属性
+        style: null,            //输入域的样式
+        containerCls: null,     //输入域的样式类
         newline: null,          //换行显示
         op: null,               //操作符 参考ligerFilter
         vt: null,               //参数类型 int float date

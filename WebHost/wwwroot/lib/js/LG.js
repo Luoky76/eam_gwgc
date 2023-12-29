@@ -31,7 +31,7 @@
     });
 
     $.extend($.ligerui.controls.Grid.prototype, {
-        getChangedRows: function (trim) {
+        getChangedRows: function (trim, skipXss) {
             var g = this, changedRows = {};
             if (trim === undefined) trim = false;
             var added = g.getAdded();
@@ -50,6 +50,9 @@
                 if (updated) {
                     $.trimAll(updated);
                 }
+            }
+            if (deleted && skipXss === undefined) {
+                deleted = JSON.parse(JSON.stringify(deleted).replace(/<[^>]+>/g, ""));
             }
             changedRows["added"] = added;
             changedRows["updated"] = updated;
@@ -134,6 +137,9 @@
                 if (!result) return;
                 if (result.IsError) {
                     if (options.errorInner) options.errorInner(result.Message, result.Data);
+                    else {
+                        LG.showError(result.Message);
+                    }
                     return;
                 }
                 if (options.successInner) options.successInner(result.Data, result.Message);
@@ -199,12 +205,7 @@
     //创建过滤规则(查询表单)
     LG.bulidFilterGroup = function (form) {
         if (!form) return null;
-        var group = {
-            op: "and",
-            rules: []
-        };
-        group.rules = liger.get(form).toConditions();
-        return group;
+        return liger.get(form).getFilter();
     };
 
     //通用上方查询
@@ -245,7 +246,8 @@
                 return;
             }
             var parms = grid.options.parms;
-            if (rule.rules.length) {
+            var hasRule = (rule.rules && rule.rules.length) || (rule.groups && rule.groups.length)
+            if (hasRule) {
                 if (!grid.options.NoFirstSearch) {
                     grid.options.NoFirstSearch = true;
                     if (!parms.where) parms.where = "{}";
@@ -596,17 +598,19 @@
             success: function (data, message) {
                 dataRev.ID = data.Sysdate.toDate();
                 dataRev.TEXT = data.Adddate.toDate();
+                window.__dataRev = dataRev;
                 var inner = function (now, field) {
                     now = now.replace(/-/g, " + -").replace(/\+/g, ",").replace(/trunc/ig, "LG.truncDate");
                     now = field + " = LG.addDays(" + now.replace(/sysdate/ig, field) + ");";
                     eval(now);
                 };
                 if (oldData.idfield) {
-                    inner(oldData.idfield, "dataRev.ID");
+                    inner(oldData.idfield, "window.__dataRev.ID");
                 }
                 if (oldData.textfield) {
-                    inner(oldData.textfield, "dataRev.TEXT");
+                    inner(oldData.textfield, "window.__dataRev.TEXT");
                 }
+                delete window.__dataRev;
             }
         };
         LG.ajax(options);

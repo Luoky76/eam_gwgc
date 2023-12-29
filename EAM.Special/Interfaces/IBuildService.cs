@@ -21,7 +21,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <returns></returns>
         Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
-        Task<GridData> ListAsync(GridRequest request, bool isAll = true);
+        Task<GridData> ListAsync(GridRequest request);
 
         Task<AjaxResult> GetAsync(string ID);
 

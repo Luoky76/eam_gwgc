@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Wordprocessing;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -8,14 +6,8 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using NPOI.OpenXmlFormats.Dml.Diagram;
-using NPOI.OpenXmlFormats.Wordprocessing;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
-using System.Reflection.Emit;
-using WkHtmlToPdfDotNet;
 
 namespace EAM.Material.Services
 {

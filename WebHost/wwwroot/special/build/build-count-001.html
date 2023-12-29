@@ -253,7 +253,7 @@
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'DEVICE_NAME', op: 'equal', value: '厦港浚001' }]
                         })
                     },
                     sortName: '',
@@ -334,7 +334,7 @@
                     height: 620,
                     allowClose: true,
                     title: '[查看]施工能耗',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
+                    url: "build-count-001-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -380,7 +380,7 @@
                     height: 620,
                     allowClose: true,
                     title: '[新增]',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
+                    url: "build-count-001-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -405,7 +405,7 @@
                     height: 620,
                     allowClose: true,
                     title: '[修改]',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
+                    url: "build-count-001-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,

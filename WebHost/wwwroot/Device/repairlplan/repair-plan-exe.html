@@ -37,7 +37,12 @@
                         columns: [
                             { display: "EXE_ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },
                             { display: "AUDITING_B", name: "AUDITING_B", minWidth: 100, type: "text", hide: true },
-                            { display: "已提交", name: "AUDITING", minWidth: 100, type: "chk" },
+                            {
+                                display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.auditing
+                                }
+                            },
                             { display: "故障申报单号", name: "EXE_CODE", minWidth: 100, type: "text", },
                             {
                                 display: "维修状态", name: "PLAN_STATE", minWidth: 100, type: "select", format: { data: me.plan_state }
@@ -79,6 +84,7 @@
                         me.repairtype = data.RepairType;
                         me.repairhandtype = data.RepairDealType;
                         me.plan_state = data.PlanState;
+                        me.auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);

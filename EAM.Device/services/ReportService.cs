@@ -85,15 +85,15 @@ namespace EAM.Device.services
                 .FirstAsync()).CODE_EN;
             //除超管和船机部外，按部门过滤数据
             var req = _dbContext.Query<DEVICE_CARD>();
-            if (!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId)
-            {
-                req = req.Where(x => _userSession.Corp.CorpID == x.DEPT_ID);
-            }
-            var query = await req.Where(t => t.STATUS == "1")
+            //if (!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId)
+            //{
+            //    req = req.Where(x => _userSession.Corp.CorpID == x.DEPT_ID);
+            //}
+            var query = await req.Where(t => t.STATUS == "1" && t.TYPE_ID =="1")
                 .Select(a => new
                 {
                     a.DEVICE_ID,
-                    DEPT_NAME = a.DEVICE_NAME+"("+ a.DEPT_NAME + ")",
+                    DEPT_NAME = a.DEVICE_NAME,
                     a.DEPT_ID
                 })
                 .GroupBy(t => t.DEPT_ID)

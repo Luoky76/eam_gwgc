@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title></title>
+    <title>物资需求申请</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -35,13 +35,18 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditingData } },
                             { display: "申请单号", name: "_search_COLLECT_CODE", dbname: "COLLECT_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
+                            {
+                                display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.auditingData
+                                }
+                            },
                             { display: "申请单号", name: "COLLECT_CODE", width: 180, type: "text" },
                             //{
                             //    display: "采购方式", name: "COLLECT_METHOD", minWidth: 120, type: "select", validate: { required: true },
@@ -83,6 +88,7 @@
                         me.typeData = data.BaseSpType
                         me.gyData = data.ProviderName;
                         me.cgfsData = data.BCCode;
+                        me.auditingData = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);
