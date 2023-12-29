@@ -88,6 +88,8 @@ namespace EAM.Special.Services
                     a.MAIN_CUMTIME,
                     a.MOORING_RUNTIME,
                     a.MOORING_CUMTIME,
+                    a.MAIN_ENGINE_RUNTIME,
+                    a.MAIN_ENGINE_CUMTIME
                 })
                 .OrderByDesc(a => a.STARTDATE)
                 .GetGridData(request);
@@ -140,6 +142,8 @@ namespace EAM.Special.Services
                     c.MAIN_CUMTIME,
                     c.MOORING_RUNTIME,
                     c.MOORING_CUMTIME,
+                    c.MAIN_ENGINE_RUNTIME,
+                    c.MAIN_ENGINE_CUMTIME
                 },
                 c => a => a.BUILD_ID == c.BUILD_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);
         }
@@ -156,27 +160,6 @@ namespace EAM.Special.Services
             entity.DEVICE_ID = card.DEVICE_ID;
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
-
-            /*
-            //获取艘船的部门的所有货位中柴油物料的库存量的和
-            var hw = await _dbContext.Query<SP_STORE>(a => a.SP_CODE == "017001-0001")
-                .LeftJoin<SP_HOUSE>((a, b) => a.STOCK_ID == b.HOUSE_ID)
-                .Where((a, b) =>_userSession.Corp.CorpID == b.DEPT_ID)
-                .Select((a, b) => new
-                {
-                    b.DEPT_ID,
-                    a.NUM,
-                })
-                .GroupBy(b => b.DEPT_ID)
-                .Select(x => new
-                {
-                    SUM = Sql.Sum(x.NUM),
-                }).FirstOrDefaultAsync();
-            if (hw != null && !entity.STOCK2.HasValue)
-            {
-                entity.STOCK2 = hw.SUM;
-            }
-            */
 
             //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
             var last_data = await _dbContext.Query<BUILD_COUNT>(a => a.STARTDATE < entity.STARTDATE)
@@ -340,31 +323,31 @@ namespace EAM.Special.Services
                 a.DEVICE_NAME,
                 a.DEPT_ID,
             })
-                .Select(c => new
-                {
-                    MONTH = c.Key.MONTH,
-                    YEAR = c.Key.YEAR,
-                    STARTDATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
-                    DEVICE_NAME = c.Key.DEVICE_NAME,
-                    SHIPTIMES = c.Sum(item => item.SHIPTIMES ?? 0),
-                    SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0),
-                    CONPLAN = c.Sum(item => item.CONPLAN ?? 0),
-                    DREDGETIME = c.Sum(item => item.DREDGETIME ?? 0),
-                    SAILTIME = c.Sum(item => item.SAILTIME ?? 0),
-                    REPAIRTIME = c.Sum(item => item.REPAIRTIME ?? 0),
-                    WEATHEREFFECT = c.Sum(item => item.WEATHEREFFECT ?? 0),
-                    OTHERSTOP = c.Sum(item => item.OTHERSTOP ?? 0),
-                    DAILYCONSUMPTION = c.Sum(item => item.DAILYCONSUMPTION ?? 0),
-                    SUPPLEMENT = c.Sum(item => item.SUPPLEMENT ?? 0),
-                    STOCK = c.Sum(item => item.STOCK ?? 0),
-                    MASTER = c.Sum(item => item.MASTER ?? 0),
-                    AUXILIARY = c.Sum(item => item.AUXILIARY ?? 0),
-                    PUMP = c.Sum(item => item.PUMP ?? 0),
-                    SUBTOTAL = c.Sum(item => item.SUBTOTAL ?? 0),
-                    SUPPLEMENT2 = c.Sum(item => item.SUPPLEMENT2 ?? 0),
-                    STOCK2 = c.Sum(item => item.STOCK2 ?? 0),
-                    LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0),
-                }).ToList();
+            .Select(c => new
+            {
+                MONTH = c.Key.MONTH,
+                YEAR = c.Key.YEAR,
+                STARTDATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
+                DEVICE_NAME = c.Key.DEVICE_NAME,
+                SHIPTIMES = c.Sum(item => item.SHIPTIMES ?? 0),
+                SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0),
+                CONPLAN = c.Sum(item => item.CONPLAN ?? 0),
+                DREDGETIME = c.Sum(item => item.DREDGETIME ?? 0),
+                SAILTIME = c.Sum(item => item.SAILTIME ?? 0),
+                REPAIRTIME = c.Sum(item => item.REPAIRTIME ?? 0),
+                WEATHEREFFECT = c.Sum(item => item.WEATHEREFFECT ?? 0),
+                OTHERSTOP = c.Sum(item => item.OTHERSTOP ?? 0),
+                DAILYCONSUMPTION = c.Sum(item => item.DAILYCONSUMPTION ?? 0),
+                SUPPLEMENT = c.Sum(item => item.SUPPLEMENT ?? 0),
+                STOCK = c.Sum(item => item.STOCK ?? 0),
+                MASTER = c.Sum(item => item.MASTER ?? 0),
+                AUXILIARY = c.Sum(item => item.AUXILIARY ?? 0),
+                PUMP = c.Sum(item => item.PUMP ?? 0),
+                SUBTOTAL = c.Sum(item => item.SUBTOTAL ?? 0),
+                SUPPLEMENT2 = c.Sum(item => item.SUPPLEMENT2 ?? 0),
+                STOCK2 = c.Sum(item => item.STOCK2 ?? 0),
+                LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0),
+            }).ToList();
             GridData gridData = new GridData()
             {
                 Rows = returnList
