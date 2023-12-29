@@ -325,7 +325,7 @@ namespace EAM.Special.Services
                 }).GetGridData(request);
             var dataList = JsonConvert.DeserializeObject<List<BUILDCOUNT>>(filterData.Rows.ToJson());
 
-            var returnList = dataList.Cast<BUILDCOUNT>().GroupBy(a => new
+            var returnList = dataList.GroupBy(a => new
             {
                 a.MONTH,
                 a.YEAR,
