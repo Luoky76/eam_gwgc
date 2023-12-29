@@ -213,6 +213,7 @@ namespace EAM.Device.Services
                     b.ASSET_CODE,
                     b.INSTALL_SITE,
                     b.DEPT_NAME,
+                    b.DEPT_ID,
                     b.CARD_USER,
                     b.CARD_USERID,
                 })
@@ -237,6 +238,7 @@ namespace EAM.Device.Services
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         SHIP_DEPT = shipDept,
                         WDEPT_ID = shipDept,
                         EXE_USER = qrycard.CARD_USER ?? "",
@@ -304,6 +306,7 @@ namespace EAM.Device.Services
                     b.ASSET_CODE,
                     b.INSTALL_SITE,
                     b.DEPT_NAME,
+                    b.DEPT_ID,
                     b.CARD_USER,
                     b.CARD_USERID,
                 })
@@ -325,6 +328,7 @@ namespace EAM.Device.Services
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
@@ -390,6 +394,7 @@ namespace EAM.Device.Services
                 {
                     b.DEVICE_ID,
                     b.DEVICE_NAME,
+                    b.DEPT_ID,
                     a.DEVICE_CODE,
                     b.DEVICE_TYPE,
                     b.ASSET_CODE,
@@ -416,6 +421,7 @@ namespace EAM.Device.Services
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
@@ -481,6 +487,7 @@ namespace EAM.Device.Services
                 {
                     b.DEVICE_ID,
                     b.DEVICE_NAME,
+                    b.DEPT_ID,
                     a.DEVICE_CODE,
                     b.DEVICE_TYPE,
                     b.ASSET_CODE,
@@ -507,6 +514,7 @@ namespace EAM.Device.Services
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
