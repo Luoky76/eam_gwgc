@@ -95,6 +95,31 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
+        /// 获取退回节点
+        /// </summary>
+        public async Task<string> GetBackNode(FlowExecuteInfo info)
+        {
+            var backNode = BackNode;
+            if (string.IsNullOrWhiteSpace(backNode) || backNode == "start") return null;
+            if (backNode != "previous") return backNode;
+            var nodes = new List<string>();
+            PreviousTaskForEach(Inputs, c =>
+            {
+                nodes.Add(c.Id);
+                return false;
+            });
+            var node = await _dbContext.Query<WF_NODE>().Where(c => c.TASK_ID == info.TaskId && nodes.Contains(c.NODE_ID) && c.NODE_STATUS == NodeStatus.Agree)
+                .Select(c => new WF_NODE()
+                {
+                    ID = c.ID,
+                    NODE_ID = c.NODE_ID,
+                    FINISHDATE = c.FINISHDATE
+                })
+                .OrderByDesc(c => c.FINISHDATE).FirstOrDefaultAsync();
+            return node?.NODE_ID;
+        }
+
+        /// <summary>
         /// 加入日志
         /// </summary>
         public async Task AddLog(FlowExecuteInfo info, string operType)
@@ -242,19 +267,23 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
-        /// 获取来源节点的任务ID
+        /// 获取来源任务节点的名称
         /// </summary>
         protected static List<string> GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs)
         {
             var nodes = new List<string>();
-            GetPreviousNodeNames(inputs, nodes);
+            PreviousTaskForEach(inputs, c =>
+            {
+                nodes.Add(c.Name);
+                return false;
+            });
             return nodes;
         }
 
         /// <summary>
-        /// 获取来源节点的任务ID
+        /// 来源任务节点遍历
         /// </summary>
-        private static void GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs, List<string> nodes)
+        private static void PreviousTaskForEach(List<BpmnSequenceFlowService> inputs, Func<BpmnBaseService, bool> func)
         {
             if (inputs == null || inputs.Count < 1) return;
             foreach (var input in inputs)
@@ -262,10 +291,9 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 if (input.Source == null) continue;
                 if (input.Source._isTask)
                 {
-                    nodes.Add(input.Source.Name);
-                    continue;
+                    if (!func(input.Source)) continue;
                 }
-                GetPreviousNodeNames(input.Source.Inputs, nodes);
+                PreviousTaskForEach(input.Source.Inputs, func);
             }
         }
 
@@ -416,13 +444,24 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
-        /// 操作人
+        /// 自动流转
         /// </summary>
         private bool AutoNext
         {
             get
             {
                 return GetProperties("autoNext").CastTo(false);
+            }
+        }
+
+        /// <summary>
+        /// 退回节点
+        /// </summary>
+        private string BackNode
+        {
+            get
+            {
+                return GetProperties("backNode").CastTo<string>();
             }
         }
     }

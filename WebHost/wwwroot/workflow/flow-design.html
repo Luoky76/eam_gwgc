@@ -38,6 +38,7 @@
         'use strict';
         var business = {
             lf: null,
+            dataBackNode: [{ ID: "previous", TEXT: "上一个节点" }, { ID: "start", TEXT: "开始节点" }],
             defaultValue: {
                 "bpmn:startEvent": { name: "start" },
                 "bpmn:userTask": { title: "用户任务" },
@@ -135,7 +136,8 @@
                     { display: "前置拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
                     { display: "后置拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
                     { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: {} },
-                    { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} }
+                    { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} },
+                    { display: "退回节点", name: "backNode", newline: true, bpmn: "bpmn:userTask", type: "select", options: { canDifferent: true, data: me.dataBackNode } }
                 ];
                 for (var i = 0, l = fields.length; i < l; i++) {
                     var field = fields[i];

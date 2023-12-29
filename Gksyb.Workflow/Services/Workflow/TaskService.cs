@@ -43,7 +43,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 if (info.ToNodeIsEmpty) return;
                 var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                 info.ToNode = null;
-                await toNodeService?.Execute(info);
+                if (toNodeService != null) await toNodeService.Execute(info);
             });
         }
 
@@ -61,7 +61,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 {
                     var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                    await toNodeService?.Execute(info);
+                    if (toNodeService != null) await toNodeService.Execute(info);
                 }
                 if (info.NodeStatus == NodeStatus.Agree)
                 {
@@ -93,7 +93,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 {
                     var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                    await toNodeService?.Execute(info);
+                    if (toNodeService != null) await toNodeService.Execute(info);
                 }
             }
             await AutoAgreeAsync(info);
@@ -244,12 +244,16 @@ namespace Gksyb.Workflow.Services.Workflow
             var nodeService = Nodes.FirstOrDefault(c => c.Id == node.NODE_ID);
             info.ToNode = info.NodeStatus switch
             {
-                NodeStatus.Back => info.ToNodeIsEmpty ? StartNode.Id : info.ToNode,
+                NodeStatus.Back => await nodeService.GetBackNode(info) ?? StartNode.Id,
                 NodeStatus.Reject => EndNode.Id,
                 _ => info.ToNode,
             };
             if (info.ToNodeIsEmpty) info.ToNode = node.TO_NODE_ID;
-            if (!info.ToNodeIsEmpty && !Nodes.Any(c => c.Id == info.ToNode)) info.ToNode = null;
+            if (!info.ToNodeIsEmpty)
+            {
+                var toNode = Nodes.FirstOrDefault(c => c.Id == info.ToNode) ?? Nodes.FirstOrDefault(c => c.Name == info.ToNode);
+                info.ToNode = toNode?.Id;
+            }
             action?.Invoke(node);
             return nodeService;
         }
