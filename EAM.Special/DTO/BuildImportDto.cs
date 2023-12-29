@@ -686,5 +686,91 @@ namespace EAM.Special.DTO
                 }
             }
         }
+
+        /// <summary>
+        /// 主机运行时间
+        /// </summary>
+        public decimal? MAIN_ENGINE_RUNTIME { get; set; }
+
+        /// <summary>
+        /// 主机运行时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "主机运行时间")]
+        [Display(Name = "主机运行时间 hh:mm")]
+        public string MAIN_ENGINE_RUNTIME_TYPE
+        {
+            get
+            {
+                return MAIN_ENGINE_RUNTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        MAIN_ENGINE_RUNTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        MAIN_ENGINE_RUNTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        MAIN_ENGINE_RUNTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("主机运行时间有误\n" + e.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 主机累计时间
+        /// </summary>
+        public decimal? MAIN_ENGINE_CUMTIME { get; set; }
+
+        /// <summary>
+        /// 主机累计时间 hh:mm
+        /// </summary>
+        [ImporterHeader(Name = "主机累计时间")]
+        [Display(Name = "主机累计时间 hh:mm")]
+        public string MAIN_ENGINE_CUMTIME_TYPE
+        {
+            get
+            {
+                return MAIN_ENGINE_CUMTIME.ToString();
+            }
+            set
+            {
+                try
+                {
+                    if (value == null) return;
+                    //格式：mm hh:mm dd:hh:mm
+                    string[] duration = value.Split(':', '：');
+                    if (duration.Length == 1)
+                    {
+                        MAIN_ENGINE_CUMTIME = decimal.Parse(duration[0]);
+                    }
+                    else if (duration.Length == 2)
+                    {
+                        MAIN_ENGINE_CUMTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
+                    }
+                    else if (duration.Length == 3)
+                    {
+                        MAIN_ENGINE_CUMTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new MessageException("主机累计时间有误\n" + e.Message);
+                }
+            }
+        }
     }
 }
