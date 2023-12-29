@@ -270,16 +270,22 @@ namespace EAM.Special.Services
             return AjaxResult.Success(1);
         }
 
+        public class BUILDCOUNT : BUILD_COUNT
+        {
+            public string START_DATE { get; set; }
+            public int YEAR { get; set; }
+            public int MONTH { get; set; }
+        }
         /// <summary>
         /// 年份查询
         /// </summary>
         /// <returns></returns>
-        public async Task<GridData> QryYearAsync(GridRequest request,string startdate, string enddate)
+        public async Task<GridData> QryYearAsync(GridRequest request, string startdate, string enddate)
         {
             DateTime b_time = Convert.ToDateTime(startdate);
             DateTime e_time = Convert.ToDateTime(enddate);
             var filterData = await _dbContext.Query<BUILD_COUNT>()
-                .Where(c=>c.STARTDATE >= b_time && c.STARTDATE < e_time)
+                .Where(c => c.STARTDATE >= b_time && c.STARTDATE < e_time)
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
                 .Select((a, b) => new
                 {
@@ -323,11 +329,11 @@ namespace EAM.Special.Services
                 a.DEVICE_NAME,
                 a.DEPT_ID,
             })
-            .Select(c => new
+            .Select(c => new BUILDCOUNT
             {
                 MONTH = c.Key.MONTH,
                 YEAR = c.Key.YEAR,
-                STARTDATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
+                START_DATE = $"{c.Key.YEAR}-{c.Key.MONTH:D2}",
                 DEVICE_NAME = c.Key.DEVICE_NAME,
                 SHIPTIMES = c.Sum(item => item.SHIPTIMES ?? 0),
                 SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0),
