@@ -23,7 +23,6 @@
             class: getQueryStringByName("c"),
             dataRole: [],
             dataCorp: [],
-            initPassword: "",
             setConfig: function () {
                 var me = this;
                 var charLength = 7;
@@ -130,10 +129,6 @@
                         me.dataRole = data.role;
                         me.dataCorp = data.corp;
                         me.dataStation = data.station;
-                        me.initPassword = data.initPassword;
-                        if (me.grid) {
-                            me.grid.set('title', '<span style="color: Red; ">初始密码为' + me.initPassword + '</span>');
-                        }
                         var editor = null;
                         if (me.searchForm) {
                             editor = me.searchForm.getEditor("_search_ROLE");
@@ -157,7 +152,6 @@
                 } : { op: 'and', rules: [] };
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    title: '<span style="color: Red; ">初始密码为' + me.initPassword + '</span>',
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
@@ -354,7 +348,7 @@
                     LG.tip('只能选择一行做密码初始化服务!');
                     return;
                 }
-                $.ligerDialog.confirm('确定初始化密码为' + me.initPassword + '吗?', function (confirm) {
+                $.ligerDialog.confirm('确定初始化密码吗?', function (confirm) {
                     if (!confirm) return;
                     for (var i = 0, len = rows.length; i < len; i++) {
                         var row = rows[i];
@@ -367,8 +361,8 @@
                             url: 'user/doInitPassword',
                             loading: '正在保存中...',
                             data: { id: row.USERID },
-                            success: function () {
-                                LG.showSuccess('密码被初始化为' + me.initPassword);
+                            success: function (data) {
+                                LG.showSuccess('密码被初始化为' + data);
                             },
                             error: function (message) {
                                 LG.showError(message);

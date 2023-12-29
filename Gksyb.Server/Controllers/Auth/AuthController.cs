@@ -328,6 +328,8 @@ namespace Gksyb.Server.Controllers.Auth
         {
             await configurationService.UpdateCacheAsync();
             await roleModuleService.Clear(options.Value.RoleAppName, CurrentUser.MenuAppname);
+            await roleModuleService.Clear(options.Value.RoleAppName, options.Value.AppName);
+            await roleModuleService.Clear(options.Value.RoleAppName, options.Value.MobileAppName);
             return AjaxResult.Success();
         }
     }

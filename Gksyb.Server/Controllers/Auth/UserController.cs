@@ -77,7 +77,7 @@ namespace Gksyb.Server.Controllers.Auth
         [JsToken]
         public async Task<AjaxResult> DoInitPassword(long? id)
         {
-            return await _service.DoInitPassword(id);
+            return AjaxResult.Success(await _service.DoInitPassword(id), default);
         }
 
         /// <summary>

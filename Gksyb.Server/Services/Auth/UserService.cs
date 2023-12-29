@@ -137,18 +137,22 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> DoInitPassword(long? id)
+        public async Task<string> DoInitPassword(long? id)
         {
-            if (!id.HasValue) return AjaxResult.Error("请传递参数");
-            var initPassWord = UserSession.Encrypt(_options.InitPassWord);
-            var userName = await _dbContext.Query<CF_USER>().Where(c => c.USERID == id.Value).Select(c => c.LOGINNAME).FirstOrDefaultAsync();
-            var row = await _dbContext.UpdateAsync<CF_USER>(c => c.USERID == id.Value, c => new CF_USER()
+            MessageException.ThrowIf(!id.HasValue, "请传递参数");
+            var user = await _dbContext.Query<CF_USER>().Where(c => c.USERID == id.Value).Select(c => new CF_USER()
             {
-                LOGINPASSWORD = initPassWord
-            });
-            if (row < 1) return AjaxResult.Error("找不到此用户");
-            await _dbContext.UserLogAsync("密码修改", $"{userName}密码修改", $"{_user.UserName}初始化{userName}的密码");
-            return AjaxResult.Success("成功");
+                USERID = c.USERID,
+                LOGINNAME = c.LOGINNAME,
+                LOGINPASSWORD = c.LOGINPASSWORD
+            }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(user == null, "找不到此用户");
+            var initPassWord = PasswordHelper.Generate();
+            _dbContext.TrackEntity(user);
+            user.LOGINPASSWORD = UserSession.Encrypt(initPassWord);
+            _dbContext.Update(user);
+            await _dbContext.UserLogAsync("密码修改", $"{user.LOGINNAME}密码修改", $"{_user.UserName}初始化{user.LOGINNAME}的密码");
+            return initPassWord;
         }
 
         /// <summary>

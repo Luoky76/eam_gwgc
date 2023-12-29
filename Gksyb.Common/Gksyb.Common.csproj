@@ -7,7 +7,6 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'1'=='1'">
-		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
 
