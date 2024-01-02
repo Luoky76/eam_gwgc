@@ -23,10 +23,6 @@
     </form>
     <script type="text/javascript">
         'use strict';
-        var tableName;
-        var dataId;
-        var isView;
-        var fileMark;
         var business = {
             rootPath:'Material/SpCollect/',
             MenuNo: getQueryStringByName("MenuNo"),
@@ -162,6 +158,38 @@
                 me.loadToolbar();
                 me.bindGridEvent();
             },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAudited: function () {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING == "1") {
+                        LG.tip("有数据已提交，无法变更！");
+                        return true;
+                    }
+                }
+                return false;
+            },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
@@ -173,21 +201,27 @@
                             me.add();
                             break;
                         case "modify":
+                            if (!me.isSelectSingleRow() || me.isAudited()) break;
                             me.modify();
                             break;
                         case "delete":
+                            if (!me.isSelectRow() || me.isAudited()) break;
                             me.delete();
                             break;
                         case "submit":
+                            if (!me.isSelectSingleRow() || me.isAudited()) break;
                             me.submit();
                             break;
                         case "revoke":
+                            if (!me.isSelectSingleRow()) break;
                             me.revoke();
                             break;
                         case "detail":
+                            if (!me.isSelectSingleRow()) break;
                             me.detail();
                             break;
                         case "attach":
+                            if (!me.isSelectSingleRow()) break;
                             me.attach();
                             break;
                         case "Excel":
@@ -228,45 +262,25 @@
             modify: function (rowdata) { //修改
                 var me = this;
                 var rows = me.grid.getSelectedRows();
-                if (rows.length > 1) {
-                    LG.showError("不能选择多行")
-                    return
-                } else if (rows.length == 0) {
-                    LG.showError("请选择一行")
-                    return
-                }
                 var selected = rows[0];
-                if (selected.AUDITING == "1") {
-                    LG.tip('已提交，无法修改!');
+                if (rowdata) {
+                    selected = rowdata;
                 }
-
-                else {
-                    if (rowdata) {
-                        selected = rowdata;
-                    }
-                    if (selected) {
-                        $.ligerDialog.open({
-                            width: 1100,
-                            height: 750,
-                            allowClose: true,
-                            title: '修改物资请购',
-                            url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
-                            isHidden: false,
-                            showMax: false,
-                            showToggle: false,
-                            showMin: false,
-                            isResize: true,
-                            slide: false,
-                            onClosed: me.reload.bind(me),
-                            data: { "sid": selected.COLLECT_ID, "view": selected.AUDITING }
-                        });
-
-
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
-
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 750,
+                    allowClose: true,
+                    title: '修改物资请购',
+                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": selected.COLLECT_ID, "view": selected.AUDITING }
+                });
             },
             save: function () { //保存
                 var me = this;
@@ -302,23 +316,14 @@
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        if (selected[0].AUDITING == "1") {
-                            LG.tip('已提交，无法删除!');
+                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (confirm) {
+                            for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                me.grid.deleteRow(selected[i]);
+                            }
+                            me.save();
                         }
-                        else {
-                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                                if (confirm) {
-                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                        me.grid.deleteRow(selected[i]);
-                                    }
-                                    me.save();
-                                }
-                            });
-                        }
-                    } else {
-                        LG.tip('请选择行!');
-                    }
+                    });
                 }
             },
             submit: function () {    //提交
@@ -411,11 +416,7 @@
             },
             detail: function () { //明细
                 var me = this;
-                if (me.grid.getSelectedRows().length != 1) {
-                    LG.showError("请选择一条记录");
-                    return
-                }
-                var apply = me.grid.getSelectedRows()[0];
+                var apply = me.grid.getSelectedRow();
                 if (apply.COLLECT_ID == null) {
                     LG.showError("请先保存再打开明细");
                     return
@@ -439,35 +440,21 @@
             attach: function () {
                 var me = this;
                 if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length == 1) {
-                        me.f_rowAttachManage(selected[0].COLLECT_ID, selected[0].AUDITING != "0");
-                    }
-                    else {
-                        LG.tip('请选择一项记录!');
-                    }
+                    var selected = me.grid.getSelectedRow();
+                    $.ligerDialog.open({
+                        width: 960,
+                        height: 540,
+                        allowClose: true,
+                        isHidden: false,
+                        //表名 主键 只读
+                        data: { "tableName": "SP_COLLECT", "dataId": selected.COLLECT_ID, "isView": selected.AUDITING != "0", "fileMark": 0 },
+                        url: '../../filemanager/file-attachment-content.html',
+                        title: '附件管理',
+                        onClose: function () {
+                            me.reload();
+                        }
+                    });
                 }
-            },
-            //附件管理
-            f_rowAttachManage: function (dataid, isview) {
-                var me = this;
-                isView = isview;
-                dataId = dataid;
-                fileMark = 0;
-                tableName = "SP_COLLECT";
-                $.ligerDialog.open({
-                    width: 960,
-                    height: 540,
-                    allowClose: true,
-                    isHidden: false,
-                    //表名 主键 只读
-                    //data: { "tableName": "SP_COLLECT", "dataId": dataid, "isView": isView, "fileMark": 0 },
-                    url: '../../filemanager/file-attachment-content.html',
-                    title: '附件管理',
-                    onClose: function () {
-                        me.reload();
-                    }
-                });
             },
             bindGridEvent: function () {
                 var me = this;
