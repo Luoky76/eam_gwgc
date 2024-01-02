@@ -23,6 +23,10 @@
     </form>
     <script type="text/javascript">
         'use strict';
+        var tableName;
+        var dataId;
+        var isView;
+        var fileMark;
         var business = {
             rootPath:'Material/SpCollect/',
             MenuNo: getQueryStringByName("MenuNo"),
@@ -177,11 +181,14 @@
                         case "submit":
                             me.submit();
                             break;
-                        case "cancelSubmit":
-                            me.cancelSubmit();
+                        case "revoke":
+                            me.revoke();
                             break;
                         case "detail":
                             me.detail();
+                            break;
+                        case "attach":
+                            me.attach();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -366,7 +373,7 @@
                     LG.tip('请选择行!');
                 }
             },
-            cancelSubmit: function () {    //撤销
+            revoke: function () {    //撤销
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 if (selected.length > 0) {
@@ -383,10 +390,9 @@
                     if (!flag) {
                         return;
                     }
-
                     LG.ajax({
                         jsToken: true,
-                        url: me.rootPath + 'CancelSubmit',
+                        url: me.rootPath + 'Revoke',
                         loading: '正在撤销中...',
                         data: { "sids": sids },
                         success: function () {
@@ -418,7 +424,7 @@
                     width: 1100,
                     height: 750,
                     allowClose: true,
-                    title: '[修改请购明细]',
+                    title: '[修改需求申请明细]',
                     url: "sp_collect_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,
@@ -428,6 +434,39 @@
                     slide: false,
                     onClosed: me.reload.bind(me),
                     data: { "sid": apply.COLLECT_ID, "view": apply.AUDITING }
+                });
+            },
+            attach: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        me.f_rowAttachManage(selected[0].COLLECT_ID, selected[0].AUDITING != "0");
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+            //附件管理
+            f_rowAttachManage: function (dataid, isview) {
+                var me = this;
+                isView = isview;
+                dataId = dataid;
+                fileMark = 0;
+                tableName = "SP_COLLECT";
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    //表名 主键 只读
+                    //data: { "tableName": "SP_COLLECT", "dataId": dataid, "isView": isView, "fileMark": 0 },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reload();
+                    }
                 });
             },
             bindGridEvent: function () {

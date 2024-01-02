@@ -407,7 +407,7 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        public async Task<AjaxResult> Revoke(List<string> sids)
         {
             var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
 

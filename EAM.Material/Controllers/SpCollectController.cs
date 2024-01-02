@@ -75,9 +75,9 @@ namespace EAM.Material.Controllers
         }
 
         [HttpPost]
-        public async Task<AjaxResult> CancelSubmitAsync(List<string> sids)
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.CancelSubmit(sids), "成功");
+            return AjaxResult.Success(await _service.Revoke(sids), "成功");
         }
 
         [HttpPost]
