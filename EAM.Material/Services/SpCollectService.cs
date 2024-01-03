@@ -70,6 +70,8 @@ namespace EAM.Material.Services
                     CONSULT_PROVIDER = c.CONSULT_PROVIDER,
                     MEMO = c.MEMO
                 })
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.COLLECT_CODE)
                 .GetGridData(request);
             foreach (var item in (List<SpCollectRes>)res.Rows)
             {
@@ -355,9 +357,9 @@ namespace EAM.Material.Services
                         BUY_USER = item.COLLECT_USER,
                         PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
-                        CREATE_USERID = _userSession.UserID.ToString(),
+                        CREATE_USERID = "", //原为_userSession.UserID.ToString()，因OA回调时并无登录用户，故取消
                         CREATEDATE = dt,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
+                        MODIFY_USERID = "",
                         MODIFYDATE = dt,
                         AUDITING = "0",
                         IS_STOP = "0"
@@ -385,9 +387,9 @@ namespace EAM.Material.Services
                         req.SPDET_ID = det.REQUEST_DET_ID;
 
                         req.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        req.CREATE_USERID = _userSession.UserID.ToString();
+                        req.CREATE_USERID = "";
                         req.CREATEDATE = dt;
-                        req.MODIFY_USERID = _userSession.UserID.ToString();
+                        req.MODIFY_USERID = "";
                         req.MODIFYDATE = dt;
 
                         req.COUNT = det.CHECK_NUM;
@@ -407,7 +409,7 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        public async Task<AjaxResult> Revoke(List<string> sids)
         {
             var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
 
@@ -447,7 +449,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_COLLECT_DET>().GetGridData(request);
+            return await _dbContext.Query<SP_COLLECT_DET>()
+                .OrderBy(a => a.SP_CODE)
+                .GetGridData(request);
         }
 
         /// <summary>
@@ -691,7 +695,7 @@ namespace EAM.Material.Services
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
                 .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                  .Where((a, b) => a.SP_STATUS == "20" && b.AUDITING == "1")
+                .Where((a, b) => a.SP_STATUS == "20" && b.AUDITING == "1")
                 .Select((a, b) => new
                 {
                     a.SPDET_ID,
@@ -708,6 +712,7 @@ namespace EAM.Material.Services
                     b.DEPT_NAME,
                     b.APPLY_DATE
                 })
+                .OrderBy(c => c.APPLY_DATE)
                 .GetGridData(request);
         }
 
@@ -808,7 +813,9 @@ namespace EAM.Material.Services
                     SEC_DEPT = b.SEC_DEPT,
                     SEC_DEPTID= b.SEC_DEPTID,
                     APPLY_USERID = b.APPLY_USERID
-                }).ToList();
+                })
+                .OrderBy(a => a.SP_CODE)
+                .ToList();
 
             var importRequest = new List<SP_COLLECT_REQUEST>();
             foreach (var item in appledet)

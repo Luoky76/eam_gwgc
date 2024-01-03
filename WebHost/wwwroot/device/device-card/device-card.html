@@ -1,0 +1,518 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="设备" id="mainmenu">
+            <ul id="maintree" style="margin-top:5px;"></ul>
+        </div>
+        <div position="center" title="设备列表">
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <div id="iframeloading" class='l-loading'>
+            </div>
+            <form id="mainform">
+                <div id="maingrid" style="float: left">
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--<div id="mainsearch">
+            <form action="" id="formsearch" class="l-form">
+            </form>
+        </div>
+        <form action="" id="mainform">
+            <div id="maingrid">
+            </div>
+        </form>-->
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            iframeloading: $("#iframeloading"),
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
+                            { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "上一节点id", name: "_search_DEPT_ID", dbname: "DEPT_ID", op: "equal", type: "hidden", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "chk", hide: true },
+                            { display: "DEVICE_ID", name: "DEVICE_ID", width: 100, type: "text", hide: true },
+                            { display: "设备编号", name: "DEVICE_NO", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备名称", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            //{ display: "设备类别", name: "DEVICE_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "使用部门", name: "DEPT_NAME", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 100 } },
+                            { display: "维保部门", name: "WDEPT_NAME", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 100 } },
+                            { display: "供应商", name: "PROVIDER_NAME", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "制造厂", name: "FACTORY", width: 100, type: "text", editor: { type: 'text' }},
+
+                        ]
+                    }
+                };
+            },
+            dataCorp: [],
+            auditing: [],
+            user: [],
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            devicetype: [],
+            assetStatus: [
+                { ID: "1", TEXT: "在用", VALUE: "1" }
+            ],
+            yesno: [
+                { "ID": "0", "TEXT": "否" }, { "ID": "1", "TEXT": "是" }
+            ],
+            purpose: [
+                { "ID": "0", "TEXT": "非生产" }, { "ID": "1", "TEXT": "生产" }
+            ],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceCard/comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.auditing = data.Auditing;
+                        me.user = data.User;
+                        me.dataCorp = data.Corp;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: { group: "list" },
+                    url: 'Device/DeviceCard/List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'TYPE_ID', op: 'equal', value: "2" }]
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    },
+                    onDblClickRow: function (rowdata) {
+                        me.view(rowdata);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+
+            setTree: function () {
+                var me = this;
+                var rootValue = "ROOT";
+                me.tree = $("#maintree").ligerTree({
+                    url: "Device/DeviceCard/Tree",
+                    parms: {},
+                    nodeWidth: 160,
+                    slide: false,
+                    checkbox: false,
+                    single: true,
+                    needCancel: false,
+                    idFieldName: 'DEPT_ID',
+                    textFieldName: 'DEVICE_NAME',
+                    parentIDFieldName: 'PARENTID',
+                    iconClsFieldName: "ICON",
+                    isExpand: 2,
+                    onSuccess: function (data) {
+                        $(".l-tree .l-body span").each(function () {
+                            var $this = $(this);
+                            var text = $this.text();
+                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
+                        });
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.DEPT_ID);
+                        else me.tree.selectNode(rootValue);
+                    },
+                    onSelect: function (node) {
+                        me.iframeloading.hide();
+                        var nodeData = node.data;
+                        me.currentNode = node;
+                        var where = {};
+                        if (nodeData) {
+                            var parentNo = nodeData.DEPT_ID;
+                            $("#_search_DEPT_ID").val((parentNo == "ROOT" ? "" : parentNo));
+                            where = {
+                                rules: [],
+                                groups: [{
+                                    rules: [], op: "and"
+                                }], op: "and"
+                            };
+                            if (parentNo === rootValue) {
+                                parentNo = "";
+                                //where.groups[0].rules.push({ field: "DEPT_ID", op: "isnull" });
+                                //where.groups[0].rules.push({ field: "DEPT_ID", op: "equal", value: "0" });
+                            } else {
+                                where.rules.push({ field: "DEPT_ID", op: "equal", value: parentNo, },);
+                                where.rules.push({ field: "TYPE_ID", op: "equal", value: "2", });
+                                me.grid.options.NoFirstSearch = false;
+                            }
+
+                            me.grid.set('parms', { "where": JSON2.stringify(where) });
+                            me.currentMenuParentNo = parentNo;
+                            me.reload();
+                        }
+                    }
+                });
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "sumbit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.sumbit();
+                                }
+                            });
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function (rowdata) { //查看
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+
+                if (rowdata) {
+                    selected = rowdata;
+                }
+                if (selected) {
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[查看]设备卡片',
+                        url: "device-card-detail.html?MenuNo=" + me.menuNo,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.buttons[0].click,
+                        data: { "sid": selected.DEVICE_ID, "isView": true }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            sumbit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("该数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/DeviceCard/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            add: function () { //新增
+                var me = this;
+                if (me.currentNode.data.PARENTID == "") {
+                    LG.tip('请选择左侧设备!');
+                }
+                else if (me.currentNode.data.TYPE == "0") {
+                    LG.tip('无法添加子设备!');
+                }
+                else {
+                    var deptid = me.currentNode.data.DEPT_ID;
+                    var deptname = me.currentNode.data.DEPT_NAME;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[新增]设备卡片',
+                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": null, "deptid": deptid, "deptname": deptname }
+                    });
+                }
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (selected.length > 1) {
+                    LG.showError("不能选择多行")
+                    return
+                } else if (selected.length == 0) {
+                    LG.showError("请选择一行")
+                    return
+                }
+                //注：原为已提交不可修改，现改为均可修改，2023.10.07
+                if (selected) {
+                    var sid = selected.DEVICE_ID;
+                    $.ligerDialog.open({
+                        width: me.detailWidth,
+                        height: me.detailHeight,
+                        allowClose: true,
+                        title: '[修改]设备卡片',
+                        url: "device-card-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                        isHidden: false,
+                        showMax: false,
+                        showToggle: false,
+                        showMin: false,
+                        isResize: true,
+                        slide: false,
+                        onClosed: me.reload.bind(me),
+                        data: { "sid": sid }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/DeviceCard/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        for (var i = 0; i < selected.length; i++) {
+                            //注：原为已提交不可修改，现改为均可修改，2023.10.07
+                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                                if (confirm) {
+                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                        me.grid.deleteRow(selected[i]);
+                                    }
+                                    me.save();
+                                }
+                            });
+                            break;
+                        }
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.iframeloading.show();
+                $("#layout").ligerLayout({ leftWidth: 200 });
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.setTree();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+    </html>

@@ -67,6 +67,9 @@ namespace EAM.Material.Services
                     TYPE_NAME = c.TYPE_NAME,
                     MEMO = c.MEMO
                 })
+                .OrderBy(c => c.AUDITING)
+                .ThenBy(c => c.AUDITING_CHECK)
+                .ThenBy(c => c.APPLY_NO)
                 .GetGridData(request);
             foreach (var item in (List<SpApplyRes>)res.Rows)
             {
@@ -450,7 +453,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_APPLY_DETAIL>().GetGridData(request);
+            return await _dbContext.Query<SP_APPLY_DETAIL>()
+                .OrderBy(c => c.SP_CODE)
+                .GetGridData(request);
         }
 
         /// <summary>
@@ -622,8 +627,8 @@ namespace EAM.Material.Services
         public async Task<GridData> ApplyListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
-                 .LeftJoin<SP_APPLY>((a,b)=>a.APPLY_ID == b.APPLY_ID)
-                 .Where((a, b) =>b.AUDITING == "1")
+                .LeftJoin<SP_APPLY>((a,b)=>a.APPLY_ID == b.APPLY_ID)
+                .Where((a, b) =>b.AUDITING == "1")
                 .Select((a, b) => new SpApplyDetRes
                 {
                     SP_STATUS = a.SP_STATUS,
@@ -642,6 +647,7 @@ namespace EAM.Material.Services
                     MEMO = a.MEMO,
                     SPDET_ID = a.SPDET_ID
                 })
+                .OrderBy(c => c.SP_CODE)
                 .GetGridData(request);
         }
 

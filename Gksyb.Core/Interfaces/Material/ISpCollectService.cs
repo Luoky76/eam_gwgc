@@ -28,7 +28,7 @@ namespace Gksyb.Core.Interfaces.Material
 
         Task<int> Submit(List<string> sids);
         Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass);
-        Task<AjaxResult> CancelSubmit(List<string> sids);
+        Task<AjaxResult> Revoke(List<string> sids);
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request);
         Task<GridData> RequestListAsync(GridRequest request);
