@@ -355,9 +355,9 @@ namespace EAM.Material.Services
                         BUY_USER = item.COLLECT_USER,
                         PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
-                        CREATE_USERID = _userSession.UserID.ToString(),
+                        CREATE_USERID = "", //原为_userSession.UserID.ToString()，因OA回调时并无登录用户，故取消
                         CREATEDATE = dt,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
+                        MODIFY_USERID = "",
                         MODIFYDATE = dt,
                         AUDITING = "0",
                         IS_STOP = "0"
@@ -385,9 +385,9 @@ namespace EAM.Material.Services
                         req.SPDET_ID = det.REQUEST_DET_ID;
 
                         req.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        req.CREATE_USERID = _userSession.UserID.ToString();
+                        req.CREATE_USERID = "";
                         req.CREATEDATE = dt;
-                        req.MODIFY_USERID = _userSession.UserID.ToString();
+                        req.MODIFY_USERID = "";
                         req.MODIFYDATE = dt;
 
                         req.COUNT = det.CHECK_NUM;

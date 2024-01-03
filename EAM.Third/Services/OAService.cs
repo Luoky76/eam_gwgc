@@ -68,9 +68,11 @@ namespace EAM.Third.Services
             /* { 
              * taskId:1,
              * isFinish:false,
+             * primary_key: 1735590940259123200,
+             * fun_name: "_spCollectService.ApprovalCompletedAsync",
              * detail:[{
              *      operation:"提交",//"退回"
-             *      memo:"意见"
+             *      memo:"意见",
              *      receiveTime:"2021-10-01 10:10:10",//任务接收时间
              *      dealTime:"2021-10-01 10:10:10",//任务处理时间
              *      delUser:"任务处理人",
@@ -91,12 +93,22 @@ namespace EAM.Third.Services
             await LogAsync("oa回调", "开始", json);
 
             JObject jObj = JObject.Parse(json);
-            if (jObj["taskId"] == null || string.IsNullOrEmpty(jObj["taskId"]?.ToString()))
+            if (string.IsNullOrEmpty(jObj["taskId"]?.ToString()))
             {
                 msg = "回调参数taskId缺少值";
                 return "{\"status\":false,\"msg\":\"" + msg + "\"}";
             }
-            if (jObj["detail"] == null || string.IsNullOrEmpty(jObj["detail"]?.ToString()))
+            if (string.IsNullOrEmpty(jObj["primary_key"]?.ToString()))
+            {
+                msg = "回调参数primary_key缺少值";
+                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
+            }
+            if (string.IsNullOrEmpty(jObj["fun_name"]?.ToString()))
+            {
+                msg = "回调参数fun_name缺少值";
+                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
+            }
+            if (string.IsNullOrEmpty(jObj["detail"]?.ToString()))
             {
                 msg = "回调参数detail缺少值";
                 return "{\"status\":false,\"msg\":\"" + msg + "\"}";
@@ -125,21 +137,21 @@ namespace EAM.Third.Services
                     RECEIVE_TIME = Convert.ToDateTime(item["receiveTime"]?.ToString()),
                     DEAL_TIME = Convert.ToDateTime(item["dealTime"]?.ToString()),
                     DEAL_USER = item["delUser"]?.ToString() ?? "",
-                    NODE_NAME = item["nodeName"]?.ToString() ?? ""  ,
+                    NODE_NAME = item["nodeName"]?.ToString() ?? "",
                     IS_REBACK = item["isReback"]?.ToString() == "true" ? "1" : "0"
                 });
                 if (canTransationOper) _dbContext.Session.CommitTransaction();
 
                 //调用物资采购的回调函数
-                var isReject = item["operation"]?.ToString() == "退回";
+                var isPass = item["operation"]?.ToString() == "提交"; //!= "退回"
                 var fun_name = item["fun_name"]?.ToString();
                 switch (fun_name)
                 {
                     case "_spCollectService.ApprovalCompletedAsync":
-                        await _spCollectService.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
+                        await _spCollectService.ApprovalCompletedAsync(jObj["primary_key"]?.ToString(), isPass);
                         break;
                     case "_repairPlanService.ApprovalCompletedAsync":
-                        await _repairPlanService.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
+                        await _repairPlanService.ApprovalCompletedAsync(jObj["primary_key"]?.ToString(), isPass);
                         break;
                     default:
                         throw new MessageException("未找到匹配的回调函数");
