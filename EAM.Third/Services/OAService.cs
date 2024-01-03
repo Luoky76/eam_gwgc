@@ -144,7 +144,7 @@ namespace EAM.Third.Services
 
                 //调用物资采购的回调函数
                 var isPass = item["operation"]?.ToString() == "提交"; //!= "退回"
-                var fun_name = item["fun_name"]?.ToString();
+                var fun_name = jObj["fun_name"]?.ToString();
                 switch (fun_name)
                 {
                     case "_spCollectService.ApprovalCompletedAsync":

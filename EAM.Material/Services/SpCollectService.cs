@@ -70,6 +70,8 @@ namespace EAM.Material.Services
                     CONSULT_PROVIDER = c.CONSULT_PROVIDER,
                     MEMO = c.MEMO
                 })
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.COLLECT_CODE)
                 .GetGridData(request);
             foreach (var item in (List<SpCollectRes>)res.Rows)
             {
@@ -447,7 +449,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_COLLECT_DET>().GetGridData(request);
+            return await _dbContext.Query<SP_COLLECT_DET>()
+                .OrderBy(a => a.SP_CODE)
+                .GetGridData(request);
         }
 
         /// <summary>
@@ -691,7 +695,7 @@ namespace EAM.Material.Services
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
                 .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                  .Where((a, b) => a.SP_STATUS == "20" && b.AUDITING == "1")
+                .Where((a, b) => a.SP_STATUS == "20" && b.AUDITING == "1")
                 .Select((a, b) => new
                 {
                     a.SPDET_ID,
@@ -708,6 +712,7 @@ namespace EAM.Material.Services
                     b.DEPT_NAME,
                     b.APPLY_DATE
                 })
+                .OrderBy(c => c.APPLY_DATE)
                 .GetGridData(request);
         }
 
@@ -808,7 +813,9 @@ namespace EAM.Material.Services
                     SEC_DEPT = b.SEC_DEPT,
                     SEC_DEPTID= b.SEC_DEPTID,
                     APPLY_USERID = b.APPLY_USERID
-                }).ToList();
+                })
+                .OrderBy(a => a.SP_CODE)
+                .ToList();
 
             var importRequest = new List<SP_COLLECT_REQUEST>();
             foreach (var item in appledet)
