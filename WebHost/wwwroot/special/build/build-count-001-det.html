@@ -76,7 +76,11 @@
                             { display: "小计(吨)", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: { disabled: true } },
                             { display: "补充(吨)", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存(吨)", name: "STOCK2", newline: false, width: 200, type: "float", options: { disabled: true } },
-                            { display: "日耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: {}, group: "滑油" },
+
+                            { display: "日耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
+                            { display: "补充(吨)", name: "LUBRICATE_SUPPLEMENT", newline: false, width: 200, type: "float", options: { precision: 3 } },
+                            { display: "库存(吨)", name: "LUBRICATE_STOCK", newline: false, width: 200, type: "float", options: { precision: 3, disabled: true } },
+
                             { display: "简要说明", name: "MEMO", newline: true, width: 846, type: "textarea", options: {}, group: "其它信息" }
                         ]
                     }

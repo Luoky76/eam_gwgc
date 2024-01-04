@@ -322,9 +322,23 @@
                                         display: "日耗", name: "LUBRICATE", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
-                                            align: 'center'
+                                            align: 'center',
+                                            render: function (e) {
+                                                return "<div>" + e.sum + "</div>";
+                                            }
                                         }
                                     },
+                                    {
+                                        display: "补充", name: "LUBRICATE_SUPPLEMENT", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                return "<div>" + e.sum + "</div>";
+                                            }
+                                        },
+                                    },
+                                    { display: "库存", name: "LUBRICATE_STOCK", minWidth: 100, type: "float", editor: { type: 'float' } }
                                 ]
                             },
                             { display: "简要说明", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } }

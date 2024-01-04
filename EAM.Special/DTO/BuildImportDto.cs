@@ -372,6 +372,20 @@ namespace EAM.Special.DTO
         public decimal? LUBRICATE { get; set; }
 
         /// <summary>
+        /// 滑油补充
+        /// </summary>
+        [ImporterHeader(Name = "滑油补充")]
+        [Display(Name = "滑油补充")]
+        public decimal? LUBRICATE_SUPPLEMENT { get; set; }
+
+        /// <summary>
+        /// 滑油库存
+        /// </summary>
+        [ImporterHeader(Name = "滑油库存")]
+        [Display(Name = "滑油库存")]
+        public decimal? LUBRICATE_STOCK { get; set; }
+
+        /// <summary>
         /// 柴油库存
         /// </summary>
         [ImporterHeader(Name = "柴油库存")]

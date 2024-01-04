@@ -80,6 +80,8 @@ namespace EAM.Special.Services
                     a.SUPPLEMENT2,
                     a.STOCK2,
                     a.LUBRICATE,
+                    a.LUBRICATE_SUPPLEMENT,
+                    a.LUBRICATE_STOCK,
                     a.MEMO,
                     a.WAIT_WORK,
                     a.WORK_TIME,
@@ -134,6 +136,8 @@ namespace EAM.Special.Services
                     c.SUPPLEMENT2,
                     c.STOCK2,
                     c.LUBRICATE,
+                    c.LUBRICATE_SUPPLEMENT,
+                    c.LUBRICATE_STOCK,
                     c.MEMO,
                     c.WAIT_WORK,
                     c.WORK_TIME,
@@ -161,21 +165,22 @@ namespace EAM.Special.Services
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
 
-            //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
+            //将上次填报的淡水、柴油、滑油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
             var last_data = await _dbContext.Query<BUILD_COUNT>
                 (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
                 .Select(a => new
                 {
                     a.STARTDATE,
                     a.STOCK,
-                    a.STOCK2
+                    a.STOCK2,
+                    a.LUBRICATE_STOCK
                 })
                 .OrderByDesc(b => b.STARTDATE)
                 .FirstAsync();
 
             entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
             entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
-
+            entity.LUBRICATE_STOCK = (last_data?.LUBRICATE_STOCK ?? 0) - (entity.LUBRICATE ?? 0) + (entity.LUBRICATE_SUPPLEMENT ?? 0);
 
             var isex = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
@@ -195,20 +200,22 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeUpdate(BUILD_COUNT entity)
         {
-            //将上次填报的淡水、柴油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
+            //将上次填报的淡水、柴油、滑油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
             var last_data = await _dbContext.Query<BUILD_COUNT>
                 (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
                 .Select(a => new
                 {
                     a.STARTDATE,
                     a.STOCK,
-                    a.STOCK2
+                    a.STOCK2,
+                    a.LUBRICATE_STOCK
                 })
                 .OrderByDesc(b => b.STARTDATE)
                 .FirstAsync();
 
             entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
             entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
+            entity.LUBRICATE_STOCK = (last_data?.LUBRICATE_STOCK ?? 0) - (entity.LUBRICATE ?? 0) + (entity.LUBRICATE_SUPPLEMENT ?? 0);
             await Task.CompletedTask;
         }
 
@@ -315,6 +322,8 @@ namespace EAM.Special.Services
                     a.SUPPLEMENT2,
                     a.STOCK2,
                     a.LUBRICATE,
+                    a.LUBRICATE_SUPPLEMENT,
+                    a.LUBRICATE_STOCK,
                     a.WAIT_WORK,
                     a.WORK_TIME,
                     a.ANCHOR_TIME,
@@ -356,6 +365,8 @@ namespace EAM.Special.Services
                 SUPPLEMENT2 = c.Sum(item => item.SUPPLEMENT2 ?? 0m),
                 STOCK2 = c.Sum(item => item.STOCK2 ?? 0m),
                 LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0m),
+                LUBRICATE_SUPPLEMENT = c.Sum(item => item.LUBRICATE_SUPPLEMENT ?? 0m),
+                LUBRICATE_STOCK = c.Sum(item => item.LUBRICATE_STOCK ?? 0m),
             }).ToList();
             GridData gridData = new GridData()
             {

@@ -80,21 +80,21 @@ namespace Gksyb.Model
         public decimal? OTHERSTOP { get; set; }
 
         /// <summary>
-        /// 日耗
+        /// 淡水日耗
         /// </summary>
-        [Description("日耗")]
+        [Description("淡水日耗")]
         public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
-        /// 补充
+        /// 淡水补充
         /// </summary>
-        [Description("补充")]
+        [Description("淡水补充")]
         public decimal? SUPPLEMENT { get; set; }
 
         /// <summary>
-        /// 库存
+        /// 淡水库存
         /// </summary>
-        [Description("库存")]
+        [Description("淡水库存")]
         public decimal? STOCK { get; set; }
 
         /// <summary>
@@ -116,21 +116,21 @@ namespace Gksyb.Model
         public decimal? PUMP { get; set; }
 
         /// <summary>
-        /// 小计
+        /// 柴油小计
         /// </summary>
-        [Description("小计")]
+        [Description("柴油小计")]
         public decimal? SUBTOTAL { get; set; }
 
         /// <summary>
-        /// 补充
+        /// 柴油补充
         /// </summary>
-        [Description("补充")]
+        [Description("柴油补充")]
         public decimal? SUPPLEMENT2 { get; set; }
 
         /// <summary>
-        /// 库存
+        /// 柴油库存
         /// </summary>
-        [Description("库存")]
+        [Description("柴油库存")]
         public decimal? STOCK2 { get; set; }
 
         /// <summary>
@@ -138,6 +138,18 @@ namespace Gksyb.Model
         /// </summary>
         [Description("滑油日耗")]
         public decimal? LUBRICATE { get; set; }
+
+        /// <summary>
+        /// 滑油补充
+        /// </summary>
+        [Description("滑油补充")]
+        public decimal? LUBRICATE_SUPPLEMENT { get; set; }
+
+        /// <summary>
+        /// 滑油库存
+        /// </summary>
+        [Description("滑油库存")]
+        public decimal? LUBRICATE_STOCK { get; set; }
 
         /// <summary>
         /// 简要说明
@@ -213,9 +225,9 @@ namespace Gksyb.Model
         public string DEVICE_NAME { get; set; }
 
         /// <summary>
-        /// 待工
+        /// 待工时间
         /// </summary>
-        [Description("待工")]
+        [Description("待工时间")]
         public decimal? WAIT_WORK { get; set; }
 
         /// <summary>
