@@ -49,7 +49,7 @@
                         columns: [
                             //{ display: "主键", name: "BUILD_ID", minWidth: 100, type: "text", hide: true },
                             {
-                                display: "日期", name: "STARTDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
+                                display: "日期", name: "START_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM" },
                                 totalSummary: { render: function (column, data) { return "<span style='color:red'>&emsp;合计：</span>" } }
                             },
                             { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text" },
@@ -179,82 +179,37 @@
                                 ]
                             },
                             {
-                                display: "主机运行时间（小时:分钟）", columns: [
-                                    {
-                                        display: "运行时间", name: "MAIN_ENGINE_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
-                                    /*{
-                                        display: "累计时间", name: "MAIN_ENGINE_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },*/
-                                ]
+                                display: "主机运行时间（小时:分钟）", name: "MAIN_ENGINE_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center',
+                                    render: function (e) {
+                                        var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                        return "<div>" + text + "</div>";
+                                    }
+                                }
                             },
                             {
-                                display: "主发电机运行时间（小时:分钟）", columns: [
-                                    {
-                                        display: "运行时间", name: "MAIN_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
-                                    /*{
-                                        display: "累计时间", name: "MAIN_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },*/
-                                ]
+                                display: "主发电机运行时间（小时:分钟）", name: "MAIN_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center',
+                                    render: function (e) {
+                                        var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                        return "<div>" + text + "</div>";
+                                    }
+                                }
                             },
                             {
-                                display: "停泊发电机运行时间（小时:分钟）", columns: [
-                                    {
-                                        display: "运行时间", name: "MOORING_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
-                                    /*{
-                                        display: "累计时间", name: "MOORING_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },*/
-                                ]
+                                display: "停泊发电机运行时间（小时:分钟）", name: "MOORING_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center',
+                                    render: function (e) {
+                                        var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                        return "<div>" + text + "</div>";
+                                    }
+                                }
                             },
                             {
                                 display: "淡水（吨）", columns: [
