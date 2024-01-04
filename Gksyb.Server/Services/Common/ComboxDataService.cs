@@ -35,20 +35,22 @@ namespace Gksyb.Server.Services.Common
             var result = new ConcurrentDictionary<string, List<ComboxData>>();
             await Parallel.ForEachAsync(views, async (view, token) =>//开启多线程
             {
+                var keys = view.Key.Split("@#");
+                var key = keys.LastOrDefault();
                 try
                 {
-                    var key = view.Key.Split("@#").FirstOrDefault();
-                    if (_methodInfos.ContainsKey(key))
+                    var name = keys.FirstOrDefault();
+                    if (_methodInfos.ContainsKey(name))
                     {
-                        var invokeResult = _methodInfos[key].Invoke(this, new object[] { view.Value });
+                        var invokeResult = _methodInfos[name].Invoke(this, new object[] { view.Value });
                         if (invokeResult is Task<List<ComboxData>> task)//返回值判断
                         {
-                            result.TryAdd(view.Key, await task);
+                            result.TryAdd(key, await task);
                             return;
                         }
                         if (invokeResult is List<ComboxData> comboxData)
                         {
-                            result.TryAdd(view.Key, comboxData);
+                            result.TryAdd(key, comboxData);
                             return;
                         }
                     }
@@ -57,7 +59,7 @@ namespace Gksyb.Server.Services.Common
                 {
                     ex.ToString();
                 }
-                result.TryAdd(view.Key, new List<ComboxData>());
+                result.TryAdd(key, new List<ComboxData>());
             });
             return result;
         }

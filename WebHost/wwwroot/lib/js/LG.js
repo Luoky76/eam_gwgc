@@ -477,6 +477,8 @@
                         cls: o.BTNCLASS,
                         click: toolbarBtnItemClick,
                         text: o.BTNNAME.split("_")[0],
+                        tip: o.BTNSCRIPT,
+                        disabled: (o.BTNCLASS.indexOf("l-button-disabled") >= 0 ? true : false),
                         icon: o.BTNICON,
                         id: o.BTNNO
                     });
