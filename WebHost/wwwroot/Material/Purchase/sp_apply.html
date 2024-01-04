@@ -26,6 +26,14 @@
         var business = {
             rootPath:'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             typeData: [],
             exigData: [],
@@ -134,8 +142,8 @@
                             rules: []
                         })
                     },
-                    sortName: 'APPLY_DATE',
-                    sortOrder: 'DESC',
+                    sortName: '',
+                    sortOrder: '',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
@@ -164,11 +172,46 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
                 me.bindGridEvent();
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAudited: function () {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING == "1") {
+                        LG.tip("有数据已提交，无法变更！");
+                        return true;
+                    }
+                }
+                return false;
             },
             loadToolbar: function () {
                 var me = this;
@@ -181,18 +224,23 @@
                             me.add();
                             break;
                         case "modify":
+                            if (!me.isSelectSingleRow() || me.isAudited()) break;
                             me.modify();
                             break;
                         case "delete":
+                            if (!me.isSelectRow() || me.isAudited()) break;
                             me.delete();
                             break;
                         case "submit":
+                            if (!me.isSelectSingleRow() || me.isAudited()) break;
                             me.submit();
                             break;
                         case "cancelSubmit":
+                            if (!me.isSelectSingleRow()) break;
                             me.cancelSubmit();
                             break;
                         case "detail":
+                            if (!me.isSelectSingleRow()) break;
                             me.detail();
                             break;
                         case "Excel":
@@ -212,11 +260,30 @@
             
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            view: function (rowid) { //查看
+                var me = this;
+                var selected = me.grid.records[rowid];
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '修改物资申请',
+                    url: "sp_apply_detail.html?MenuNo=" + me.MenuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "Sid": selected.APPLY_ID, "view": true }
+                });
+            },
             add: function () { //新增
                 var me = this;
                 $.ligerDialog.open({
-                    width: 1100,
-                    height: 750,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '新增物资申请',
                     url: "sp_apply_detail.html?MenuNo=" + me.MenuNo,
@@ -227,7 +294,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": null, "view": true }
+                    data: { "Sid": null, "view": false }
                 });
             },
             modify: function (rowdata) { //修改
@@ -247,8 +314,8 @@
                 }
                 if (selected) {
                     $.ligerDialog.open({
-                        width: 1100,
-                        height: 750,
+                        width: me.detailWidth,
+                        height: me.detailHeight,
                         allowClose: true,
                         title: '修改物资申请',
                         url: "sp_apply_detail.html?MenuNo=" + me.MenuNo,
@@ -259,10 +326,8 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.reload.bind(me),
-                        data: { "Sid": selected.APPLY_ID, "view": selected.AUDITING }
+                        data: { "Sid": selected.APPLY_ID, "view": false }
                     });
-
-
                 } else {
                     LG.tip('请选择行!');
                 }
@@ -379,7 +444,7 @@
                     var flag = true;
                     var sids = [];
                     selected.forEach((a) => {
-                        if (a.AUDITING != "1") {
+                        if (a.AUDITING == "0") {
                             LG.tip(a.APPLY_NO + '未提交!');
                             flag = false;
                             return;
@@ -417,8 +482,8 @@
                 }
 
                 $.ligerDialog.open({
-                    width: 1200,
-                    height: 750,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[修改采购明细]',
                     url: "sp_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
@@ -429,7 +494,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING }
+                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING != "0" }
                 });
             },
             bindGridEvent: function () {
@@ -503,6 +568,7 @@
                 var me = this;
                 me.loadComboxData();
                 me.setConfig();
+                me.setDialogSize();
                 me.setForm();
                 me.setGrid();
                 me.reload();
