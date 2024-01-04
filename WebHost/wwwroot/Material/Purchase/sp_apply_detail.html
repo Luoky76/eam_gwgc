@@ -136,6 +136,8 @@
                     }
                 };
             },
+            //物资本身信息的字段
+            spColumns: ["SP_ID", "SP_CODE", "UNIT", "SP_NAME", /*"SP_SIZE", "PRODUCE",*/ "TYPE_NAME", "WARRANTY", "LAST_PROVIDER", "LAST_PROVIDERID", "IS_XY", "NO_PRODUCE" ],
             grid: null,
             mainform: null,
             buttons: null,
@@ -215,7 +217,7 @@
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.SP_ID != "" && editParm.column.name != "COUNT")
+                            if (editParm.record.SP_ID != "" && me.spColumns.includes(editParm.column.name))
                                 return false;
                             else return true;
                         }
@@ -385,9 +387,8 @@
                             loading: '正在保存中...',
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {
-                                LG.showSuccess('保存成功', function () {
-                                    if (me.dialog) me.dialog.close();
-                                });
+                                LG.showSuccess('保存成功');
+                                me.reload();
                             },
                             error: function (message) {
                                 LG.showError(message);
@@ -399,6 +400,7 @@
             },
             reload: function () { //刷新
                 var me = this;
+                me.loadData();
                 me.grid.options.parms = {
                     where: JSON.stringify({
                         op: 'and',

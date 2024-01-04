@@ -26,6 +26,14 @@
         var business = {
             rootPath:'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
             typeData: [],
             exigData: [],
             cgfsData: [],
@@ -251,8 +259,8 @@
                 }
 
                 $.ligerDialog.open({
-                    width: 1200,
-                    height: 750,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[修改采购明细]',
                     url: "sp_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
@@ -263,7 +271,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING_CHECK }
+                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING_CHECK != "0" }
                 });
             },
             submit: function () {    //提交
@@ -426,6 +434,7 @@
                 var me = this;
                 me.loadComboxData();
                 me.setConfig();
+                me.setDialogSize();
                 me.setForm();
                 me.setGrid();
                 me.reload();
