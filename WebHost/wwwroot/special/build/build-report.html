@@ -42,39 +42,59 @@
                                     format: "yyyy-MM"
                                 }
                             },
+                            { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "主键", name: "BUILD_ID", minWidth: 100, type: "text", hide: true },
+                            //{ display: "主键", name: "BUILD_ID", minWidth: 100, type: "text", hide: true },
                             {
-                                display: "月份", name: "START_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
+                                display: "日期", name: "STARTDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
                                 totalSummary: { render: function (column, data) { return "<span style='color:red'>&emsp;合计：</span>" } }
                             },
                             { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text" },
                             {
                                 display: "产量", columns: [
                                     {
-                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (data) {
-                                                return Math.round(data.sum);
-                                            }
-                                        }
-                                    },
-                                    {
-                                        display: "船方", name: "SHIPNUM", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
+                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "船方", name: "SHIPNUM", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
                                         }
                                     },
                                 ]
                             },
                             {
                                 display: "施工时间（小时:分钟）", columns: [
+                                    {
+                                        display: "作业时间", name: "WORK_TIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    {
+                                        display: "锚泊时间", name: "ANCHOR_TIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
                                     {
                                         display: "施工准备", name: "CONPLAN", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
                                         {
@@ -145,6 +165,95 @@
                                             }
                                         }
                                     },
+                                    {
+                                        display: "待工", name: "WAIT_WORK", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "主机运行时间（小时:分钟）", columns: [
+                                    {
+                                        display: "运行时间", name: "MAIN_ENGINE_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    /*{
+                                        display: "累计时间", name: "MAIN_ENGINE_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },*/
+                                ]
+                            },
+                            {
+                                display: "主发电机运行时间（小时:分钟）", columns: [
+                                    {
+                                        display: "运行时间", name: "MAIN_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    /*{
+                                        display: "累计时间", name: "MAIN_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },*/
+                                ]
+                            },
+                            {
+                                display: "停泊发电机运行时间（小时:分钟）", columns: [
+                                    {
+                                        display: "运行时间", name: "MOORING_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    /*{
+                                        display: "累计时间", name: "MOORING_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },*/
                                 ]
                             },
                             {
@@ -247,7 +356,6 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {
@@ -267,7 +375,10 @@
                     toolbar: { group: "list" },
                     url: 'Special/Build/QryYear',
                     parms: {
-                        where: JSON.stringify()
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
                     },
                     sortName: '',
                     sortOrder: '',
@@ -348,21 +459,6 @@
             },
             view: function (rowid) { //查看
                 var me = this;
-                $.ligerDialog.open({
-                    width: 1100,
-                    height: 620,
-                    allowClose: true,
-                    title: '[查看]施工能耗',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": me.grid.getRow(rowid).BUILD_ID, "isNew": false, "isView": true }
-                });
             },
             export: function () { //模板导出
                 var date = new Date($("#_search_STARTDATE").val());

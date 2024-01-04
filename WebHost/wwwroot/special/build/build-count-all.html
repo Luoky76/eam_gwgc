@@ -57,10 +57,7 @@
                                         display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
                                         {
                                             type: 'sum',
-                                            align: 'center',
-                                            render: function (data) {
-                                                return Math.round(data.sum);
-                                            }
+                                            align: 'center'
                                         }
                                     },
                                     {
@@ -357,7 +354,6 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {

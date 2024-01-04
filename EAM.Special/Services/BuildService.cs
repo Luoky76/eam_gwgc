@@ -153,6 +153,50 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 自动计算的字段
+        /// </summary>
+        /// <returns></returns>
+        private async Task Calc(BUILD_COUNT entity)
+        {
+            //将上次填报的淡水、柴油、滑油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
+            //主机累计时间、主发电机累计时间、停泊发电机累计时间自动计算，每年清零
+            var last_data = await _dbContext.Query<BUILD_COUNT>
+                (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
+                .Select(a => new
+                {
+                    a.STARTDATE,
+                    a.STOCK,
+                    a.STOCK2,
+                    a.LUBRICATE_STOCK,
+                    a.MAIN_ENGINE_CUMTIME,
+                    a.MAIN_CUMTIME,
+                    a.MOORING_CUMTIME
+                })
+                .OrderByDesc(b => b.STARTDATE)
+                .FirstAsync();
+
+            entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
+            entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
+            entity.LUBRICATE_STOCK = (last_data?.LUBRICATE_STOCK ?? 0) - (entity.LUBRICATE ?? 0) + (entity.LUBRICATE_SUPPLEMENT ?? 0);
+
+            //判断是否跨年，新年则将累计时间清零
+            if ((last_data?.STARTDATE.Year ?? 0) < entity.STARTDATE.Year)
+            {
+                entity.MAIN_ENGINE_CUMTIME = 0;
+                entity.MAIN_CUMTIME = 0;
+                entity.MOORING_CUMTIME = 0;
+            }
+            else
+            {
+                entity.MAIN_ENGINE_CUMTIME = (last_data?.MAIN_ENGINE_CUMTIME ?? 0) + entity.MAIN_ENGINE_RUNTIME;
+                entity.MAIN_CUMTIME = (last_data?.MAIN_CUMTIME ?? 0) + entity.MAIN_RUNTIME;
+                entity.MOORING_CUMTIME = (last_data?.MOORING_CUMTIME ?? 0) + entity.MOORING_RUNTIME;
+            }
+
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
         /// 新增
         /// </summary>
         /// <returns></returns>
@@ -165,22 +209,7 @@ namespace EAM.Special.Services
             entity.DEVICE_NAME = card.DEVICE_NAME;
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
 
-            //将上次填报的淡水、柴油、滑油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
-            var last_data = await _dbContext.Query<BUILD_COUNT>
-                (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
-                .Select(a => new
-                {
-                    a.STARTDATE,
-                    a.STOCK,
-                    a.STOCK2,
-                    a.LUBRICATE_STOCK
-                })
-                .OrderByDesc(b => b.STARTDATE)
-                .FirstAsync();
-
-            entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
-            entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
-            entity.LUBRICATE_STOCK = (last_data?.LUBRICATE_STOCK ?? 0) - (entity.LUBRICATE ?? 0) + (entity.LUBRICATE_SUPPLEMENT ?? 0);
+            await Calc(entity);
 
             var isex = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
@@ -200,22 +229,7 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeUpdate(BUILD_COUNT entity)
         {
-            //将上次填报的淡水、柴油、滑油库存数据带入：本次库存 = 上次库存 - 本次消耗 + 本次补充
-            var last_data = await _dbContext.Query<BUILD_COUNT>
-                (a => a.STARTDATE < entity.STARTDATE && a.DEVICE_ID == entity.DEVICE_ID)
-                .Select(a => new
-                {
-                    a.STARTDATE,
-                    a.STOCK,
-                    a.STOCK2,
-                    a.LUBRICATE_STOCK
-                })
-                .OrderByDesc(b => b.STARTDATE)
-                .FirstAsync();
-
-            entity.STOCK = (last_data?.STOCK ?? 0) - (entity.DAILYCONSUMPTION ?? 0) + (entity.SUPPLEMENT ?? 0);
-            entity.STOCK2 = (last_data?.STOCK2 ?? 0) - (entity.SUBTOTAL ?? 0) + (entity.SUPPLEMENT2 ?? 0);
-            entity.LUBRICATE_STOCK = (last_data?.LUBRICATE_STOCK ?? 0) - (entity.LUBRICATE ?? 0) + (entity.LUBRICATE_SUPPLEMENT ?? 0);
+            await Calc(entity);
             await Task.CompletedTask;
         }
 
@@ -287,7 +301,7 @@ namespace EAM.Special.Services
             public int MONTH { get; set; }
         }
         /// <summary>
-        /// 年份查询
+        /// 年度报表 按月汇总
         /// </summary>
         /// <returns></returns>
         public async Task<GridData> QryYearAsync(GridRequest request, string startdate, string enddate)
@@ -306,12 +320,15 @@ namespace EAM.Special.Services
                     a.STARTDATE,
                     a.SHIPTIMES,
                     a.SHIPNUM,
+                    a.WORK_TIME,
+                    a.ANCHOR_TIME,
                     a.CONPLAN,
                     a.DREDGETIME,
                     a.SAILTIME,
                     a.REPAIRTIME,
                     a.WEATHEREFFECT,
                     a.OTHERSTOP,
+                    a.WAIT_WORK,
                     a.DAILYCONSUMPTION,
                     a.SUPPLEMENT,
                     a.STOCK,
@@ -324,9 +341,8 @@ namespace EAM.Special.Services
                     a.LUBRICATE,
                     a.LUBRICATE_SUPPLEMENT,
                     a.LUBRICATE_STOCK,
-                    a.WAIT_WORK,
-                    a.WORK_TIME,
-                    a.ANCHOR_TIME,
+                    a.MAIN_ENGINE_RUNTIME,
+                    a.MAIN_ENGINE_CUMTIME,
                     a.MAIN_RUNTIME,
                     a.MAIN_CUMTIME,
                     a.MOORING_RUNTIME,
@@ -349,12 +365,15 @@ namespace EAM.Special.Services
                 DEVICE_NAME = c.Key.DEVICE_NAME,
                 SHIPTIMES = c.Sum(item => item.SHIPTIMES ?? 0),
                 SHIPNUM = c.Sum(item => item.SHIPNUM ?? 0m),
+                WORK_TIME = c.Sum(item => item.WORK_TIME ?? 0m),
+                ANCHOR_TIME = c.Sum(item => item.ANCHOR_TIME ?? 0m),
                 CONPLAN = c.Sum(item => item.CONPLAN ?? 0m),
                 DREDGETIME = c.Sum(item => item.DREDGETIME ?? 0m),
                 SAILTIME = c.Sum(item => item.SAILTIME ?? 0m),
                 REPAIRTIME = c.Sum(item => item.REPAIRTIME ?? 0m),
                 WEATHEREFFECT = c.Sum(item => item.WEATHEREFFECT ?? 0m),
                 OTHERSTOP = c.Sum(item => item.OTHERSTOP ?? 0m),
+                WAIT_WORK = c.Sum(item => item.WAIT_WORK ?? 0m),
                 DAILYCONSUMPTION = c.Sum(item => item.DAILYCONSUMPTION ?? 0m),
                 SUPPLEMENT = c.Sum(item => item.SUPPLEMENT ?? 0m),
                 STOCK = c.Sum(item => item.STOCK ?? 0m),
@@ -367,6 +386,9 @@ namespace EAM.Special.Services
                 LUBRICATE = c.Sum(item => item.LUBRICATE ?? 0m),
                 LUBRICATE_SUPPLEMENT = c.Sum(item => item.LUBRICATE_SUPPLEMENT ?? 0m),
                 LUBRICATE_STOCK = c.Sum(item => item.LUBRICATE_STOCK ?? 0m),
+                MAIN_ENGINE_RUNTIME = c.Sum(item => item.MAIN_ENGINE_RUNTIME ?? 0m),
+                MAIN_RUNTIME = c.Sum(item => item.MAIN_RUNTIME ?? 0m),
+                MOORING_RUNTIME = c.Sum(item => item.MOORING_RUNTIME ?? 0m)
             }).ToList();
             GridData gridData = new GridData()
             {
