@@ -85,40 +85,40 @@
                         labelwidth: 220,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_EXE", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "基础信息" },
-                            { display: "保养计划单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
-                            { display: "保养来源", name: "SOURCE", newline: false, upper: true, type: "select", options: { data: me.bySource, } },
+                            { display: "记录状态", name: "AUDITING_EXE", type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "基础信息" },
+                            { display: "保养计划单号", name: "PLAN_CODE", editor: { disabled: true }, type: "text", options: {} },
+                            { display: "保养来源", name: "SOURCE", type: "select", options: { data: me.bySource, } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", editor: { disabled: true },
                                 options: {
                                     data: me.deviceInfo,
                                 }
                             },
-                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维护类别", name: "PM_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.pmType } },
+                            { display: "船舶名称", name: "DEVICE_NAME", type: "hidden", options: {} },
+                            { display: "船舶编号", name: "DEVICE_CODE", editor: { disabled: true }, options: {} },
+                            { display: "船舶型号", name: "DEVICE_TYPE", editor: { disabled: true }, options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", type: "text", editor: { disabled: true }, options: {} },
+                            { display: "安装地点", name: "INSTALL_SITE", type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维护类别", name: "PM_TYPE", type: "select", editor: { disabled: true }, options: { data: me.pmType } },
 
-                            //{ display: "计划编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "计划完成时间", name: "PLAN_FINISH_TIME", newline: false, upper: true, editor: { disabled: true }, type: "date", options: {} },
-                            { display: "计划编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            //{ display: "计划编制日期", name: "EDIT_DATE", type: "date", editor: { disabled: true }, options: {} },
+                            { display: "计划完成时间", name: "PLAN_FINISH_TIME", editor: { disabled: true }, type: "date", options: {} },
+                            { display: "计划编制人", name: "EDIT_USER", type: "text", editor: { disabled: true }, options: {} },
 
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", type: "text", editor: { disabled: true }, options: {} },
                             {
-                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {
+                                display: "维保部门", name: "WDEPT_ID", type: "select", editor: { disabled: true }, options: {
                                     data: me.maintDept,
                                 }
                             },
-                            { display: "维保部门", name: "SHIP_DEPT", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "保养负责人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "是否有遗留问题", name: "IS_LOSE", newline: false, upper: true, type: "select", options: { data: me.isLose }, validate: { required: true }, },
+                            { display: "维保部门", name: "SHIP_DEPT", type: "hidden", options: {} },
+                            { display: "保养负责人", name: "EXE_USER", type: "text", editor: { disabled: true }, options: {} },
+                            { display: "是否有遗留问题", name: "IS_LOSE", type: "select", options: { data: me.isLose }, validate: { required: true }, },
                             { display: "遗留问题描述", name: "LEG_DESC", newline: true, upper: true, width: 826, type: "textarea", options: {} },
                             { display: "备注", name: "MEMO", newline: true, upper: true, width: 826, type: "textarea", options: {} },
 
                             {
-                                display: "保养开始时间", name: "BEGIN_DATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                display: "保养开始时间", name: "BEGIN_DATE", type: "date", validate: { required: true },
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
@@ -127,7 +127,7 @@
                                 }, group: "实施信息"
                             },
                             {
-                                display: "保养结束时间", name: "END_DATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                display: "保养结束时间", name: "END_DATE", type: "date", validate: { required: true },
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
@@ -137,11 +137,11 @@
                             },
 
                             //隐藏
-                            { display: "主键", name: "EXE_ID", newline: false, upper: true, type: "hidden", options: {} },]
+                            { display: "主键", name: "EXE_ID", type: "hidden", options: {} },]
                     },
                     grid: {
                         columns: [
-                            { display: "*完成情况", name: "COMPLETE", newline: false, upper: true, type: "select", minWidth: 100, validate: { required: true }, editor: { type: 'select', data: me.complete } },
+                            { display: "*完成情况", name: "COMPLETE", type: "select", minWidth: 100, validate: { required: true }, editor: { type: 'select', data: me.complete } },
                             { display: "执行岗位", name: "EXE_USER", minWidth: 100, type: "text", },
                             { display: "*执行人", name: "EXECUTE_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             { display: "检查岗位", name: "CHK_USER", minWidth: 100, type: "text", },
