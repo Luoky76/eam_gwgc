@@ -451,8 +451,8 @@
                     return
                 }
                 $.ligerDialog.open({
-                    width: 1100,
-                    height: 750,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: '[修改需求申请明细]',
                     url: "sp_collect_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
@@ -463,7 +463,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": apply.COLLECT_ID, "view": apply.AUDITING }
+                    data: { "sid": apply.COLLECT_ID, "view": ["1", "2", "3"].includes(apply.AUDITING) }
                 });
             },
             attach: function () {
