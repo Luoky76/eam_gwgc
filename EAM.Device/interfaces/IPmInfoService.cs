@@ -57,6 +57,12 @@ namespace EAM.Device.interfaces
         public Task<GridData> GetPlandetList(GridRequest request);
 
         /// <summary>
+        /// 获取计划主表和明细信息
+        /// </summary>
+        /// <returns></returns>
+        public Task<GridData> GetExtendPlanList(GridRequest request);
+
+        /// <summary>
         /// 管理计划明细
         /// </summary>
         /// <returns></returns>
