@@ -173,6 +173,9 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
                 me.grid.isValid = true;
@@ -214,6 +217,25 @@
                 }
             
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function (rowid) { //查看
+                var me = this;
+                var selected = me.grid.records[rowid];
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[查看]物资申请',
+                    url: "sp_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "Sid": selected.APPLY_ID, "view": true }
+                });
             },
             save: function () { //保存
                 var me = this;
@@ -262,7 +284,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[修改采购明细]',
+                    title: '[修改]物资申请',
                     url: "sp_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,

@@ -393,7 +393,7 @@
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
                 if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                me.isView = me.dialogData.view === "1";
+                me.isView = Boolean(me.dialogData.view);
 
                 me.setConfig();
                 me.setForm();

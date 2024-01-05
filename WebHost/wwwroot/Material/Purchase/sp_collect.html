@@ -26,6 +26,14 @@
         var business = {
             rootPath:'Material/SpCollect/',
             MenuNo: getQueryStringByName("MenuNo"),
+            //明细页面大小
+            detailWidth: null,
+            detailHeight: null,
+            setDialogSize: function () {
+                var me = this;
+                me.detailWidth = window.innerWidth * 0.9;
+                me.detailHeight = window.innerHeight * 0.9;
+            },
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             typeData: [],
             gyData: [],
@@ -111,8 +119,8 @@
                             rules: []
                         })
                     },
-                    sortName: 'APPLY_DATE',
-                    sortOrder: 'DESC',
+                    sortName: '',
+                    sortOrder: '',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
@@ -150,9 +158,11 @@
                             }
                         }
                         return true;
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
                     }
                 });
-
 
                 me.grid.isValid = true;
                 me.loadToolbar();
@@ -183,7 +193,7 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (row.AUDITING == "1") {
+                    if (["1", "2", "3"].includes(row.AUDITING)) {
                         LG.tip("有数据已提交，无法变更！");
                         return true;
                     }
@@ -241,13 +251,14 @@
             
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            view: function (rowid) { //查看
                 var me = this;
+                var selected = me.grid.records[rowid];
                 $.ligerDialog.open({
-                    width: 1100,
-                    height: 750,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
-                    title: '新增物资请购',
+                    title: '[查看]物资请购',
                     url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
                     isHidden: false,
                     showMax: false,
@@ -256,7 +267,25 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sdid": null, "isNew": true }
+                    data: { "sid": selected.COLLECT_ID, "view": true }
+                });
+            },
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]物资请购',
+                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null, "isNew": true, "view": false }
                 });
             },
             modify: function (rowdata) { //修改
@@ -267,10 +296,10 @@
                     selected = rowdata;
                 }
                 $.ligerDialog.open({
-                    width: 1100,
-                    height: 750,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
-                    title: '修改物资请购',
+                    title: '[修改]物资请购',
                     url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
                     isHidden: false,
                     showMax: false,
@@ -279,7 +308,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": selected.COLLECT_ID, "view": selected.AUDITING }
+                    data: { "sid": selected.COLLECT_ID, "view": false }
                 });
             },
             save: function () { //保存
@@ -527,6 +556,7 @@
                 var me = this;
                 me.loadComboxData();
                 me.setConfig();
+                me.setDialogSize();
                 me.setForm();
                 me.setGrid();
                 me.reload();
