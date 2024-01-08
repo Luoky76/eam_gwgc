@@ -45,16 +45,14 @@
                                 display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                             {
-                                display: "保养实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "保养计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
                             },
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "已提交", name: "AUDITING_EXE", width: 100, type: "chk" },
-
-                            { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
-                            //{ display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
                             { display: "船舶编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -64,6 +62,7 @@
                             { display: "是否有遗留问题", name: "IS_LOSE", dbname: "IS_LOSE", width: 100, type: "select", format: { data: me.isLose } },
                             { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            //隐藏字段
                             { display: "EXE_ID", name: "EXE_ID", hide: true },
                         ]
                     },
