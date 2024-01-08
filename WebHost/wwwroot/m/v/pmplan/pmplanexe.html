@@ -917,10 +917,12 @@
                                     },
                                     url: 'Device/PmInfo/GetPlandetFile',
                                     success: function (data) {
-                                        
+                                        //删除最后一次出现的</ul>
+                                        var substr = "</ul>";
+                                        var pattern = new RegExp(substr + "(?!.*" + substr + ")", "s");
+                                        str = str.replace(pattern, "");
+
                                         //材料附件
-                                        str = str.replace("</ul>","");
-                                        
                                         data.Data[0].ATTACH_EXE_FILE.split(",").forEach(function (item) {
                                             //判断是否是图片
                                             if (item) {  
@@ -1001,6 +1003,22 @@
                                                     }
                                                 }
                                             }
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.STD_LEVEL',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.WORK_STATE',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.MAINT_CYCLE',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.PLAN_MONTH',
+                                            searchbar: false
                                         });
                                     }  
                                     
