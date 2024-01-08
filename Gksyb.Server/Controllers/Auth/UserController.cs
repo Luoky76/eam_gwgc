@@ -36,8 +36,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 role = (await _service.RoleData()).Rows,
                 corp = (await _service.CorpData()).Rows,
-                station = await codeService.Get("岗位"),
-                initPassword = _service.GetInitPassword()
+                station = await codeService.Get("岗位")
             });
         }
 

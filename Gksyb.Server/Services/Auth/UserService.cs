@@ -126,10 +126,22 @@ namespace Gksyb.Server.Services.Auth
         public async Task<AjaxResult> Save(SaveRequest<UserRequest> request)
         {
             sysdate = await _dbContext.GetSysdate();
-            return await _dbContext.SaveEntityAnsyc(request,
+            var messages = new List<string>();
+            var result = await _dbContext.SaveEntityAnsyc(request,
                 c => new { c.REALNAME, c.PHONE, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
                 c => a => a.USERID == c.USERID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, BeforeUpdate, BeforeDelete, false, async (added, updated, deleted) =>
+                {
+                    foreach (var entity in added)
+                    {
+                        var password = PasswordHelper.Generate();
+                        entity.LOGINPASSWORD = password;
+                        messages.Add($"{entity.LOGINNAME}的初始密码为{password}");
+                    }
+                    await Task.CompletedTask;
+                }, AfterSave);
+            if (!result.IsError) result.Data = messages;
+            return result;
         }
 
         /// <summary>
@@ -166,7 +178,7 @@ namespace Gksyb.Server.Services.Auth
             MessageException.ThrowIf(!_user.IsOurCompany && entity.CLASS != "0", "您无权设置用户属性");
             await Handle(entity);
 
-            entity.LOGINPASSWORD = UserSession.Encrypt(_options.InitPassWord);
+            entity.LOGINPASSWORD = UserSession.Encrypt(entity.LOGINPASSWORD);
             entity.RECORDSTATUS = Oper.Add;
             entity.APPNAME = _options.UserAppName;
 

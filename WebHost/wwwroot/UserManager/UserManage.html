@@ -424,8 +424,11 @@
                         url: 'user/save',
                         loading: '正在保存中...',
                         data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
+                        success: function (data, message) {
+                            if (data && data.length > 0) {
+                                message = data.join('<br/>');
+                            }
+                            LG.showSuccess(message);
                             me.grid.isDataChanged = false;
                             me.reload();
                         },

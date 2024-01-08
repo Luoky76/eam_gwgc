@@ -213,7 +213,7 @@ namespace Gksyb.Common
         /// <summary>
         /// 获取指定类型的方法
         /// </summary>
-        public static Dictionary<string, MethodInfo> GetDicMethods(this Type type, BindingFlags? flags = null)
+        public static Dictionary<string, MethodInfo> GetDicMethods(this Type type, BindingFlags? flags = null, Func<MethodInfo, bool> func = null)
         {
             flags ??= BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase;
             var methodInfos = new Dictionary<string, MethodInfo>(StringComparer.OrdinalIgnoreCase);
@@ -221,6 +221,7 @@ namespace Gksyb.Common
             foreach (var method in methods)
             {
                 if (string.IsNullOrWhiteSpace(method.Name)) continue;
+                if (func?.Invoke(method) == false) continue;
                 methodInfos.Add(method.Name, method);
             }
             return methodInfos;
