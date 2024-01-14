@@ -84,6 +84,7 @@ namespace Gksyb.Server.Services.Auth
             var userSession = new UserSession()
             {
                 Token = Guid.NewGuid().ToString("N"),
+                Version = _options.TicketVersion,
                 UserID = model.ID.Value,
                 UserName = model.APPID,
                 RealName = model.NAME,
