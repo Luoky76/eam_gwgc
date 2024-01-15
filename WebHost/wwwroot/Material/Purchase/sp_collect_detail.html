@@ -48,7 +48,7 @@
                             { display: "采购部门", name: "DEPT_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
                             { display: "采购人", name: "COLLECT_USER", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: 786, type: "textarea", options: {} },
 
                             //隐藏
                             { display: "主键", name: "COLLECT_ID", newline: false, upper: true, type: "hidden", options: {} },
@@ -393,7 +393,7 @@
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
                 if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                me.isView = me.dialogData.view === "1";
+                me.isView = Boolean(me.dialogData.view);
 
                 me.setConfig();
                 me.setForm();

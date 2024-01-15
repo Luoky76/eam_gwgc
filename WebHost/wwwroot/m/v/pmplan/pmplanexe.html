@@ -97,11 +97,11 @@
             ListDict: [
                 { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: false, isPrimaryKey: true, isShow: false },
                 { display: "记录状态", name: "AUDITING_EXE" },
-                { display: "保养实施单号", name: "EXE_CODE" },
-                { display: "设备编号", name: "DEVICE_CODE" },
+                { display: "保养计划单号", name: "PLAN_CODE" },
+                //{ display: "保养实施单号", name: "EXE_CODE" },
+                //{ display: "设备编号", name: "DEVICE_CODE" },
                 { display: "设备名称", name: "DEVICE_NAME" },
                 { display: "维保部门", name: "SHIP_DEPT" },
-                { display: "保养计划单号", name: "PLAN_CODE" },
             ],
             //获取主列表的数据
             getData: function () {
@@ -314,14 +314,14 @@
         var pmPlanexeInfo = [
             { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: true, isPrimaryKey: true, isShow: false },
             { display: "记录状态", name: "AUDITING_EXE", readOnly: true },
-            { display: "保养实施单号", name: "EXE_CODE", readOnly: true },
+            //{ display: "保养实施单号", name: "EXE_CODE", readOnly: true },
             { display: "保养计划单号", name: "PLAN_CODE", readOnly: true },
             { display: "保养来源", name: "SOURCE", Option: business.bySource },
             { display: "设备名称", name: "DEVICE_ID", Option: business.deviceSelect, readOnly: true },
-            { display: "设备编号", name: "DEVICE_CODE", readOnly: true },
-            { display: "设备型号", name: "DEVICE_TYPE", readOnly: true },
-            { display: "资产编号", name: "ASSET_CODE", readOnly: true },
-            { display: "安装地点", name: "INSTALL_SITE", readOnly: true },
+            //{ display: "设备编号", name: "DEVICE_CODE", readOnly: true },
+            //{ display: "设备型号", name: "DEVICE_TYPE", readOnly: true },
+            //{ display: "资产编号", name: "ASSET_CODE", readOnly: true },
+            //{ display: "安装地点", name: "INSTALL_SITE", readOnly: true },
             { display: "维护类别", name: "PM_TYPE", Option: business.pmType, readOnly: true },
             { display: "计划完成时间", name: "PLAN_FINISH_TIME", readOnly: true },
             { display: "计划编制人", name: "EDIT_USER", readOnly: true },
@@ -917,10 +917,12 @@
                                     },
                                     url: 'Device/PmInfo/GetPlandetFile',
                                     success: function (data) {
-                                        
+                                        //删除最后一次出现的</ul>
+                                        var substr = "</ul>";
+                                        var pattern = new RegExp(substr + "(?!.*" + substr + ")", "s");
+                                        str = str.replace(pattern, "");
+
                                         //材料附件
-                                        str = str.replace("</ul>","");
-                                        
                                         data.Data[0].ATTACH_EXE_FILE.split(",").forEach(function (item) {
                                             //判断是否是图片
                                             if (item) {  
@@ -1001,6 +1003,22 @@
                                                     }
                                                 }
                                             }
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.STD_LEVEL',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.WORK_STATE',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.MAINT_CYCLE',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.PLAN_MONTH',
+                                            searchbar: false
                                         });
                                     }  
                                     

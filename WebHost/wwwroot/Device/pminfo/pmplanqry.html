@@ -38,27 +38,70 @@
                     search: {
                         fields: [
                             {
-                                display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "保养计划单号", name: "_search_PLAN_CODE", dbname: "PLAN_CODE", newline: false, width: 200, upper: true, type: "text", options: {}
                             },
                             {
-                                display: "保养实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, width: 150, upper: true, type: "text", options: {}
+                                display: "使用部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", newline: false, width: 200, upper: true, type: "text", options: {}
+                            },
+                            {
+                                display: "维保部门", name: "_search_SHIP_DEPT", dbname: "SHIP_DEPT", newline: false, width: 200, upper: true, type: "text", options: {}
+                            },
+                            {
+                                display: "计划完成时间", name: "_search_PLAN_FINISH_TIME_FROM", dbname: "PLAN_FINISH_TIME", width: 200, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_PLAN_FINISH_TIME_TO", dbname: "PLAN_FINISH_TIME", labelWidth: 70, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "实际完成时间", name: "_search_AUDIT_TIME_FROM", dbname: "AUDIT_TIME", width: 200, newline: true, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_AUDIT_TIME_TO", dbname: "AUDIT_TIME", labelWidth: 70, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
                             },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
-                            //{ display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "设备名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "实施人员", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "实施完成时间", name: "AUDIT_TIME", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "是否有遗留问题", name: "IS_LOSE", dbname: "IS_LOSE", width: 100, type: "select", format: { data: me.isLose } },
-                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
-                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
-                            { display: "EXE_ID", name: "EXE_ID", hide: true },
+                            { display: "计划已提交", name: "AUDITING", type: "chk" },
+                            { display: "实施已提交", name: "AUDITING_EXE", type: "chk" },
+                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text" },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
+                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text" },
+                            { display: "计划完成时间", name: "PLAN_FINISH_TIME", minWidth: 100, type: "date", showTime: true, format: "yyyy-MM-dd hh:mm" },
+                            { display: "实际完成时间", name: "AUDIT_TIME", minWidth: 100, type: "date", showTime: true, format: "yyyy-MM-dd hh:mm" },
+
+                            { display: "已完成", name: "COMPLETE", type: "chk" },
+                            {
+                                display: "计划附件", name: "ATTACH_PLAN", dbname: "ATTACH_PLAN", width: 90, type: "text",
+                                render: function (rowdata, index, value) {
+                                    return '<a href="javascript:void(0)" onclick="business.f_planAttachManage(\'' + rowdata.DONEITEM_ID + '\')"><span class="badge">' + value + '</span></i></a>';
+                                }
+                            },
+                            {
+                                display: "实施附件", name: "ATTACH_EXE", dbname: "ATTACH_EXE", width: 90, type: "text",
+                                render: function (rowdata, index, value) {
+                                    return '<a href="javascript:void(0)" onclick="business.f_exeAttachManage(\'' + rowdata.DONEITEM_ID + '\')"><span class="badge">' + value + '</span></i></a>';
+                                }
+                            },
+                            { display: "保养项目", name: "OBJECT_NAME", minWidth: 150, type: "text" },
+                            { display: "保养内容", name: "CONTENT", minWidth: 250, type: "text" },
+                            { display: "执行人", name: "EXECUTE_USER", minWidth: 100, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text" },
+                            //隐藏字段
+                            { display: "主表主键", name: "EXE_ID", hide: true },
+                            { display: "子表主键", name: "DONEITEM_ID", hide: true }
                         ]
                     },
                 };
@@ -67,6 +110,34 @@
             searchForm: null,
             buttons: null,
             searchForm2: null,
+            //实施附件管理
+            f_exeAttachManage: function (dataid) {
+                var me = this;
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    data: { "tableName": "PM_PLAN_EXE", "dataId": dataid, "isView": true, "fileMark": 0 },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {}
+                });
+            },
+            //计划附件管理
+            f_planAttachManage: function (dataid) {
+                var me = this;
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    data: { "tableName": "PM_PLAN_DONEITEM", "dataId": dataid, "isView": true, "fileMark": 0 },
+                    url: '../../filemanager/file-attachment-content.html',
+                    title: '附件管理',
+                    onClose: function () {}
+                });
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -87,23 +158,21 @@
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
-                //me.config.gridtop.columns.removeNull();
-                //me.config.gridcenter.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
                     fixedCellHeight: true,
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     toolbar: {},
-                    url: 'Device/PmInfo/GetPmExeList',
+                    url: 'Device/PmInfo/GetExtendPlanList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    //sortName: 'RECEIVEDATE',
-                    //sortOrder: 'desc',
+                    sortName: 'PLAN_CODE',
+                    sortOrder: 'DESC',
                     width: '98%',
                     height: '100%',
                     checkbox: false,
@@ -111,7 +180,7 @@
                     clickToEdit: false,
                     page: 1,
                     pageSize: 50,
-                    //isSingleCheck: true,
+                    isSingleCheck: false,
                     usePager: false,
                     onBeforeEdit: function (editParm) {
 
@@ -124,11 +193,7 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
 
-                    },
-                    onDblClickRow: function (rowdata) {
-                        me.view(rowdata);
                     }
-
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
@@ -143,13 +208,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: "../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
                         case "Word":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
@@ -228,34 +293,6 @@
                     }
                 });
                 LG.commonSearch($formsearch1, me.grid);
-            },
-
-            view: function (rowdata) { //查看
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-
-                if (rowdata) {
-                    selected = rowdata;
-                }
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: 1100,
-                        height: 620,
-                        allowClose: true,
-                        title: '查看明细',
-                        url: "pmplanexedet.html?MenuNo=" + me.menuNo,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.buttons[0].click,
-                        data: { "sid": selected.EXE_ID, "view": true, "qry": true }
-                    });
-                } else {
-                    LG.tip('请选择行!');
-                }
             },
             initSearchData: function () {
 

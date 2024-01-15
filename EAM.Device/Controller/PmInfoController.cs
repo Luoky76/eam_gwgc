@@ -108,6 +108,17 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.GetPlandetList(request), "成功");
         }
+
+        /// <summary>
+        /// 获取计划主表和明细信息
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> GetExtendPlanListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.GetExtendPlanList(request), "成功");
+        }
+
         /// <summary>
         /// 获取计划明细
         /// </summary>

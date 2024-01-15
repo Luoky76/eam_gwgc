@@ -248,6 +248,7 @@ namespace EAM.Material.Services
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
+            entity.CONFIRM_AUDIT = "0";
 
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
