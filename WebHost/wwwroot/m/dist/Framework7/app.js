@@ -636,6 +636,22 @@
                 }
             }
         },
+        //加载组件
+        loadComponent: function (url) {
+            url = window.gksybConfigs.getUrl(url, window.gksybConfigs.apiBase);
+            var component = null;
+            app.request({
+                noGlobal: true,
+                async: false,
+                url: url,
+                type: 'get',
+                dataType: "text",
+                success: function (result) {
+                    component = app.component.parse(result);
+                }
+            });
+            return component;
+        },
         android: {
             getIMEI: function () {
                 if (window.android) {
