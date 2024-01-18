@@ -16,6 +16,7 @@ using System.Data;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace EAM.Material.Services
 {
@@ -913,7 +914,6 @@ namespace EAM.Material.Services
                 using var stream = new MemoryStream();
                 stream.Write(content, 0, content.Length);
                 FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
-
                 fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
