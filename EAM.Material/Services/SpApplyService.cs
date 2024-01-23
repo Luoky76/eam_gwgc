@@ -9,6 +9,8 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -69,7 +71,7 @@ namespace EAM.Material.Services
                 })
                 .OrderBy(c => c.AUDITING)
                 .ThenBy(c => c.AUDITING_CHECK)
-                .ThenBy(c => c.APPLY_NO)
+                .ThenByDesc(c => c.APPLY_NO)
                 .GetGridData(request);
             foreach (var item in (List<SpApplyRes>)res.Rows)
             {
@@ -615,15 +617,22 @@ namespace EAM.Material.Services
             /// <summary>
             /// 紧急程度
             /// </summary>
-            public string EXIG_DEV;
+            public string EXIG_DEV { get; set; }
 
-            public string APPLY_USER;
+            /// <summary>
+            /// 申请单号
+            /// </summary>
+            public string APPLY_NO { get; set; }
 
-            public DateTime? APPLY_DATE;
+            public string APPLY_USER { get; set; }
 
-            public string DEPT_NAME;
-            public string SEC_DEPT;
+            public DateTime? APPLY_DATE { get; set; }
+
+            public string DEPT_NAME { get; set; }
+
+            public string SEC_DEPT { get; set; }
         }
+
         public async Task<GridData> ApplyListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
@@ -640,6 +649,7 @@ namespace EAM.Material.Services
                     TYPE_NAME = a.TYPE_NAME,
                     IS_XY = a.IS_XY,
                     EXIG_DEV = b.EXIG_DEV,
+                    APPLY_NO = b.APPLY_NO,
                     APPLY_USER = b.APPLY_USER,
                     APPLY_DATE = b.APPLY_DATE,
                     DEPT_NAME = b.DEPT_NAME,
@@ -647,7 +657,8 @@ namespace EAM.Material.Services
                     MEMO = a.MEMO,
                     SPDET_ID = a.SPDET_ID
                 })
-                .OrderBy(c => c.SP_CODE)
+                .OrderByDesc(c => c.APPLY_NO)
+                .ThenBy(c => c.SP_CODE)
                 .GetGridData(request);
         }
 

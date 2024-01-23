@@ -702,7 +702,6 @@ namespace EAM.Material.Services
                 {
                     a.SPDET_ID,
                     a.SP_ID,
-                    b.APPLY_NO,
                     a.SP_CODE,
                     a.SP_NAME,
                     a.SP_SIZE,
@@ -710,11 +709,13 @@ namespace EAM.Material.Services
                     a.UNIT,
                     a.TYPE_NAME,
                     a.COUNT,
+                    b.APPLY_NO,
                     b.APPLY_USER,
                     b.DEPT_NAME,
                     b.APPLY_DATE
                 })
-                .OrderBy(c => c.APPLY_DATE)
+                .OrderByDesc(c => c.APPLY_NO)
+                .ThenBy(c => c.SP_CODE)
                 .GetGridData(request);
         }
 
