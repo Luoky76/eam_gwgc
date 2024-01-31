@@ -44,15 +44,15 @@
                             { display: "运行时间", name: "MAIN_RUNTIME", newline: false, width: 200, type: "duration", options: {}, group: "发电机运行时间（小时:分钟）" },
                             { display: "累计时间", name: "MAIN_CUMTIME", newline: false, width: 200, type: "duration", options: { disabled: true } },
 
-                            { display: "日耗(吨)", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
+                            { display: "消耗(吨)", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
                             { display: "补充(吨)", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存(吨)", name: "STOCK", newline: false, width: 200, type: "float", options: { disabled: true } },
                             
-                            { display: "日耗(吨)", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, group: "柴油" },
+                            { display: "消耗(吨)", name: "SUBTOTAL", newline: false, width: 200, type: "float", options: {}, group: "柴油" },
                             { display: "补充(吨)", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存(吨)", name: "STOCK2", newline: false, width: 200, type: "float", options: { disabled: true } },
 
-                            { display: "日耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
+                            { display: "消耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
                             { display: "补充(吨)", name: "LUBRICATE_SUPPLEMENT", newline: false, width: 200, type: "float", options: { precision: 3 } },
                             { display: "库存(吨)", name: "LUBRICATE_STOCK", newline: false, width: 200, type: "float", options: { precision: 3, disabled: true } },
 
@@ -70,7 +70,6 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {
@@ -79,14 +78,13 @@
                 });
             },
             sum: function (zhu, fu, ban) {
-
                 var total = Number(zhu) + Number(fu) + Number(ban);
                 $('#SUBTOTAL').val(total);
             },
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    me.mainform.setOrginData({});
+                    me.mainform.setOrginData({ DEVICE_ID: "1701416739972247552", DEVICE_NAME: "厦港工105" });
                 }
                 else {
                     LG.ajax({

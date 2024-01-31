@@ -42,12 +42,12 @@
                             { display: "天气影响", name: "WEATHEREFFECT", newline: false, width: 200, type: "duration", options: {} },
                             { display: "其他停工", name: "OTHERSTOP", newline: false, width: 200, type: "duration", options: {} },
 
-                            { display: "日耗(吨)", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
+                            { display: "消耗(吨)", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
                             { display: "补充(吨)", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存(吨)", name: "STOCK", newline: false, width: 200, type: "float", options: { disabled: true } },
 
                             {
-                                display: "主机日耗(吨)", name: "MASTER", newline: false, width: 200, type: "float", options: {
+                                display: "主机消耗(吨)", name: "MASTER", newline: false, width: 200, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -56,7 +56,7 @@
                                 }, group: "柴油"
                             },
                             {
-                                display: "辅机日耗(吨)", name: "AUXILIARY", newline: false, width: 200, type: "float", options: {
+                                display: "辅机消耗(吨)", name: "AUXILIARY", newline: false, width: 200, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -65,7 +65,7 @@
                                 }
                             },
                             {
-                                display: "泵机日耗(吨)", name: "PUMP", newline: false, width: 200, value: 0, type: "float", options: {
+                                display: "泵机消耗(吨)", name: "PUMP", newline: false, width: 200, value: 0, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -77,7 +77,7 @@
                             { display: "补充(吨)", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存(吨)", name: "STOCK2", newline: false, width: 200, type: "float", options: { disabled: true } },
 
-                            { display: "日耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
+                            { display: "消耗(吨)", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
                             { display: "补充(吨)", name: "LUBRICATE_SUPPLEMENT", newline: false, width: 200, type: "float", options: { precision: 3 } },
                             { display: "库存(吨)", name: "LUBRICATE_STOCK", newline: false, width: 200, type: "float", options: { precision: 3, disabled: true } },
 
@@ -95,7 +95,6 @@
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        
                         me.shipinfo = data.shipInfo;
                     },
                     error: function (message) {
@@ -104,14 +103,13 @@
                 });
             },
             sum: function (zhu, fu, ban) {
-                
                 var total = Number(zhu) + Number(fu) + Number(ban);
                 $('#SUBTOTAL').val(total);
             },
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    me.mainform.setOrginData({});
+                    me.mainform.setOrginData({ DEVICE_ID: "1701416588385906688", DEVICE_NAME: "厦港浚001" });
                 }
                 else {
                     LG.ajax({
