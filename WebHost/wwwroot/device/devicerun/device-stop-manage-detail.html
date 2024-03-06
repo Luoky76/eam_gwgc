@@ -55,6 +55,7 @@
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            console.log("DEVICE_NO = " + $('#DEVICE_NO').val());
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
@@ -69,18 +70,20 @@
                             {
                                 display: "停机开始时间", name: "RUN_START", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
-                                    format: 'yyyy-MM-dd HH:mm',
+                                    format: 'yyyy-MM-dd HH',
                                     onChangeValue: function (input, value, g) {
-                                        me.updateWorkHours(value, $('#RUN_END').val());
+                                        $('#RUN_START').val(value + ":00");
+                                        me.updateWorkHours($('#RUN_START').val(), $('#RUN_END').val());
                                     },
                                 },
                             },
                             {
                                 display: "停机结束时间", name: "RUN_END", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
-                                    format: 'yyyy-MM-dd HH:mm',
+                                    format: 'yyyy-MM-dd HH',
                                     onChangeValue: function (input, value, g) {
-                                        me.updateWorkHours($('#RUN_START').val(), value);
+                                        $('#RUN_END').val(value + ":00");
+                                        me.updateWorkHours($('#RUN_START').val(), $('#RUN_END').val());
                                     },
                                 }
                             },
@@ -124,7 +127,6 @@
             buttons: null,
             //时间判断
             updateWorkHours: function (startDate, completeDate) {
-                debugger
                 var start = new Date(startDate);
                 var complete = new Date(completeDate);
 
@@ -255,6 +257,7 @@
                     changeRow["updated"] = [data];
                     changeRow["original"] = [original];
                 }
+                debugger
                 LG.ajax({
                     jsToken: true,
                     url: 'Device/DeviceStop/ManageStop',

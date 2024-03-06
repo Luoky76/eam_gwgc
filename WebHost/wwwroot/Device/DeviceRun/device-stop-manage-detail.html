@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title>明细</title>
+    <title>船舶停机管理明细</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -55,6 +55,7 @@
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            console.log("DEVICE_NO = " + $('#DEVICE_NO').val());
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
@@ -69,18 +70,20 @@
                             {
                                 display: "停机开始时间", name: "RUN_START", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
-                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    format: 'yyyy-MM-dd HH',
                                     onChangeValue: function (input, value, g) {
-                                        me.updateWorkHours(value, $('#RUN_END').val());
+                                        $('#RUN_START').val(value + ":00");
+                                        me.updateWorkHours($('#RUN_START').val(), $('#RUN_END').val());
                                     },
                                 },
                             },
                             {
                                 display: "停机结束时间", name: "RUN_END", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
-                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    format: 'yyyy-MM-dd HH',
                                     onChangeValue: function (input, value, g) {
-                                        me.updateWorkHours($('#RUN_START').val(), value);
+                                        $('#RUN_END').val(value + ":00");
+                                        me.updateWorkHours($('#RUN_START').val(), $('#RUN_END').val());
                                     },
                                 }
                             },
@@ -95,8 +98,8 @@
                             { display: "分析人ID", name: "CHECK_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "分析部门", name: "CHECK_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "分析日期", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.repType } },
-                            { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", validate: { required: true }, options: {} },
+                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.repType } },
+                            { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", options: {} },
                             { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: 775, type: "textarea", options: {} },
                             { display: "计划后续措施", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
 
@@ -132,18 +135,11 @@
                     return;
                 }
 
-                if (start >= complete) {
+                if (start > complete) {
                     $('#RUN_START').val("");
                     $('#RUN_END').val("");
                     $('#STOP_HOURS').val("");
-                    LG.showError("停机开始时间不能大于停机结束时间或者当前时间！请重新选择！");
-                    return;
-                }
-
-                var now = new Date();
-                if (complete > now) {
-                    $('#RUN_END').val("");
-                    LG.showError("停机结束时间不能大于当前时间！");
+                    LG.showError("停机开始时间不能大于停机结束时间！请重新选择！");
                     return;
                 }
 
@@ -261,6 +257,7 @@
                     changeRow["updated"] = [data];
                     changeRow["original"] = [original];
                 }
+                debugger
                 LG.ajax({
                     jsToken: true,
                     url: 'Device/DeviceStop/ManageStop',
