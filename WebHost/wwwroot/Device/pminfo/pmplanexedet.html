@@ -142,9 +142,9 @@
                     grid: {
                         columns: [
                             { display: "*完成情况", name: "COMPLETE", type: "select", minWidth: 100, validate: { required: true }, editor: { type: 'select', data: me.complete } },
-                            { display: "执行岗位", name: "EXE_USER", minWidth: 100, type: "text", },
+                            { display: "执行岗位", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "*执行人", name: "EXECUTE_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
-                            { display: "检查岗位", name: "CHK_USER", minWidth: 100, type: "text", },
+                            { display: "检查岗位", name: "CHK_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "*检查人", name: "CHECK_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             {
                                 display: "附件材料", name: "ATTACH_EXE", dbname: "ATTACH_EXE", width: 90, type: "text",

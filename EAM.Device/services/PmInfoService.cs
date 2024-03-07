@@ -585,8 +585,8 @@ namespace EAM.Device.services
             //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<PM_PLAN_EXE>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
-                .Where(c => c.AUDITING=="1")
-                .OrderBy(c => c.AUDITING)
+                .Where(c => c.AUDITING == "1")
+                .OrderBy(c => c.AUDITING_EXE)
                 .ThenByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
         }
