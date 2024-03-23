@@ -2,7 +2,6 @@
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
-using Gksyb.Workflow.EventSubscriber.Dtos;
 using Gksyb.Workflow.Services.Workflow.Bpmn;
 using Gksyb.Workflow.Services.Workflow.Dtos;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,12 +38,13 @@ namespace Gksyb.Workflow.Services.Workflow
             }
             await _dbContext.UseTransactionAsync(async () =>
             {
-                await StartNode.Execute(info);
+                await StartNode.Execute();
                 if (info.ToNodeIsEmpty) return;
                 var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                 info.ToNode = null;
-                if (toNodeService != null) await toNodeService.Execute(info);
+                if (toNodeService != null) await toNodeService.Execute();
             });
+            await info.PublishEvent();
         }
 
         /// <summary>
@@ -55,29 +55,29 @@ namespace Gksyb.Workflow.Services.Workflow
             var nodeService = await FindNodeService(info);
             await _dbContext.UseTransactionAsync(async () =>
             {
-                await nodeService.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
-                await nodeService.Complate(info);
+                await nodeService.AddLog(NodeStatus.GetDesc(info.NodeStatus));
+                await nodeService.Complate();
                 if (!info.ToNodeIsEmpty)
                 {
                     var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                    if (toNodeService != null) await toNodeService.Execute(info);
+                    if (toNodeService != null) await toNodeService.Execute();
                 }
                 if (info.NodeStatus == NodeStatus.Agree)
                 {
                     await AutoAgreeAsync(info);
                 }
             });
+            await info.PublishEvent();
         }
 
         /// <summary>
         /// 相同处理人自动同意
         /// </summary>
-        private async Task AutoAgreeAsync(FlowExecuteInfo executeInfo)
+        private async Task AutoAgreeAsync(FlowExecuteInfo info)
         {
-            var nodeInfos = executeInfo.ToNodeInfos.FindAll(c => c.NodeUserId == executeInfo.NodeUserId);
+            var nodeInfos = info.ToNodeInfos.FindAll(c => c.NodeUserId == info.NodeUserId);
             if (nodeInfos.Count < 1) return;
-            var info = executeInfo.MapTo<FlowExecuteInfo>();
             info.NodeReason = "自动流转";
             info.ToNodeInfos.Clear();
             foreach (var nodeInfo in nodeInfos)
@@ -87,13 +87,13 @@ namespace Gksyb.Workflow.Services.Workflow
                 info.Users?.Clear();
                 info.ToNode = null;
                 var nodeService = Nodes.FirstOrDefault(c => c.Id == nodeInfo.NodeId);
-                await nodeService.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
-                await nodeService.Complate(info);
-                if (info.ToNodeIsEmpty)
+                await nodeService.AddLog(NodeStatus.GetDesc(info.NodeStatus));
+                await nodeService.Complate();
+                if (!info.ToNodeIsEmpty)
                 {
                     var toNodeService = Nodes.FirstOrDefault(c => c.Id == info.ToNode);
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
-                    if (toNodeService != null) await toNodeService.Execute(info);
+                    if (toNodeService != null) await toNodeService.Execute();
                 }
             }
             await AutoAgreeAsync(info);
@@ -110,11 +110,17 @@ namespace Gksyb.Workflow.Services.Workflow
             info.FlowId = task.FLOW_ID;
             info.NodeStatus = NodeStatus.Cancel;
             await Init(info);
+            info.FlowName = task.FLOW_NAME;
+            info.RealTitle = task.FLOW_TITLE;
+            info.AppName = task.APPNAME;
+            info.Creator = task.CREATEUSER;
+            info.CreateDate = task.CREATEDATE;
             await _dbContext.UseTransactionAsync(async () =>
             {
-                await EndNode.AddLog(info, NodeStatus.GetDesc(info.NodeStatus));
-                await EndNode.Execute(info);
+                await EndNode.AddLog(NodeStatus.GetDesc(info.NodeStatus));
+                await EndNode.Execute();
             });
+            await info.PublishEvent();
         }
 
         /// <summary>
@@ -186,9 +192,10 @@ namespace Gksyb.Workflow.Services.Workflow
                 }
                 var reason = string.IsNullOrWhiteSpace(info.NodeReason) ? "" : $"{info.NodeReason}：";
                 info.NodeReason = $"{reason}{info.Users.Select(c => c.Name).ToStr(",")}";
-                await nodeService.AddLog(info, "抄送");
+                await nodeService.AddLog("抄送");
             });
-            await nodeService.EventPublish(WorkflowEventAction.AddShare, nodes);
+            nodeService.AddEvent(WorkflowEventAction.AddShare, nodes);
+            await info.PublishEvent();
         }
 
         /// <summary>
@@ -209,9 +216,10 @@ namespace Gksyb.Workflow.Services.Workflow
             {
                 var reason = string.IsNullOrWhiteSpace(info.NodeReason) ? "" : $"{info.NodeReason}：";
                 info.NodeReason = $"{reason}{info.Users.Select(c => c.Name).DistinctAndOrderBy().ToStr(",")}";
-                await nodeService.AddLog(info, "转办");
-                await nodeService.Complate(info);
+                await nodeService.AddLog("转办");
+                await nodeService.Complate();
             });
+            await info.PublishEvent();
         }
 
         /// <summary>
@@ -236,7 +244,23 @@ namespace Gksyb.Workflow.Services.Workflow
             info.TaskId = node.TASK_ID;
             info.NodeId = node.NODE_ID;
             info.NodeUserId = node.NODE_USERID;
+
             await Init(info);
+
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => new WF_TASK()
+            {
+                FLOW_NAME = c.FLOW_NAME,
+                FLOW_TITLE = c.FLOW_TITLE,
+                APPNAME = c.APPNAME,
+                CREATEUSER = c.CREATEUSER,
+                CREATEDATE = c.CREATEDATE
+            }).FirstOrDefaultAsync();
+            info.FlowName = task.FLOW_NAME;
+            info.RealTitle = task.FLOW_TITLE;
+            info.AppName = task.APPNAME;
+            info.Creator = task.CREATEUSER;
+            info.CreateDate = task.CREATEDATE;
+
             if (string.IsNullOrWhiteSpace(info.TaskKey) && info.FormData != null)
             {
                 info.TaskKey = info.GetTaskKey();
@@ -244,7 +268,7 @@ namespace Gksyb.Workflow.Services.Workflow
             var nodeService = Nodes.FirstOrDefault(c => c.Id == node.NODE_ID);
             info.ToNode = info.NodeStatus switch
             {
-                NodeStatus.Back => await nodeService.GetBackNode(info) ?? StartNode.Id,
+                NodeStatus.Back => await nodeService.GetBackNode() ?? StartNode.Id,
                 NodeStatus.Reject => EndNode.Id,
                 _ => info.ToNode,
             };
@@ -275,14 +299,14 @@ namespace Gksyb.Workflow.Services.Workflow
             {
                 var serviceName = $"Gksyb.Workflow.Services.Workflow.Bpmn.{c.ServiceName}";
                 if (_serviceProvider.GetService(serviceName) is not BpmnNodeService service) return;
-                service.Init(c);
+                service.Init(info, c);
                 Nodes.Add(service);
             });
             graphData.Edges?.ForEach(c =>
             {
                 var service = _serviceProvider.GetService<BpmnSequenceFlowService>();
                 if (service is null) return;
-                service.Init(c, Nodes);
+                service.Init(info, c, Nodes);
                 Sequences.Add(service);
             });
             info.Users = await FindUsers(info.Operators);
@@ -295,6 +319,7 @@ namespace Gksyb.Workflow.Services.Workflow
             info.FlowId = flow.ID;
             info.FlowCode = flow.FLOW_CODE;
             info.FlowName = flow.FLOW_NAME;
+            info.FlowGroup = flow.FLOW_GROUP;
             info.Title = flow.FLOW_TITLE;
             info.KeyName = flow.KEY_NAME;
             isInit = true;

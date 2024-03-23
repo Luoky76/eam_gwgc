@@ -27,8 +27,8 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "发起时间从", name: "sdate", dbname: "CreateDate", newline: false, upper: true, type: "date", op: "greaterorequal", options: { format: "yyyy-MM-dd hh:mm" } },
-                            { display: "到", name: "edate", dbname: "CreateDate", newline: false, upper: true, type: "date", op: "lessorequal", options: { format: "yyyy-MM-dd hh:mm" } },
+                            { display: "发起时间从", name: "sdate", dbname: "CreateDate", newline: false, upper: true, type: "date",vt:"date", op: "greaterorequal", options: { format: "yyyy-MM-dd hh:mm" } },
+                            { display: "到", name: "edate", dbname: "CreateDate", newline: false, upper: true, type: "dateEnd",vt:"date", op: "less", options: { format: "yyyy-MM-dd hh:mm" } },
                             { display: "流程标题", name: "_search_Title", newline: false, upper: true, type: "text", options: {} },
                             { display: "状态", name: "_search_TaskFinishFlag", newline: false, upper: true, type: "select", options: { data: function () { return me.dataTaskStatus; } } }
                         ]
@@ -161,9 +161,9 @@
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
+                                url: "../System/Export.html?exporttype=pdf",
                                 modal: true
                             });
                             break;
@@ -242,8 +242,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

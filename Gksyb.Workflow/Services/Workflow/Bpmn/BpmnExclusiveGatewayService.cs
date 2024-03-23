@@ -31,27 +31,27 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             }
         }
 
-        protected override async Task Exec(FlowExecuteInfo info)
+        protected override async Task Exec()
         {
             var expression = Expression;
             var outputs = Outputs;
-            if (info.FormData == null)
+            if (_info.FormData == null)
             {
-                await SetFormData(info);
+                await SetFormData();
             }
             var handle = GetHandle();
-            var result = handle == null ? null : await handle.Eval(info);
+            var result = handle == null ? null : await handle.Eval(_info);
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                result = Eval(expression, info.FormData, info.TaskId, GetPreviousNodeNames(Inputs));
+                result = Eval(expression, _info.FormData, _info.TaskId, GetPreviousNodeNames(Inputs));
             }
             if (Outputs.Count < 2 && result == "False") return;
             if (result != "True") outputs = outputs.Where(c => c.Name.EqualsTo(result)).ToList();
             MessageException.ThrowIf(outputs.Count < 1 && !string.IsNullOrWhiteSpace(result), $"找不到连线{result}");
-            await outputs.ForEachAsync(async c => await c.Execute(info));
+            await outputs.ForEachAsync(async c => await c.Execute());
         }
 
-        public override async Task Complate(FlowExecuteInfo info)
+        public override async Task Complate()
         {
             await Task.CompletedTask;
             MessageException.Throw($"分支节点{Title}不能被完成");

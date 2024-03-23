@@ -61,5 +61,15 @@
         /// 完成日期
         /// </summary>
         public DateTime? Finishdate { get; set; }
+
+        /// <summary>
+        /// 标记是否处理，用于对接第三方平台时进行标记
+        /// </summary>
+        public bool IsHandle { get; set; }
+
+        /// <summary>
+        /// 处理备注，用于对接第三方平台时进行标记
+        /// </summary>
+        public bool HandleRemark { get; set; }
     }
 }

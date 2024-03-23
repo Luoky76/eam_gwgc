@@ -277,6 +277,7 @@
                             me.isView = true;
                         }
                         me.isOper = me.isStart && !me.isView;
+                        me.setTitle();
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -501,6 +502,20 @@
                     showToggle: false,
                     showMax: false
                 });
+            },
+            setTitle: function () {
+                var me = this;
+                var title = (me.data.Title || "") + "【" + (me.data.NodeTitle || "发起") + "】";
+                if (frameElement && frameElement.dialog && frameElement.dialog.dialog) {
+                    frameElement.dialog._setTitle(title);
+                    return;
+                }
+                var win = parent || window;
+                if (win.editTabTitle && win.getActivePageId) {
+                    win.editTabTitle(win.getActivePageId(), title);
+                    return;
+                }
+                document.title = title;
             },
             init: function () {
                 var me = this;

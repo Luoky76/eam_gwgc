@@ -355,7 +355,6 @@
             me.ctx = ctx;
             me.param = param || {};
             me.nid = me.param.id;
-            me.isView = me.param.isView === "1";
             me.initAuditForm();
             me.initForm();
             me.initTimeline();
@@ -363,6 +362,7 @@
     };
     return function (props, ctx) {
         var me = business;
+        me.isView = props.isView === "1";
         me.loadData(props);
         var FlowForm = (props, { $h }) => {
             return () => $h`<div></div>`;

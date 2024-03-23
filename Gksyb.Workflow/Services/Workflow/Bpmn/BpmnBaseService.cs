@@ -11,14 +11,16 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
     public abstract class BpmnBaseService
     {
         protected readonly IDbContext _dbContext;
+        protected FlowExecuteInfo _info;
 
         public BpmnBaseService(IDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        protected void Init(FlowGraphNode flowGraphNode)
+        public void Init(FlowExecuteInfo info, FlowGraphNode flowGraphNode)
         {
+            _info = info;
             Properties = flowGraphNode.Properties;
             Id = flowGraphNode.ID;
             Name = GetProperties("name") as string;
@@ -64,23 +66,24 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 获取当前表单数据
         /// </summary>
-        protected async Task SetFormData(FlowExecuteInfo info)
+        protected async Task SetFormData()
         {
-            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => new WF_TASK()
+            if (_info.FormData != null) return;
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == _info.TaskId).Select(c => new WF_TASK()
             {
                 ID = c.ID,
                 TASK_KEY = c.TASK_KEY,
                 FLOW_FORM_DATA = c.FLOW_FORM_DATA
             }).FirstOrDefaultAsync();
-            task ??= await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == info.TaskId).Select(c => new WF_TASK()
+            task ??= await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == _info.TaskId).Select(c => new WF_TASK()
             {
                 ID = c.ID,
                 TASK_KEY = c.TASK_KEY,
                 FLOW_FORM_DATA = c.FLOW_FORM_DATA
             }).FirstOrDefaultAsync();
-            info.FormData = (task == null ? "" : (task.FLOW_FORM_DATA ?? "")).ToObject<Dictionary<string, object>>()
+            _info.FormData = (task == null ? "" : (task.FLOW_FORM_DATA ?? "")).ToObject<Dictionary<string, object>>()
                 ?? new Dictionary<string, object>();
-            info.TaskKey = task == null ? info.GetTaskKey() : task.TASK_KEY;
+            _info.TaskKey = task == null ? _info.GetTaskKey() : task.TASK_KEY;
         }
 
         /// <summary>
@@ -130,11 +133,11 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 执行当前模型
         /// </summary>
-        public abstract Task Execute(FlowExecuteInfo info);
+        public abstract Task Execute();
 
         /// <summary>
         /// 完成当前节点
         /// </summary>
-        public abstract Task Complate(FlowExecuteInfo info);
+        public abstract Task Complate();
     }
 }

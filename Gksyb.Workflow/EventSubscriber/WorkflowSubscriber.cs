@@ -1,8 +1,6 @@
 ﻿using Gksyb.Common.EventBus;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.WorkFlow;
-using Gksyb.Core.Interfaces.WorkFlow.Dtos;
-using Gksyb.Workflow.EventSubscriber.Dtos;
 
 namespace Gksyb.Workflow.EventSubscriber
 {
@@ -15,28 +13,61 @@ namespace Gksyb.Workflow.EventSubscriber
             _service = service;
         }
 
-        [EventSubscribe(WorkflowEventAction.AddTask)]
-        public async Task AddTaskAsync(MessageInfo<NodeInfo> info)
+        [EventSubscribe(WorkflowEventAction.AddNode)]
+        public async Task AddToDoAsync(FlowEventInfo info)
         {
-            info.Code = "ToDo";
-            info.Title = $"您有一条新的待办";
-            await _service.SendAsync(info, true);
+            if (info.NodeInfos == null || info.NodeInfos.Count < 1) return;
+            foreach (var node in info.NodeInfos)
+            {
+                await _service.SendAsync(new MessageInfo
+                {
+                    Code = "ToDo",
+                    Title = "您有一条新的待办",
+                    Content = info.Title,
+                    Key = node.Id,
+                    Receives = new List<string>() { node.NodeUserName },
+                    Data = node,
+                    Appname = info.AppName
+                }, true);
+            }
         }
 
         [EventSubscribe(WorkflowEventAction.ComplateTask)]
-        public async Task ComplateTaskAsync(MessageInfo<NodeInfo> info)
+        public async Task ComplateTaskAsync(FlowEventInfo info)
         {
-            info.Code = "ToDoComplate";
-            info.Content = $"您的《{info.Title}》申请已审批，结果为{NodeStatus.GetDesc(info.Data?.NodeStatus)}";
-            await _service.SendAsync(info, true);
+            if (info.NodeInfos == null || info.NodeInfos.Count < 1) return;
+            foreach (var node in info.NodeInfos)
+            {
+                await _service.SendAsync(new MessageInfo
+                {
+                    Code = "ToDoComplate",
+                    Title = info.FlowName,
+                    Content = $"您的《{info.Title}》申请已审批，结果为{NodeStatus.GetDesc(node?.NodeStatus)}",
+                    Key = node.Id,
+                    Receives = new List<string>() { node.NodeUserName },
+                    Data = node,
+                    Appname = info.AppName
+                }, true);
+            }
         }
 
         [EventSubscribe(WorkflowEventAction.AddShare)]
-        public async Task AddShareAsync(MessageInfo<NodeInfo> info)
+        public async Task AddShareAsync(FlowEventInfo info)
         {
-            info.Code = "ToRead";
-            info.Content = $"您有一条新的待阅";
-            await _service.SendAsync(info, true);
+            if (info.NodeInfos == null || info.NodeInfos.Count < 1) return;
+            foreach (var node in info.NodeInfos)
+            {
+                await _service.SendAsync(new MessageInfo
+                {
+                    Code = "ToRead",
+                    Title = info.FlowName,
+                    Content = "您有一条新的待阅",
+                    Key = node.Id,
+                    Receives = new List<string>() { node.NodeUserName },
+                    Data = node,
+                    Appname = info.AppName
+                }, true);
+            }
         }
     }
 }
