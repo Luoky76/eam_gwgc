@@ -257,7 +257,11 @@
                     groups: [],
                     op: 'and'
                 };
-                if (parms.orginwhere) rules.groups.push(JSON2.parse(parms.orginwhere));
+                if (parms.orginwhere) {
+                    var orginGroup = JSON2.parse(parms.orginwhere);
+                    orginGroup.orgin = "1";
+                    rules.groups.push(orginGroup);
+                }
                 rules.groups.push(rule);
                 parms.where = JSON2.stringify(rules);
             } else {

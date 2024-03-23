@@ -6,7 +6,7 @@ namespace Gksyb.Common.Weixin
 {
     public static class MiniProgramHelper
     {
-        internal static readonly string ApiHost = WeixinSetting.ApiHost;
+        internal const string ApiHost = WeixinSetting.ApiHost;
 
         /// <summary>
         /// 获取用户登录凭据

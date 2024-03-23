@@ -6,7 +6,7 @@ namespace Gksyb.Common.Data
 {
     public class Contains_Handler : IMethodHandler
     {
-        public static readonly string MethodName = nameof(string.Contains);
+        public const string MethodName = nameof(string.Contains);
         private static readonly MethodInfo method = typeof(string).GetMethod(MethodName, new Type[] { typeof(char) });
 
         private readonly string _concat;

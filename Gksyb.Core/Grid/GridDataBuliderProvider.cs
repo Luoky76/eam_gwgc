@@ -48,7 +48,7 @@ namespace Gksyb.Core.Grid
                 foreach (Match mactch in matchCollection.Cast<Match>())
                 {
                     var name = mactch.Value;
-                    object value = null;
+                    object value = DBNull.Value;
                     if (FilterParmMatch.CurrentParmMatch.ContainsKey(name))
                     {
                         value = FilterParmMatch.CurrentParmMatch[name]();
@@ -61,7 +61,9 @@ namespace Gksyb.Core.Grid
                     }
                     name = Regex.Replace(name, @"[{}]", "");
                     if (whereTranslator.Parms.Any(c => c.Name == name)) continue;
-                    whereTranslator.Parms.Add(new DbParam(name.TrimStart(paramPrefix.ToCharArray()), value));
+                    var dbParam = new DbParam(name.TrimStart(paramPrefix.ToCharArray()), value);
+                    if (value == DBNull.Value) dbParam.Type = typeof(string);
+                    whereTranslator.Parms.Add(dbParam);
                 }
                 request.View = Regex.Replace(request.View, @"{(\w+)}", $"{paramPrefix}$1");
             }
@@ -71,7 +73,7 @@ namespace Gksyb.Core.Grid
             {
                 total = (await source.Session.ExecuteScalarAsync($"select count(1) from ({request.View}) tmptableinner", whereTranslator.Parms)).CastTo<int>();
             }
-            var order = request.HasSort ? $"ORDER BY {request.SortName} {request.SortOrder}" : "";
+            var order = request.HasSort ? $"ORDER BY {request.SortName} {request.OrderBy}" : "";
             string sql;
             if (request.Page.HasValue && request.PageSize.HasValue)
             {
@@ -148,7 +150,7 @@ namespace Gksyb.Core.Grid
                     {
                         total = await source.GroupBy(groupExpression).Select(DynamicExpressionParser.ParseLambda(parameterExpressions, null, $"new ({request.GroupBy})")).CountAsync();
                     }
-                    if (hasSort) source = source.OrderBy($"{request.SortName} {request.SortOrder}");
+                    if (hasSort) source = source.OrderBy($"{request.SortName} {request.OrderBy}");
                     var groupQuery = source.GroupBy(groupExpression);
                     IQuery<object> query = groupQuery.Select(DynamicExpressionParser.ParseLambda(parameterExpressions, null, $"new ({(hasColumns ? request.Columns : request.GroupBy)})"));
                     if (request.Page.HasValue && request.PageSize.HasValue)
@@ -165,7 +167,7 @@ namespace Gksyb.Core.Grid
                 {
                     total = await source.CountAsync();
                 }
-                if (hasSort) source = source.OrderBy($"{request.SortName} {request.SortOrder}");
+                if (hasSort) source = source.OrderBy($"{request.SortName} {request.OrderBy}");
                 if (request.Page.HasValue && request.PageSize.HasValue)
                 {
                     source = source.TakePage(request.Page.Value, request.PageSize.Value);

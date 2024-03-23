@@ -254,7 +254,7 @@ namespace Gksyb.Server.Services.Common
                         }
                         try
                         {
-                            string sortExp = (request.Sort ?? "").SqlFilter(80);
+                            string sortExp = (request.Sort ?? "").SqlFilter(5);
                             if (sortExp.HasValue())
                             {
                                 var upperText = sql.ToUpper();
@@ -263,7 +263,7 @@ namespace Gksyb.Server.Services.Common
                                 {
                                     sql = sql[..lastIndex];
                                 }
-                                sql = "SELECT * FROM ({0}) tmptableinner ORDER BY {1}".FormatWith(sql, sortExp);
+                                sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
                             }
                         }
                         catch (Exception) { }
@@ -357,6 +357,6 @@ namespace Gksyb.Server.Services.Common
         }
 
         //缓存前缀
-        private static readonly string CachePrefix = "View_";
+        private const string CachePrefix = "View_";
     }
 }

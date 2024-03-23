@@ -7,7 +7,7 @@ namespace Gksyb.Common.Data
 {
     public class Compare_Handler : IMethodHandler
     {
-        public static readonly string MethodName = nameof(string.Compare);
+        public const string MethodName = nameof(string.Compare);
         private static readonly MethodInfo method = typeof(string).GetMethod(MethodName, new Type[] { typeof(string), typeof(string) });
 
         public bool CanProcess(DbMethodCallExpression exp) => exp.Method.DeclaringType != PublicConstants.TypeOfSql && (exp.Method == method && exp.Arguments?.Count == 2);

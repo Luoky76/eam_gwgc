@@ -7,7 +7,7 @@ namespace Gksyb.Common.Data
 {
     public class IsNullOrWhiteSpace_Handler : IMethodHandler
     {
-        public static readonly string MethodName = nameof(string.IsNullOrWhiteSpace);
+        public const string MethodName = nameof(string.IsNullOrWhiteSpace);
         private static readonly MethodInfo method = typeof(string).GetMethod(MethodName, new Type[] { typeof(string) });
 
         public bool CanProcess(DbMethodCallExpression exp) => exp.Method == method;

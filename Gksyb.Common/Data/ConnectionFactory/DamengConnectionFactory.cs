@@ -15,7 +15,8 @@ namespace Gksyb.Common.Data
                 {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
                 {Compare_Handler.MethodName, new Compare_Handler()},
                 {Contains_Handler.MethodName, new Contains_Handler()},
-                {SumString_Handler.MethodName, new SumString_Handler("LISTAGG")}
+                {SumString_Handler.MethodName, new SumString_Handler("LISTAGG")},
+                {MathAbs_Handler.MethodName, new MathAbs_Handler()}
             };
             foreach (var item in methodHandlerDic)
             {

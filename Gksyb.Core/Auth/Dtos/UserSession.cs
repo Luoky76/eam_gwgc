@@ -1,10 +1,10 @@
-﻿using Gksyb.Common;
-using Gksyb.Common.Static;
+﻿using Gksyb.Common.Static;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.UI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Globalization;
@@ -17,6 +17,7 @@ namespace Gksyb.Core.Auth
     /// </summary>
     public partial class UserSession
     {
+        private readonly LogPath _logPath = new(nameof(UserSession));
         private static readonly string VERSION;
 
         static UserSession()
@@ -28,7 +29,7 @@ namespace Gksyb.Core.Auth
         /// <summary>
         /// 超级用户角色
         /// </summary>
-        public static readonly string SuperRoleName = "$H^thKo#7E";
+        public const string SuperRoleName = "$H^thKo#7E";
 
         /// <summary>
         /// Token
@@ -270,6 +271,8 @@ namespace Gksyb.Core.Auth
                 if (UserAgent == userAgent) times += 1;
                 if (times > 0 && Token == request.HttpContext.GetUID(false)) times += 1;
                 if (times > 1) return true;
+                var logger = request.HttpContext.RequestServices.GetService<ILogger<UserSession>>();
+                logger.LogError(_logPath, $"{Token}验证失败，{Environment.NewLine}当前：{ip}{Environment.NewLine}原始：{IP}{Environment.NewLine}当前：{userAgent}{Environment.NewLine}原始：{UserAgent}");
             }
             distributedCache ??= request.HttpContext.RequestServices.GetService<IDistributedCache>();
             distributedCache.Remove(Token);

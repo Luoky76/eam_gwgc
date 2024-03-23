@@ -17,7 +17,7 @@ namespace Gksyb.Model.Filter
             {
                 foreach (var rule in Rules)
                 {
-                    rule.Field.SqlFilter(30);
+                    rule.Field.SqlFilter(5);
                 }
             }
             if (Groups != null && Groups.Count > 0)

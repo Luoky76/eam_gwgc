@@ -6,7 +6,7 @@ namespace Gksyb.Common.Data
 {
     public class SumString_Handler : IMethodHandler
     {
-        public static readonly string MethodName = "Sum";
+        public const string MethodName = "Sum";
 
         private readonly string _fn;
         private readonly string _delimiter;

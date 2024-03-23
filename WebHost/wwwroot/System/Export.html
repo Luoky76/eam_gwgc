@@ -7,10 +7,13 @@
     <title>数据导出</title>
     <script src="../lib/LGboot.js" type="text/javascript"></script>
     <script src="../lib/js-export/ligerExcel.js?ver=2" type="text/javascript"></script>
+    <script src="../lib/js-export/html2canvas.js?ver=2" type="text/javascript"></script>
+    <script src="../lib/js-export/shnormal-font.js" type="text/javascript"></script>
+    <script src="../lib/js-export/jspdf.js?ver=2" type="text/javascript"></script>
 </head>
 
 <body style="overflow:hidden">
-    <div id="export-table" style="visibility:hidden">
+    <div id="export-div" style="visibility:hidden">
     </div>
     <div>
         正在导出文件，请稍后...
@@ -142,7 +145,7 @@
                     columns = eColumns;
                     g.columns = columns;
                     var gridhtmlarr = [];
-                    gridhtmlarr.push('<table border="3"><thead>');
+                    gridhtmlarr.push('<table id="export-table" border="3"><thead>');
                     var $head = $("tbody", g.gridheader).clone();
                     var $frozenHead = $("tbody>tr:first>td", g.f.gridheader).clone();
                     $frozenHead.attr("frozen", "1");
@@ -198,6 +201,20 @@
                     g.columns = oldColumns;
                 }
             },
+            saveAs: function (dataURI, exporttype) {
+                var me = this;
+                var item = (parent ? parent.window : window).location;
+                $.ajax({
+                    noGlobal: true,
+                    async: false,
+                    type: 'post',
+                    dataType: 'json',
+                    url: 'myinfo/exportlog',
+                    data: { url: (item.pathname || "") + "?" + exporttype, menuNo: getQueryStringByName("menuno", item.url) }
+                });
+                ((parent && parent.liger) ? parent.liger : liger).saveAs(dataURI, (new Date()).format("yyyyMMddhhmmss.") + exporttype);
+                me.dialog.close();
+            },
             init: function () {
                 if (!frameElement || !frameElement.dialog) return;
                 var me = this;
@@ -208,23 +225,29 @@
                 var skipStyle = getQueryStringByName("skipStyle") || me.dialogData.skipStyle;
                 var gridId = me.dialogData.gridid || getQueryStringByName("gridid") || "maingrid";
                 me.grid = parent.liger.get(gridId);
+                var options = me.grid.options.export || {};
                 var tableHtml = me.getTableHtml();
                 if (exporttype === "xls") exporttype = "xlsx";
-                var dataURI = "";
-                if (exporttype.indexOf("doc") < 0 && !exportHtml) {
-                    var exportTable = $("#export-table");
-                    exportTable.html(tableHtml);
-                    dataURI = liger.ooxml.tableToExcel($(">table", exportTable), skipStyle, me.dialogData.callBack);
-                }
-                else {
+                if (exporttype.indexOf("doc") > -1) exportHtml = true;
+                if (exportHtml) {
                     var htmls = [];
                     htmls.push('<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body>');
                     htmls.push(tableHtml);
                     htmls.push("</body></html>");
-                    dataURI = "data:text/html;base64," + Base64.toBase64(htmls.join(''));
+                    me.saveAs("data:text/html;base64," + Base64.toBase64(htmls.join('')), exporttype);
+                    return;
                 }
-                ((parent && parent.liger) ? parent.liger : liger).saveAs(dataURI, (new Date()).format("yyyyMMddhhmmss.") + exporttype);
-                me.dialog.close();
+                $("#export-div").html(tableHtml);
+                switch (exporttype) {
+                    case "xlsx":
+                        var dataURI = liger.ooxml.tableToExcel($("#export-table"), skipStyle, me.dialogData.callBack, options);
+                        me.saveAs(dataURI, exporttype);
+                        break;
+                    case "pdf":
+                        liger.toPdf($("#export-table"), options, function (data) {
+                            me.saveAs(data, exporttype);
+                        });
+                }
             }
         };
         $(function () {

@@ -8,7 +8,7 @@ namespace Gksyb.Common.Weixin
 {
     public static class WeixinPayHelper
     {
-        internal static readonly string ApiHost = "https://api.mch.weixin.qq.com";//微信支付api地址
+        internal const string ApiHost = "https://api.mch.weixin.qq.com";//微信支付api地址
 
         /// <summary>
         /// 统一支付接口

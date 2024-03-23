@@ -329,8 +329,8 @@
                         case "Excel":
                             $.ligerDialog.open({ url: "../System/Export.html?exporttype=xls", modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({ url: "../System/Export.html?exporttype=doc", modal: true });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: "../System/Export.html?exporttype=pdf", modal: true });
                             break;
                     }
                 }
@@ -472,8 +472,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

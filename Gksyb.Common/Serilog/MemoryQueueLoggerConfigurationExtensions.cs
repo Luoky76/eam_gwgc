@@ -12,7 +12,7 @@ namespace Serilog
     /// </summary>
     public static class MemoryQueueLoggerConfigurationExtensions
     {
-        private const string DefaultOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}";
+        private const string DefaultOutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}:{HostIP}] {MessagePath} {Message:lj}{NewLine}{Exception}";
 
         /// <summary>
         /// 写入内存队列
@@ -21,14 +21,12 @@ namespace Serilog
         public static LoggerConfiguration MemoryQueue(
             this LoggerSinkConfiguration sinkConfiguration,
             LogEventLevel restrictedToMinimumLevel = LevelAlias.Minimum,
-            string outputTemplate = DefaultOutputTemplate,
             IFormatProvider formatProvider = null,
             LoggingLevelSwitch levelSwitch = null)
         {
             if (sinkConfiguration == null) throw new ArgumentNullException(nameof(sinkConfiguration));
-            if (outputTemplate == null) throw new ArgumentNullException(nameof(outputTemplate));
 
-            var formatter = new MessageTemplateTextFormatter(outputTemplate, formatProvider);
+            var formatter = new MessageTemplateTextFormatter(DefaultOutputTemplate, formatProvider);
             return sinkConfiguration.MemoryQueue(formatter, restrictedToMinimumLevel, levelSwitch);
         }
 

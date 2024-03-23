@@ -135,6 +135,18 @@ namespace Gksyb.Common
             return value.IsMatch(pattern);
         }
 
+        /// <summary>
+        /// 去标识化
+        /// </summary>
+        public static string Deidentification(this string source, int m, int n = -1)
+        {
+            if (source == null) return source;
+            if (m >= source.Length) n = source.Length - 1;
+            if (n >= source.Length) n = source.Length;
+            if (n < m) n = m + 1;
+            return (m > 0 ? source.SubStr(0, m) : string.Empty) + string.Empty.PadLeft(n - m, '*') + source.SubStr(n);
+        }
+
         #endregion 正则表达式
 
         #region 其他操作
@@ -156,10 +168,15 @@ namespace Gksyb.Common
         public static string SqlFilter(this string value, int? limit = null)
         {
             if (string.IsNullOrWhiteSpace(value)) return value;
-            if (Regex.IsMatch(value, @"(insert\s+|union\s+|update\s+|delete\s+|select\s+|\s+or\s+|\s+=\s+|\s+dual\s+|create\s+|declare\s+|exec\s+|sys\.|dbms_|extractvalue|dburitype)", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(value, @"(\bselect\b|\bfrom\b\|\binsert\b|\bunion\b|\bupdate\b|\bdelete\b|\bdrop\b|\sor\s|\s=\s|\bdual\b|\bcreate\|\bdeclare\b|\bexec\b|--|sys\.|dbms_|extractvalue|dburitype|\buser_tab|\ball_)", RegexOptions.IgnoreCase))
                 throw new MessageException("防注入:1001");
-            if (limit != null && value.Length > limit && Regex.Replace(value, $@"^((\w|\.|,){{{limit},}})|(\basc\b)|(\bdesc\b)|( )", "", RegexOptions.IgnoreCase).Length > limit)
-                throw new MessageException("防注入:1002");
+            if (limit.HasValue && value.Length > limit)
+            {
+                var txt = Regex.Replace(value, @"(\s*\basc\b\s*)|(\s*\bdesc\b\s*)|(\s*,\s*)|(\s*\btrunc\b\s*\()", "", RegexOptions.IgnoreCase).Trim();
+                txt = Regex.Replace(txt, @"^(\w|\.|\(|:|\?|@)+|\s+", "", RegexOptions.IgnoreCase);
+                if (txt.Length > limit)
+                    throw new MessageException("防注入:1002");
+            }
             return value;
         }
 

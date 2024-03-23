@@ -12,8 +12,8 @@ namespace Gksyb.Server.Services.Auth
     public class OAuthService : IBaseService
     {
         private const int ShortExpiration = 30;
-        private static readonly string KEY = OAuthRequest<object>.KEY;
-        private static readonly string _opertype = "用户公司";
+        private const string KEY = OAuthRequest<object>.KEY;
+        private const string _opertype = "用户公司";
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
         private readonly UserSession _user;

@@ -73,9 +73,9 @@
             if (window.session.Token) jqXHR.setRequestHeader("GKSYBTOKEN", window.session.Token);
         },
         _toLogin: function () {
-            var loginUrl = gksybConfigs.urlBase + "login.html?FromUrl=" + encodeURIComponent(topWindow.location.href);
-            topWindow.location.href = loginUrl;
-            return;
+            var loc = topWindow.location;
+            var loginUrl = gksybConfigs.urlBase + "login.html?FromUrl=" + encodeURIComponent(loc.href);
+            loc.href = loginUrl;
         },
         innerDialogTip: function (msg, _toLogin) {
             if (_toLogin === true) {
@@ -92,7 +92,6 @@
                 alert(msg);
                 window._toLogin();
             }
-            return;
         },
         refreshGksybToken: function (callback, _toLogin) {
             var innerTip = window.innerDialogTip;

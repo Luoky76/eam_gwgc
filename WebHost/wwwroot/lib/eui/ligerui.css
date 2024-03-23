@@ -19,6 +19,10 @@ input::-ms-clear {
     display: none;
 }
 
+.l-display-none {
+    display: none !important;
+}
+
 .l-noborder {
     border: none !important;
 }
@@ -1899,6 +1903,7 @@ table.l-filter-group-alt table.l-filter-group {
 .l-box-dateeditor {
     font-size: 14px;
     width: 180px;
+    width: auto;
 }
 
     .l-box-dateeditor:before {
@@ -1949,7 +1954,24 @@ table.l-filter-group-alt table.l-filter-group {
     margin-top: 0;
 }
 
-.l-box-dateeditor-header {
+.l-box-dateeditor-pannel {
+    display: inline-block;
+}
+
+.l-box-dateeditor-range.l-box-dateeditor-notime .l-box-dateeditor-pannel-first {
+    margin-right: 20px;
+}
+
+.l-box-dateeditor-range .l-box-dateeditor-pannel-first .l-box-dateeditor-header-next, .l-box-dateeditor-range .l-box-dateeditor-pannel-second .l-box-dateeditor-header-prev {
+    display: none !important;
+}
+
+.l-box-dateeditor-date-pannel {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.l-box-dateeditor-header, .l-box-dateeditor-time-header {
     font-weight: bold;
     line-height: 31px;
     position: relative;
@@ -1957,6 +1979,7 @@ table.l-filter-group-alt table.l-filter-group {
     height: 31px;
     text-align: center;
     border-bottom: 1px solid #e9eaec;
+    cursor: default;
 }
 
 .l-box-dateeditor-header-btn {
@@ -2005,12 +2028,14 @@ table.l-filter-group-alt table.l-filter-group {
     }
 
         .l-box-dateeditor-body table td {
+            display: inline-block;
             width: 25px;
             height: 20px;
-            padding: 3px 0;
+            padding: 2px 0;
             text-align: center;
             border: none;
-            border-radius: 4px;
+            position: relative;
+            margin: 1px 0px;
         }
 
         .l-box-dateeditor-body table thead td {
@@ -2019,8 +2044,7 @@ table.l-filter-group-alt table.l-filter-group {
         }
 
 .l-box-dateeditor-monthselector,
-.l-box-dateeditor-yearselector,
-.l-box-dateeditor-timeselector {
+.l-box-dateeditor-yearselector {
     position: absolute;
     top: 0;
     left: 0;
@@ -2034,37 +2058,33 @@ table.l-filter-group-alt table.l-filter-group {
     background: white;
 }
 
-    .l-box-dateeditor-monthselector li {
-        line-height: 54px;
+    .l-box-dateeditor-monthselector li, .l-box-dateeditor-yearselector li {
+        width: 42px;
+        height: 52px;
+        line-height: 52px;
         display: block;
         float: left;
-        float: left;
-        width: 23%;
-        height: 54px;
-        margin: 1%;
+        margin: 3px 0;
         cursor: pointer;
         border-radius: 4px;
     }
 
-    .l-box-dateeditor-yearselector li {
-        line-height: 54px;
-        display: block;
-        float: left;
-        float: left;
-        width: 23%;
-        height: 54px;
-        margin: 1%;
-        cursor: pointer;
-        border-radius: 4px;
-    }
+.l-box-dateeditor-time-pannel {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.l-box-dateeditor-time-header {
+    border-left: 1px solid #e9eaec;
+}
 
 .l-box-dateeditor-hourselector,
 .l-box-dateeditor-minuteselector,
 .l-box-dateeditor-secondselector {
     float: left;
     overflow: hidden;
-    width: 58px;
-    height: 100%;
+    width: 50px;
+    height: 182px;
     list-style: none;
     border-left: 1px solid #e9eaec;
 }
@@ -2083,7 +2103,7 @@ table.l-filter-group-alt table.l-filter-group {
         box-sizing: content-box;
         height: 24px;
         margin: 0;
-        padding: 0 0 0 15px;
+        padding: 0 0 0 10px;
         list-style: none;
         cursor: pointer;
         -webkit-user-select: none;
@@ -2104,19 +2124,19 @@ table.l-filter-group-alt table.l-filter-group {
     color: #999;
 }
 
-.l-box-dateeditor-today {
-    color: #fff;
-    border-color: #f1a325;
-    border-color: rgba(0, 0, 0, .1) rgba(0, 0, 0, .1) rgba(0, 0, 0, .25);
-    background-color: #f1a325;
+.l-box-dateeditor-body table td.l-box-dateeditor-today {
+    border: 1px solid #0462f7;
+    border-radius: 4px;
 }
 
-.l-box-dateeditor-selected {
-    color: #fff;
-    border-color: #0462f7;
-    border-color: rgba(0, 0, 0, .1) rgba(0, 0, 0, .1) rgba(0, 0, 0, .25);
+.l-box-dateeditor-selected, .l-box-dateeditor-range .l-box-dateeditor-pannel .l-box-dateeditor-range-start, .l-box-dateeditor-range .l-box-dateeditor-pannel .l-box-dateeditor-range-end, .l-box-dateeditor-range .l-box-dateeditor-over {
+    color: #fff !important;
     background-color: #3280fc;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, .25);
+}
+
+.l-box-dateeditor-range .l-box-dateeditor-pannel .l-box-dateeditor-in-range {
+    background: #e6f4ff;
+    border-radius: 0;
 }
 
 .l-box-dateeditor-over,
@@ -2124,12 +2144,6 @@ table.l-filter-group-alt table.l-filter-group {
 .l-box-dateeditor-yearselector li:hover {
     cursor: pointer;
     background-color: #eee;
-}
-
-.l-box-dateeditor-today:hover,
-.l-box-dateeditor-monthselector li.l-box-dateeditor-today:hover,
-.l-box-dateeditor-yearselector li.l-box-dateeditor-today:hover {
-    background-color: #d5890e;
 }
 
 .l-box-dateeditor-selected:hover,
@@ -2163,6 +2177,9 @@ table.l-filter-group-alt table.l-filter-group {
         background-color: #eee;
     }
 
+.l-box-dateeditor-toolbar .l-button-today {
+    float: left;
+}
 /* -------------
    * 下拉框 *
  * ------------- */
@@ -2900,6 +2917,7 @@ table.l-filter-group-alt table.l-filter-group {
 .l-text-invalid .l-upload-text {
     border-color: red !important;
 }
+
 /* -----------------------
    * 表格 *
 * ----------------------- */

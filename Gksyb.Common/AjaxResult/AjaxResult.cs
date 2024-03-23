@@ -63,9 +63,6 @@ namespace Gksyb.Common
             };
         }
 
-        public override string ToString()
-        {
-            return this.ToJson();
-        }
+        public override string ToString() => this.ToJson();
     }
 }

@@ -50,11 +50,28 @@ namespace Gksyb.Server.Controllers.Auth
         public AjaxResult<DateTime> Now() => AjaxResult<DateTime>.Success(DateTime.Now);
 
         [AllowAnonymous]
-        public async Task<AjaxResult> AccessTokenAsync(OAuthRequest<string> request)
+        public async Task<AjaxResult> AccessTokenAsync(string json)
         {
-            request.Init(Request);
-            var response = await _service.AccessTokenAsync(request);
-            return AjaxResult.Success(response);
+            string ip = null;
+            string response = null;
+            try
+            {
+                ip = Request.GetRealIP();
+                var request = json.ToObject<OAuthRequest<string>>();
+                request.Init(Request);
+                var token = await _service.AccessTokenAsync(request);
+                response = token.ToJson();
+                return AjaxResult.Success(token);
+            }
+            catch (Exception ex)
+            {
+                response = ex.ToString();
+                throw;
+            }
+            finally
+            {
+                _logger.LogInformation(_logPath, $"接到来自{ip}的【AccessToken】请求，请求参数：{json},应答数据：{response}");
+            }
         }
 
         [JsToken]

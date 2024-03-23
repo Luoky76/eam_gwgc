@@ -359,7 +359,7 @@ namespace Chloe
         /// <summary>
         /// 关闭数据库日志标识
         /// </summary>
-        private static readonly string _sqlLogKey = "NotSqlLog";
+        private const string _sqlLogKey = "NotSqlLog";
 
         /// <summary>
         /// 是否关闭数据库日志

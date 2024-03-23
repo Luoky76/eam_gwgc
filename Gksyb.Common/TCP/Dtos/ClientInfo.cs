@@ -44,8 +44,8 @@ namespace Gksyb.Common.TCP
 
         public void Dispose()
         {
-            Socket.Close();
-            Socket.Dispose();
+            Socket?.Dispose();
+            Socket = null;
             Packet?.Dispose();
             GC.SuppressFinalize(this);
         }

@@ -107,18 +107,15 @@ namespace Chloe
             Func<List<T>, List<T>, List<T>, Task> beforeSave = null,
             Func<List<T>, List<T>, List<T>, Task> afterSave = null, bool orgin = false, Func<T, T, Task> beforeUpdate2 = null, bool autoSet = true)
         {
-            var canTransationOper = false;
+            var doTransation = false;
             try
             {
                 request.Added ??= new List<T>();
                 request.Updated ??= new List<T>();
                 request.Original ??= new List<T>();
                 request.Deleted ??= new List<T>();
-                canTransationOper = !source.Session.IsInTransaction;
-                if (canTransationOper)
-                {
-                    source.Session.BeginTransaction();
-                }
+                doTransation = !source.Session.IsInTransaction;
+                if (doTransation) source.Session.BeginTransaction();
                 if (beforeSave != null) await beforeSave(request.Added, request.Updated, request.Deleted);
                 int row;
                 var typeDescriptor = EntityTypeContainer.GetDescriptor(typeof(T));
@@ -148,11 +145,7 @@ namespace Chloe
                         if (beforeDelete != null) await beforeDelete(entity);
                         row = hasPrimaryKey ? await source.DeleteAsync(entity) : await source.DeleteAsync(updateCondition(entity));
                     }
-
-                    if (row != 1)
-                    {
-                        return AjaxResult.Error("删除记录出错");
-                    }
+                    MessageException.ThrowIf(row != 1, "删除记录出错");
                 }
                 if (request.Added.Count > 0)
                 {
@@ -187,22 +180,15 @@ namespace Chloe
                     if (autoSet) datePropertys.ForEach(c => { c.SetValue(entity, sysdate); });
                     if (beforeUpdate2 != null) await beforeUpdate2(entity, old);
                     row = await source.UpdateAsync(entity, updateCondition(orgin ? old : entity));
-                    if (row != 1)
-                    {
-                        return AjaxResult.Error("修改记录出错");
-                    }
+                    MessageException.ThrowIf(row != 1, "修改记录出错");
                 }
                 if (afterSave != null) await afterSave(request.Added, request.Updated, request.Deleted);
-                if (canTransationOper) source.Session.CommitTransaction();
+                if (doTransation) source.Session.CommitTransaction();
                 return AjaxResult.Success("保存成功");
-            }
-            catch (Exception ex)
-            {
-                return AjaxResult.Error($"系统错误：{ex.FormatMessage()}");
             }
             finally
             {
-                if (canTransationOper && source.Session.IsInTransaction)
+                if (doTransation && source.Session.IsInTransaction)
                 {
                     source.Session.RollbackTransaction();
                 }
@@ -409,7 +395,7 @@ namespace Chloe
         /// <summary>
         /// 关闭数据库日志标识
         /// </summary>
-        private static readonly string _dbLogKey = "NotDbLog";
+        private const string _dbLogKey = "NotDbLog";
 
         /// <summary>
         /// 是否关闭数据库日志

@@ -18,9 +18,9 @@ namespace Gksyb.Server.Services.Auth
         private readonly UserSession _user;
         private readonly SysContextOptions _options;
         private DateTime? sysdate;
-        private static readonly string _opertype = "用户公司";
-        private static readonly string _roletype = "角色公司";
-        protected static readonly string _weixinType = "微信";
+        private const string _opertype = "用户公司";
+        private const string _roletype = "角色公司";
+        protected const string _weixinType = "微信";
 
         /// <summary>
         /// 用户服务
