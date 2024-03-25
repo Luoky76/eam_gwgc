@@ -33,6 +33,7 @@
         css: null,               //附加css
         value: null,            //值
         valueFieldCssClass: null,
+        onDblClickRow: null, //双击行事件
         onChangeValue: null//值变化事件
     };
 

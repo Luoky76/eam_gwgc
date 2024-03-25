@@ -38,6 +38,7 @@
         slide: $.browser.msie ? false : true,        //是否以动画的形式显示
         fixedType: null,            //在固定的位置显示, 可以设置的值有n, e, s, w, ne, se, sw, nw
         fixedGroup: false,             //追加到l-dialog-fixed的组里面
+        closeQuery: null,//关闭询问 返回询问字符串
         onLoaded: null,
         onExtend: null,
         onExtended: null,

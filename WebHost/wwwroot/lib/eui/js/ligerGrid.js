@@ -205,7 +205,7 @@
         dbname: null, //数据库实际名称
         sortdbname: null, //排序用数据库实际名称
         sortFix: false, //排序后缀
-        totalSummary: null,
+        totalSummary: null,//{name:"默认为当前列，可指定其他列进行统计",type:"sum,tsum,count,max,min,avg",hastext:false,igronNull:false,render:function(info, column, allData, groupData){}}
         display: null,
         headerRender: null,
         isAllowHide: true,
