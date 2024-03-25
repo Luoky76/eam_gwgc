@@ -80,9 +80,9 @@ namespace Gksyb.Model.Core
         public string TJ_MONTH { get; set; }
 
         /// <summary>
-        /// 用户名
+        /// 账号
         /// </summary>
-        [Description("用户名")]
+        [Description("账号")]
         [Column(DbType = DbType.AnsiString, Size = 200)]
         public string USERNAME { get; set; }
 

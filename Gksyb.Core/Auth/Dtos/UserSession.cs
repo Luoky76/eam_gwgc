@@ -50,7 +50,7 @@ namespace Gksyb.Core.Auth
         public long UserID { get; set; }
 
         /// <summary>
-        /// 用户名
+        /// 账号
         /// </summary>
         [JsonProperty("UN")]
         public string UserName { get; set; }

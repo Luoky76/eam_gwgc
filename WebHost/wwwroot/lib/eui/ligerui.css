@@ -1753,7 +1753,7 @@ table.l-filter-group-alt table.l-filter-group {
     top: 0px;
     right: 0px;
     margin-left: 3px;
-    padding: 0 7px;
+    padding: 2px 7px;
     height: 100%;
     cursor: pointer;
 }
@@ -1790,10 +1790,11 @@ table.l-filter-group-alt table.l-filter-group {
 
 /*文本框为空*/
 .l-text-field-null {
-    line-height: 28px;
+    line-height: inherit;
     position: absolute;
     z-index: 10;
     left: 4px;
+    padding:2px 0px;
     width: auto;
     cursor: text;
     color: #999 !important;
@@ -2029,13 +2030,15 @@ table.l-filter-group-alt table.l-filter-group {
 
         .l-box-dateeditor-body table td {
             display: inline-block;
-            width: 25px;
+            width: 23px;
             height: 20px;
             padding: 2px 0;
             text-align: center;
-            border: none;
+            border-top: 1px solid white;
+            border-bottom: 1px solid white;
+            border-left: 1px solid transparent;
+            border-right: 1px solid transparent;
             position: relative;
-            margin: 1px 0px;
         }
 
         .l-box-dateeditor-body table thead td {
@@ -2131,7 +2134,7 @@ table.l-filter-group-alt table.l-filter-group {
 
 .l-box-dateeditor-selected, .l-box-dateeditor-range .l-box-dateeditor-pannel .l-box-dateeditor-range-start, .l-box-dateeditor-range .l-box-dateeditor-pannel .l-box-dateeditor-range-end, .l-box-dateeditor-range .l-box-dateeditor-over {
     color: #fff !important;
-    background-color: #3280fc;
+    background-color: #3280fc !important;
 }
 
 .l-box-dateeditor-range .l-box-dateeditor-pannel .l-box-dateeditor-in-range {

@@ -242,7 +242,7 @@ namespace Gksyb.Server.Services.Auth
             if (isExists) throw new MessageException($"已经存在用户{entity.LOGINNAME}");
             //isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME)
             //    .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
-            //if (isExists) throw new MessageException($"已经存在用户名{entity.REALNAME}");
+            //if (isExists) throw new MessageException($"已经存在账号{entity.REALNAME}");
             //if (!string.IsNullOrWhiteSpace(entity.PHONE))
             //{
             //    isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.PHONE == entity.PHONE)

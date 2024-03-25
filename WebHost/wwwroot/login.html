@@ -280,7 +280,7 @@
                     <div class="login-input">
                         <input type="text" name="txtUsername" id="txtUsername" value="" class="login-text" />
                         <span class="login-text login-null">
-                            请输入用户名
+                            请输入账号
                         </span>
                     </div>
                     <div class="login-input">
@@ -540,7 +540,7 @@
                         }
                         if (result.Data === "1") {
                             myAlert({
-                                message: result ? result.Message : "用户名密码错误",
+                                message: result ? result.Message : "账号密码错误",
                                 callback: function () {
                                     location.href = "change-pwd.html?FromUrl=" + encodeURIComponent(location.href);
                                 }

@@ -64,8 +64,8 @@ namespace Gksyb.Server.Services.Auth
             request.MenuAppname = request.MenuAppname.HasValue() ? request.MenuAppname : _options.AppName;
 
             CF_USER user = await GetUserAsync(request.Username, request.Password);
-            if (user == null) return AjaxResult.Error("用户名密码错误");
-            if (user.LOGINPASSWORD != request.Password) return AjaxResult.Error("用户名密码错误");
+            if (user == null) return AjaxResult.Error("账号密码错误");
+            if (user.LOGINPASSWORD != request.Password) return AjaxResult.Error("账号密码错误");
 
             var lastChangeTime = user.SUPPLIERID == null ? (await _dbContext.GetSysdate()) : DateTime.UnixEpoch.AddSeconds(user.SUPPLIERID.CastTo<double>());
             var errorMsg = await CheckPassword(request.Username, request.InputPassword, lastChangeTime);

@@ -37,7 +37,7 @@
         public static string NewShortId() => IdWorker.NextId().ToBase62();
 
         private static readonly ThreadLocal<Random> rnd = new(() => new Random());
-        private readonly int __staticMachine = ((0x00ffffff & Environment.MachineName.GetHashCode()) + AppDomain.CurrentDomain.Id) & 0x00ffffff;
+        private static readonly int __staticMachine = ((0x00ffffff & Environment.MachineName.GetHashCode()) + AppDomain.CurrentDomain.Id) & 0x00ffffff;
         private static readonly int __staticPid = Environment.ProcessId;
         private static int __staticIncrement = rnd.Value.Next();
 

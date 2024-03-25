@@ -8,10 +8,10 @@ namespace Gksyb.Model.Dtos
     public class LoginRequest
     {
         /// <summary>
-        /// 用户名
+        /// 账号
         /// </summary>
         [ModelEncrypt]
-        [Required(ErrorMessage = "用户名不能为空")]
+        [Required(ErrorMessage = "账号不能为空")]
         public string Username { get; set; }
 
         /// <summary>

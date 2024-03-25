@@ -12,7 +12,7 @@ namespace Gksyb.Common
         /// <summary>
         /// 错误提示信息
         /// </summary>
-        private const string errorMsg = "密码必须8个以上字符且包含数字、大小写字母、特殊字符中的三种。密码不能包含用户名及4个以上连续或重复字符。密码不能包含常见密码。";
+        private const string errorMsg = "密码必须8个以上字符且包含数字、大小写字母、特殊字符中的三种。密码不能包含账号及4个以上连续或重复字符。密码不能包含常见密码。";
 
         /// <summary>
         /// 导向提示
@@ -30,7 +30,7 @@ namespace Gksyb.Common
         public static bool IsStrong(string password, string username)
         {
             var upperPassword = password.ToUpper();
-            if (upperPassword.Contains(username.ToUpper())) return false;//不能包含用户名
+            if (upperPassword.Contains(username.ToUpper())) return false;//不能包含账号
             if (_BanList.Any(c => upperPassword.Contains(c))) return false;//不能包含常见密码
             if (password.Length < 8) return false;//至少8个字符
             if (Regex.IsMatch(password, @"([0-9a-zA-Z])\1{3}")) return false; //不包含4个以上重复字符

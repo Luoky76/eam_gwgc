@@ -156,7 +156,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 request.Username = CurrentUser?.UserName;
             }
-            if (string.IsNullOrWhiteSpace(request.Username)) return AjaxResult.Error("请输入用户名");
+            if (string.IsNullOrWhiteSpace(request.Username)) return AjaxResult.Error("请输入账号");
             request.Username = request.Username.ToUpper();
             return await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
             {

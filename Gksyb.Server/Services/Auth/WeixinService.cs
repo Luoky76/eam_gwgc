@@ -79,7 +79,7 @@ namespace Gksyb.Server.Services.Auth
                 request.Username = (request.Username ?? "").ToUpper();
                 request.PasswordHandle();
                 var user = await _authService.GetUserAsync(request.Username, request.Password);
-                if (user == null || user.LOGINPASSWORD != request.Password) return AjaxResult.Error("用户名密码错误，无法绑定");
+                if (user == null || user.LOGINPASSWORD != request.Password) return AjaxResult.Error("账号密码错误，无法绑定");
                 request.Username = user.LOGINNAME;
             }
             await RemoveInvalid(openid);
