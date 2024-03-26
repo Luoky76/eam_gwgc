@@ -1488,11 +1488,11 @@ table.l-filter-group-alt table.l-filter-group {
 
 .l-disabled.l-radio-wrapper {
     cursor: not-allowed;
-    color: #ccc;
+    color: #b8b8b8;
 }
 
     .l-disabled.l-radio-wrapper .l-radio {
-        color: #e2e2e2;
+        color: #b8b8b8;
     }
 
 /* -------------
@@ -1651,14 +1651,16 @@ table.l-filter-group-alt table.l-filter-group {
         background-color: #f3f3f3;
     }
 
+    .l-disabled.l-checkbox-wrapper.l-checkbox-orgin .l-checkbox.l-checkbox-checked {
+        color: #b8b8b8;
+    }
+
 .l-disabled.l-checkbox-rect.l-checkbox-wrapper .l-checkbox {
     background: none;
 }
-
 /* -------------
    * 下拉 *
  * ------------- */
-
 .l-box-dropdown {
     position: absolute;
     top: 0px;
@@ -1794,7 +1796,7 @@ table.l-filter-group-alt table.l-filter-group {
     position: absolute;
     z-index: 10;
     left: 4px;
-    padding:2px 0px;
+    padding: 2px 0px;
     width: auto;
     cursor: text;
     color: #999 !important;
