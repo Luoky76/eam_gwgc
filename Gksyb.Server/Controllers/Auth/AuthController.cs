@@ -59,7 +59,7 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous]
         public async Task<string> LoginTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}Auth/Login");
+            return await HttpContext.GenerateTokenAsync("Auth/Login");
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 登陆
         /// </summary>
-        [AllowAnonymous, JsToken]
+        [AllowAnonymous, JsToken("Auth/Login")]
         public async Task<AjaxResult> Login([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, LoginRequest request)
         {
             if ("0".Equals(IsInnerIP().Data) && !await ValidVerifyCodeAsync(request.Verifycode))
