@@ -894,6 +894,9 @@
                 input.name = dict[i].name || "";
                 input.id = dict[i].name || "";
                 input.readOnly = dict[i].readOnly;
+                if (dict[i].hasOwnProperty("validate") && dict[i].validate.required) {
+                    input.setAttribute("required", "true");
+                }
                 itemafter.appendChild(input);
                 itemafter.className = "item-after";
                 itemafter.setAttribute("style", "text-align:right;");
