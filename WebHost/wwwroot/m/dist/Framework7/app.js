@@ -894,8 +894,9 @@
                 input.name = dict[i].name || "";
                 input.id = dict[i].name || "";
                 input.readOnly = dict[i].readOnly;
+                //设置必填
                 if (dict[i].hasOwnProperty("validate") && dict[i].validate.required) {
-                    input.setAttribute("required", "true");
+                    input.required = true;
                 }
                 itemafter.appendChild(input);
                 itemafter.className = "item-after";
