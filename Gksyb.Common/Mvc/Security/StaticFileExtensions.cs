@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Builder
                 if (noHtml && response.ContentType != "text/javascript") return;
                 var cache = request.QueryString.HasValue ? request.QueryString.Value.GetParm("cache") : "";
                 if (cache == "1") return;
-                if (cache != "0" && noHtml && ((response.ContentLength ?? long.MaxValue) > _cacheSize || request.Path.StartsWithSegments("/lib"))) return;
+                if (cache != "0" && noHtml && ((response.ContentLength ?? long.MaxValue) > _cacheSize || (request.Path.StartsWithSegments("/lib") && !request.Path.Value.EndsWith("boot.js")))) return;
                 response.Headers[HeaderNames.CacheControl] = _cacheControl;
             };
             return app.UseStaticFiles(options);

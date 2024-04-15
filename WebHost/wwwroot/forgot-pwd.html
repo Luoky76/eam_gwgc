@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
-    <title>修改密码</title>
+    <title>忘记密码</title>
     <script src="lib/jquery/jquery.js" type="text/javascript"></script>
     <script src="lib/js/common.js?v=1" type="text/javascript"></script>
     <style type="text/css">
@@ -81,6 +81,7 @@
         .login-input {
             position: relative;
             text-align: left;
+            width:290px;
             height: 42px;
             line-height: 42px;
             margin-bottom: 10px;
@@ -117,7 +118,7 @@
         }
 
         #btnLogin {
-            margin-left:20px;
+            margin-left: 20px;
             width: 240px;
             height: 41px;
             line-height: 41px;
@@ -137,6 +138,29 @@
 
         .hidden {
             visibility: hidden;
+        }
+
+        .disabled {
+            cursor: not-allowed !important;
+            color: #bbbec4 !important;
+            border-color: #dddee1 !important;
+            background-color: #f7f7f7 !important;
+            pointer-events: none;
+        }
+
+        a.abutton {
+            font-size: 16px;
+            color: rgb(30, 128, 255);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #sms-code {
+            display:inline;
+            position: absolute;
+            top: 0px;
+            right: 5px;
+            z-index: 999;
         }
 
         @media(max-width:800px) {
@@ -243,18 +267,19 @@
         </div>
         <div id="div-center">
             <div id="div-login-panel">
-                <div class="login-title">密码修改</div>
+                <div class="login-title">忘记密码</div>
                 <div class="login-panel">
                     <div class="login-input">
                         <input type="text" name="txtUsername" id="txtUsername" value="" class="login-text" />
                         <span class="login-text login-null">
-                            请输入账号
+                            请输入手机号或账号
                         </span>
                     </div>
                     <div class="login-input">
+                        <a id="sms-code" class="abutton none">获取验证码</a>
                         <input type="password" name="txtOld" id="txtOld" value="" class="login-text" />
                         <span class="login-text login-null">
-                            请输入旧密码
+                            验证码
                         </span>
                     </div>
                     <div class="login-input">
@@ -331,7 +356,7 @@
                 };
                 if (!formData.username) {
                     myAlert({
-                        "message": '请输入账户!',
+                        "message": '请输入手机号或账号!',
                         callback: function () {
                             $("#txtUsername").focus();
                         }
@@ -378,7 +403,7 @@
                     type: 'post',
                     cache: false,
                     dataType: 'json',
-                    url: 'Auth/ChangePassword',
+                    url: 'auth/resetpassword',
                     jsToken: {
                         url: "auth/logintoken"
                     },
@@ -387,7 +412,7 @@
                         $('.myModa').remove();
                         if (result && !result.IsError) {
                             myAlert({
-                                "message": '密码修改成功!',
+                                "message": '密码操作成功!',
                                 callback: function () {
                                     location.href = FromUrl;
                                 }
@@ -411,6 +436,46 @@
                     },
                     complete: function () {
                         $("#btnLogin").attr("disabled", false);
+                    }
+                });
+            },
+            smsCode: function () {
+                var me = this;
+                var phone = $.trim($("#txtUsername").val() || "");
+                if (!phone) {
+                    myAlert({ "message": "请输入手机号或账号" });
+                    return;
+                }
+                $.ajax({
+                    noGlobal: true,
+                    jsToken: true,
+                    tokenOptions: {
+                        url: "auth/smstoken"
+                    },
+                    type: 'post',
+                    dataType: 'json',
+                    url: 'auth/smscode',
+                    data: { phone: encrypt(phone) },
+                    success: function (result) {
+                        if (!result || result.IsError) {
+                            myAlert({ "message": result ? result.Message : "发送失败" });
+                            return;
+                        }
+                        var time = 120;
+                        var handler = null;
+                        var inner = function () {
+                            time = time - 1;
+                            if (time == 0) {
+                                me.$sms.text("获取验证码");
+                                me.$sms.removeClass("disabled");
+                                clearInterval(handler);
+                                return;
+                            }
+                            me.$sms.text("(" + time + ")秒后重新发送");
+                        }
+                        me.$sms.addClass("disabled");
+                        me.$sms.text("(" + time + ")秒后重新发送");
+                        handler = setInterval(inner, 1000);
                     }
                 });
             },
@@ -454,12 +519,15 @@
                         $("#txtAgain").focus().select();
                     }
                 });
-
                 $("#txtAgain").keydown(function (e) {
                     if (e.keyCode == 13) {
                         e.preventDefault();
                         me.submit();
                     }
+                });
+                me.$sms = $("#sms-code");
+                me.$sms.click(function (e) {
+                    me.smsCode();
                 });
             },
             init: function () { //初始化

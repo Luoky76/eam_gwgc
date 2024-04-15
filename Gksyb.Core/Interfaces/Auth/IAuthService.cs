@@ -22,7 +22,7 @@ namespace Gksyb.Core.Interfaces.Auth
         /// 获取用户对象
         /// </summary>
         /// <returns></returns>
-        Task<CF_USER> GetUserAsync(string loginName, string password);
+        Task<CF_USER> GetUserAsync(string loginName, string password = null);
 
         /// <summary>
         /// 修改密码
@@ -30,6 +30,11 @@ namespace Gksyb.Core.Interfaces.Auth
         /// <param name="request"></param>
         /// <returns></returns>
         Task<AjaxResult> ChangePasswordAsync(ChangePasswordRequest request);
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        Task<AjaxResult> ResetPasswordAsync(ChangePasswordRequest request, CF_USER user, string op = "重置");
 
         /// <summary>
         /// 获取菜单

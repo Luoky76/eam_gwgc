@@ -73,7 +73,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 登陆
         /// </summary>
-        [AllowAnonymous, JsToken("Auth/Login")]
+        [AllowAnonymous, JsToken]
         public async Task<AjaxResult> Login([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, LoginRequest request)
         {
             if ("0".Equals(IsInnerIP().Data) && !await ValidVerifyCodeAsync(request.Verifycode))
@@ -161,6 +161,37 @@ namespace Gksyb.Server.Controllers.Auth
             return await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
             {
                 return await service.ChangePasswordAsync(request);
+            });
+        }
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        [AllowAnonymous, JsToken("Auth/Login")]
+        public async Task<AjaxResult> ResetPasswordAsync([FromServices] ISmsService smsService, [FromServices] IAuthService service, ChangePasswordRequest request)
+        {
+            var times = await smsService.CheckCodeAsync(request.Username, request.OldPassword);
+            MessageException.ThrowIf(times < 0, $"验证码已失效");
+            if (times > 0) return AjaxResult.Error($"验证失败，剩余次数:{times}", "99");
+            var user = await service.GetUserAsync(request.Username);
+            return await service.ResetPasswordAsync(request, user);
+        }
+
+        [AllowAnonymous]
+        public async Task<string> SmsTokenAsync()
+        {
+            return await HttpContext.GenerateTokenAsync($"auth/smscode");
+        }
+
+        [AllowAnonymous, JsToken]
+        public async Task<AjaxResult> SmsCodeAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, [FromServices] ISmsService smsService, [ModelEncrypt] string phone)
+        {
+            return await distributedCache.LimitInvoke($"{phone}_SMS", async () =>
+            {
+                var user = await service.GetUserAsync(phone);
+                if (user == null) return AjaxResult.Success();
+                await smsService.GenerateCodeAsync(user.PHONE, key: phone);
+                return AjaxResult.Success();
             });
         }
 

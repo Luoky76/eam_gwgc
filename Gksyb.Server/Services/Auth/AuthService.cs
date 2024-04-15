@@ -157,15 +157,20 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <inheritdoc/>
-        public async Task<CF_USER> GetUserAsync(string loginName, string password)
+        public async Task<CF_USER> GetUserAsync(string loginName, string password = null)
         {
             CF_USER user = null;
             if (loginName.IsMobileNumber())//手机号登录支持
             {
                 var users = await _dbContext.Query<CF_USER>()
                 .Where(c => c.PHONE == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").ToListAsync();
-                user = users.OrderByDescending(c => c.LASTLOGINTIME).FirstOrDefault(c => c.LOGINPASSWORD == password);
+                if (!string.IsNullOrWhiteSpace(password))
+                {
+                    users = users.Where(c => c.LOGINPASSWORD == password).ToList();
+                }
+                user = users.OrderBy(c => c.USERID).FirstOrDefault();
             }
+            loginName = loginName?.ToUpper();
             user ??= await _dbContext.Query<CF_USER>()
                     .Where(c => c.LOGINNAME == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").FirstOrDefaultAsync();
             return user;
@@ -174,8 +179,6 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 修改密码
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public async Task<AjaxResult> ChangePasswordAsync(ChangePasswordRequest request)
         {
             if (request.OldPassword == request.NewPassword) return AjaxResult.Error("修改失败，密码不能与上次密码一样");
@@ -183,7 +186,13 @@ namespace Gksyb.Server.Services.Auth
             var user = await GetUserAsync(request.Username, request.OldPassword);
             if (user == null) return AjaxResult.Error("修改失败，请输入正确的账号密码");
             if (user.LOGINPASSWORD != request.OldPassword) return AjaxResult.Error("修改失败，请输入正确的账号密码");
-            var errorMsg = await CheckPassword(request.Username, request.NewPassword);
+            return await ResetPasswordAsync(request, user, "修改");
+        }
+
+        /// <inheritdoc/>
+        public async Task<AjaxResult> ResetPasswordAsync(ChangePasswordRequest request, CF_USER user, string op = "重置")
+        {
+            var errorMsg = await CheckPassword(user.LOGINNAME, request.NewPassword);
             if (!string.IsNullOrWhiteSpace(errorMsg)) return AjaxResult.Error(errorMsg);
             request.NewPassword = UserSession.Encrypt(request.NewPassword);
             var ticks = ((await _dbContext.GetSysdate()).Value - DateTime.UnixEpoch).TotalSeconds.CastTo<long>();
@@ -192,7 +201,7 @@ namespace Gksyb.Server.Services.Auth
                 SUPPLIERID = ticks,
                 LOGINPASSWORD = request.NewPassword
             });
-            await _dbContext.UserLogAsync("密码修改", $"{user.LOGINNAME}密码修改", $"{user.LOGINNAME}修改自己的密码");
+            await _dbContext.UserLogAsync($"密码{op}", $"{user.LOGINNAME}密码{op}", $"{user.LOGINNAME}{op}自己的密码");
             return AjaxResult.Success();
         }
 

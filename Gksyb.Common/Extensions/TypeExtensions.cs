@@ -111,6 +111,12 @@ namespace Gksyb.Common
         }
 
         /// <summary>
+        /// 获取成员的显示名称
+        /// </summary>
+        public static string GetDisplayName(this MemberInfo memberInfo)
+            => memberInfo.GetAttribute<DisplayAttribute>()?.Name ?? memberInfo.GetAttribute<DisplayNameAttribute>()?.DisplayName;
+
+        /// <summary>
         /// 从类型成员获取指定Attribute特性
         /// </summary>
         /// <typeparam name="T">Attribute特性类型</typeparam>

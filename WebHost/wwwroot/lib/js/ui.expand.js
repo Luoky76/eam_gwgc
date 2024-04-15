@@ -17,7 +17,7 @@ $.extend($.ligerui.controls.Grid.prototype, {
     _loadCustomColumn: function () {
         var g = this;
         var id = g._getCustomColumnId();
-        var column = (topWindow.__CustomColumn || {})[id];
+        var column = (topDomainWindow.__CustomColumn || {})[id];
         if (column !== undefined) {
             g._setCustomColumn(column);
             return;
@@ -33,8 +33,8 @@ $.extend($.ligerui.controls.Grid.prototype, {
                 column = result.Data;
             }
         });
-        topWindow.__CustomColumn = topWindow.__CustomColumn || {};
-        topWindow.__CustomColumn[id] = column;
+        topDomainWindow.__CustomColumn = topDomainWindow.__CustomColumn || {};
+        topDomainWindow.__CustomColumn[id] = column;
         g._setCustomColumn(column);
     },
     _setCustomColumn: function (columns) {
@@ -61,8 +61,8 @@ $.extend($.ligerui.controls.Grid.prototype, {
         });
         var column = columns.join(',');
         var id = g._getCustomColumnId();
-        topWindow.__CustomColumn = topWindow.__CustomColumn || {};
-        topWindow.__CustomColumn[id] = column;
+        topDomainWindow.__CustomColumn = topDomainWindow.__CustomColumn || {};
+        topDomainWindow.__CustomColumn[id] = column;
         $.ajax({
             noGlobal: true,
             async: true,

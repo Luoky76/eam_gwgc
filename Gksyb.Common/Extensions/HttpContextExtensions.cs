@@ -108,7 +108,7 @@ namespace Gksyb.Common
             var uid = source.GetClientID();
             if (string.IsNullOrWhiteSpace(key))
             {
-                key = $"{source.Request.PathBase}{source.Request.Path}";
+                key = source.Request.Path;
             }
             key = key.TrimStart('/').TrimEnd('/').ToLower();
             key = $"{uid}-{key}";

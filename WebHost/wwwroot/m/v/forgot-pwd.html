@@ -13,7 +13,7 @@
     <div id="app">
         <div class="view view-main">
             <div class="page-content login-screen-content">
-                <div class="login-screen-title">微平台</div>
+                <div class="login-screen-title">忘记密码</div>
                 <form id="my-form">
                     <div class="list no-hairlines-md">
                         <ul>
@@ -22,9 +22,9 @@
                                     <i class="f7-icons">person</i>
                                 </div>
                                 <div class="item-inner">
-                                    <div class="item-title item-floating-label">账号</div>
+                                    <div class="item-title item-floating-label">手机号或账号</div>
                                     <div class="item-input-wrap">
-                                        <input type="text" id="username" name="username" placeholder="请输入账号" required validate trim />
+                                        <input type="text" id="username" name="username" placeholder="请输入手机号或账号" required validate trim />
                                         <span class="input-clear-button"></span>
                                     </div>
                                 </div>
@@ -34,10 +34,12 @@
                                     <i class="f7-icons">person</i>
                                 </div>
                                 <div class="item-inner">
-                                    <div class="item-title item-floating-label">旧密码</div>
-                                    <div class="item-input-wrap">
-                                        <input type="password" id="oldpassword" name="oldpassword" placeholder="请输入旧密码" required validate trim />
-                                        <span class="input-clear-button"></span>
+                                    <div class="item-title item-floating-label">验证码</div>
+                                    <div class="item-input-wrap row">
+                                        <div class="col-55">
+                                            <input type="password" id="oldpassword" name="oldpassword" placeholder="请输入验证码" required validate trim />
+                                        </div>
+                                        <div id="sms-code" class="col-45 button button-small">获取验证码</div>
                                     </div>
                                 </div>
                             </li>
@@ -101,19 +103,53 @@
                 formData.newpassword = encrypt(formData.newpassword);
                 app.ajax({
                     noGlobal: true,
-                    url: 'Auth/ChangePassword',
+                    url: 'auth/resetpassword',
                     jsToken: true,
                     tokenOptions: {
                         url: "auth/logintoken"
                     },
                     data: formData,
                     success: function (data) {
-                        app.dialog.alert('密码修改成功', function () {
+                        app.dialog.alert('密码操作成功', function () {
                             var fromUrl = getQueryStringByName("FromUrl");
                             if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
                             fromUrl = fromUrl || "index.html";
                             location.href = fromUrl;
                         });
+                    }
+                });
+            },
+            smsCode: function () {
+                var me = this;
+                var phone = ($("#username").val() || "").trim();
+                if (!phone) {
+                    app.dialog.error('请输入手机号或账号。');
+                    return;
+                }
+                app.ajax({
+                    noGlobal: true,
+                    url: 'auth/smscode',
+                    jsToken: true,
+                    tokenOptions: {
+                        url: "auth/smstoken"
+                    },
+                    data: { phone: encrypt(phone) },
+                    success: function () {
+                        var time = 120;
+                        var handler = null;
+                        var inner = function () {
+                            time = time - 1;
+                            if (time == 0) {
+                                me.$sms.text("获取验证码");
+                                me.$sms.removeClass("disabled");
+                                clearInterval(handler);
+                                return;
+                            }
+                            me.$sms.text("(" + time + ")秒后重新发送");
+                        }
+                        me.$sms.addClass("disabled");
+                        me.$sms.text("(" + time + ")秒后重新发送");
+                        handler = setInterval(inner, 1000);
                     }
                 });
             },
@@ -140,6 +176,10 @@
                         e.preventDefault();
                         $$("#againpassword").focus();
                     }
+                });
+                me.$sms = $("#sms-code");
+                me.$sms.click(function (e) {
+                    me.smsCode();
                 });
             },
             //初始化

@@ -18,7 +18,7 @@
         apiBase: urlBase, // api 接口的访问路径
         getUrl: function (url, baseUrl) {
             if (url.toLowerCase().indexOf("http") === 0) return url;
-            url = url.replace(/\.\.\//g, "");
+            url = url.replace(/\.\.\//g, "").replace(/\/+/g, "\/");
             baseUrl = baseUrl || this.apiBase;
             if (baseUrl && url.indexOf(baseUrl) === 0) return url;
             url = baseUrl + url;
@@ -83,9 +83,25 @@
             }
         });
     }
-    //顶层窗口
     if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
+            get: function () {//获取不跨域的有gksybConfigs的顶层窗口
+                var parentWindow = window;
+                try {
+                    for (var i = 0; i < 10; i++) {
+                        if (parentWindow.parent.location.href && parentWindow.parent.setGksybToken) {
+                            parentWindow = parentWindow.parent;
+                        }
+                    }
+                } catch (err) {
+                }
+                return parentWindow;
+            }
+        });
+    }
+
+    if (window.topDomainWindow === undefined) {
+        Object.defineProperty(window, 'topDomainWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;
                 try {
@@ -111,7 +127,7 @@
         },
         generateJsToken: function (jqXHR, opt) {//js票据 eval用到jqXHR
             opt = opt || { jsToken: "JsToken" };
-            var key = (opt.jsToken === true) ? opt.url : opt.jsToken;
+            var key = (opt.jsToken === true) ? opt.url.replace(gksybConfigs.apiBase, "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "") : opt.jsToken;
             var data = (typeof key === "string" ? { key: key } : null);
             var tokenOptions = Framework7.utils.extend(true, {
                 noGlobalBeforeOpen: true,

@@ -100,7 +100,7 @@ namespace Gksyb.Server.Controllers.Auth
             return await HttpContext.GenerateTokenAsync($"oauth/validTicket");
         }
 
-        [JsToken("oauth/validTicket"), AllowAnonymous]
+        [JsToken, AllowAnonymous]
         public async Task<AjaxResult> ValidTicketAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, [FromHeader, Required] string ticket)
         {
             try

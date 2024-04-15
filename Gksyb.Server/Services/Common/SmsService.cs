@@ -60,10 +60,11 @@ namespace Gksyb.Server.Services.Common
         }
 
         /// <inheritdoc/>
-        public async Task<string> GenerateCodeAsync(string phone, int second = 120)
+        public async Task<string> GenerateCodeAsync(string phone, int second = 120, string key = null)
         {
             MessageException.ThrowIf(!phone.IsMobileNumber(), "请传递正确的手机号");
-            var key = $"{phone}{nameof(SmsService)}";
+            key = string.IsNullOrWhiteSpace(key) ? phone : key;
+            key = $"{key}{nameof(SmsService)}";
             var value = await _distributedCache.GetStringAsync(key);
             MessageException.ThrowIf(!string.IsNullOrWhiteSpace(value), "上次验证码还在有效期中");
             var code = GuidHelper.NewSnowflakeId().ToString();
