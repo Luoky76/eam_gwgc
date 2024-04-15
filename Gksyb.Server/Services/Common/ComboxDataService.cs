@@ -298,8 +298,8 @@ namespace Gksyb.Server.Services.Common
                     EXTEND2 = c.DEPT_NAME,
                     EXTEND3 = c.CARD_USER,
                     EXTEND4 = c.PERSON,
-                    EXTEND5 = c.ASSET_TYPE,
-                    EXTEND6 = c.BRAND
+                    EXTEND5 = c.ASSET_SIZE,
+                    EXTEND6 = c.PRODUCE
                 })
                 .ToListAsync();
         }

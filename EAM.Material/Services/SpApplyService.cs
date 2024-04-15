@@ -657,7 +657,8 @@ namespace EAM.Material.Services
                     MEMO = a.MEMO,
                     SPDET_ID = a.SPDET_ID
                 })
-                .OrderByDesc(c => c.APPLY_NO)
+                .OrderBy(c => c.SP_STATUS)
+                .ThenByDesc(c => c.APPLY_NO)
                 .ThenBy(c => c.SP_CODE)
                 .GetGridData(request);
         }

@@ -60,8 +60,8 @@
                         columns: [
                             { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
                             { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
-                            { display: "型号规格", name: "SP_TYPE", width: 150, type: "text", },
-                            { display: "品牌、厂家", name: "BRAND", width: 150, type: "text", },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
                             { display: "申请数量", name: "REQUEST_NUM", width: 150, type: "decimal", },
                             { display: "计量单位", name: "UNIT", width: 150, type: "text", },
                             { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
@@ -222,6 +222,7 @@
                             SP_ID: item.SP_ID,
                         });
                     }
+                    me.save();
                 };
                 var selData = me.grid.getData();
                 var dataValue = "";
@@ -323,6 +324,7 @@
                                 for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
+                                me.save();
                             }
                         });
                     } else {

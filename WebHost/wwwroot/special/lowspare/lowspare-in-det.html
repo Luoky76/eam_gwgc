@@ -60,17 +60,17 @@
                                         if (g.selected != undefined) {
                                             $('#SP_ID').val(g.selected.ID ?? '');
                                             $('#SP_NAME').val(g.selected.VALUE ?? '');
-                                            $('#SP_TYPE').val(g.selected.EXTEND ?? '');
+                                            $('#SP_SIZE').val(g.selected.EXTEND ?? '');
                                             $('#TYPE_NAME').val(g.selected.EXTEND1 ?? '');
-                                            $('#BRAND').val(g.selected.EXTEND2 ?? '');
+                                            $('#PRODUCE').val(g.selected.EXTEND2 ?? '');
                                             $('#UNIT').val(g.selected.EXTEND3 ?? '');
                                         }
                                     }
                                 }
                             },
                             { display: "物料名称", name: "SP_NAME", width: 250, type: "text" ,options: { disabled: true } },
-                            { display: "规格型号", name: "SP_TYPE", width: 250, type: "text", options: { disabled: true } },
-                            { display: "品牌厂家", name: "BRAND", width: 250, type: "text", options: { disabled: true } },
+                            { display: "型号规格", name: "SP_SIZE", width: 250, type: "text", options: { disabled: true } },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 250, type: "text", options: { disabled: true } },
                             { display: "计量单位", name: "UNIT", width: 250, type: "text", options: { disabled: true } },
                             { display: "物料分类", name: "TYPE_NAME", width: 250, type: "text", options: { disabled: true } },
                             {

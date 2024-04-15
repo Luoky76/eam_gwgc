@@ -1035,7 +1035,7 @@
             { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE" },
             { display: "备件品种名称", name: "SP_NAME" },
-            { display: "备件型号", name: "SP_TYPE" },
+            { display: "型号规格", name: "SP_SIZE" },
         ];
         //创建物资明细列表html
         function CreateWuziList(ID) {
@@ -1078,7 +1078,7 @@
             { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE", readOnly: true },
             { display: "备件品种名称", name: "SP_NAME", readOnly: true },
-            { display: "备件型号", name: "SP_TYPE", readOnly: true },
+            { display: "型号规格", name: "SP_SIZE", readOnly: true },
             { display: "仓库名称", name: "HOUSE_NAME", readOnly: true },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true },
             { display: "库存数量", name: "STORE_NUM", readOnly: true },
@@ -1093,7 +1093,7 @@
             { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE", readOnly: true },
             { display: "备件品种名称", name: "SP_NAME", validate: { required: true }, Option: SpList, Searched: true },
-            { display: "备件型号", name: "SP_TYPE", readOnly: true },
+            { display: "型号规格", name: "SP_SIZE", readOnly: true },
             { display: "仓库名称", name: "HOUSE_NAME", readOnly: true },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true },
             { display: "库存数量", name: "STORE_NUM", readOnly: true },
@@ -1228,7 +1228,7 @@
                             var da = SpOrList.find((va) => va.SP_NAME == split[0] && va.NUM == split[1]);
                             if (!currentSet.has(da.STORE_ID)) {
                                 da.STORE_NUM = da.NUM;
-                                da.SP_TYPE = da.SP_SIZE;
+                                da.SP_SIZE = da.SP_SIZE;
                                 da.STORE_ID = da.STORE_ID;
                                 da.HOUSE_NAME = da.HOUSE_NAME;
                                 da.STOCK_NAME = da.STOCK_NAME;

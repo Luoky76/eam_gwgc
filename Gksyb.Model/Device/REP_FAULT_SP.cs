@@ -73,11 +73,18 @@ namespace Gksyb.Model
         public string SP_NAME { get; set; }
 
         /// <summary>
-        /// 备件型号
+        /// 型号规格
         /// </summary>
-        [Description("备件型号")]
+        [Description("型号规格")]
         [Column(DbType = DbType.AnsiString)]
-        public string SP_TYPE { get; set; }
+        public string SP_SIZE { get; set; }
+
+        /// <summary>
+        /// 品牌、厂家
+        /// </summary>
+        [Description("品牌、厂家")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PRODUCE { get; set; }
 
         /// <summary>
         /// 其他编号
@@ -85,13 +92,6 @@ namespace Gksyb.Model
         [Description("其他编号")]
         [Column(DbType = DbType.AnsiString)]
         public string OTHER_CODE { get; set; }
-
-        /// <summary>
-        /// 品牌
-        /// </summary>
-        [Description("品牌")]
-        [Column(DbType = DbType.AnsiString)]
-        public string BRAND { get; set; }
 
         /// <summary>
         /// 计量单位

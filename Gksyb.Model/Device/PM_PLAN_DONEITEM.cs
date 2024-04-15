@@ -187,18 +187,18 @@ namespace Gksyb.Model
         public string LUBSP_ID { get; set; }
 
         /// <summary>
-        /// 油脂型号
+        /// 油脂型号规格
         /// </summary>
-        [Description("油脂型号")]
+        [Description("油脂型号规格")]
         [Column(DbType = DbType.AnsiString)]
-        public string LUBSP_TYPE { get; set; }
+        public string LUBSP_SIZE { get; set; }
 
         /// <summary>
-        /// 油脂品牌
+        /// 油脂品牌、厂家
         /// </summary>
-        [Description("油脂品牌")]
+        [Description("油脂品牌、厂家")]
         [Column(DbType = DbType.AnsiString)]
-        public string LUBSP_BRAND { get; set; }
+        public string LUBPRODUCE { get; set; }
 
         /// <summary>
         /// 润滑点数

@@ -87,8 +87,8 @@ namespace EAM.Special.Services
                     b.DEPT_NAME,
                     b.CARD_USER,
                     b.PERSON,
-                    b.ASSET_TYPE,
-                    b.BRAND
+                    b.ASSET_SIZE,
+                    b.PRODUCE
                 })
                 .GetGridData(request);
             return list;
@@ -130,8 +130,8 @@ namespace EAM.Special.Services
                     b.DEPT_NAME,
                     b.CARD_USER,
                     b.PERSON,
-                    b.ASSET_TYPE,
-                    b.BRAND
+                    b.ASSET_SIZE,
+                    b.PRODUCE
                 })
                 .GetGridData(request);
             return list;
@@ -223,8 +223,8 @@ namespace EAM.Special.Services
                     b.DEPT_NAME,
                     b.CARD_USER,
                     b.PERSON,
-                    b.ASSET_TYPE,
-                    b.BRAND,
+                    b.ASSET_SIZE,
+                    b.PRODUCE,
                     b.SERIAL_NUM,
                     b.INSTALL_SITE,
                     
@@ -295,8 +295,8 @@ namespace EAM.Special.Services
                     b.DEPT_NAME,
                     b.CARD_USER,
                     b.PERSON,
-                    b.ASSET_TYPE,
-                    b.BRAND,
+                    b.ASSET_SIZE,
+                    b.PRODUCE,
                 })
                 .GetGridData(request);
             return list;
@@ -364,8 +364,8 @@ namespace EAM.Special.Services
                     DEPT_NAME = b.DEPT_NAME,
                     CARD_USER = b.CARD_USER,
                     PERSON = b.PERSON,
-                    ASSET_TYPE = b.ASSET_TYPE,
-                    BRAND = b.BRAND,
+                    ASSET_SIZE = b.ASSET_SIZE,
+                    PRODUCE = b.PRODUCE,
                     SERIAL_NUM = b.SERIAL_NUM,
                     INSTALL_SITE = b.INSTALL_SITE,
                 })

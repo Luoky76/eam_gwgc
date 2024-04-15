@@ -55,8 +55,8 @@
                                             $('#DEPT_NAME').val(g.selected.EXTEND2 ?? '');
                                             $('#CARD_USER').val(g.selected.EXTEND3 ?? '');
                                             $('#PERSON').val(g.selected.EXTEND4 ?? '');
-                                            $('#ASSET_TYPE').val(g.selected.EXTEND5 ?? '');
-                                            $('#BRAND').val(g.selected.EXTEND6 ?? '');
+                                            $('#ASSET_SIZE').val(g.selected.EXTEND5 ?? '');
+                                            $('#PRODUCE').val(g.selected.EXTEND6 ?? '');
                                         }
                                     }
                                 }, group: "设备信息"
@@ -67,8 +67,8 @@
                             { display: "使用人", name: "CARD_USER", width: 300, type: "text", options: { disabled: true } },
                             { display: "责任人", name: "PERSON", width: 300, type: "text", options: { disabled: true } },
                             { display: "资产编号", name: "ASSETNO", width: 300, type: "text", options: { disabled: true } },
-                            { display: "型号", name: "ASSET_TYPE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "品牌", name: "BRAND", width: 300, type: "text", options: { disabled: true } },
+                            { display: "型号规格", name: "ASSET_SIZE", width: 300, type: "text", options: { disabled: true } },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 300, type: "text", options: { disabled: true } },
 
                             { display: "故障发生时间", name: "FAILURE_TIME", width: 300, type: "date", validate: { required: true }, group: "故障信息" },
                             { display: "故障现象描述", name: "FAILURE_DESCRIBE", width: 1146, type: "textarea", validate: { required: true } },

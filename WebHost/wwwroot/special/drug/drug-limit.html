@@ -35,7 +35,7 @@
                     search: {
                         fields: [
                             { display: "物资名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "物资型号", name: "_search_SP_TYPE", dbname: "SP_TYPE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "型号规格", name: "_search_SP_SIZE", dbname: "SP_SIZE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
@@ -44,7 +44,7 @@
                             { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
                             { display: "品牌、厂家", name: "PRODUCE", minWidth: 200, type: "text" },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
-                            { display: "物资型号", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            { display: "型号规格", name: "SP_SIZE", minWidth: 100, type: "text" },
                             { display: "港内限制数量(4月）", name: "INSIDE_APRIL", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
                             { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
                             { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },

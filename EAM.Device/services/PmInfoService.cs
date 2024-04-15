@@ -459,7 +459,8 @@ namespace EAM.Device.services
                 {
                     c.SP_SOURCE,
                     c.SP_CODE,
-                    c.SP_TYPE,
+                    c.SP_SIZE,
+                    c.PRODUCE,
                     c.SP_NAME,
                     c.OTHER_CODE,
                     c.UNIT,

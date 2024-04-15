@@ -116,7 +116,7 @@ namespace EAM.Material.Services
         /// <param name="request"></param>
         /// <param name="requestdet"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request , SaveRequest<SP_COLLECT_REQUEST> requestdet)
+        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
         {
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
@@ -177,11 +177,10 @@ namespace EAM.Material.Services
                           c.REQUEST_USERID,
                           c.SP_CODE,
                           c.SP_NAME,
-                          c.SP_TYPE,
-                          c.BRAND,
+                          c.SP_SIZE,
+                          c.PRODUCE,
                           c.OTHER_CODE,
                           c.UNIT,
-                          c.FACTORY,
                           c.DEPT_NAME,
                           c.DEPT_ID,
                           c.SEC_DEPT,
@@ -468,9 +467,9 @@ namespace EAM.Material.Services
                 {
                     c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
+                    c.SP_SIZE,
+                    c.PRODUCE,
                     c.OTHER_CODE,
-                    c.BRAND,
                     c.UNIT,
                     c.FACTORY,
                     c.COLLECT_NUM,
@@ -541,11 +540,10 @@ namespace EAM.Material.Services
                     c.REQUEST_USERID,
                     c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
-                    c.BRAND,
+                    c.SP_SIZE,
+                    c.PRODUCE,
                     c.OTHER_CODE,
                     c.UNIT,
-                    c.FACTORY,
                     c.DEPT_NAME,
                     c.DEPT_ID,
                     c.SEC_DEPT,
@@ -637,7 +635,7 @@ namespace EAM.Material.Services
         }
         private async Task BeforeDeleteRequest(SP_COLLECT_REQUEST entity)
         {
-            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID== entity.REQUEST_DET_ID,
+            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == entity.REQUEST_DET_ID,
                  x => new SP_APPLY_DETAIL
                  {
                      SP_STATUS = "20"//请购中
@@ -814,7 +812,7 @@ namespace EAM.Material.Services
                     DEPT_NAME = b.DEPT_NAME,
                     DEPT_ID = b.DEPT_ID,
                     SEC_DEPT = b.SEC_DEPT,
-                    SEC_DEPTID= b.SEC_DEPTID,
+                    SEC_DEPTID = b.SEC_DEPTID,
                     APPLY_USERID = b.APPLY_USERID
                 })
                 .OrderBy(a => a.SP_CODE)
@@ -888,8 +886,8 @@ namespace EAM.Material.Services
                     REQUEST_USER = c.REQUEST_USER,
                     SP_CODE = c.SP_CODE,
                     SP_NAME = c.SP_NAME,
-                    SP_TYPE = c.SP_TYPE,
-                    BRAND = c.BRAND,
+                    SP_SIZE = c.SP_SIZE,
+                    PRODUCE = c.PRODUCE,
                     UNIT = c.UNIT,
                     REQUEST_NUM = c.REQUEST_NUM,
                     TYPE_NAME = c.TYPE_NAME,
@@ -898,7 +896,7 @@ namespace EAM.Material.Services
 
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
-            string directoryPath =  "UploadDirectory/SpCollect/";
+            string directoryPath = "UploadDirectory/SpCollect/";
             string fileUrl = "";
             //创建文件夹
             if (!Directory.Exists(directoryPath))
@@ -918,8 +916,8 @@ namespace EAM.Material.Services
                 fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
-            string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$" 
-                + attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl+ fileUrl);
+            string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$"
+                + attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl + fileUrl);
 
             var mainQuery = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
@@ -934,7 +932,7 @@ namespace EAM.Material.Services
 
             string jsonData = mainQuery.ToJson();
 
-            
+
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
@@ -959,7 +957,7 @@ namespace EAM.Material.Services
             {
                 return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
             }
-            
+
             #endregion
 
             return AjaxResult.Success("创建流程成功", "成功");
@@ -1016,18 +1014,18 @@ namespace EAM.Material.Services
         public string SP_NAME { get; set; }
 
         /// <summary>
-        /// 备件型号
+        /// 型号规格
         /// </summary>
-        [Display(Name = "规格型号")]
-        [Description("备件型号")]
-        public string SP_TYPE { get; set; }
+        [Display(Name = "型号规格")]
+        [Description("型号规格")]
+        public string SP_SIZE { get; set; }
 
         /// <summary>
-        /// 品牌
+        /// 品牌、厂家
         /// </summary>
-        [Display(Name = "品牌")]
-        [Description("品牌")]
-        public string BRAND { get; set; }
+        [Display(Name = "品牌、厂家")]
+        [Description("品牌、厂家")]
+        public string PRODUCE { get; set; }
 
         /// <summary>
         /// 计量单位
