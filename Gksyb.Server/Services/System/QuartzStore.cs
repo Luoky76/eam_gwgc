@@ -4,6 +4,7 @@ using Gksyb.Common.Static;
 using Gksyb.Model.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Gksyb.Server.Services.System
 {
@@ -13,10 +14,12 @@ namespace Gksyb.Server.Services.System
     public class QuartzStore : IQuartzStore
     {
         private readonly IDbContext _dbContext;
+        private readonly SysContextOptions _options;
 
-        public QuartzStore(IDbContext dbContext)
+        public QuartzStore(IDbContext dbContext, IOptions<SysContextOptions> options)
         {
             _dbContext = dbContext;
+            _options = options.Value;
         }
 
         /// <summary>
@@ -30,7 +33,7 @@ namespace Gksyb.Server.Services.System
                 List<QuartzTask> list = null;
                 await _dbContext.NotSqlLog(async () =>
                 {
-                    list = await _dbContext.Query<SYS_TASK>().Where(c => c.TASK_STATUS == "正常").Select(c => new QuartzTask()
+                    list = await _dbContext.Query<SYS_TASK>().Where(c => (c.APPNAME ?? _options.AppName) == _options.AppName && c.TASK_STATUS == "正常").Select(c => new QuartzTask()
                     {
                         TaskID = c.ID.Value,
                         TaskMethod = c.TASK_INVOKE,
