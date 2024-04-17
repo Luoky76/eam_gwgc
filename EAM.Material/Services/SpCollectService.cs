@@ -233,7 +233,7 @@ namespace EAM.Material.Services
 
             entity.COLLECT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            string type = $"QG{dt.Value.ToString("yyyyMM")}";
+            string type = $"QG{dt.Value:yyyyMM}";
             string def = type + "0000";
             var model = await _dbContext.Query<SP_COLLECT>(x => x.COLLECT_CODE.Contains(type)).Select(x => Sql.Max(x.COLLECT_CODE) ?? def).FirstOrDefaultAsync();
             var index = model.SubStr(8, 4).CastTo<int>() + 1;
@@ -338,7 +338,7 @@ namespace EAM.Material.Services
                 DateTime? dt = await _dbContext.GetSysdate();
                 var importDetail = new List<SP_ORDER_DETAIL>();
                 var importList = new List<SP_ORDER>();
-                string type = $"DD{dt.Value.ToString("yyyyMM")}";
+                string type = $"DD{dt.Value:yyyyMM}";
                 string def = type + "0000";
                 var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
                 var i = 1;
@@ -867,7 +867,7 @@ namespace EAM.Material.Services
             var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == collectId && c.table_name == "SP_COLLECT").ToList();
             var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
             string attachName = string.Empty, attachUrl = string.Empty;
-            if (fj != null && fj.Count() > 0)
+            if (fj != null && fj.Count > 0)
             {
                 foreach (var item in fj)
                 {
@@ -903,7 +903,7 @@ namespace EAM.Material.Services
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            if (detQuery.Count() > 0)
+            if (detQuery.Count > 0)
             {
                 fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
 
@@ -912,7 +912,7 @@ namespace EAM.Material.Services
                 var content = await exporter.ExportAsByteArray(detQuery);
                 using var stream = new MemoryStream();
                 stream.Write(content, 0, content.Length);
-                FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
+                FormFile ff = new(stream, 0, stream.Length, fileName, fileName);
                 fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
@@ -936,7 +936,7 @@ namespace EAM.Material.Services
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
-            OAHandle oa = new OAHandle(_dbContext);
+            OAHandle oa = new(_dbContext);
             string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "{}");
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
@@ -972,6 +972,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 需求计划单号
         /// </summary>
+        [ExporterHeader(DisplayName = "申请单号", Width = 15)]
         [Display(Name = "申请单号")]
         [Description("需求计划单号")]
         public string REQUEST_CODE { get; set; }
@@ -979,6 +980,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 申请部门
         /// </summary>
+        [ExporterHeader(DisplayName = "申请部门", Width = 10)]
         [Display(Name = "申请部门")]
         [Description("申请部门")]
         public string DEPT_NAME { get; set; }
@@ -986,6 +988,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 申请人
         /// </summary>
+        [ExporterHeader(DisplayName = "申请人", Width = 10)]
         [Display(Name = "申请人")]
         [Description("申请人")]
         public string REQUEST_USER { get; set; }
@@ -999,23 +1002,25 @@ namespace EAM.Material.Services
         public DateTime? REQUEST_DATE { get; set; }
 
         /// <summary>
-        /// 备件品种编码
+        /// 物资编码
         /// </summary>
+        [ExporterHeader(DisplayName = "物资编码", Width = 15)]
         [Display(Name = "物资编码")]
-        [Description("备件品种编码")]
+        [Description("物资编码")]
         public string SP_CODE { get; set; }
 
         /// <summary>
-        /// 备件品种名称
+        /// 物资名称
         /// </summary>
         [ExporterHeader(DisplayName = "物资名称", Width = 30)]
         [Display(Name = "物资名称")]
-        [Description("备件品种名称")]
+        [Description("物资名称")]
         public string SP_NAME { get; set; }
 
         /// <summary>
         /// 型号规格
         /// </summary>
+        [ExporterHeader(DisplayName = "型号规格", Width = 30)]
         [Display(Name = "型号规格")]
         [Description("型号规格")]
         public string SP_SIZE { get; set; }
@@ -1023,6 +1028,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 品牌、厂家
         /// </summary>
+        [ExporterHeader(DisplayName = "品牌、厂家", Width = 30)]
         [Display(Name = "品牌、厂家")]
         [Description("品牌、厂家")]
         public string PRODUCE { get; set; }
@@ -1042,16 +1048,17 @@ namespace EAM.Material.Services
         public decimal? REQUEST_NUM { get; set; }
 
         /// <summary>
-        /// 备件类别名称
+        /// 物资类别
         /// </summary>
-        [ExporterHeader(DisplayName = "物资类别", Width = 40)]
+        [ExporterHeader(DisplayName = "物资类别", Width = 30)]
         [Display(Name = "物资类别")]
-        [Description("备件类别名称")]
+        [Description("物资类别")]
         public string TYPE_NAME { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
+        [ExporterHeader(DisplayName = "备注", Width = 30)]
         [Display(Name = "备注")]
         [Description("备注")]
         public string MEMO { get; set; }

@@ -303,7 +303,7 @@
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {
                                 LG.showSuccess('保存成功', function () {
-                                    if (me.dialog) me.dialog.close();
+                                    if (me.dialog && !me.sid) me.dialog.close();
                                 });
                             },
                             error: function (message) {

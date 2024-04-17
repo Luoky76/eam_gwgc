@@ -1,4 +1,5 @@
-﻿using EAM.Material.DTO;
+﻿using DocumentFormat.OpenXml.Vml.Office;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Application;
@@ -253,7 +254,7 @@ namespace EAM.Material.Services
 
             entity.APPLY_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
 
-            string type = $"SQ{DateTime.Now.ToString("yyyyMM")}";
+            string type = $"SQ{DateTime.Now:yyyyMM}";
             string def = type + "0000";
             var model = await _dbContext.Query<SP_APPLY>(x => x.APPLY_NO.Contains(type)).Select(x => Sql.Max(x.APPLY_NO) ?? def).FirstOrDefaultAsync();
             var index = model.SubStr(8, 4).CastTo<int>() + 1;
@@ -288,19 +289,128 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 获取指定物资的库存数量
+        /// </summary>
+        /// <param name="sp_id">物资ID</param>
+        /// <returns>物资库存数量</returns>
+        private async Task<decimal> GetStoreNumAsync(string sp_id)
+        {
+            return await _dbContext.Query<SP_STORE>(x => x.SP_ID == sp_id)
+                .Select(x => Sql.Sum(x.NUM)).FirstOrDefaultAsync() ?? 0;
+        }
+
+        /// <summary>
         /// 申请提交
         /// </summary>
-        /// <param name="sids"></param>
-        /// <returns></returns>
+        /// <param name="sids">主键数组</param>
+        /// <returns>匹配记录数</returns>
         public async Task<int> Submit(List<string> sids)
         {
-            var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
+            int updateCnt = 0;
+            await _dbContext.UseTransactionAsync(async () => {
+                //匹配物资信息
+                var sp_apply_details = await _dbContext.Query<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID))
+                    .ToListAsync();
+
+                for (int i = 0;  i < sp_apply_details.Count; ++i)
+                {
+                    //跟踪sp_apply_details中的实体，记录修改情况
+                    _dbContext.TrackEntity(sp_apply_details[i]);
+
+                    //根据 物资名称；型号规格；品牌、厂家；单位 匹配物资
+                    var sp_catalog = await _dbContext.Query<BASE_SPCATALOG>(x => 
+                        x.SP_NAME == sp_apply_details[i].SP_NAME
+                        && x.SP_SIZE == sp_apply_details[i].SP_SIZE
+                        && x.PRODUCE == sp_apply_details[i].PRODUCE
+                        && x.UNIT == sp_apply_details[i].UNIT)
+                        .FirstOrDefaultAsync();
+
+                    if (sp_catalog != null)
+                    {
+                        //物资目录已有对应物资
+                        sp_apply_details[i].SP_ID = sp_catalog.SP_ID;
+                        sp_apply_details[i].SP_CODE = sp_catalog.SP_CODE;
+                        sp_apply_details[i].TYPE_ID = sp_catalog.TYPE_ID;
+                        sp_apply_details[i].TYPE_NAME = sp_catalog.TYPE_NAME;
+                        sp_apply_details[i].TYPE_CODE = sp_catalog.TYPE_CODE;
+                        sp_apply_details[i].PURTYPE_ID = sp_catalog.PURTYPE_ID;
+                        sp_apply_details[i].PURTYPE_NAME = sp_catalog.PURTYPE_NAME;
+                        sp_apply_details[i].LAST_PROVIDERID = sp_catalog.LAST_PROVIDERID;
+                        sp_apply_details[i].LAST_PROVIDER = sp_catalog.LAST_PROVIDER;
+                        sp_apply_details[i].WARRANTY = sp_catalog.WARRANTY;
+
+                        //获取库存数量
+                        sp_apply_details[i].STORE_NUM = await GetStoreNumAsync(sp_apply_details[i].SP_ID);
+                    }
+                    else
+                    {
+                        //若物资类别为空，则设为临时类别
+                        if (string.IsNullOrEmpty(sp_apply_details[i].TYPE_ID))
+                        {
+                            var sp_type = await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_NAME == "临时类别").FirstAsync();
+                            sp_apply_details[i].TYPE_ID = sp_type.TYPE_ID;
+                            sp_apply_details[i].TYPE_NAME = sp_type.TYPE_NAME;
+                            sp_apply_details[i].TYPE_CODE = sp_type.TYPE_CODE;
+                        }
+
+                        //新物资插入物资目录中
+                        string headCode = sp_apply_details[i].TYPE_CODE + "-";
+                        string newCode = headCode + "0000";
+                        string model = await _dbContext.Query<BASE_SPCATALOG>(a => a.SP_CODE.StartsWith(headCode))
+                            .Select(a => Sql.Max(a.SP_CODE)).FirstOrDefaultAsync() ?? newCode;
+                        newCode = headCode + (long.Parse(model[headCode.Length..]) + 1).ToString("D4");
+                        string newId = GuidHelper.NewSnowflakeId().ToString();
+                        var sysdate = await _dbContext.GetSysdate();
+                        var new_sp = new BASE_SPCATALOG
+                        {
+                            SP_ID = newId,
+                            SP_CODE = newCode,
+                            SP_NAME = sp_apply_details[i].SP_NAME,
+                            IS_CANCEL = "0",
+                            TYPE_NAME = sp_apply_details[i].TYPE_NAME,
+                            TYPE_ID = sp_apply_details[i].TYPE_ID,
+                            TYPE_CODE = sp_apply_details[i].TYPE_CODE,
+                            SP_SIZE = sp_apply_details[i].SP_SIZE,
+                            PRODUCE = sp_apply_details[i].PRODUCE,
+                            UNIT = sp_apply_details[i].UNIT,
+                            EDIT_USERID = _userSession.UserID.ToString(),
+                            DEPT_ID = _userSession.Corp.CorpID,
+                            DEPT_NAME = _userSession.Corp.CName,
+                            EDIT_USER = _userSession.RealName,
+                            SEC_DEPTID = _userSession.ParentCompany.CorpID,
+                            SEC_DEPT = _userSession.ParentCompany.CName,
+                            PURTYPE_ID = sp_apply_details[i].PURTYPE_ID,
+                            PURTYPE_NAME = sp_apply_details[i].PURTYPE_NAME,
+                            CREATE_USERID = _userSession.UserID.ToString(),
+                            CREATEDATE = sysdate,
+                            MODIFY_USERID = _userSession.UserID.ToString(),
+                            MODIFYDATE = sysdate,
+                        };
+                        await _dbContext.InsertAsync(new_sp);
+
+                        sp_apply_details[i].SP_ID = newId;
+                        sp_apply_details[i].SP_CODE = newCode;
+                    }
+
+                    //更新申请明细
+                    await _dbContext.UpdateAsync(sp_apply_details[i]);
+                }
+
+                //更新记录状态
+                updateCnt = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                     x => new SP_APPLY
                     {
                         AUDITING = "1"
                     });
 
-            return updatedevice;
+                //更新采购状态
+                await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID),
+                   x => new SP_APPLY_DETAIL
+                   {
+                       SP_STATUS = "20"//待需求确认
+                   });
+            });
+            return updateCnt;
         }
 
         /// <summary>
@@ -377,6 +487,10 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
+        /// <summary>
+        /// Excel导入
+        /// </summary>
+        /// <returns></returns>
         public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
         {
             var apply = string.IsNullOrEmpty(sid) ? new SP_APPLY { AUDITING = "0" } : _dbContext.QueryByKey<SP_APPLY>(sid);
@@ -388,64 +502,48 @@ namespace EAM.Material.Services
 
             var importResult = new List<SP_APPLY_DETAIL>();
 
-            try
+            await formFile.Import<SpExportData>(async c =>
             {
-                DateTime? dt = await _dbContext.GetSysdate();
-                var type = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == "临时类别").FirstOrDefault();
-                var typeCount = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.TYPE_ID == type.TYPE_ID).Count();
+                //查询物资目录中是否有匹配的物资
+                var sp = _dbContext.Query<BASE_SPCATALOG>()
+                    .Where(t =>
+                        t.SP_NAME == c.SP_NAME
+                        && t.SP_SIZE == c.SP_SIZE
+                        && t.PRODUCE == c.PRODUCE
+                        && t.UNIT == c.UNIT
+                    )
+                    .FirstOrDefault();
 
-                await formFile.Import<SpExportData>(async c =>
+                SP_APPLY_DETAIL temp;
+                if (sp == null)
                 {
-                  
-                    var sp = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.SP_NAME == c.SP_NAME && t.SP_SIZE == c.SP_SIZE).FirstOrDefault();
-                    if (sp == null)
-                    {
-                        typeCount++;
-                        sp = new BASE_SPCATALOG
-                        {
-                            SP_ID = GuidHelper.NewSnowflakeId().ToString(),
-                            SP_CODE = $"{type.TYPE_CODE}-{typeCount.ToString("D4")}",
-                            SP_NAME = c.SP_NAME,
-                            IS_CANCEL = "0",
-                            SP_SIZE = c.SP_SIZE,
-                            TYPE_NAME = type.TYPE_NAME,
-                            TYPE_ID = type.TYPE_ID,
-                            TYPE_CODE = type.TYPE_CODE,
-                            UNIT = c.UNIT,
-                            EDIT_USERID = _userSession.UserID.ToString(),
-                            DEPT_ID = _userSession.Corp.CorpID,
-                            DEPT_NAME = _userSession.Corp.CName,
-                            EDIT_USER = _userSession.RealName,
-                            SEC_DEPTID = _userSession.ParentCompany.CorpID,
-                            SEC_DEPT = _userSession.ParentCompany.CName,
-                            PURTYPE_ID = type.PURTYPE_ID,
-                            PURTYPE_NAME = type.PURTYPE_NAME,
-                            CREATE_USERID = _userSession.UserID.ToString(),
-                            CREATEDATE = dt,
-                            MODIFY_USERID = _userSession.UserID.ToString(),
-                            MODIFYDATE = dt
-                        };
-                        _dbContext.Insert(sp);
-                    }
-                    var temp = sp.MapTo<SP_APPLY_DETAIL>();
-
+                    temp = c.MapTo<SP_APPLY_DETAIL>();
+                    //新物资默认为临时类别
+                    var base_sptype = await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_NAME == "临时类别").FirstOrDefaultAsync();
+                    temp.TYPE_ID = base_sptype.TYPE_ID;
+                    temp.TYPE_NAME = base_sptype.TYPE_NAME;
+                    temp.TYPE_CODE = base_sptype.TYPE_CODE;
+                    //库存数量为0
+                    temp.STORE_NUM = 0;
+                }
+                else
+                {
+                    temp = sp.MapTo<SP_APPLY_DETAIL>();
                     temp.COUNT = c.COUNT;
                     temp.MEMO = c.MEMO;
-                    temp.APPLY_ID = apply.APPLY_ID;
-                    await BeforeAddDet(temp);
-                    importResult.Add(temp);
-                    await Task.CompletedTask;
-                });
+                    //获取库存数量
+                    temp.STORE_NUM = await GetStoreNumAsync(temp.SP_ID);
+                }
+                temp.APPLY_ID = apply.APPLY_ID;
 
-                _dbContext.InsertRange<SP_APPLY_DETAIL>(importResult);
+                await BeforeAddDet(temp);
+                importResult.Add(temp);
+                await Task.CompletedTask;
+            });
 
-                return AjaxResult.Success(apply);
-            }
-            catch (Exception ex)
-            {
-                return AjaxResult.Error(ex.Message);
-            }
+            await _dbContext.InsertRangeAsync(importResult);
 
+            return AjaxResult.Success(apply);
         }
 
         /// <summary>
@@ -526,7 +624,7 @@ namespace EAM.Material.Services
                     c.ZKCS,
                     c.QYKCSL
                 },
-                c => a => a.SPDET_ID == c.SPDET_ID, BeforeAddDet, BeforeUpdateDet,null,false,null, AfterSaveDet);
+                c => a => a.SPDET_ID == c.SPDET_ID, BeforeAddDet, BeforeUpdateDet, null, false, null, AfterSaveDet);
         }
 
         private async Task BeforeAddDet(SP_APPLY_DETAIL entity)
@@ -538,53 +636,10 @@ namespace EAM.Material.Services
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
-            entity.SP_STATUS = "10";//计划
+            entity.SP_STATUS = "10";//物资申请
 
-            if (string.IsNullOrEmpty(entity.SP_CODE))
-            {
-                var sp = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.SP_NAME == entity.SP_NAME && t.SP_SIZE == entity.SP_SIZE).FirstOrDefault();
-                if (sp == null)
-                {
-                    var type = _dbContext.Query<BASE_SPTYPE>().Where(t => t.TYPE_NAME == "临时类别").FirstOrDefault();
-                    var typeCount = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.TYPE_ID == type.TYPE_ID).Count();
-
-                    typeCount++;
-                    sp = new BASE_SPCATALOG
-                    {
-                        SP_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        SP_CODE = $"{type.TYPE_CODE}-{typeCount.ToString("D4")}",
-                        SP_NAME = entity.SP_NAME,
-                        IS_CANCEL = "0",
-                        SP_SIZE = entity.SP_SIZE,
-                        TYPE_NAME = type.TYPE_NAME,
-                        TYPE_ID = type.TYPE_ID,
-                        TYPE_CODE = type.TYPE_CODE,
-                        UNIT = entity.UNIT,
-                        PRODUCE = entity.PRODUCE,
-                        EDIT_USERID = _userSession.UserID.ToString(),
-                        DEPT_ID = _userSession.Corp.CorpID,
-                        DEPT_NAME = _userSession.Corp.CName,
-                        EDIT_USER = _userSession.RealName,
-                        SEC_DEPTID = _userSession.ParentCompany.CorpID,
-                        SEC_DEPT = _userSession.ParentCompany.CName,
-                        PURTYPE_ID = type.PURTYPE_ID,
-                        PURTYPE_NAME = type.PURTYPE_NAME,
-                        CREATE_USERID = _userSession.UserID.ToString(),
-                        CREATEDATE = dt,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
-                        MODIFYDATE = dt
-                    };
-                    _dbContext.Insert(sp);
-                }
-
-                entity.SP_ID = sp.SP_ID;
-                entity.SP_CODE = sp.SP_CODE;
-                entity.PURTYPE_ID = sp.PURTYPE_ID;
-                entity.PURTYPE_NAME = sp.PURTYPE_NAME;
-                entity.TYPE_NAME = sp.TYPE_NAME;
-                entity.TYPE_ID = sp.TYPE_ID;
-                entity.TYPE_CODE = sp.TYPE_CODE;
-            }
+            //获取库存数量
+            entity.STORE_NUM = await GetStoreNumAsync(entity.SP_ID);
         }
 
         private async Task BeforeUpdateDet(SP_APPLY_DETAIL entity)
@@ -594,6 +649,8 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
+            //获取库存数量
+            entity.STORE_NUM = await GetStoreNumAsync(entity.SP_ID);
         }
 
         private async Task AfterSaveDet(List<SP_APPLY_DETAIL> added, List<SP_APPLY_DETAIL> updated, List<SP_APPLY_DETAIL> deleted)

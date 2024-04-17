@@ -29,6 +29,11 @@ namespace EAM.Material.Interfaces
         /// <returns></returns>
         Task<AjaxResult> ComboxData();
 
+        /// <summary>
+        /// 申请提交
+        /// </summary>
+        /// <param name="sids">主键数组</param>
+        /// <returns>匹配记录数</returns>
         Task<int> Submit(List<string> sids);
         Task<AjaxResult> CancelSubmit(List<string> sids);
         Task<GridData> DetailListAsync(GridRequest request);
@@ -40,6 +45,11 @@ namespace EAM.Material.Interfaces
 
         Task<int> CheckSubmit(List<string> sids);
         Task<AjaxResult> CheckCancelSubmit(List<string> sids);
+
+        /// <summary>
+        /// Excel导入
+        /// </summary>
+        /// <returns></returns>
         Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid);
     }
 }
