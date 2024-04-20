@@ -30,6 +30,15 @@
 		<Reference Include="Chloe">
 			<HintPath>..\dll\Chloe.dll</HintPath>
 		</Reference>
+		<Reference Include="Magicodes.IE.EPPlus">
+			<HintPath>..\dll\Magicodes.IE.EPPlus.dll</HintPath>
+		</Reference>
+		<Reference Include="DmProvider">
+			<HintPath>..\dll\DmProvider.dll</HintPath>
+		</Reference>
+		<Reference Include="Kdbndp">
+			<HintPath>..\dll\Kdbndp.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 
 	<!--基础库-->

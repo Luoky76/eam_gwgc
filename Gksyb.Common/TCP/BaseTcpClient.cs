@@ -51,7 +51,7 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 关闭连接
         /// </summary>
-        public event Action<ClientInfo> OnClose;
+        public event Action<ClientInfo, SocketError> OnClose;
 
         /// <summary>
         /// 连接
@@ -139,6 +139,7 @@ namespace Gksyb.Common.TCP
                 }
                 if (e.SocketError != SocketError.Success)
                 {
+                    OnClose?.Invoke(client, e.SocketError);
                     switch (e.SocketError)
                     {
                         case SocketError.OperationAborted:

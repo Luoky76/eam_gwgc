@@ -9,18 +9,14 @@ namespace Gksyb.Common
     /// </summary>
     public class VerifyCodeHelper
     {
-        private static readonly SKTypeface[] _fontFamilies;
+        private static readonly SKTypeface _font;
 
         static VerifyCodeHelper()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var names = assembly.GetManifestResourceNames();
-            _fontFamilies = new SKTypeface[names.Length];
-            for (int i = 0; i < names.Length; i++)
-            {
-                using var stream = assembly.GetManifestResourceStream(names[i]);
-                _fontFamilies[i] = SKTypeface.FromStream(stream);
-            }
+            var name = assembly.GetManifestResourceNames().Where(c => c.EndsWith("ttf", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            using var stream = assembly.GetManifestResourceStream(name);
+            _font = SKTypeface.FromStream(stream);
         }
 
         public static byte[] GetVerifyCode(out string code, ValidateCodeType codeType = ValidateCodeType.NumberAndLetter, int length = 4, int codeW = 80, int codeH = 30)
@@ -65,7 +61,7 @@ namespace Gksyb.Common
         /// <returns></returns>
         private byte[] GetCode(out string code, ValidateCodeType codeType = ValidateCodeType.NumberAndLetter, int length = 4, int codeW = 80, int codeH = 30)
         {
-            float fontSize = (float)(codeH * 0.8), y = codeH - (1f / 3 * fontSize);
+            float fontSize = (float)(codeH * 0.7), y = codeH - (1f / 3 * fontSize);
             var text = code = GetCode(length, codeType);
             SKColor[] colors = { SKColors.Black, SKColors.Red, SKColors.Blue, SKColors.Green, SKColors.Orange, SKColors.Brown, SKColors.Brown, SKColors.DarkBlue };
 
@@ -78,7 +74,7 @@ namespace Gksyb.Common
                 var paint = new SKPaint
                 {
                     Color = colors[random.Next(colors.Length)],
-                    Typeface = _fontFamilies[random.Next(_fontFamilies.Length)],
+                    Typeface = _font,
                     TextSize = fontSize,
                     IsAntialias = true,
                     Style = SKPaintStyle.Fill
