@@ -429,6 +429,8 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
+
+        #region 需求确认
         /// <summary>
         /// 确认提交
         /// </summary>
@@ -486,6 +488,128 @@ namespace EAM.Material.Services
             }
             return AjaxResult.Success("成功");
         }
+
+        /// <summary>
+        /// 获取确认明细
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> GetCheckListAsync(GridRequest request)
+        {
+            var res = await _dbContext.Query<SP_APPLY>()
+                .InnerJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
+                .Where((a, b) => a.AUDITING == "1" && b.SP_STATUS == "10")
+                .Select((a, b) => new SP_APPLY_DET_DTO
+                {
+                    //主表数据
+                    APPLY_NO = a.APPLY_NO,
+                    APPLY_USER = a.APPLY_USER,
+                    DEPT_NAME = a.DEPT_NAME,
+                    APPLY_DATE = a.APPLY_DATE,
+                    APPLY_ID = b.APPLY_ID,
+                    //明细表数据
+                    SP_ID = b.SP_ID,
+                    SP_NAME = b.SP_NAME,
+                    SP_CODE = b.SP_CODE,
+                    SP_SIZE = b.SP_SIZE,
+                    SP_STATUS = b.SP_STATUS,
+                    PRODUCE = b.PRODUCE,
+                    UNIT = b.UNIT,
+                    COUNT = b.COUNT,
+                    STORE_NUM = b.STORE_NUM,
+                    YG_PRICE = b.YG_PRICE,
+                    YG_MONEY = b.YG_MONEY,
+                    TYPE_ID = b.TYPE_ID,
+                    TYPE_NAME = b.TYPE_NAME,
+                    SPDET_ID = b.SPDET_ID,
+                    IS_XY = b.IS_XY,
+                    NO_PRODUCE = b.NO_PRODUCE,
+                    WARRANTY = b.WARRANTY,
+                    AUDITING_CHECK = b.AUDITING_CHECK,
+                    MEMO = b.MEMO,
+                })
+                .OrderBy(c => c.AUDITING_CHECK)
+                .ThenByDesc(c => c.APPLY_DATE)
+                .GetGridData(request);
+
+            return res;
+        }
+
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DET_DTO> request)
+        {
+            //删除
+            if (request.Deleted != null && request.Deleted.Count > 0)
+            {
+                foreach (var l in request.Deleted)
+                {
+                    SP_APPLY_DETAIL d = new SP_APPLY_DETAIL();
+                    d.SPDET_ID = l.SPDET_ID;
+                    await _dbContext.DeleteAsync(d);
+                }
+            }
+            //修改
+            if (request.Updated != null && request.Updated.Count > 0)
+            {
+                foreach (var l in request.Updated)
+                {
+                    var d = _dbContext.Query<SP_APPLY_DETAIL>(c => c.SPDET_ID == l.SPDET_ID).First();
+                    d.SPDET_ID = l.SPDET_ID;
+                    d.SP_NAME = l.SP_NAME;
+                    d.COUNT = l.COUNT;
+                    d.UNIT = l.UNIT;
+                    d.SP_SIZE = l.SP_SIZE;
+                    d.PRODUCE = l.PRODUCE;
+                    d.TYPE_NAME = l.TYPE_NAME;
+                    d.STORE_NUM = l.STORE_NUM;
+                    d.WARRANTY = l.WARRANTY;
+                    d.YG_PRICE = l.YG_PRICE;
+                    d.YG_MONEY = l.YG_MONEY;
+                    d.IS_XY = l.IS_XY;
+                    d.NO_PRODUCE = l.NO_PRODUCE;
+                    d.MEMO = l.MEMO;
+                    d.SP_ID = l.SP_ID;
+                    d.APPLY_ID = l.APPLY_ID;
+                    d.SP_CODE = l.SP_CODE;
+                    d.AUDITING_CHECK = l.AUDITING_CHECK;
+
+                    await _dbContext.UpdateAsync(d);
+                }
+            }
+
+            return AjaxResult.Success("保存成功");
+        }
+
+        /// <summary>
+        /// 保存提交状态
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SubmitCheckList(string ids)
+        {
+            var idStr = ids.TrimEnd(',').Split(',');
+            foreach (var l in idStr)
+            {
+                var d = _dbContext.Query<SP_APPLY_DETAIL>(c => c.SPDET_ID == l).First();
+                d.AUDITING_CHECK = "1";
+                d.SP_STATUS = "20";
+
+                await _dbContext.UpdateAsync(d);
+            }
+
+            return AjaxResult.Success("保存成功");
+        }
+
+
+
+        #endregion
+
+
 
         /// <summary>
         /// Excel导入

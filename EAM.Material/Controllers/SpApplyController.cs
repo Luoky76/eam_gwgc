@@ -169,5 +169,45 @@ namespace EAM.Material.Controllers
             return await _service.ApplyDetFlowAsync(SPDET_ID);
         }
         #endregion
+
+
+
+        /// <summary>
+        /// 获取物资确认明细表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> GetCheckListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.GetCheckListAsync(request), "成功");
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DET_DTO> request)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.SaveCheckList(request);
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> SubmitCheckList(string ids)
+        {
+            return await _service.SubmitCheckList(ids);
+        }
+
     }
 }

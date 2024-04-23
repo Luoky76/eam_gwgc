@@ -404,6 +404,12 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string SP_STATUS { get; set; }
 
+        /// <summary>
+        /// 确认状态
+        /// </summary>
+        [Description("确认状态")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDITING_CHECK { get; set; }
     }
 
 }

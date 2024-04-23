@@ -1,4 +1,5 @@
-﻿using Gksyb.Model;
+﻿using EAM.Material.DTO;
+using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
 
@@ -51,5 +52,27 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <returns></returns>
         Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid);
+
+        /// <summary>
+        /// 获取物资确认明细表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<GridData> GetCheckListAsync(GridRequest request);
+
+        /// <summary>
+        /// 物资确认保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DET_DTO> request);
+
+
+        /// <summary>
+        /// 物资确认提交
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<AjaxResult> SubmitCheckList(string ids);
     }
 }

@@ -695,7 +695,7 @@ namespace EAM.Material.Services
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
                 .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) => a.SP_STATUS == "20" && b.AUDITING == "1")
+                .Where((a, b) => a.SP_STATUS == "20" && a.AUDITING_CHECK == "1")
                 .Select((a, b) => new
                 {
                     a.SPDET_ID,
