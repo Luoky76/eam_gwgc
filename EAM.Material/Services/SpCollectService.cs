@@ -328,7 +328,7 @@ namespace EAM.Material.Services
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                   x => new SP_APPLY_DETAIL
                   {
-                      SP_STATUS = "40"//采购中
+                      SP_STATUS = "50"//采购订单待提交
                   });
 
             var list = _dbContext.Query<SP_COLLECT>().Where(x => x.COLLECT_ID == sid).ToList();
@@ -403,8 +403,8 @@ namespace EAM.Material.Services
                     }
                 }
 
-                await _dbContext.InsertRangeAsync<SP_ORDER>(importList);
-                await _dbContext.InsertRangeAsync<SP_ORDER_DETAIL>(importDetail);
+                await _dbContext.InsertRangeAsync(importList);
+                await _dbContext.InsertRangeAsync(importDetail);
             }
 
             return AjaxResult.Success("成功");
@@ -433,7 +433,7 @@ namespace EAM.Material.Services
                 await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                       x => new SP_APPLY_DETAIL
                       {
-                          SP_STATUS = "30"//请购中
+                          SP_STATUS = "30"//待需求申请
                       });
 
                 var orderId = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.PURPLAN_ID)).Select(t => t.ORDER_ID).ToList();
@@ -619,12 +619,6 @@ namespace EAM.Material.Services
             entity.SEC_DEPTID = appledet.SEC_DEPTID;
             entity.TYPE_ID = appledet.TYPE_ID;
             entity.TYPE_CODE = appledet.TYPE_CODE;
-
-            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == entity.REQUEST_DET_ID,
-             x => new SP_APPLY_DETAIL
-             {
-                 SP_STATUS = "30"//请购中
-             });
         }
         private async Task BeforeUpdateRequest(SP_COLLECT_REQUEST entity)
         {
@@ -635,11 +629,7 @@ namespace EAM.Material.Services
         }
         private async Task BeforeDeleteRequest(SP_COLLECT_REQUEST entity)
         {
-            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == entity.REQUEST_DET_ID,
-                 x => new SP_APPLY_DETAIL
-                 {
-                     SP_STATUS = "20"//请购中
-                 });
+            await Task.CompletedTask;
         }
         private async Task AfterSaveRequest(List<SP_COLLECT_REQUEST> added, List<SP_COLLECT_REQUEST> updated, List<SP_COLLECT_REQUEST> deleted)
         {
@@ -667,22 +657,6 @@ namespace EAM.Material.Services
                         TAX_MONEY = TAX_MONEY,
                         NOTAX_MONEY = NOTAX_MONEY
                     });
-
-                //var det = data.GroupBy(x => x.COLLECT_DET_ID)
-                //    .Select(x => new
-                //    {
-                //        x.Key,
-                //        CHECK_NUM = x.Sum(x => x.CHECK_NUM)
-                //    });
-
-                //foreach (var sp in det)
-                //{
-                //    await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.COLLECT_DET_ID == sp.Key,
-                //   x => new SP_COLLECT_DET
-                //   {
-                //       COLLECT_NUM = sp.CHECK_NUM
-                //   });
-                //}
             }
         }
 
@@ -946,11 +920,22 @@ namespace EAM.Material.Services
             JObject job = JObject.Parse(result);
             if (job["success"] != null && job["success"].ToString().ToLower() == "true")
             {
-                //成功后将记录状态改为审批中
-                _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
-                {
-                    AUDITING = "2",
-                    OA_CODE = job["code"].ToString()
+                await _dbContext.UseTransactionAsync(async () => {
+                    //成功后将记录状态改为审批中
+                    _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
+                    {
+                        AUDITING = "2",
+                        OA_CODE = job["code"].ToString()
+                    });
+
+                    //修改船舶物资申请明细的物资采购状态
+                    var request_det_ids = _dbContext.Query<SP_COLLECT_REQUEST>(x => x.COLLECT_ID == collectId)
+                        .Select(x => x.REQUEST_DET_ID)
+                        .ToList();
+                    await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => request_det_ids.Contains(x.SPDET_ID), x => new SP_APPLY_DETAIL
+                    {
+                        SP_STATUS = "40"
+                    });
                 });
             }
             else

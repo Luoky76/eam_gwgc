@@ -31,7 +31,7 @@ namespace EAM.Material.Services
             _userSession = userSession;
         }
 
-        #region 采购申请
+        #region 船舶物资申请
         class SpApplyRes : SP_APPLY
         {
             /// <summary>
@@ -392,6 +392,9 @@ namespace EAM.Material.Services
                         sp_apply_details[i].SP_CODE = newCode;
                     }
 
+                    //物资采购状态修改为「待需求确认」
+                    sp_apply_details[i].SP_STATUS = "20";
+
                     //更新申请明细
                     await _dbContext.UpdateAsync(sp_apply_details[i]);
                 }
@@ -498,7 +501,7 @@ namespace EAM.Material.Services
         {
             var res = await _dbContext.Query<SP_APPLY>()
                 .InnerJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) => a.AUDITING == "1" && b.SP_STATUS == "20")
+                .Where((a, b) => a.AUDITING == "1" && b.AUDITING_CHECK == "0")
                 .Select((a, b) => new SP_APPLY_DET_DTO
                 {
                     //主表数据
@@ -541,70 +544,51 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DET_DTO> request)
+        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DETAIL> request)
         {
-            //删除
-            if (request.Deleted != null && request.Deleted.Count > 0)
-            {
-                foreach (var l in request.Deleted)
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new
                 {
-                    SP_APPLY_DETAIL d = new SP_APPLY_DETAIL();
-                    d.SPDET_ID = l.SPDET_ID;
-                    await _dbContext.DeleteAsync(d);
-                }
-            }
-            //修改
-            if (request.Updated != null && request.Updated.Count > 0)
-            {
-                foreach (var l in request.Updated)
-                {
-                    var d = _dbContext.Query<SP_APPLY_DETAIL>(c => c.SPDET_ID == l.SPDET_ID).First();
-                    d.SPDET_ID = l.SPDET_ID;
-                    d.SP_NAME = l.SP_NAME;
-                    d.COUNT = l.COUNT;
-                    d.UNIT = l.UNIT;
-                    d.SP_SIZE = l.SP_SIZE;
-                    d.PRODUCE = l.PRODUCE;
-                    d.TYPE_NAME = l.TYPE_NAME;
-                    d.STORE_NUM = l.STORE_NUM;
-                    d.WARRANTY = l.WARRANTY;
-                    d.YG_PRICE = l.YG_PRICE;
-                    d.YG_MONEY = l.YG_MONEY;
-                    d.IS_XY = l.IS_XY;
-                    d.NO_PRODUCE = l.NO_PRODUCE;
-                    d.MEMO = l.MEMO;
-                    d.SP_ID = l.SP_ID;
-                    d.APPLY_ID = l.APPLY_ID;
-                    d.SP_CODE = l.SP_CODE;
-                    d.AUDITING_CHECK = l.AUDITING_CHECK;
-
-                    await _dbContext.UpdateAsync(d);
-                }
-            }
-
-            return AjaxResult.Success("保存成功");
+                    c.AUDITING_CHECK,
+                    c.SP_NAME,
+                    c.COUNT,
+                    c.UNIT,
+                    c.SP_SIZE,
+                    c.PRODUCE,
+                    c.TYPE_NAME,
+                    c.STORE_NUM,
+                    c.WARRANTY,
+                    c.LAST_PROVIDER,
+                    c.LAST_PROVIDERID,
+                    c.YG_PRICE,
+                    c.YG_MONEY,
+                    c.IS_XY,
+                    c.NO_PRODUCE,
+                    c.MEMO,
+                    c.SP_ID,
+                    c.APPLY_ID,
+                    c.SPDET_ID,
+                    c.SP_CODE
+                },
+                c => a => a.SPDET_ID == c.SPDET_ID
+                , null, null, null, false, null, null);
         }
 
         /// <summary>
-        /// 保存提交状态
+        /// 物资需求确认提交
         /// </summary>
-        /// <param name="ids"></param>
+        /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> SubmitCheckList(string ids)
+        public async Task<AjaxResult> SubmitCheckList(List<string> sids)
         {
-            var idStr = ids.TrimEnd(',').Split(',');
-            foreach (var l in idStr)
+            var sp_apply_details = await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.SPDET_ID), x => new SP_APPLY_DETAIL
             {
-                var d = _dbContext.Query<SP_APPLY_DETAIL>(c => c.SPDET_ID == l).First();
-                d.AUDITING_CHECK = "1";
-                d.SP_STATUS = "20";
-
-                await _dbContext.UpdateAsync(d);
-            }
+                AUDITING_CHECK = "1",
+                SP_STATUS = "30"
+            });
 
             return AjaxResult.Success("保存成功");
         }
-
 
 
         #endregion

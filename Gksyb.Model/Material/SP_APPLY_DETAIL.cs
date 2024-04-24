@@ -398,9 +398,9 @@ namespace Gksyb.Model
         public decimal? QYKCSL { get; set; }
 
         /// <summary>
-        /// 物资状态(10计划,20待请购,30请购中,40采购中,50供货中,60质检待入库,70订单终止)
+        /// 物资状态(10物资申请 20待需求确认 30待需求申请 40OA审批中 50采购订单待提交 60待收货登记 70待到货验收 80待入库 90已入库 100订单中止)
         /// </summary>
-        [Description("物资状态(10计划,20待请购,30请购中,40采购中,50供货中,60质检待入库,70订单终止)")]
+        [Description("物资状态(10物资申请 20待需求确认 30待需求申请 40OA审批中 50采购订单待提交 60待收货登记 70待到货验收 80待入库 90已入库 100订单中止)")]
         [Column(DbType = DbType.AnsiString)]
         public string SP_STATUS { get; set; }
 

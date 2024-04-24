@@ -1,4 +1,5 @@
-﻿using EAM.Material.DTO;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
@@ -190,7 +191,7 @@ namespace EAM.Material.Controllers
         /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DET_DTO> request)
+        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DETAIL> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
@@ -198,15 +199,15 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 保存
+        /// 物资需求确认提交
         /// </summary>
-        /// <param name="ids"></param>
+        /// <param name="sids">明细表主键数组</param>
         /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> SubmitCheckList(string ids)
+        public async Task<AjaxResult> SubmitCheckList(List<string> sids)
         {
-            return await _service.SubmitCheckList(ids);
+            return await _service.SubmitCheckList(sids);
         }
 
     }

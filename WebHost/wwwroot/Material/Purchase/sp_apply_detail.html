@@ -392,7 +392,8 @@
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {
                                 LG.showSuccess('保存成功');
-                                me.reload();
+                                if (!me.Sid) me.dialog.close();
+                                else me.reload();
                             },
                             error: function (message) {
                                 LG.showError(message);

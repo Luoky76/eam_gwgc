@@ -65,14 +65,14 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DET_DTO> request);
+        Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DETAIL> request);
 
 
         /// <summary>
-        /// 物资确认提交
+        /// 物资需求确认提交
         /// </summary>
-        /// <param name="ids"></param>
+        /// <param name="sids"></param>
         /// <returns></returns>
-        Task<AjaxResult> SubmitCheckList(string ids);
+        Task<AjaxResult> SubmitCheckList(List<string> sids);
     }
 }
