@@ -498,7 +498,7 @@ namespace EAM.Material.Services
         {
             var res = await _dbContext.Query<SP_APPLY>()
                 .InnerJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) => a.AUDITING == "1" && b.SP_STATUS == "10")
+                .Where((a, b) => a.AUDITING == "1" && b.SP_STATUS == "20")
                 .Select((a, b) => new SP_APPLY_DET_DTO
                 {
                     //主表数据
