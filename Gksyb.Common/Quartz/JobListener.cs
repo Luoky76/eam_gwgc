@@ -1,4 +1,4 @@
-using Gksyb.Common.Quartz.Dtos;
+锘縰sing Gksyb.Common.Quartz.Dtos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -7,7 +7,7 @@ using Quartz.Listener;
 namespace Gksyb.Common.Quartz
 {
     /// <summary>
-    /// 单例注入 全局处理job
+    /// 鍗曚緥娉ㄥ叆 鍏ㄥ眬澶勭悊job
     /// </summary>
     public class JobListener : JobListenerSupport
     {
@@ -21,7 +21,7 @@ namespace Gksyb.Common.Quartz
             _serviceScopeFactory = serviceScopeFactory;
         }
 
-        public override string Name => "任务监听";
+        public override string Name => "浠诲姟鐩戝惉";
 
         public override async Task JobToBeExecuted(IJobExecutionContext context, CancellationToken cancellationToken = default)
         {
@@ -38,12 +38,12 @@ namespace Gksyb.Common.Quartz
                 quartzTask.ElapsedTime = context.JobRunTime.TotalMilliseconds.CastTo<int>();
                 if (!quartzTask.IsExcuted)
                 {
-                    _logger.LogInformation(_logPath, $"任务未执行：{quartzTask.ToMiniJson()}");
+                    _logger.LogInformation(_logPath, $"浠诲姟鏈墽琛岋細{quartzTask.ToMiniJson()}");
                     return;
                 }
                 if (jobException == null)
                 {
-                    quartzTask.RunStatus = "正常";
+                    quartzTask.RunStatus = "姝ｅ父";
                     quartzTask.LastRunResult = context.Result?.ToString();
                 }
                 else
@@ -56,7 +56,7 @@ namespace Gksyb.Common.Quartz
                             ex = ex.InnerException;
                         }
                     }
-                    quartzTask.RunStatus = "异常";
+                    quartzTask.RunStatus = "寮傚父";
                     quartzTask.LastRunResult = ex.ToString();
                 }
                 using var scope = _serviceScopeFactory.CreateAsyncScope();

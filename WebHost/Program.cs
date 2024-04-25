@@ -1,4 +1,4 @@
-using Serilog;
+锘縰sing Serilog;
 
 namespace WebHost
 {
@@ -12,15 +12,15 @@ namespace WebHost
                 .CreateBootstrapLogger();
             try
             {
-                Log.Information("主机启动");
+                Log.Information("涓绘満鍚姩");
                 AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
                 TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-                Directory.SetCurrentDirectory(AppContext.BaseDirectory);//设置当前路径
+                Directory.SetCurrentDirectory(AppContext.BaseDirectory);//璁剧疆褰撳墠璺緞
                 CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "发生未处理的异常");
+                Log.Fatal(ex, "鍙戠敓鏈鐞嗙殑寮傚父");
             }
             finally
             {
@@ -30,7 +30,7 @@ namespace WebHost
 
         private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-             .UseSerilog((context, services, configuration) => configuration//配置Serilog
+             .UseSerilog((context, services, configuration) => configuration//閰嶇疆Serilog
                     .CommonLoggerConfiguration(context.Configuration)
                     .ReadFrom.Configuration(context.Configuration)
                     .ReadFrom.Services(services))
@@ -48,7 +48,7 @@ namespace WebHost
             });
 
         /// <summary>
-        /// 全局异常捕获
+        /// 鍏ㄥ眬寮傚父鎹曡幏
         /// </summary>
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
@@ -56,12 +56,12 @@ namespace WebHost
         }
 
         /// <summary>
-        /// 记录任何未观察到的任务异常并防止进程终止
+        /// 璁板綍浠讳綍鏈瀵熷埌鐨勪换鍔″紓甯稿苟闃叉杩涚▼缁堟
         /// </summary>
         private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             Log.Fatal($"{{{nameof(LogPath)}}} {{message}}", _logPath, e.Exception?.ToString());
-            e.SetObserved();//防止进程终止
+            e.SetObserved();//闃叉杩涚▼缁堟
         }
 
         private static readonly LogPath _logPath = new("Exception");

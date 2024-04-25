@@ -1,4 +1,4 @@
-using Chloe;
+ï»¿using Chloe;
 using Gksyb.Common;
 using Gksyb.Common.Interface;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +24,7 @@ namespace WebHost
             _env = env;
             var pluginDirectory = Path.Combine(AppContext.BaseDirectory, "plugins");
             if (!Directory.Exists(pluginDirectory)) return;
-            //²å¼ş´¦Àí
+            //æ’ä»¶å¤„ç†
             var pluginType = typeof(IPlugin);
             var loadedFileNames = AssemblyLoadContext.Default.Assemblies.Where(c => !c.IsDynamic && !string.IsNullOrWhiteSpace(c.Location))
                 .Select(c => Path.GetFileNameWithoutExtension(c.Location)).ToList();
@@ -32,16 +32,16 @@ namespace WebHost
             var businessAssemblies = new ConcurrentQueue<Assembly>();
             var pluginsPrefixs = configuration.GetSection(OptionName.PluginsPrefix).Get<List<string>>();
             var assemblyLoadContext = AssemblyLoadContext.Default;//new AssemblyLoadContext("GksybPlugins", false);
-            Parallel.ForEach(fileNames, name =>//¶àÏß³Ì¼Ó¿ìĞ§ÂÊ
+            Parallel.ForEach(fileNames, name =>//å¤šçº¿ç¨‹åŠ å¿«æ•ˆç‡
             {
                 try
                 {
                     var filename = Path.GetFileNameWithoutExtension(name);
-                    if (loadedFileNames.Contains(filename)) return;//ÒÑ¼ÓÔØµÄ³ÌĞò¼¯²»ÖØ¸´¼ÓÔØ
+                    if (loadedFileNames.Contains(filename)) return;//å·²åŠ è½½çš„ç¨‹åºé›†ä¸é‡å¤åŠ è½½
                     var symbolFile = name.Replace("dll", "pdb");
                     Assembly assembly = null;
                     using var stream = File.OpenRead(name);
-                    if (File.Exists(symbolFile))//¼ÓÔØ·ûºÅÎÄ¼ş£¬ÓÃÓÚ´òÓ¡´íÎóµÄ´úÂëĞĞÊı
+                    if (File.Exists(symbolFile))//åŠ è½½ç¬¦å·æ–‡ä»¶ï¼Œç”¨äºæ‰“å°é”™è¯¯çš„ä»£ç è¡Œæ•°
                     {
                         using var streamPdb = File.OpenRead(symbolFile);
                         assembly = assemblyLoadContext.LoadFromStream(stream, streamPdb);
@@ -59,7 +59,7 @@ namespace WebHost
                 }
             });
 
-            businessAssemblies.ForEach(assembly =>//¼ÓÔØÍê³Éºó²ÅÄÜ±éÀú
+            businessAssemblies.ForEach(assembly =>//åŠ è½½å®Œæˆåæ‰èƒ½éå†
             {
                 var types = assembly.GetTypes().Where(t => pluginType.IsAssignableFrom(t) && !t.IsAbstract);
                 foreach (var type in types)
@@ -77,7 +77,7 @@ namespace WebHost
             app.Use((context, next) =>
             {
                 context.Request.EnableRewind();
-                context.Response.AddSecurityHeader();//°²È«ÏìÓ¦Í·
+                context.Response.AddSecurityHeader();//å®‰å…¨å“åº”å¤´
                 return next.Invoke();
             });
             if (_env.IsDevelopment())
@@ -130,21 +130,21 @@ namespace WebHost
             services.AddSysService(_configuration);
             var mvcBuilder = services.AddControllers(configure =>
             {
-                configure.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;//½ûÖ¹C# 8.0 ÑéÖ¤·Ç¿É¿ÕÒıÓÃÀàĞÍ
-                configure.MaxModelBindingCollectionSize = int.MaxValue;//×î´ó°ó¶¨Ä£ĞÍÊı
+                configure.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;//ç¦æ­¢C# 8.0 éªŒè¯éå¯ç©ºå¼•ç”¨ç±»å‹
+                configure.MaxModelBindingCollectionSize = int.MaxValue;//æœ€å¤§ç»‘å®šæ¨¡å‹æ•°
                 configure.Filters.Add<ModelHandleFilter>();
                 configure.Filters.Add<AjaxResultFilter>();
                 configure.Conventions.Add(new ApplicationModelConvention());
             }).ConfigureApiBehaviorOptions(configure =>
             {
-                configure.SuppressModelStateInvalidFilter = true;//½ûÓÃ×Ô¶¯Ä£ĞÍÑéÖ¤ÌáÊ¾£¬ÒÑ¼¯³ÉÔÚModelEncryptFilter
-                configure.SuppressInferBindingSourcesForParameters = true;//½ûÓÃÍÆÀí¹æÔò
+                configure.SuppressModelStateInvalidFilter = true;//ç¦ç”¨è‡ªåŠ¨æ¨¡å‹éªŒè¯æç¤ºï¼Œå·²é›†æˆåœ¨ModelEncryptFilter
+                configure.SuppressInferBindingSourcesForParameters = true;//ç¦ç”¨æ¨ç†è§„åˆ™
             }).AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.Custom();
             });
             //SignalR
-            services.AddSignalR().AddRedis(_configuration).AddNewtonsoftJsonProtocol(configure =>//ÅäÖÃÊ¹ÓÃNewtonsoftJson
+            services.AddSignalR().AddRedis(_configuration).AddNewtonsoftJsonProtocol(configure =>//é…ç½®ä½¿ç”¨NewtonsoftJson
             {
                 configure.PayloadSerializerSettings.Custom(igronNull: true);
             });

@@ -1,4 +1,4 @@
-using Gksyb.Common;
+ï»¿using Gksyb.Common;
 using Gksyb.Common.Quartz.Dtos;
 using Gksyb.Common.Static;
 using Microsoft.Extensions.Caching.Distributed;
@@ -17,7 +17,7 @@ namespace Quartz
         protected bool _isDistributedLock = false;
 
         /// <summary>
-        /// Ëø¶¨³¬Ê±Ê±¼ä µ¥Î»Ãë Ä¬ÈÏÁ½·ÖÖÓ
+        /// é”å®šè¶…æ—¶æ—¶é—´ å•ä½ç§’ é»˜è®¤ä¸¤åˆ†é’Ÿ
         /// </summary>
         protected double Expiry = 2 * 60;
 
@@ -42,34 +42,34 @@ namespace Quartz
                 var isExcute = await distributedCache.GetStringAsync($"{key}{nameof(Expiry)}");
                 if (isExcute == "1")
                 {
-                    _logger.LogInformation(_logPath, $"ÉÏ´ÎÈÎÎñÎ´Íê³É£¬Ìø¹ı±¾´Îµ÷¶È");
+                    _logger.LogInformation(_logPath, $"ä¸Šæ¬¡ä»»åŠ¡æœªå®Œæˆï¼Œè·³è¿‡æœ¬æ¬¡è°ƒåº¦");
                     return;
                 }
                 _isDistributedLock = (_quartzTask.TaskIP ?? "").Split(",").DistinctAndOrderBy().Count() != 1;
-                if (_isDistributedLock)//²»ÊÇµ¥IP£¬·Ö²¼Ê½Ëø´¦Àí
+                if (_isDistributedLock)//ä¸æ˜¯å•IPï¼Œåˆ†å¸ƒå¼é”å¤„ç†
                 {
                     var address = HttpContext.AddressList.ToStr(",").SubStr(0, 500, true); ;
                     var value = await DistributedLockHelper.LockQueryAsync(key);
                     if (!string.IsNullOrWhiteSpace(value) && value != address)
                     {
-                        _logger.LogInformation(_logPath, $"ÈÎÎñÒÑ±»{value}Ëø¶¨");
-                        return;//ÒÑ±»ÆäËû·şÎñÆ÷Ëø¶¨
+                        _logger.LogInformation(_logPath, $"ä»»åŠ¡å·²è¢«{value}é”å®š");
+                        return;//å·²è¢«å…¶ä»–æœåŠ¡å™¨é”å®š
                     }
                     var nextFireTimeUtc = context.NextFireTimeUtc ?? context.FireTimeUtc.AddSeconds(Expiry);
                     var expiry = (nextFireTimeUtc - context.FireTimeUtc).TotalSeconds * 3;
                     if (expiry < Expiry) expiry = Expiry;
                     expiry *= 1000;
-                    //Ê×´Îµ÷¶È£¬ÎªÁËÑÓĞøÖ®Ç°IP£¬ÏÈËø¶¨Ö®Ç°IP
+                    //é¦–æ¬¡è°ƒåº¦ï¼Œä¸ºäº†å»¶ç»­ä¹‹å‰IPï¼Œå…ˆé”å®šä¹‹å‰IP
                     var isChange = context.PreviousFireTimeUtc == null && !string.IsNullOrWhiteSpace(_quartzTask.LastRunIP) && _quartzTask.LastRunIP != address;
                     var runIP = isChange ? _quartzTask.LastRunIP : address;
-                    if (!await DistributedLockHelper.LockExtendAsync(key, runIP, expiry) && !await DistributedLockHelper.LockTakeAsync(key, runIP, expiry))//¼ÓÈëËø
+                    if (!await DistributedLockHelper.LockExtendAsync(key, runIP, expiry) && !await DistributedLockHelper.LockTakeAsync(key, runIP, expiry))//åŠ å…¥é”
                     {
-                        _logger.LogInformation(_logPath, $"Ëø¶¨ÈÎÎñ{key}:{runIP}Ê§°Ü");
+                        _logger.LogInformation(_logPath, $"é”å®šä»»åŠ¡{key}:{runIP}å¤±è´¥");
                         return;
                     }
                     if (isChange)
                     {
-                        _logger.LogInformation(_logPath, $"Ê×´Îµ÷¶ÈÌø¹ı£¬µ±Ç°{address}£ºÑÓĞø{runIP}");
+                        _logger.LogInformation(_logPath, $"é¦–æ¬¡è°ƒåº¦è·³è¿‡ï¼Œå½“å‰{address}ï¼šå»¶ç»­{runIP}");
                         return;
                     }
                 }
@@ -105,13 +105,13 @@ namespace Quartz
         }
 
         /// <summary>
-        /// Ö´ĞĞjob
+        /// æ‰§è¡Œjob
         /// </summary>
         /// <returns></returns>
         public abstract Task Excute();
 
         /// <summary>
-        ///´íÎó´¦Àí
+        ///é”™è¯¯å¤„ç†
         /// </summary>
         /// <returns></returns>
         protected virtual async Task ErrorHandle(Exception ex)
