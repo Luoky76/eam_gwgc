@@ -38,13 +38,6 @@
                             },
                             {
                                 display: "物料名称", name: "SP_NAME", width: 150, type: "text", align: "left", editor: { type: "text", }, validate: { required: true },
-                                //totalSummary:
-                                //{
-                                //    render: function (suminf, column, cell) {
-                                //        return '<div>合计</div>';
-                                //    },
-                                //    align: 'center'
-                                //}
                             },
                             {
                                 display: "数量", name: "COUNT", type: "number", width: 80, editor: {
@@ -53,11 +46,6 @@
                                         editParm["YG_MONEY"] = ((editParm.YG_PRICE || 0) * value).toFixed(2);
                                     }
                                 }, validate: { required: true },
-                                //totalSummary:
-                                //{
-                                //    type: 'sum',
-                                //    align: 'center'
-                                //}
                             },
                             { display: "计量单位", name: "UNIT", width: 150, type: "select", editor: { type: 'select', data: me.unitData } },
                             { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", align: "left", editor: { type: "text", } },
@@ -76,13 +64,7 @@
                             },
                             {
                                 display: "预估金额(元)", name: "YG_MONEY", width: 120, type: "number",
-                                //totalSummary:
-                                //{
-                                //    type: 'sum',
-                                //    align: 'center'
-                                //}
                             },
-                            //{ display: "预估库龄(月)", name: "STORE_MONTH", width: 120, type: "number", editor: { type: 'number' } },
                             {
                                 display: "是否协议", name: "IS_XY", dbname: "IS_XY", width: 80, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
                             },
@@ -329,13 +311,13 @@
             sure: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                var ids = '';
                 if (selecteds.length > 0) {
+                    var ids = [];
                     for (let row of selecteds) {
                         if (row.AUDITING_CHECK == "1") {
                             LG.tip("有数据已确认，无法变更！");
                         }
-                        ids += row.SPDET_ID + ",";
+                        ids.push(row.SPDET_ID);
                     }
 
                     if (ids != '') {
@@ -343,7 +325,7 @@
                             jsToken: true,
                             url: me.rootPath + 'SubmitCheckList',
                             loading: '正在保存中...',
-                            data: { "ids": ids },
+                            data: { "sids": ids },
                             success: function () {
                                 LG.showSuccess('确认成功');
                                 me.grid.isDataChanged = false;
@@ -353,11 +335,7 @@
                                 LG.showError(message);
                             }
                         });
-
-
-
                     }
-
                 }
                 else {
                     LG.tip('请选择行!');
