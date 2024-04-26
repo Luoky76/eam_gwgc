@@ -74,6 +74,11 @@ namespace WebHost
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            var pathBase = _configuration.GetValue<string>("Kestrel:PathBase");
+            if (!string.IsNullOrWhiteSpace(pathBase))
+            {
+                app.UsePathBase($"/{pathBase.TrimStart('/')}");
+            }
             app.Use((context, next) =>
             {
                 context.Request.EnableRewind();
