@@ -249,8 +249,20 @@
                         ]
                     },
                     fields: [
-                        { display: "采购申请单号", name: "APPLY_NO", width: 200, type: "text" },
-                        { display: "物资名称", name: "SP_NAME", width: 200, type: "text" }
+                        {
+                            display: "通用搜索",
+                            name: "_search_all",
+                            hideLabel: true,
+                            filter: [
+                                { op: "like", field: "APPLY_NO", type: "string" },
+                                { op: "like", field: "SP_CODE", type: "string" },
+                                { op: "like", field: "SP_NAME", type: "string" },
+                                { op: "like", field: "SP_SIZE", type: "string" },
+                                { op: "like", field: "PRODUCE", type: "string" },
+                                { op: "like", field: "UNIT", type: "string" },
+                                { op: "like", field: "TYPE_NAME", type: "string" }
+                            ],
+                        }
                     ],
                     callback: callback
                 }

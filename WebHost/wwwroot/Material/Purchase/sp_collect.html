@@ -43,8 +43,17 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditingData } },
-                            { display: "申请单号", name: "_search_COLLECT_CODE", dbname: "COLLECT_CODE", newline: false, upper: true, type: "text", options: {} },
+                            {
+                                display: "通用搜索",
+                                name: "_search_all",
+                                hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "COLLECT_CODE", type: "string" },
+                                    { op: "like", field: "COLLECT_USER", type: "string" },
+                                    { op: "like", field: "DEPT_NAME", type: "string" },
+                                    { op: "like", field: "MEMO", type: "string" }
+                                ],
+                            },
                         ]
                     },
                     grid: {
@@ -58,7 +67,6 @@
                             { display: "申请单号", name: "COLLECT_CODE", width: 180, type: "text" },
                             { display: "采购人", name: "COLLECT_USER", width: 100, type: "text", },
                             { display: "采购部门", name: "DEPT_NAME", width: 100, type: "text", },
-                            { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text", },
                             { display: "申请日期", name: "COLLECT_DATE", width: 120, type: "date", format: "yyyy-MM-dd", },
                             { display: "备注", name: "MEMO", minWidth: 120, maxWidth: 200, type: "text", editor: { type: 'text' }, },
                             { display: "主键", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
