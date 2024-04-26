@@ -631,34 +631,6 @@ namespace EAM.Material.Services
         {
             await Task.CompletedTask;
         }
-        private async Task AfterSaveRequest(List<SP_COLLECT_REQUEST> added, List<SP_COLLECT_REQUEST> updated, List<SP_COLLECT_REQUEST> deleted)
-        {
-            var applyId = added.Count == 0 ? (updated.Count == 0 ? deleted.Select(c => c.COLLECT_ID).FirstOrDefault() : updated.Select(c => c.COLLECT_ID).FirstOrDefault()) : added.Select(c => c.COLLECT_ID).FirstOrDefault();
-            await Task.CompletedTask;
-            if (!string.IsNullOrEmpty(applyId))
-            {
-                var data = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_ID == applyId)
-                    .Select(t => new
-                    {
-                        t.COLLECT_DET_ID,
-                        t.COLLECT_MONEY,
-                        t.TAX_MONEY,
-                        t.NOTAX_MONEY,
-                        t.CHECK_NUM
-                    }).ToList();
-
-                var COLLECT_PRICE = data.Sum(t => t.COLLECT_MONEY) ?? 0;
-                var TAX_MONEY = data.Sum(t => t.TAX_MONEY) ?? 0;
-                var NOTAX_MONEY = data.Sum(t => t.NOTAX_MONEY) ?? 0;
-                await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == applyId,
-                    x => new SP_COLLECT
-                    {
-                        COLLECT_PRICE = COLLECT_PRICE,
-                        TAX_MONEY = TAX_MONEY,
-                        NOTAX_MONEY = NOTAX_MONEY
-                    });
-            }
-        }
 
         /// <summary>
         /// 待请购的采购申请明细
@@ -667,9 +639,12 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> SpApplyListAsync(GridRequest request)
         {
+            var request_det_ids = _dbContext.Query<SP_COLLECT_REQUEST>().Select(x => x.REQUEST_DET_ID)
+                .ToList();
+
             return await _dbContext.Query<SP_APPLY_DETAIL>()
                 .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) => a.SP_STATUS == "20" && a.AUDITING_CHECK == "1")
+                .Where((a, b) => a.AUDITING_CHECK == "1" && !request_det_ids.Contains(a.SPDET_ID))
                 .Select((a, b) => new
                 {
                     a.SPDET_ID,
@@ -679,7 +654,9 @@ namespace EAM.Material.Services
                     a.SP_SIZE,
                     a.PRODUCE,
                     a.UNIT,
+                    a.TYPE_ID,
                     a.TYPE_NAME,
+                    a.TYPE_CODE,
                     a.COUNT,
                     b.APPLY_NO,
                     b.APPLY_USER,
