@@ -92,7 +92,7 @@ namespace WebHost
             if (string.IsNullOrWhiteSpace(_env.WebRootPath))
             {
                 var rootPath = Directory.GetCurrentDirectory();
-                var index = rootPath.IndexOf("\\bin\\");
+                var index = rootPath.IndexOf($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}");
                 _env.WebRootPath = Path.Combine(rootPath[..index], "wwwroot");
                 _env.WebRootFileProvider = new PhysicalFileProvider(_env.WebRootPath);
             }
