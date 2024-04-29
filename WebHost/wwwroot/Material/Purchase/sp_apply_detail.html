@@ -26,6 +26,9 @@
         var business = {
             rootPath:'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             dialog: null,
             dialogData: null,
             Sid: null,
@@ -309,8 +312,8 @@
                     dataValue += a.SP_ID + ",";
                 });
                 $.ligerDialog.open({
-                    width: 1080,
-                    height: 600,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: "挑选物资编码",
                     url: "../Base/base_spcatalogPop.html?MenuNo=" + me.MenuNo,

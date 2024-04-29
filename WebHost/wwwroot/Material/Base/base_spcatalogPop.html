@@ -58,7 +58,7 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: '查询', name: "_search_SEARCH", dbname: "SEARCH", upper: false,op: "like", type: "text", width: 200 },
+                            { display: '查询', hideLabel: true, name: "_search_SEARCH", dbname: "SEARCH", upper: false, op: "like", type: "text", width: 200 },
                             { display: "是否禁用", name: "_search_IS_CANCEL", dbname: "IS_CANCEL", newline: false, type: "hidden" },
                             { display: "上一节点id", name: "_search_TYPE_ID", dbname: "TYPE_ID", op: "startwith", type: "hidden", options: {} }
                         ]
@@ -86,7 +86,6 @@
                             { display: "已选物料编码", name: "SP_CODE", width: 80, type: "string", align: "left" },
                             { display: "已选物料", name: "SP_NAME", width: 80, type: "string", align: "left" },
                             { display: '型号规格', name: "SP_SIZE", width: 80, type: "text", align: "left" },
-                            /*   { display: '品牌、厂家', name: "PRODUCE", width: 80, type: "text", align: "left" }*/
                             { display: '计量单位', name: "UNIT", width: 80, type: "text", align: "left" },
                         ]
                     }

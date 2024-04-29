@@ -738,6 +738,7 @@ namespace EAM.Material.Services
         private async Task BeforeAddDet(SP_APPLY_DETAIL entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
+
             entity.APPLY_ID = string.IsNullOrEmpty(entity.APPLY_ID) ? _rentID : entity.APPLY_ID;
             entity.SPDET_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();
@@ -745,6 +746,7 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
             entity.SP_STATUS = "10";//物资申请
+            entity.AUDITING_CHECK = "0";    //需求确认状态
 
             //获取库存数量
             entity.STORE_NUM = await GetStoreNumAsync(entity.SP_ID);
