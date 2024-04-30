@@ -27,6 +27,8 @@ namespace EAM.Material.Services
         public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
             _dbContext = dbContext;
+            //添加船舶物资需求的软删除字段过滤
+            _dbContext.HasQueryFilter<SP_APPLY_DETAIL>(x => x.IS_DELETED != "1");
             _comboxDataService = comboxDataService;
             _userSession = userSession;
         }
@@ -172,68 +174,7 @@ namespace EAM.Material.Services
                 if (mainSuccess)  //主表是否保存成功
                 {
                     requestdet ??= new SaveRequest<SP_APPLY_DETAIL>();
-
-                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
-                      c => new
-                      {
-                          c.SPDET_ID,
-                          c.APPLY_ID,
-                          c.SP_ID,
-                          c.SP_CODE,
-                          c.SP_NAME,
-                          c.SP_SIZE,
-                          c.PRODUCE,
-                          c.UNIT,
-                          c.COUNT,
-                          c.STORE_NUM,
-                          c.YG_PRICE,
-                          c.YG_MONEY,
-                          c.LAST_PROVIDERID,
-                          c.LAST_PROVIDER,
-                          c.TYPE_ID,
-                          c.TYPE_CODE,
-                          c.TYPE_NAME,
-                          c.IS_STOP,
-                          c.MEMO,
-                          c.IS_GEN,
-                          c.CREATE_USERID,
-                          c.CREATEDATE,
-                          c.MODIFY_USERID,
-                          c.MODIFYDATE,
-                          c.TENANT_ID,
-                          c.PURTYPE_ID,
-                          c.PURTYPE_NAME,
-                          c.IS_CANCEL,
-                          c.NO_PRODUCE,
-                          c.COMP_CODE,
-                          c.STORE_MONTH,
-                          c.PUR_PERIOD,
-                          c.ONROAD_NUM,
-                          c.PRO_ID,
-                          c.PRO_DET_ID,
-                          c.PERIOD,
-                          c.IS_XY,
-                          c.WARRANTY,
-                          c.DELIVERY_CODE,
-                          c.XHZQ,
-                          c.SYDD,
-                          c.CGFS,
-                          c.SYDDDEPTID,
-                          c.COUNT2,
-                          c.CGFS2,
-                          c.SP_CODE2,
-                          c.COMP_CODE2,
-                          c.SP_NAME2,
-                          c.SYDD2,
-                          c.SYDDDEPTID2,
-                          c.SP_SIZE2,
-                          c.PRODUCE2,
-                          c.UNIT2,
-                          c.ZKCS,
-                          c.QYKCSL
-                      },
-                     c => a => a.SPDET_ID == c.SPDET_ID, BeforeAddDet, BeforeUpdateDet, null, false, null, AfterSaveDet);
-
+                    execResult = await DetailSave(requestdet);
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
                 if (mainSuccess && detSuccess)
@@ -571,7 +512,13 @@ namespace EAM.Material.Services
                     c.SP_CODE
                 },
                 c => a => a.SPDET_ID == c.SPDET_ID
-                , null, null, null, false, null, null);
+                , null, null, beforeDeleteApplyDetail, true, null, null);
+        }
+
+        private Task beforeDeleteApplyDetail(SP_APPLY_DETAIL entity)
+        {
+            entity.IS_DELETED = "1";
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -719,16 +666,6 @@ namespace EAM.Material.Services
                     c.SYDD,
                     c.CGFS,
                     c.SYDDDEPTID,
-                    c.COUNT2,
-                    c.CGFS2,
-                    c.SP_CODE2,
-                    c.COMP_CODE2,
-                    c.SP_NAME2,
-                    c.SYDD2,
-                    c.SYDDDEPTID2,
-                    c.SP_SIZE2,
-                    c.PRODUCE2,
-                    c.UNIT2,
                     c.ZKCS,
                     c.QYKCSL
                 },

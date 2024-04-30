@@ -159,6 +159,18 @@
                 me.loadToolbar();
                 me.bindGridEvent();
             },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
@@ -173,6 +185,7 @@
                             me.sure();
                             break;
                         case "delete":
+                            if (!me.isSelectSingleRow()) break;
                             me.delete();
                             break;
                         case "save":
@@ -196,21 +209,6 @@
             },
             add: function () { //新增
                 var me = this;
-                //$.ligerDialog.open({
-                //    width: me.detailWidth,
-                //    height: me.detailHeight,
-                //    allowClose: true,
-                //    title: '[新增]',
-                //    url: "view-detail.html",
-                //    isHidden: false,
-                //    showMax: false,
-                //    showToggle: false,
-                //    showMin: false,
-                //    isResize: true,
-                //    slide: false,
-                //    onClosed: me.reload.bind(me),
-                //    data: { "sid": null }
-                //});
                 me.grid.addEditRow({}, true);
             },
             save: function () { //保存
@@ -246,19 +244,12 @@
             delete: function () { //删除
                 var me = this;
                 if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
+                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (confirm) {
+                            me.grid.deleteSelectedRow();
+                            me.save();
+                        }
+                    });
                 }
             },
             bindGridEvent: function () {
