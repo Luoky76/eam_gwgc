@@ -141,7 +141,7 @@ namespace Gksyb.Common.TCP
                     var client = _clients[i];
                     if (client.Socket?.Connected == true)
                     {
-                        if (ClientTimeOut < 0) continue;
+                        if (ClientTimeOut <= 0) continue;
                         if ((client.ActieveTime ?? DateTime.MinValue).AddSeconds(ClientTimeOut) > now) continue;
                     }
                     RemoveClient(client);
@@ -185,11 +185,18 @@ namespace Gksyb.Common.TCP
         /// </summary>
         private void ListenAccept(Socket listener, SocketAsyncEventArgs e)
         {
-            e.AcceptSocket = null;
-            if (_disposed) return;
-            if (listener?.AcceptAsync(e) == false)
+            try
             {
-                ListenAccept(listener, e);
+                e.AcceptSocket = null;
+                if (_disposed) return;
+                if (listener?.AcceptAsync(e) == false)
+                {
+                    ListenAccept(listener, e);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(_logPath, ex.ToString());
             }
         }
 
@@ -228,16 +235,7 @@ namespace Gksyb.Common.TCP
             finally
             {
                 if (doNext)
-                {
-                    try
-                    {
-                        ListenAccept(listener, e);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError(_logPath, ex.ToString());
-                    }
-                }
+                    ListenAccept(listener, e);
             }
         }
 
@@ -295,13 +293,13 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 监听下一次数据接收
         /// </summary>
-        private static void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
+        private void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
         {
             client.ReceiveBuffer = new byte[client.BufferLength];
             e.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
             if (client.Socket?.ReceiveAsync(e) == false)
             {
-                ListenReceive(client, e);
+                IO_Completed(client.Socket, e);
             }
         }
 
@@ -365,7 +363,7 @@ namespace Gksyb.Common.TCP
             var buffer = new byte[e.BytesTransferred];
             Array.Copy(client.ReceiveBuffer, 0, buffer, 0, e.BytesTransferred);
             client.ReceiveBuffer = buffer;
-            _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{Encoding.GetString(client.ReceiveBuffer)}");
+            _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{BitConverter.ToString(client.ReceiveBuffer)}");
             var result = SocketError.Success;
             if (client.Packet != null)
             {
@@ -431,7 +429,7 @@ namespace Gksyb.Common.TCP
                 var client = _clients.FindLast(c => c.ID == id);
                 var result = OnSend?.Invoke(client, buffer, _listener) ?? SocketError.Success;
                 if (result != SocketError.Success) return false;
-                _logger?.LogInformation(_logPath, $"准备向{client.ID}发送：{Encoding.GetString(buffer)}");
+                _logger?.LogInformation(_logPath, $"准备向{id}发送：{BitConverter.ToString(buffer)}");
                 var times = 0;
                 if (retry < 1) retry = 1;
                 while (times < retry)

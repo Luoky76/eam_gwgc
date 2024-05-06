@@ -16,19 +16,26 @@ namespace Gksyb.Common.TCP
         private LogPath _logPath;
         private ClientInfo _client;
         private IPEndPoint _server;
+
+        /// <summary>
+        /// 标识
+        /// </summary>
+        public string ID { get; set; }
+
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
         /// <summary>
         /// 断开连接，重连间隔（毫秒) null表示不重连
         /// </summary>
-        public int? ReConnectTime = 3000;
+        public int? ReConnectTime { get; set; } = 3000;
 
         /// <summary>
         /// TCP客户端
         /// </summary>
         /// <param name="logPath">路径</param>
-        public BaseTcpClient(LogPath logPath = null)
+        public BaseTcpClient(string id = null, LogPath logPath = null)
         {
+            ID = id;
             _logPath = logPath;
             _logger = HttpContext.RequestServices.GetRequiredService<ILogger<BaseTcpClient>>();
         }
@@ -56,10 +63,18 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 连接
         /// </summary>
-        public void Connect(string ip, int port)
+        public void Connect(string ip, int port, bool reConnect = true)
         {
             _logPath ??= new LogPath($"TcpClient-{ip}-{port}");
-            Connect(new IPEndPoint(IPAddress.Parse(ip), port));
+            try
+            {
+                Connect(new IPEndPoint(IPAddress.Parse(ip), port));
+            }
+            catch (Exception)
+            {
+                if (!reConnect) throw;
+                ReConnect();
+            }
         }
 
         /// <summary>
@@ -113,13 +128,20 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 监听下一次数据接收
         /// </summary>
-        private static void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
+        private void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
         {
-            client.ReceiveBuffer = new byte[client.BufferLength];
-            e.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
-            if (client.Socket?.ReceiveAsync(e) == false)
+            try
             {
-                ListenReceive(client, e);
+                client.ReceiveBuffer = new byte[client.BufferLength];
+                e.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
+                if (client.Socket?.ReceiveAsync(e) == false)
+                {
+                    IO_Completed(client.Socket, e);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(_logPath, ex.ToString());
             }
         }
 
@@ -169,16 +191,7 @@ namespace Gksyb.Common.TCP
             finally
             {
                 if (doNext)
-                {
-                    try
-                    {
-                        ListenReceive(client, e);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError(_logPath, ex.ToString());
-                    }
-                }
+                    ListenReceive(client, e);
             }
         }
 
@@ -191,7 +204,7 @@ namespace Gksyb.Common.TCP
             var buffer = new byte[e.BytesTransferred];
             Array.Copy(client.ReceiveBuffer, 0, buffer, 0, e.BytesTransferred);
             client.ReceiveBuffer = buffer;
-            _logger?.LogInformation(_logPath, $"接收来自{_server}的数据：{Encoding.GetString(client.ReceiveBuffer)}");
+            _logger?.LogInformation(_logPath, $"接收来自{_server}的数据：{BitConverter.ToString(client.ReceiveBuffer)}");
             var result = SocketError.Success;
             if (client.Packet != null)
             {
@@ -250,7 +263,7 @@ namespace Gksyb.Common.TCP
                 }
                 var result = OnSend?.Invoke(_client, buffer) ?? SocketError.Success;
                 if (result != SocketError.Success) return false;
-                _logger?.LogInformation(_logPath, $"准备向{_server}发送：{Encoding.GetString(buffer)}");
+                _logger?.LogInformation(_logPath, $"准备向{_server}发送：{BitConverter.ToString(buffer)}");
                 if (await _client.Socket?.SendAsync(buffer, SocketFlags.None) == buffer.Length)
                 {
                     _client.ActieveTime = DateTime.Now;

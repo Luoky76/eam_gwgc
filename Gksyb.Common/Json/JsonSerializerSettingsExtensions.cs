@@ -56,7 +56,7 @@ namespace Newtonsoft.Json
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                var rawValue = $"{value:#0.#################}";
+                var rawValue = value.ToString();
                 if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
                 writer.WriteRawValue(rawValue);
             }

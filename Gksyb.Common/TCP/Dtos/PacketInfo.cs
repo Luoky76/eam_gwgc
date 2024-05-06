@@ -17,17 +17,26 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 包头
         /// </summary>
-        public int? PackHead { get; set; }
-
-        /// <summary>
-        /// 包头长度
-        /// </summary>
-        public int PackHeadSize { get; set; }
+        public byte[] PackHead { get; set; }
 
         /// <summary>
         /// 整个包长度（包含包头和包尾）
         /// </summary>
         public Func<IEnumerable<byte>, int> GetPackLength { get; set; }
+
+        /// <summary>
+        /// 是否同包头一致
+        /// </summary>
+        public bool IsEqualPackHead(int index)
+        {
+            var size = PackHead.Length;
+            for (int i = 0; i < size; i++)
+            {
+                if (PackHead[i] != PackBuffer[index + i])
+                    return false;
+            }
+            return true;
+        }
 
         /// <summary>
         /// 粘拆包处理
@@ -40,13 +49,13 @@ namespace Gksyb.Common.TCP
                 PackBuffer.AddRange(data);
                 var length = PackBuffer.Count;
                 var index = 0;
+                var size = PackHead.Length;
                 for (var i = 0; i < length; i++)
                 {
-                    if ((i + PackHeadSize - 1) >= length) break;
-                    var bytes = PackBuffer.Skip(i).Take(PackHeadSize).ToArray();
-                    if (BitConverter.ToUInt32(bytes) == PackHead)
+                    if ((i + size - 1) >= length) break;
+                    if (IsEqualPackHead(i))
                     {
-                        var l = GetPackLength(PackBuffer.Skip(i + PackHeadSize));//包长度
+                        var l = GetPackLength(PackBuffer.Skip(i + size));//包长度
                         var len = l + i;
                         if (len > length) break;
                         var handleResult = handling(PackBuffer.GetRange(i, l).ToArray());
