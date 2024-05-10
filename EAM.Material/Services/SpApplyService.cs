@@ -28,7 +28,7 @@ namespace EAM.Material.Services
         {
             _dbContext = dbContext;
             //添加船舶物资需求的软删除字段过滤
-            _dbContext.HasQueryFilter<SP_APPLY_DETAIL>(x => x.IS_DELETED != "1");
+            _dbContext.HasQueryFilter<SP_APPLY_DETAIL>(x => x.IS_DELETED != "1" || x.IS_DELETED == null);
             _comboxDataService = comboxDataService;
             _userSession = userSession;
         }
