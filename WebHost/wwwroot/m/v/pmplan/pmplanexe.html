@@ -90,18 +90,18 @@
             auditingData: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
             stdLevel: [{ "ID": "临时保养", "TEXT": "临时保养" }, { "ID": "定期保养", "TEXT": "定期保养" }],
-            planMonth: [{ "ID": "1", "TEXT": "一月" }, { "ID": "2", "TEXT": "二月" }, { "ID": "3", "TEXT": "三月" }, { "ID": "4", "TEXT": "四月" }, { "ID": "5", "TEXT": "五月" }
-                , { "ID": "6", "TEXT": "六月" }, { "ID": "7", "TEXT": "七月" }, { "ID": "8", "TEXT": "八月" }, { "ID": "9", "TEXT": "九月" }, { "ID": "10", "TEXT": "十月" }
-                , { "ID": "11", "TEXT": "十一月" }, { "ID": "12", "TEXT": "十二月" }],
+            planMonth: [{ "ID": "1月", "TEXT": "1月" }, { "ID": "2月", "TEXT": "2月" }, { "ID": "3月", "TEXT": "3月" }, { "ID": "4月", "TEXT": "4月" }, { "ID": "5月", "TEXT": "5月" }
+                , { "ID": "6月", "TEXT": "6月" }, { "ID": "7月", "TEXT": "7月" }, { "ID": "8月", "TEXT": "8月" }, { "ID": "9月", "TEXT": "9月" }, { "ID": "10月", "TEXT": "10月" }
+                , { "ID": "11月", "TEXT": "11月" }, { "ID": "12月", "TEXT": "12月" }],
             //主列表
             ListDict: [
                 { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: false, isPrimaryKey: true, isShow: false },
                 { display: "记录状态", name: "AUDITING_EXE" },
-                { display: "保养实施单号", name: "EXE_CODE" },
-                { display: "设备编号", name: "DEVICE_CODE" },
+                { display: "保养计划单号", name: "PLAN_CODE" },
+                //{ display: "保养实施单号", name: "EXE_CODE" },
+                //{ display: "设备编号", name: "DEVICE_CODE" },
                 { display: "设备名称", name: "DEVICE_NAME" },
                 { display: "维保部门", name: "SHIP_DEPT" },
-                { display: "保养计划单号", name: "PLAN_CODE" },
             ],
             //获取主列表的数据
             getData: function () {
@@ -314,14 +314,14 @@
         var pmPlanexeInfo = [
             { display: "主键", name: "EXE_ID", PrimaryKey: "EXE_ID", readOnly: true, isPrimaryKey: true, isShow: false },
             { display: "记录状态", name: "AUDITING_EXE", readOnly: true },
-            { display: "保养实施单号", name: "EXE_CODE", readOnly: true },
+            //{ display: "保养实施单号", name: "EXE_CODE", readOnly: true },
             { display: "保养计划单号", name: "PLAN_CODE", readOnly: true },
             { display: "保养来源", name: "SOURCE", Option: business.bySource },
             { display: "设备名称", name: "DEVICE_ID", Option: business.deviceSelect, readOnly: true },
-            { display: "设备编号", name: "DEVICE_CODE", readOnly: true },
-            { display: "设备型号", name: "DEVICE_TYPE", readOnly: true },
-            { display: "资产编号", name: "ASSET_CODE", readOnly: true },
-            { display: "安装地点", name: "INSTALL_SITE", readOnly: true },
+            //{ display: "设备编号", name: "DEVICE_CODE", readOnly: true },
+            //{ display: "设备型号", name: "DEVICE_TYPE", readOnly: true },
+            //{ display: "资产编号", name: "ASSET_CODE", readOnly: true },
+            //{ display: "安装地点", name: "INSTALL_SITE", readOnly: true },
             { display: "维护类别", name: "PM_TYPE", Option: business.pmType, readOnly: true },
             { display: "计划完成时间", name: "PLAN_FINISH_TIME", readOnly: true },
             { display: "计划编制人", name: "EDIT_USER", readOnly: true },
@@ -917,10 +917,12 @@
                                     },
                                     url: 'Device/PmInfo/GetPlandetFile',
                                     success: function (data) {
-                                        
+                                        //删除最后一次出现的</ul>
+                                        var substr = "</ul>";
+                                        var pattern = new RegExp(substr + "(?!.*" + substr + ")", "s");
+                                        str = str.replace(pattern, "");
+
                                         //材料附件
-                                        str = str.replace("</ul>","");
-                                        
                                         data.Data[0].ATTACH_EXE_FILE.split(",").forEach(function (item) {
                                             //判断是否是图片
                                             if (item) {  
@@ -1002,6 +1004,22 @@
                                                 }
                                             }
                                         });
+                                        app.smartSelect.create({
+                                            el: '.STD_LEVEL',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.WORK_STATE',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.MAINT_CYCLE',
+                                            searchbar: false
+                                        });
+                                        app.smartSelect.create({
+                                            el: '.PLAN_MONTH',
+                                            searchbar: false
+                                        });
                                     }  
                                     
                                 });                            
@@ -1017,7 +1035,7 @@
             { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE" },
             { display: "备件品种名称", name: "SP_NAME" },
-            { display: "备件型号", name: "SP_TYPE" },
+            { display: "型号规格", name: "SP_SIZE" },
         ];
         //创建物资明细列表html
         function CreateWuziList(ID) {
@@ -1060,7 +1078,7 @@
             { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE", readOnly: true },
             { display: "备件品种名称", name: "SP_NAME", readOnly: true },
-            { display: "备件型号", name: "SP_TYPE", readOnly: true },
+            { display: "型号规格", name: "SP_SIZE", readOnly: true },
             { display: "仓库名称", name: "HOUSE_NAME", readOnly: true },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true },
             { display: "库存数量", name: "STORE_NUM", readOnly: true },
@@ -1075,7 +1093,7 @@
             { display: "主键", name: "PLAN_SP_ID", PrimaryKey: "PLAN_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE", readOnly: true },
             { display: "备件品种名称", name: "SP_NAME", validate: { required: true }, Option: SpList, Searched: true },
-            { display: "备件型号", name: "SP_TYPE", readOnly: true },
+            { display: "型号规格", name: "SP_SIZE", readOnly: true },
             { display: "仓库名称", name: "HOUSE_NAME", readOnly: true },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true },
             { display: "库存数量", name: "STORE_NUM", readOnly: true },
@@ -1210,7 +1228,7 @@
                             var da = SpOrList.find((va) => va.SP_NAME == split[0] && va.NUM == split[1]);
                             if (!currentSet.has(da.STORE_ID)) {
                                 da.STORE_NUM = da.NUM;
-                                da.SP_TYPE = da.SP_SIZE;
+                                da.SP_SIZE = da.SP_SIZE;
                                 da.STORE_ID = da.STORE_ID;
                                 da.HOUSE_NAME = da.HOUSE_NAME;
                                 da.STOCK_NAME = da.STOCK_NAME;

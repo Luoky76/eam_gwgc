@@ -87,18 +87,18 @@ namespace Gksyb.Model
         public string ASSETNO { get; set; }
 
         /// <summary>
-        /// 品牌
+        /// 品牌、厂家
         /// </summary>
-        [Description("品牌")]
+        [Description("品牌、厂家")]
         [Column(DbType = DbType.AnsiString)]
-        public string BRAND { get; set; }
+        public string PRODUCE { get; set; }
 
         /// <summary>
-        /// 型号
+        /// 型号规格
         /// </summary>
-        [Description("型号")]
+        [Description("型号规格")]
         [Column(DbType = DbType.AnsiString)]
-        public string ASSET_TYPE { get; set; }
+        public string ASSET_SIZE { get; set; }
 
         /// <summary>
         /// 序列号

@@ -1,4 +1,5 @@
-﻿using EAM.Material.DTO;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
@@ -169,5 +170,45 @@ namespace EAM.Material.Controllers
             return await _service.ApplyDetFlowAsync(SPDET_ID);
         }
         #endregion
+
+
+
+        /// <summary>
+        /// 获取物资确认明细表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult<GridData>> GetCheckListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.GetCheckListAsync(request), "成功");
+        }
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DETAIL> request)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.SaveCheckList(request);
+        }
+
+        /// <summary>
+        /// 物资需求确认提交
+        /// </summary>
+        /// <param name="sids">明细表主键数组</param>
+        /// <returns></returns>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> SubmitCheckList(List<string> sids)
+        {
+            return await _service.SubmitCheckList(sids);
+        }
+
     }
 }

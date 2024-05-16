@@ -80,9 +80,9 @@ namespace Gksyb.Model
         public decimal? OTHERSTOP { get; set; }
 
         /// <summary>
-        /// 淡水日耗
+        /// 淡水消耗
         /// </summary>
-        [Description("淡水日耗")]
+        [Description("淡水消耗")]
         public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
@@ -98,21 +98,21 @@ namespace Gksyb.Model
         public decimal? STOCK { get; set; }
 
         /// <summary>
-        /// 主机日耗
+        /// 主机消耗
         /// </summary>
-        [Description("主机日耗")]
+        [Description("主机消耗")]
         public decimal? MASTER { get; set; }
 
         /// <summary>
-        /// 辅机日耗
+        /// 辅机消耗
         /// </summary>
-        [Description("辅机日耗")]
+        [Description("辅机消耗")]
         public decimal? AUXILIARY { get; set; }
 
         /// <summary>
-        /// 泵机日耗
+        /// 泵机消耗
         /// </summary>
-        [Description("泵机日耗")]
+        [Description("泵机消耗")]
         public decimal? PUMP { get; set; }
 
         /// <summary>
@@ -134,9 +134,9 @@ namespace Gksyb.Model
         public decimal? STOCK2 { get; set; }
 
         /// <summary>
-        /// 滑油日耗
+        /// 滑油消耗
         /// </summary>
-        [Description("滑油日耗")]
+        [Description("滑油消耗")]
         public decimal? LUBRICATE { get; set; }
 
         /// <summary>

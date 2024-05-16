@@ -202,11 +202,20 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeAdd(BUILD_COUNT entity)
         {
-            var card = _dbContext.Query<DEVICE_CARD>()
+            //若实体无船舶信息，则根据登录用户部门查找船舶
+            if (entity.DEVICE_ID.IsNullOrEmpty())
+            {
+                var card = _dbContext.Query<DEVICE_CARD>()
                 .Select(b => new { b.DEVICE_NAME, b.DEVICE_ID, b.DEPT_ID })
                 .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
-            entity.DEVICE_ID = card.DEVICE_ID;
-            entity.DEVICE_NAME = card.DEVICE_NAME;
+                if (card == null)
+                {
+                    throw new MessageException("未找到船舶信息！");
+                }
+                entity.DEVICE_ID = card.DEVICE_ID;
+                entity.DEVICE_NAME = card.DEVICE_NAME;
+            }
+
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
 
             await Calc(entity);

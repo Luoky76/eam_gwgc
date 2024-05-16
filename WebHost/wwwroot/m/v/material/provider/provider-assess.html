@@ -96,7 +96,6 @@
                         var str = '';
                         for (var i = 0; i < me.list.length; i++) {
                             var sid = me.list[i].ASSESS_ID;
-
                             str += `
                                             <li id="list-` + sid + `">
                                                 <a href="#" class="item-link item-content">
@@ -104,26 +103,23 @@
                                                         <div class="item-row">
                                                             <div class="item-cell">
                                                                 <div class="row no-gap">
-                                                                    <div class="col-25" style="color: rgb(192,192,192)">记录状态</div>`
-                                                                    + ((me.list[i].AUDITING == 0) ?
-                                                                    (`<div class="col-65" style="color: RGB(192,72,81); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">` + (me.auditing.get(me.list[i].AUDITING) ?? '') + `</div>`)
-                                                                    : (`<div class="col-65" style="color: RGB(65,174,60); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">` + (me.auditing.get(me.list[i].AUDITING) ?? '') + `</div>`))
-                                                                    +
-                                                                    `<div class="col-10"></div>
+                                                                    <div class="col-25" style="color: rgb(192,192,192)">记录状态</div>
+                                                                    <div class="col-65" style="color: ${me.list[i].AUDITING == "0" ? "rgb(192,72,81)" : "rgb(65,174,60)"}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${me.auditing.get(me.list[i].AUDITING)}</div>
+                                                                    <div class="col-10"></div>
                                                                 </div>
                                                                 <div class="row no-gap">
                                                                     <div class="col-25" style="color: rgb(192,192,192)">评分人</div>
-                                                                    <div class="col-65" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">` + (me.user.get(me.list[i].EXAMINER_ID) ?? '') + `</div>
+                                                                    <div class="col-65" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${me.user.get(me.list[i].EXAMINER_ID)}</div>
                                                                     <div class="col-10"></div>
                                                                 </div>
                                                                 <div class="row no-gap">
                                                                     <div class="col-25" style="color: rgb(192,192,192)">评价结果</div>
-                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].RESULT ?? '') + `</div>
+                                                                    <div class="col-65" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${me.list[i].RESULT ?? ""}</div>
                                                                     <div class="col-10"></div>
                                                                 </div>
                                                                 <div class="row no-gap">
                                                                     <div class="col-25" style="color: rgb(192,192,192)">供应商名</div>
-                                                                    <div class="col-65" style="white-space: nowrap;overflow: hidden;text-overflow:ellipsis;">` + (me.list[i].PROVIDER_NAME ?? '') + `</div>
+                                                                    <div class="col-65" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${me.list[i].PROVIDER_NAME ?? ""}</div>
                                                                     <div class="col-10"></div>
                                                                 </div>
                                                             </div>
@@ -132,7 +128,7 @@
                                                 </a>
                                             </li>`;
                         }
-
+                        
                         $("#main_list").html(str);
                         data.Rows.forEach((row) => {
                             $("#list-" + row.ASSESS_ID).click(function () {
@@ -140,6 +136,7 @@
                                 app.methods.toUrl('/ProviderAssessDet/' + JSON2.stringify(param))
                             })
                         })
+                        
                     },
                     error: function (message, data) {
                         app.dialog.error(message, function () { });

@@ -931,7 +931,7 @@
             { display: "主键", name: "FAULT_SP_ID", PrimaryKey: "FAULT_SP_ID", readOnly: false, isPrimaryKey: true, isShow: false },
             { display: "备件品种编码", name: "SP_CODE" },
             { display: "备件品种名称", name: "SP_NAME" },
-            { display: "备件型号", name: "SP_TYPE" },
+            { display: "型号规格", name: "SP_SIZE" },
             { display: "仓库名称", name: "HOUSE_NAME" },
             { display: "库位名称", name: "STOCK_NAME" },
             { display: "库存数量", name: "CUR_NUM" },
@@ -1013,7 +1013,7 @@
             { display: "主键", name: "FAULT_SP_ID", PrimaryKey: "FAULT_SP_ID", readOnly: true, isPrimaryKey: true, isShow: false },
             { display: "备件品种名称", name: "SP_NAME", validate: { required: true }, Option: SpList, Searched: true },
             { display: "备件品种编码", name: "SP_CODE", readOnly: true, },
-            { display: "备件型号", name: "SP_TYPE", readOnly: true, },
+            { display: "型号规格", name: "SP_SIZE", readOnly: true, },
             { display: "计量单位", name: "UNIT", readOnly: true, },
             { display: "仓库名称", name: "HOUSE_NAME", readOnly: true, },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
@@ -1028,7 +1028,7 @@
             { display: "主键", name: "FAULT_SP_ID", PrimaryKey: "FAULT_SP_ID", readOnly: true, isPrimaryKey: true, isShow: false },
             { display: "备件品种名称", name: "SP_NAME", readOnly: true, },
             { display: "备件品种编码", name: "SP_CODE", readOnly: true, },
-            { display: "备件型号", name: "SP_TYPE", readOnly: true, },
+            { display: "型号规格", name: "SP_SIZE", readOnly: true, },
             { display: "计量单位", name: "UNIT", readOnly: true, },
             { display: "仓库名称", name: "HOUSE_NAME", readOnly: true, },
             { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
@@ -1177,7 +1177,7 @@
                             var da = SpOrList.find((va) => va.SP_NAME == split[0] && va.NUM == split[1]);
                             if (!currentSet.has(da.STORE_ID)) {
                                 da.CUR_NUM = da.NUM;
-                                da.SP_TYPE = da.SP_SIZE;
+                                da.SP_SIZE = da.SP_SIZE;
                                 da.SP_STORE_ID = da.STORE_ID;
                                 app.form.fillFromData('#detail_bg_detail', da);
                             }

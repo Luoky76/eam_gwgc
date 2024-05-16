@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title></title>
+    <title>物资需求确认</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -53,7 +53,7 @@
                             { display: "已提交", name: "AUDITING_CHECK", width: 100, type: "chk" },
                             { display: "申请单号", name: "APPLY_NO", width: 180, type: "text" },
                             {
-                                display: "采购分类", name: "TYPE_ID", minWidth: 150, type: "select", validate: { required: true },
+                                display: "采购分类", name: "TYPE_ID", minWidth: 150, type: "select",
                                 editor: {
                                     type: 'select',
                                     data: me.typeData,
@@ -74,7 +74,7 @@
                                 }
                             },
                             {
-                                display: "采购方式", name: "TYPE_ID2", minWidth: 150, type: "select", validate: { required: true },
+                                display: "采购方式", name: "TYPE_ID2", minWidth: 150, type: "select",
                                 editor: {
                                     type: 'select',
                                     data: me.cgfsData,
@@ -92,14 +92,12 @@
                                     },
                                 }
                             },
-                            { display: "紧急程度", name: "EXIG_DEV", width: 120, type: "select", editor: { type: 'select', data: me.exigData }, validate: { required: true }, },
-                            { display: "用途", name: "USE_MEMO", width: 150, type: "text", editor: { type: 'text' }, validate: { required: true }, },
-
+                            { display: "紧急程度", name: "EXIG_DEV", width: 120, type: "select", editor: { type: 'select', data: me.exigData } },
+                            { display: "用途", name: "USE_MEMO", width: 150, type: "text" },
                             { display: "申请人", name: "APPLY_USER", width: 100, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
-                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
                             { display: "申请日期", name: "APPLY_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
-                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
+                            { display: "备注", name: "MEMO", width: 120, type: "text" },
                             { display: "采购方式名", name: "CGFS", width: 100, type: "text", hide: true },
                             { display: "采购分类名", name: "TYPE_NAME", width: 100, type: "text", hide: true },
                             { display: "采购分类编码", name: "TYPE_CODE", width: 100, type: "text", hide: true },
@@ -152,8 +150,7 @@
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.AUDITING_CHECK == "1") return false;
-                            else return true;
+                            return false;
                         }
                         switch (editParm.column.name) {
                             case "":

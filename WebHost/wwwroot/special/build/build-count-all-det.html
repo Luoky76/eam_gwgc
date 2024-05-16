@@ -54,12 +54,12 @@
                             { display: "运行时间", name: "MOORING_RUNTIME", newline: false, width: 200, type: "duration", options: {}, group: "停泊发电机运行时间（小时:分钟）" },
                             { display: "累计时间", name: "MOORING_CUMTIME", newline: false, width: 200, type: "duration", options: {} },
 
-                            { display: "日耗", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
+                            { display: "消耗", name: "DAILYCONSUMPTION", newline: false, width: 200, type: "float", options: {}, group: "淡水" },
                             { display: "补充", name: "SUPPLEMENT", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存", name: "STOCK", newline: false, width: 200, type: "float", options: { disabled: true } },
 
                             {
-                                display: "主机日耗", name: "MASTER", newline: false, width: 200, type: "float", options: {
+                                display: "主机消耗", name: "MASTER", newline: false, width: 200, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -68,7 +68,7 @@
                                 }, group: "柴油"
                             },
                             {
-                                display: "辅机日耗", name: "AUXILIARY", newline: false, width: 200, type: "float", options: {
+                                display: "辅机消耗", name: "AUXILIARY", newline: false, width: 200, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -77,7 +77,7 @@
                                 }
                             },
                             {
-                                display: "泵机日耗", name: "PUMP", newline: false, width: 200, value: 0, type: "float", options: {
+                                display: "泵机消耗", name: "PUMP", newline: false, width: 200, value: 0, type: "float", options: {
                                     onChangeValue: function (input, value, g) {
                                         if (value) {
                                             me.sum($('#MASTER').val(), $('#AUXILIARY').val(), $('#PUMP').val());
@@ -89,7 +89,7 @@
                             { display: "补充", name: "SUPPLEMENT2", newline: false, width: 200, type: "float", options: {} },
                             { display: "库存", name: "STOCK2", newline: false, width: 200, type: "float", options: { disabled: true } },
 
-                            { display: "日耗", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
+                            { display: "消耗", name: "LUBRICATE", newline: true, width: 200, type: "float", options: { precision: 3 }, group: "滑油" },
                             { display: "补充(吨)", name: "LUBRICATE_SUPPLEMENT", newline: false, width: 200, type: "float", options: { precision: 3 } },
                             { display: "库存(吨)", name: "LUBRICATE_STOCK", newline: false, width: 200, type: "float", options: { precision: 3, disabled: true } },
 

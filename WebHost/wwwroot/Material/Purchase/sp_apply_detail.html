@@ -26,6 +26,9 @@
         var business = {
             rootPath:'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
+            //明细页面大小
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             dialog: null,
             dialogData: null,
             Sid: null,
@@ -75,7 +78,7 @@
                     grid: {
                         columns: [
                             {
-                                display: "物料编码", name: "SP_CODE", width: 150, type: "text", editor: { type: "text", },validate: { required: true },
+                                display: "物料编码", name: "SP_CODE", width: 150, type: "text",
                                 totalSummary:
                                 {
                                     render: function (suminf, column, cell) {
@@ -137,7 +140,7 @@
                 };
             },
             //物资本身信息的字段
-            spColumns: ["SP_ID", "SP_CODE", "UNIT", "SP_NAME", /*"SP_SIZE", "PRODUCE",*/ "TYPE_NAME", "WARRANTY", "LAST_PROVIDER", "LAST_PROVIDERID", "IS_XY", "NO_PRODUCE" ],
+            spColumns: ["SP_ID", "SP_CODE", "UNIT", "SP_NAME", "SP_SIZE", "PRODUCE", "TYPE_NAME", "WARRANTY", "LAST_PROVIDER", "LAST_PROVIDERID", "IS_XY", "NO_PRODUCE" ],
             grid: null,
             mainform: null,
             buttons: null,
@@ -216,6 +219,7 @@
                     enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
+                        /*
                         if (editParm.record.__status == "nochanged") {
                             if (editParm.record.SP_ID != "" && me.spColumns.includes(editParm.column.name))
                                 return false;
@@ -227,6 +231,7 @@
                                 else return false;
                                 break;
                         }
+                        */
                     },
                     onBeforeSubmitEdit: function (e) {
                         if (e.column.name == "COUNT" || e.column.name == "YG_PRICE" || e.column.name == "STORE_MONTH") {
@@ -307,8 +312,8 @@
                     dataValue += a.SP_ID + ",";
                 });
                 $.ligerDialog.open({
-                    width: 1080,
-                    height: 600,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
                     title: "挑选物资编码",
                     url: "../Base/base_spcatalogPop.html?MenuNo=" + me.MenuNo,
@@ -350,15 +355,17 @@
                     return data;
                 }
 
+                /*
                 var dataRow = me.grid.getData();
                 var code = dataRow.map((a) => {
-                    return a.SP_ID;
+                    return a.SP_CODE;
                 });
 
                 if (new Set(code).size !== code.length) {
                     LG.showSuccess('物资编码不能重复');
                     return;
                 }
+                */
 
                 if (formEdit || gridEdit) {
                     var data = handle(me.mainform.getData());
@@ -388,7 +395,8 @@
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {
                                 LG.showSuccess('保存成功');
-                                me.reload();
+                                if (!me.Sid) me.dialog.close();
+                                else me.reload();
                             },
                             error: function (message) {
                                 LG.showError(message);
@@ -451,6 +459,7 @@
                                 for (var i = 0, len = selected.length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
+                                me.save();
                             }
                         });
                     } else {

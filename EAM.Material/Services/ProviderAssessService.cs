@@ -94,7 +94,9 @@ namespace EAM.Material.Services
                     b.END_TIME,
                     b.PROVIDER_PRODUCTION,
                     b.CREATE_USERID,
-                }).GetGridData(request);
+                })
+                .OrderBy(c => c.AUDITING)
+                .GetGridData(request);
             return list;
         }
 

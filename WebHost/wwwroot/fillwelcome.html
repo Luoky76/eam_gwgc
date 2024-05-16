@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -218,17 +217,17 @@
                                 </div>
                                 <div class="centerItem">
                                     <div class="fontItem" style="width: 100%;"id="sp_apply">
-                                        <a href="javascript:void(0);" title="物资采购需求" onclick="business.wzcgxq()">物资采购需求</a>
+                                        <a href="javascript:void(0);" title="船舶物资申请" onclick="business.wzcgxq()">船舶物资申请</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
                                     <div class="fontItem" style="width: 100%;"id="sp_apply_check">
-                                        <a href="javascript:void(0);" title="物资采购确认" onclick="business.wzcgqr()">物资采购确认</a>
+                                        <a href="javascript:void(0);" title="物资需求确认" onclick="business.wzcgqr()">物资需求确认</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
                                     <div class="fontItem" style="width: 100%;"id="sp_collect">
-                                        <a href="javascript:void(0);" title="物资请购审批" onclick="business.wzcgsp()">物资请购审批</a>
+                                        <a href="javascript:void(0);" title="物资需求申请" onclick="business.wzcgsp()">物资需求申请</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
@@ -399,11 +398,14 @@
                                 <span style="height: 36px; line-height: 36px; font-size:16px;">报表</span>
                             </div>-->
                             <div class="centerItem">
-                                <div class="fontItem" style="width: 100%;"id="Buildcount">
-                                    <a href="javascript:void(0);" title="施工能耗填报" onclick="business.sgnhtb()">施工能耗填报</a>
+                                <div class="fontItem" style="width: 100%;" id="BuildCount001">
+                                    <a href="javascript:void(0);" title="施工能耗填报【001】" onclick="business.sgnh001()">施工能耗填报【001】</a>
                                 </div>
-                                <div class="fontItem" style="width: 100%;"id="BuildGlcount">
-                                    <a href="javascript:void(0);" title="施工能耗填报" onclick="business.sgnhtbyear()">施工能耗填报</a>
+                                <div class="fontItem" style="width: 100%;" id="BuildCount06">
+                                    <a href="javascript:void(0);" title="施工能耗填报【06】" onclick="business.sgnh06()">施工能耗填报【06】</a>
+                                </div>
+                                <div class="fontItem" style="width: 100%;" id="BuildCount105">
+                                    <a href="javascript:void(0);" title="施工能耗填报【105】" onclick="business.sgnh105()">施工能耗填报【105】</a>
                                 </div>
                             </div>
                         </div>
@@ -449,15 +451,15 @@
                 window.parent.f_addTab('PmPlanExe', '维保实施', 'device/pminfo/pmplanexe.html?MenuNo=PmPlanExe&ver=' + new Date().getTime());
             },
             wzcgxq: function () {
-                window.parent.f_addTab('sp_apply', '物资采购需求', 'Material/Purchase/sp_apply.html?MenuNo=sp_apply&ver=' + new Date().getTime());
+                window.parent.f_addTab('sp_apply', '船舶物资申请', 'Material/Purchase/sp_apply.html?MenuNo=sp_apply&ver=' + new Date().getTime());
             },
 
             wzcgqr: function () {
-                window.parent.f_addTab('sp_apply_check', '物资采购确认', 'Material/Purchase/sp_apply_check.html?MenuNo=sp_apply_check&ver=' + new Date().getTime());
+                window.parent.f_addTab('sp_apply_check', '物资需求确认', 'Material/Purchase/sp_apply_check.html?MenuNo=sp_apply_check&ver=' + new Date().getTime());
             },
 
             wzcgsp: function () {
-                window.parent.f_addTab('sp_collect', '物资请购审批', 'Material/Purchase/sp_collect.html?MenuNo=sp_collect&ver=' + new Date().getTime());
+                window.parent.f_addTab('sp_collect', '物资需求申请', 'Material/Purchase/sp_collect.html?MenuNo=sp_collect&ver=' + new Date().getTime());
             },
 
             wzcgfa: function () {
@@ -514,11 +516,14 @@
             lbypzj: function () {
                 window.parent.f_addTab('labor_rent', '劳保用品租借', 'special/labor/labor-rent.html?MenuNo=labor_rent&ver=' + new Date().getTime());
             },
-            sgnhtb: function () {
-                window.parent.f_addTab('Buildcount', '施工能耗填报', 'special/build/build-count.html?MenuNo=Buildcount&ver=' + new Date().getTime());
+            sgnh001: function () {
+                window.parent.f_addTab('BuildCount001', '施工能耗填报【001】', 'special/build/build-count-001.html?MenuNo=BuildCount001&ver=' + new Date().getTime());
             },
-            sgnhtbyear: function () {
-                window.parent.f_addTab('BuildGlcount', '施工能耗填报', 'special/build/build-count-gl.html?MenuNo=BuildGlcount&ver=' + new Date().getTime());
+            sgnh06: function () {
+                window.parent.f_addTab('BuildCount06', '施工能耗填报【06】', 'special/build/build-count-06.html?MenuNo=BuildCount06&ver=' + new Date().getTime());
+            },
+            sgnh105: function () {
+                window.parent.f_addTab('BuildCount105', '施工能耗填报【105】', 'special/build/build-count-105.html?MenuNo=BuildCount105&ver=' + new Date().getTime());
             },
             init: function () {
                 var me = this;

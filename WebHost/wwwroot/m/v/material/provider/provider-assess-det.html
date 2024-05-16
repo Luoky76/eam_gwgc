@@ -90,14 +90,15 @@
             columnsDet: [],
             //是否允许修改
             isEditable: false,
-            //成功提示框，当已有提示框未关闭时不会重复弹出
+            //成功提示框，1.5s后自动关闭并销毁
             showSuccessMessage: function (message = '成功') {
-                var me = this;
-                if (me.showSuccessMessage.isShown) return;
-                me.showSuccessMessage.isShown = true;
-                app.dialog.alert(message, function () {
-                    me.showSuccessMessage.isShown = false;
-                });
+                app.toast.create({
+                    text: message,
+                    position: 'top',
+                    horizontalPosition: 'center',
+                    closeTimeout: 1500,
+                    destroyOnClose: true
+                }).open();
             },
             loadComboxData: function () {
                 var me = this;

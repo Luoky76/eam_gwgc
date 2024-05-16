@@ -25,6 +25,7 @@ namespace Gksyb.Model
         [Description("申请ID")]
         [Column(DbType = DbType.AnsiString)]
         public string APPLY_ID { get; set; }
+
         /// <summary>
         /// 物资采购明细表ID
         /// </summary>
@@ -316,75 +317,6 @@ namespace Gksyb.Model
         public string SYDDDEPTID { get; set; }
 
         /// <summary>
-        /// 数量
-        /// </summary>
-        [Description("数量")]
-        public decimal? COUNT2 { get; set; }
-
-        /// <summary>
-        /// 采购方式
-        /// </summary>
-        [Description("采购方式")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CGFS2 { get; set; }
-
-        /// <summary>
-        /// 物料编码
-        /// </summary>
-        [Description("物料编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SP_CODE2 { get; set; }
-
-        /// <summary>
-        /// 标准编码
-        /// </summary>
-        [Description("标准编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string COMP_CODE2 { get; set; }
-
-        /// <summary>
-        /// 物料名称
-        /// </summary>
-        [Description("物料名称")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SP_NAME2 { get; set; }
-
-        /// <summary>
-        /// 使用地点
-        /// </summary>
-        [Description("使用地点")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SYDD2 { get; set; }
-
-        /// <summary>
-        /// 使用地点
-        /// </summary>
-        [Description("使用地点")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SYDDDEPTID2 { get; set; }
-
-        /// <summary>
-        /// 型号规格
-        /// </summary>
-        [Description("型号规格")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SP_SIZE2 { get; set; }
-
-        /// <summary>
-        /// 品牌厂家
-        /// </summary>
-        [Description("品牌厂家")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PRODUCE2 { get; set; }
-
-        /// <summary>
-        /// 单位
-        /// </summary>
-        [Description("单位")]
-        [Column(DbType = DbType.AnsiString)]
-        public string UNIT2 { get; set; }
-
-        /// <summary>
         /// 总库存数
         /// </summary>
         [Description("总库存数")]
@@ -397,12 +329,25 @@ namespace Gksyb.Model
         public decimal? QYKCSL { get; set; }
 
         /// <summary>
-        /// 物资状态(10计划,20待请购,30请购中,40采购中,50供货中,60质检待入库,70订单终止)
+        /// 物资状态(10物资申请 20待需求确认 30待需求申请 40OA审批中 50采购订单待提交 60待收货登记 70待到货验收 80待入库 90已入库 100订单中止)
         /// </summary>
-        [Description("物资状态(10计划,20待请购,30请购中,40采购中,50供货中,60质检待入库,70订单终止)")]
+        [Description("物资状态(10物资申请 20待需求确认 30待需求申请 40OA审批中 50采购订单待提交 60待收货登记 70待到货验收 80待入库 90已入库 100订单中止)")]
         [Column(DbType = DbType.AnsiString)]
         public string SP_STATUS { get; set; }
 
+        /// <summary>
+        /// 确认状态
+        /// </summary>
+        [Description("确认状态")]
+        [Column(DbType = DbType.AnsiString)]
+        public string AUDITING_CHECK { get; set; }
+
+        /// <summary>
+        /// 是否已删除
+        /// </summary>
+        [Description("是否已删除")]
+        [Column(DbType = DbType.AnsiString)]
+        public string IS_DELETED { get; set; }
     }
 
 }

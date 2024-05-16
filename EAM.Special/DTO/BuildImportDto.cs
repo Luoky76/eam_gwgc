@@ -309,10 +309,10 @@ namespace EAM.Special.DTO
         }
 
         /// <summary>
-        /// 淡水日耗
+        /// 淡水消耗
         /// </summary>
-        [ImporterHeader(Name = "淡水日耗")]
-        [Display(Name = "淡水日耗")]
+        [ImporterHeader(Name = "淡水消耗")]
+        [Display(Name = "淡水消耗")]
         public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
@@ -330,31 +330,31 @@ namespace EAM.Special.DTO
         public decimal? STOCK { get; set; }
 
         /// <summary>
-        /// 主机日耗
+        /// 主机消耗
         /// </summary>
-        [ImporterHeader(Name = "主机日耗")]
-        [Display(Name = "主机日耗")]
+        [ImporterHeader(Name = "主机消耗")]
+        [Display(Name = "主机消耗")]
         public decimal? MASTER { get; set; }
 
         /// <summary>
-        /// 辅机日耗
+        /// 辅机消耗
         /// </summary>
-        [ImporterHeader(Name = "辅机日耗")]
-        [Display(Name = "辅机日耗")]
+        [ImporterHeader(Name = "辅机消耗")]
+        [Display(Name = "辅机消耗")]
         public decimal? AUXILIARY { get; set; }
 
         /// <summary>
-        /// 泵机日耗
+        /// 泵机消耗
         /// </summary>
-        [ImporterHeader(Name = "泵机日耗")]
-        [Display(Name = "泵机日耗")]
+        [ImporterHeader(Name = "泵机消耗")]
+        [Display(Name = "泵机消耗")]
         public decimal? PUMP { get; set; }
 
         /// <summary>
-        /// 柴油总日耗
+        /// 柴油总消耗
         /// </summary>
-        [ImporterHeader(Name = "柴油总日耗")]
-        [Display(Name = "柴油总日耗")]
+        [ImporterHeader(Name = "柴油总消耗")]
+        [Display(Name = "柴油总消耗")]
         public decimal? SUBTOTAL { get; set; }
 
         /// <summary>
@@ -365,10 +365,10 @@ namespace EAM.Special.DTO
         public decimal? SUPPLEMENT2 { get; set; }
 
         /// <summary>
-        /// 滑油日耗
+        /// 滑油消耗
         /// </summary>
-        [ImporterHeader(Name = "滑油日耗")]
-        [Display(Name = "滑油日耗")]
+        [ImporterHeader(Name = "滑油消耗")]
+        [Display(Name = "滑油消耗")]
         public decimal? LUBRICATE { get; set; }
 
         /// <summary>
