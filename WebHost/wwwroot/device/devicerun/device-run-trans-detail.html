@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>明细</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform">
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialogData: {},
+            isView: false,
+            sid: getQueryStringByName("sid"),
+            dataCorp: [],
+            rootPath : "../",
+            dialog : null,
+            dialogData : null,
+            callback : null,
+            orginData : {},
+            auditing : [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            runStatus : [],
+            deviceInfo : [],
+
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            {
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 200, type: "select", align: "left", options: { data: me.auditing }, editor: { disabled: true },
+                            },
+                            {
+                                display: "设备编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 200, type: "select", align: "left", validate: { required: true },
+                                options: {
+                                    data: me.deviceInfo,
+                                    autocomplete: true,
+                                    selectBoxWidth: 400,
+                                    valueField: "ID",
+                                    textField: "VALUE",
+                                    columns: [
+                                        { header: '设备编号', name: 'VALUE', width: 100 },
+                                        { header: '设备名称', name: 'TEXT' }
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#RUN_STATUS').val(g.selected.EXTEND == null ? '' : g.selected.EXTEND);
+                                            $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "设备编号", name: "DEVICE_NO", dbname: "DEVICE_NO", labelWidth: 130, width: 200, type: "hidden", options: {} },
+                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, width: 200, type: "text", options: {}, editor: { disabled: true }, },
+                            { display: "*状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", width: 200, validate: { required: true }, minWidth: 150, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" } },
+                            { display: "原状态", name: "RUN_STATUS", newline: false, upper: true, width: 200, type: "text", options: {}, editor: { disabled: true }, },
+                            { display: "现状态", name: "NEW_RUN_STATUS", newline: false, upper: true, width: 200, type: "select", options: { data: me.runStatus } },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, width: 200, type: "hidden", options: {} },
+                            { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, width: 200, type: "hidden", options: {} },
+
+                            { display: "转换原因", name: "TRANS_MEMO", newline: true, upper: true, width: 850, type: "textarea", options: {} },
+
+                            { display: "主键", name: "TRANS_ID", newline: false, upper: true, type: "hidden", options: {} },
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url:  'Device/DeviceRun/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.runStatus = data.runStatus;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                LG.ajax({
+                    async: false,
+                    url: 'Device/DeviceRun/deviceData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.deviceInfo = data.deviceData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                if (!me.sid) {
+                    me.mainform.setOrginData({AUDITING: "0"});
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/DeviceRun/GetRunDetail',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            debugger
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                me.mainform.focus();
+            },
+            save: function () { //保存
+                var me = this;
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.mainform.getOrginData());
+                var changeRow = new Object();
+                if (!me.sid) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/DeviceRun/Manage',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () { if (me.dialog) { me.dialog.close(); } });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                function inner(callback) {
+                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+                    });
+                }
+                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', onclick: me.save.bind(me) });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                }
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

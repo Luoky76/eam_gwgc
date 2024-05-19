@@ -1,0 +1,431 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>物资盘点结果</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">物资盘点结果</div>
+
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search" placeholder="请输入..." id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <div id="sp_scan_list">
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <button class="button" id="refresh">
+                            刷新
+                        </button>
+                        <button class="button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var formdata;
+        var formDataDetail;
+        
+        var busResult = {
+            scanResult: [{ "ID": "正常", "TEXT": "正常" }, { "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }],
+            scanType: [],
+            storeSou: [],
+            ListDict: [
+                {
+                    display: " 主键",
+                    name: "SCAN_DET_ID",
+                    PrimaryKey: "SCAN_DET_ID",
+                    readOnly: false,
+                    isPrimaryKey: true,
+                    isShow: false
+                },
+                {
+                    display: "盘点单号", name: "SCAN_CODE",
+                },
+                {
+                    display: "盘点类型", name: "SCAN_TYPE_NAME",  
+                },
+                {
+                    display: "来源类型", name: "SRC_TYPE_NAME",
+                },
+                {
+                    display: "物料名称", name: "SP_NAME",
+                },
+                {
+                    display: "盘点数量", name: "SCAN_NUM",
+                },
+                {
+                    display: "盘点结果", name: "SCAN_RESULT", 
+                }
+            ],
+            getData: function () {
+                var me = this;
+                var where = JSON.stringify({
+                    op: 'and',
+                    rules: [{ field: 'AUDITING', op: 'equal', value: "0" }]
+                });
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/SpScan/DetailAnsList',
+                    data: { "where": where },
+                    success: function (data) {
+                        me.list = data.Rows;
+                        
+                        data.Rows.forEach((a) => {
+                            a.SCAN_TYPE_NAME = busResult.scanType.find((v) => v.ID == a.SCAN_TYPE).TEXT;
+                            a.SRC_TYPE_NAME = busResult.storeSou.find((v) => v.ID == a.SRC_TYPE).TEXT;
+                        });
+                        
+                        var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
+                        $("#sp_scan_list").html(str);
+
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.SCAN_DET_ID).click(function () {
+                                detail_popup.params = { "SCAN_DET_ID": a.SCAN_DET_ID };
+                                detail_popup.open();
+                            });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            getCombox: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/SpScan/ComboxData',
+                    success: function (data) {
+                        me.scanType = data.ScanType;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/SpStore/ComboxData',
+                    success: function (data) {
+                        me.storeSou = data.BCCode;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                
+                me.getCombox();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                });
+
+                //提交
+                $("#sumbit").click(function () {
+                    var checkDom = $("#sp_scan_list input:checked");
+                    var checkedIDList = [];
+                    
+                    if (checkDom.length == 0) {
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+
+                    checkDom.forEach(x => {
+                        checkedIDList.push(x.value);
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList.length > 1) {
+                        app.dialog.error("仅选择一行", function () { });
+                        return false;
+                    }
+
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        var ming = me.list.find((v) => v.SCAN_DET_ID == a);
+                        if (ming.SCAN_NUM == null || ming.SCAN_NUM == '') {
+                            app.dialog.error("盘点数量未确认，不能提交");
+                            flag = false;
+                            return false;
+                        }
+                        if (ming.SCAN_RESULT == null || ming.SCAN_RESULT == '') {
+                            app.dialog.error("盘点结果未确认，不能提交");
+                            flag = false;
+                            return false;
+                        }
+                    });
+
+                    if (flag) {
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Material/SpScan/DetSubmit',
+                                data: {
+                                    "sids": checkedIDList
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("提交成功", function () {
+                                        busResult.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    }
+                });
+            }
+
+        };
+        busResult.init();
+
+        //明细信息
+        var outAppDetailInfo = [
+            {
+                display: " 主键",
+                name: "SCAN_DET_ID",
+                PrimaryKey: "SCAN_DET_ID",
+                readOnly: true,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "盘点单号", name: "SCAN_CODE", readOnly: true, },
+            { display: "盘点类型", name: "SCAN_TYPE", Option: busResult.scanType, readOnly: true, },
+            { display: "来源类型", name: "SRC_TYPE", Option: busResult.storeSou, readOnly: true, },
+            { display: "库存数量", name: "STORE_NUM", readOnly: true, },
+            { display: "盘点数量", name: "SCAN_NUM", validate: { required: true }, },
+            { display: "盘点结果", name: "SCAN_RESULT", validate: { required: true }, Option: busResult.scanResult, Searched: true },
+            { display: "物料编码", name: "SP_CODE", readOnly: true, },
+            { display: "物料名称", name: "SP_NAME", readOnly: true, },
+            { display: "规格型号", name: "SP_SIZE", readOnly: true, },
+            { display: "计量单位", name: "UNIT", readOnly: true, },
+            { display: "分类", name: "TYPE_NAME", readOnly: true, },
+            { display: "品牌、厂家", name: "PRODUCE", readOnly: true, },
+            { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
+            { display: "批次号", name: "STORE_CODE", readOnly: true, },
+            { display: "盘点人", name: "SCAN_USER", readOnly: true, },
+            { display: "盘点部门", name: "DEPT_NAME", readOnly: true, },
+            { display: "二级单位", name: "SEC_DEPT", readOnly: true, },
+            { display: "盘点日期", name: "SCAN_DATE", readOnly: true, },
+            { display: "SCAN_ID", name: "SCAN_ID", isShow: false },
+            { display: "AUDITING", name: "AUDITING", isShow: false }
+        ];
+        var detail_popup = app.popup.create({
+            content: `
+                                                                <div class="popup answersheet"id ="detail_popup">
+                                                                    <div class="view" >
+                                                                        <div class="page">
+                                                                            <div class="navbar">
+                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                    <div class="left link popup-close">
+                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                    </div>
+                                                                                    <div class="title">详情</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="tabs">
+                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                    <form class="list" id="detail_bg_detail">
+                                                                                     </form>
+                                                                                </div>
+                                                                              </div>
+                                                                            </div>
+                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                <div class="toolbar-inner">
+                                                                                    <button class="col button button-large button-fill" id="saveDetail" >保存</button>
+                                                                                    <button class="col button button-large button-fill" id="sumbitDetail" style="background-color: orange">提交</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    $("#popup-close").click(function () {
+                        detail_popup.close();
+                        busResult.getData();
+                    });
+
+                    $("#saveDetail").off('click').click(function () {
+
+                        let data = app.form.convertToData("#detail_bg_detail");
+                        data.SCAN_DET_ID = me.params.SCAN_DET_ID;
+
+                        if (data.SCAN_NUM == null || data.SCAN_NUM == '') {
+                            app.dialog.error("盘点数量不可为空");
+                            return;
+                        }
+
+                        if (data.SCAN_RESULT == null || data.SCAN_RESULT == '') {
+                            app.dialog.error("盘点结果不可为空");
+                            return;
+                        }
+                        
+                        var AddRow = new Object();
+
+                        if (data.SCAN_DET_ID) {
+                            AddRow["Updated"] = [data];
+                            AddRow["Original"] = [formDataDetail];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+                        
+                        app.ajax({
+                            jsToken: true,
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Material/SpScan/DetailSave',
+                            success: function () {
+                                busResult.getData();
+                            }
+                        });
+                    });
+
+                    $("#sumbitDetail").off('click').click(function () {
+
+                        let data = app.form.convertToData("#detail_bg_detail");
+
+                        if (data.SCAN_NUM == null || data.SCAN_NUM == '') {
+                            app.dialog.error("盘点数量不可为空");
+                            return;
+                        }
+
+                        if (data.SCAN_RESULT == null || data.SCAN_RESULT == '') {
+                            app.dialog.error("盘点结果不可为空");
+                            return;
+                        }
+                        var checkedIDList = [];
+                        checkedIDList.push(me.params.SCAN_DET_ID);
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "sids": checkedIDList
+                            },
+                            url: 'Material/SpScan/DetSubmit',
+                            success: function () {
+                                detail_popup.close();
+                                busResult.getData();
+                            }
+                        });
+                    });
+               
+                    // 清单明细
+                    if (me.params.SCAN_DET_ID) {
+                        var where = JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'SCAN_DET_ID', op: 'equal', value: me.params.SCAN_DET_ID }]
+                        });
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "where": where
+                            },
+                            url: 'Material/SpScan/DetailAnsList',
+                            success: function (data) {
+                                var str = app.CreatePopupContentHtml(outAppDetailInfo);
+                                $("#detail_bg_detail").html(str);
+                                if (data.Rows.length > 0) {
+                                    formDataDetail = data.Rows[0];
+                                    app.form.fillFromData('#detail_bg_detail', formDataDetail);
+
+                                    app.smartSelect.create({
+                                        el: '.SCAN_TYPE'
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.SRC_TYPE'
+                                    });
+                                    app.smartSelect.create({
+                                        el: '.SCAN_RESULT'
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

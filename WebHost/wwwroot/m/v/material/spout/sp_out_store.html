@@ -1,0 +1,703 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>领用出库</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+</head>
+
+<body class="color-theme-blue">
+    <div id="app">
+        <div class="statusbar">
+        </div>
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="title">领用出库</div>
+
+                        <div class="subnavbar">
+                            <form class="searchbar" id="searchbar-autocomplete">
+                                <div class="searchbar-inner">
+                                    <div class="searchbar-input-wrap">
+                                        <input type="search" placeholder="请输入..." id="searchText" />
+                                        <i class="searchbar-icon"></i>
+                                        <span class="input-clear-button"></span>
+                                    </div>
+                                    <span class="searchbar-disable-button">Cancel</span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="list page-content" style="padding-top: 80px; padding-bottom: 80px">
+                    <div id="spout_store_list">
+                    </div>
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a href='javascript:app.methods.toUrl("back")' class="link external">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <!--<button class="button" id="refresh">
+                            刷新
+                        </button>-->
+                        <button class="button" id="sumbit">
+                            提交
+                        </button>
+                        <button class="button button-large button-fill" id="unsubmit" style="background-color: orange">注销</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var formdata;
+        var formDataDetail;
+        var userList = [];//人员
+        var business = {
+            auditingData: [],
+            purtypeName: [],
+            spapplyType: [],
+            ListDict: [
+                {
+                    display: " 主键",
+                    name: "OUT_ID",
+                    PrimaryKey: "OUT_ID",
+                    readOnly: false,
+                    isPrimaryKey: true,
+                    isShow: false
+                },
+                {
+                    display: "记录状态 ", name: "AUDITING_TEXT",
+                },
+                {
+                    display: "出库单号", name: "OUT_CODE",
+                },
+                {
+                    display: "申请单号", name: "APPLY_CODE",
+                },
+                {
+                    display: "出库日期", name: "OUT_DATE"
+                },
+                {
+                    display: "申请人", name: "USER_NAME"
+                },
+                {
+                    display: "申请部门", name: "DEPT_NAME"
+                }
+            ],
+            getData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/SpOut/GetSpOutStoreList',
+                    success: function (data) {
+                        me.list = data.Rows;
+                        data.Rows.forEach((a) => {
+                            a.AUDITING_TEXT = me.auditingData.find((v) => v.ID == a.AUDITING_A).TEXT;
+                        });
+
+                        var str = app.CreateListContentHtml(data.Rows, me.ListDict, true);
+                        $("#spout_store_list").html(str);
+
+                        data.Rows.forEach((a) => {
+                            $("#list-" + a.OUT_ID).click(function () {
+                                Info_popup.params = { "OUT_ID": a.OUT_ID };
+                                Info_popup.open();
+                            });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            getCombox: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/SpOut/ComboxData',
+                    success: function (data) {
+                        me.auditingData = data.auditing;
+                        me.purtypeName = data.purtypeName;
+                        me.spapplyType = data.spapplyType;
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'popup/users',
+                    success: function (data) {
+                        data.forEach((a) => {
+                            var station = a.Station.length > 0 ? '(' + a.Station + ')' : "";
+                            userList.push({ "ID": a.Id, "TEXT": a.Name + station, "VALUE": a.Name });
+                        });
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+
+                me.getCombox();
+                me.getData();
+                me.initSearchbar();
+                me.initFreshButton();
+            },
+
+            initSearchbar: function () {
+                app.searchbar.create({
+                    el: '.searchbar',
+                    searchContainer: '.list',
+                    searchIn: ['.item-inner'],
+                    on: {
+                        search: function (sb, query, previousQuery) {
+                            console.log(query, previousQuery);
+                        }
+                    }
+                })
+            },
+
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#refresh').on('click', function (e) {
+                    me.getData();
+                    me.initSearchbar();
+                });
+
+                //提交
+                $("#sumbit").click(function () {
+                    var checkDom = $("#spout_store_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ OUT_ID: x.value });
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点提交", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList.length > 1) {
+                        app.dialog.error("仅选择一行", function () { });
+                        return false;
+                    }
+
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        var aut = me.list.find((v) => v.OUT_ID == a.OUT_ID).AUDITING_A;
+                        if (aut == "1") {
+                            app.dialog.error("已提交不能再提交", function () { });
+                            flag = false;
+                            return false;
+                        }
+                    });
+
+                    if (flag) {
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Material/SpOut/SubmitSpOutStore',
+                                data: {
+                                    "sid": checkedIDList[0].OUT_ID
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("提交成功", function () {
+                                        business.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    }
+                });
+                //注销
+                $("#unsubmit").click(function () {
+                    var checkDom = $("#spout_store_list input:checked");
+                    var checkedIDList = [];
+                    checkDom.forEach(x => {
+                        checkedIDList.push({ OUT_ID: x.value });
+                    });
+
+                    if (checkedIDList.length <= 0) {
+                        app.dialog.error("请勾选后在点注销", function () { });
+                        return false;
+                    }
+
+                    if (checkedIDList.length > 1) {
+                        app.dialog.error("仅选择一行", function () { });
+                        return false;
+                    }
+
+                    var flag = true;
+                    checkedIDList.forEach((a) => {
+                        var aut = me.list.find((v) => v.OUT_ID == a.OUT_ID).AUDITING_A;
+                        if (aut == "1") {
+                            app.dialog.error("已提交不能注销", function () { });
+                            flag = false;
+                            return false;
+                        }
+                    });
+                    if (flag) {
+                        app.dialog.confirm('确定要注销？', '注销', function () {
+
+                            app.ajax({
+                                async: false,
+                                type: 'post',
+                                url: 'Material/SpOut/UnSubmitSpOutStore',
+                                data: {
+                                    "sid": checkedIDList[0].OUT_ID
+                                },
+                                success: function (data) {
+                                    app.dialog.alert("注销成功", function () {
+                                        business.getData();
+                                    });
+                                },
+                                error: function (message, data) {
+                                    app.dialog.error(message, function () { });
+                                    return;
+                                }
+                            });
+                        })
+                    } 
+                });
+            }
+
+        };
+        business.init();
+
+        var outAppInfo = [
+            {
+                display: " 主键",
+                name: "OUT_ID",
+                PrimaryKey: "OUT_ID",
+                readOnly: true,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "申请单号", name: "APPLY_CODE", readOnly: true, },
+            { display: "申请日期", name: "APPLY_DATE", readOnly: true, },
+            { display: "项目编号", name: "PROJECT_CODE", readOnly: true, },
+            { display: "项目名称", name: "PROJECT_NAME", readOnly: true, },
+            { display: "申请部门", name: "DEPT_NAME", readOnly: true, },
+            { display: "申请人", name: "USER_NAME", readOnly: true, },
+            { display: "申请类型", name: "APPLY_TYPE", Option: business.spapplyType, readOnly: true,  },
+            { display: "二级单位", name: "SEC_DEPT", readOnly: true, },
+            { display: "用途", name: "PURTYPE_NAME", Option: business.purtypeName, readOnly: true, },
+            { display: "申请总金额(元)", name: "SUM_MONEY", readOnly: true, },
+
+            { display: "出库单号", name: "OUT_CODE", readOnly: true, },
+            { display: "仓库员", name: "M_USERID", Option: userList, Searched: true },
+            { display: "仓管员", name: "M_USER", isShow: false },
+            { display: "出库日期", name: "OUT_DATE", validate: { required: true }, },
+            { display: "备注", name: "MEMO", },
+        ]; 
+        //出库信息
+        var Info_popup = app.popup.create({
+            content: `
+                                                                <div class="popup answersheet">
+                                                                    <div class="view">
+                                                                        <div class="page">
+                                                                            <div class="navbar">
+                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                    <div class="left link popup-close">
+                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                    </div>
+                                                                                    <div class="title">领用出库</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="toolbar tabbar toolbar-top">
+                                                                                <div class="toolbar-inner" style="
+                                                                                    --f7-tabbar-link-active-border-color: #fff;
+                                                                                    --f7-tabbar-link-active-color: black;
+                                                                                    --f7-tabbar-link-active-bg-color: white;
+                                                                                    --f7-tabbar-link-inactive-color: black;
+                                                                                    background-color: rgb(236, 235, 235);
+                                                                             ">
+                                                                                    <a href="#tab-1" class="tab-link tab-link-active" id="dg_list">出库详情</a>
+                                                                                    <a href="#tab-2" class="tab-link" id="modify_list">出库清单</a>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="tabs">
+                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                    <form class="list" id="detail_bg"></form>
+                                                                                </div>
+                                                                              </div>
+                                                                              <div id="tab-2" class="page-content tab">
+                                                                                    <div class="list" id="modify_bg">
+                                                                                    </div>
+                                                                              </div>
+                                                                            </div>
+                                                                            <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
+                                                                                <div class="toolbar-inner">
+                                                                                    <button class="col button button-large button-fill" id="save" >保存</button>
+                                                                                    <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`
+            ,
+            on: {
+                open: function () {
+                    var me = this;
+                    var ID = me.params.OUT_ID;
+                    $("#popup-close").click(function () {
+                        Info_popup.close();
+                    });
+
+                    //保存事件
+                    $("#save").off('click').click(function () {
+                        let data = app.form.convertToData("#detail_bg");
+                        data.OUT_ID = ID;
+
+                        if (data.M_USERID != null && data.M_USERID != '') {
+                            var da = userList.find((va) => va.ID == data.M_USERID);
+                            if (da != null) {
+                                data.M_USER = da.TEXT;
+                            }
+                        }              
+
+                        if (data.OUT_DATE == null || data.OUT_DATE == '') {
+                            app.dialog.error("出库日期不能为空");
+                            return
+                        }
+                        data.AUDITING_A = "0";
+
+                        var AddRow = new Object();
+                        if (ID) {
+                            AddRow["Updated"] = [data];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+                        AddRow["Original"] = [formdata];
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "request": AddRow
+                            },
+                            url: 'Material/SpOut/ManageSpOutStore',
+                            success: function (data) {
+                                if (ID) {
+                                    $("#modify_list").click();
+                                } else {
+                                    Info_popup.close();
+                                }
+                                business.getData();
+                            }
+                        });
+                    });
+                    //提交事件
+                    $("#sumbit").off('click').click(function () {
+                        let data = app.form.convertToData("#detail_bg");
+
+                        if (data.AUDITING_A == "1") {
+                            app.dialog.error("该单据已经提交！");
+                            return false
+                        }
+                        if (formDataDetail == undefined || formDataDetail == null || formDataDetail.length == 0) {
+                            app.dialog.error("请先填写申请清单", function () {
+                                $("#modify_list").click();
+                            });
+                            return false
+                        }
+
+                        app.dialog.confirm('确定要提交？', '提交', function () {
+                            app.ajax({
+                                type: 'post',
+                                data: {
+                                    "sid": ID
+                                },
+                                url: 'Material/SpOut/SubmitSpOutStore',
+                                success: function () {
+                                    Info_popup.close();
+                                    business.getData();
+                                }
+                            });
+                        });
+                    });
+
+                    if (ID) {
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "id": ID
+                            },
+                            url: 'Material/SpOut/GetSpOutStoreListDetail',
+                            success: function (data) {
+                                var str = "";
+                                str = app.CreatePopupContentHtml(outAppInfo);
+                                $("#detail_bg").html(str);
+
+                                formdata = data;
+                                me.detail = data;
+                                me.detail.AUDITING_TEXT = business.auditingData.find((v) => v.ID == me.detail.AUDITING_A).TEXT;
+                                app.form.fillFromData('#detail_bg', me.detail);
+                                showBtn(data.AUDITING_A == "0");
+
+                                app.smartSelect.create({
+                                    el: '.M_USERID',
+                                    searchbar: true
+                                });
+                                app.smartSelect.create({
+                                    el: '.APPLY_TYPE',
+                                    searchbar: true
+                                });
+                                app.smartSelect.create({
+                                    el: '.PURTYPE_NAME',
+                                    searchbar: true
+                                });
+
+                                app.calendar.create({
+                                    inputEl: '#OUT_DATE',
+                                    timePicker: true,
+                                    dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
+                                });
+
+                                //明细数据
+                                CreateApplyDetail(ID, me.detail.AUDITING_A);
+                            }
+                        });
+                    }
+                }
+            }
+        });
+        //按钮显示隐藏
+        function showBtn(isEdit) {
+            if (isEdit) {
+                $("#menu").show();
+                $("#dg_list").click(function () {
+                    $("#menu").show();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
+            } else {
+                $("#menu").hide();
+                $("#dg_list").click(function () {
+                    $("#menu").hide();
+                })
+                $("#modify_list").click(function () {
+                    $("#menu").hide();
+                });
+            }
+        }
+
+        var outAppDetail = [
+            {
+                display: " 主键",
+                name: "OUTDET_ID",
+                PrimaryKey: "OUTDET_ID",
+                readOnly: false,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "物料编码", name: "SP_CODE", },
+            { display: "物料名称", name: "SP_NAME",  },
+            { display: "规格型号", name: "SP_SIZE",  },
+            { display: "计量单位", name: "UNIT", },
+            { display: "库位名称", name: "STOCK_NAME", },
+            { display: "库存数量", name: "STORE_NUM",  },
+            { display: "申请数量", name: "APPLY_NUM", },
+            { display: "出库数量", name: "COUNT", },
+        ];    
+        //明细列表
+        function CreateApplyDetail(ID, AUDITING_A) {
+           var where = JSON.stringify({
+                op: 'and',
+               rules: [{ field: 'OUT_ID', op: 'equal', value: ID }]
+            });
+          
+            app.ajax({
+                type: 'post',
+                data: { "where": where },
+                url: 'Material/SpOut/GetSpOutStoredetList',
+                success: function (data) {
+                    formDataDetail = data.Rows;
+                    // 清单
+                    var str = app.CreateListContentHtml(data.Rows, outAppDetail, true);
+                    $("#modify_bg").html(str);
+                    data.Rows.forEach((a) => {
+                        $("#list-" + a.OUTDET_ID).click(function () {
+                            detail_popup.params = { "OUTDET_ID": a.OUTDET_ID, "OUT_ID": a.OUT_ID, "AUDITING_A": AUDITING_A };
+                            detail_popup.open();
+                            
+                        })
+                    });
+                }
+            });
+
+        };
+
+        //明细信息
+        var outAppDetailInfo = [
+            {
+                display: " 主键",
+                name: "OUTDET_ID",
+                PrimaryKey: "OUTDET_ID",
+                readOnly: true,
+                isPrimaryKey: true,
+                isShow: false
+            },
+            { display: "物料名称", name: "SP_NAME", readOnly: true, },
+            { display: "物料编码", name: "SP_CODE", readOnly: true, },
+            { display: "规格型号", name: "SP_SIZE", readOnly: true, },
+            { display: "计量单位", name: "UNIT", readOnly: true, },
+            { display: "库位名称", name: "STOCK_NAME", readOnly: true, },
+            { display: "批次号", name: "STORE_CODE", readOnly: true, },
+            { display: "入库日期", name: "IN_DATE", readOnly: true, },
+            { display: "参考单价(元)", name: "PRICE", readOnly: true, },
+ 
+            { display: "库存数量", name: "STORE_NUM", readOnly: true, },
+            { display: "申请数量", name: "APPLY_NUM", readOnly: true, },
+            { display: "出库数量", name: "COUNT", validate: { required: true } },
+            { display: "备注", name: "MEMO", readOnly: true, },
+            { display: "外键", name: "OUT_ID", isShow: false },
+            { display: "外键", name: "SP_ID", isShow: false },
+            { display: "外键", name: "SP_ID", isShow: false },
+        ];
+        var detail_popup = app.popup.create({
+            content: `
+                                                                <div class="popup answersheet"id ="detail_popup">
+                                                                    <div class="view" >
+                                                                        <div class="page">
+                                                                            <div class="navbar">
+                                                                                <div class="navbar-inner" style="background-color:rgb(0,125,255);">
+                                                                                    <div class="left link popup-close">
+                                                                                        <i class="f7-icons">arrow_left</i>
+                                                                                    </div>
+                                                                                    <div class="title">清单详情</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="tabs">
+                                                                              <div id="tab-1" class="page-content tab tab-active">
+                                                                                <div class="list inline-labels no-hairlines-md">
+                                                                                    <form class="list" id="detail_bg_detail">
+                                                                                     </form>
+                                                                                </div>
+                                                                              </div>
+                                                                            </div>
+                                                                             <div class="toolbar toolbar-bottom" id="menuDetail">
+                                                                                <div class="toolbar-inner">
+                                                                                    <button class="col button button-large button-fill" id="saveDetail" style="background-color: #2faa44">保存</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>`,
+            on: {
+                open: function () {
+                    var me = this;
+                    me.AUDITING_A = me.params.AUDITING_A;
+                    $("#popup-close").click(function () {
+                        detail_popup.close();
+                    })
+
+                    $("#saveDetail").off('click').click(function () {
+
+                        let data = app.form.convertToData("#detail_bg_detail");
+                        data.OUT_ID = me.params.OUT_ID;
+                        data.OUTDET_ID = me.params.OUTDET_ID;
+
+                        if (data.COUNT == null || data.COUNT == '') {
+                            app.dialog.error("申请数量不可为空");
+                            return
+                        }
+                       
+                        if (parseInt(data.COUNT) > parseInt(data.STORE_NUM)) {
+                            app.dialog.error("出库数量不可大于库存数量");
+                            return
+                        }
+                        
+                        var AddRow = new Object();
+
+                        if (data.OUTDET_ID) {
+                            AddRow["Updated"] = [data];
+                            AddRow["Original"] = [formDataDetail];
+                        }
+                        else {
+                            AddRow["Added"] = [data]
+                        }
+
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "requestdet": AddRow
+                            },
+                            url: 'Material/SpOut/ManageSpOutStore',
+                            success: function () {
+                                detail_popup.close();
+                                CreateApplyDetail(data.OUT_ID, me.params.AUDITING_A);
+                            }
+                        });
+                    });
+
+                   
+
+                    // 清单明细
+                    if (me.params.OUTDET_ID) {
+                        var where = JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'OUTDET_ID', op: 'equal', value: me.params.OUTDET_ID }]
+                        });
+                        app.ajax({
+                            type: 'post',
+                            data: {
+                                "where": where
+                            },
+                            url: 'Material/SpOut/GetSpOutStoredetList',
+                            success: function (data) {
+                                var str = app.CreatePopupContentHtml(outAppDetailInfo);
+                                $("#detail_bg_detail").html(str);
+                                if (data.Rows.length > 0) {
+                                    formDataDetail = data.Rows[0];
+                                    app.form.fillFromData('#detail_bg_detail', formDataDetail);
+                                }
+                                if (me.AUDITING_A == "1") {
+                                    $("#menuDetail").hide();
+                                } else {
+                                    $("#menuDetail").show();
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

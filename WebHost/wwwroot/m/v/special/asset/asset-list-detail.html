@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>设备详情</title>
+    <link rel="stylesheet" href="../../dist/Framework7/mobile.css?v=1" />
+</head>
+<body class="color-theme-blue">
+    <div id="app">
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home" style="background-color: RGB(236,235,235);">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="col-80 title" id="title">设备详情</div>
+                    </div>
+                    <button class="button col-1" id="detail-refresh" style="display:none">
+                    </button>
+                </div>
+
+                <div class="page-content" style="padding-bottom:70px;margin-top:-20px">
+
+                    <div class="list inline-labels no-hairlines-md">
+                        <form class="list" id="my-form">
+                            <ul>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">资产名称</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="ASSET_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">设备类型</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="TYPE_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">记录编码</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="ASSET_CODE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">使用情况</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="USE_STATE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">资产编号</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="ASSETNO" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">资产简称</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="SHORT_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">版本</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="VERSION" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">序列号</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="SERIAL_NUM" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">许可数量</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="LICENSE_NUM" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">使用部门</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="DEPT_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">品牌、厂家</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="PRODUCE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">型号规格</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="ASSET_SIZE" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">责任人</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="PERSON" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">管理部门</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="MDEPT_NAME" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-inner" style="padding: 0px;padding-left: 16px;padding-right:16px;">
+                                        <div class="item-title" style="color: #666666">使用人</div>
+                                        <div class="item-after" style="text-align:right">
+                                            <input style="text-align: right;font-size: 14px;color: rgba(0, 0, 0, 0.54)" type="text" name="CARD_USER" placeholder="" readonly />
+                                        </div>
+                                    </div>
+                                </li>
+
+                            </ul>
+                        </form>
+                    </div>
+
+
+                </div>
+
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a class="link external" id="backUrl">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script type="text/javascript" src="../../dist/Framework7/app.js?v=1"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" id="scriptBlock">
+'use strict';
+var img_baseurl = "../../";
+//debugger
+var myPhotoBrowserPopup = null;
+var originalData = eval('(' + page.route.params.params + ')');
+var id = originalData.sid;
+//var id = 'wl-046';
+var dangerCorpId = originalData.DANGER_CORP_ID
+var photos = [];
+
+var business = {
+            detail: null,
+            deptList: [],
+            userList: [],
+            orginData: null,
+            getCombox: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/AssetCard/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.user = data.User;
+                        me.assetStatus = data.AssetStatus;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            getData: function () {
+                var me = this;
+                var where = JSON.stringify({
+                    op: 'and',
+                    rules: [{ field: 'ASSET_ID', op: 'equal', value: id }]
+                });
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    data: { "where": where },
+                    url: 'Special/AssetCard/List',
+                    success: function (data) {
+                        debugger
+                        me.detail = data.Rows[0];
+                        app.form.fillFromData('#my-form', me.detail);
+
+                    },
+                    error: function (message, data) {
+                        app.dialog.error(message, function () { });
+                        return;
+                    }
+                });
+            },
+            initButton: function () {
+                var me = this
+                $('#backUrl').on('click', function (e) {
+                    $('#refresh', parent.document).click();
+                    app.methods.toUrl("back")
+                })
+            },
+            initFreshButton: function () {
+                var me = this;
+                //刷新按钮
+                $('#detail-refresh').on('click', function (e) {
+                    me.getData();
+                })
+            },
+            init: function () {
+                var me = this;
+                me.initButton();
+                me.getData();
+                me.initFreshButton();
+            }
+};
+business.init();
+    </script>
+</body>
+</html>

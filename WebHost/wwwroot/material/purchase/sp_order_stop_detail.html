@@ -1,0 +1,265 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            rootPath:'Material/SpOrderStop/',
+            MenuNo: getQueryStringByName("MenuNo"),
+            dialog: null,
+            dialogData: null,
+            Sid: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "关联外键", name: "_search_STOP_ID", dbname: "STOP_ID", newline: false, type: "hidden" },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "订单编号", name: "ORDER_CODE", width: 150, type: "text", },
+                            { display: "中止数量", name: "STOP_NUM", type: "number", width: 80, editor: { type: 'number', }, validate: { required: true } },
+                            { display: "订单数量", name: "COUNT", width: 150, type: "decimal", },
+                            { display: "入库数量", name: "INSTORE_COUNT", width: 150, type: "decimal", },
+                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text"  },
+                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
+                            { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
+                            { display: "申请人", name: "APPLY_USER", width: 150, type: "text", },
+                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
+
+                            { display: "ORDERDET_ID", name: "ORDERDET_ID", dbname: "ORDERDET_ID", width: 100, type: "text", hide: true },
+                            { display: "ORDER_ID", name: "ORDER_ID", dbname: "ORDER_ID", width: 100, type: "text", hide: true },
+                            { display: "STOP_ID", name: "STOP_ID", dbname: "STOP_ID", width: 100, type: "text", hide: true },
+                            { display: "主键", name: "STOP_DET_ID", dbname: "STOP_DET_ID", width: 100, type: "text", hide: true },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: false,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    toolbar: { group:"detail" },
+                    url: me.rootPath + 'DetailList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'CREATEDATE',
+                    sortOrder: 'DESC',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: !me.isView,
+                    clickToEdit: true,
+                    onBeforeSubmitEdit: function (e) {
+                        if (e.column.name == "STOP_NUM") {
+                            if (e.value < 0) {
+                                LG.showError("不可为负数！");
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                    }
+                }
+                if (!me.isView)
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+                var callback = function (list) {
+                    var gridlist = me.grid.getData();
+                    var flag = false;
+                    for (var i in list) {
+                        var flag = gridlist.some(t => t.ORDERDET_ID == list[i].ORDERDET_ID);
+                        if (flag) {
+                            LG.showError(list[i].SP_NAME + "[" + list[i].SP_CODE + "]" + "已存在,不能重复添加");
+                            return
+                        }
+                        me.grid.addEditRow({
+                            "STOP_ID": me.Sid,
+                            "ORDER_ID": list[i].ORDER_ID,
+                            "ORDERDET_ID": list[i].ORDERDET_ID,
+                            "ORDER_CODE": list[i].ORDER_CODE,
+                            "ORDER_DATE": list[i].ORDER_DATE,
+                            "COUNT": list[i].COUNT,
+                            "INSTORE_COUNT": list[i].INSTORE_COUNT,
+                            "APPLY_USER": list[i].APPLY_USER,
+                            "DEPT_NAME": list[i].DEPT_NAME,
+                            "UNIT": list[i].UNIT,
+                            "SP_SIZE": list[i].SP_SIZE,
+                            "SP_NAME": list[i].SP_NAME,
+                            "SP_CODE": list[i].SP_CODE,
+                        });
+                    }
+                };
+
+
+                $.ligerDialog.open({
+                    width: 980,
+                    height: 600,
+                    allowClose: true,
+                    title: "挑选采购订单物资",
+                    url: "orderDetailPop.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        isCancel:"0",
+                        mainReloadBtn: me.buttons[0],
+                        callback: callback
+                    }
+                });
+
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+
+                   
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'DetailSave',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                        me.searchForm.setData({ "_search_STOP_ID": me.Sid });
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+
+                me.dialog = frameElement.dialog;
+                me.dialogData = me.dialog.get('data');
+                me.Sid = me.dialogData.Sid;
+                me.isView = me.dialogData.view === "1";
+                
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>任务明细</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform">
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialogData: {},
+            isAddNew: false,
+            isView: true,
+            sid: getQueryStringByName("sid"),
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            { display: "任务名称", name: "TASK_NAME", newline: true, type: "text", validate: { required: true }, options: {} },
+                            { display: "任务组", name: "TASK_GROUP", newline: true, type: "text", validate: { required: true }, options: {} },
+                            { display: "任务描述", name: "TASK_DESC", newline: true, type: "text", options: {} },
+                            { display: "间隔(Cron)", name: "TASK_CRON", newline: true, width: 140, type: "text", validate: { required: true }, options: { onChangeValue: me.changeCron }, afterContent: '<b id="fire-time"></b>' },
+                            { display: "服务器IP", name: "TASK_RUNIP", newline: true, type: "text", options: { nullText: "运行的服务器IP，不设置默认所有服务器都可以执行" } },
+                            { display: "调用方法", name: "TASK_INVOKE", newline: true, type: "text", options: { nullText: "如：Gksyb.Server.Job.WeiXinNoticeJob, Gksyb.Server" } },
+                            { display: "数据视图", name: "TASK_VIEW", newline: true, type: "text", options: { nullText: "页面配置的视图" } },
+                            { display: "数据", name: "TASK_DATA", newline: true, type: "textarea", width: 100, options: { rows: 10, cols: 90 } },
+                            { display: "异常匹配", name: "TASK_ERROR_REGEX", newline: true, type: "text", options: { nullText: "支持正则表达式" } },
+                            { display: "异常回调", name: "TASK_ERROR_INVOKE", newline: true, type: "text", options: { nullText: "异常回调可以是通知等" } }
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            changeCron: function (input, value, g) {
+                var $dom = $("#fire-time");
+                $dom.text("");
+                if (!value) return;
+                LG.ajax({
+                    async: false,
+                    url: 'task/nextfiretime',
+                    loading: '正在获取中...',
+                    data: { cron: value },
+                    success: function (data) {
+                        $dom.text(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadComboxData: function () {
+            },
+            loadData: function () {
+                var me = this;
+                me.loadComboxData();
+                if (me.isAddNew) {
+                    me.mainform.setOrginData({ TASK_CRON: "0/5 * * * * ? *", TASK_TYPE: "本地" });
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'task/get',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data) {
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                me.mainform.focus();
+            },
+            save: function () { //保存
+                var me = this;
+                if ($.isEmptyObject(me.mainform.getChanges())) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.TASK_DATA = encrypt(data.TASK_DATA);
+                    data.TASK_ERROR_REGEX = encrypt(data.TASK_ERROR_REGEX);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.mainform.getOrginData());
+                var changeRow = new Object();
+                if (me.isAddNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'task/save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () {
+                            location.reload(true);
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            closeQuery: function (callback) {
+                var me = this;
+                if (me._skipConfirm === true || $.isEmptyObject(me.mainform.getChanges())) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                if (me.dialog) {
+                    me.dialog.close();
+                    return;
+                }
+                me.closeQuery(function () {
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
+                });
+            },
+            setFormDefaultBtn: function (cancleCallback, savedCallback) {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    me.loadData();
+                                }
+                            });
+                        }
+                    });
+                }
+                buttons.push({ text: '关闭', onclick: function () { me.close(); } });
+                if (!me.isView) buttons.push({ text: '保存', onclick: function () { me.save() } });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    enterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 100,
+                    inputWidth: 500,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    if (me.closeQuery) me.dialog.options.closeQuery = me.closeQuery.bind(me);
+                    me.dialogData = me.dialog.get('data');
+                    if (me.dialogData) {
+                        me.callback = me.dialogData.callback;
+                        me.sid = me.dialogData.sid
+                        me.isView = me.dialogData.view === "1";
+                    }
+                }
+                if ((me.sid || "0") === "0") me.sid = "";
+                me.isAddNew = (me.sid === "");
+                me.isView = false;
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

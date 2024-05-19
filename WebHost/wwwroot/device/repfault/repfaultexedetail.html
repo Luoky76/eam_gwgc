@@ -1,0 +1,980 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>故障处理</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%; overflow:auto;">
+    <form id="mainform" style="width:97%;">
+    </form>
+    <div style="margin-bottom: 5px; width: 98%;" id="paramform">
+    </div>
+    <div style="width: 94.5%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>物资明细</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="margin-bottom: 50px; width: 100%;" id="spgird">
+                    </div>
+                </li>
+            </ul>
+            <div class="l-group" style="width: 100%;"><span>人员明细</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style=" width: 100%;">
+                    <div style="margin-bottom: 50px; width: 100%;" id="pepgird">
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            dialogData: {},
+            sid: getQueryStringByName("sid"),
+            isAddNew: false,
+            isView: false,
+            orginData: {},
+            auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            disposeType: [],
+            deviceStatus: [],
+            faultSrc: [],
+            faultStatus: [],
+            repType: [],
+            shipInfo: [],
+            maintDept: [],
+            repairUser: [],
+            start: null,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        labelwidth: 220,
+                        fields: [
+                            //基础信息
+                            { display: "记录状态", name: "AUDITING_B", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "设备故障上报" },
+                            { display: "故障单号", name: "FAULT_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
+                            { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultStatus } },
+                            {
+                                display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                options: {
+                                    data: me.shipInfo,
+                                    autocomplete: true,
+                                    selectBoxWidth: 400,
+                                    valueField: "ID",
+                                    textField: "TEXT",
+                                    columns: [
+                                        { header: '船舶名称', name: 'TEXT' },
+                                        { header: '船舶编号', name: 'VALUE', width: 100 },
+                                        { header: '使用部门', name: 'EXTEND', width: 100 },
+                                        { header: '维保部门', name: 'EXTEND1', width: 100 },
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#SHIP_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#SHIP_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "船舶编码", name: "SHIP_CODE", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "船舶名称", name: "SHIP_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "故障发生时间", name: "FAULT_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
+                            {
+                                display: "设备状态", name: "DEVICE_STATUS", newline: false, upper: true, type: "select", validate: { required: true }, options: {
+                                    data: me.deviceStatus,
+                                }
+                            },
+                            {
+                                display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                options: {
+                                    data: me.deviceInfo,
+                                    autocomplete: true,
+                                    selectBoxWidth: 300,
+                                    valueField: "ID",
+                                    textField: "TEXT",
+                                    columns: [
+                                        { header: '设备编号', name: 'VALUE', width: 150 },
+                                        { header: '设备名称', name: 'TEXT' }
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
+                                            $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                            $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
+                                            $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
+                                            $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "异常来源", name: "FAULT_SRC", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultSrc } },
+                            //{ display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修人", name: "REPAIR_USER", newline: false, upper: true, type: "text", options: {} },
+                            { display: "维修人ID", name: "REPAIR_USERID", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            //{ display: "使用部门", name: "DEPT_ID", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+
+                            { display: "维保部门", name: "WDEPT_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
+                            {
+                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: {
+                                    data: me.maintDept,
+                                    onChangeValue: function (input, value, g) {
+                                        if (value) {
+                                            for (var i = 0; i < me.maintDept.length; i++) {
+                                                if (value == me.maintDept[i].ID) {
+                                                    me.mainform.setData({ 'WDEPT_NAME': me.maintDept[i].VALUE })
+                                                }
+                                            }
+                                        } else {
+                                            me.mainform.setData({ 'WDEPT_NAME': '' })
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "上报人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            //{ display: "上报人ID", name: "EDIT_USERID", newline: false, upper: true, type: "text", options: {} },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: 775, validate: { required: true }, type: "textarea", options: {} },
+
+                            { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.disposeType }, group: "故障处理" },
+                            { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.repType } },
+                            { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text", options: {} },
+                            {
+                                display: "开工时间", name: "ORDER_DATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours(value, $('#COMPLETE_DATE').val());
+                                    },
+                                },
+                            },
+                            {
+                                display: "完工时间", name: "COMPLETE_DATE", newline: false, upper: true, type: "date", validate: { required: true },
+                                options: {
+                                    format: 'yyyy-MM-dd HH:mm:ss',
+                                    onChangeValue: function (input, value, g) {
+                                        me.updateWorkHours($('#ORDER_DATE').val(), value);
+                                    },
+                                }
+                            },
+                            { display: "维修工时(h)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float", editor: { disabled: true }, options: {} },
+                            { display: "故障及解决方法描述", name: "FAULT_REASON", newline: true, upper: true, validate: { required: true }, width: 775, type: "textarea", options: {} },
+                            { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: 775, validate: { required: true }, type: "textarea", options: {} },
+                            { display: "故障处理备注", name: "FAULT_MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+
+
+
+                            //隐藏
+                            { display: "主键", name: "FAULT_ID", newline: false, upper: true, type: "hidden", options: {} },]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "人员姓名", name: "LABOR_NAME", minWidth: 200, type: "text", editor: { type: 'text' } },
+                            { display: "人员ID", name: "LABOR_ID", minWidth: 100, hide: true },
+                            { display: "工时(H)", name: "WORK_HOURS", minWidth: 200, type: "float", editor: { type: 'float' } },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "主键", name: "FAULT_LABOR_ID", width: 100, hide: true },
+                            { display: "外键", name: "FAULT_ID", width: 100, hide: true },
+
+                        ]
+                    },
+                    grid2: {
+                        columns: [
+                            //{ display: "来源", name: "SP_SOURCE", minWidth: 100, type: "text", },
+                            { display: "备件品种编码", name: "SP_CODE", minWidth: 100, type: "text", },
+                            { display: "备件品种名称", name: "SP_NAME", minWidth: 100, type: "text", },
+                            { display: "型号规格", name: "SP_SIZE", minWidth: 100, type: "text", },
+                            { display: "物料ID", name: "SP_ID", minWidth: 100, hide: true },
+                            { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text", },
+                            { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
+                            { display: "库存数量", name: "CUR_NUM", minWidth: 100, type: "float", },
+                            { display: "*实际消耗数量", name: "REAL_OUT_NUM", validate: { required: true }, minWidth: 100, type: "float", editor: { type: 'float' } },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
+                            //{ display: "制造厂", name: "FACTORY", minWidth: 100, type: "text" },
+                            { display: "主键", name: "FAULT_SP_ID", minWidth: 100, hide: true },
+                            { display: "外键", name: "SP_STORE_ID", minWidth: 100, hide: true },
+                            { display: "外键", name: "FAULT_ID", minWidth: 100, hide: true },
+                        ]
+                    },
+                };
+            },
+            mainform: null,
+            buttons: null,
+            //时间判断
+            updateWorkHours: function (startDate, completeDate) {
+                var start = new Date(startDate);
+                var complete = new Date(completeDate);
+
+                if (!startDate || !completeDate) {
+                    $('#REPAIR_HOURS').val("");
+                    return;
+                }
+
+                if (start >= complete) {
+                    $('#ORDER_DATE').val("");
+                    $('#COMPLETE_DATE').val("");
+                    $('#REPAIR_HOURS').val("");
+                    LG.showError("开工时间不能大于完工时间或者当前时间！请重新选择！");
+                    return;
+                }
+
+                var now = new Date();
+                if (complete > now) {
+                    $('#COMPLETE_DATE').val("");
+                    LG.showError("完工时间不能大于当前时间！");
+                    return;
+                }
+
+                var timeDiff = complete - start;
+                var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
+                $('#REPAIR_HOURS').val(minutesDiff);
+            },
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/RepFault/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.faultStatus = data.faultStatus;
+                        me.maintDept = data.maintDept;
+                        me.shipInfo = data.shipInfo;
+                        me.deviceInfo = data.deviceInfo;
+                        me.disposeType = data.disposeType;
+                        me.deviceStatus = data.deviceStatus;
+                        me.repType = data.repType;
+                        me.faultSrc = data.faultSrc;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
+                if (me.isAddNew) {
+                    me.mainform.setData({ AUDITING_B: "0", FAULT_STATUS: "30", FAULT_SRC: "10", DISPOSE_TYPE: "2" });
+                    inner();
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/RepFault/GetFaultExeListDetail',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            data.OLDMODIFYDATE = data.MODIFYDATE;
+                            me.mainform.setData(data);
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                var input = me.mainform.getEditor(me.config.form.fields[0].name).inputText;
+                input.focus();
+                input.select();
+            },
+            //保存
+            save: function () { //保存
+                var me = this;
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow = new Object();
+                if (me.isAddNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/RepFault/ManageFaultExe',
+                    loading: '正在保存中...',
+                    data: { request: changeRow },
+                    success: function (result) {
+                        LG.showSuccess('保存成功', function () {
+                            if (me.dialog) me.dialog.close();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var isChangedGrid2 = me.grid2.getChangedRows();
+                    var isChangedGrid = me.grid.getChangedRows();
+                    if (updateFields || isChangedGrid2.updated.length > 0 || isChangedGrid2.added.length > 0 || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
+                    }
+                });
+            },
+            setFormDefaultBtn: function (cancleCallback, savedCallback) {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            //物料消耗明细
+            grid2: null,
+            setGrid2: function () {
+                var me = this;
+                me.config.grid2.columns.removeNull();
+                me.grid2 = $("#spgird").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.grid2.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Device/RepFault/GetFaultSpList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'FAULT_ID', op: 'equal', value: $('#FAULT_ID').val() }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+                me.grid2.isValid = true;
+                if (!me.isView) {
+                    me.loadToolbar2();
+                }
+                me.bindGridEvent2();
+            },
+            bindGridEvent2: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid2.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            loadToolbar2: function () {
+                var me = this;
+                me.toolbarBtnItemClick2 = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadSp();
+                            break;
+                        case "import":
+                            //导入前需要先保存主表
+                            if ($('#FAULT_ID').val() == '') {
+                                LG.showError("请先保存设备基础数据");
+                            }
+                            else me.import();
+                            break;
+                        case "savesp":
+                            me.savesp();
+                            break;
+                        case "deletesp":
+                            me.deletesp();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid2.toolbarManager.options.group = 'detail2';
+                LG.loadToolbar(me.grid2, me.toolbarBtnItemClick2);
+            },
+            //新增
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    FAULT_ID: me.sid
+                });
+                me.grid2.addEditRow(row, true);
+            },
+            //导入
+            import: function () {
+                var me = this;
+                var gridData = me.grid2.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.SP_STORE_ID);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Device/RepFault/ImportList',
+                        rowKey: "STORE_ID",
+                        columns: [
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text" },
+                            { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            //{ display: "图号", name: "DRAWING_NO", minWidth: 100, type: "text" },
+                            { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text" },
+                            { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text" },
+                            { display: "库存数量", name: "NUM", minWidth: 100, type: "float" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "主键", name: "STORE_ID", hide: true },
+
+                        ]
+                    },
+                    fields: [
+                        { display: "物料名称", name: "SP_NAME", width: 100, type: "text" },
+                        { display: "物料编码", name: "SP_CODE", width: 200, type: "text" }
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.STORE_ID)) {
+                                me.addGrid({
+                                    SP_CODE: item.SP_CODE,
+                                    SP_NAME: item.SP_NAME,
+                                    HOUSE_NAME: item.HOUSE_NAME,
+                                    SP_SIZE: item.SP_SIZE,
+                                    DRAWING_NO: item.DRAWING_NO,
+                                    STOCK_NAME: item.STOCK_NAME,
+                                    CUR_NUM: item.NUM,
+                                    SP_STORE_ID: item.STORE_ID,
+                                    REAL_OUT_NUM:"1",
+                                    UNIT: item.UNIT
+                                });
+                            }
+                        }
+                        me.savesp();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '挑选物资',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            //保存
+            savesp: function () { //保存
+                var me = this;
+                var flag = true;
+                if (me.grid2.endEdit() != false) {
+                    if (!me.grid2.isDataChanged) {
+                        LG.showSuccess('无变动');
+                        return;
+                    }
+                    if (!me.grid2.validChangeRows()) return false;
+                    var changeRow = me.grid2.getChangedRows();
+                    for (var i = 0; i < changeRow.updated.length; i++) {
+                        var row = changeRow.updated[i];
+                        if (row.CUR_NUM < row.REAL_OUT_NUM) {
+                            flag = false;
+                            LG.showSuccess('实际消耗数量不可大于库存数量！');
+                            break;
+                        }
+                        if (row.REAL_OUT_NUM < 0) {
+                            flag = false;
+                            LG.showSuccess('实际消耗数量不可为负数！');
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Device/RepFault/ManageFaultSp',
+                            loading: '正在保存中...',
+                            data: changeRow,
+                            success: function () {
+                                LG.showSuccess('保存成功');
+                                me.grid.isDataChanged = false;
+                                me.reloadSp();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
+            //删除
+            deletesp: function () { //删除
+                var me = this;
+                if (me.grid2.endEdit() != false) {
+                    var selected = me.grid2.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid2.deleteRow(selected[i]);
+                                }
+                                me.savesp();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            //刷新
+            reloadSp: function () {
+                var me = this;
+                me.grid2.loadData();
+            },
+            //人员明细
+            grid: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#pepgird").ligerGrid({
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.grid.columns,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Device/RepFault/GetFaultPepList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'FAULT_ID', op: 'equal', value: $('#FAULT_ID').val() }]
+                        })
+                    },
+                    //sortName: 'MODIFY_DATE',
+                    //sortOrder: 'desc',
+                    width: '99%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        //me.iframeloading.hide();
+                    }
+                });
+                me.grid.isValid = true;
+                if (!me.isView) {
+                    me.loadToolbar();
+                }
+                me.bindGridEvent();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadPep();
+                            break;
+                        case "adddet":
+                            me.addPep();
+                            break;
+                        case "deletedet":
+                            me.deletePep();
+                            break;
+                        case "savedet":
+                            me.savePep();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid.toolbarManager.options.group = 'detail';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            //刷新
+            reloadPep: function () {
+                var me = this;
+                me.grid.loadData();
+            },
+            //新增
+            addPep: function () {
+                var me = this;
+                if ($('#FAULT_ID').val() == '') {
+                    LG.showError("请先保存设备基础数据");
+                    return;
+                }
+                me.grid.addEditRow({ "FAULT_ID": $('#FAULT_ID').val() });
+                me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
+            },
+            //保存
+            savePep: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    var errorMessages = [];
+
+                    changeRow.updated.concat(changeRow.added).forEach(function (row) {
+                        if (row.WORK_HOURS < 0) {
+                            errorMessages.push('工时不可为负数！');
+                        }
+                    });
+
+                    if (errorMessages.length > 0) {
+                        LG.showSuccess(errorMessages[0]);
+                        return;
+                    }
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Device/RepFault/ManageFaultPep',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reloadPep();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+            },
+            //删除
+            deletePep: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.savePep();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+
+            f_select_man: function () {
+                var me = this;
+                var userId = me.mainform.getData().REPAIR_USERID || "";
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 500,
+                    title: '人员挑选',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [userId],
+                        options: {
+                            url: 'popup/users', sortName: 'Name', rowKey: "Id", isSingleCheck: false,
+                            columns: [
+                                { display: "姓名", name: "Name", type: "text" },
+                                { display: "公司岗位", name: "Station", type: "text" }
+                            ]
+                        },
+                        fields: [
+                            { display: "姓名", name: "Name", width: 100, type: "text" },
+                            { display: "公司岗位", name: "Station", width: 100, type: "text" }
+                        ],
+                        callback: function (values, rows) {
+                            if (rows.length < 1) {
+                                me.mainform.setData({
+                                    "REPAIR_USER": null,
+                                    "REPAIR_USERID": null,
+                                });
+                                return;
+                            }
+                            var name = rows.map(function (rows) {
+                                return rows.Name;
+                            }).join(",");
+                            var id = rows.map(function (rows) {
+                                return rows.Id;
+                            }).join(",");
+                            me.repairUser = rows
+                            me.mainform.setData({
+                                "REPAIR_USER": name,
+                                "REPAIR_USERID": id,
+                            });
+                        }
+                    }
+                });
+
+            },
+
+            //选择故障知识库
+            f_select_fault: function () {
+                var me = this;
+                var codeId = me.mainform.getData().FRDB_CODE || "";
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 500,
+                    title: '选择故障知识库',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [codeId],
+                        options: {
+                            url: 'Device/RepInfo/GetRepFrdbList',
+                            parms: {
+                                where: JSON.stringify({
+                                    op: 'and',
+                                    rules: [{ field: 'AUDITING', op: 'equal', value: "1" }]
+                                })
+                            },
+                            sortName: 'FRDB_CODE', rowKey: "FRDB_CODE", isSingleCheck: true,
+                            columns: [
+                                { display: "故障库编码", name: "FRDB_CODE", width: 100, type: "text", },
+                                { display: "船舶编码", name: "DEVICE_CODE", width: 100, type: "text", },
+                                { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
+                                { display: "故障现象", name: "FAULT_DESCRIBE", minWidth: 250, type: "text", },
+                                { display: "故障原因", name: "FAULT_REASON", minWidth: 200, type: "text", },
+                                { display: "解决方法", name: "MEASURES", minWidth: 200, type: "text", },
+                            ]
+                        },
+                        fields: [
+                            { display: "故障库编码", name: "FRDB_CODE", type: "text" },
+                            { display: "船舶名称", name: "DEVICE_NAME", type: "text" }
+                        ],
+                        callback: function (values, rows) {
+                            if (rows.length < 1) {
+                                me.mainform.setData({
+                                    "FRDB_CODE": null,
+                                });
+                                return;
+                            }
+                            me.mainform.setData({
+                                "FRDB_CODE": rows[0].FRDB_CODE,
+                            });
+                        }
+                    }
+                });
+
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data');
+                    me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                }
+
+                //加在基础信息
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+
+
+                //加载重大改造履历
+                me.setGrid();
+                me.setGrid2();
+                if (me.dialogData.view == undefined) {
+                    $('#REPAIR_USER').bind('click', function () {
+                        me.f_select_man();
+                    });
+                    $('#FRDB_CODE').bind('click', function () {
+                        me.f_select_fault();
+                    });
+                }
+                me.reloadPep();
+                me.reloadSp();
+                if (me.dialogData.view != undefined) {
+                    const commonGridOptions = {
+                        enabledEdit: false,
+                    };
+                    me.grid.setOptions(commonGridOptions);
+                    me.grid2.setOptions(commonGridOptions);
+                }
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>

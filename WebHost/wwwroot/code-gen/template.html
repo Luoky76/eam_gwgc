@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>模板生成</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <style type="text/css">
+        .full {
+            margin: 0;
+            padding: 3px 5px;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            box-sizing: border-box;
+            border: none;
+        }
+
+        #maintree {
+            margin-bottom: 45px;
+        }
+    </style>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="模板" id="mainmenu">
+            <ul id="maintree"></ul>
+        </div>
+        <div id="template" position="center">
+            <div id="iframeloading" class='l-loading'>
+            </div>
+            <div id="content-pannel">
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            iframeloading: $("#iframeloading"),
+            tree: null,
+            reloadTree: function () {
+                var me = this;
+                me.selectNode = me.tree.getSelected();
+                me.tree.reload();
+            },
+            initTab: function (data) {
+                var me = this;
+                if (me.tab) {
+                    me.tab.destroy();
+                }
+                $("#content-pannel").html('<div id="content"></div>');
+                var $tab = $("#content");
+                me.data = data || [];
+                var htmls = [];
+                for (var i = 0, l = me.data.length; i < l; i++) {
+                    var item = me.data[i];
+                    htmls.push('<div title="' + item.Key + '">');
+                    htmls.push('    <textarea class="full">' + item.Value + '</textarea></div>');
+                }
+                $tab.html(htmls.join(''));
+                me.tab = $tab.ligerTab({
+                    heightDiff: -45,
+                    cls: "l-tab-auto",
+                    height: "100%",
+                    pill: true,
+                    showSwitch: true
+                });
+            },
+            loadTemplate: function (name) {
+                var me = this;
+                LG.ajax({
+                    url: 'codeGen/templateContent',
+                    loading: '正在生成中...',
+                    data: { tableInfos: me.dialogData, template: name },
+                    success: function (data, message) {
+                        me.iframeloading.hide();
+                        me.template = name;
+                        me.initTab(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            reload: function () { //刷新
+                var me = this;
+                var node = me.tree.getSelected();
+                if (node && node.data) {
+                    var nodeData = node.data;
+                    if (nodeData.children && nodeData.children.length) {
+                        return;
+                    }
+                    me.loadTemplate(nodeData.ID);
+                }
+            },
+            setTree: function () {
+                var me = this;
+                me.tree = $("#maintree").ligerTree({
+                    url: "codeGen/templateTree",
+                    parms: {},
+                    nodeWidth: 160,
+                    slide: false,
+                    checkbox: false,
+                    single: true,
+                    needCancel: false,
+                    parentIDFieldName: 'PARENTID',
+                    iconClsFieldName: "ICON",
+                    isExpand: 2,
+                    filter: true,
+                    treeLine: false,
+                    onSuccess: function (data) {
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.ID);
+                    },
+                    onSelect: function () {
+                        me.iframeloading.show();
+                        me.reload();
+                    }
+                });
+            },
+            build: function () {
+                var me = this;
+                $.ligerDialog.prompt("请输入模块", "", function (isOk, val) {
+                    if (!isOk) return;
+                    var rows = $.extend(true, [], me.dialogData || []);
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var item = rows[i];
+                        item.Module = val;
+                    }
+                    LG.ajax({
+                        url: 'codeGen/templateBuild',
+                        loading: '正在生成中...',
+                        data: { tableInfos: rows, template: me.template },
+                        success: function (data) {
+                            LG.showSuccess("生成路径：" + data, function () {
+                                me.dialog.close();
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            download: function () {
+                var me = this;
+                $.ligerDialog.prompt("请输入模块", "", function (isOk, val) {
+                    if (!isOk) return;
+                    var rows = $.extend(true, [], me.dialogData || []);
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var item = rows[i];
+                        item.Module = val;
+                    }
+                    LG.download({
+                        url: "codeGen/templateDownload",
+                        type: "post",
+                        contentType: "application/json",
+                        data: { tableInfos: rows, template: me.template }
+                    });
+                });
+            },
+            copy: function () {
+                var me = this;
+                var html = me.tab.getSelectedTabItem().find(".full").text();
+                navigator.clipboard.writeText(html);
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                var buttons = [];
+                buttons.push({ text: '下载', onclick: function () { me.download(); } });
+                buttons.push({ text: '本地生成', onclick: function () { me.build(); } });
+                buttons.push({ text: '复制', onclick: function () { me.copy(); } });
+                LG.addFormButtons(buttons, $("#template"));
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                }
+                $("#layout").ligerLayout({ leftWidth: 240 });
+                me.iframeloading.show();
+                me.setTree();
+                me.setFormDefaultBtn();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

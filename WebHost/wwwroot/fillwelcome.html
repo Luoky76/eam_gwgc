@@ -1,0 +1,567 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link href="lib/dist/css/normalize.css" rel="stylesheet" />
+    <link href="lib/dist/css/bootstrap.css" rel="stylesheet" />
+    <link href="/lib/dist/css/unity-page.min.css" rel="stylesheet" />
+    <style>
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+
+        .ant-row {
+            position: relative;
+            margin-left: 0;
+            margin-right: 0;
+            height: auto;
+            float: left;
+            zoom: 1;
+            display: block;
+            width: 100%
+        }
+
+        .sidebar {
+            width: 250px; /* 设置侧边栏的宽度 */
+            background-color: #f0f0f0; /* 设置背景颜色 */
+            border-right: 1px solid #ccc; /* 添加右边框 */
+            padding: 10px; /* 添加内边距 */
+            position: fixed; /* 让侧边栏固定在屏幕上 */
+            top: 0; /* 设置侧边栏距离顶部的距离 */
+            bottom: 0; /* 设置侧边栏距离底部的距离 */
+            float: left;
+        }
+
+        .ant-col {
+            display: flex;
+            width: 100%;
+            position: relative;
+            min-height: 1px;
+            padding-left: 0;
+            padding-right: 0;
+            float: left;
+            -ms-flex: 0 0 auto;
+            flex: 0 0 auto
+        }
+
+        .ant-card {
+            background: #f5f5f5;
+            border-color: #d5d5d5;
+            margin-bottom: 30px;
+            float: left;
+        }
+
+        .title {
+            width: 50px;
+        }
+
+        .card {
+            width: 210px;
+        }
+
+        /*.ant-card :hover {
+                background: #ffffff;
+            }*/
+
+        .ant-card-bordered {
+            border-width: 0;
+            border: 1px solid #f5f5f5;
+            border-top: 4px solid red;
+            height: 250px;
+            float: left;
+            margin-right: 10px;
+        }
+
+        .centerItem a {
+            color: #7a7a7a;
+            font-size: 15px;
+        }
+
+            .centerItem a:hover {
+                color: #4ab1fc;
+                background: transparent;
+            }
+
+        /*.fontItem {
+            border-width: 0;
+            border: 1px solid #f5f5f5;
+            border-bottom: 1px solid #666666;
+        }*/
+        .vertical-text {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .vertical-text-content {
+            writing-mode: vertical-rl; /* 设置文字垂直显示 */
+            text-orientation: upright; /* 设置文字方向为垂直 */
+            font-size: 20px;
+            line-height: 1; /* 垂直文字建议设置行高为1，以确保文字之间不产生额外间距 */
+        }
+
+        .fontItem {
+            height: 30px;
+            width: 100%;
+            float: left;
+            white-space: nowrap;
+            overflow: hidden;
+            -o-text-overflow: ellipsis;
+            text-overflow: ellipsis;
+            padding: 0 20px;
+            font-size: 13px;
+        }
+    </style>
+    <script src="lib/LGboot.js" type="text/javascript"></script>
+</head>
+<body style="overflow-y: auto;">
+    <div class="width:100%;padding:20px 10px 0;overflow-y:auto;height:calc(100% - 100px);">
+        <div class="ant-row">
+            <div class="ant-col" style="padding: 0px 10px;" id="Device">
+                <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
+                    <span style="line-height: 36px; font-size: 20px;" class="vertical-text-content">设备数据</span>
+                </div>
+                <div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255);" id="DeviceRun">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">设备运行情况</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;" id="DeviceRunTrans">
+                                        <a href="javascript:void(0);" title="设备运行状态转换" onclick="business.sbyxzt()">设备运行状态转换</a>
+                                    </div>
+                                    <div class="fontItem" style="width: 100%;" id="DeviceStopManage">
+                                        <a href="javascript:void(0);" title="设备停机管理" onclick="business.sbtjgl()">设备停机管理</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255);" id="Repair">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">维修管理</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;" id="ReportPlan">
+                                        <a href="javascript:void(0);" title="故障报修" onclick="business.gzbx()">故障报修</a>
+                                    </div>
+                                    <div class="fontItem" style="width: 100%;" id="Audit">
+                                        <a href="javascript:void(0);" title="故障核验" onclick="business.gzhy()">故障核验</a>
+                                    </div>
+                                    <div class="fontItem" style="width: 100%;" id="exe">
+                                        <a href="javascript:void(0);" title="维修计划实施" onclick="business.wxjhshh()">维修计划实施</a>
+                                    </div>
+                                    <div class="fontItem" style="width: 100%;" id="check">
+                                        <a href="javascript:void(0);" title="维修计划验收" onclick="business.wxjhys()">维修计划验收</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255); " id="RepFault">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">故障快修</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;" id="RepFaultExe">
+                                        <a href="javascript:void(0);" title="故障处理" onclick="business.gzcl()">故障处理</a>
+                                    </div>
+                                    <div class="fontItem" style="width: 100%;" id="RepFaultChk">
+                                        <a href="javascript:void(0);" title="故障验收" onclick="business.gzys()">故障验收</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(55, 178, 255); " id="PmManage">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">维保管理</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;" id="PmPlan">
+                                        <a href="javascript:void(0);" title="维保计划" onclick="business.wbjh()">维保计划</a>
+                                    </div>
+                                    <div class="fontItem" style="width: 100%;" id="PmPlanExe">
+                                        <a href="javascript:void(0);" title="维保实施" onclick="business.wbshh()">维保实施</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ant-col" style="padding: 0px 10px;" id="Material">
+                <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
+                    <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">物资数据</span>
+                </div>
+                <div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); "id="MaterialPurchase">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">物资采购</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_apply">
+                                        <a href="javascript:void(0);" title="船舶物资申请" onclick="business.wzcgxq()">船舶物资申请</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_apply_check">
+                                        <a href="javascript:void(0);" title="物资需求确认" onclick="business.wzcgqr()">物资需求确认</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_collect">
+                                        <a href="javascript:void(0);" title="物资需求申请" onclick="business.wzcgsp()">物资需求申请</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_purplan">
+                                        <a href="javascript:void(0);" title="物资询价方案" onclick="business.wzcgfa()">物资询价方案</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_order">
+                                        <a href="javascript:void(0);" title="物资采购订单" onclick="business.wzcgdd()">物资采购订单</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); "id="MaterialWarehouse">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">物资入库</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="MaterialReceive">
+                                        <a href="javascript:void(0);" title="物料收货登记" onclick="business.wlshhdj()">物料收货登记</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="MaterialCheck">
+                                        <a href="javascript:void(0);" title="物料到货验收" onclick="business.wldhys()">物料到货验收</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="Instore">
+                                        <a href="javascript:void(0);" title="物资采购入库" onclick="business.wlcgrk()">物料收货登记</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="Inback">
+                                        <a href="javascript:void(0);" title="物资入库冲红" onclick="business.wzrkchh()">物资入库冲红</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialStore">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">物资库存</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_store_seafarer">
+                                        <a href="javascript:void(0);" title="库存明细 (船员)" onclick="business.kcmxcy()">库存明细 (船员)</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_store">
+                                        <a href="javascript:void(0);" title="库存明细" onclick="business.kcmx()">库存明细</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialOut">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">物资出库</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="SpOutApp">
+                                        <a href="javascript:void(0);" title="物资领用申请" onclick="business.wzlyshq()">物资领用申请</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="SpOutStore">
+                                        <a href="javascript:void(0);" title="物资领用出库" onclick="business.wzlyck()">物资领用出库</a>
+                                    </div>
+                                </div>
+
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="SpOutBack">
+                                        <a href="javascript:void(0);" title="物资出库冲红" onclick="business.wzckch()">物资出库冲红</a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialInventory">
+                        <div class="wf-card-type-name">
+                            <div class="ant-card-body">
+                                <div style="padding: 5px 0px 25px; text-align: center;">
+                                    <span style="height: 36px; line-height: 36px; font-size:16px;">物资盘点</span>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="sp_scan">
+                                        <a href="javascript:void(0);" title="物资盘点任务" onclick="business.wzpdrw()">物资盘点任务</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ant-col" style="padding: 0px 10px;" id="Special">
+            <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
+                <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">专项数据</span>
+            </div>
+            <div>
+                <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 255, 0);"id="Drug">
+                    <div class="wf-card-type-name">
+                        <div class="ant-card-body">
+                            <div style="padding: 5px 0px 25px; text-align: center;">
+                                <span style="height: 36px; line-height: 36px; font-size:16px;">药品管理</span>
+                            </div>
+                            <div class="centerItem">
+                                <div class="fontItem" style="width: 100%;"id="DrugRequest">
+                                    <a href="javascript:void(0);" title="药品需求登记" onclick="business.ypxqdj()">药品需求登记</a>
+                                </div>
+                            </div>
+                            <div class="centerItem">
+                                <div class="fontItem" style="width: 100%;"id="DrugCollect">
+                                    <a href="javascript:void(0);" title="药品采购登记" onclick="business.ypcgdj()">药品采购登记</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 255, 0);"id="labor">
+                    <div class="wf-card-type-name">
+                        <div class="ant-card-body">
+                            <div style="padding: 5px 0px 25px; text-align: center;">
+                                <span style="height: 36px; line-height: 36px; font-size:16px;">劳保管理</span>
+                            </div>
+                            <div class="centerItem">
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="labor-user">
+                                        <a href="javascript:void(0);" title="劳保人员清单" onclick="business.lbryqd()">劳保人员清单</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="labor_exchange">
+                                        <a href="javascript:void(0);" title="劳保用品退换" onclick="business.lbypth()">劳保用品退换</a>
+                                    </div>
+                                </div>
+                                <div class="centerItem">
+                                    <div class="fontItem" style="width: 100%;"id="labor_rent">
+                                        <a href="javascript:void(0);" title="劳保用品租借" onclick="business.lbypzj()">劳保用品租借</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ant-col" style="padding: 0px 10px;" id="Build">
+            <div style="padding: 5px 0px 25px; height: auto; flex-shrink: 0;" class="ant-card ant-card-bordered vertical-text title">
+                <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">能耗数据</span>
+            </div>
+            <div>
+                <div class="ant-card ant-card-bordered card" style="border-top-color: #7a7a7a;">
+                    <div class="wf-card-type-name">
+                        <div class="ant-card-body"><!--
+                            <div style="padding: 5px 0px 25px; text-align: center;">
+                                <span style="height: 36px; line-height: 36px; font-size:16px;">报表</span>
+                            </div>-->
+                            <div class="centerItem">
+                                <div class="fontItem" style="width: 100%;" id="BuildCount001">
+                                    <a href="javascript:void(0);" title="施工能耗填报【001】" onclick="business.sgnh001()">施工能耗填报【001】</a>
+                                </div>
+                                <div class="fontItem" style="width: 100%;" id="BuildCount06">
+                                    <a href="javascript:void(0);" title="施工能耗填报【06】" onclick="business.sgnh06()">施工能耗填报【06】</a>
+                                </div>
+                                <div class="fontItem" style="width: 100%;" id="BuildCount105">
+                                    <a href="javascript:void(0);" title="施工能耗填报【105】" onclick="business.sgnh105()">施工能耗填报【105】</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            sbyxzt: function () {
+                window.parent.f_addTab('DeviceRunTrans', '设备运行状态转换', 'device/devicerun/device-run-trans.html?MenuNo=DeviceRunTrans&ver=' + new Date().getTime());
+            },
+            sbtjgl: function () {
+                window.parent.f_addTab('DeviceStopManage', '设备停机管理', 'device/devicerun/device-stop-manage.html?MenuNo=DeviceStopManage&ver=' + new Date().getTime());
+            },
+            gzbx: function () {
+                window.parent.f_addTab('ReportPlan', '故障报修', 'Device/repairlplan/repair-plan-report.html?MenuNo=ReportPlan&ver=' + new Date().getTime());
+            },
+            gzhy: function () {
+                window.parent.f_addTab('Audit', '故障核验', 'Device/repairlplan/repair-plan-audit.html?MenuNo=Audit&ver=' + new Date().getTime());
+            },
+            wxjhshh: function () {
+                window.parent.f_addTab('exe', '维修计划实施', 'Device/repairlplan/repair-plan-exe.html?MenuNo=exe&ver=' + new Date().getTime());
+            },
+            wxjhys: function () {
+                window.parent.f_addTab('check', '维修计划验收', 'Device/repairlplan/repair-plan-check.html?MenuNo=check&ver=' + new Date().getTime());
+            },
+            gzcl: function () {
+                window.parent.f_addTab('RepFaultExe', '故障快修-故障处理', 'device/repfault/repfaultexe.html?MenuNo=RepFaultExe&ver=' + new Date().getTime());
+            },
+            gzys: function () {
+                window.parent.f_addTab('RepFaultChk', '故障快修-故障验收', 'device/repfault/repfaultchk.html?MenuNo=RepFaultChk&ver=' + new Date().getTime());
+            },
+            wbjh: function () {
+                window.parent.f_addTab('PmPlan', '维保计划', 'device/pminfo/pmplan.html?MenuNo=PmPlan&ver=' + new Date().getTime());
+            },
+            wbshh: function () {
+                window.parent.f_addTab('PmPlanExe', '维保实施', 'device/pminfo/pmplanexe.html?MenuNo=PmPlanExe&ver=' + new Date().getTime());
+            },
+            wzcgxq: function () {
+                window.parent.f_addTab('sp_apply', '船舶物资申请', 'Material/Purchase/sp_apply.html?MenuNo=sp_apply&ver=' + new Date().getTime());
+            },
+
+            wzcgqr: function () {
+                window.parent.f_addTab('sp_apply_check', '物资需求确认', 'Material/Purchase/sp_apply_check.html?MenuNo=sp_apply_check&ver=' + new Date().getTime());
+            },
+
+            wzcgsp: function () {
+                window.parent.f_addTab('sp_collect', '物资需求申请', 'Material/Purchase/sp_collect.html?MenuNo=sp_collect&ver=' + new Date().getTime());
+            },
+
+            wzcgfa: function () {
+                window.parent.f_addTab('sp_purplan', '物资询价方案', 'Material/Purchase/sp_purplan.html?MenuNo=sp_purplan&ver=' + new Date().getTime());
+            },
+
+            wzcgdd: function () {
+                window.parent.f_addTab('sp_order', ' 物资采购订单', 'Material/Purchase/sp_order.html?MenuNo=sp_order&ver=' + new Date().getTime());
+            },
+
+            wlshhdj: function () {
+                window.parent.f_addTab('MaterialReceive', '物料收货登记', 'Material/Warehouse/sp-receive.html?MenuNo=MaterialReceive&ver=' + new Date().getTime());
+            },
+            wldhys: function () {
+                window.parent.f_addTab('MaterialCheck', '物料到货验收', 'Material/Warehouse/sp-check.html?MenuNo=MaterialCheck&ver=' + new Date().getTime());
+            },
+            wlcgrk: function () {
+                window.parent.f_addTab('Instore', '物资采购入库', 'Material/Warehouse/sp-instore.html?MenuNo=Instore&ver=' + new Date().getTime());
+            },
+            wzrkchh: function () {
+                window.parent.f_addTab('Inback', '物资入库冲红', 'Material/Warehouse/sp-in-back.html?MenuNo=Inback&ver=' + new Date().getTime());
+            },
+            wzckch: function () {
+                window.parent.f_addTab('SpOutBack', '物资出库冲红', 'Material/materialout/spoutback.html?MenuNo=SpOutBack&ver=' + new Date().getTime());
+            },
+            kcmxcy: function () {
+                window.parent.f_addTab('sp_store_seafarer', '库存明细 (船员)', 'Material/Purchase/sp_store_seafarer.html?MenuNo=sp_store_seafarer&ver=' + new Date().getTime());
+            },
+            kcmx: function () {
+                window.parent.f_addTab('sp_store', '库存明细', 'Material/Purchase/sp_store.html?MenuNo=sp_store&ver=' + new Date().getTime());
+            },
+
+            wzlyshq: function () {
+                window.parent.f_addTab('SpOutApp', '物资领用申请', 'Material/materialout/spoutapp.html?MenuNo=SpOutApp&ver=' + new Date().getTime());
+            },
+            wzlyck: function () {
+                window.parent.f_addTab('SpOutStore', '物资领用出库', 'Material/materialout/spoutstore.html?MenuNo=SpOutStore&ver=' + new Date().getTime());
+            },
+            wzpdrw: function () {
+                window.parent.f_addTab('sp_scan', '物资盘点任务', 'Material/Inventory/sp_scan.html?MenuNo=sp_scan&ver=' + new Date().getTime());
+            },
+            ypxqdj: function () {
+                window.parent.f_addTab('DrugRequest', '药品需求登记', 'special/drug/drug-request.html?MenuNo=DrugRequest&ver=' + new Date().getTime());
+            },
+            ypcgdj: function () {
+                window.parent.f_addTab('DrugCollect', ' 药品采购登记', 'special/drug/drug-collect.html?MenuNo=DrugCollect&ver=' + new Date().getTime());
+            },
+            lbryqd: function () {
+                window.parent.f_addTab('labor-user', '劳保人员清单', 'special/labor/labor-user.html?MenuNo=labor-user&ver=' + new Date().getTime());
+            },
+            lbypth: function () {
+                window.parent.f_addTab('labor_exchange', '劳保用品退换', 'special/labor/labor-exchange.html?MenuNo=labor_exchange&ver=' + new Date().getTime());
+            },
+            lbypzj: function () {
+                window.parent.f_addTab('labor_rent', '劳保用品租借', 'special/labor/labor-rent.html?MenuNo=labor_rent&ver=' + new Date().getTime());
+            },
+            sgnh001: function () {
+                window.parent.f_addTab('BuildCount001', '施工能耗填报【001】', 'special/build/build-count-001.html?MenuNo=BuildCount001&ver=' + new Date().getTime());
+            },
+            sgnh06: function () {
+                window.parent.f_addTab('BuildCount06', '施工能耗填报【06】', 'special/build/build-count-06.html?MenuNo=BuildCount06&ver=' + new Date().getTime());
+            },
+            sgnh105: function () {
+                window.parent.f_addTab('BuildCount105', '施工能耗填报【105】', 'special/build/build-count-105.html?MenuNo=BuildCount105&ver=' + new Date().getTime());
+            },
+            init: function () {
+                var me = this;
+                //me.setBind();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'auth/mymenus',
+                    loading: '正在保存中...',
+                    success: function (data) {
+                        var menuValues = [];
+
+                        for (const item of data) {
+                            menuValues.push(item.MENUNO);
+                        }
+                        // 获取页面中所有的元素
+                        var allElements = document.querySelectorAll('[id]');
+
+                        // 遍历所有元素
+                        allElements.forEach(element => {
+                            // 判断元素的ID是否在数组中
+                            if (!menuValues.includes(element.id)) {
+                                element.style.display = 'none';
+                            } 
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                return me;
+            }
+        };
+        business.init();
+    </script>
+
+    <!-- Visual Studio Browser Link -->
+    <script type="text/javascript" src="/_vs/browserLink" async="async" id="__browserLink_initializationData" data-requestId="cb4dc353c3a443da954087997a9dab92" data-requestMappingFromServer="false" data-connectUrl="http://localhost:49919/cb25f4e9d4374ab599a4c51dbee14eb1/browserLink"></script>
+    <!-- End Browser Link -->
+
+</body>
+</html>

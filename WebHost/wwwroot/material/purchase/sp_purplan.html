@@ -1,0 +1,465 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+
+    <form action="" id="mainform">
+        <div style="float: left; width: 100%; height: 60%; ">
+            <div id="maingrid" position="center" title="价格清单">
+            </div>
+        </div>
+    </form>
+
+    <div style="float: left; width: 100%; height: 40%; ">
+        <div id="reqGrid" position="bottom" title="价格清单明细">
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            rootPath: 'Material/SpPurplan/',
+            MenuNo: getQueryStringByName("MenuNo"),
+            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            gyData:[],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "询价单号", name: "_search_PLAN_NO", dbname: "PLAN_NO", newline: false, upper: true, type: "text", options: {} },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
+                            { display: "询价单号", name: "PLAN_NO", width: 180, type: "text" },
+                            {
+                                display: "是否协议供货", name: "IS_SUPPACT", dbname: "IS_SUPPACT", width: 120, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
+                            },
+                            { display: "标的名称", name: "BD_NAME", width: 120, type: "text", editor: { type: 'text' }, },
+                            {
+                                display: "中标供应商", name: "PLAN_PROVIDERID", width: 180, type: "select", editor: {
+                                    type: 'select',
+                                    data: me.gyData,
+                                    onChange: function (rowdata, rowIndex) {
+                                        if (rowdata.value) {
+                                            for (var i = 0; i < me.gyData.length; i++) {
+                                                if (rowdata.value == me.gyData[i].ID) {
+                                                    liger.get("maingrid").updateCell("PLAN_PROVIDER", me.gyData[i].TEXT, rowdata.record);
+                                                    break;
+                                                }
+                                            }
+                                        } else {
+                                            liger.get("maingrid").updateCell("PLAN_PROVIDER", "", rowdata.record);
+                                        }
+                                    },
+                                }
+                            },
+                            { display: "预估总金额(元)", name: "SUM_MONEY", width: 150, type: "text",},
+                            { display: "询价人", name: "XJ_USER", width: 100, type: "text", },
+                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
+                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
+                            { display: "询价日期", name: "PLAN_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
+                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' }, },
+                            { display: "中标供应商名", name: "PLAN_PROVIDER", width: 100, type: "text", hide: true },
+                            { display: "主键", name: "PURPLAN_ID", dbname: "PURPLAN_ID", width: 100, type: "text", hide: true },
+                        ],
+                        columns2: [
+                            {
+                                display: "申请单号", name: "APPLY_NO", width: 150, type: "text",
+                                totalSummary:
+                                {
+                                    render: function (suminf, column, cell) {
+                                        return '<div>合计</div>';
+                                    },
+                                    align: 'center'
+                                }
+                            },
+                            {
+                                display: "数量", name: "COUNT", width: 150, type: "decimal", totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
+                            { display: "申请人", name: "APPLY_USER", width: 150, type: "text", },
+                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
+                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
+                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
+                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
+                           
+                            { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
+                            {
+                                display: "成交单价(元)", name: "PRICE", width: 120, type: "float", editor: {
+                                    type: 'float', onChangeValue: function (input, value, g) {
+                                        var editParm = g.options.editParm.record;
+                                        editParm["MONEY"] = (value * (editParm.COUNT || 0)).toFixed(2);
+
+                                    }
+                                }, 
+                            },
+                            {
+                                display: "成交金额(元)", name: "MONEY", width: 120, type: "float", editor: {
+                                    type: 'float', onChangeValue: function (input, value, g) {
+                                        var editParm = g.options.editParm.record;
+                                        editParm["PRICE"] = (value / (editParm.COUNT || 0)).toFixed(2);
+                                    }
+                                }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center'
+                                }
+                            },
+                            { display: "供应周期(天)", name: "PERIOD", width: 120, type: "float", editor: { type: 'float' }, },
+                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
+                            { display: "PURPLAN_ID", name: "PURPLAN_ID", dbname: "PURPLAN_ID", width: 100, type: "text", hide: true },
+                            { display: "主键", name: "PLAN_ID", dbname: "PLAN_ID", width: 100, type: "text", hide: true },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: me.rootPath + 'ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.gyData = data.ProviderName;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: false,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    toolbar: { group: "list" },
+                    url: me.rootPath + 'List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'CREATEDATE',
+                    sortOrder: 'DESC',
+                    width: '98%',
+                    height: '50%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        if (editParm.record.__status == "nochanged") {
+                            if (editParm.record.AUDITING == "1") return false;
+                            else return true;
+                        }
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    onSelectRow: function (rowdata, rowid) {
+                        if (me.gridSelectId != rowdata.PURPLAN_ID) {
+                            me.gridSelectId = rowdata.PURPLAN_ID;
+                            me.gridAuditing = rowdata.AUDITING;
+                            me.gridReq.options.parms = { PURPLAN_ID: me.gridSelectId };
+                            me.gridReq.loadData();
+
+                        }
+                    },
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "submit":
+                            me.submit();
+                            break;
+                        case "cancelSubmit":
+                            me.cancelSubmit();
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            setGridReq: function () {
+                var me = this;
+                me.config.grid.columns2.removeNull();
+                me.gridReq = $("#reqGrid").ligerGrid({
+                    autoWidth: false,
+                    delayLoad: true,
+                    columns: me.config.grid.columns2,
+                    usePager: false,
+                    toolbar: { group: "detail" },
+                    url: me.rootPath + 'DetailList',
+                    parms: {
+                        PURPLAN_ID: "",
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'CREATEDATE',
+                    sortOrder: 'DESC',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        if (editParm.record.__status == "nochanged") {
+                            if (me.gridAuditing == "1") return false;
+                            else return true;
+                        }
+                    },
+                    onBeforeSubmitEdit: function (e) {
+                        if (e.column.name == "PRICE" || e.column.name == "MONEY" || e.column.name == "PERIOD") {
+                            if (e.value < 0) {
+                                LG.showError("不可为负数！");
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                });
+                me.gridReq.isValid = true;
+                me.loadToolbarReq();
+            },
+            loadToolbarReq: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "saveDetail":
+                            me.saveDetail();
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.gridReq, me.toolbarBtnItemClick);
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            submit: function () {    //提交
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    if (selected[0].AUDITING == null) {
+                        LG.tip('请先保存!');
+                    }
+                    else if (selected[0].AUDITING != "0") {
+                        LG.tip('已提交，无法再次提交!');
+                    }
+                    else {
+                        var flag = true;
+                        var sids = [];
+                        selected.forEach((a) => {
+                            if (a.AUDITING != "0") {
+                                LG.tip(a.PLAN_NO + '已提交，无法再次提交!');
+                                flag = false;
+                                return;
+                            }
+                            sids.push(a.PURPLAN_ID)
+                        })
+                        if (!flag) {
+                            return;
+                        }
+
+                        LG.ajax({
+                            jsToken: true,
+                            url: me.rootPath + 'Submit',
+                            loading: '正在保存中...',
+                            data: { "sids": sids },
+                            success: function () {
+                                LG.showSuccess('提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            cancelSubmit: function () {    //撤销
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length > 0) {
+                    var flag = true;
+                    var sids = [];
+                    selected.forEach((a) => {
+                        if (a.AUDITING != "1") {
+                            LG.tip(a.PLAN_NO + '未提交!');
+                            flag = false;
+                            return;
+                        }
+                        sids.push(a.PURPLAN_ID)
+                    })
+                    if (!flag) {
+                        return;
+                    }
+
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'CancelSubmit',
+                        loading: '正在撤销中...',
+                        data: { "sids": sids },
+                        success: function () {
+                            LG.showSuccess('撤销成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            saveDetail: function () { //保存
+                var me = this;
+                if (me.gridReq.endEdit() != false) {
+                    if (!me.gridReq.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.gridReq.validChangeRows()) return false;
+
+                    var changeRow = me.gridReq.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: me.rootPath + 'DetailSave',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.gridReq.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.setGridReq();
+                me.reload();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

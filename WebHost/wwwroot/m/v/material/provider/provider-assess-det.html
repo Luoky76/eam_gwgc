@@ -1,0 +1,469 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>供应商评估明细</title>
+    <link rel="stylesheet" href="../../../dist/Framework7/mobile.css?v=1" />
+</head>
+<body class="color-theme-blue">
+    <div id="app">
+        <!-- Your main view, should have "view-main" class -->
+        <div class="view view-main">
+            <div class="page" data-name="home" style="background-color: RGB(236,235,235);">
+                <div class="navbar">
+                    <div class="navbar-bg"></div>
+                    <div class="navbar-inner sliding">
+                        <div class="col-80 title" id="title">供应商评估明细</div>
+                    </div>
+                </div>
+
+                <div class="toolbar tabbar toolbar-top">
+                    <div class="toolbar-inner" style="
+                            --f7-tabbar-link-active-border-color: #fff;
+                            --f7-tabbar-link-active-color: black;
+                            --f7-tabbar-link-active-bg-color: white;
+                            --f7-tabbar-link-inactive-color: black;
+                            background-color: rgb(236, 235, 235);">
+                        <a href="#tab-1" class="tab-link tab-link-active" id="assess_list">评估总览</a>
+                        <a href="#tab-2" class="tab-link" id="assess_det_list">评估明细</a>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <div id="tab-1" class="page-content tab tab-active" style="padding-bottom: 70px;">
+                        <div class="list inline-labels no-hairlines-md">
+                            <form class="list" id="assess">
+                            </form>
+                        </div>
+                    </div>
+
+                    <div id="tab-2" class="page-content tab" style="padding-bottom: 70px;">
+                        <div class="list" id="assess_det">
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="toolbar toolbar-bottom-md">
+                    <div class="toolbar-inner">
+                        <a class="link external" id="backUrl">
+                            <i class="f7-icons">arrow_left</i>
+                            <span class="ios-only">返回</span>
+                        </a>
+                        <button class="col button button-large button-fill" id="save" style="display: none; background-color: rgba(27, 167, 132, 0.5)">保存</button>
+                        <button class="col button button-large button-fill" id="submit" style="display: none; background-color: orange">提交</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script type="text/javascript" src="../../../dist/Framework7/mobile.js?v=1"></script>
+    <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+    <script type="text/javascript" src="../../../dist/Framework7/app.js?v=1"></script>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" id="scriptBlock">
+        'use strict';
+        var img_baseurl = "../../../";
+        var myPhotoBrowserPopup = null;
+        var paramsData = eval('(' + page.route.params.params + ')');
+        var photos = [];
+
+        var business = {
+            sid: paramsData.sid,
+            //原始数据
+            orginData: null,
+            orginDetailData: null,
+            //数据是否改变
+            isDataChanged: false,
+            isDetailDataChanged: false,
+            //下拉数据
+            auditing: [],
+            assessBaseContent: [],
+            user: [],
+            appraise: [],
+            columns: [],
+            columnsDet: [],
+            //是否允许修改
+            isEditable: false,
+            //成功提示框，1.5s后自动关闭并销毁
+            showSuccessMessage: function (message = '成功') {
+                app.toast.create({
+                    text: message,
+                    position: 'top',
+                    horizontalPosition: 'center',
+                    closeTimeout: 1500,
+                    destroyOnClose: true
+                }).open();
+            },
+            loadComboxData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/ComboxData',
+                    success: function (data) {
+                        me.auditing = data.Auditing;
+                        me.assessBaseContent = data.AssessBaseContent;
+                        me.user = data.User;
+                        me.appraise = data.Appraise;
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/GetCertainAssess',
+                    data: { assessId: me.sid },
+                    success: function (data, message) {
+                        me.orginData = data;
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            setColumns: function () {
+                var me = this;
+                me.columns = [
+                    {
+                        display: "主键",
+                        name: "ASSESS_ID",
+                        PrimaryKey: "ASSESS_ID",
+                        readOnly: true,
+                        isPrimaryKey: true,
+                        isShow: false
+                    },
+                    { display: "评估任务id", name: "ASSESS_TASK_ID", readOnly: true, isShow: false },
+                    { display: "记录状态", name: "AUDITING", Option: me.auditing, Searched: true, readOnly: true },
+                    { display: "任务制定人", name: "FORMULATER_ID", Option: me.user, Searched: true, readOnly: true },
+                    { display: "评分人", name: "EXAMINER_ID", Option: me.user, Searched: true, readOnly: true },
+                    { display: "评估年度", name: "ASSESS_YEAR", readOnly: true },
+                    { display: "考核开始时间", name: "BEGIN_TIME", readOnly: true },
+                    { display: "考核结束时间", name: "END_TIME", readOnly: true },
+                    { display: "供应商名", name: "PROVIDER_NAME", readOnly: true },
+                    { display: "供应商产品", name: "PROVIDER_PRODUCTION", readOnly: true },
+                    { display: "考核说明", name: "REMARK", readOnly: !me.isEditable },
+                    { display: "评估总分", name: "TOTAL_SCORE", readOnly: true },
+                    { display: "评估结果", name: "RESULT", readOnly: !me.isEditable },
+                ]
+                me.columnsDet = [
+                    { display: "评估主表id", name: "ASSESS_ID", readOnly: true, isShow: false },
+                    { display: "评估内容", name: "ASSESS_BASE_ID", Option: me.assessBaseContent, Searched: true, readOnly: true },
+                    { display: "分数", name: "SCORE", readOnly: !me.isEditable },
+                    { display: "分数等级", name: "SCORE_DESC", Option: me.appraise, readOnly: !me.isEditable },
+                ]
+            },
+            setForm: function () {
+                var me = this;
+                //创建input
+                var str = app.CreatePopupContentHtml(me.columns);
+                $("#assess").html(str);
+                //填充表单数据
+                app.form.fillFromData('#assess', me.orginData);
+                //设置选择框
+                app.smartSelect.create({
+                    el: '.AUDITING',
+                    searchbar: true,
+                    on: {
+                        beforeOpen: function (smartSelect, prevent) {
+                            prevent();
+                        }
+                    }
+                });
+                app.smartSelect.create({
+                    el: '.FORMULATER_ID',
+                    searchbar: true,
+                    on: {
+                        beforeOpen: function (smartSelect, prevent) {
+                            prevent();
+                        }
+                    }
+                });
+                app.smartSelect.create({
+                    el: '.EXAMINER_ID',
+                    searchbar: true,
+                    on: {
+                        beforeOpen: function (smartSelect, prevent) {
+                            prevent();
+                        }
+                    }
+                });
+                //设置数字输入框
+                $('#TOTAL_SCORE').attr("type", "number");
+                $('#TOTAL_SCORE').attr("step", "0.01");
+                //为表格添加修改事件
+                $('#assess input, #assess select').on('change', function () {
+                    me.isDataChanged = true;
+                });
+            },
+            refresh: function () {
+                var me = this;
+                app.form.fillFromData('#assess', me.orginData);
+                me.isDataChanged = false;
+            },
+            validate: function () {
+                var me = this;
+                return document.forms['assess'].reportValidity()
+            },
+            save: function () {
+                var me = this;
+                let data = app.form.convertToData('#assess');
+                //防止主键篡改
+                data.ASSESS_ID = me.orginData.ASSESS_ID;
+                var changeRow = new Object();
+                changeRow["updated"] = [data];
+                changeRow["original"] = [me.orginData];
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/Save',
+                    data: changeRow,
+                    success: function (data, message) {
+                        me.showSuccessMessage("保存成功");
+                        me.orginData = changeRow.updated[0];
+                        me.isDataChanged = false;
+                        me.refresh();
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            submit: function () {
+                var me = this;
+                let data = app.form.convertToData("#assess");
+                //防止主键篡改
+                data.ASSESS_ID = me.orginData.ASSESS_ID;
+                //提交
+                data.AUDITING = "1";
+                var changeRow = new Object();
+                changeRow["updated"] = [data];
+                changeRow["original"] = [me.orginData];
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssess/Save',
+                    data: changeRow,
+                    success: function (data, message) {
+                        me.showSuccessMessage("提交成功");
+                        me.orginData = data;
+                        me.refresh();
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            loadDetailData: function () {
+                var me = this;
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssessDet/CertainAssessList',
+                    data: {
+                        assessId: me.sid
+                    },
+                    success: function (data, message) {
+                        me.orginDetailData = data.Rows;
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            setFormDet: function () {
+                var me = this;
+                //对每行数据分别创建表格
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    //新增表格
+                    let form_id = "assess_det_" + i;
+                    let str = `<form class="list" id="${form_id}"> </form >`;
+                    $("#assess_det").append(str);
+                    //创建input
+                    str = app.CreatePopupContentHtml(me.columnsDet);
+                    $("#" + form_id).html(str);
+                    //填充表单数据
+                    app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
+                    //设置选择框
+                    app.smartSelect.create({
+                        el: '#' + form_id + ' .ASSESS_BASE_ID',
+                        searchbar: true,
+                        on: {
+                            beforeOpen: function (smartSelect, prevent) {
+                                prevent();
+                            }
+                        }
+                    });
+                    if (me.orginData.AUDITING == "1") {
+                        app.smartSelect.create({
+                            el: '#' + form_id + ' .SCORE_DESC',
+                            searchbar: false,
+                            on: {
+                                beforeOpen: function (smartSelect, prevent) {
+                                    prevent();
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        app.smartSelect.create({
+                            el: '#' + form_id + ' .SCORE_DESC',
+                            searchbar: false
+                        });
+                    }
+                    //设置数字输入框
+                    $('#' + form_id + ' #SCORE').attr("type", "number");
+                    $('#' + form_id + ' #SCORE').attr("step", "0.01");
+                    $('#' + form_id + ' #SCORE').attr("min", "0");
+                    //为表格添加修改事件
+                    $('#' + form_id + ' input, #' + form_id + ' select').on('change', function () {
+                        me.isDetailDataChanged = true;
+                    });
+                    //计算总分
+                    $('#' + form_id + ' #SCORE').on('change', function (e) {
+                        let score = 0;
+                        for (let i = 0; i < me.orginDetailData.length; ++i) {
+                            let form_id = "assess_det_" + i;
+                            score += Number($('#' + form_id + ' #SCORE').val());
+                        }
+                        if (score != $('#TOTAL_SCORE').val()) {
+                            $('#TOTAL_SCORE').val(score);
+                            me.isDataChanged = true;
+                        }
+                    });
+                }
+            },
+            refreshDet: function () {
+                var me = this;
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    let form_id = 'assess_det_' + i;
+                    app.form.fillFromData('#' + form_id, me.orginDetailData[i]);
+                }
+                me.isDetailDataChanged = false;
+            },
+            validateDet: function () {
+                var me = this;
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    //表格ID
+                    let form_id = 'assess_det_' + i;
+                    if (!document.forms[form_id].reportValidity()) {
+                        //验证不通过
+                        return false;
+                    }
+                }
+                return true;
+            },
+            saveDet: function () {
+                var me = this;
+                let changeRow = new Object();
+                changeRow.updated = [];
+                changeRow.original = [];
+                for (let i = 0; i < me.orginDetailData.length; ++i) {
+                    //表格ID
+                    let form_id = 'assess_det_' + i;
+                    let data = app.form.convertToData('#' + form_id);
+                    changeRow.updated.push(data);
+                    changeRow.original.push(me.orginDetailData[i]);
+                }
+                app.ajax({
+                    async: false,
+                    type: 'post',
+                    url: 'Material/ProviderAssessDet/Save',
+                    data: changeRow,
+                    success: function (data, message) {
+                        me.showSuccessMessage("保存成功");
+                        me.orginDetailData = changeRow.updated;
+                        me.isDetailDataChanged = false;
+                        me.refreshDet();
+                    },
+                    error: function (message) {
+                        app.dialog.error(message, function () { });
+                    }
+                });
+            },
+            initButton: function () {
+                var me = this;
+                $('#backUrl').on('click', function (e) {
+                    if (me.isDataChanged || me.isDetailDataChanged) {
+                        app.dialog.confirm('有未保存的数据，是否仍要返回？', function (confirm) {
+                            if (confirm) {
+                                $('#refresh', parent.document).click();
+                                app.methods.toUrl('back');
+                            }
+                        });
+                    }
+                    else {
+                        $('#refresh', parent.document).click();
+                        app.methods.toUrl('back');
+                    }
+                });
+                //设置按钮的显示切换，仅未提交记录且登录用户为评分人或超管才显示按钮
+                $('#assess_list').on('click', function (e) {
+                    if (me.isEditable) {
+                        $('#save').show();
+                        $('#submit').show();
+                    }
+                });
+                $('#assess_det_list').on('click', function (e) {
+                    if (me.isEditable) {
+                        $('#save').show();
+                        $('#submit').hide();
+                    }
+                });
+                $('#assess_list').click();
+                $('#save').on('click', function (e) {
+                    if (me.orginData.AUDITING == '1') {
+                        app.dialog.error('数据已提交，无法变更！');
+                        return;
+                    }
+                    if (!me.isDataChanged && !me.isDetailDataChanged) {
+                        me.showSuccessMessage('无修改');
+                    }
+                    else {
+                        if (me.validate() && me.validateDet()) {
+                            if (me.isDataChanged) me.save();
+                            if (me.isDetailDataChanged) me.saveDet();
+                        }
+                    }
+                });
+                $('#submit').on('click', function (e) {
+                    if (me.orginData.AUDITING == '1') {
+                        app.dialog.error('数据已提交，无法变更！');
+                        return;
+                    }
+                    app.dialog.confirm('提交后不可修改，是否继续？', function (confirm) {
+                        if (confirm) {
+                            me.submit();
+                        }
+                    });
+                });
+            },
+            init: function () {
+                debugger;
+                var me = this;
+                me.loadComboxData();
+
+                me.loadData();
+                me.loadDetailData();
+                me.isEditable = me.orginData.AUDITING == '0' && (me.orginData.EXAMINER_ID == window.session.UserID || window.session.UserID == '1');
+                me.setColumns();
+                me.setForm();
+                me.setFormDet();
+
+                me.initButton();
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

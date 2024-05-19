@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>单点跳转</title>
+    <script src="../../lib/jquery/jquery.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <h3 id="msg"></h3>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            getQueryStringByName: function (name) {
+                var result = location.search.match(new RegExp("[\?\&]" + name + "=([^\&]+)", "i"));
+                if (result == null || result.length < 1) {
+                    return "";
+                }
+                return decodeURIComponent(result[1]);
+            },
+            to: function () {
+                var me = this;
+                $("#msg").html(location.href.substring(0, location.href.lastIndexOf("/") + 1) + (me.getQueryStringByName("to") || "index.html"));
+                location.href = location.href.substring(0, location.href.lastIndexOf("/") + 1) + (me.getQueryStringByName("to") || "index.html");
+            },
+            getBaseUrl: function (root) {
+                return location.href.substring(0, location.href.lastIndexOf("/") + 1) + root;
+            },
+            oauth: function (code) {
+                var me = this;
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: '../../oauth/check',
+                    async:false,
+                    headers: {
+                        code: code,
+                        appName:"EAM_MOBILE"
+                    },
+                    success: function (result) {
+                        try {
+                            debugger;
+                            if (result.IsError) {
+                                $("#msg").html("单点验证失败，原因" + data.Message);
+                                return;
+                            }
+                            var data = result.Data;
+                            window.localStorage.setItem("GksybTicket", data.Ticket);
+                            delete data.Ticket;
+                            window.localStorage.setItem("GksybData", JSON.stringify(data));
+                            var fromUrl = me.getQueryStringByName("FromUrl");
+                            if (((fromUrl || "").toLowerCase().indexOf("http") >= 0) && (fromUrl.indexOf(location.host) < 0)) fromUrl = "";
+                            fromUrl = fromUrl || "index.html";
+                            location.replace(fromUrl);
+                        }
+                        catch (e) {
+                            $("#msg").html("单点验证失败，原因" + e.message);
+                        }
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                var code = me.getQueryStringByName("ticketCode");
+                if (!code) {
+                    $("#msg").html("缺少必要参数，单点验证失败。" + code);
+                    return;
+                }
+                me.oauth(code);
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

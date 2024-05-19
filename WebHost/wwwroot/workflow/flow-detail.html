@@ -1,0 +1,505 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>流程设计</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/flow-boot.js" type="text/javascript"></script>
+    <style type="text/css">
+        body {
+            margin: 0px 20px;
+        }
+
+        .l-panel {
+            margin-top: 20px;
+            box-shadow: none;
+        }
+
+        #container {
+            height: 100%
+        }
+
+        #flow-audit-form .l-text-readonly {
+            margin-top: -2px;
+            border-bottom: 0 !important;
+            box-shadow: none;
+        }
+
+            #flow-audit-form .l-text-readonly .l-text-icon {
+                display: none;
+            }
+
+        .reject {
+            color: red !important;
+        }
+
+        .l-panel-header .l-button {
+            margin-left: 10px;
+        }
+
+        .l-panel-header .l-button-small {
+            margin-top: -3px;
+            padding: 3px 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="flow-audit-form-panel" style="display:none;">
+        <form id="flow-audit-form">
+        </form>
+    </div>
+    <div id="flow-form-panel">
+        <form id="flow-form">
+        </form>
+    </div>
+    <div id="flow-node-panel" style="display:none;">
+        <ul id="node-timeline">
+        </ul>
+    </div>
+    <div id="flow-panel">
+        <div id="container"></div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            lf: null,
+            data: null,
+            nodeStatus: {
+                Agree: "agree",//同意
+                Reject: "reject",//拒绝,
+                Back: "back",//退回
+                Draft: "draft" //草稿
+            },
+            sid: getQueryStringByName("sid"),
+            nid: getQueryStringByName("nid"),
+            isView: getQueryStringByName("isView"),
+            split: "@#",
+            isStart: false,
+            initAuditForm: function () {
+                var me = this;
+                if (me.isView || me.isStart) return;
+                var panel = me.auditPanel.panel;
+                $('<button></button>').appendTo(panel.winbtns).ligerButton({
+                    text: '转办', type: "warning small", icon: "fa fa-send", onClick: function () {
+                        me.transfer();
+                    }
+                });
+                $('<button></button>').appendTo(panel.winbtns).ligerButton({
+                    text: '抄送', type: "primary small", icon: "fa fa-share", onClick: function () {
+                        me.share();
+                    }
+                });
+                panel.show();
+                me.auditForm = $("#flow-audit-form").ligerForm({
+                    labelWidth: 180,
+                    fields: [
+                        { display: "流程标题", name: "Title", width: 300, newline: true, type: "text", options: { readonly: true } },
+                        { display: "发起人", name: "Creator", width: 160, newline: true, type: "text", options: { readonly: true } },
+                        { display: "发起时间", name: "CreateDate", labelWidth: 70, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } },
+                        {
+                            display: "处理意见", name: "CommonReason", width: 250, newline: true, type: "select", options: {
+                                url: "workflow/query/reasonData", triggerToLoad: true,
+                                nullText: "常用审批语", onChangeValue: function (_input, value, g) {
+                                    g.options.host_form.setData({ Reason: value });
+                                }
+                            }
+                        },
+                        {
+                            display: "", name: "Reason", width: 300, newline: true, type: "textarea", options: {
+                                rows: 3
+                            }
+                        }
+                    ],
+                    space: 3,
+                    validate: true,
+                    onAfterSetFields: function (g) {
+                    },
+                    buttons: [
+                        {
+                            text: '同意', type: "success small", icon: "fa fa-check", newline: true, click: function () {
+                                me.agree();
+                            }
+                        }, {
+                            text: '退回', type: "warning small", icon: "fa fa-reply", click: function () {
+                                me.back();
+                            }
+                        }, {
+                            text: '不同意', type: "error small", icon: "fa fa-remove", click: function () {
+                                me.reject();
+                            }
+                        }]
+                });
+                me.auditForm.setOrginData(me.data);
+            },
+            initFormUrl: function () {
+                var me = this;
+                var url = me.data.FormUrl;
+                url += (url.indexOf('?') > -1 ? "&" : "?");
+                url += "flowId=" + me.data.FlowId;
+                if (me.data.TaskId) url += "&taskId=" + me.data.TaskId;
+                if (me.data.NodeId) url += "&nodeId=" + me.data.NodeId;
+                if (me.isStart) url += "&isStart=1";
+                if (me.isView) url += "&isView=1";
+                me.formPanel._setUrl(window.gksybConfigs.getUrl(url, window.gksybConfigs.urlBase));
+            },
+            initForm: function () {
+                var me = this;
+                if (me.data.FormUrl) {
+                    me.initFormUrl();
+                    return;
+                }
+                window._displayOptions = {};
+                try {
+                    eval("window._displayOptions = " + (me.data.FormContent || "{}"));
+                }
+                catch (e) {
+                    return;
+                }
+                var isOper = me.isStart && !me.isView;
+                if (isOper) {
+                    $('<button></button>').appendTo(me.formPanel.panel.winbtns).ligerButton({
+                        text: '保存草稿', type: "primary small", icon: "fa fa-archive", onClick: function () {
+                            me.draft();
+                        }
+                    });
+                    window._displayOptions = $.extend({
+                        validate: true,
+                        buttons: [
+                            {
+                                text: '提交', type: "primary", newline: true, click: function () {
+                                    me.add();
+                                }
+                            }, {
+                                text: '重置', type: "ghost", click: function () {
+                                    $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                        if (confirm) {
+                                            me.mainForm.reset();
+                                        }
+                                    });
+                                }
+                            }]
+                    }, window._displayOptions);
+                }
+                me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
+                if (me.nid) {
+                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")));
+                }
+                else {
+                    if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
+                }
+                if (!isOper) me.mainForm._setDisabled(true);
+            },
+            initFlow: function () {
+                var me = this;
+                me.lf = new eflow({
+                    multipleSelectKey: "shift",
+                    isSilentMode: true,
+                    container: $("#container")[0],
+                    grid: false
+                });
+                var graphData = {};
+                try {
+                    graphData = JSON.parse(me.data.FlowContet || "{}");
+                }
+                catch (e) {
+
+                }
+                me.lf.render(graphData);
+                me.lf.setFirstNodeVisible(-80, -100);
+                var nodes = [], nodeInfos = me.data.Logs || [];
+                for (var i = 0, l = nodeInfos.length; i < l; i++) {
+                    nodes.push(nodeInfos[i].NodeId);
+                }
+                me.data.NodeId = me.data.NodeId || me.lf.getNodeModelByType("bpmn:startEvent").id;
+                if (nodes.length < 1) nodes.push(me.data.NodeId);
+                me.lf.highLight(nodes, me.data.NodeId);
+                me.isAssign = me.lf.getNodeDataById(me.data.NodeId).properties.assign;
+            },
+            initTimeline: function () {
+                var me = this;
+                if (!me.nid) return;
+                $("#flow-node-panel").show();
+                var logs = me.data.Logs;
+                var data = [];
+                for (var i = 0, l = logs.length; i < l; i++) {
+                    var item = logs[i];
+                    var detail = item.OperType;
+                    if (item.OperDetail && item.OperDetail !== detail) detail += '：' + item.OperDetail;
+                    var title = item.Operator + "【" + item.OperTitle + " / <b>" + detail + "</b>】";
+                    title += '<span style="padding-left:5px;color:gray">' + item.OperDate.toDate().format("yyyy-MM-dd HH:mm") + "</span>";
+                    data.push({ title: title, status: item.OperType });
+                }
+                $("#node-timeline").ligerTimeline({
+                    icon: function (item) {
+                        if (item.status === 3) return "fa-times-circle-o reject";
+                        return null;
+                    },
+                    data: data
+                });
+            },
+            loadData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    jsToken: true,
+                    url: 'workflow/query/taskInfo',
+                    loading: '正在获取中...',
+                    data: { id: me.nid, flowId: me.sid },
+                    success: function (data) {
+                        me.data = data;
+                        me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
+                        if (data.NodeStatus && data.NodeStatus !== 1) {
+                            me.isView = true;
+                        }
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            agree: function () {
+                var me = this;
+                me.excute(me.nodeStatus.Agree);
+            },
+            reject: function () {
+                var me = this;
+                var formData = me.auditForm.getData();
+                if (!formData.Reason) {
+                    LG.showError("请输入处理意见");
+                    return;
+                }
+                $.ligerDialog.confirm('确认不同意吗?', function (confirm) {
+                    if (!confirm) return;
+                    me.excute(me.nodeStatus.Reject, formData);
+                });
+            },
+            back: function () {
+                var me = this;
+                me.excute(me.nodeStatus.Back);
+            },
+            excute: function (nodeStatus, data, skipAssign) {
+                var me = this;
+                if (me.auditForm) {
+                    if (!me.auditForm.valid()) {
+                        me.auditForm.showInvalid();
+                        return;
+                    }
+                    if (!data) {
+                        var formData = me.auditForm.getData();
+                        data = { NodeReason: formData.Reason };
+                    }
+                }
+                data = $.extend({ Id: me.data.Id }, data);
+                var inner = function () {
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'workflow/task/' + nodeStatus,
+                        loading: '正在保存中...',
+                        data: data,
+                        success: function () {
+                            LG.showSuccess('保存成功', function () {
+                                me.close(true);
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                };
+                if (nodeStatus == me.nodeStatus.Agree && me.isAssign && !skipAssign) {
+                    this.selectUser(function (values) {
+                        if (values.length < 1) return;
+                        data.Operators = values.join(me.split);
+                        inner();
+                    });
+                    return;
+                }
+                inner();
+            },
+            share: function (url, isClose) {
+                var me = this;
+                url = url || 'workflow/task/share';
+                this.selectUser(function (values) {
+                    if (values.length < 1) return;
+                    var formData = me.auditForm.getData();
+                    LG.ajax({
+                        jsToken: true,
+                        url: url,
+                        loading: '正在保存中...',
+                        data: { Id: me.data.Id, Operators: values.join(me.split), NodeReason: formData.Reason },
+                        success: function () {
+                            LG.showSuccess('操作成功', function () {
+                                if (isClose) me.close(true);
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            transfer: function () {
+                var me = this;
+                me.share('workflow/task/transfer', true);
+            },
+            selectUser: function (callback) {
+                var me = this;
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 600,
+                    title: '人员挑选',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [],
+                        options: {
+                            url: 'popup/users', sortName: 'Name', rowKey: "Id",
+                            columns: [
+                                { display: "姓名", name: "Name", type: "text" },
+                                { display: "公司岗位", name: "Station", type: "text" }
+                            ]
+                        },
+                        fields: [
+                            { display: "姓名", name: "Name", width: 100, type: "text" },
+                            { display: "公司岗位", name: "Station", width: 100, type: "text" }
+                        ],
+                        callback: callback
+                    }
+                });
+            },
+            draft: function (formData) {
+                var me = this;
+                me.add(formData, me.nodeStatus.Draft);
+            },
+            add: function (formData, nodeStatus) { //保存
+                var me = this;
+                var isDraft = nodeStatus === me.nodeStatus.Draft;
+                if (formData === undefined) {
+                    if (!me.mainForm.valid()) {
+                        me.mainForm.showInvalid();
+                        return;
+                    }
+                    formData = me.mainForm.getData();
+                }
+                var data = { FlowId: me.data.FlowId, Id: me.data.Id, FormData: formData };
+                var inner = function (operators) {
+                    if (operators) data.Operators = operators;
+                    var url = isDraft ? me.nodeStatus.Draft : "start";
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'workflow/task/' + url,
+                        loading: '正在保存中...',
+                        data: data,
+                        success: function () {
+                            LG.showSuccess('保存成功', function () {
+                                me.close(true);
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                if (me.isAssign && !isDraft && !me.nid) {
+                    this.selectUser(function (values) {
+                        if (values.length < 1) return;
+                        inner(values.join(me.split));
+                    });
+                    return;
+                }
+                inner();
+            },
+            closeQuery: function (callback) {
+                var me = this;
+                if (me._skipConfirm === true || ((!me.mainForm || $.isEmptyObject(me.mainForm.getChanges())) && (!me.auditForm || $.isEmptyObject(me.auditForm.getChanges())))) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                if (me.dialog) {
+                    me.dialog.close();
+                    return;
+                }
+                me.closeQuery(function () {
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
+                });
+            },
+            initLayout: function () {
+                var me = this;
+                me.auditPanel = $("#flow-audit-form-panel").ligerPanel({
+                    title: "【" + me.data.Title + "】" + me.data.NodeTitle,
+                    type: "info",
+                    width: "100%",
+                    showToggle: false,
+                    showMax: false
+                });
+                me.formPanel = $("#flow-form-panel").ligerPanel({
+                    title: (me.isStart ? "【" + me.data.Title + "】" : "") + "申请信息",
+                    type: "info",
+                    width: "100%",
+                    height: "auto",
+                    showToggle: false,
+                    showMax: false
+                });
+                $("#flow-node-panel").ligerPanel({
+                    title: "流转意见",
+                    type: "info",
+                    width: "100%",
+                    showToggle: false,
+                    showMax: false
+                });
+                $("#flow-panel").ligerPanel({
+                    title: "流程图",
+                    type: "info",
+                    width: "100%",
+                    height: 400,
+                    showToggle: false,
+                    showMax: false
+                });
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    if (me.closeQuery) me.dialog.options.closeQuery = me.closeQuery.bind(me);
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.nid) me.nid = me.dialogData.nid;
+                }
+                if (!me.sid && !me.nid) {
+                    LG.showError("参数不完整");
+                    return;
+                }
+                me.loadData();
+                me.initLayout();
+                me.initAuditForm();
+                me.initForm();
+                me.initFlow();
+                me.initTimeline();
+                window.closeQuery = function (callback) {
+                    return me.closeQuery(callback);
+                };
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

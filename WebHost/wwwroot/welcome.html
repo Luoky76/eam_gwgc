@@ -1,0 +1,1060 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title></title>
+
+</head>
+
+<body>
+    <style type="text/css">
+        .l-layout-content {
+            overflow: hidden !important
+        }
+
+        .content {
+            position: relative;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            width: 100%;
+            padding: 20px 15px 30px 15px;
+        }
+
+        .box6, .box4, .box3, .box2, .box1 {
+            padding: 0px 3px 15px 15px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            float: left;
+        }
+
+        .box6 {
+            width: 16.66666666%;
+        }
+
+        .box4 {
+            width: 25%;
+        }
+
+        .box3 {
+            width: 33.33333333%;
+        }
+
+        .box2 {
+            width: 50%;
+        }
+
+        .box1 {
+            width: 100%;
+        }
+
+        .box {
+            background-color: #FFF;
+            box-shadow: 0 0 10px 2px rgba(0,74,116,.15);
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+
+            .box span {
+                display: block;
+            }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+        }
+
+
+        .l-form .l-field-required {
+            color: #333333 !important;
+        }
+
+        .flex-parent {
+            display: flex;
+        }
+
+        table th {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        table td {
+            text-align: center;
+        }
+
+        .box span {
+            display: inline;
+        }
+
+        .right-border {
+            border-right: solid 3px #dedede;
+        }
+
+        .bottom-border {
+            border-bottom: solid 3px #dedede;
+        }
+
+        .sum-back-color {
+            background-color: #f5f6f8
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        #rank-history-table-tbody tr:nth-child(2n) {
+            background-color: #f1f1f1
+        }
+
+        .tbl-header {
+            position: relative;
+            top: 0;
+            left: 0;
+            z-index: 999;
+        }
+
+            .tbl-header td {
+                white-space: nowrap;
+            }
+
+        .tbl-body {
+            position: relative;
+            top: 0;
+            left: 0;
+            height: 470px;
+        }
+
+            .tbl-body td {
+                white-space: nowrap;
+            }
+
+        h4 {
+            color: #81a7c4;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            margin-bottom: 10px !important;
+        }
+
+        .h4content {
+            width: 200px;
+            height: 75px;
+            padding: 10px;
+            /*padding-left: 90px;*/
+        }
+
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f0f2ff;
+        }
+
+        th {
+            font-weight: bold;
+            background-color: #2196f3;
+            color: #ffffff;
+        }
+    </style>
+
+
+
+
+    <div class="content" style="background-color:#e4edf3;min-width:1400px">
+
+        <div id="layout" style="margin: 2px; margin-left: 29px; height: 300px ">
+            <div position="center" class="l-portal" id="portalMain" style="width: 100%; height: 100%">
+
+            </div>
+        </div>
+        <div class="flex-parent" style="flex-direction: column">
+            <div class="flex-parent" style="flex-direction:row-reverse">
+                <!--<div id="mainsearch" style="width: 300px;">
+                    <div class="searchbox">
+
+                        <form id="formsearch" class="l-form">
+                        </form>
+                    </div>
+
+                </div>-->
+            </div>
+
+            <div style="padding:15px 3px 15px 15px;">
+
+                <div class="flex-parent" style="flex-direction:row;">
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+                        <div class="box flex-parent" style="position:relative;background-color:#5b90fa ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
+                            <img src="" style="position: absolute;float: right;right: 3%; top: 20%;height:65%;" ; />
+                            <div class="font-size-desc">
+                                设备数量
+                                <span class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div class="font-size-desc"> <span class="font-size-desc" id="deviceCount">10</span>个</div>
+                        </div>
+                    </div>
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+                        <div class="box flex-parent" style="position:relative;background-color:#5d7091 ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
+                            <img src="" style="position: absolute;float: right;right: 3%; top: 20%;height:65%;" ; />
+                            <div class="font-size-desc">
+                                维修单数
+                                <span class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div class="font-size-desc">  <span class="font-size-desc" id="repairCount">10</span>单 </div>
+                        </div>
+                    </div>
+
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+
+                        <div class="box flex-parent" style="position:relative;background-color:#e76452 ; color: white; height: 97px; padding: 15px; line-height: 35px;flex-direction: column;border-radius:5px;">
+                            <div class="font-size-desc">
+                                委外维修单数
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div class="font-size-subtitle" style="display: inline">  <span class="font-size-desc" id="outrepairCount">10</span>单 </div>
+                        </div>
+                    </div>
+                    <div class="box1 fade-in-up" style="position:relative;padding-bottom:15px;">
+                        <div class="box flex-parent" style="position: relative; background-color: #55bb5a; color: white; height: 97px; padding: 15px; line-height: 35px; flex-direction: column; border-radius: 5px;">
+                            <img src="" style="position: absolute;float: right;right: 3%; top: 20%;height:65%;" ; />
+                            <div class="font-size-desc">
+                                码头维修单数
+                                <span class="font-bigsize-data"></span>
+                                <span class="font-size-subtitle">&nbsp </span>
+                            </div>
+                            <div class="font-size-desc">  <span class="font-size-desc" id="shiprepairCount">10</span> 单</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!--第二层-->
+            <div style="margin:0px 3px 80px 15px;">
+                <div class="flex-parent" style="width:100%;flex-direction:row">
+                    <div class="box1 fade-in-up" style="height:300px;padding-right:10px;width:50%">
+                        <div class="box" style="padding:8px;border-radius:5px;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">设备维修情况（月）</div>
+                            <div id="percent" style="height: 300px; margin: 20px;">
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="flex-parent" style="flex-direction:column;width:50%;">
+                        <div class="box1 fade-in-up" style="height:300px">
+                            <div class="box " style="padding:8px;border-radius:5px;">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:10px">设备维修情况</div>
+                                <div style="border: 0; margin: 5px auto; width: 100%; line-height: 35px; min-height: 325px; font-size: 18px; max-height: 325px; word-break: break-all; overflow: auto;">
+                                    <div id="deviceUpBar" style="padding-left: 10px; list-style: none; height: 300px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div style="margin: 15px 3px 50px 15px;">
+                <div class="flex-parent" style="width:100%;flex-direction:row">
+                    <div class="box1 fade-in-up" style="height:300px;padding-right:10px;width:50%">
+                        <div class="box" style="padding:8px;border-radius:5px;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">淡水消耗</div>
+                            <div id="Fresh" style="height: 300px; margin: 20px;">
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="flex-parent" style="flex-direction:column;width:50%;">
+                        <div class="box1 fade-in-up" style="height:300px">
+                            <div class="box " style="padding:8px;border-radius:5px;">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:10px">柴油消耗</div>
+                                <div style="border: 0; margin: 5px auto; width: 100%; line-height: 35px; min-height: 325px; font-size: 18px; max-height: 325px; word-break: break-all; overflow: auto;">
+                                    <div id="DieselOil" style="padding-left: 10px; list-style: none; height: 300px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div style="margin: 45px 3px 50px 15px;">
+                <div class="flex-parent" style="width:100%;flex-direction:row">
+                    <div class="box1 fade-in-up" style="height:300px;padding-right:10px;width:50%">
+                        <div class="box" style="padding:8px;border-radius:5px;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">润滑油消耗</div>
+                            <div id="Lube" style="height: 300px; margin: 20px;">
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <!--<div class="flex-parent" style="flex-direction:column;width:50%;">
+                        <div class="box1 fade-in-up" style="height:300px">
+                            <div class="box " style="padding:8px;border-radius:5px;">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:10px">柴油消耗</div>
+                                <div style="border: 0; margin: 5px auto; width: 100%; line-height: 35px; min-height: 325px; font-size: 18px; max-height: 325px; word-break: break-all; overflow: auto;">
+                                    <div id="deviceUpBar" style="padding-left: 10px; list-style: none; height: 300px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>-->
+
+                </div>
+            </div>
+            <!--第三层-->
+            <!--<div style="margin:15px 3px 50px 15px;">
+                <div class="flex-parent" style="width:100%;flex-direction:row">
+                    <div class="box1 fade-in-up" style="height:300px;padding-right:10px;width:100%">
+                        <div class="box" style="padding:8px;border-radius:5px;">
+                            <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:5px">近7日维修情况</div>
+                            <div id="outIn" style="height:300px;padding-right:10px;width:100%">
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>-->
+            <!--第五层  储煤情况-->
+            <!--<div style="margin:0px 10px 50px 15px;">
+                <div>
+                    <div class="box1 fade-in-up" style="width:100%;height:300px;">
+                        <div class="box flex-parent" style="padding:8px;border-radius:5px;flex-direction:row">
+                            <div style="width:50%">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:12px;margin-bottom:20px">
+                                    维修情况
+                                </div>
+                                <div id="coalStorage" style="height:300px;"></div>
+
+                            </div>
+                            <div style="width:40%;margin-top:50px;">
+                                <div style="display:flex; flex-wrap:wrap; ">
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/ff7b00/fff" alt="预约" style="margin-right: 10px; ">
+                                        <div class="h4content">
+                                            <h4 id="deviceCount">1</h4>
+                                            <p>设备数量</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/ffd500/fff" alt="会议" style="margin-right: 10px;">
+                                        <div class="h4content">
+                                            <h4 id="repairCount">2</h4>
+                                            <p>维修单数</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/00aeff/fff" alt="任务" style="margin-right: 10px;">
+                                        <div class="h4content">
+                                            <h4 id="outrepairCount">3</h4>
+                                            <p>委外维修单数</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 10px; background-color: #f0f2ff">
+                                        <img src="https://dummyimage.com/50x50/9c27b0/fff" alt="报表" style="margin-right: 10px;">
+                                        <div class="h4content">
+                                            <h4 id="shiprepairCount">4</h4>
+                                            <p>码头维修单数 </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>-->
+            <!--第六层 堆场月均库存-->
+            <!--<div style="margin:20px 10px 100px 15px;">
+                <div>
+                    <div class="box1 fade-in-up" style="width:100%;height:300px;">
+                        <div class="box flex-parent" style="padding:8px;border-radius:5px;flex-direction:row">
+                            <div style="width:75%">
+                                <div class="font-size-title" style="line-height: 14px; color: #666666;border-left: 6px solid #ffbb00;padding-left: 6px;margin-top:12px;margin-bottom:20px">
+                                    堆场月均库存
+                                </div>
+                                <div style="position:relative;left:380px;top:-25px;z-index:2;">
+                                    <button class="font-size-desc sb" id="now" onclick="changeinventoryBarEchart(this.id)" style="border-bottom-left-radius:20px;border-top-left-radius:20px;border:1px solid #dcdcdc;padding:8px 10px;margin-right:-5px;background-color:#ffffff">今年</button>
+                                    <button class="font-size-desc ts" id="last" onclick="changeinventoryBarEchart(this.id)" style="border:1px solid #dcdcdc;padding:8px 10px 8px 10px;border-bottom-right-radius:20px;border-top-right-radius:20px;background-color:#eeeeee">去年</button>
+                                </div>
+                                <div id="inventoryBar" style="height:300px;"></div>
+
+                            </div>
+                            <div style="width:20%;margin-top:80px;">
+                                <div id="inventoryPie" style="height:300px;"></div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>-->
+            <!--第七层 当前出入库情况-->
+            <!--<div style="margin:30px 10px 80px 15px;">
+                <div>
+                    <div class="flex-parent" style="width:100%;flex-direction:row">
+                        <div class="box1 fade-in-up" style="height:330px;width:50%">
+                            <div class="box" style="padding: 8px; border-radius: 5px; min-height: 365px; max-height: 385px; ">
+                                <div class="font-size-title" style="display: flex; align-items: center; line-height: 14px; color: #666666; border-left: 6px solid #ffbb00; padding-left: 6px; margin-top: 5px;">
+                                    <span>当前出入库情况</span>
+                                    <a href="#" style="color: #49a5f3; margin-left: auto; font-size: 14px;" onclick="showMore('Info')">更多</a>
+                                </div>
+                                <div style="border: 0; margin: 10px auto; width: 100%; line-height: 15px;  font-size: 18px; word-break: break-all; overflow: auto;">
+                                    <table class="font-size-desc" style="margin: 0 auto; width: 100%; left: 0; line-height: 40px; border-collapse: collapse;text-align:center;">
+                                        <tr>
+                                            <th style="background-color: #80a4fc; color: #fff;">煤炭名称</th>
+                                            <th style="background-color: #80a4fc; color: #fff;">出入类型</th>
+                                            <th style="background-color: #80a4fc; color: #fff;">数量(吨)</th>
+                                            <th style="background-color: #80a4fc; color: #fff;">记录时间</th>
+                                        </tr>
+                                        <tbody id="GetOutInData">
+                                            <tr>
+                                                <td>1</td>
+                                                <td>2</td>
+                                                <td>3</td>
+                                                <td>4</td>
+                                            </tr>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>2</td>
+                                                <td>3</td>
+                                                <td>4</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="flex-parent" style="flex-direction:column;width:50%;">
+                            <div class="box1 fade-in-up">
+                                <div class="box " style="padding: 8px; border-radius: 5px; min-height: 365px; max-height: 385px; ">
+                                    <div class="font-size-title" style="display: flex; align-items: center; line-height: 14px; color: #666666; border-left: 6px solid #ffbb00; padding-left: 6px; margin-top: 5px;">
+                                        <span>闸口进出情况</span>
+                                        <a href="#" style="color: #49a5f3; margin-left: auto; font-size: 14px;" onclick="showMore('EquipCarWeigh')">更多</a>
+                                    </div>
+                                    <div style="border: 0; margin: 10px auto; width: 100%; line-height: 15px;font-size: 18px; word-break: break-all; overflow: auto;">
+                                        <table class="font-size-desc" style="margin: 0 auto; width: 100%; left: 0; line-height: 40px; border-collapse: collapse;text-align:center;">
+                                            <tr>
+                                                <th style="background-color: #80a4fc; color: #fff;">车牌号</th>
+                                                <th style="background-color: #80a4fc; color: #fff;">进出闸类型</th>
+                                                <th style="background-color: #80a4fc; color: #fff;">重量（吨）</th>
+                                                <th style="background-color: #80a4fc; color: #fff;">记录时间</th>
+                                            </tr>
+
+                                            <tbody id="GetGateEntryExit">
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>2</td>
+                                                    <td>3</td>
+                                                    <td>4</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>2</td>
+                                                    <td>3</td>
+                                                    <td>4</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>-->
+
+
+
+
+
+        </div>
+
+
+
+
+
+    </div>
+
+
+    <div id="legend-size" style="display: none"></div><!--用于获取css变量内容-->
+    <script src="lib/LGboot.js"></script>
+    <script src="lib/js/common.js"></script>
+    <script src="lib/echarts/echarts.expand.js"></script>
+    <script src="lib/echarts/echarts.js"></script>
+
+
+    <script>
+
+        var upperUrl = "common/jsonvalue";
+        var timeFlag = false;
+        var _YearStandBoxNum;
+        var _NowYear;
+        var layout = $("#layout").ligerLayout({
+            topHeight: 300,
+            heightDiff: -6
+        });
+
+        var portal = $("#portalMain").ligerPortal({
+            rows: [{
+                columns: [
+                    { width: '100%', height: '100%', panels: [{ title: '待处理事项', height: '100%', width: '100%', showToggle: false, showMax: false, url: 'Home/HomeReminder.html' }] }
+                ]
+            }]
+        });
+        var app = {
+            percentEchartData: null,
+            outInEchartData: null,
+            inventoryData: null,
+            //设备维修情况（月）图表
+            percentEchart: function (data) {
+                var ChartPercent = echarts.init(document.getElementById("percent"));
+                ChartPercent.clear(this.option);//清空数据缓存
+
+                let option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                        }
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: { show: true, readOnly: false },
+                            magicType: { show: true, type: ['line', 'bar'] },
+                            restore: { show: true },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    legend: {
+                        data: ['维修时长', '维修次数']
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '维修时长',
+                            min: 0,
+                            max: 50,
+                            interval: 10,
+                            axisLabel: {
+                                formatter: '{value} 小时'
+                            }
+                        },
+                        {
+                            type: 'value',
+                            name: '维修次数',
+                            min: 0,
+                            max: 50,
+                            interval: 5,
+                            axisLabel: {
+                                formatter: '{value} 次'
+                            }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '维修时长',
+                            type: 'bar',
+                            data: data != null ? data.HourList : []
+                        },
+                        {
+                            name: '维修次数',
+                            type: 'bar',
+                            data: data != null ? data.RepairList : []
+                        },
+                        //{
+                        //    name: '平均温度',
+                        //    type: 'line',
+                        //    yAxisIndex: 1,
+                        //    data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
+                        //}
+                    ]
+                };
+
+
+                option && ChartPercent.setOption(option, true);
+                ChartPercent.getZr().off('click');
+                ChartPercent.getZr().on('click', function (params) {
+                    let pointInPixel = [params.offsetX, params.offsetY];
+                    if (ChartPercent.containPixel('grid', pointInPixel)) {
+                        let pointInGrid = ChartPercent.convertFromPixel({
+                            seriesIndex: 0
+                        }, pointInPixel);
+                        let xIndex = pointInGrid[0];
+                        let handleIndex = Number(xIndex);
+                        var op = ChartPercent.getOption();
+                        var month = op.xAxis[0].data[handleIndex].replace("月", "");
+                        app.deviceUpBarGetData(month);
+                        ChartPercent.resize()
+                    };
+                });
+                window.addEventListener("resize", function () {
+                    ChartPercent.resize();
+                });
+
+            },
+            // 点击后触发月份的图表
+            deviceUpBarEchart: function (data) {
+                var ChartinventoryBar = echarts.init(document.getElementById("deviceUpBar"));
+                ChartinventoryBar.clear(this.option);//清空数据缓存
+                let option = {
+                    color: ['#003366', '#006699', '#4cabce', '#e5323e'],
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {
+                        data: ['维修时长', '维修次数']
+                    },
+                    toolbox: {
+                        show: true,
+                        orient: 'vertical',
+                        left: 'right',
+                        top: 'center',
+                        feature: {
+                            mark: { show: true },
+                            dataView: { show: true, readOnly: false },
+                            magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+                            restore: { show: true },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            axisTick: { show: false },
+                            data: data != null ? data.DeviceNameList : []
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '维修时长',
+                            type: 'bar',
+                            data: data != null ? data.HourList : []
+                        },
+                        {
+                            name: '维修次数',
+                            type: 'bar',
+                            data: data != null ? data.RepairList : []
+                        },
+                    ]
+                };
+                option && ChartinventoryBar.setOption(option, true);
+
+
+
+
+                window.addEventListener("resize", function () {
+
+                    ChartinventoryBar.resize();
+                });
+
+            },
+            //淡水  Fresh
+            FreshEchart: function (data) {
+                let ChartPercent = echarts.init(document.getElementById("Fresh"));
+                ChartPercent.clear(this.option);//清空数据缓存
+
+                let option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                        }
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: { show: true, readOnly: false },
+                            magicType: { show: true, type: ['line', 'bar'] },
+                            restore: { show: true },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    legend: {
+                        data: ['淡水消耗']
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '淡水消耗',
+                            axisLabel: {
+                                formatter: '{value}'
+                            }
+                        },
+
+                    ],
+                    series: [
+                        {
+                            name: '淡水消耗',
+                            type: 'line',
+                            data: data != null ? data : []
+                        },
+
+
+                    ]
+                };
+
+
+                option && ChartPercent.setOption(option, true);
+                window.addEventListener("resize", function () {
+                    ChartPercent.resize();
+                });
+
+            },
+            //柴油 DieselOil
+            DieselOilEchart: function (data) {
+                let ChartPercent = echarts.init(document.getElementById("DieselOil"));
+                ChartPercent.clear(this.option);//清空数据缓存
+
+                let option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                        }
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: { show: true, readOnly: false },
+                            magicType: { show: true, type: ['line', 'bar'] },
+                            restore: { show: true },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    legend: {
+                        data: ['柴油消耗']
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '柴油消耗',
+                            axisLabel: {
+                                formatter: '{value}'
+                            }
+                        },
+
+                    ],
+                    series: [
+                        {
+                            name: '柴油消耗',
+                            type: 'line',
+                            data: data != null ? data : []
+                        },
+
+
+                    ]
+                };
+
+
+                option && ChartPercent.setOption(option, true);
+                window.addEventListener("resize", function () {
+                    ChartPercent.resize();
+                });
+            },
+            // 润滑油 Lube
+            LubeEchart: function (data) {
+                let ChartPercent = echarts.init(document.getElementById("Lube"));
+                ChartPercent.clear(this.option);//清空数据缓存
+
+                let option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                        }
+                    },
+                    toolbox: {
+                        feature: {
+                            dataView: { show: true, readOnly: false },
+                            magicType: { show: true, type: ['line', 'bar'] },
+                            restore: { show: true },
+                            saveAsImage: { show: true }
+                        }
+                    },
+                    legend: {
+                        data: ['润滑油消耗']
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                            axisPointer: {
+                                type: 'shadow'
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: '润滑油消耗',
+                            axisLabel: {
+                                formatter: '{value}'
+                            }
+                        },
+
+                    ],
+                    series: [
+                        {
+                            name: '润滑油消耗',
+                            type: 'line',
+                            data: data != null ? data : []
+                        },
+
+
+                    ]
+                };
+
+
+                option && ChartPercent.setOption(option, true);
+                window.addEventListener("resize", function () {
+                    ChartPercent.resize();
+                });
+            },
+
+       
+
+            percentEchartGetData: function () {
+                app.percentEchart(null);
+                var data = LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceRepairInfoEchart',
+                    loading: '正在获取中...',
+                    data: {},
+                    success: function (data, message) {
+                        app.percentEchart(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            deviceUpBarGetData: function (month) {
+                LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceInfoInMonth',
+                    loading: '正在获取中...',
+                    data: { month: month },
+                    success: function (data, message) {
+                        app.deviceUpBarEchart(data);
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+
+                });
+            },
+            //4个卡片的数值
+            GetCarddata: function () {
+                var data = LG.ajax({
+                    async: true,
+                    url: 'welcome/GetDeviceRepairCount',
+                    loading: '正在获取中...',
+                    data: {},
+                    success: function (data, message) {
+                        for (let key in data) {
+                            document.getElementById(key).innerHTML = data[key];
+                        }
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            //消耗统计
+            GetConstructionEchartData: function () {
+                LG.ajax({
+                    async: true,
+                    url: 'welcome/GetConstructionEchartData',
+                    loading: '正在获取中...',
+                    data: {},
+                    success: function (data, message) {
+                        if (data) {
+                            app.FreshEchart(data.FreshWaterCostList)
+                            app.DieselOilEchart(data.DieselOilCostList)
+                            app.LubeEchart(data.LubeCostList)
+                        }
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+
+
+            totalGetData: function () {
+                var me = this;
+                var startTime = $("#_search_STARTDATE").val();
+
+
+                //获取数据
+                me.GetCarddata();
+                me.percentEchartGetData();
+                me.deviceUpBarEchart();
+                me.GetConstructionEchartData();
+            },
+            init: function () {
+                app.totalGetData();
+                var CorpInfo = JSON2.parse(window.localStorage.GksybData);
+                if (CorpInfo.Corp) {
+                    if (CorpInfo.Corp.CName == "经营层") {
+                        $("#layout").hide()
+                    }
+                }
+
+
+            }
+        };
+
+        app.init();
+
+
+
+
+        //更改日期
+        function f_changeDate(input, value, g) {
+            if (mainForm) {
+                rls = mainForm.toConditions();
+                //if (rls && rls.length < 2) {
+                //    $.ligerDialog.warn('查询条件不能为空！');
+                //    return;
+                //}
+                var sdate = rls[0].value.format("yyyy-MM-dd"); //统计起始时间
+                var dateSysDate = {};
+                LG.getSysdate({
+                    DateFormat: "yyyy-MM",
+
+                    //viewname: 'DUAL', idfield: "trunc(sysdate,'MM')",
+                    //textfield: "case when (to_date('" + sdate + "','yyyy-MM-dd') = trunc(sysdate, 'yyyy')) then (sysdate+1) else  (add_months(trunc(to_date('"
+                    //    + sdate + "','yyyy-MM-dd'), 'yyyy'), 12)) end"
+                }, dateSysDate);
+
+
+                mainForm.setData({ "_search_ENDDATE": dateSysDate.TEXT });
+
+            }
+            input.validValue = true;
+
+        }
+        var dateSysDate = {};
+        var mainForm = $("#formsearch").ligerForm({
+            //buttons: [
+            //    { text: '搜索', width: 50, click: app.init }
+            //],
+            NoSuperSearch: true,
+            SearchClick: true, validate: true,
+            onAfterSetFields: function (g) {
+                LG.getSysdate({
+                    DateFormat: "yyyy-MM-dd HH:mm:ss",
+
+                    //viewname: 'DUAL', idfield: "trunc(sysdate,'MM')",
+                    //textfield: "case when (to_date('" + sdate + "','yyyy-MM-dd') = trunc(sysdate, 'yyyy')) then (sysdate+1) else  (add_months(trunc(to_date('"
+                    //    + sdate + "','yyyy-MM-dd'), 'yyyy'), 12)) end"
+                }, dateSysDate);
+
+                //LG.getSysdate({
+                //    viewname: 'DUAL', idfield: "trunc(sysdate,'yyyy')",
+                //    textfield: "case when (sysdate < add_months(trunc(sysdate, 'yyyy'), 12)) then (sysdate+1) else (add_months(trunc(sysdate, 'yyyy'), 12)) end"
+                //}, dateSysDate);
+                //g.setData({ "_search_STARTDATE": new Date(new Date().getFullYear()+"-01-01") });
+                //g.setData({ "_search_ENDDATE": new Date((new Date().getFullYear()-1) + "-01-01") });
+                g.setData({ "_search_STARTDATE": dateSysDate.TEXT });
+                g.setData({ "_search_ENDDATE": dateSysDate.ID });
+                $(".l-fieldcontainer:eq(1)").hide();
+            },
+            fields: [
+                { display: "", name: "_search_STARTDATE", id: "_search_STARTDATE", newline: false, labelWidth: 115, width: 115, op: 'equal', vt: "date", type: "date", options: { format: "yyyy-MM", onChangeValue: f_changeDate } }
+            ]
+
+        })
+        var buttons = $(".l-form-buttons");
+        buttons.css("margin", "0px");
+        var div = $("<div style=\"float:left;\"></div>")
+        var container = $(".l-form-container ul:first");
+        buttons.appendTo(div);
+        div.appendTo(container);
+
+
+
+        //更多跳转
+        function showMore(MenuNo) {
+            var url = `/index.html?MenuNo=${MenuNo}&ver=" ${new Date().format("yyyyMMddhhmmss")}`;
+            window.open(url);
+        }
+
+    </script>
+
+
+</body>
+
+</html>

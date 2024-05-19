@@ -1,0 +1,381 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>消息类型</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            msgType: [{ ID: "Message", TEXT: "站内信" }, { ID: "Weixin", TEXT: "微信" }, { ID: "Sms", TEXT: "短信" }],
+            dialogMode: [{ ID: "提示", TEXT: "提示" }, { ID: "对话框", TEXT: "对话框" }, { ID: "通知", TEXT: "通知" }],
+            dialogType: [{ ID: "info", TEXT: "提醒" }, { ID: "success", TEXT: "成功" }, { ID: "error", TEXT: "错误" }, { ID: "warn", TEXT: "警告" }, { ID: "question", TEXT: "询问" }],
+            readType: [{ ID: "1", TEXT: "自动" }, { ID: "0", TEXT: "手动" }],
+            dataNoticeUsers: {},
+            setConfig: function () {
+                var me = this;
+                var charLength = 30;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "编码", name: "_search_CODE", dbname: "CODE", newline: false, upper: true, type: "text", options: {} },
+                            { display: "名称", name: "_search_NAME", dbname: "NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "所属组", name: "_search_GROUP", dbname: "GROUP", newline: false, upper: true, type: "text", options: {} }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: '编码', name: 'CODE', validate: { required: true }, editor: { type: 'text' } },
+                            { display: '名称', name: 'NAME', validate: { required: true }, editor: { type: 'text' } },
+                            { display: '模板', name: 'TEMPLATE',editor: { type: 'text' } },
+                            { display: '所属组', name: 'MSG_GROUP', editor: { type: 'text' } },
+                            { display: '消息类型', name: 'MSG_TYPE', formatType: "select", editor: { type: 'select', autocomplete: true, data: me.msgType } },
+                            { display: '弹窗模式', name: 'DIALOG_MODE', formatType: "select", editor: { type: 'select', autocomplete: true, data: me.dialogMode } },
+                            { display: '弹窗类别', name: 'DIALOG_TYPE', formatType: "select", editor: { type: 'select', autocomplete: true, data: me.dialogType } },
+                            { display: '自动已读', name: 'AUTO_READED', formatType: "select", editor: { type: 'select', autocomplete: true, data: me.readType } },
+                            { display: '找人类型', name: 'NOTICE_TYPE', formatType: "select", editor: { type: 'select', autocomplete: true, data: me.noticeType, onChangeValue: me.changeNoticeType } },
+                            {
+                                display: '通知人', name: 'NOTICE_USERS', minWidth: 150, formatType: "select", format: {
+                                    split: ",", data: function (rowdata, column) {
+                                        if (!column) {
+                                            var editParm = rowdata.options.editParm;
+                                            rowdata = editParm.record;
+                                            column = editParm.column;
+                                        }
+                                        if (!rowdata.NOTICE_TYPE) return [];
+                                        return me.dataNoticeUsers[rowdata.NOTICE_TYPE] || [];
+                                    }, formatRender: function (value, rowdata, column) {
+                                        var model;
+                                        for (var i = 0, l = me.noticeType.length; i < l; i++) {
+                                            var item = me.noticeType[i];
+                                            if (item.ID === rowdata.NOTICE_TYPE) {
+                                                model = item;
+                                                break;
+                                            }
+                                        }
+                                        if (!model) return;
+                                        var strHref = 'javascript:business.transferSelect("' + (model.TEXT || "").replace("指定", "") + '","' + column.name + '","' + model.VALUE + '")';
+                                        var strUrl = "<a style=\"color:Red\" href=" + strHref + ">设置</a>";
+                                        if (value.length < 1) return strUrl;
+                                        var texts = value.join(",");
+                                        return "<a href=" + strHref + ">" + "<acronym title=\"" + texts + "\">" + (texts.length > charLength ? texts.substring(0, charLength) + "..." : texts) + "</acronym></a>";
+                                    }
+                                }
+                            },
+                            { display: '链接', name: 'MSG_HREF', editor: { type: 'text' } },
+                            { display: '移动端链接', name: 'MSG_MOBILE_HREF', editor: { type: 'text' } },
+                            {
+                                display: "操作", name: "Action", type: "text", minWidth: 100, render: function (rowdata, _rowindex, value) {
+                                    if (!rowdata.NOTICE_USERS) return;
+                                    return '<a class="l-grid-row-button" href="javascript:business.send()"><i class="fa fa-envelope-o" style="padding-right:2px;" aria-hidden="true" /></i>测试</a>';
+                                }
+                            }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'popup/findPersionComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.noticeType = data.FindPersion;
+                        me.dataNoticeUsers = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'messageTemplate/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'NAME',
+                    sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                me.grid.set({
+                    toolbar: {
+                        "items": [
+                            { id: "add", text: '增加', click: me.toolbarBtnItemClick, icon: "fa fa-plus" },
+                            { id: "delete", text: '删除', click: me.toolbarBtnItemClick, icon: "fa fa-times" },
+                            { id: "save", text: '保存', click: me.toolbarBtnItemClick, icon: "fa fa-save" }
+                        ]
+                    }
+                });
+            },
+            changeNoticeType: function (input, value, g) {
+                g.options.host_grid.updateRow(g.options.editParm.record, { "NOTICE_TYPE": value, "NOTICE_USERS": "" });
+            },
+            transferSelect: function (detailType, name, url, width, height, options) {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                options = $.extend({
+                    url: url,
+                    display: detailType,
+                    values: row[name],
+                    options: options,
+                    callback: function (values) {
+                        var newRowData = {};
+                        newRowData[name] = values.join(",");
+                        me.grid.updateRow(row, newRowData);
+                    }
+                }, options);
+                $.ligerDialog.open({
+                    width: width || 500,
+                    height: height || 400,
+                    title: null,
+                    allowClose: false,
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer.html",
+                    isResize: false,
+                    slide: false,
+                    data: options
+                });
+            },
+            add: function () { //新增
+                var me = this;
+                me.grid.addEditRow({ "AUTO_READED": "0" }, true);
+            },
+            send: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) return;
+                $.ligerDialog.prompt("请输入内容", "测试消息", function (isOk, val) {
+                    if (!isOk) return;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'messageTemplate/send',
+                        loading: '正在发送中...',
+                        data: {
+                            Code: selected.CODE,
+                            Title: "标题",
+                            Content: val,
+                            DialogMode: selected.DIALOG_MODE,
+                            DialogType: selected.DIALOG_TYPE
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'messageTemplate/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

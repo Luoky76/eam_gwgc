@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>统计图表</title>
+    <script src="../lib/echarts/echarts.js?ver=1" type="text/javascript"></script>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="../lib/echarts/echarts.expand.js?ver=1" type="text/javascript"></script>
+    <style type="text/css">
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            box-sizing: border-box;
+            padding: 1px 3px;
+        }
+
+        .l-form {
+            margin-top: 3px;
+            margin-bottom: 0px;
+        }
+
+        #char-form {
+            margin: 0px 0px -10px 0px !important;
+        }
+
+        .full {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mainsearch">
+        <form action="" id="formsearch">
+        </form>
+    </div>
+    <div id="layout-panel">
+        <div id="grid-panel" border="false" position="center">
+            <form action="" id="mainform">
+                <div id="maingrid">
+                </div>
+            </form>
+        </div>
+        <div position="bottom" title='<form action="" id="char-form"></form>'>
+            <div id="main" class="full"></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var IsOurCompany = window.session.IsOurCompany;
+        var IsAdmin = window.session.IsAdmin;
+        var MenuNo = getQueryStringByName("MenuNo");
+        var config = { Grid: {}, Form: {} };
+        var formsearch = null, grid = null;
+        var business = {
+            rows: null,
+            columns: null,
+            chartOpt: {},
+            charTypes: [{ name: "bar", display: "柱状图" }, { name: "stack", display: "堆叠柱状图" }, { name: "line", display: "折线图" }, { name: "pie", display: "饼图" }, { name: "scatter", display: "散点图" }],
+            handleColumns: function () {
+                var me = this;
+                var columns = me.columns || [], categoryColumns = [], numberColumns = [{ name: "数量", display: "数量", type: "string" }];
+                for (var i = 0, l = columns.length; i < l; i++) {
+                    var column = columns[i];
+                    var type = column.type;
+                    var item = { name: column.name, display: column.display, type: type };
+                    if (type === "float" || type === "int") {
+                        numberColumns.push(item)
+                    }
+                    else {
+                        categoryColumns.push(item)
+                    }
+                }
+                return { numberColumns: numberColumns, categoryColumns: categoryColumns };
+            },
+            setChartForm: function () {
+                var me = this, chartOpt = me.chartOpt;
+                var obj = me.handleColumns(), numberColumns = obj.numberColumns, categoryColumns = obj.categoryColumns;
+                me.chartForm = $("#char-form").ligerForm({
+                    fields: [{
+                        display: "类型", name: "type", type: "select", width: 120, options: {
+                            valueField: "name", textField: "display",
+                            data: me.charTypes, autocomplete: true, isMultiSelect: false, split: ",", value: "bar",
+                            onChangeValue: me.reload.bind(me)
+                        }
+                    }, {
+                        display: "组", name: "category", type: "select", width: 200, options: {
+                            render: function (_value, text) { return text; }, autocomplete: false,
+                            valueField: "name", textField: "display", value: (categoryColumns.length === 1 ? categoryColumns[0].name : undefined),
+                            data: categoryColumns, isMultiSelect: true, split: ",",
+                            onChangeValue: me.reload.bind(me)
+                        }
+                    }, {
+                        display: "值", name: "values", type: "select", width: 200, options: {
+                            render: function (_value, text) { return text; }, autocomplete: false,
+                            valueField: "name", textField: "display", value: (numberColumns.length === 2 ? numberColumns[1].name : undefined),
+                            data: numberColumns, isMultiSelect: true, split: ",",
+                            onChangeValue: me.reload.bind(me)
+                        }
+                    }],
+                    space: 3,
+                    validate: true
+                });
+                if (chartOpt.data) {
+                    var formData = {};
+                    if (chartOpt.data.x !== undefined) formData.category = chartOpt.data.x;
+                    if (chartOpt.data.y !== undefined) formData.values = chartOpt.data.y;
+                    me.chartForm.setOrginData(formData, false);
+                }
+                if (chartOpt.show !== true) me.chartForm.form.hide();
+            },
+            getFormData: function () {
+                var me = this;
+                var formData = me.chartForm.getData();
+                formData["category"] = me.chartForm.getEditor("category").getRows();
+                formData["values"] = me.chartForm.getEditor("values").getRows();
+                formData.type = (formData.type || "").split(",");
+                return formData;
+            },
+            reload: function () {
+                var me = this, chartOpt = me.chartOpt;
+                if (!me.rows) return;
+                var formData = me.getFormData();
+                var options = echarts.getOptionsFromData(me.rows, formData);
+                if (chartOpt.options) {
+                    if (typeof chartOpt.options === "function") {
+                        options = chartOpt.options(options, me) || options;
+                    }
+                    else {
+                        $.extend(true, options, chartOpt.options);
+                    }
+                }
+                me.chart.setOption(options, true);
+            },
+            loadData: function () {
+                var me = this, g = me.grid;
+                if (me._columns !== g.columns) {
+                    me._columns = g.columns;
+                    var columns = [];
+                    for (var i = 0, l = g.columns.length; i < l; i++) {
+                        var column = g.columns[i];
+                        if (column.issystem) continue;
+                        if (!column.display) continue;
+                        var item = { name: column.name, display: column.display, type: g.getColumnRealType(column) };
+                        columns.push(item);
+                    }
+                    me.columns = columns;
+                    var obj = me.handleColumns();
+                    me.chartForm.getEditor("category").setData(obj.categoryColumns);
+                    me.chartForm.getEditor("values").setData(obj.numberColumns);
+                }
+                me.rows = me.grid.getDisplayRows();
+                me.reload();
+            },
+            setGrid: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items:
+                        [
+                            {
+                                id: 'Excel', text: '导出Excel', click: function () {
+                                    $.ligerDialog.open({
+                                        url: "../System/Export.html?exporttype=xlsx",
+                                        modal: true
+                                    });
+                                }, icon: "fa fa-file-excel-o"
+                            },
+                            { line: true },
+                            {
+                                id: 'Word', text: '导出Word', click: function () {
+                                    $.ligerDialog.open({
+                                        url: "../System/Export.html?exporttype=docx",
+                                        modal: true
+                                    });
+                                }, icon: "fa fa-file-word-o"
+                            }
+                        ]
+                });
+                config.Grid.columns.removeNull();
+                var options = $.extend({
+                    delayLoad: true,
+                    autoWidth: true,
+                    checkbox: false,
+                    usePager: false,
+                    pageSize: 100,
+                    sortName: '1',
+                    sortOrder: 'asc',
+                    url: 'common/query',
+                    parms: {
+                        view: MenuNo,
+                    },
+                    ajaxOptions: {
+                        jsToken: true
+                    },
+                    width: '100%',
+                    height: '100%',
+                    onContextmenu: function (parm, e) {
+                        menu.show({ top: e.pageY, left: e.pageX });
+                        return false;
+                    }
+                }, config.Grid, { inWindow: "#grid-panel" });
+                options.onAfterShowDataOrgin = options.onAfterShowData;
+                options.onAfterShowData = function (data) {
+                    this.trigger('afterShowDataOrgin', [data]);
+                    me.loadData();
+                };
+                me.grid = grid = $("#maingrid").ligerGrid(options);
+            },
+            setForm: function () {
+                var me = this;
+                config.Form = config.Form || {};
+                if (config.Form.fields) config.Form.fields.removeNull();
+                var $formsearch = $("#formsearch");
+                me.buttons = [
+                    {
+                        text: '查询', newline: false, width: 60, click: function () {
+                            LG.commonSearch($formsearch, me.grid, config.Form.limit);
+                        }
+                    }
+                ];
+                var options = $.extend({
+                    enterMoveNextControl: true,
+                    validate: true,
+                    SearchClick: false,
+                    buttons: me.buttons,
+                    onAfterSetFields: function (g) {
+                        formsearch = g;
+                    }
+                }, config.Form);
+                me.searchForm = formsearch = $formsearch.ligerForm(options);
+                if ((config.Form.fields || []).length < 1) {
+                    if (config.Form.SearchClick === undefined) {
+                        me.searchForm.options.SearchClick = true;
+                    }
+                    $formsearch.hide();
+                }
+            },
+            loadConfig: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'common/queryconfig',
+                    data: { viewName: MenuNo },
+                    success: function (data) {
+                        eval("config.Form=" + (data.FORM || "{}"));
+                        eval("config.Grid=" + (data.GRID || "{}"));
+                        if (!config.Grid.columns) {
+                            var fields = data.Fields || [];
+                            var columns = [];
+                            for (var i = 0, l = fields.length; i < l; i++) {
+                                var item = fields[i];
+                                columns.push({ display: item.Key, name: item.Key, type: item.Value });
+                            }
+                            if (!config.Grid.sortName && fields.length > 0) {
+                                config.Grid.sortName = fields[0].Key;
+                            }
+                            config.Grid.columns = columns;
+                        }
+                        for (var i = config.Grid.columns.length - 1; i >= 0; i--) {//移除隐藏，加入追加属性
+                            var column = config.Grid.columns[i];
+                            if (column.display.indexOf("隐藏") >= 0) {
+                                config.Grid.columns.splice(i, 1);
+                                continue;
+                            }
+                            if (config.Grid.columnsAppend) {
+                                for (var j = config.Grid.columnsAppend.length - 1; j >= 0; j--) {
+                                    var append = config.Grid.columnsAppend[j];
+                                    if (column.name == append.name) {
+                                        $.extend(column, append);
+                                        config.Grid.columnsAppend.splice(j, 1);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                me.chartOpt = config.Grid.chartOptions || me.chartOpt;
+                me.columns = me._columns = config.Grid.columns || [];
+            },
+            initLayout: function () {
+                var me = this;
+                me.setForm();
+                me.layout = $("#layout-panel").ligerLayout({
+                    showBottomMax: true,
+                    bottomHeight: "40%",
+                    heightDiff: -3,
+                    onResize: function () {
+                        me.grid._onResize();
+                        me.chart.resize();
+                    }
+                });
+                me.setChartForm();
+                me.chart = echarts.init(document.getElementById('main'), null, { renderer: (me.chartOpt.renderer || 'svg') });
+                me.setGrid();
+            },
+            init: function () {
+                var me = this;
+                me.loadConfig();
+                me.initLayout();
+                if (me.searchForm.options.SearchClick) me.buttons[0].click();
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

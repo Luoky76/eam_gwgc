@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>码头维修确认明细</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform">
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            dialogData: {},
+            maintDept: [],
+            repSourceType: [],
+            RepDockConfirmType: [],
+            isleave: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
+            status: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
+            isView: true,
+            sid: getQueryStringByName("sid"),
+            dataCorp: [],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            { display: "确认单状态", name: "AUDITING_CONFIRM", newline: false, upper: true, type: "select", options: { type: 'select', data: me.status, disabled: true }, group: "码头确认单详情" },
+                            { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
+
+                            { display: "维修项目", name: "REP_ITEM", newline: true, width: 780, upper: true, type: "text", options: { rows: "1", disabled: true } },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "故障原因", name: "REASON", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
+                            { display: "解决方法", name: "SOLUTION", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
+                            { display: "维修内容", name: "REP_CONTENT", newline: true, width: 780, upper: true, type: "textarea", validate: { required: true }, options: { rows: "2" } },
+
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, validate: { required: true }, type: "select", options: { type: 'select', data: me.isleave } },
+
+                            { display: "确认人", name: "CONFIRM_USER", newline: false, upper: true, type: "text", options: {} },
+
+                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2" } },
+                            { display: "备注", name: "MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "3" } },
+                            { display: "主键", name: "CHECK_ID", newline: false, upper: true, type: "hidden", options: {} },
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,/*
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Device/RepDockInfo/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },*/
+            loadData: function () {
+                var me = this;
+                if (!me.sid) {
+                    me.mainform.setOrginData({});
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Device/RepDockInfo/GetRepDockConfirmDetail',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                me.mainform.focus();
+            },
+            save: function () { //保存
+                var me = this;
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.mainform.getOrginData());
+                var changeRow = new Object();
+                if (!me.sid) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/RepDockInfo/ManageRepDockCheck',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () { if (me.dialog) { me.dialog.close(); } });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                function inner(callback) {
+                    if (!skipConfirm && !$.isEmptyObject(me.mainform.getChanges())) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) {
+                            me.dialog.close();
+                            return;
+                        }
+                        var win = parent || window;
+                        if (win.closeCurrentTab) win.closeCurrentTab();
+                        else win.close();
+                    }
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                /*if (!me.isView) {
+                    buttons.push({
+                        text: '重置', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    location.reload(true);
+                                }
+                            });
+                        }
+                    });
+                }*/
+                buttons.push({ text: '关闭', onclick: me.close.bind(me) });
+                if (me.auditing == "0") {
+                    buttons.push({ text: '保存', onclick: me.save.bind(me) });
+                }
+                else {
+                    me.mainform.setReadonly(true);
+                }
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 140,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data') || {};
+                    if (me.dialogData.callback) me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.auditing) me.auditing = me.dialogData.auditing;
+                    if (me.dialogData.isView) me.isView = me.dialogData.isView === "1";
+                }
+                me.isView = false;
+                //me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

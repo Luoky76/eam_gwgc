@@ -1,0 +1,437 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <script src="../lib/LGboot.js?ver=<%=SystemService.JsVersion %>" type="text/javascript"></script>
+    <script src="../lib/js-export/Blob.js" type="text/javascript"></script>
+    <script src="../lib/js-export/FileSaver.js" type="text/javascript"></script>
+    <title></title>
+</head>
+<body style="padding: 5px; height: 100%; text-align: center;">
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <div>
+        <ul id="images">
+        </ul>
+    </div>
+    <script type="text/javascript">
+        //相对路径
+        var rootPath = "../";
+        var CurrentUserName = "<%= gksyyb.Common.SysContext.CurrentUserName %>";
+        var IsAdmin = ('<%=gksyyb.Common.SysContext.IsAdmin %>' == "True" ? true : false);
+        //初始化下拉框数据（在config之前）
+        var fileMark;
+        var tableName;
+        var dataId;
+        var dataMenuList;
+        var isView;
+        var curNode;
+        var popWin = window.parent;
+
+        var isOtherType = false;
+        //获取参数
+        function GetParam() {
+            if (popWin.tableName) {
+                fileMark = popWin.fileMark;
+                tableName = popWin.tableName;
+                dataId = popWin.dataId;
+                dataMenuList = popWin.dataMenuList;
+                isView = popWin.isView;
+                curNode = popWin.curNode;
+            }
+            else if (frameElement && frameElement.dialog) {
+                var dialogData = frameElement.dialog.get('data') || {};
+                fileMark = dialogData.fileMark;
+                tableName = dialogData.tableName;
+                dataId = dialogData.dataId;
+                dataMenuList = dialogData.dataMenuList;
+                isView = dialogData.isView;
+                curNode = dialogData.curNode;
+            }
+            isOtherType = (fileMark == -1);
+        }
+        GetParam();
+
+        var config = [];
+        //禁止和隐藏的字段
+        var forbidFields = [];
+        var isValid = true;
+        //过滤
+        var Filter = {
+            op: 'and',
+            rules: [
+            ]
+        };
+
+        config.Grid = {
+            columns: [
+                { display: "附件id", name: "attach_id", dbname: "attach_id", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "表名", name: "table_name", dbname: "table_name", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "记录id", name: "data_id", dbname: "data_id", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "相关字段", name: "attach_field", dbname: "attach_field", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "文件类型", name: "content_type", dbname: "content_type", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "功能id", name: "fun_id", dbname: "fun_id", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "功能名称", name: "fun_name", dbname: "fun_name", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "附件路径(服务器路径)", name: "attach_path", dbname: "attach_path", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "附件类型", name: "attach_type", dbname: "attach_type", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "文件大小", name: "file_size", dbname: "file_size", width: 100, type: "float", editor: { type: 'float' }, hide: true },
+                { display: "创建者", name: "createuser", dbname: "createuser", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "创建日期", name: "createdate", dbname: "createdate", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
+                { display: "最后修改人", name: "modifyuser", dbname: "modifyuser", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                { display: "修改日期", name: "modifydate", dbname: "modifydate", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" }, hide: true },
+
+                {
+                    display: "查看", name: "view", minWidth: 60, type: "text", align: "center",
+                    render: function (rowdata, rowindex, value, column) {
+                        var showStr = "";
+                        var attach_type = rowdata.attach_type;
+                        if (!attach_type.startsWith(".doc") && !attach_type.startsWith(".xls")) {
+                            if (rowdata.attach_urlpath) showStr = "查看";
+                            return '<a onclick="f_fileView(\'' + rootPath + rowdata.attach_urlpath + '\',\'' + rowdata.attach_name + '\')" class="view_' + rowindex + '" style="color: #0000FF; cursor: pointer;" >' + showStr + '</a>';
+                        }
+                    }
+                },
+                {
+                    display: "下载", name: "download", minWidth: 60, type: "text", align: "center",
+                    render: function (rowdata, rowindex, value, column) {
+                        var showStr = "";
+                        if (rowdata.attach_urlpath) showStr = "下载";
+                        return '<a onclick="f_fileDownload(\'' + rootPath + rowdata.attach_urlpath + '\',\'' + rowdata.attach_name + '\')" style="color: #0000FF; cursor: pointer;" >' + showStr + '</a>';
+                    }
+                },
+                { display: "附件名称", name: "attach_name", dbname: "attach_name", width: 100, type: "text", editor: { type: 'text' } },
+                { display: "上传人", name: "upload_user", dbname: "upload_user", width: 100, type: "text", editor: { type: 'text' } },
+                { display: "上传日期", name: "upload_date", dbname: "upload_date", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                { display: "附件路径（相对路径）", name: "attach_urlpath", dbname: "attach_urlpath", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+
+            ]
+        };
+
+        //清除空元素
+        if (config.Search && config.Search.fields) {
+            for (var i = config.Search.fields.length - 1; i >= 0; i--) {
+                if (!config.Search.fields[i]) config.Search.fields.pop();
+            }
+        }
+        //清除空元素
+        if (config.Grid && config.Grid.columns) {
+            for (var i = config.Grid.columns.length - 1; i >= 0; i--) {
+                if (!config.Grid.columns[i]) config.Grid.columns.pop();
+            }
+        }
+
+        //根据字段权限 调整
+        LG.adujestConfig(config, forbidFields);
+
+        //列表结构
+        var grid = $("#maingrid").ligerGrid({
+            AutoWidth: true,
+            dateFormat: "yyyy-MM-dd hh:mm",
+            usePager: false,
+            columns: config.Grid.columns,
+            dataAction: 'server',
+            toolbar: {
+                items: [
+                    { id: "upload", text: '上传', icon: "fa fa-cloud-upload", click: toolbarBtnItemClick, disabled: isView },
+                    //{ id: "save", text: '保存', icon: "fa fa-save", click: toolbarBtnItemClick, disabled: isView },
+                    { id: "delete", text: '删除', icon: "fa fa-times", click: toolbarBtnItemClick, disabled: isView }
+                ]
+            },
+            //data: { Rows: [] },
+            //sortName: "ID",
+            //sortOrder: 'desc',
+            url: 'attach/list',
+            parms: {
+                where: JSON.stringify({
+                    op: 'and',
+                    rules: [{ field: 'table_name', value: tableName, op: 'equal' },
+                        { field: 'data_id', value: dataId, op: 'equal' },
+                        fileMark == '-1' ? { field: "attach_field", op: 'isnull' } : { field: "attach_field", value: fileMark, op: 'equal' }]
+                })
+            },
+            sortName: 'createdate',
+            sortOrder: 'desc',
+            width: '98%',
+            height: '100%',
+            checkbox: true,
+            enabledEdit: false,
+            clickToEdit: false,
+            onBeforeEdit: f_onBeforeEdit,
+            onContextmenu: function (parm, e) {
+                //menu.show({ top: e.pageY, left: e.pageX });
+                return false;
+            }, rowAttrRender: function (rowdata, rowid) {
+                return "";
+            }
+        });
+
+        //编辑前事件
+        function f_onBeforeEdit(editParm) {
+            switch (editParm.column.name) {
+                case "":
+                    return false;
+                    break;
+            }
+            return true;
+        }
+
+        //验证
+        var maingform = $("#mainform");
+        $.metadata.setType("attr", "validate");
+        LG.validate(maingform, { debug: true });
+
+        grid.bind('beforeSubmitEdit', function (e) {
+            if (isValid) {
+                if (!LG.validator.form()) {
+                    LG.showInvalidTip();
+                    return false;
+                }
+            }
+            else {
+                $(".l-verify-tip").remove();
+            }
+            return true;
+        });
+
+        var searchForm = null;
+        var buttons = null;
+        //搜索表单应用ligerui样式
+        $("#formsearch").ligerForm({
+            fields: config.Search ? config.Search.fields : [],
+            EnterMoveNextControl: true,
+            appendID: true,
+            validate: true,
+            toJSON: JSON2.stringify,
+            buttons: [
+                //{ text: '查询', newline: false, width: 60, click: function () { LG.commonSearch($("#formsearch"), grid); } }
+            ],
+            onAfterSetFields: function (g) {
+                searchForm = g;
+                buttons = g.options.buttons;
+            }
+        });
+
+        //加载toolbar
+        //LG.loadToolbar(grid, toolbarBtnItemClick);
+
+        //工具条事件
+        function toolbarBtnItemClick(item) {
+            switch (item.id) {
+                case "refresh": f_reload(); break;
+                case "add": f_add(); break;
+                case "delete": f_fileDelete(); break;
+                case "save": f_save(); break;
+                case "upload": f_upload(); break;
+            }
+        }
+
+        //刷新
+        function f_reload() {
+            isValid = false;
+            grid.endEdit();
+            isValid = true;
+            if (grid.options.url && grid.isDataChanged && !confirm(grid.options.isContinueByDataChanged))
+                return false;
+            //grid.loadData(grid.where);
+            grid.loadData();
+        }
+
+
+        //上传
+        function f_upload() {
+            //LG.showUpload({
+            //    type: "AjaxAttach",
+            //    method: "UploadAttach",
+            //    folder: tableName,
+            //    fileTypeExts: isOtherType ? "*" : "gif,jpg,jpeg,bmp,png,pdf,mp4,avi",
+            //    mimeTypes: isOtherType ? "*" : "image/*,video/*,application/pdf",
+            //    compress: false,
+            //    fileSizeLimit: "10MB",
+            //    data: JSON2.stringify({
+            //        "fileName": new Date().format("yyyyMMddhhmmss"),
+            //        "dataId": dataId,
+            //        "tableName": tableName,
+            //        "attachField": (isOtherType ? '' : fileMark)
+            //    }),
+            //    callback: function (success, data) {
+            //        if (success) {
+            //            loadData();
+            //        }
+            //    }
+            //});
+            LG.showUpload({
+                title: "上传",
+                server: "attach/Upload",
+                multiple: false,
+                extensions: 'gif,jpg,jpeg,bmp,png,pdf,xlsx,xls,doc,docx',
+                mimeTypes: 'image/*,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/msword,.docx',
+                compress: {
+                    width: 1920
+                },
+                showSuccess: true,
+                data: {
+                    parms: JSON2.stringify({
+                        "fileName": new Date().format("yyyyMMddhhmmss"),
+                        "dataId": dataId,
+                        "tableName": tableName,
+                        "attachField": (isOtherType ? '' : fileMark)
+                    })
+                },                   
+                callback: function (status, data) {
+                    if (status) loadData();
+                    //else LG.showError(JSON.stringify(data));
+                }
+            });
+        }
+
+        //查看
+        function f_fileView(urlpath, showstr) {
+            //var topWin = popWin.top;
+
+            //var attachList = grid.getData();
+            //topWin.$.ligerDialog.open({
+            //    width: topWin.innerWidth * 0.8,
+            //    height: topWin.innerHeight * 0.8,
+            //    allowClose: true,
+            //    isHidden: false,
+            //    data: { "ATTACHLIST": attachList, "SROWID": rowid },
+            //    url: '../filemanager/file-attachment-show.html',
+            //    title: "附件查看",
+            //    onClose: function () {
+            //        //if (callback) callback();
+            //    }
+            //});
+            var topWin = popWin.top;
+            topWin.$.ligerDialog.open({
+                width: 1030,
+                height: 780,
+                allowClose: true,
+                title: showstr,
+                url: urlpath,
+                isHidden: false,
+                showMax: false,
+                showToggle: false,
+                showMin: false,
+                isResize: true,
+                slide: false
+            });
+        }
+
+        //检测文件是否有效
+        function fileExist(FileURL) {
+            if (window.ActiveXObject) {
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            } else if (window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+            }
+            xmlhttp.open("GET", FileURL, false);
+            xmlhttp.send();
+            if (xmlhttp.readyState == 4) {
+
+                if (xmlhttp.status == 200) {
+                    return "1";
+                } else if (xmlhttp.status == 404) {
+                    return "2";
+                } else {
+                    return "3";
+                }
+            }
+        }
+
+        //下载
+        function f_fileDownload(url, fileName) {
+            var isExist = fileExist(url);
+
+            if (isExist != "1") {
+                LG.showError('系统未能找到该资源！无法下载！');
+                return false;
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("get", url, true);
+            xhr.responseType = "blob";
+            xhr.onload = function () {
+                if (this.status == 200) saveAs(this.response, fileName);
+            };
+            xhr.send();
+        }
+
+        //删除
+        function f_fileDelete() {
+            if (grid.endEdit() != false) {
+                var selected = grid.getSelectedRows();
+                if (selected.length > 0) {
+                    jQuery.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (confirm) {
+                            var flag = false;
+                            for (let i in selected) {
+                                LG.ajax({
+                                    //type: 'AjaxAttach',
+                                    //method: 'DeleteAttachByAttachId',
+                                    url: 'attach/DeleteAttachByAttachId',
+                                    loading: '正在删除中...',
+                                    data: { "id": selected[i].attach_id },
+                                    async: false,
+                                    success: function () {
+                                        //LG.showSuccess('保存成功');
+                                        //grid.isDataChanged = false;
+                                        //f_reload();
+                                    },
+                                    error: function (message) {
+                                        LG.showError(message);
+                                        flag = true;
+                                    }
+                                });
+                                if (flag) break;
+                            }
+                            if (!flag) LG.showSuccess('删除成功!');
+                            loadData();
+                        }
+                    });
+                }
+                else {
+                    LG.tip('请选择行!');
+                }
+            }
+        }
+
+        //更新数据
+        function loadData() {
+            GetParam();
+            grid.set("parms", {
+                where: JSON.stringify({
+                    op: 'and',
+                    rules: [{ field: 'table_name', value: tableName, op: 'equal' },
+                    { field: 'data_id', value: dataId, op: 'equal' },
+                    fileMark == '-1' ? { field: "attach_field", op: 'isnull' } : { field: "attach_field", value: fileMark, op: 'equal' }]
+                })
+            });
+            f_reload();
+            //LG.ModelAjax({
+            //    data: {
+            //        view: 'SYS_ATTACH',
+            //        where: JSON2.stringify({
+            //            op: 'and', rules: [
+            //                { field: 'SYS_ATTACH.TABLE_NAME', value: tableName, op: 'equal' },
+            //                { field: 'SYS_ATTACH.DATA_ID', value: dataId, op: 'equal' },
+            //                fileMark == '-1' ? { field: "SYS_ATTACH.ATTACH_FIELD", op: 'isnull' } : { field: "SYS_ATTACH.ATTACH_FIELD", value: fileMark, op: 'equal' }
+            //            ]
+            //        }),
+            //        sortorder: "SYS_ATTACH.CREATEDATE desc "
+            //    },
+            //    success: function (data) {
+            //        var rows = [];
+            //        if (data.ATTACH_ID) rows.push(data);
+            //        else if (data.length) rows = data;
+            //        grid.loadData({ Rows: rows });
+            //    }
+            //});
+        }
+
+        loadData();
+
+    </script>
+</body>
+</html>

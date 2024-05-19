@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>收发存报表</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            rootPath: 'Material/SpStore/',
+            MenuNo: getQueryStringByName("MenuNo"),
+            stockData: [],
+            typeData: [],
+            purtypeData: [],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "统计时间", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: 90, width: 130, op: 'greaterorequal', type: "date" },
+                            { display: "至", name: "_search_EDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: 20, width: 130, op: 'lessorequal', type: "date" },
+                            { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { data: me.stockData } },
+                            { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.typeData } },
+                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { data: me.purtypeData } },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "创建时间", name: "CREATEDATE", dbname: "CREATEDATE", width: 120, type: "date", format: "yyyy-MM-dd" },
+                            { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", width: 130, type: "text", },
+                            { display: "物料名称", name: "SP_NAME", dbname: "SP_NAME", width: 150, type: "text", },
+                            { display: "规格型号", name: "SP_SIZE", dbname: "SP_SIZE", width: 150, type: "text", },
+                            { display: "计量单位", name: "UNIT", dbname: "UNIT", width: 120, type: "text", },
+                            { display: "分类", name: "TYPE_NAME", dbname: "TYPE_NAME", width: 120, type: "text", },
+                            { display: "采购分类", name: "PURTYPE_NAME", dbname: "PURTYPE_NAME", width: 120, type: "text", },
+                            { display: "库位名称", name: "STOCK_NAME", dbname: "STOCK_NAME", width: 150, type: "text", },
+                            { display: "库存单价(元)", name: "PRICE", dbname: "PRICE", width: 150, type: "text", },
+                            { display: "不含税单价(元)", name: "NOTAX_PRICE", dbname: "NOTAX_PRICE", width: 150, type: "text", },
+                            {
+                                display: '期初', columns:
+                                    [
+                                        { display: '库存数量', name: 'BEG_NUM', width: 100 },
+                                        {
+                                            display: '含税金额(元)', name: 'BEG_MONEY', width: 100, render: function (rowdata, index, value) {
+                                                if (value < 0) {
+                                                    return Math.abs(value);
+                                                } else {
+                                                    return value;
+                                                }
+                                            }
+                                        },
+                                        {
+                                            display: '不含税金额(元)', name: 'BEG_NOTAX_MONEY', width: 100, render: function (rowdata, index, value) {
+                                                if (value < 0) {
+                                                    return Math.abs(value);
+                                                } else {
+                                                    return value;
+                                                }
+                                            }
+                                        }
+                                    ]
+                            },
+                            {
+                                display: '入库', columns:
+                                    [
+                                        { display: '库存数量', name: 'IN_NUM', width: 100 },
+                                        { display: '含税金额(元)', name: 'IN_MONEY', width: 100 },
+                                        { display: '不含税金额(元)', name: 'IN_NOTAX_MONEY', width: 100 }
+                                    ]
+                            },
+                            {
+                                display: '出库', columns:
+                                    [
+                                        { display: '库存数量', name: 'OUT_NUM', width: 100 },
+                                        { display: '含税金额(元)', name: 'OUT_MONEY', width: 100 },
+                                        { display: '不含税金额(元)', name: 'OUT_NOTAX_MONEY', width: 100 }
+                                    ]
+                            },
+                            {
+                                display: '期末', columns:
+                                    [
+                                        { display: '库存数量', name: 'END_NUM', width: 100 },
+                                        {
+                                            display: '含税金额(元)', name: 'END_MONEY', width: 100, render: function (rowdata, index, value) {
+                                                if (value < 0) {
+                                                    return Math.abs(value);
+                                                } else {
+                                                    return value;
+                                                }
+                                            }
+                                        },
+                                        {
+                                            display: '不含税金额(元)', name: 'END_NOTAX_MONEY', width: 100,
+                                            render: function (rowdata, index, value) {
+                                                if (value < 0) {
+                                                    return Math.abs(value);
+                                                } else {
+                                                    return value;
+                                                }
+                                            }
+                                        }
+                                    ]
+                            },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: me.rootPath + 'ReportComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.stockData = data.SpHouseName;
+                        me.typeData = data.BaseSpType;
+                        me.purtypeData = data.BasePurtype;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: false,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    toolbar: {},
+                    url: me.rootPath + 'StoreInOutList',
+                    parms: {
+                        CREATEDATE: me.createData,
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'CREATEDATE',
+                    sortOrder: 'DESC',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: false,
+                    clickToEdit: false,
+                });
+
+
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            me.grid.options.parms.CREATEDATE = liger.get('_search_BDATE').getValue();
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+
+                        var nowDate = new Date();
+                        var beginDate = nowDate.getFullYear() + "-" + (nowDate.getMonth() + 1) + "-01";
+                        var day = new Date(nowDate.getFullYear(), nowDate.getMonth() + 1, 0);
+                        var endDate = nowDate.getFullYear() + "-" + (nowDate.getMonth() + 1) + "-" + day.getDate();
+                        me.searchForm.setData({ "_search_BDATE": beginDate });
+                        me.searchForm.setData({ "_search_EDATE": endDate });
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+</html>

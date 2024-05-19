@@ -1,0 +1,561 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title></title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            ver: getQueryStringByName("ver"),
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            {
+                                display: "日期", name: "_search_STARTDATE", dbname: "STARTDATE", width: 120, newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                            {
+                                display: "至", name: "_search_STARTDATE", dbname: "STARTDATE", width: 120, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: {
+                                    format: "yyyy-MM-dd"
+                                }
+                            },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "主键", name: "BUILD_ID", minWidth: 100, type: "text", hide: true },
+                            {
+                                display: "日期", name: "STARTDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd" },
+                                totalSummary: { render: function (column, data) { return "<span style='color:red'>&emsp;合计：</span>" } }
+                            },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text" },
+                            {
+                                display: "产量", columns: [
+                                    {
+                                        display: "船次", name: "SHIPTIMES", minWidth: 100, type: "int", editor: { type: 'int' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "船方", name: "SHIPNUM", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "施工时间（小时:分钟）", columns: [
+                                    {
+                                        display: "施工准备", name: "CONPLAN", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    {
+                                        display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    {
+                                        display: "航行时间", name: "SAILTIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "停工时间（小时:分钟）", columns: [
+                                    {
+                                        display: "检修时间", name: "REPAIRTIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    {
+                                        display: "天气影响", name: "WEATHEREFFECT", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                    {
+                                        display: "其他停工", name: "OTHERSTOP", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
+                                                return "<div>" + text + "</div>";
+                                            }
+                                        }
+                                    },
+                                ]
+                            },
+                            {
+                                display: "淡水（吨）", columns: [
+                                    {
+                                        display: "消耗", name: "DAILYCONSUMPTION", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "补充", name: "SUPPLEMENT", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    { display: "库存", name: "STOCK", minWidth: 100, type: "float", editor: { type: 'float' } },
+                                ]
+                            },
+                            {
+                                display: "柴油（吨）", columns: [
+                                    {
+                                        display: "主机消耗", name: "MASTER", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "辅机消耗", name: "AUXILIARY", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "泵机消耗", name: "PUMP", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "小计", name: "SUBTOTAL", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    {
+                                        display: "补充", name: "SUPPLEMENT2", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center'
+                                        }
+                                    },
+                                    { display: "库存", name: "STOCK2", minWidth: 100, type: "float", editor: { type: 'float' } }
+                                ]
+                            },
+                            {
+                                display: "滑油（吨）", columns: [
+                                    {
+                                        display: "消耗", name: "LUBRICATE", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                return "<div>" + e.sum + "</div>";
+                                            }
+                                        }
+                                        
+                                    },
+                                    {
+                                        display: "补充", name: "LUBRICATE_SUPPLEMENT", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                            render: function (e) {
+                                                return "<div>" + e.sum + "</div>";
+                                            }
+                                        },
+                                    },
+                                    { display: "库存", name: "LUBRICATE_STOCK", minWidth: 100, type: "float", editor: { type: 'float' } }
+                                ]
+                            },
+                            { display: "简要说明", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            shipinfo: [],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/Build/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        
+                        me.shipinfo = data.shipInfo;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {group:"list"},
+                    url: 'Special/Build/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'DEVICE_NAME', op: 'equal', value: '厦港浚001' }]
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "import":
+                            me.import();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function (rowid) { //查看
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '[查看]施工能耗',
+                    url: "build-count-001-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": me.grid.getRow(rowid).BUILD_ID, "isNew": false, "isView": true }
+                });
+            },
+            import: function () {
+                var me = this;
+                LG.showUpload({
+                    title: "施工能耗数据导入",
+                    server: "Special/Build/Import",
+                    //mouldFileName: "contract/ExportExcelHeader",
+                    mouldFileName: function () {
+                        debugger
+                        window.open(gksybConfigs.urlBase + "import-excel/施工能耗导入（001）.xlsx");
+                    },
+                    multiple: false,
+                    extensions: 'xls,xlsx',
+                    mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+                    compress: {
+                        width: 1920
+                    },
+                    showSuccess: false,
+                    data: { folder: '../../Adv' },
+                    callback: function (status, data) {
+                        
+                        if (status) {
+                            LG.showSuccess("导入成功");
+                            me.reload();
+                        }
+                        else LG.showError(data.Message);
+                    }
+                });
+            },
+            add: function () { //新增
+                var me = this;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '[新增]',
+                    url: "build-count-001-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": null, "isNew": true, "isView": false }
+                });
+                //me.grid.addEditRow({}, true);
+            },
+            modify: function () { //修改
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                var sid = selected.BUILD_ID;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '[修改]',
+                    url: "build-count-001-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sid": sid, "isNew": false, "isView": false }
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/Build/Save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = selected.length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

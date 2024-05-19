@@ -1,0 +1,301 @@
+﻿
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>低值品入账-明细</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%; overflow:auto;">
+    <div id="mainform" style="width:97%;">
+    </div>
+    <div style="margin-bottom: 5px; width: 98%;" id="paramform">
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            //dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            dialogData: {},
+            sdid: getQueryStringByName("sdid"),
+            isAddNew: false,
+            isView: true,
+            orginData: {},
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        labelwidth: 70,
+                        fields: [
+                            {
+                                display: "记录状态", name: "AUDITING", width: 250, type: "select", options: {
+                                    type: "select",
+                                    data: me.Auditing,
+                                    disabled: true
+                                }
+                            },
+                            { display: "入账单号", name: "IN_CODE", width: 250, type: "text", options: { disabled: true } },
+                            { display: "入账日期", name: "IN_DATE", width: 250, type: "date", options: { disabled: true } },
+                            {
+                                display: "物料编码", name: "SP_CODE", width: 250, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.SpcatalogCard,
+                                    autocomplete: true,
+                                    selectBoxWidth: 400,
+                                    valueField: "TEXT",
+                                    textField: "TEXT",
+                                    columns: [
+                                        { header: '物料编码', name: 'TEXT' },
+                                        { header: '物料名称', name: 'VALUE' },
+                                        { header: '物料分类', name: 'EXTEND1' },
+                                    ],
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#SP_ID').val(g.selected.ID ?? '');
+                                            $('#SP_NAME').val(g.selected.VALUE ?? '');
+                                            $('#SP_SIZE').val(g.selected.EXTEND ?? '');
+                                            $('#TYPE_NAME').val(g.selected.EXTEND1 ?? '');
+                                            $('#PRODUCE').val(g.selected.EXTEND2 ?? '');
+                                            $('#UNIT').val(g.selected.EXTEND3 ?? '');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "物料名称", name: "SP_NAME", width: 250, type: "text" ,options: { disabled: true } },
+                            { display: "型号规格", name: "SP_SIZE", width: 250, type: "text", options: { disabled: true } },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 250, type: "text", options: { disabled: true } },
+                            { display: "计量单位", name: "UNIT", width: 250, type: "text", options: { disabled: true } },
+                            { display: "物料分类", name: "TYPE_NAME", width: 250, type: "text", options: { disabled: true } },
+                            {
+                                display: "低值类别", name: "LOW_TYPE", width: 250, type: "select", validate: { required: true },
+                                options: {
+                                    type: 'select',
+                                    data: me.LowType
+                                }
+                            },
+                            {
+                                display: "保管人", name: "USER_NAME", width: 250, type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.UserDept,
+                                    autocomplete: true,
+                                    valueField: "TEXT",
+                                    textField: "TEXT",
+                                    onChangeValue: function (input, value, g) {
+                                        if (g.selected != undefined) {
+                                            $('#USER_ID').val(g.selected.ID ?? '');
+                                            $('#DEPT_ID').val(g.selected.VALUE ?? '');
+                                            $('#DEPT_NAME').val(g.selected.EXTEND ?? '');
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "使用部门", name: "DEPT_NAME", width: 250, type: "text", options: { disabled: true } },
+                            { display: "入账数量", name: "IN_NUM", width: 250, type: "float", validate: { required: true } },
+                            { display: "存放地点", name: "LOCATION", width: 250, type: "text" },
+                            { display: "办理人", name: "HANDLE_USER", width: 250, type: "text", options: { disabled: true } },
+                            { display: "备注", name: "MEMO",width: 1155, type: "textarea" },
+                            { display: "办理人id", name: "HANDLE_USERID", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "保管人id", name: "USER_ID", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "部门id", name: "DEPT_ID", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "备件品种id", name: "SP_ID", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "主键", name: "IN_ID",width: 300, type: "hidden" }
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'special/LowspareIn/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.Auditing = data.Auditing;
+                        me.UserDept = data.UserDept;
+                        me.SpcatalogCard = data.SpcatalogCard;
+                        me.LowType = data.LowType;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
+                if (me.isAddNew) {
+                    me.mainform.setData({
+                        AUDITING: "0",
+                        HANDLE_USERID: window.session.UserID,
+                        HANDLE_USER: window.session.RealName,
+                        //APPLY_DEPTID: window.session.Corp.CorpID,
+                        //APPLY_DEPT: window.session.Corp.CName
+                    });
+                    inner();
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'special/LowspareIn/Get',
+                        loading: '正在获取中...',
+                        data: { sdid: me.sdid },
+                        success: function (data, message) {
+                            me.mainform.setData(data);
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+            },
+            //保存
+            save: function () { //保存
+                var me = this;
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+
+                var changeRow = new Object();
+                if (me.isAddNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+
+                LG.ajax({
+                    jsToken: true,
+                    url: 'special/LowspareIn/save',
+                    loading: '正在保存中...',
+                    data: { request: changeRow },
+                    success: function (result) {
+                        LG.showSuccess('保存成功', function () {
+                            if (me.dialog) me.dialog.close();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    if (updateFields) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
+                    }
+                });
+            },
+            setFormDefaultBtn: function (cancleCallback, savedCallback) {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (!me.isView) {
+                    buttons.push({
+                        text: '重置', icon: 'fa fa-undo', onclick: function () {
+                            $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
+                                if (confirm) {
+                                    me.loadData();
+                                }
+                            });
+                        }
+                    });
+                }
+                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 200,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data');
+                    me.callback = me.dialogData.callback;
+                    if (me.dialogData.sdid != undefined) me.sdid = me.dialogData.sdid;
+                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
+                }
+
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+
+
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>

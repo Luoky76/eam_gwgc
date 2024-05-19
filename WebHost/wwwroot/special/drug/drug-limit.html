@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>药品数量配置</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="center" title="">
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <div id="iframeloading" class='l-loading' style="display:none;">
+            </div>
+            <form id="mainform">
+                <div id="maingrid" style="margin: 2px;"></div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "物资名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
+                            { display: "型号规格", name: "_search_SP_SIZE", dbname: "SP_SIZE", newline: false, upper: true, type: "text", options: {} },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "物资编号", name: "SP_CODE", minWidth: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", minWidth: 200, type: "text" },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 200, type: "text" },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text" },
+                            { display: "型号规格", name: "SP_SIZE", minWidth: 100, type: "text" },
+                            { display: "港内限制数量(4月）", name: "INSIDE_APRIL", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            { display: "港外限制数量(4月）", name: "OUTSIDE_APRIL", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            { display: "港内限制数量(10月）", name: "INSIDE_OCTOBER", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            { display: "港外限制数量(10月）", name: "OUTSIDE_OCTOBER", minWidth: 200, type: "float", editor: { type: 'float' }, validate: { required: true } },
+                            //隐藏
+                            { display: "主键", name: "LIMIT_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物资ID", name: "SP_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别ID", name: "TYPE_ID", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别", name: "TYPE_NAME", minWidth: 100, type: "text", hide: true },
+                            { display: "物资类别编码", name: "TYPE_CODE", minWidth: 100, type: "text", hide: true },
+                            { display: "添加人ID", name: "CREATE_USERID", minWidth: 100, type: "long", hide: true },
+                            { display: "添加时间", name: "CREATEDATE", minWidth: 100, type: "date", hide: true },
+                            { display: "修改人ID", name: "MODIFY_USERID", minWidth: 100, type: "long", hide: true },
+                            { display: "修改时间", name: "MODIFYDATE", minWidth: 100, type: "date", hide: true }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Special/DrugLimit/Comboxdata',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.dataCorp = data.corpData;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'Special/DrugLimit/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'LIMIT_ID',
+                    sortOrder: 'asc',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
+                            }
+                        }
+                    },
+                    rowAttrRender: function (rowdata, rowid) {
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "import":
+                            me.import();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/DrugLimit/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.grid.loadData();
+            },
+            add: function (row = {}) { //新增
+                var me = this;
+                //$.extend(row, {});
+                me.grid.addEditRow(row, true);
+            },
+            import: function () { //导入
+                var me = this;
+                var gridData = me.grid.getData();
+                var currentSpIds = [];
+                for (var item of gridData) {
+                    currentSpIds.push(item.SP_ID);
+                }
+                var dataOptions = {
+                    //TODO 实现导入
+                    url: 'Special/DrugLimit/DrugList',
+                    values: currentSpIds,
+                    options: {
+                        sortName: 'SP_ID',
+                        rowKey: "SP_ID",
+                        columns: [
+                            { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
+                            { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
+                            { display: "物资分类", name: "TYPE_NAME", width: 200, type: "text" },
+                            { display: "计量单位", name: "UNIT", width: 200, type: "text" },
+                        ]
+                    },
+                    fields: [
+                        { display: "物资编号", name: "SP_CODE", width: 200, type: "text" },
+                        { display: "物资名称", name: "SP_NAME", width: 200, type: "text" },
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(currentSpIds);
+                        /*var newSet = new Set(values);
+                        for (var i = 0; i < currentSpIds.length; ++i) {
+                            if (!newSet.has(currentSpIds[i])) {
+                                me.grid.deleteRow(i);
+                            }
+                        }*/
+                        for (let item of rows) {
+                            if (!currentSet.has(item.SP_ID)) {
+                                item.INSIDE_APRIL = 0;
+                                item.OUTSIDE_APRIL = 0;
+                                item.INSIDE_OCTOBER = 0;
+                                item.OUTSIDE_OCTOBER = 0;
+                                me.add(item);
+                            }
+                        }
+                        me.save();
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1300,
+                    height: 400,
+                    title: '导入药品',
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                me.grid.deleteSelectedRow();
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>

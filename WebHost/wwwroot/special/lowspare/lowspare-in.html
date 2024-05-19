@@ -1,0 +1,508 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>低值品入账</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+    <style type="text/css">
+        .badge {
+            display: inline-block;
+            min-width: 10px;
+            padding: 3px 7px;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #777;
+            border-radius: 10px;
+        }
+
+            .badge:empty {
+                display: none;
+            }
+
+            .badge:hover,
+            .badge:focus {
+                background-color: #66ccff;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    </style>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "入账单号", name: "_search_IN_CODE", dbname: "IN_CODE", newline: false, width: 150, upper: true, type: "text" }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "chk" },
+                            {
+                                display: "附件材料", name: "attach_id", dbname: "attach_id", width: 90, type: "text",
+                                render: function (rowdata, index, value) {
+                                    if (value != "0" && value != undefined) {
+                                        return '<a href="javascript:void(0)" onclick="business.f_rowAttachManage(\'' + rowdata.IN_ID + '\')"><span class="badge">' + value + '</span></i></a>';
+                                    } else {
+                                        return '-';
+                                    }
+                                }
+                            },
+                            { display: "入账单号", name: "IN_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入账日期", name: "IN_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "型号规格", name: "SP_SIZE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "物料分类", name: "TYPE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            {
+                                display: "低值类别", name: "LOW_TYPE", minWidth: 100, type: "select", editor: {
+                                    type: 'select',
+                                    data: me.LowType
+                                }
+                            },
+                            { display: "保管人", name: "USER_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "入账数量", name: "IN_NUM", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "存放地点", name: "LOCATION", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "办理人", name: "HANDLE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
+                            { display: "主键", name: "IN_ID", minWidth: 100, type: "text", hide:true}
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'special/LowspareIn/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.LowType = data.LowType;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: false,
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Special/LowspareIn/List',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: '',
+                    sortOrder: '',
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: false,
+                    clickToEdit: true,
+                    rowAttrRender: function (rowdata, rowid) {
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view();
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "file":
+                            me.f_attachManage();
+                            break;
+                        case "submit":
+                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                if (confirm) {
+                                    me.submit();
+                                }
+                            });
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+
+                $.ligerDialog.open({
+                    width: 1500,
+                    height: 700,
+                    allowClose: true,
+                    title: '[新增]低值品入账',
+                    url: "lowspare-in-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sdid": null, "isView": false ,"isNew": true }
+                });
+            },
+            modify: function () { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return;
+                } else if (rows.length == 0) {
+                    LG.showError("请选择一行");
+                    return;
+                }
+                var selected = me.grid.getSelectedRow();
+                if (selected.AUDITING == "1") {
+                    LG.showError("已提交,不可修改");
+                    return;
+                }
+                $.ligerDialog.open({
+                    width: 1500,
+                    height: 700,
+                    allowClose: true,
+                    title: '[修改]低值品入账',
+                    url: "lowspare-in-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { "sdid": selected.IN_ID, "isView": false }
+                });
+
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    for (var i = 0; i < selected.length; i++) {
+                        if (selected[i].AUDITING == "1") {
+                            LG.showError("选中数据有部分已提交,无法删除");
+                            return;
+                        }
+                    }
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            view: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                //if (!selected) {
+                //    LG.tip('请选择行!');
+                //    return;
+                //}
+                $.ligerDialog.open({
+                    width: 1500,
+                    height: 700,
+                    allowClose: true,
+                    title: '[查看]低值品入账',
+                    url: "lowspare-in-det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.buttons[0].click,
+                    data: { "sdid": selected.IN_ID, "isView": true }
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'special/LowspareIn/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            submit: function () { //提交
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds) {
+                    var updatedarr = [];
+                    var orginarr = [];
+                    for (var i = 0; i < selecteds.length; i++) {
+                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
+                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
+                        if (ori.AUDITING == "1") {
+                            LG.showError("有数据已提交，无法重复提交！");
+                            return;
+                        }
+                        upd.AUDITING = "1";
+                        orginarr.push(ori);
+                        updatedarr.push(upd)
+                    }
+                    var changeRow = new Object();
+                    changeRow["updated"] = updatedarr;
+                    changeRow["original"] = orginarr;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Special/LowspareIn/Save',
+                        loading: '正在提交中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('提交成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                } else {
+                    LG.tip('请选择行!');
+                }
+            },
+            reload: function () { //刷新
+                var me = this;
+                me.buttons[0].click();
+            },
+
+            f_attachManage: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length == 1) {
+                        me.f_rowAttachManage(selected[0].IN_ID);
+                    }
+                    else {
+                        LG.tip('请选择一项记录!');
+                    }
+                }
+            },
+
+            //附件管理
+            f_rowAttachManage: function (dataid) {
+                var me = this;
+                var isView = false;
+                $.ligerDialog.open({
+                    width: 960,
+                    height: 540,
+                    allowClose: true,
+                    isHidden: false,
+                    data: { "tableName": "SPEC_LOWSPARE_IN", "dataId": dataid, "isView": isView, "dataMenuList": me.getAttachMenuList(dataid) },
+                    url: '../../filemanager/file-attachment-pop.html',
+                    title: '附件管理',
+                    onClose: function () {
+                        me.reload();
+                    }
+                });
+            },
+
+            //构造附件管理左侧树状菜单
+            getAttachMenuList: function (dataid) {
+                var dataMenuList = new Array();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'attach/GetAttachFieldStat',
+                    data: { "tableName": "SPEC_LOWSPARE_IN", "dataId": dataid },
+                    success: function (attachList) {
+                        var getCount = function (id) {
+                            if (attachList) {
+                                if (attachList.length > 0) {
+                                    for (var i in attachList) {
+                                        if (attachList[i].ATTACH_FIELD === id) {
+                                            return attachList[i].CNT;
+                                            break;
+                                        }
+                                        if (i == attachList.length - 1) return 0;
+                                    }
+                                } else {
+                                    return 0;
+                                }
+                            } else {
+                                return 0;
+                            }
+                        }
+                        dataMenuList.push({ ID: "0", TEXT: "附件" + "(" + getCount("0") + ")", VALUE: "0", MEMO: "附件", COUNT: getCount("0") });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                return dataMenuList;
+            },
+
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.buttons[0].click(); //查询
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setGrid();
+                me.setForm();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>
