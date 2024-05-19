@@ -1,9 +1,0 @@
-﻿p,span,b,div,form{ text-align:left;}
-/* 搜索框 */
-.searchtitle{ display: none;}
-/* 一条线 导航线 */
-.navline{ display: none; }
-
-.searchbox .l-form .l-form-container ul{
-	float: left;
-}
