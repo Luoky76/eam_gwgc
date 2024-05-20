@@ -100,8 +100,6 @@ namespace EAM.Third.Services
             }
             string json = JsonConvert.SerializeObject(data);
 
-            await LogAsync("oa回调", "开始", json);
-
             //判断必须有内容的参数
             JObject jObj = JObject.Parse(json);
             var checkValidParams = new string[] { "taskId", "primary_key", "fun_name", "detail" };
@@ -159,7 +157,6 @@ namespace EAM.Third.Services
             }
             catch (Exception ex)
             {
-                await LogAsync("oa回调", ex.Message, json);
                 returnParam.status = false;
                 returnParam.msg = "回调异常：" + ex.Message;
             }
@@ -171,6 +168,7 @@ namespace EAM.Third.Services
                 }
             }
 
+            await _dbContext.DBLog("OA创建流程", "", "OA回调结束", returnParam.ToJson());
             return returnParam.ToJson();
         }
 
