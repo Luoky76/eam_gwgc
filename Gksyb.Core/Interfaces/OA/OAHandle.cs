@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
-using Flurl;
 using Flurl.Http;
-using DocumentFormat.OpenXml.EMMA;
 using Flurl.Http.Content;
-using Newtonsoft.Json;
+using Flurl;
 
 namespace Gksyb.Core.Interfaces.OA
 {
@@ -97,17 +95,14 @@ namespace Gksyb.Core.Interfaces.OA
 
         public async Task<string> GetOALogList(string url, string tid, string oaid, string json)
         {
-            await _dbContext.DBLog("获取OA实时审批进度", "", "TASKid：" + tid + "====OAid：" + oaid + "\n" + json, "");
+            await _dbContext.DBLog("获取OA实时审批进度", "", $"TASKid：{tid}====OAid：{oaid}\n{json}", "");
 
-            //通过tojson转化的json  会含有null 的数据 需要替换成 ""    特殊处理掉日期带时间的问题
-            json = json.Replace(":null", ":\"\"").Replace(" 00:00:00", "");
-
-            var http = new Url(url.TrimEnd('/') + "/cusrequest/getrequestlog/getList");
-            string result = await http.PostJsonAsync(json).ReceiveString();
+            var siteUri = new Uri(url).AppendPathSegments("cusrequest", "getrequestlog", "getList");
+            var content = new CapturedJsonContent(json);
+            string result = await siteUri.ToString().PostAsync(content).ReceiveJson();
 
             await _dbContext.DBLog("获取OA实时审批进度结果", "", result + "\n" + json, "");
             return result;
         }
-
     }
 }
