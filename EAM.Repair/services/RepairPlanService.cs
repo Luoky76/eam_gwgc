@@ -347,7 +347,7 @@ namespace EAM.Repair.services
                 mainSuccess = !execResult.IsError;
                 if (mainSuccess)  //主表是否保存成功
                 {
-                    requestdet = requestdet ?? new SaveRequest<REP_PLAN_EXE_ITEM>();
+                    requestdet ??= new SaveRequest<REP_PLAN_EXE_ITEM>();
 
                     execResult = await _dbContext.SaveEntityAnsyc(requestdet,
                          c => new
@@ -564,7 +564,7 @@ namespace EAM.Repair.services
             var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == exeId && c.table_name == "REP_PLAN_EXE").ToList();
             var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
             string attachName = string.Empty, attachUrl = string.Empty;
-            if (fj != null && fj.Count() > 0)
+            if (fj != null && fj.Count > 0)
             {
                 foreach (var item in fj)
                 {
@@ -595,7 +595,7 @@ namespace EAM.Repair.services
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            if (detQuery.Count() > 0)
+            if (detQuery.Count > 0)
             {
                 fileName = "维修计划(" + query.PLAN_CODE + ").xlsx";
 
@@ -604,8 +604,7 @@ namespace EAM.Repair.services
                 var content = await exporter.ExportAsByteArray(detQuery);
                 using var stream = new MemoryStream();
                 stream.Write(content, 0, content.Length);
-                FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
-
+                var ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
                 fileUrl = await ff.SaveAs("RepairPlan", fileRealName);
             }
 
@@ -615,7 +614,7 @@ namespace EAM.Repair.services
             var mainQuery = await _dbContext.Query<REP_PLAN_EXE>(c => c.EXE_ID == exeId)
                 .Select(c => new
                 {
-                    c.PLAN_CODE,
+                    plan_code = c.PLAN_CODE,
                     primary_key = c.EXE_ID,
                     fun_name = "_repairPlanService.ApprovalCompletedAsync",
                     bdmc = c.DEPT_NAME + "维修计划申请",
@@ -629,8 +628,8 @@ namespace EAM.Repair.services
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
-            OAHandle oa = new OAHandle(_dbContext);
-            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "{}");
+            var oa = new OAHandle(_dbContext);
+            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.plan_code}）- {_userSession.RealName}", _userSession.Phone, _userSession.UserName, mainQuery, null);
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 

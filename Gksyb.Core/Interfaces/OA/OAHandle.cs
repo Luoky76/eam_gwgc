@@ -48,10 +48,10 @@ namespace Gksyb.Core.Interfaces.OA
         }
 
 
-        public async Task<string> CreateFlow(string url, string billId, string billTitle, string phone, string oaCode, string mainData, string detData)
+        public async Task<string> CreateFlow(string url, string billId, string billTitle, string phone, string loginid, Object mainData, Object detData)
         {
-            string json = await GetFlowJsonAsync(url, billId, billTitle, phone, oaCode, mainData, detData);
-            await _dbContext.DBLog("创建OA流程参数", "", $"手机号码：{phone}\nOA账号：{oaCode}\n{json}", "");
+            string json = await GetFlowJsonAsync(url, billId, billTitle, phone, loginid, mainData, detData);
+            await _dbContext.DBLog("创建OA流程参数", "", $"手机号码：{phone}\nOA账号：{loginid}\n{json}", "");
             var content = new CapturedJsonContent(json);
             string result = await ($"{url.TrimEnd('/')}/createWorkflow?method=getExternalData").PostAsync(content).ReceiveString();
             await _dbContext.DBLog("创建OA流程结果", "", result, "");
@@ -65,15 +65,12 @@ namespace Gksyb.Core.Interfaces.OA
         /// <param name="billId"></param>
         /// <param name="billTitle"></param>
         /// <param name="phone"></param>
-        /// <param name="oaCode"></param>
+        /// <param name="loginid">为空时将通过phone向OA请求得到</param>
         /// <param name="mainData"></param>
         /// <param name="detData"></param>
         /// <returns></returns>
-        public async Task<string> GetFlowJsonAsync(string url, string billId, string billTitle, string phone, string oaCode, string mainData, string detData)
+        public async Task<string> GetFlowJsonAsync(string url, string billId, string billTitle, string phone, string loginid, Object mainData, Object detData)
         {
-            #region 拼接json
-            string dataJson = string.Empty, loginid = oaCode;
-
             if (string.IsNullOrEmpty(loginid))
             {
                 loginid = await GetUserIdAsync(phone, url);
@@ -84,35 +81,18 @@ namespace Gksyb.Core.Interfaces.OA
                 return "未成功获取到oa登录id";
             }
 
-            StringBuilder sb = new StringBuilder();
-            //json 开始
-            sb.Append("{");
+            var queryParams = new
+            {
+                billId,
+                billTitle,
+                creator = loginid,
+                isAutoSubmit = "0",
+                oaRequest = "",
+                mainTable = mainData,
+                detailTable = detData
+            };
 
-            // 流程信息
-            sb.Append("\"billId\":\"" + billId + "\",");
-            sb.Append("\"billTitle\":\"" + billTitle + "\",");
-            sb.Append("\"creator\":\"" + loginid + "\",");
-            sb.Append("\"isAutoSubmit\":\"0\",");
-            sb.Append("\"oaRequest\":\"\",");
-
-            // mainTable 主表信息 开始
-            sb.Append("\"mainTable\":");
-
-            sb.Append(mainData);// mainData 格式已自带 {}  
-            // mainTable 主表信息 结束
-            sb.Append(",");
-
-            // detailTable 子表信息 开始
-            sb.Append("\"detailTable\":");
-
-            sb.Append(detData);// detData 格式已自带 {}  
-            // detailTable 子表信息 结束
-
-            //json 结束
-            sb.Append("}");
-            #endregion
-
-            return sb.ToString().Replace(":null", ":\"\"").Replace(" 00:00:00", "");
+            return queryParams.ToJson();
         }
 
         public async Task<string> GetOALogList(string url, string tid, string oaid, string json)

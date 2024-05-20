@@ -69,9 +69,11 @@ namespace EAM.Third.Services
         {
             await _dbContext.DBLog("OA创建流程", "", $"收到OA回调请求，回调参数：\n{data}", "");
 
-            var returnParam = new RETURN_PARAM();
-            returnParam.status = true;
-            returnParam.msg = "回调成功";
+            var returnParam = new RETURN_PARAM
+            {
+                status = true,
+                msg = "回调成功"
+            };
 
             #region data 格式
             /* { 

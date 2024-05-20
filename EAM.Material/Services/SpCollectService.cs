@@ -874,13 +874,11 @@ namespace EAM.Material.Services
                     fjsc = attach
                 }).FirstAsync();
 
-            string jsonData = mainQuery.ToJson();
-
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
             OAHandle oa = new(_dbContext);
-            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.collect_code}）- {_userSession.RealName}", _userSession.Phone, null, jsonData, "{}");
+            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.collect_code}）- {_userSession.RealName}", _userSession.Phone, null, mainQuery, null);
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 
