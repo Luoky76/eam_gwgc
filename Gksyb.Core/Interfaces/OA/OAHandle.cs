@@ -15,6 +15,7 @@ namespace Gksyb.Core.Interfaces.OA
         {
             _dbContext = dbContext;
         }
+
         /// <summary>
         /// 获取账号
         /// </summary>
@@ -23,11 +24,11 @@ namespace Gksyb.Core.Interfaces.OA
         /// <returns></returns>
         public static async Task<string> GetUserIdAsync(string phone, string url)
         {
-            string paras = "{\"mobile\":\"" + phone + "\"}";
+            string paras = "{\"mobile\": \"" + phone + "\"}";
             try
             {
-                var http = new Url(url.TrimEnd('/') + "/hrm/HrmUserId/getUserId");
-                string result = await http.PostJsonAsync(paras).ReceiveString();
+                var content = new CapturedJsonContent(paras);
+                string result = await (url.TrimEnd('/') + "/hrm/HrmUserId/getUserId").PostAsync(content).ReceiveString();
 
                 //解析json 
                 JObject jObj = JObject.Parse(result);
@@ -53,7 +54,6 @@ namespace Gksyb.Core.Interfaces.OA
             await _dbContext.DBLog("创建OA流程结果", "", result, "");
             return result;
         }
-
 
         /// <summary>
         /// 拼接oa接口需求参数
@@ -111,7 +111,6 @@ namespace Gksyb.Core.Interfaces.OA
 
             return sb.ToString().Replace(":null", ":\"\"").Replace(" 00:00:00", "");
         }
-
 
         public async Task<string> GetOALogList(string url, string tid, string oaid, string json)
         {
