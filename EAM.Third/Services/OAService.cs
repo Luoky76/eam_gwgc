@@ -6,8 +6,6 @@ using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Gksyb.Model;
-using Gksyb.Common;
-using Chloe;
 using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Interfaces.Repair;
 
@@ -55,6 +53,12 @@ namespace EAM.Third.Services
             return true;
         }
 
+        //接口返回参数
+        private class RETURN_PARAM
+        {
+            public bool status;
+            public string msg;
+        }
 
         /// <summary>
         /// oa 回调数据
@@ -65,7 +69,10 @@ namespace EAM.Third.Services
         {
             await _dbContext.DBLog("OA创建流程", "", $"收到OA回调请求，回调参数：\n{data}", "");
 
-            string msg = "回调成功";
+            var returnParam = new RETURN_PARAM();
+            returnParam.status = true;
+            returnParam.msg = "回调成功";
+
             #region data 格式
             /* { 
              * taskId:1,
@@ -87,36 +94,27 @@ namespace EAM.Third.Services
 
             if (data == null)
             {
-                msg = "回调参数为空串";
-                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
+                returnParam.status = false;
+                returnParam.msg = "回调参数为空串";
+                return returnParam.ToJson();
             }
             string json = JsonConvert.SerializeObject(data);
 
             await LogAsync("oa回调", "开始", json);
 
+            //判断必须有内容的参数
             JObject jObj = JObject.Parse(json);
-            if (string.IsNullOrEmpty(jObj["taskId"]?.ToString()))
+            var checkValidParams = new string[] { "taskId", "primary_key", "fun_name", "detail" };
+            foreach (string param in checkValidParams)
             {
-                msg = "回调参数taskId缺少值";
-                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
-            }
-            if (string.IsNullOrEmpty(jObj["primary_key"]?.ToString()))
-            {
-                msg = "回调参数primary_key缺少值";
-                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
-            }
-            if (string.IsNullOrEmpty(jObj["fun_name"]?.ToString()))
-            {
-                msg = "回调参数fun_name缺少值";
-                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
-            }
-            if (string.IsNullOrEmpty(jObj["detail"]?.ToString()))
-            {
-                msg = "回调参数detail缺少值";
-                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
+                if (!jObj.ContainsKey(param) || string.IsNullOrEmpty(jObj.GetValue(param).ToString()))
+                {
+                    returnParam.status = false;
+                    returnParam.msg = $"回调参数{param}缺少值";
+                    return returnParam.ToJson();
+                }
             }
 
-            bool flag = true;
             //启用事务
             var canTransationOper = false;
             try
@@ -162,8 +160,8 @@ namespace EAM.Third.Services
             catch (Exception ex)
             {
                 await LogAsync("oa回调", ex.Message, json);
-                msg = "回调异常：" + ex.Message;
-                flag = false;
+                returnParam.status = false;
+                returnParam.msg = "回调异常：" + ex.Message;
             }
             finally
             {
@@ -173,7 +171,7 @@ namespace EAM.Third.Services
                 }
             }
 
-            return "{\"status\":" + flag.ToString().ToLower() + ",\"msg\":\"" + msg + "\"}";
+            return returnParam.ToJson();
         }
 
         public string RemoveHtml(string html)

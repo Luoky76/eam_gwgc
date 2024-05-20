@@ -24,10 +24,13 @@ namespace Gksyb.Core.Interfaces.OA
         /// <returns></returns>
         public static async Task<string> GetUserIdAsync(string phone, string url)
         {
-            string paras = "{\"mobile\": \"" + phone + "\"}";
+            var paras = new
+            {
+                mobile = phone
+            };
             try
             {
-                var content = new CapturedJsonContent(paras);
+                var content = new CapturedJsonContent(paras.ToJson());
                 string result = await (url.TrimEnd('/') + "/hrm/HrmUserId/getUserId").PostAsync(content).ReceiveString();
 
                 //解析json 
