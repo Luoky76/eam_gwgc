@@ -63,6 +63,8 @@ namespace EAM.Third.Services
         /// <returns></returns>
         public async Task<string> GetOADataAsync(dynamic data)
         {
+            await _dbContext.DBLog("OA创建流程", "", $"收到OA回调请求，回调参数：\n{data}", "");
+
             string msg = "回调成功";
             #region data 格式
             /* { 

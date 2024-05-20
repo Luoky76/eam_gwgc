@@ -796,6 +796,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> CreateWorkFlow(string collectId)
         {
+            await _dbContext.DBLog("OA创建流程", "", $"即将请求创建OA流程 COLLECT_ID = {collectId}", "");
+
             #region 推送oa
             var taskId = GuidHelper.NewSnowflakeId().ToString();
             var corpId = _userSession.Corp.CorpID;
@@ -857,8 +859,10 @@ namespace EAM.Material.Services
                 fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
+            string excelUrl = attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl + fileUrl);
+
             string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$"
-                + attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl + fileUrl);
+                + excelUrl;
 
             var mainQuery = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
@@ -886,11 +890,12 @@ namespace EAM.Material.Services
             if (job["success"] != null && job["success"].ToString().ToLower() == "true")
             {
                 await _dbContext.UseTransactionAsync(async () => {
-                    //成功后将记录状态改为审批中
+                    //成功后将记录状态改为审批中，保存OA编号和Excel附件的网络地址
                     _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
                     {
                         AUDITING = "2",
-                        OA_CODE = job["code"].ToString()
+                        OA_CODE = job["code"].ToString(),
+                        EXCEL_URL = excelUrl
                     });
 
                     //修改船舶物资申请明细的物资采购状态

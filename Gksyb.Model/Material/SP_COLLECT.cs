@@ -270,6 +270,12 @@ namespace Gksyb.Model
         [Column(DbType = DbType.AnsiString)]
         public string OA_CODE { get; set; }
 
+        /// <summary>
+        /// Excel附件地址
+        /// </summary>
+        [Description("Excel附件地址")]
+        [Column(DbType = DbType.AnsiString)]
+        public string EXCEL_URL { get; set; }
     }
 
 }
