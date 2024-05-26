@@ -2922,7 +2922,6 @@ table.l-filter-group-alt table.l-filter-group {
 .l-text-invalid .l-upload-text {
     border-color: red !important;
 }
-
 /* -----------------------
    * 表格 *
 * ----------------------- */
@@ -4745,6 +4744,7 @@ l-grid {
 
 .l-tree .l-tree-icon-text {
     display: inline-block;
+    user-select: none;
 }
 
     .l-tree .l-tree-icon-text:hover {
