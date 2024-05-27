@@ -6,7 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 dll", "00 dll", "{2A8EBADF-8E08-4D21-9EB1-80C325F21C79}"
 	ProjectSection(SolutionItems) = preProject
 		dll\Chloe.dll = dll\Chloe.dll
-		dll\DmProvider.dll = dll\DmProvider.dll
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gksyb.Model", "Gksyb.Model\Gksyb.Model.csproj", "{99852D2D-7EF4-4AA8-85B3-5735A5C298A3}"
