@@ -3,6 +3,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Services.Workflow;
 using Microsoft.AspNetCore.Mvc;
@@ -27,10 +28,16 @@ namespace Gksyb.Workflow.Controllers.Workflow
         /// </summary>
         public async Task<AjaxResult> ComboxDataAsync([FromServices] ICorpService service, [FromServices] IBCCodeService codeService)
         {
+            var operatorTypeData = await codeService.Get("找人类型");
+            operatorTypeData.Add(new ComboxData()
+            {
+                ID = "FromService",
+                TEXT = "自定义"
+            });
             return AjaxResult.Success(new
             {
                 corpData = await service.ComboxDataAsync(true),
-                operatorTypeData = await codeService.Get("找人类型")
+                operatorTypeData
             });
         }
 

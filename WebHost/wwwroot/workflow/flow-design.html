@@ -95,17 +95,29 @@
                 if (!model) return;
                 g.options.host_form.setData({ "operators": "" });
                 g.options.host_form.setVisible("operators", true);
+                var editor = liger.get("operators");
+                if (!model.VALUE) {
+                    editor.inputText.css({ "width": "", "padding-right": "0px" });
+                    editor.set({ isMultiSelect: false, canDifferent: true, cancelable: false, triggerIcon: null });
+                    editor.setData([]);
+                    return;
+                }
+                editor.set({ isMultiSelect: true, canDifferent: false, cancelable: true, triggerIcon: "l-text-icon-transition fa fa-chevron-down" });
+                editor.inputText.css({ "padding-right": editor._icon.outerWidth(true) });
                 LG.ajax({
                     async: false,
                     url: model.VALUE,
                     success: function (data) {
-                        liger.get("operators").setData(data);
+                        editor.setData(data);
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
                 $("#operators-label").html(item.TEXT);
+            },
+            changeAssign: function (input, value, g) {
+                g.options.host_form.setVisible("assignUrl", value);
             },
             initFlowForm: function () {
                 var me = this;
@@ -121,7 +133,10 @@
                     {
                         display: '<span id="operators-label">操作人</span>', name: "operators", newline: true, bpmn: "no", type: "select", options: {
                             isMultiSelect: true,
-                            split: ","
+                            split: ",",
+                            onBeforeOpen: function () {
+                                return this.orginData && this.orginData.length;
+                            }
                         }
                     },
                     { display: "类路径", name: "clazz", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
@@ -135,7 +150,8 @@
                     { display: "处理类", name: "handle", newline: true, bpmn: "bpmn:exclusiveGateway", type: "text", options: {} },
                     { display: "前置拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
                     { display: "后置拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
-                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: {} },
+                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: { onChangeValue: me.changeAssign } },
+                    { display: "处理人URL", name: "assignUrl", newline: true, bpmn: "no", type: "text", options: {} },
                     { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} },
                     { display: "退回节点", name: "backNode", newline: true, bpmn: "bpmn:userTask", type: "select", options: { canDifferent: true, data: me.dataBackNode } }
                 ];

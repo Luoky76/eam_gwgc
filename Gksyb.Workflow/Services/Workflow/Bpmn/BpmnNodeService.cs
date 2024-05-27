@@ -138,20 +138,11 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         {
             var users = _info.Users ?? new List<UserInfo>();
             _info.Users = null;
-            if (users.Count < 1)
+            if (users.Count < 1 && !string.IsNullOrWhiteSpace(OperatorType))
             {
-                var operatorType = OperatorType ?? "";
-                if (!string.IsNullOrWhiteSpace(operatorType))
-                {
-                    var service = _serviceProvider.GetService<IUserService>();
-                    var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == _info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();
-                    users = await service.FindOperators(new FindOperatorInfo()
-                    {
-                        Type = operatorType,
-                        Corp = corpid,
-                        Operators = Operators
-                    });
-                }
+                users = OperatorType == "FromService" ?
+                    await FindeOperatorsFromService() :
+                    await FindeOperators();
             }
             if (users.Count < 1)
             {
@@ -368,6 +359,34 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             await interceptorList.ForEachAsync(async c =>
             {
                 await c.Intercept(_info);
+            });
+        }
+
+        /// <summary>
+        /// 从自定义的服务里面找处理人
+        /// </summary>
+        /// <returns></returns>
+        private async Task<List<UserInfo>> FindeOperatorsFromService()
+        {
+            var serviceName = Operators;
+            if (string.IsNullOrWhiteSpace(serviceName)) return new List<UserInfo>();
+            var service = _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == serviceName) as IFindOperators;
+            return await service.Find(_info);
+        }
+
+        /// <summary>
+        /// 从预制的服务里面找处理人
+        /// </summary>
+        /// <returns></returns>
+        private async Task<List<UserInfo>> FindeOperators()
+        {
+            var service = _serviceProvider.GetService<IUserService>();
+            var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == _info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();
+            return await service.FindOperators(new FindOperatorInfo()
+            {
+                Type = OperatorType,
+                Corp = corpid,
+                Operators = Operators
             });
         }
 

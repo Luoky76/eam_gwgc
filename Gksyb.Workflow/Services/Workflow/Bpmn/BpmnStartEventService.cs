@@ -35,6 +35,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         private async Task ExecNewAsync()
         {
+            var users = _info.Users;
             await AddWfTask();
             _info.Id = await AddTask();
             if (_info.NodeStatus == NodeStatus.Draft)
@@ -43,6 +44,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 return;
             }
             await DoPostInterceptors();
+            _info.Users = users;
             await Complate();
             await AddLog("发起");
         }

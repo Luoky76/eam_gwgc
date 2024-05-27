@@ -94,17 +94,6 @@ namespace Gksyb.Workflow.Controllers.Workflow
         {
             return AjaxResult.Success(await _service.TaskInfoAsync(request));
         }
-
-        /// <summary>
-        /// 任务详情(移动端)
-        /// </summary>
-        [JsToken]
-        public async Task<AjaxResult> TaskInfoMobileAsync(TaskInfoRequest request)
-        {
-            var taskInfo = await _service.TaskInfoAsync(request);
-            taskInfo.FlowContent = null;
-            return AjaxResult.Success(taskInfo);
-        }
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

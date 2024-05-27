@@ -238,7 +238,8 @@
                 nodeId = !me.isStart && me.isView && $.inArray(nodeId, nodes) >= 0 ? nodes[0] : nodeId;
                 if (nodes.length < 1) nodes.push(nodeId);
                 me.lf.highLight(nodes, nodeId);
-                me.isAssign = me.lf.getNodeDataById(me.data.NodeId).properties.assign;
+                me.nodeData = me.lf.getNodeDataById(me.data.NodeId);
+                me.isAssign = me.nodeData.properties.assign;
             },
             initTimeline: function () {
                 var me = this;
@@ -347,7 +348,7 @@
                         if (values.length < 1) return;
                         data.Operators = values.join(me.split);
                         inner();
-                    });
+                    }, me.nodeData.properties.assignUrl);
                     return;
                 }
                 inner();
@@ -378,7 +379,8 @@
                 var me = this;
                 me.share('workflow/task/transfer', true);
             },
-            selectUser: function (callback) {
+            selectUser: function (callback, url) {
+                url = url || 'popup/users';
                 $.ligerDialog.open({
                     width: 500,
                     height: 600,
@@ -389,7 +391,7 @@
                     data: {
                         values: [],
                         options: {
-                            url: 'popup/users', sortName: 'Name', rowKey: "Id",
+                            url: url, sortName: 'Name', rowKey: "Id",
                             columns: [
                                 { display: "姓名", name: "Name", type: "text" },
                                 { display: "公司岗位", name: "Station", type: "text" }
@@ -440,7 +442,7 @@
                     me.selectUser(function (values) {
                         if (values.length < 1) return;
                         inner(values.join(me.split));
-                    });
+                    }, me.nodeData.properties.assignUrl);
                     return;
                 }
                 inner();

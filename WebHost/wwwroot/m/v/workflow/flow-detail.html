@@ -164,20 +164,41 @@
             }
             page.find("#flow-timeline").html(htmls.join(''));
         },
+        getNodeData: function (fn) {
+            var me = this;
+            if (!me.graphData || !me.graphData.nodes || !me.graphData.nodes.length)
+                return { properties: {} };
+            for (var i = 0, l = me.graphData.nodes.length; i < l; i++) {
+                var item = me.graphData.nodes[i];
+                if (fn(item)) return item;
+            }
+        },
         loadData: function (param) {
             var me = this, param = param || me.param;
             app.ajax({
                 jsToken: true,
                 async: false,
-                url: 'workflow/query/taskInfoMobile',
+                url: 'workflow/query/taskInfo',
                 data: { Id: param.id, FlowId: param.flowId, FlowCode: param.flowCode },
                 success: function (data) {
                     me.data = data || {};
-                    me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
+                    var startType = "bpmn:startEvent";
+                    me.isStart = !data.NodeType || (startType === data.NodeType);
                     if (data.NodeStatus && data.NodeStatus !== 1) {
                         me.isView = true;
                     }
                     me.isOper = me.isStart && !me.isView;
+                    try {
+                        me.graphData = JSON.parse(me.data.FlowContent || "{}");
+                        var nodeId = me.data.WorkNodeId || me.data.NodeId;
+                        me.nodeData = me.getNodeData(function (item) {
+                            return nodeId ? (item.id === nodeId) : (item.type === startType);
+                        });
+                        me.isAssign = me.nodeData.properties.assign;
+                    }
+                    catch (e) {
+
+                    }
                 }
             });
         },
@@ -254,7 +275,7 @@
                     if (values.length < 1) return;
                     data.Operators = values.join(me.split);
                     inner();
-                });
+                }, me.nodeData.properties.assignUrl);
                 return;
             }
             inner();
@@ -281,12 +302,13 @@
             var me = this;
             me.share('workflow/task/transfer', true);
         },
-        selectUser: function (callback) {
+        selectUser: function (callback, url) {
             var me = this, page = me.page.$el, dom = page.find("#select-user");
+            url = url || "popup/users";
             if (!me.userSelect) {
                 me.userSelect = new Framework7.MForm.editors["select"](dom, {
                     pageTitle: "人员挑选",
-                    url: "popup/users",
+                    url: url,
                     split: me.split,
                     isMultiSelect: true,
                     validate: { required: true },
@@ -333,7 +355,7 @@
                 me.selectUser(function (values) {
                     if (values.length < 1) return;
                     inner(values.join(me.split));
-                });
+                }, me.nodeData.properties.assignUrl);
                 return;
             }
             inner();
