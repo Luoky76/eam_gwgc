@@ -20,7 +20,7 @@ namespace Gksyb.Common.TCP
         public byte[] PackHead { get; set; }
 
         /// <summary>
-        /// 整个包长度（包含包头和包尾）
+        /// 整个包长度（包含包头和包尾）,传递的的字节数据已跳过包头
         /// </summary>
         public Func<IEnumerable<byte>, int> GetPackLength { get; set; }
 

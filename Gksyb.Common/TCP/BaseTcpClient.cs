@@ -16,6 +16,11 @@ namespace Gksyb.Common.TCP
         private LogPath _logPath;
         private ClientInfo _client;
         private IPEndPoint _server;
+        private bool _closed = false;
+        private bool _reConnect = false;
+
+        private readonly SocketAsyncEventArgs _connectEventArgs;
+        private readonly SocketAsyncEventArgs _receiveEventArgs;
 
         /// <summary>
         /// 标识
@@ -38,6 +43,11 @@ namespace Gksyb.Common.TCP
             ID = id;
             _logPath = logPath;
             _logger = HttpContext.RequestServices.GetRequiredService<ILogger<BaseTcpClient>>();
+            _connectEventArgs = new SocketAsyncEventArgs { };
+            _connectEventArgs.Completed += OnConnectCompleted;
+
+            _receiveEventArgs = new SocketAsyncEventArgs();
+            _receiveEventArgs.Completed += OnReceiveCompleted;
         }
 
         /// <summary>
@@ -63,80 +73,61 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 连接
         /// </summary>
-        public void Connect(string ip, int port, bool reConnect = true)
+        public void Connect(string ip, int port)
         {
+            _closed = false;
             _logPath ??= new LogPath($"TcpClient-{ip}-{port}");
-            try
-            {
-                Connect(new IPEndPoint(IPAddress.Parse(ip), port));
-            }
-            catch (Exception)
-            {
-                if (!reConnect) throw;
-                ReConnect();
-            }
+            Connect(new IPEndPoint(IPAddress.Parse(ip), port));
         }
 
-        /// <summary>
-        /// 建立连接
-        /// </summary>
         private void Connect(IPEndPoint endPoint)
         {
             _server = endPoint;
-            MessageException.ThrowIf(_disposed, "对象已释放");
-            Close();
+            _connectEventArgs.RemoteEndPoint = _server;
             var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             _logger?.LogError(_logPath, $"准备连接：{_server}");
-            socket.Connect(endPoint);
-            _logger?.LogInformation(_logPath, $"客户端{socket.LocalEndPoint}连接服务器：{_server}");
-            Accept(new ClientInfo()
+            if (!socket.ConnectAsync(_connectEventArgs))
             {
-                ID = socket.LocalEndPoint.ToString(),
-                Socket = socket,
-            });
+                OnConnectCompleted(socket, _connectEventArgs);
+            }
         }
 
-        /// <summary>
-        /// 关闭连接
-        /// </summary>
-        public void Close()
+        private void OnConnectCompleted(object sender, SocketAsyncEventArgs e)
         {
-            CloseClient(_client);
-            _client = null;
-        }
-
-        /// <summary>
-        /// 成功连接处理
-        /// </summary>
-        protected virtual void Accept(ClientInfo client)
-        {
-            _client = client;
-            var result = OnConnect?.Invoke(client) ?? SocketError.Success;
-            if (result != SocketError.Success || string.IsNullOrWhiteSpace(client.ID))
+            _reConnect = false;
+            if (e.SocketError != SocketError.Success)
             {
-                CloseClient(client);
+                _logger?.LogInformation(_logPath, $"连接服务器{_server}失败，原因：{e.SocketError}");
+                Reconnect(e.SocketError);
                 return;
             }
-            var eventArgs = new SocketAsyncEventArgs()
+            _logger?.LogInformation(_logPath, $"客户端{e.ConnectSocket.LocalEndPoint}连接服务器：{_server}");
+            _client = new ClientInfo()
             {
-                UserToken = client
+                ID = e.ConnectSocket.LocalEndPoint.ToString(),
+                Socket = e.ConnectSocket,
             };
-            eventArgs.Completed += IO_Completed;
-            ListenReceive(client, eventArgs);
+            var result = OnConnect?.Invoke(_client) ?? SocketError.Success;
+            if (result != SocketError.Success || string.IsNullOrWhiteSpace(_client.ID))
+            {
+                Reconnect(result);
+                return;
+            }
+            var buffer = new byte[_client.BufferLength];
+            _receiveEventArgs.SetBuffer(buffer, 0, buffer.Length);
+            StartReceive();
         }
 
         /// <summary>
         /// 监听下一次数据接收
         /// </summary>
-        private void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
+        private void StartReceive()
         {
             try
             {
-                client.ReceiveBuffer = new byte[client.BufferLength];
-                e.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
-                if (client.Socket?.ReceiveAsync(e) == false)
+                if (_client.Socket?.ReceiveAsync(_receiveEventArgs) == false)
                 {
-                    IO_Completed(client.Socket, e);
+                    OnReceiveCompleted(_client.Socket, _receiveEventArgs);
                 }
             }
             catch (Exception ex)
@@ -145,44 +136,49 @@ namespace Gksyb.Common.TCP
             }
         }
 
+        private void Reconnect(SocketError error)
+        {
+            CloseClient(error);
+            if (!ReConnectTime.HasValue) return;
+            if (_closed) return;
+            if (_reConnect) return;
+            _reConnect = true;
+            Task.Delay(ReConnectTime.Value).ContinueWith(t => Connect(_server));
+        }
+
+        /// <summary>
+        /// 关闭连接
+        /// </summary>
+        public void Close()
+        {
+            _closed = true;
+            CloseClient(SocketError.Success);
+            _client = null;
+        }
+
         /// <summary>
         /// 接收数据
         /// </summary>
-        private void IO_Completed(object sender, SocketAsyncEventArgs e)
+        private void OnReceiveCompleted(object sender, SocketAsyncEventArgs e)
         {
             var doNext = true;
-            var client = (ClientInfo)e.UserToken;
             try
             {
-                if (e.SocketError == SocketError.OperationAborted && !Connected)
+                if (e.SocketError != SocketError.Success || e.BytesTransferred <= 0)
                 {
                     doNext = false;
-                    return;
-                }
-                if (e.SocketError != SocketError.Success)
-                {
-                    OnClose?.Invoke(client, e.SocketError);
-                    switch (e.SocketError)
+                    var error = e.SocketError switch
                     {
-                        case SocketError.OperationAborted:
-                            _logger?.LogInformation(_logPath, $"关闭同{_server}的连接{client?.ID}");
-                            break;
-
-                        case SocketError.ConnectionReset:
-                            _logger?.LogInformation(_logPath, $"断开同{_server}的连接{client?.ID}");
-                            ReConnect(ReConnectTime);
-                            break;
-
-                        default:
-                            _logger?.LogError(_logPath, $"{nameof(IO_Completed)}操作{e.LastOperation}失败:{e.SocketError}");
-                            ReConnect(ReConnectTime);
-                            break;
-                    }
-                    doNext = false;
+                        SocketError.Success => $"被动断开同{_server}的连接{_client?.ID}",
+                        SocketError.OperationAborted => $"关闭同{_server}的连接{_client?.ID}",
+                        SocketError.ConnectionReset => $"断开同{_server}的连接{_client?.ID}",
+                        _ => $"{nameof(OnReceiveCompleted)}操作{e.LastOperation}失败:{e.SocketError}",
+                    };
+                    _logger?.LogError(_logPath, error);
+                    Reconnect(e.SocketError);
                     return;
                 }
-                if (e.LastOperation != SocketAsyncOperation.Receive || e.BytesTransferred <= 0) return;
-                doNext = ProcessReceived(client, e);
+                doNext = ProcessReceived(e);
             }
             catch (Exception ex)
             {
@@ -191,53 +187,57 @@ namespace Gksyb.Common.TCP
             finally
             {
                 if (doNext)
-                    ListenReceive(client, e);
+                    StartReceive();
             }
         }
 
         /// <summary>
         /// 处理接收的数据
         /// </summary>
-        private bool ProcessReceived(ClientInfo client, SocketAsyncEventArgs e)
+        private bool ProcessReceived(SocketAsyncEventArgs e)
         {
-            client.ActieveTime = DateTime.Now;
+            _client.ActieveTime = DateTime.Now;
             var buffer = new byte[e.BytesTransferred];
-            Array.Copy(client.ReceiveBuffer, 0, buffer, 0, e.BytesTransferred);
-            client.ReceiveBuffer = buffer;
-            _logger?.LogInformation(_logPath, $"接收来自{_server}的数据：{BitConverter.ToString(client.ReceiveBuffer)}");
+            Buffer.BlockCopy(e.Buffer, e.Offset, buffer, 0, e.BytesTransferred);
+            _logger?.LogInformation(_logPath, $"接收来自{_server}的数据：{BitConverter.ToString(buffer)}");
             var result = SocketError.Success;
-            if (client.Packet != null)
+            if (_client.Packet != null)
             {
-                result = client.Packet.PackHandle(client.ReceiveBuffer, bytes =>
+                result = _client.Packet.PackHandle(buffer, bytes =>
                 {
-                    return OnReceive?.Invoke(client, bytes) ?? SocketError.Success;
+                    return OnReceive?.Invoke(_client, bytes) ?? SocketError.Success;
                 });
             }
             else
             {
-                result = OnReceive?.Invoke(client, client.ReceiveBuffer) ?? SocketError.Success;
+                result = OnReceive?.Invoke(_client, buffer) ?? SocketError.Success;
             }
-            if (result != SocketError.Success)
-            {
-                CloseClient(client);
-                return false;
-            }
-            return true;
+            if (result == SocketError.Success)
+                return true;
+            Reconnect(result);
+            return false;
         }
 
         /// <summary>
         /// 关闭连接
         /// </summary>
-        private void CloseClient(ClientInfo client)
+        private void CloseClient(SocketError error)
         {
             try
             {
-                if (client == null) return;
-                client.Dispose();
+                if (error != SocketError.Success)
+                {
+                    if (_client?.Socket?.Connected == true)
+                    {
+                        _logger?.LogInformation(_logPath, $"主动断开同{_server}的连接{_client?.ID}");
+                    }
+                    OnClose?.Invoke(_client, error);
+                }
+                _client?.Dispose();
             }
             catch (Exception ex)
             {
-                _logger?.LogError(_logPath, $"{_client.ID}：{ex}");
+                _logger?.LogError(_logPath, $"{_client?.ID}：{ex}");
             }
         }
 
@@ -254,17 +254,13 @@ namespace Gksyb.Common.TCP
         /// </summary>
         public async Task<bool> SendAsync(byte[] buffer)
         {
-            MessageException.ThrowIf(_server == null, "请先连接");
             try
             {
-                if (ReConnect())
-                {
-                    await Task.Delay(1000);
-                }
                 var result = OnSend?.Invoke(_client, buffer) ?? SocketError.Success;
                 if (result != SocketError.Success) return false;
                 _logger?.LogInformation(_logPath, $"准备向{_server}发送：{BitConverter.ToString(buffer)}");
-                if (await _client.Socket?.SendAsync(buffer, SocketFlags.None) == buffer.Length)
+                MessageException.ThrowIf(_client?.Socket == null, "连接已断开");
+                if (await _client.Socket.SendAsync(buffer, SocketFlags.None) == buffer.Length)
                 {
                     _client.ActieveTime = DateTime.Now;
                     _logger?.LogInformation(_logPath, $"向{_server}发送成功");
@@ -279,33 +275,6 @@ namespace Gksyb.Common.TCP
             return false;
         }
 
-        /// <summary>
-        /// 重新连接
-        /// </summary>
-        /// <returns></returns>
-        private bool ReConnect(int? waitTime = null)
-        {
-            if (Connected) return false;
-            lock (this)
-            {
-                if (Connected) return false;
-                try
-                {
-                    Connect(_server);
-                }
-                catch (Exception ex)
-                {
-                    if (!waitTime.HasValue) throw;
-                    _logger?.LogError(_logPath, $"重新连接失败，等待{waitTime}毫秒后重连，失败原因:{ex}");
-                    Task.Delay(waitTime.Value).Result();
-                    return ReConnect(waitTime);
-                }
-            }
-            return true;
-        }
-
-        public bool Connected => _client?.Socket?.Connected == true;
-
         public void Dispose()
         {
             Dispose(true);
@@ -317,7 +286,7 @@ namespace Gksyb.Common.TCP
         private void Dispose(bool _)
         {
             if (_disposed) return;
-            CloseClient(_client);
+            Close();
             _disposed = true;
         }
     }

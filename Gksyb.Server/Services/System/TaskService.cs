@@ -59,7 +59,7 @@ namespace Gksyb.Server.Services.System
         /// <returns></returns>
         public async Task<SYS_TASK> GetAsync(long id)
         {
-            return await _dbContext.Query<SYS_TASK>().Where(c => c.ID == id).FirstAsync();
+            return await _dbContext.Query<SYS_TASK>().Exclude(c => c.TASK_LAST_RESULT).Where(c => c.ID == id).FirstAsync();
         }
 
         /// <summary>

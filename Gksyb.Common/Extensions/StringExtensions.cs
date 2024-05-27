@@ -147,6 +147,16 @@ namespace Gksyb.Common
             return (m > 0 ? source.SubStr(0, m) : string.Empty) + string.Empty.PadLeft(n - m, '*') + source.SubStr(n);
         }
 
+        /// <summary>
+        /// 过滤敏感词，防止信息泄漏
+        /// </summary>
+        /// <returns></returns>
+        public static string SensitiveFilter(this string source)
+        {
+            if (source == null) return source;
+            return source.Replace("ora", "错误码", StringComparison.OrdinalIgnoreCase);
+        }
+
         #endregion 正则表达式
 
         #region 其他操作

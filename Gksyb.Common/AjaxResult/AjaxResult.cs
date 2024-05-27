@@ -7,6 +7,8 @@ namespace Gksyb.Common
     /// </summary>
     public class AjaxResult
     {
+        private string message;
+
         /// <summary>
         /// 是否产生错误
         /// </summary>
@@ -17,7 +19,7 @@ namespace Gksyb.Common
         /// 错误信息，或者成功信息
         /// </summary>
         [JsonProperty(Order = 20)]
-        public string Message { get; set; }
+        public string Message { get => message; set => message = value.SensitiveFilter(); }
 
         /// <summary>
         /// 成功可能时返回的数据
@@ -30,7 +32,7 @@ namespace Gksyb.Common
             return new AjaxResult()
             {
                 IsError = true,
-                Message = (message ?? "").Replace("ORA", "错误码")
+                Message = message
             };
         }
 
@@ -39,7 +41,7 @@ namespace Gksyb.Common
             return new AjaxResult()
             {
                 IsError = true,
-                Message = (message ?? "").Replace("ORA", "错误码"),
+                Message = message,
                 Data = data
             };
         }

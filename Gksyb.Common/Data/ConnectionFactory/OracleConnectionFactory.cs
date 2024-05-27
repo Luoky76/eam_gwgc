@@ -15,6 +15,8 @@ namespace Gksyb.Common.Data
     {
         static OracleConnectionFactory()//初始化
         {
+            OracleConfiguration.SuppressErrorURL = true;
+            OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version8;
             var methodHandlerDic = new Dictionary<string, IMethodHandler>()
             {
                 {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
@@ -56,7 +58,7 @@ namespace Gksyb.Common.Data
 
         static OracleConnectionDecorator()
         {
-            IsNewConGetter = DelegateGenerator.CreateGetter(typeof(OracleConnection).GetField("m_bNewConCreated",
+            IsNewConGetter = DelegateGenerator.CreateGetter(typeof(OracleConnection).GetProperty("m_bNewConCreated",
                BindingFlags.NonPublic | BindingFlags.Instance));
         }
 

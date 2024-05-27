@@ -23,11 +23,6 @@ namespace Gksyb.Common.TCP
         public int BufferLength { get; set; } = 2 * 1024;
 
         /// <summary>
-        /// 接收缓冲区
-        /// </summary>
-        internal byte[] ReceiveBuffer { get; set; }
-
-        /// <summary>
         /// 扩展属性
         /// </summary>
         public object Extra { get; set; }

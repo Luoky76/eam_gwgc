@@ -1,6 +1,7 @@
 ﻿using Gksyb.Common.Static;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -17,34 +18,15 @@ namespace Gksyb.Common.TCP
         private ServerState serverState;
         private readonly ILogger _logger;
         private readonly LogPath _logPath;
-        private readonly List<ClientInfo> _clients = new();
-        private readonly double _interval;
-        private System.Timers.Timer _timerCheckClient;
+        private readonly ConcurrentDictionary<ClientInfo, Socket> _clients = new();
+        private readonly int _interval;
+        private readonly Timer _timer;
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
         /// <summary>
         /// 客户端超时时间 单位秒 -1代表从不超时
         /// </summary>
         public int ClientTimeOut = 3 * 60;
-
-        /// <summary>
-        /// 定时器(业务逻辑)
-        /// </summary>
-        public System.Timers.Timer TimerCheckClient
-        {
-            get
-            {
-                if (_timerCheckClient == null)
-                {
-                    _timerCheckClient = new System.Timers.Timer
-                    {
-                        Interval = _interval
-                    };
-                    _timerCheckClient.Elapsed += TimerCheckClient_Elapsed;
-                }
-                return _timerCheckClient;
-            }
-        }
 
         /// <summary>
         /// TCP/IP 服务端
@@ -55,7 +37,7 @@ namespace Gksyb.Common.TCP
         /// <param name="interval">定时移除不活动连接的间隔时间，默认1分钟</param>
         /// <param name="backlog">最大排队数</param>
         /// <param name="address">IP地址，默认监听本机所有网卡</param>
-        public BaseTcpServer(int port, LogPath logPath = null, int max = 10 * 1000, double interval = 60 * 1000, int backlog = 1000, IPAddress address = null)
+        public BaseTcpServer(int port, LogPath logPath = null, int max = 10 * 1000, int interval = 60 * 1000, int backlog = 1000, IPAddress address = null)
         {
             _logger = HttpContext.RequestServices.GetRequiredService<ILogger<BaseTcpServer>>();
             _logPath = logPath ?? new LogPath($"TcpServer-{port}");
@@ -64,6 +46,7 @@ namespace Gksyb.Common.TCP
             _interval = interval;
             _backlog = backlog;
             _address = address ?? IPAddress.Any;
+            _timer = new Timer(CheckInactiveClients, null, _interval, _interval);
         }
 
         /// <summary>
@@ -106,8 +89,6 @@ namespace Gksyb.Common.TCP
                 case ServerState.None:
                 case ServerState.Stopped:
                     {
-                        TimerCheckClient.Stop();
-                        TimerCheckClient.Start();
                         Listen();
                         break;
                     }
@@ -124,24 +105,19 @@ namespace Gksyb.Common.TCP
             return this;
         }
 
-        private bool IsCheckRun = false;
-
         /// <summary>
         /// 定时关闭不活动的连接
         /// </summary>
-        private void TimerCheckClient_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void CheckInactiveClients(object state)
         {
-            if (IsCheckRun) return;
+            if (ClientTimeOut <= 0) return;
             try
             {
-                IsCheckRun = true;
                 var now = DateTime.Now;
-                for (var i = _clients.Count - 1; i >= 0; i--)
+                foreach (var client in _clients.Keys)
                 {
-                    var client = _clients[i];
                     if (client.Socket?.Connected == true)
                     {
-                        if (ClientTimeOut <= 0) continue;
                         if ((client.ActieveTime ?? DateTime.MinValue).AddSeconds(ClientTimeOut) > now) continue;
                     }
                     RemoveClient(client);
@@ -150,10 +126,6 @@ namespace Gksyb.Common.TCP
             catch (Exception ex)
             {
                 _logger?.LogError(_logPath, ex.ToString());
-            }
-            finally
-            {
-                IsCheckRun = false;
             }
         }
 
@@ -191,7 +163,7 @@ namespace Gksyb.Common.TCP
                 if (_disposed) return;
                 if (listener?.AcceptAsync(e) == false)
                 {
-                    ListenAccept(listener, e);
+                    Accept_Completed(listener, e);
                 }
             }
             catch (Exception ex)
@@ -277,11 +249,11 @@ namespace Gksyb.Common.TCP
                 RemoveClient(client);
                 return;
             }
-            _clients.FindAll(c => c.ID == client.ID).ForEach(c =>
+            _clients.Keys.Where(c => c.ID == client.ID).ForEach(c =>
             {
                 RemoveClient(c);
             });
-            _clients.Add(client);
+            _clients[client] = client.Socket;
             var eventArgs = new SocketAsyncEventArgs()
             {
                 UserToken = client
@@ -295,8 +267,8 @@ namespace Gksyb.Common.TCP
         /// </summary>
         private void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
         {
-            client.ReceiveBuffer = new byte[client.BufferLength];
-            e.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
+            var buffer = new byte[client.BufferLength];
+            e.SetBuffer(buffer, 0, buffer.Length);
             if (client.Socket?.ReceiveAsync(e) == false)
             {
                 IO_Completed(client.Socket, e);
@@ -312,10 +284,14 @@ namespace Gksyb.Common.TCP
             var client = (ClientInfo)e.UserToken;
             try
             {
-                if (e.SocketError != SocketError.Success)
+                if (e.SocketError != SocketError.Success || e.BytesTransferred <= 0)
                 {
                     switch (e.SocketError)
                     {
+                        case SocketError.Success:
+                            _logger?.LogInformation(_logPath, $"已关闭的客户端{client.ID}");
+                            break;
+
                         case SocketError.OperationAborted:
                             _logger?.LogInformation(_logPath, $"关闭客户端{client.ID}");
                             break;
@@ -331,7 +307,7 @@ namespace Gksyb.Common.TCP
                     doNext = false;
                     return;
                 }
-                if (e.LastOperation != SocketAsyncOperation.Receive || e.BytesTransferred <= 0) return;
+                if (e.LastOperation != SocketAsyncOperation.Receive) return;
                 doNext = ProcessReceived(client, e);
             }
             catch (Exception ex)
@@ -361,20 +337,19 @@ namespace Gksyb.Common.TCP
         {
             client.ActieveTime = DateTime.Now;
             var buffer = new byte[e.BytesTransferred];
-            Array.Copy(client.ReceiveBuffer, 0, buffer, 0, e.BytesTransferred);
-            client.ReceiveBuffer = buffer;
-            _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{BitConverter.ToString(client.ReceiveBuffer)}");
+            Array.Copy(e.Buffer, 0, buffer, 0, e.BytesTransferred);
+            _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{BitConverter.ToString(buffer)}");
             var result = SocketError.Success;
             if (client.Packet != null)
             {
-                result = client.Packet.PackHandle(client.ReceiveBuffer, bytes =>
+                result = client.Packet.PackHandle(buffer, bytes =>
                 {
                     return OnReceive?.Invoke(client, bytes, _listener) ?? SocketError.Success;
                 });
             }
             else
             {
-                result = OnReceive?.Invoke(client, client.ReceiveBuffer, _listener) ?? SocketError.Success;
+                result = OnReceive?.Invoke(client, buffer, _listener) ?? SocketError.Success;
             }
             if (result != SocketError.Success)
             {
@@ -392,8 +367,10 @@ namespace Gksyb.Common.TCP
             try
             {
                 if (client == null) return;
-                OnClose?.Invoke(client, _listener);
-                _clients.Remove(client);
+                if (_clients.TryRemove(client, out var _))
+                {
+                    OnClose?.Invoke(client, _listener);
+                }
                 client.Dispose();
                 client = null;
             }
@@ -426,7 +403,7 @@ namespace Gksyb.Common.TCP
         {
             try
             {
-                var client = _clients.FindLast(c => c.ID == id);
+                var client = _clients.Keys.Last(c => c.ID == id);
                 var result = OnSend?.Invoke(client, buffer, _listener) ?? SocketError.Success;
                 if (result != SocketError.Success) return false;
                 _logger?.LogInformation(_logPath, $"准备向{id}发送：{BitConverter.ToString(buffer)}");
@@ -437,7 +414,7 @@ namespace Gksyb.Common.TCP
                     times++;
                     try
                     {
-                        client = _clients.FindLast(c => c.ID == id);
+                        client = _clients.Keys.Last(c => c.ID == id);
                         if (client == null)
                         {
                             await Task.Delay(delay);
@@ -471,7 +448,7 @@ namespace Gksyb.Common.TCP
         public void Broadcast(string data)
         {
             var buffer = Encoding.GetBytes(data);
-            Parallel.ForEach(_clients, client =>//开启多线程
+            Parallel.ForEach(_clients.Keys, client =>//开启多线程
             {
                 try
                 {
@@ -491,19 +468,20 @@ namespace Gksyb.Common.TCP
         {
             try
             {
-                TimerCheckClient.Stop();
-                for (var i = _clients.Count - 1; i >= 0; i--)
+                foreach (var client in _clients.Keys)
                 {
-                    var client = _clients[i];
                     RemoveClient(client);
                 }
             }
             catch (Exception)
             {
             }
-            _listener?.Dispose();
-            _listener = null;
-            serverState = ServerState.Stopped;
+            finally
+            {
+                _listener?.Dispose();
+                _listener = null;
+                serverState = ServerState.Stopped;
+            }
         }
 
         public void Dispose()
@@ -518,8 +496,8 @@ namespace Gksyb.Common.TCP
         {
             if (_disposed) return;
             _logger?.LogInformation(_logPath, $"关闭服务器{_listener.LocalEndPoint}");
+            _timer.Dispose();
             Stop();
-            TimerCheckClient.Dispose();
             OnShutdown?.Invoke(_listener);
             _disposed = true;
         }

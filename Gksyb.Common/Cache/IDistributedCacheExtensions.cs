@@ -17,7 +17,9 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <returns></returns>
         public static T Get<T>(this IDistributedCache source, string key)
         {
-            return typeof(T).IsComplexType() ? source.GetString(key).ToObject<T>() : source.GetString(key).CastTo<T>();
+            var value = source.GetString(key);
+            if (value == null) return default;
+            return typeof(T).IsComplexType() ? value.ToObject<T>() : value.CastTo<T>();
         }
 
         /// <summary>
@@ -30,18 +32,16 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <returns></returns>
         public static T Get<T>(this IDistributedCache source, string key, T defaultValue)
         {
-            if (typeof(T).IsComplexType())
+            try
             {
-                try
-                {
-                    return source.GetString(key).ToObject<T>();
-                }
-                catch
-                {
-                    return defaultValue;
-                }
+                var value = source.GetString(key);
+                if (value == null) return defaultValue;
+                return typeof(T).IsComplexType() ? value.ToObject<T>() : value.CastTo<T>();
             }
-            return source.GetString(key).CastTo<T>(defaultValue);
+            catch
+            {
+                return defaultValue;
+            }
         }
 
         public static async Task<T> GetAsync<T>(this IDistributedCache source, string key)

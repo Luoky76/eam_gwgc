@@ -221,6 +221,10 @@
                 var me = this;
                 me.buttons[0].click();
             },
+            rowHandle: function (row) {
+                delete row["TASK_RUNSTATUS"];
+                delete row["TASK_LAST_RESULT"];
+            },
             getSelectedRows: function (remove) {
                 var me = this;
                 if (me.grid.endEdit() === false) return false;
@@ -229,17 +233,14 @@
                     LG.tip('请选择行!');
                     return false;
                 }
-                if (remove) {
-                    for (var i = 0, l = rows.length; i < l; i++) {
-                        var row = rows[i];
-                        delete row["TASK_RUNSTATUS"];
-                    }
+                for (var i = 0, l = rows.length; i < l; i++) {
+                    me.rowHandle(rows[i]);
                 }
                 return rows;
             },
             delete: function () { //删除
                 var me = this;
-                var rows = me.getSelectedRows();
+                var rows = me.getSelectedRows(true);
                 if (!rows) return;
                 $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                     if (!confirm) return;
@@ -279,7 +280,7 @@
                         var row = rows[i];
                         me.grid._updateHandle(row);
                         row.TASK_STATUS = status;
-                        row.TASK_RUNSTATUS = "";
+                        me.rowHandle(rows);
                     }
                     me.grid.isDataChanged = true;
                     me.save();
