@@ -36,14 +36,17 @@
                     },
                     grid: {
                         columns: [
-                            { display: "船名(部门)", name: "DEPT_NAME", width: 80, type: "text", },
-                            { display: "维修成本", name: "REP", width: 80, type: "text", },
-                            { display: "维保成本", name: "PM", width: 80, type: "text", },
-                            { display: "订单成本", name: "ORDER", width: 80, type: "text", },
-                            { display: "物资消耗成本", name: "OUTSTORE", width: 80, type: "text", },
-                            { display: "淡水消耗量", name: "DAILYCONSUMPTION", width: 80, type: "text", },
-                            { display: "柴油消耗量", name: "MASTER", width: 80, type: "text", },
-                            { display: "滑油消耗量", name: "LUBRICATE", width: 80, type: "text", },
+                            { display: "船名(部门)", name: "DEPT_NAME", minWidth: 200, type: "text", },
+                            //{ display: "维修成本", name: "REP", minWidth: 200, type: "text", },
+                            //{ display: "维保成本", name: "PM", minWidth: 200, type: "text", },
+                            { display: "维保成本", name: "REP_AND_PM", minWidth: 200, type: "float", },
+                            //{ display: "订单成本", name: "ORDER", minWidth: 200, type: "text", },
+                            { display: "物资消耗成本", name: "OUTSTORE", minWidth: 200, type: "float", },
+                            { display: "淡水消耗成本", name: "DAILYCONSUMPTION", minWidth: 200, type: "float", },
+                            { display: "柴油消耗成本", name: "MASTER", minWidth: 200, type: "float", },
+                            { display: "滑油消耗成本", name: "LUBRICATE", minWidth: 200, type: "float", },
+                            { display: "其它成本", name: "OTHER", minWidth: 200, type: "float", },
+                            { display: "人工成本", name: "LABOR", minWidth: 200, type: "float", },
                         ]
                     }
                 };

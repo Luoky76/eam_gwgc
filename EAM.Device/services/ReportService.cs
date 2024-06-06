@@ -41,6 +41,10 @@ namespace EAM.Device.services
             /// </summary>
             public decimal? PM { get; set; }
             /// <summary>
+            /// 维修和维保
+            /// </summary>
+            public decimal? REP_AND_PM { get; set; }
+            /// <summary>
             /// 订单
             /// </summary>
             public decimal? ORDER { get; set; }
@@ -124,6 +128,10 @@ namespace EAM.Device.services
                             TAX_MONEY = b.TAX_MONEY.HasValue ? b.TAX_MONEY : 0
                         })
                         .Sum(t => t.TAX_MONEY);
+
+                    //维修和维保
+                    item.REP_AND_PM = item.REP + item.PM;
+
                     //订单
                     item.ORDER = _dbContext.Query<SP_ORDER>()
                        .Where(a=> a.DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.ORDER_DATE >= b_time && a.ORDER_DATE <= e_time)
@@ -133,6 +141,7 @@ namespace EAM.Device.services
                     item.OUTSTORE = _dbContext.Query<SP_OUTSTORE>()
                        .Where(a => a.DEPT_ID == item.DEPT_ID && a.AUDITING_A == "1" && a.OUT_DATE >= b_time && a.OUT_DATE <= e_time)
                        .Sum(t => t.SUM_MONEY);
+
                     //耗能
                     var cost = _dbContext.Query<BUILD_COUNT>()
                        .Where(a => a.DEVICE_ID == item.DEVICE_ID && a.STARTDATE >= b_time && a.STARTDATE <= e_time)
@@ -148,7 +157,6 @@ namespace EAM.Device.services
                     item.MASTER = cost?.MASTER;
                     item.LUBRICATE = cost?.LUBRICATE;
                 }
-            
             }
             return new GridData
             {
