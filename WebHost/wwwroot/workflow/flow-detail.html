@@ -73,6 +73,7 @@
                 Back: "back",//退回
                 Draft: "draft" //草稿
             },
+            code: getQueryStringByName("code"),
             sid: getQueryStringByName("sid"),
             nid: getQueryStringByName("nid"),
             isView: getQueryStringByName("isView"),
@@ -83,12 +84,12 @@
                 if (me.isView || me.isStart) return;
                 var panel = me.auditPanel.panel;
                 $('<button></button>').appendTo(panel.winbtns).ligerButton({
-                    text: '转办', type: "warning small", icon: "fa fa-send", onClick: function () {
+                    text: '转办', type: "warning small", icon: "fa fa-share", onClick: function () {
                         me.transfer();
                     }
                 });
                 $('<button></button>').appendTo(panel.winbtns).ligerButton({
-                    text: '抄送', type: "primary small", icon: "fa fa-share", onClick: function () {
+                    text: '抄送', type: "primary small", icon: "fa fa-send", onClick: function () {
                         me.share();
                     }
                 });
@@ -98,7 +99,7 @@
                     fields: [
                         { display: "流程标题", name: "Title", width: 300, newline: true, type: "text", options: { readonly: true } },
                         { display: "发起人", name: "Creator", width: 160, newline: true, type: "text", options: { readonly: true } },
-                        { display: "发起时间", name: "CreateDate", labelWidth: 70, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } },
+                        { display: "发起时间", name: "CreateDate", labelWidth: 70, width: 180, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } },
                         {
                             display: "处理意见", name: "CommonReason", width: 250, newline: true, type: "select", options: {
                                 url: "workflow/query/reasonData", triggerToLoad: true,
@@ -115,8 +116,6 @@
                     ],
                     space: 3,
                     validate: true,
-                    onAfterSetFields: function (g) {
-                    },
                     buttons: [
                         {
                             text: '同意', type: "success small", icon: "fa fa-check", newline: true, click: function () {
@@ -132,7 +131,15 @@
                             }
                         }]
                 });
-                me.auditForm.setOrginData(me.data);
+                me.auditForm.setData(me.data);
+                me.auditForm.orginData = me.auditForm.getData();
+            },
+            initDraft: function (fn) {
+                var me = this;
+                fn = fn || function () { me.draft(); };
+                $('<button></button>').appendTo(me.formPanel.panel.winbtns).ligerButton({
+                    text: '保存草稿', type: "primary small", icon: "fa fa-archive", onClick: fn
+                });
             },
             initFormUrl: function () {
                 var me = this;
@@ -140,7 +147,7 @@
                 url += (url.indexOf('?') > -1 ? "&" : "?");
                 url += "flowId=" + me.data.FlowId;
                 if (me.data.TaskId) url += "&taskId=" + me.data.TaskId;
-                if (me.data.NodeId) url += "&nodeId=" + me.data.NodeId;
+                if (me.data.Id) url += "&nodeId=" + me.data.Id;
                 if (me.isStart) url += "&isStart=1";
                 if (me.isView) url += "&isView=1";
                 me.formPanel._setUrl(window.gksybConfigs.getUrl(url, window.gksybConfigs.urlBase));
@@ -158,13 +165,8 @@
                 catch (e) {
                     return;
                 }
-                var isOper = me.isStart && !me.isView;
-                if (isOper) {
-                    $('<button></button>').appendTo(me.formPanel.panel.winbtns).ligerButton({
-                        text: '保存草稿', type: "primary small", icon: "fa fa-archive", onClick: function () {
-                            me.draft();
-                        }
-                    });
+                if (me.isOper) {
+                    me.initDraft();
                     window._displayOptions = $.extend({
                         validate: true,
                         buttons: [
@@ -185,12 +187,33 @@
                 }
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
                 if (me.nid) {
-                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")));
+                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
                 }
                 else {
                     if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
-                if (!isOper) me.mainForm._setDisabled(true);
+                if (!me.isOper) me.mainForm._setDisabled(true);
+            },
+            getNodes: function () {
+                var me = this;
+                var nodes = [], nodeInfos = me.data.Logs || [];
+                if (nodeInfos.length < 1) return nodes;
+                var first = nodeInfos[0];
+                if (first.OperType === "同意") {
+                    if (me.data.FinishDate) {
+                        nodes.push(me.lf.getNodeModelByType("bpmn:endEvent").id);
+                    }
+                }
+                else if (first.OperType === "拒绝") {
+                    setTimeout(function () {
+                        me.lf.setProperties(first.NodeId, { state: "reject" })
+                        me.lf.setProperties(me.lf.getNodeModelByType("bpmn:endEvent").id, { state: "finish" })
+                    }, 0);
+                }
+                for (var i = 0, l = nodeInfos.length; i < l; i++) {
+                    nodes.push(nodeInfos[i].NodeId);
+                }
+                return nodes;
             },
             initFlow: function () {
                 var me = this;
@@ -202,21 +225,21 @@
                 });
                 var graphData = {};
                 try {
-                    graphData = JSON.parse(me.data.FlowContet || "{}");
+                    graphData = JSON.parse(me.data.FlowContent || "{}");
                 }
                 catch (e) {
 
                 }
                 me.lf.render(graphData);
                 me.lf.setFirstNodeVisible(-80, -100);
-                var nodes = [], nodeInfos = me.data.Logs || [];
-                for (var i = 0, l = nodeInfos.length; i < l; i++) {
-                    nodes.push(nodeInfos[i].NodeId);
-                }
+                var nodes = me.getNodes();
                 me.data.NodeId = me.data.NodeId || me.lf.getNodeModelByType("bpmn:startEvent").id;
-                if (nodes.length < 1) nodes.push(me.data.NodeId);
-                me.lf.highLight(nodes, me.data.NodeId);
-                me.isAssign = me.lf.getNodeDataById(me.data.NodeId).properties.assign;
+                var nodeId = me.data.WorkNodeId || me.data.NodeId;
+                nodeId = !me.isStart && me.isView && $.inArray(nodeId, nodes) >= 0 ? nodes[0] : nodeId;
+                if (nodes.length < 1) nodes.push(nodeId);
+                me.lf.highLight(nodes, nodeId);
+                me.nodeData = me.lf.getNodeDataById(me.data.NodeId);
+                me.isAssign = me.nodeData.properties.assign;
             },
             initTimeline: function () {
                 var me = this;
@@ -247,13 +270,15 @@
                     jsToken: true,
                     url: 'workflow/query/taskInfo',
                     loading: '正在获取中...',
-                    data: { id: me.nid, flowId: me.sid },
+                    data: { Id: me.nid, FlowId: me.sid, FlowCode: me.code },
                     success: function (data) {
-                        me.data = data;
+                        me.data = data || {};
                         me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
                         if (data.NodeStatus && data.NodeStatus !== 1) {
                             me.isView = true;
                         }
+                        me.isOper = me.isStart && !me.isView;
+                        me.setTitle();
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -262,6 +287,11 @@
             },
             agree: function () {
                 var me = this;
+                var formData = me.auditForm.getData();
+                if (formData.Reason === "不同意") {
+                    LG.showError("同意操作不能选择不同意为处理意见");
+                    return;
+                }
                 me.excute(me.nodeStatus.Agree);
             },
             reject: function () {
@@ -271,9 +301,13 @@
                     LG.showError("请输入处理意见");
                     return;
                 }
+                if (formData.Reason === "同意") {
+                    LG.showError("不同意操作不能选择同意为处理意见");
+                    return;
+                }
                 $.ligerDialog.confirm('确认不同意吗?', function (confirm) {
                     if (!confirm) return;
-                    me.excute(me.nodeStatus.Reject, formData);
+                    me.excute(me.nodeStatus.Reject);
                 });
             },
             back: function () {
@@ -310,11 +344,11 @@
                     });
                 };
                 if (nodeStatus == me.nodeStatus.Agree && me.isAssign && !skipAssign) {
-                    this.selectUser(function (values) {
+                    me.selectUser(function (values) {
                         if (values.length < 1) return;
                         data.Operators = values.join(me.split);
                         inner();
-                    });
+                    }, me.nodeData.properties.assignUrl);
                     return;
                 }
                 inner();
@@ -322,7 +356,7 @@
             share: function (url, isClose) {
                 var me = this;
                 url = url || 'workflow/task/share';
-                this.selectUser(function (values) {
+                me.selectUser(function (values) {
                     if (values.length < 1) return;
                     var formData = me.auditForm.getData();
                     LG.ajax({
@@ -345,8 +379,8 @@
                 var me = this;
                 me.share('workflow/task/transfer', true);
             },
-            selectUser: function (callback) {
-                var me = this;
+            selectUser: function (callback, url) {
+                url = url || 'popup/users';
                 $.ligerDialog.open({
                     width: 500,
                     height: 600,
@@ -357,7 +391,7 @@
                     data: {
                         values: [],
                         options: {
-                            url: 'popup/users', sortName: 'Name', rowKey: "Id",
+                            url: url, sortName: 'Name', rowKey: "Id",
                             columns: [
                                 { display: "姓名", name: "Name", type: "text" },
                                 { display: "公司岗位", name: "Station", type: "text" }
@@ -405,10 +439,10 @@
                     });
                 }
                 if (me.isAssign && !isDraft && !me.nid) {
-                    this.selectUser(function (values) {
+                    me.selectUser(function (values) {
                         if (values.length < 1) return;
                         inner(values.join(me.split));
-                    });
+                    }, me.nodeData.properties.assignUrl);
                     return;
                 }
                 inner();
@@ -471,6 +505,20 @@
                     showMax: false
                 });
             },
+            setTitle: function () {
+                var me = this;
+                var title = (me.data.Title || "") + "【" + (me.data.NodeTitle || "发起") + "】";
+                if (frameElement && frameElement.dialog && frameElement.dialog.dialog) {
+                    frameElement.dialog._setTitle(title);
+                    return;
+                }
+                var win = parent || window;
+                if (win.editTabTitle && win.getActivePageId) {
+                    win.editTabTitle(win.getActivePageId(), title);
+                    return;
+                }
+                document.title = title;
+            },
             init: function () {
                 var me = this;
                 if (frameElement && frameElement.dialog) {
@@ -479,9 +527,10 @@
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                    if (me.dialogData.code) me.code = me.dialogData.code;
                     if (me.dialogData.nid) me.nid = me.dialogData.nid;
                 }
-                if (!me.sid && !me.nid) {
+                if (!me.sid && !me.code && !me.nid) {
                     LG.showError("参数不完整");
                     return;
                 }

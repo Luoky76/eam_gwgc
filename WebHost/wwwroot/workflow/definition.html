@@ -40,7 +40,9 @@
                                     return '<a class="l-grid-row-button" href="javascript:business.modify()">' + value + '</a>';
                                 }
                             },
+                            { display: "流程编码", name: "FLOW_CODE", width: 100, type: "text" },
                             { display: "流程标题", name: "FLOW_TITLE", width: 100, type: "text" },
+                            { display: "所属组", name: "FLOW_GROUP", width: 100, type: "text" },
                             { display: "所属组织", name: "CORPID", width: 200, type: "select", format: { data: function () { return me.dataCorp; } } },
                             {
                                 display: "流程版本", name: "FLOW_VERSION", width: 100, type: "int", render: function (rowdata, rowindex, value, column) {
@@ -48,6 +50,7 @@
                                 }
                             },
                             { display: '顺序', name: 'FLOW_ORDER', width: 80, validate: { required: true }, editor: { type: 'int' } },
+                            { display: "被动触发", name: "PASSIVE", width: 100, type: "chk"},
                             { display: "状态", name: "FLAG", width: 100, type: "select", format: { data: function () { return me.dataFlag; } } },
                             { display: "创建人", name: "CREATEUSER", width: 100, type: "text" },
                             { display: "创建日期", name: "CREATEDATE", width: 100, type: "date" },
@@ -137,6 +140,9 @@
                         case "add":
                             me.add();
                             break;
+                        case "copy":
+                            me.copy();
+                            break;
                         case "modify":
                             me.modify();
                             break;
@@ -152,9 +158,9 @@
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
+                                url: "../System/Export.html?exporttype=pdf",
                                 modal: true
                             });
                             break;
@@ -164,6 +170,7 @@
                     toolbar: {
                         "items": [
                             { id: "add", text: '增加', click: me.toolbarBtnItemClick, icon: "fa fa-plus" },
+                            { id: "copy", text: '复制', click: me.toolbarBtnItemClick, icon: "fa fa-copy" },
                             { id: "modify", text: '修改', click: me.toolbarBtnItemClick, icon: "fa fa-edit" },
                             { id: "delete", text: '删除', click: me.toolbarBtnItemClick, icon: "fa fa-times" },
                             { id: "save", text: '保存', click: me.toolbarBtnItemClick, icon: "fa fa-save" }
@@ -196,6 +203,57 @@
             add: function () { //新增
                 var me = this;
                 me.addTab('新建流程设计', 'flow-design.html');
+            },
+            selectCorp: function (callback) {
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 600,
+                    title: '公司挑选',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: {
+                        values: [],
+                        options: {
+                            url: 'popup/corps', sortName: 'CName', rowKey: "CorpID",
+                            columns: [
+                                { display: "公司名称", name: "CName", type: "text" }
+                            ]
+                        },
+                        fields: [
+                            { display: "公司名称", name: "CName", width: 100, type: "text" }
+                        ],
+                        callback: callback
+                    }
+                });
+            },
+            copy: function () { //修改
+                var me = this;
+                var rows = me.grid.getSelectedRows(true);
+                if (rows.length < 1) return;
+                me.selectCorp(function (corps) {
+                    if (corps.length < 1) return;
+                    var ids = [];
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var row = rows[i];
+                        ids.push(row.ID);
+                    }
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'workflow/definition/copy',
+                        loading: '正在保存中...',
+                        data: { ids: ids, corps: corps },
+                        success: function () {
+                            me.grid.isDataChanged = false;
+                            LG.showSuccess('保存成功', function () {
+                                me.reload();
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
             },
             modify: function () { //修改
                 var me = this;
@@ -272,8 +330,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

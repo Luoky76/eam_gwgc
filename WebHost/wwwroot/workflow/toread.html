@@ -26,10 +26,9 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "通知时间从", name: "sdate", dbname: "StartDate", newline: false, upper: true, type: "date", op: "greaterorequal", options: { format: "yyyy-MM-dd hh:mm" } },
-                            { display: "到", name: "edate", dbname: "StartDate", newline: false, upper: true, type: "date", op: "lessorequal", options: { format: "yyyy-MM-dd hh:mm" } },
+                            { display: "通知时间从", name: "_search_StartDate", dbname: "StartDate", newline: false, width: 230, type: "date", vt: "date", op: "between", options: { range: true, format: "yyyy-MM-dd" } },
                             { display: "流程标题", name: "_search_Title", dbname: "Title", newline: false, upper: true, type: "text", options: {} },
-                            { display: "状态", name: "_search_NodeStatus", dbname: "NodeStatus", width:80, newline: false, upper: true, type: "select", options: { data: function () { return me.dataStatus; } } }
+                            { display: "状态", name: "_search_NodeStatus", dbname: "NodeStatus", width: 80, newline: false, upper: true, type: "select", options: { data: function () { return me.dataStatus; } } }
                         ]
                     },
                     grid: {
@@ -106,9 +105,9 @@
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
+                                url: "../System/Export.html?exporttype=pdf",
                                 modal: true
                             });
                             break;
@@ -214,8 +213,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
@@ -249,7 +248,7 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
-                        g.setData({ sdate: LG.addDays(new Date(), -180), edate: LG.truncDate(LG.addDays(new Date(), 1), "")});
+                        g.setData({ _search_StartDate: [LG.addDays(new Date(), -180), LG.truncDate(LG.addDays(new Date(), 1), "")] });
                     }
                 });
             },

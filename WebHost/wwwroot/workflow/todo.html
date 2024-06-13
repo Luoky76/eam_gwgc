@@ -99,9 +99,9 @@
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
+                                url: "../System/Export.html?exporttype=pdf",
                                 modal: true
                             });
                             break;
@@ -158,8 +158,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

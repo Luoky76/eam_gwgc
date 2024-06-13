@@ -38,6 +38,7 @@
         'use strict';
         var business = {
             lf: null,
+            dataBackNode: [{ ID: "previous", TEXT: "上一个节点" }, { ID: "start", TEXT: "开始节点" }],
             defaultValue: {
                 "bpmn:startEvent": { name: "start" },
                 "bpmn:userTask": { title: "用户任务" },
@@ -94,17 +95,29 @@
                 if (!model) return;
                 g.options.host_form.setData({ "operators": "" });
                 g.options.host_form.setVisible("operators", true);
+                var editor = liger.get("operators");
+                if (!model.VALUE) {
+                    editor.inputText.css({ "width": "", "padding-right": "0px" });
+                    editor.set({ isMultiSelect: false, canDifferent: true, cancelable: false, triggerIcon: null });
+                    editor.setData([]);
+                    return;
+                }
+                editor.set({ isMultiSelect: true, canDifferent: false, cancelable: true, triggerIcon: "l-text-icon-transition fa fa-chevron-down" });
+                editor.inputText.css({ "padding-right": editor._icon.outerWidth(true) });
                 LG.ajax({
                     async: false,
                     url: model.VALUE,
                     success: function (data) {
-                        liger.get("operators").setData(data);
+                        editor.setData(data);
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
                 $("#operators-label").html(item.TEXT);
+            },
+            changeAssign: function (input, value, g) {
+                g.options.host_form.setVisible("assignUrl", value);
             },
             initFlowForm: function () {
                 var me = this;
@@ -120,10 +133,12 @@
                     {
                         display: '<span id="operators-label">操作人</span>', name: "operators", newline: true, bpmn: "no", type: "select", options: {
                             isMultiSelect: true,
-                            split: ","
+                            split: ",",
+                            onBeforeOpen: function () {
+                                return this.orginData && this.orginData.length;
+                            }
                         }
                     },
-                    //{ display: "表单", name: "form", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
                     { display: "类路径", name: "clazz", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
                     { display: "方法名", name: "methodName", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
                     { display: "参数变量", name: "args", newline: true, bpmn: "bpmn:serviceTask", type: "text", options: {} },
@@ -133,28 +148,12 @@
                         }
                     },
                     { display: "处理类", name: "handle", newline: true, bpmn: "bpmn:exclusiveGateway", type: "text", options: {} },
-                    //{
-                    //    display: "任务类型", name: "taskType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
-                    //        data: [{ ID: 1, TEXT: "主办任务" }, { ID: 2, TEXT: "协办任务" }]
-                    //    }
-                    //},
-                    //{
-                    //    display: "参与类型", name: "performType", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
-                    //        data: [{ ID: 1, TEXT: "普通参与" }, { ID: 2, TEXT: "会签参与" }]
-                    //    }
-                    //},
                     { display: "前置拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
                     { display: "后置拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
-                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: {} }
-                    //, { display: "提醒时间", name: "reminderTime", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
-                    //{ display: "重复提醒间隔", name: "reminderRepeat", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
-                    //{ display: "期待完成时间", name: "expireTime", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} },
-                    //{
-                    //    display: "是否自动完成", name: "autoExecute", newline: true, bpmn: "bpmn:userTask", type: "select", options: {
-                    //        data: [{ ID: "N", TEXT: "否" }, { ID: "Y", TEXT: "是" }]
-                    //    }
-                    //},
-                    //{ display: "回调处理", name: "callback", newline: true, bpmn: "bpmn:userTask", type: "text", options: {} }
+                    { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: { onChangeValue: me.changeAssign } },
+                    { display: "处理人URL", name: "assignUrl", newline: true, bpmn: "no", type: "text", options: {} },
+                    { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} },
+                    { display: "退回节点", name: "backNode", newline: true, bpmn: "bpmn:userTask", type: "select", options: { canDifferent: true, data: me.dataBackNode } }
                 ];
                 for (var i = 0, l = fields.length; i < l; i++) {
                     var field = fields[i];
@@ -163,6 +162,7 @@
                     field.options.onChangeValue = function (input, value, g) {
                         if (g.options._orginOnChangeValue) g.options._orginOnChangeValue(input, value, g);
                         if (me._skipUpdateProperties === true) return;
+                        me._flowChanged = true;
                         var properties = {};
                         properties[g.id] = value;
                         me.lf.setProperties(me.selectNode.id, properties);
@@ -233,11 +233,16 @@
                     inputWidth: 180,
                     fields: [
                         { name: "FLOW_FORM", type: "hidden" },
-                        { display: "流程名称", name: "FLOW_NAME", newline: true, type: "text", options: {} },
+                        { display: "流程编码", name: "FLOW_CODE", newline: true, type: "text", options: {} },
+                        { display: "流程名称", name: "FLOW_NAME", newline: true, type: "text", validate: { required: true }, options: {} },
+                        { display: "所属组", name: "FLOW_GROUP", newline: true, type: "text", options: {} },
                         { display: "流程标题", name: "FLOW_TITLE", newline: true, type: "textarea", options: { rows: 3 } },
                         { display: "所属组织", name: "CORPID", newline: true, type: "select", options: { data: function () { return me.dataCorp; }, autocomplete: true } },
                         { display: "顺序", name: "FLOW_ORDER", newline: true, type: "int" },
+                        { display: "表单主键名称", name: "KEY_NAME", newline: true, type: "text", options: {} },
                         { display: "表单url", name: "FLOW_FORM_URL", newline: true, type: "textarea", options: { rows: 3 } },
+                        { display: "手机表单url", name: "FLOW_FORM_MOBILE_URL", newline: true, type: "textarea", options: { rows: 3 } },
+                        { display: "被动触发", name: "PASSIVE", newline: true, type: "chkStr", options: {} }
                     ],
                     space: 3,
                     validate: true
@@ -354,7 +359,7 @@
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    me.render({});
+                    me.render({ PASSIVE: "0" });
                     return;
                 }
                 LG.ajax({
@@ -411,7 +416,7 @@
             },
             closeQuery: function (callback) {
                 var me = this;
-                if (me._skipConfirm === true || ($.isEmptyObject(me.flowForm.getChanges()) && $.isEmptyObject(me.mainForm.getChanges()))) {
+                if (me._skipConfirm === true || (me._flowChanged !== true && $.isEmptyObject(me.mainForm.getChanges()))) {
                     delete me._skipConfirm;
                     if (me.formDialog) return me.formDialog.frame.business.closeQuery(callback);
                     callback();
