@@ -1,84 +1,41 @@
-﻿using System.Linq.Expressions;
+﻿using Gksyb.Core.Interfaces.WorkFlow;
+using Gksyb.Core.Interfaces.WorkFlow.Dtos;
+using System.Linq.Expressions;
 
 namespace Gksyb.Model.WorkFlow
 {
-    public class WF_NODEExtensions
+    public static class WF_NODEExtensions
     {
-        /// <summary>
-        /// 取消
-        /// </summary>
-        public const int Cancel = 0;
-
-        /// <summary>
-        /// 激活
-        /// </summary>
-        public const int Active = 1;
-
-        /// <summary>
-        /// 同意
-        /// </summary>
-        public const int Agree = 2;
-
-        /// <summary>
-        /// 拒绝
-        /// </summary>
-        public const int Reject = 3;
-
-        /// <summary>
-        /// 抄送
-        /// </summary>
-        public const int Share = 4;
-
-        /// <summary>
-        /// 退回
-        /// </summary>
-        public const int Back = 5;
-
-        /// <summary>
-        /// 转办
-        /// </summary>
-        public const int Transfer = 6;
-
-        /// <summary>
-        /// 已读
-        /// </summary>
-        public const int Readed = 8;
-
-        /// <summary>
-        /// 归档
-        /// </summary>
-        public const int Archived = 9;
-
-        /// <summary>
-        /// 草稿
-        /// </summary>
-        public const int Draft = 10;
-
-        /// <summary>
-        /// 获取描述
-        /// </summary>
-        public static string GetDesc(int? status)
-        {
-            return status switch
-            {
-                Agree => "同意",
-                Share => "抄送",
-                Back => "退回",
-                Transfer => "转办",
-                Reject => "拒绝",
-                Cancel => "取消",
-                _ => null,
-            };
-        }
-
         /// <summary>
         /// 统计通过率状态
         /// </summary>
-        private static readonly List<int?> PassRationStatus = new() { Active, Agree, Reject };
+        private static readonly List<int?> PassRationStatus = new() { NodeStatus.Active, NodeStatus.Agree, NodeStatus.Reject };
 
         /// <summary>
         /// 统计通过率过滤
         /// </summary>
         public static Expression<Func<WF_NODE, bool>> PassRationFilter => node => PassRationStatus.Contains(node.NODE_STATUS);
+
+        /// <summary>
+        /// WF_NODE转NodeInfo
+        /// </summary>
+        public static NodeInfo ToNodeInfo(this WF_NODE source)
+        {
+            return new NodeInfo()
+            {
+                Id = source.ID,
+                NodeId = source.NODE_ID,
+                NodeName = source.NODE_NAME,
+                NodeTitle = source.NODE_TITLE,
+                NodeType = source.NODE_TYPE,
+                NodeStatus = source.NODE_STATUS,
+                NodeUserId = source.NODE_USERID,
+                NodeUserName = source.NODE_USERNAME,
+                NodeUser = source.NODE_USER,
+                NodeReason = source.NODE_REASON,
+                Viewdate = source.VIEWDATE,
+                Finishdate = source.FINISHDATE
+            };
+        }
     }
 }

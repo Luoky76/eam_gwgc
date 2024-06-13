@@ -5,6 +5,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
+using Gksyb.Core.Interfaces.WorkFlow;
 using System.ComponentModel;
 using System.Data;
 
@@ -67,7 +68,7 @@ namespace Gksyb.Model.WorkFlow
         public string NODE_TYPE { get; set; }
 
         /// <summary>
-        /// 节点状态 参考<see cref="WF_NODEExtensions"/> 
+        /// 节点状态 参考<see cref="NodeStatus"/> 
         /// </summary>
         [Description("节点状态")]
         public int? NODE_STATUS { get; set; }

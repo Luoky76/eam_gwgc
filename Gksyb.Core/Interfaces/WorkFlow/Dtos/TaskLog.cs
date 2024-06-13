@@ -1,7 +1,12 @@
-﻿namespace Gksyb.Workflow.Controllers.Workflow.Dtos
+﻿namespace Gksyb.Core.Interfaces.WorkFlow
 {
     public class TaskLog
     {
+        /// <summary>
+        /// 日志主键
+        /// </summary>
+        public long? Id { get; set; }
+
         /// <summary>
         /// 节点主键
         /// </summary>

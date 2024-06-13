@@ -1,6 +1,6 @@
-﻿namespace Gksyb.Workflow.Controllers.Workflow.Dtos
+﻿namespace Gksyb.Core.Interfaces.WorkFlow
 {
-    public class TaskInfo
+    public class TaskInfoEx : TaskInfo
     {
         /// <summary>
         /// 主键
@@ -8,24 +8,9 @@
         public string Id { get; set; }
 
         /// <summary>
-        /// 任务ID
-        /// </summary>
-        public string TaskId { get; set; }
-
-        /// <summary>
-        /// 流程主键
-        /// </summary>
-        public string FlowId { get; set; }
-
-        /// <summary>
-        /// 标题
-        /// </summary>
-        public string Title { get; set; }
-
-        /// <summary>
         /// 流程内容
         /// </summary>
-        public string FlowContet { get; set; }
+        public string FlowContent { get; set; }
 
         /// <summary>
         /// 表单内容
@@ -38,14 +23,19 @@
         public string FormUrl { get; set; }
 
         /// <summary>
-        /// 表单数据
+        /// 表单url
         /// </summary>
-        public string FormData { get; set; }
+        public string FormMobileUrl { get; set; }
 
         /// <summary>
         /// 节点ID
         /// </summary>
         public string NodeId { get; set; }
+
+        /// <summary>
+        /// 作业节点ID
+        /// </summary>
+        public string WorkNodeId { get; set; }
 
         /// <summary>
         /// 节点标题
@@ -73,18 +63,8 @@
         public DateTime? ViewDate { get; set; }
 
         /// <summary>
-        /// 发起人
+        /// 任务完成时间
         /// </summary>
-        public string Creator { get; set; }
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        public DateTime? CreateDate { get; set; }
-
-        /// <summary>
-        /// 流转节点信息
-        /// </summary>
-        public List<TaskLog> Logs { get; set; }
+        public DateTime? FinishDate { get; set; }
     }
 }

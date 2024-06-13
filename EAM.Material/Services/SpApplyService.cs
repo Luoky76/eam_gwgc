@@ -10,7 +10,6 @@ using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Gksyb.Workflow.Services.Workflow;
 using Microsoft.AspNetCore.Http;
 using System.Data;
 using System.Linq.Expressions;
@@ -22,17 +21,17 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
-        private readonly TaskService _taskService;
+        private readonly IFlowEngineService _flowEngineService;
         private string _rentID = string.Empty, errMsg = string.Empty;
 
-        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, TaskService taskService)
+        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IFlowEngineService flowEngineService)
         {
             _dbContext = dbContext;
             //添加船舶物资需求的软删除字段过滤
             _dbContext.HasQueryFilter<SP_APPLY_DETAIL>(x => x.IS_DELETED != "1" || x.IS_DELETED == null);
             _comboxDataService = comboxDataService;
             _userSession = userSession;
-            _taskService = taskService;
+            _flowEngineService = flowEngineService;
         }
 
         #region 船舶物资申请
@@ -378,7 +377,7 @@ namespace EAM.Material.Services
                 dict.TryAdd("isView", false);
                 flowExecuteInfo.FormData = dict;
                 flowExecuteInfo.FlowId = "2YIFgkk2ruk";
-                await _taskService.StartAsync(flowExecuteInfo);
+                await _flowEngineService.StartAsync(flowExecuteInfo);
             }
         }
 

@@ -13,9 +13,9 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         {
         }
 
-        public void Init(FlowGraphEdge flowGraphEdge, List<BpmnNodeService> services)
+        public void Init(FlowExecuteInfo _info, FlowGraphEdge flowGraphEdge, List<BpmnNodeService> services)
         {
-            Init(flowGraphEdge);
+            Init(_info, flowGraphEdge);
             Source = services.FirstOrDefault(c => c.Id == flowGraphEdge.SourceNodeId);
             if (Source != null && !Source.Outputs.Contains(this)) Source.Outputs.Add(this);
             Target = services.FirstOrDefault(c => c.Id == flowGraphEdge.TargetNodeId);
@@ -43,23 +43,23 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             }
         }
 
-        public override async Task Execute(FlowExecuteInfo info)
+        public override async Task Execute()
         {
             if (Target == null) return;
             var expression = Expression;
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                if (info.FormData == null)
+                if (_info.FormData == null)
                 {
-                    await SetFormData(info);
+                    await SetFormData();
                 }
-                var result = Eval(expression, info.FormData, info.TaskId, new List<string>() { Source.Name }) == "True";
+                var result = Eval(expression, _info.FormData, _info.TaskId, new List<string>() { Source.Name }) == "True";
                 if (!result) return;
             }
-            await Target.Execute(info);
+            await Target.Execute();
         }
 
-        public override async Task Complate(FlowExecuteInfo info)
+        public override async Task Complate()
         {
             await Task.CompletedTask;
             throw new MessageException($"连线{Title}不能被完成");

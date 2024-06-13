@@ -44,7 +44,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
                 query = query.Where(c => corpids.Contains(c.CORPID));
             }
-            return await query.Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM, c.FLOW_FORM_URL }).GetGridData(request);
+            return await query.Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM, c.FLOW_FORM_URL, c.FLOW_FORM_MOBILE_URL }).GetGridData(request);
         }
 
         /// <summary>
@@ -68,14 +68,40 @@ namespace Gksyb.Workflow.Services.Workflow
         }
 
         /// <summary>
+        /// 复制
+        /// </summary>
+        public async Task CopyAsync(List<string> ids, List<string> corps)
+        {
+            var sysdate = await _dbContext.GetSysdate();
+            var list = await _dbContext.Query<WF_FLOW>().Where(c => ids.Contains(c.ID)).ToListAsync();
+            await _dbContext.UseTransactionAsync(async () =>
+            {
+                foreach (var id in ids)
+                {
+                    var model = list.Find(c => c.ID == id);
+                    if (model == null) continue;
+                    foreach (var corp in corps)
+                    {
+                        model.ID = GuidHelper.NewShortId();
+                        model.CORPID = corp;
+                        model.MODIFYUSERID = _user.UserID;
+                        model.MODIFYUSER = _user.Display;
+                        model.MODIFYDATE = sysdate;
+                        await _dbContext.InsertAsync(model);
+                    }
+                }
+            });
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<WF_FLOW> request)
         {
             var result = await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.FLOW_NAME, c.FLOW_TITLE, c.FLOW_ORDER, c.FLOW_CONTENT, c.FLOW_FORM, c.FLOW_FORM_URL, c.CORPID },
+                c => new { c.FLOW_CODE, c.FLOW_NAME, c.FLOW_GROUP, c.FLOW_TITLE, c.FLOW_ORDER, c.FLOW_CONTENT, c.KEY_NAME, c.FLOW_FORM, c.FLOW_FORM_URL, c.FLOW_FORM_MOBILE_URL, c.PASSIVE, c.CORPID },
                 c => a => a.ID == c.ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, true, BeforeSave);
+                , BeforeAdd, BeforeUpdate, BeforeDelete, true, BeforeSave, AfterSave);
             if (result.IsError) return result;
             return AjaxResult.Success(request.Added);
         }
@@ -104,15 +130,14 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <returns></returns>
         private async Task BeforeAdd(WF_FLOW entity)
         {
-            var isExists = await _dbContext.Query<WF_FLOW>().Where(c => c.FLOW_NAME == entity.FLOW_NAME
-            && c.FLAG == "1" && c.APPNAME == _options.AppName).AnyAsync();
-            if (isExists) throw new MessageException($"已经存在流程名称{entity.FLOW_NAME}");
+            await Handle(entity);
             if (!_user.IsAdmin)
             {
                 if (!_user.AllCorps.Exists(c => c.CorpID == entity.CORPID)) throw new MessageException($"请维护流程所属组织");
             }
             entity.ID = GuidHelper.NewShortId();
             entity.FLAG = "1";
+            entity.PASSIVE = entity.PASSIVE == "1" ? "1" : "0";
             entity.FLOW_VERSION = (entity.FLOW_VERSION ?? 0) + 1;
             entity.APPNAME = _options.AppName;
         }
@@ -124,11 +149,9 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <returns></returns>
         private async Task BeforeUpdate(WF_FLOW entity)
         {
+            await Handle(entity);
             var model = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == entity.ID).FirstOrDefaultAsync()
                 ?? throw new MessageException($"找不到流程{entity.FLOW_NAME}");
-            var isExists = await _dbContext.Query<WF_FLOW>().Where(c => c.APPNAME == _options.AppName
-                && c.FLOW_NAME == entity.FLOW_NAME && c.FLAG == "1" && c.ID != entity.ID).AnyAsync();
-            if (isExists) throw new MessageException($"已经存在流程{entity.FLOW_NAME}");
             if (!_user.IsAdmin)
             {
                 if (!_user.AllCorps.Exists(c => c.CorpID == model.CORPID)) throw new MessageException($"您无权进行此操作");
@@ -151,8 +174,41 @@ namespace Gksyb.Workflow.Services.Workflow
             {
                 if (!_user.AllCorps.Exists(c => c.CorpID == model.CORPID)) throw new MessageException($"您无权进行此操作");
             }
-            var isExists = await _dbContext.Query<WF_FLOW>().Where(c => c.FLOW_NAME == entity.FLOW_NAME).AnyAsync();
             entity.FLAG = "0";
+        }
+
+        /// <summary>
+        /// 保存后
+        /// </summary>
+        private async Task AfterSave(List<WF_FLOW> added, List<WF_FLOW> updated, List<WF_FLOW> deleted)
+        {
+            for (var i = deleted.Count - 1; i >= 0; i--)
+            {
+                var entity = deleted[i];
+                var isExists = await _dbContext.Query<WF_TASK>().Where(c => c.FLOW_ID == entity.ID).AnyAsync() ||
+                    await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.FLOW_ID == entity.ID).AnyAsync();
+                if (isExists) continue;
+                await _dbContext.DeleteAsync(entity);
+            }
+        }
+
+        /// <summary>
+        /// 检查和预处理
+        /// </summary>
+        private async Task Handle(WF_FLOW entity)
+        {
+            entity.FLOW_NAME.CheckNotNullOrWhiteSpace("流程名称");
+            var isExists = await _dbContext.Query<WF_FLOW>()
+                .Where(c => c.FLOW_NAME == entity.FLOW_NAME && c.CORPID == entity.CORPID && c.FLAG == "1" && c.APPNAME == _options.AppName)
+                .WhereIfNotNullOrEmpty(entity.ID, c => c.ID != entity.ID).AnyAsync();
+            if (isExists) throw new MessageException($"已经存在流程名称{entity.FLOW_NAME}");
+            if (!string.IsNullOrWhiteSpace(entity.FLOW_CODE))
+            {
+                isExists = await _dbContext.Query<WF_FLOW>()
+                    .Where(c => c.FLOW_CODE == entity.FLOW_CODE && c.FLAG == "1" && c.APPNAME == _options.AppName)
+                    .WhereIfNotNullOrEmpty(entity.ID, c => c.ID != entity.ID).AnyAsync();
+                if (isExists) throw new MessageException($"已经存在流程编码{entity.FLOW_CODE}");
+            }
         }
     }
 }

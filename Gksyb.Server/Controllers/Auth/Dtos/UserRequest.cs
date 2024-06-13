@@ -27,5 +27,10 @@ namespace Gksyb.Model.Core
         /// 用户公司岗位
         /// </summary>
         public Dictionary<string,string> CorpStation { get; set; }
+
+        /// <summary>
+        /// 角色归属公司
+        /// </summary>
+        public Dictionary<string, string> RoleCorp { get; set; }
     }
 }

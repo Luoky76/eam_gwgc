@@ -24,6 +24,13 @@ namespace Gksyb.Model.WorkFlow
         public string ID { get; set; }
 
         /// <summary>
+        /// 任务主键
+        /// </summary>
+        [Description("任务主键")]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
+        public string TASK_KEY { get; set; }
+
+        /// <summary>
         /// 流程主键
         /// </summary>
         [Description("流程主键")]
@@ -55,7 +62,7 @@ namespace Gksyb.Model.WorkFlow
         /// 流程表单数据
         /// </summary>
         [Description("流程表单数据")]
-        [Column(DbType = DbType.AnsiString, Size = 4000)]
+        [Column(DbType = DbType.AnsiString, Size = int.MaxValue)]
         public string FLOW_FORM_DATA { get; set; }
 
         /// <summary>
@@ -65,7 +72,14 @@ namespace Gksyb.Model.WorkFlow
         public int? FLOW_STATUS { get; set; }
 
         /// <summary>
-        /// 所属组织
+        /// 所属公司
+        /// </summary>
+        [Description("所属公司")]
+        [Column(DbType = DbType.AnsiString, Size = 20)]
+        public string COMPANY { get; set; }
+
+        /// <summary>
+        /// 所属组织（部门或公司）
         /// </summary>
         [Description("所属组织")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
