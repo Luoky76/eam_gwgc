@@ -15,7 +15,7 @@ namespace Gksyb.Model.Dtos
     public class ChangePasswordRequest 
     {
         /// <summary>
-        /// 账号
+        /// 用户名
         /// </summary>
         [ModelEncrypt]
         public string Username { get; set; }

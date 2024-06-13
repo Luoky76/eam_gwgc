@@ -6,7 +6,7 @@
     public partial class FlowExecuteInfo
     {
         /// <summary>
-        /// 节点主键
+        /// 主键
         /// </summary>
         public string Id { get; set; }
 
@@ -14,16 +14,6 @@
         /// 任务ID
         /// </summary>
         public string TaskId { get; set; }
-
-        /// <summary>
-        /// 任务主键（默认为表单主键，获取不到则取<seealso cref="TaskId"/>）
-        /// </summary>
-        public string TaskKey { get; set; }
-
-        /// <summary>
-        /// 流程编码
-        /// </summary>
-        public string FlowCode { get; set; }
 
         /// <summary>
         /// 流程主键
@@ -41,7 +31,7 @@
         public string NodeId { get; set; }
 
         /// <summary>
-        /// 节点状态 <seealso cref="WorkFlow.NodeStatus"/>
+        /// 节点状态
         /// </summary>
         public int? NodeStatus { get; set; }
 
@@ -59,5 +49,10 @@
         /// 操作人
         /// </summary>
         public string Operators { get; set; }
+
+        /// <summary>
+        /// 程序名
+        /// </summary>
+        public string AppName { get; set; }
     }
 }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR
     public class BroadcastChannelHub : Hub<IBroadcastChannelClient>
     {
         private static readonly Type _hubType = typeof(Hub<IBroadcastChannelClient>);
-        private const string _assemblyName = "Microsoft.AspNetCore.SignalR.Channel";
+        private static readonly string _assemblyName = "Microsoft.AspNetCore.SignalR.Channel";
 
         /// <summary>
         /// 方法缓存

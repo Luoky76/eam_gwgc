@@ -141,6 +141,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// 禁止提示
         /// </summary>
-        private const string ForbidText = "您无权进行此操作";
+        private static readonly string ForbidText = "您无权进行此操作";
     }
 }

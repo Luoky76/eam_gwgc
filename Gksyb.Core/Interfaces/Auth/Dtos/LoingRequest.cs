@@ -8,10 +8,10 @@ namespace Gksyb.Model.Dtos
     public class LoginRequest
     {
         /// <summary>
-        /// 账号
+        /// 用户名
         /// </summary>
         [ModelEncrypt]
-        [Required(ErrorMessage = "账号不能为空")]
+        [Required(ErrorMessage = "用户名不能为空")]
         public string Username { get; set; }
 
         /// <summary>
@@ -44,11 +44,6 @@ namespace Gksyb.Model.Dtos
         /// 用户代理
         /// </summary>
         public string UserAgent { get; set; }
-
-        /// <summary>
-        /// 设备唯一识别码
-        /// </summary>
-        public string IMEI { get; set; }
 
         /// <summary>
         ///来源

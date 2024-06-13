@@ -29,12 +29,6 @@ namespace Gksyb.Core.Interfaces.Auth
         public string WorkerCode { get; set; }
 
         /// <summary>
-        /// 手机
-        /// </summary>
-        [JsonIgnore]
-        public string Phone { get; set; }
-
-        /// <summary>
         /// 组织
         /// </summary>
         public List<CorpInfo> Corps { get; set; } = new List<CorpInfo>();

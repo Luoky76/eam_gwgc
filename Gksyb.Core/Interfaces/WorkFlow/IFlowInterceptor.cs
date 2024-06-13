@@ -1,6 +1,6 @@
 ﻿namespace Gksyb.Core.Interfaces.WorkFlow
 {
-    public interface IFlowInterceptor : IBaseService
+    public interface IFlowInterceptor : IService
     {
         /// <summary>
         /// 拦截器

@@ -3,7 +3,7 @@
     /// <summary>
     /// 网关处理接口
     /// </summary>
-    public interface IFlowGatewayHandle : IBaseService
+    public interface IFlowGatewayHandle : IService
     {
         /// <summary>
         /// 执行网关处理

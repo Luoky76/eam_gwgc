@@ -23,7 +23,7 @@ namespace Gksyb.Core.Grid
         /// <param name="source"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static async Task<GridData<IList>> GetGridData(this IDbContext source, GridRequest request, Action<IList<DbParam>> action = null)
+        public static async Task<GridData<IList>> GetGridData(this IDbContext source, GridRequest request)
         {
             var whereTranslator = request.GetFilterTranslator();
             request.Where = whereTranslator.CommandText;
@@ -48,7 +48,7 @@ namespace Gksyb.Core.Grid
                 foreach (Match mactch in matchCollection.Cast<Match>())
                 {
                     var name = mactch.Value;
-                    object value = DBNull.Value;
+                    object value = null;
                     if (FilterParmMatch.CurrentParmMatch.ContainsKey(name))
                     {
                         value = FilterParmMatch.CurrentParmMatch[name]();
@@ -61,19 +61,16 @@ namespace Gksyb.Core.Grid
                     }
                     name = Regex.Replace(name, @"[{}]", "");
                     if (whereTranslator.Parms.Any(c => c.Name == name)) continue;
-                    var dbParam = new DbParam(name.TrimStart(paramPrefix.ToCharArray()), value);
-                    if (value == DBNull.Value) dbParam.Type = typeof(string);
-                    whereTranslator.Parms.Add(dbParam);
+                    whereTranslator.Parms.Add(new DbParam(name.TrimStart(paramPrefix.ToCharArray()), value));
                 }
                 request.View = Regex.Replace(request.View, @"{(\w+)}", $"{paramPrefix}$1");
             }
-            action?.Invoke(whereTranslator.Parms);
             int? total = null;
             if (request.IsTotal)
             {
-                total = (await source.Session.ExecuteScalarAsync($"select count(1) from ({request.View}) tmptableinner", whereTranslator.Parms)).CastTo<int>();
+                total = (await source.Session.ExecuteScalarAsync($"select count(1) from ({request.View})", whereTranslator.Parms)).CastTo<int>();
             }
-            var order = request.HasSort ? $"ORDER BY {request.SortName} {request.OrderBy}" : "";
+            var order = request.HasSort ? $"ORDER BY {request.SortName} {request.SortOrder}" : "";
             string sql;
             if (request.Page.HasValue && request.PageSize.HasValue)
             {
@@ -150,7 +147,7 @@ namespace Gksyb.Core.Grid
                     {
                         total = await source.GroupBy(groupExpression).Select(DynamicExpressionParser.ParseLambda(parameterExpressions, null, $"new ({request.GroupBy})")).CountAsync();
                     }
-                    if (hasSort) source = source.OrderBy($"{request.SortName} {request.OrderBy}");
+                    if (hasSort) source = source.OrderBy($"{request.SortName} {request.SortOrder}");
                     var groupQuery = source.GroupBy(groupExpression);
                     IQuery<object> query = groupQuery.Select(DynamicExpressionParser.ParseLambda(parameterExpressions, null, $"new ({(hasColumns ? request.Columns : request.GroupBy)})"));
                     if (request.Page.HasValue && request.PageSize.HasValue)
@@ -167,7 +164,7 @@ namespace Gksyb.Core.Grid
                 {
                     total = await source.CountAsync();
                 }
-                if (hasSort) source = source.OrderBy($"{request.SortName} {request.OrderBy}");
+                if (hasSort) source = source.OrderBy($"{request.SortName} {request.SortOrder}");
                 if (request.Page.HasValue && request.PageSize.HasValue)
                 {
                     source = source.TakePage(request.Page.Value, request.PageSize.Value);
@@ -194,23 +191,6 @@ namespace Gksyb.Core.Grid
         public static IQuery<T> Where<T>(this IQuery<T> source, string where, ParameterExpression[] parameterExpressions = null)
         {
             if (string.IsNullOrWhiteSpace(where)) return source;
-            return source.Where(ToExpression<T>(where, parameterExpressions));
-        }
-
-        /// <summary>
-        /// 获取where条件
-        /// </summary>
-        public static Expression<Func<T, bool>> GetWhereExpression<T>(this GridRequest request, ParameterExpression[] parameterExpressions = null)
-        {
-            return ToExpression<T>(request.Where, parameterExpressions);
-        }
-
-        /// <summary>
-        /// 字符串转表达式
-        /// </summary>
-        private static Expression<Func<T, bool>> ToExpression<T>(string where, ParameterExpression[] parameterExpressions = null)
-        {
-            if (string.IsNullOrWhiteSpace(where)) return null;
             if (parameterExpressions == null)
             {
                 var type = typeof(T);
@@ -228,7 +208,7 @@ namespace Gksyb.Core.Grid
                 return ExpressionExtension.MakeWrapperAccess(c.Value, c.Value == null ? null : c.Type);
             }).ToArray();
             var exp = DynamicExpressionParser.ParseLambda(parameterExpressions, typeof(bool), expression, values);
-            return (Expression<Func<T, bool>>)exp;
+            return source.Where((Expression<Func<T, bool>>)exp);
         }
 
         /// <summary>
@@ -247,17 +227,6 @@ namespace Gksyb.Core.Grid
             }
             whereTranslator.Translate();
             return whereTranslator;
-        }
-
-        /// <summary>
-        /// 获取指定名称的规则的值
-        /// </summary>
-        public static T GetRuleValue<T>(this GridRequest request, string name)
-        {
-            if (string.IsNullOrWhiteSpace(request.Where)) return default;
-            var rule = request.Where.ToObject<FilterGroup>()?.GetRule(name);
-            if (rule == null) return default;
-            return rule.Value.CastTo<T>(default);
         }
     }
 }
