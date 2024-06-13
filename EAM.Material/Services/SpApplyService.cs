@@ -1,4 +1,4 @@
-﻿using DocumentFormat.OpenXml.Vml.Office;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
 using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
@@ -6,13 +6,13 @@ using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Gksyb.Workflow.Services.Workflow;
 using Microsoft.AspNetCore.Http;
-using System.ComponentModel;
 using System.Data;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services
@@ -22,15 +22,17 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
+        private readonly TaskService _taskService;
         private string _rentID = string.Empty, errMsg = string.Empty;
 
-        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, TaskService taskService)
         {
             _dbContext = dbContext;
             //添加船舶物资需求的软删除字段过滤
             _dbContext.HasQueryFilter<SP_APPLY_DETAIL>(x => x.IS_DELETED != "1" || x.IS_DELETED == null);
             _comboxDataService = comboxDataService;
             _userSession = userSession;
+            _taskService = taskService;
         }
 
         #region 船舶物资申请
@@ -253,13 +255,13 @@ namespace EAM.Material.Services
                 var sp_apply_details = await _dbContext.Query<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID))
                     .ToListAsync();
 
-                for (int i = 0;  i < sp_apply_details.Count; ++i)
+                for (int i = 0; i < sp_apply_details.Count; ++i)
                 {
                     //跟踪sp_apply_details中的实体，记录修改情况
                     _dbContext.TrackEntity(sp_apply_details[i]);
 
                     //根据 物资名称；型号规格；品牌、厂家；单位 匹配物资
-                    var sp_catalog = await _dbContext.Query<BASE_SPCATALOG>(x => 
+                    var sp_catalog = await _dbContext.Query<BASE_SPCATALOG>(x =>
                         x.SP_NAME == sp_apply_details[i].SP_NAME
                         && x.SP_SIZE == sp_apply_details[i].SP_SIZE
                         && x.PRODUCE == sp_apply_details[i].PRODUCE
@@ -340,11 +342,14 @@ namespace EAM.Material.Services
                     await _dbContext.UpdateAsync(sp_apply_details[i]);
                 }
 
+                //创建内部审批流程
+                CreateWorkFlow(sids);
+
                 //更新记录状态
                 updateCnt = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                     x => new SP_APPLY
                     {
-                        AUDITING = "1"
+                        AUDITING = "2"
                     });
 
                 //更新采购状态
@@ -354,7 +359,27 @@ namespace EAM.Material.Services
                        SP_STATUS = "20"//待需求确认
                    });
             });
+
             return updateCnt;
+        }
+
+        /// <summary>
+        /// 创建审批流程
+        /// </summary>
+        /// <param name="sids">主键数组</param>
+        /// <returns></returns>
+        public async void CreateWorkFlow(List<string> sids)
+        {
+            foreach (string sid in sids)
+            {
+                var flowExecuteInfo = new FlowExecuteInfo();
+                var dict = new Dictionary<string, object>();
+                dict.TryAdd("Sid", sid);
+                dict.TryAdd("isView", false);
+                flowExecuteInfo.FormData = dict;
+                flowExecuteInfo.FlowId = "2YIFgkk2ruk";
+                await _taskService.StartAsync(flowExecuteInfo);
+            }
         }
 
         /// <summary>
@@ -512,10 +537,10 @@ namespace EAM.Material.Services
                     c.SP_CODE
                 },
                 c => a => a.SPDET_ID == c.SPDET_ID
-                , null, null, beforeDeleteApplyDetail, true, null, null);
+                , null, null, BeforeDeleteApplyDetail, true, null, null);
         }
 
-        private Task beforeDeleteApplyDetail(SP_APPLY_DETAIL entity)
+        private Task BeforeDeleteApplyDetail(SP_APPLY_DETAIL entity)
         {
             entity.IS_DELETED = "1";
             return Task.CompletedTask;
@@ -740,8 +765,8 @@ namespace EAM.Material.Services
         public async Task<GridData> ApplyListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
-                .LeftJoin<SP_APPLY>((a,b)=>a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) =>b.AUDITING == "1")
+                .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
+                .Where((a, b) => b.AUDITING == "1")
                 .Select((a, b) => new SpApplyDetRes
                 {
                     SP_STATUS = a.SP_STATUS,
@@ -801,11 +826,11 @@ namespace EAM.Material.Services
             public string TYPE_NAME;
             public string APPLY_NO;
             public string COLLECT_CODE;
-            public string PLAN_NO; 
+            public string PLAN_NO;
             public string ORDER_CODE;
-            public string APPLY_USER; 
+            public string APPLY_USER;
             public decimal? APPLY_COUNT;
-            public string PROVIDER_NAME; 
+            public string PROVIDER_NAME;
             public string DEPT_NAME;
             public string XJDOWN_USER;
             public string BUY_USER;
