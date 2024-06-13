@@ -5,16 +5,16 @@
         /// <summary>
         /// 撤销
         /// </summary>
-        public static readonly int Cancel = 0;
+        public const int Cancel = 0;
 
         /// <summary>
         /// 激活
         /// </summary>
-        public static readonly int Active = 1;
+        public const int Active = 1;
 
         /// <summary>
         /// 完成
         /// </summary>
-        public static readonly int Finish = 2;
+        public const int Finish = 2;
     }
 }
