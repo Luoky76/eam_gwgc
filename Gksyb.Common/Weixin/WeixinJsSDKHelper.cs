@@ -7,7 +7,7 @@ namespace Gksyb.Common.Weixin
 {
     public static class WeixinJsSDKHelper
     {
-        private static readonly string JsApiTicketCacheName = "Weixin_JsApiTicket";//微信JsApi缓存名
+        private const string JsApiTicketCacheName = "Weixin_JsApiTicket";//微信JsApi缓存名
         private static JsApiTicketResponse _jsApiTicket;//微信JsApi
 
         /// <summary>

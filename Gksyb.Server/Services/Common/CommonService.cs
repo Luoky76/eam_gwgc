@@ -6,7 +6,6 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Gksyb.Model.UI;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Oracle.ManagedDataAccess.Client;
@@ -148,7 +147,7 @@ namespace Gksyb.Server.Services.Common
         {
             var view = request.ViewName;
             if (string.IsNullOrWhiteSpace(view)) throw new MessageException("请传递视图参数");
-            await HttpContext.Current.ValidViewAsync(view);
+            view = await HttpContext.Current.ValidViewAsync(view);
             var dbContext = isClone ? _dbContext.Clone() : _dbContext;
             var entity = await GetViewAsync(dbContext, view)
                 ?? throw new MessageException($"视图{view}不存在");
@@ -255,7 +254,7 @@ namespace Gksyb.Server.Services.Common
                         }
                         try
                         {
-                            string sortExp = (request.Sort ?? "").SqlFilter(80);
+                            string sortExp = (request.Sort ?? "").SqlFilter(5);
                             if (sortExp.HasValue())
                             {
                                 var upperText = sql.ToUpper();
@@ -264,7 +263,7 @@ namespace Gksyb.Server.Services.Common
                                 {
                                     sql = sql[..lastIndex];
                                 }
-                                sql = "SELECT * FROM ({0}) tmptableinner ORDER BY {1}".FormatWith(sql, sortExp);
+                                sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
                             }
                         }
                         catch (Exception) { }
@@ -332,33 +331,32 @@ namespace Gksyb.Server.Services.Common
             return true;
         }
 
-        public async Task<List<string>> GetDeptList(string dept)
+        /// <inheritdoc/>
+        public async Task<string> StoreAsync<T>(T data, TimeSpan? expiry = null)
         {
-            //获取当前登录人所在公司
-            var dept_id = dept;
-            var sql = @"WITH RECURSIVE temp AS (
-                           SELECT t.* FROM cf_dept t WHERE t.DEPT_ID = @dept_id
-                           UNION ALL
-                           SELECT t.* FROM cf_dept t INNER JOIN temp ON t.PARENT_ID = temp.DEPT_ID
-                       )
-                       SELECT * FROM temp";
-
-            var list = await _dbContext.SqlQueryAsync<ComboxData>(sql, new
+            var key = Guid.NewGuid().ToString("N").ToLower();
+            await _distributedCache.SetAsync(key, data, new DistributedCacheEntryOptions()
             {
-                dept_id
+                AbsoluteExpirationRelativeToNow = expiry ?? TimeSpan.FromHours(3)
             });
+            return key;
+        }
 
-            var returnList = new List<string>();
-
-            foreach (var item in list)
+        /// <inheritdoc/>
+        public async Task<T> GetStoreAsync<T>(string key)
+        {
+            try
             {
-                returnList.Add("," + item.ID.ToString() + ",");
+                return await _distributedCache.GetAsync<T>(key);
             }
-
-            return returnList;
+            catch (Exception)
+            {
+                await _distributedCache.RemoveAsync(key);
+                throw;
+            }
         }
 
         //缓存前缀
-        private static readonly string CachePrefix = "View_";
+        private const string CachePrefix = "View_";
     }
 }

@@ -1,17 +1,18 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace Gksyb.Common
 {
     public class PasswordHelper
     {
-        private static readonly string _BANLIST = "QWERTY|QWEASD|ADMIN|PASSWORD|P@SSWORD|PASSWD|ILOVEYOU|5201314";
+        private const string _BANLIST = "QWERTY|QWEASD|ADMIN|PASSWORD|P@SSWORD|PASSWD|ILOVEYOU|5201314";
 
         private static readonly List<string> _BanList = _BANLIST.Split('|').ToList();
 
         /// <summary>
         /// 错误提示信息
         /// </summary>
-        private const string errorMsg = "密码必须8个以上字符且包含数字、大小写字母、特殊字符中的三种。密码不能包含用户名及4个以上连续或重复字符。密码不能包含常见密码。";
+        private const string errorMsg = "密码必须8个以上字符且包含数字、大小写字母、特殊字符中的三种。密码不能包含账号及4个以上连续或重复字符。密码不能包含常见密码。";
 
         /// <summary>
         /// 导向提示
@@ -29,7 +30,7 @@ namespace Gksyb.Common
         public static bool IsStrong(string password, string username)
         {
             var upperPassword = password.ToUpper();
-            if (upperPassword.Contains(username.ToUpper())) return false;//不能包含用户名
+            if (upperPassword.Contains(username.ToUpper())) return false;//不能包含账号
             if (_BanList.Any(c => upperPassword.Contains(c))) return false;//不能包含常见密码
             if (password.Length < 8) return false;//至少8个字符
             if (Regex.IsMatch(password, @"([0-9a-zA-Z])\1{3}")) return false; //不包含4个以上重复字符
@@ -71,6 +72,32 @@ namespace Gksyb.Common
                 }
             }
             return true;
+        }
+
+        private const string Lowercase = "abcdefghijklmnpqrstuvwxyz";
+        private const string Uppercase = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
+        private const string Digits = "1234567890";
+        private const string SpecialChars = "!@#$%&*";
+        private static readonly string AllChars = $"{Digits}{Lowercase}{SpecialChars}{Uppercase}";
+
+        /// <summary>
+        /// 生成指定长度的随机密码
+        /// </summary>
+        /// <param name="length">密码长度默认8</param>
+        /// <returns>随机密码</returns>
+        public static string Generate(int length = 8)
+        {
+            MessageException.ThrowIf(length < 4, "长度必须大于4");
+            var password = new char[length];
+            password[0] = Lowercase[RandomNumberGenerator.GetInt32(Lowercase.Length)];
+            password[1] = Uppercase[RandomNumberGenerator.GetInt32(Uppercase.Length)];
+            password[2] = Digits[RandomNumberGenerator.GetInt32(Digits.Length)];
+            password[3] = SpecialChars[RandomNumberGenerator.GetInt32(SpecialChars.Length)];
+            for (int i = length - 1; i >= 4; i--)
+            {
+                password[i] = AllChars[RandomNumberGenerator.GetInt32(AllChars.Length)];
+            }
+            return new string(password.OrderBy(s => RandomNumberGenerator.GetInt32(length)).ToArray());
         }
     }
 }

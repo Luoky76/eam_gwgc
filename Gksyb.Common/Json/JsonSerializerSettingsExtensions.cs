@@ -39,33 +39,26 @@ namespace Newtonsoft.Json
         /// </summary>
         private class MinifiedNumArrayConverter : JsonConverter
         {
-            public override void WriteJson(JsonWriter writer, object value,
-                JsonSerializer serializer)
-            {
-                var rawValue = $"{value:#0.#################}";
-                if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
-                writer.WriteRawValue(rawValue);
-            }
-
-            private readonly Type dblType = typeof(double);
-            private readonly Type decType = typeof(decimal);
-            private readonly Type fltType = typeof(float);
+            private static readonly Type dblType = typeof(double);
+            private static readonly Type decType = typeof(decimal);
+            private static readonly Type fltType = typeof(float);
 
             public override bool CanConvert(Type objectType)
             {
                 var realType = objectType.GetUnNullableType();
-                return (realType == decType || realType == fltType || realType == dblType);
+                return realType == decType || realType == fltType || realType == dblType;
             }
 
-            public override bool CanRead
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
-                get { return false; }
+                return reader.Value.CastTo(objectType);
             }
 
-            public override object ReadJson(JsonReader reader, Type objectType,
-                object existingValue, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                throw new NotImplementedException();
+                var rawValue = value.ToString();
+                if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
+                writer.WriteRawValue(rawValue);
             }
         }
 
@@ -74,31 +67,24 @@ namespace Newtonsoft.Json
         /// </summary>
         private class JsLongConverter : JsonConverter
         {
-            public override void WriteJson(JsonWriter writer, object value,
-                JsonSerializer serializer)
-            {
-                var rawValue = value.ToString();
-                if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
-                writer.WriteRawValue(rawValue);
-            }
-
-            private readonly Type longType = typeof(long);
+            private static readonly Type longType = typeof(long);
 
             public override bool CanConvert(Type objectType)
             {
                 var realType = objectType.GetUnNullableType();
-                return (realType == longType);
+                return realType == longType;
             }
 
-            public override bool CanRead
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
-                get { return false; }
+                return reader.Value.CastTo(objectType);
             }
 
-            public override object ReadJson(JsonReader reader, Type objectType,
-                object existingValue, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                throw new NotImplementedException();
+                var rawValue = value.ToString();
+                if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
+                writer.WriteRawValue(rawValue);
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿using Gksyb.Core.Auth;
+﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
+using Azure;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Dtos;
@@ -8,6 +10,7 @@ using Gksyb.Server.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gksyb.Server.Controllers.Auth
@@ -15,11 +18,14 @@ namespace Gksyb.Server.Controllers.Auth
     [GksybAuthorize(true)]
     public class OAuthController : BaseController
     {
+        private readonly LogPath _logPath = new("OAuth");
+        private readonly ILogger<OAuthController> _logger;
         private readonly OAuthService _service;
 
-        public OAuthController(OAuthService service)
+        public OAuthController(OAuthService service, ILogger<OAuthController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         /// <summary>
@@ -44,40 +50,54 @@ namespace Gksyb.Server.Controllers.Auth
         public AjaxResult<DateTime> Now() => AjaxResult<DateTime>.Success(DateTime.Now);
 
         [AllowAnonymous]
-        public async Task<AjaxResult> AccessTokenAsync(OAuthRequest<string> request)
+        public async Task<AjaxResult> AccessTokenAsync(string json)
         {
-            request.Init(Request);
-            var user = await _service.AccessTokenAsync(request);
-            return AjaxResult.Success(user.Token, "成功");
+            string ip = null;
+            string response = null;
+            try
+            {
+                ip = Request.GetRealIP();
+                var request = json.ToObject<OAuthRequest<string>>();
+                request.Init(Request);
+                var token = await _service.AccessTokenAsync(request);
+                response = token.ToJson();
+                return AjaxResult.Success(token);
+            }
+            catch (Exception ex)
+            {
+                response = ex.ToString();
+                throw;
+            }
+            finally
+            {
+                _logger.LogInformation(_logPath, $"接到来自{ip}的【AccessToken】请求，请求参数：{json},应答数据：{response}");
+            }
         }
 
         [JsToken]
-        public async Task<AjaxResult> GenerateTokenAsync()
+        public async Task<AjaxResult> GenerateTokenAsync([FromServices] UserSession user, string userType)
         {
-            var token = await _service.GenerateTokenAsync();
+            var key = userType switch
+            {
+                "1" => user.UserName,
+                "2" => (await _service.GetUserAsync()).Phone,
+                "3" => (await _service.GetUserAsync()).ToMiniJson(),
+                "4" => (await _service.GetUserAsync(user.UserName, true)).ToMiniJson(),
+                _ => string.IsNullOrWhiteSpace(user.WorkerCode) ? user.UserName : user.WorkerCode,
+            };
+            var token = await _service.TokenAsync(new TokenRequest()
+            {
+                Key = key,
+                IP = Request.GetRealIP(),
+                UA = Request.GetUserAgent()
+            });
             return AjaxResult.Success(token, default);
-        }
-
-        [AllowAnonymous]
-        public async Task<AjaxResult> TokenAsync(OAuthRequest<TokenRequest> request)
-        {
-            request.Init(Request);
-            await _service.Check(request);
-            var ticket = await _service.TicketAsync(request.Data);
-            return AjaxResult.Success(ticket, default);
-        }
-
-        [GksybAuthorize(IsApi = true)]
-        public async Task<AjaxResult> TicketAsync(TokenRequest request)
-        {
-            var ticket = await _service.TicketAsync(request);
-            return AjaxResult.Success(ticket, default);
         }
 
         [AllowAnonymous]
         public async Task<string> JsTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}oauth/validTicket");
+            return await HttpContext.GenerateTokenAsync($"oauth/validTicket");
         }
 
         [JsToken, AllowAnonymous]
@@ -85,15 +105,18 @@ namespace Gksyb.Server.Controllers.Auth
         {
             try
             {
-                var info = await distributedCache.GetAsync<TokenRequest>(ticket);
-                if (info == null) return AjaxResult.Error("验证失败：1001");
                 var ip = Request.GetRealIP();
                 var ua = Request.GetUserAgent();
-                if (!string.IsNullOrWhiteSpace(info.IP) && info.IP != ip) return AjaxResult.Error("验证失败：1002");
-                if (!string.IsNullOrWhiteSpace(info.UA) && info.UA != CryptographyHelper.GetSM3(ua)) return AjaxResult.Error("验证失败：1003");
+                var name = await _service.UserInfoAsync(new TokenRequest()
+                {
+                    Key = ticket,
+                    IP = ip,
+                    UA = ua
+                });
+                var user = name.Contains('{') ? name.ToObject<UserInfoResponse>() : await _service.GetUserAsync(name);
                 var request = new LoginRequest()
                 {
-                    Username = info.Account,
+                    Username = user.Account,
                     IP = ip,
                     UserAgent = ua
                 };
@@ -108,30 +131,57 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         [AllowAnonymous]
-        public async Task<AjaxResult> UserInfoAsync(OAuthRequest<string> request)
+        public async Task<AjaxResult> TokenAsync(string json)
         {
-            request.Init(Request);
-            await _service.Check(request);
-            var userInfo = await _service.UserInfoAsync(request.Data);
-            return AjaxResult.Success(userInfo);
+            string ip = null;
+            string response = null;
+            try
+            {
+                ip = Request.GetRealIP();
+                var request = json.ToObject<OAuthRequest<TokenRequest>>();
+                await request.Check(HttpContext);
+                if (string.IsNullOrWhiteSpace(request.Data.Key))
+                {
+                    response = "请传递字段Key";
+                    return AjaxResult.Error(response);
+                }
+                response = await _service.TokenAsync(request.Data);
+                return AjaxResult.Success(response, default);
+            }
+            catch (Exception ex)
+            {
+                response = ex.ToString();
+                throw;
+            }
+            finally
+            {
+                _logger.LogInformation(_logPath, $"接到来自{ip}的【Token】请求，请求参数：{json},应答数据：{response}");
+            }
         }
 
-        /// <summary>
-        /// 单点登录
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
         [AllowAnonymous]
-        public async Task<AjaxResult> Check([FromHeader] string code, [FromHeader] string appName = "EAM")
+        public async Task<AjaxResult> UserInfoAsync(string json)
         {
-            var userName = await _service.GetUserNameAsync(code);
-            var request = new LoginRequest()
+            string ip = null;
+            string response = null;
+            try
             {
-                Username = userName,
-                IP = Request.GetRealIP(),
-                UserAgent = Request.GetUserAgent()
-            };
-            return await _service.OauthAsync(request, appName);
+                ip = Request.GetRealIP();
+                var request = json.ToObject<OAuthRequest<TokenRequest>>();
+                await request.Check(HttpContext);
+                response = await _service.UserInfoAsync(request.Data);
+                return AjaxResult.Success(response, default);
+            }
+            catch (Exception ex)
+            {
+                response = ex.ToString();
+                throw;
+            }
+            finally
+            {
+                _logger.LogInformation(_logPath, $"接到来自{ip}的【UserInfo】请求，请求参数：{json},应答数据：{response}");
+            }
         }
     }
 }
+#pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

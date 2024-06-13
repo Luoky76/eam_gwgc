@@ -3,7 +3,7 @@ using Gksyb.Common.Mvc.Interface;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SixLabors.ImageSharp;
+using SkiaSharp;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -80,7 +80,6 @@ namespace Microsoft.AspNetCore.Http
             return mapPath;
         }
 
-
         /// <summary>
         /// 获取文件hash
         /// </summary>
@@ -139,7 +138,7 @@ namespace Microsoft.AspNetCore.Http
             if (IsImage(fileExtension))
             {
                 using var stream = source.OpenReadStream();
-                CheckImage(stream).Result();
+                CheckImage(stream);
             }
         }
 
@@ -172,21 +171,18 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// 判断是否真实图片
         /// </summary>
-        public static async Task<bool> CheckImage(Stream stream)
+        public static bool CheckImage(Stream stream)
         {
             try
             {
                 if (stream.CanSeek) stream.Position = 0;
-                using Image img = await Image.LoadAsync(stream);
+                SKBitmap img = SKBitmap.Decode(stream);
+                MessageException.ThrowIf(img == null, "不支持的类型");
                 return true;
             }
             catch (Exception)
             {
                 throw new MessageException("不支持的类型");
-            }
-            finally
-            {
-                if (stream.CanSeek) stream.Position = 0;
             }
         }
 
@@ -197,7 +193,8 @@ namespace Microsoft.AspNetCore.Http
         {
             try
             {
-                using Image img = Image.Load(content);
+                using SKBitmap img = SKBitmap.Decode(content);
+                MessageException.ThrowIf(img == null, "不支持的类型");
                 return true;
             }
             catch (Exception)

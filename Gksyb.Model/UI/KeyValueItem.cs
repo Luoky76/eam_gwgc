@@ -5,6 +5,16 @@
     /// </summary>
     public class KeyValueItem
     {
+        public KeyValueItem()
+        {
+        }
+
+        public KeyValueItem(string key, string value)
+        {
+            Key = key;
+            Value = value;
+        }
+
         /// <summary>
         /// 实际值
         /// </summary>
@@ -18,6 +28,16 @@
 
     public class KeyValueItem<T>
     {
+        public KeyValueItem()
+        {
+        }
+
+        public KeyValueItem(string key, T value)
+        {
+            Key = key;
+            Value = value;
+        }
+
         /// <summary>
         /// 实际值
         /// </summary>

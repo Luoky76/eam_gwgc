@@ -157,5 +157,11 @@ namespace Gksyb.Model.Core
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
 
+        /// <summary>
+        /// 程序名
+        /// </summary>
+        [Description("程序名")]
+        [Column(DbType = DbType.AnsiString, Size = 100)]
+        public string APPNAME { get; set; }
     }
 }

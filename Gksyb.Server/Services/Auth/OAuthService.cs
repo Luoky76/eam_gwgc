@@ -1,9 +1,7 @@
-﻿using Flurl.Http;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
-using Gksyb.Model.Dtos;
 using Gksyb.Model.Grid;
 using Gksyb.Server.Controllers.Auth.Dtos;
 using Microsoft.Extensions.Caching.Distributed;
@@ -14,21 +12,19 @@ namespace Gksyb.Server.Services.Auth
     public class OAuthService : IBaseService
     {
         private const int ShortExpiration = 30;
-        private const string KEY = "eokW6j8@DZfwFBMiIa7ghzELcKYSuyAR";
-        private static readonly string _opertype = "用户公司";
+        private const string KEY = OAuthRequest<object>.KEY;
+        private const string _opertype = "用户公司";
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
         private readonly UserSession _user;
         private readonly SysContextOptions _options;
-        private readonly IAuthService _authService;
 
-        public OAuthService(IDbContext dbContext, IDistributedCache distributedCache, UserSession userSession, IOptions<SysContextOptions> sysContext, IAuthService authService)
+        public OAuthService(IDbContext dbContext, IDistributedCache distributedCache, UserSession userSession, IOptions<SysContextOptions> sysContext)
         {
             _dbContext = dbContext;
             _distributedCache = distributedCache;
             _user = userSession;
             _options = sysContext.Value;
-            _authService = authService;
         }
 
         /// <summary>
@@ -82,30 +78,34 @@ namespace Gksyb.Server.Services.Auth
             if (isExists) throw new MessageException($"已经存在编码{entity.APPID}");
         }
 
-        public async Task<UserSession> AccessTokenAsync(OAuthRequest<string> request)
+        public async Task<AccessTokenResponse> AccessTokenAsync(OAuthRequest<string> request)
         {
-            var model = await Check(request);
+            var model = await request.Check(_dbContext);
             var userSession = new UserSession()
             {
                 Token = Guid.NewGuid().ToString("N"),
+                Version = _options.TicketVersion,
                 UserID = model.ID.Value,
                 UserName = model.APPID,
                 RealName = model.NAME,
                 IsApi = true,
                 Group = model.INFORMATION ?? "",
-                Roles = new List<string>(),
+                AllRoles = new List<string>(),
                 IP = request.IP,
                 UserAgent = request.UA,
                 UserAppName = _options.UserAppName,
                 RoleAppName = _options.RoleAppName,
-                MenuAppname = _options.AppName,
-                ForbinMenus = new List<MenuModule>(),
-                ForbinButtons = new SortedList<string, List<ButtonModule>>()
+                MenuAppname = _options.AppName
             };
             var key = CryptographyHelper.GetSM3($"{model.APPID}{model.IP}{nameof(AccessTokenAsync)}");
             var lastToken = await _distributedCache.GetAsync<string>(key);
             if (!string.IsNullOrWhiteSpace(lastToken)) await _distributedCache.RemoveAsync(lastToken);
-            var expiration = TimeSpan.FromSeconds(model.EXPIRES ?? 7200);
+            var response = new AccessTokenResponse()
+            {
+                AccessToken = userSession.Token,
+                ExpiresIn = model.EXPIRES ?? 7200
+            };
+            var expiration = TimeSpan.FromSeconds(response.ExpiresIn);
             await _distributedCache.SetAsync(key, userSession.Token, new DistributedCacheEntryOptions()
             {
                 AbsoluteExpirationRelativeToNow = expiration
@@ -114,16 +114,16 @@ namespace Gksyb.Server.Services.Auth
             {
                 AbsoluteExpirationRelativeToNow = expiration
             });
-            return userSession;
+            return response;
         }
 
         /// <summary>
-        /// 生成token
+        /// 生成单点凭据
         /// </summary>
-        public async Task<string> GenerateTokenAsync()
+        public async Task<string> TokenAsync(TokenRequest request)
         {
             var token = Guid.NewGuid().ToString("N");
-            await _distributedCache.SetStringAsync(token, _user.UserName, new DistributedCacheEntryOptions()
+            await _distributedCache.SetAsync(token, request, new DistributedCacheEntryOptions()
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ShortExpiration)
             });
@@ -131,67 +131,68 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
-        /// 获取ticket
-        /// </summary>
-        public async Task<string> TicketAsync(TokenRequest request)
-        {
-            var name = request.Account;
-            var query = _dbContext.Query<CF_USER>();
-            if (name.IsMobileNumber())
-            {
-                query = query.Where(c => c.PHONE == name);
-            }
-            else
-            {
-                query = query.Where(c => c.LOGINNAME == name || c.DEPARTCODE == name);
-            }
-            var list = await query.Where(c => c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).ToListAsync();
-            MessageException.ThrowIf(list.Count < 1, $"找不到用户{name}");
-            var model = list.FirstOrDefault(c => c.Phone == name) ?? list.FirstOrDefault(c => c.WorkerCode == name) ?? list.FirstOrDefault();
-            request.Account = model.Account;
-            var ticket = Guid.NewGuid().ToString("N");
-            await _distributedCache.SetAsync(ticket, request, new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ShortExpiration)
-            });
-            return ticket;
-        }
-
-        /// <summary>
         /// token换取用户信息
         /// </summary>
         /// <returns></returns>
-        public async Task<UserInfoResponse> UserInfoAsync(string ticketCode)
+        public async Task<string> UserInfoAsync(TokenRequest request)
         {
             try
             {
-                var userName = await _distributedCache.GetStringAsync(ticketCode);
-                if (string.IsNullOrWhiteSpace(userName)) throw new MessageException("token已失效");
-                var userInfo = await UserInfoResponseAsync(userName);
-                await CorpInfoResponseAsync(userInfo, userInfo.CorpID);
-                return userInfo;
+                var token = await _distributedCache.GetAsync<TokenRequest>(request.Key);
+                MessageException.ThrowIf(string.IsNullOrWhiteSpace(token?.Key), "验证失败：1001");
+                var error = string.Empty;
+                var hasIp = !string.IsNullOrWhiteSpace(token.IP);
+                var hasUA = !string.IsNullOrWhiteSpace(token.UA);
+                if (!hasIp && !hasUA) return token.Key;
+                var times = 0;
+                if (!string.IsNullOrWhiteSpace(token.IP))
+                {
+                    if (token.IP == request.IP)
+                    {
+                        times += 1;
+                    }
+                    else
+                    {
+                        error = "验证失败：1002";
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(token.UA))
+                {
+                    if (token.UA == request.UA)
+                    {
+                        times += 1;
+                    }
+                    else
+                    {
+                        error = "验证失败：1003";
+                    }
+                }
+                MessageException.ThrowIf(times < 1, error);
+                return token.Key;
             }
             finally
             {
-                if (!string.IsNullOrWhiteSpace(ticketCode)) await _distributedCache.RemoveAsync(ticketCode);
+                if (!string.IsNullOrWhiteSpace(request.Key)) await _distributedCache.RemoveAsync(request.Key);
             }
         }
 
         /// <summary>
         /// 获取用户信息
         /// </summary>
-        private async Task<UserInfoResponse> UserInfoResponseAsync(string userName)
+        public async Task<UserInfoResponse> GetUserAsync(string userName = null, bool hasCorp = false)
         {
+            userName ??= _user.UserName;
             var userInfo = await _dbContext.Query<CF_USER>()
-                 .Where(c => c.LOGINNAME == userName && c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).FirstOrDefaultAsync()
+                 .Where(c => (c.LOGINNAME == userName || c.PHONE == userName || c.DEPARTCODE == userName) && c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).FirstOrDefaultAsync()
                  ?? throw new MessageException($"找不到用户{userName}");
+            if (hasCorp) await GetCorpInfoAsync(userInfo, userInfo.CorpID);
             return userInfo;
         }
 
         /// <summary>
         /// 获取公司数据
         /// </summary>
-        public async Task CorpInfoResponseAsync(UserInfoResponse user, string corpid)
+        public async Task GetCorpInfoAsync(UserInfoResponse user, string corpid)
         {
             user.Corp = null;
             user.AllCorp = new List<CorpInfo>();
@@ -210,49 +211,6 @@ namespace Gksyb.Server.Services.Auth
             user.AllCorp = user.AllCorp.DistinctBy(c => c.CorpID).OrderBy(c => c.CorpID).ToList();
             if (corps == null || corps.Count < 1) return;
             user.Corp = corps.FirstOrDefault(c => c.CorpID == corpid) ?? corps[0];
-        }
-
-        /// <summary>
-        /// 检查
-        /// </summary>
-        public async Task<SYS_OAUTH> Check<T>(OAuthRequest<T> request)
-        {
-            var model = await _dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == request.AppId && c.FLAG == "1").FirstOrDefaultAsync();
-            MessageException.ThrowIf(model == null, $"找不到{request.AppId}的记录");
-            request.Check(model.SECRET, model.IP);
-            return model;
-        }
-
-        public async Task<string> GetAuthorizeUrlAsync()
-        {
-            var url = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "AuthorizeUrl" && c.CODE_EN == "AuthorizeUrl").Select(c => c.CODE_CN).FirstOrDefaultAsync();
-            return url.TrimEnd('/');
-        }
-
-        public async Task<string> GetUserNameAsync(string code)
-        {
-            var url = await GetAuthorizeUrlAsync();
-            url = $"{url}/oauth/userinfo";
-            var response = await url.PostUrlEncodedAsync(new { ticketCode = code }).ReceiveString();
-            var result = response.ToObject<AjaxResult<dynamic>>();
-            if (result.IsError) throw new MessageException(result.Message);
-            return result.Data.WorkCode;
-        }
-
-        /// <summary>
-        /// 单点登录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> OauthAsync(LoginRequest request, string appName = "EAM")
-        {
-            var user = await _dbContext.Query<CF_USER>().Where(c => c.WORK_CODE == request.Username).FirstOrDefaultAsync();
-            if (user == null) return AjaxResult.Error("-1");
-            request.Username = user.LOGINNAME;
-            request.Password = user.LOGINPASSWORD;
-            request.MenuAppname = appName;
-            var result = await _authService.LoginAsync(request, null, false);
-            if (result.IsError) return result;
-            return result;
         }
     }
 }

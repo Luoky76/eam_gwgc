@@ -18,8 +18,9 @@ namespace Gksyb.Server.Services.Auth
         private readonly UserSession _user;
         private readonly SysContextOptions _options;
         private DateTime? sysdate;
-        private static readonly string _opertype = "用户公司";
-        protected static readonly string _weixinType = "微信";
+        private const string _opertype = "用户公司";
+        private const string _roletype = "角色公司";
+        protected const string _weixinType = "微信";
 
         /// <summary>
         /// 用户服务
@@ -80,7 +81,8 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<GridData> ListAsync(UserRequest user, GridRequest request)
         {
-            var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options));
+            var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
+                .WhereIf(!_user.IsOurCompany, c => (c.CLASS ?? "0") == "0");
             if (user.ROLE != null)
             {
                 var roleid = user.ROLE.CastTo<long>();
@@ -99,7 +101,11 @@ namespace Gksyb.Server.Services.Auth
             foreach (var c in list)
             {
                 var ports = userPorts.Where(a => a.LOGINNAME == c.LOGINNAME).ToList();
-                c.ROLE = userRoles.Where(a => a.USERID == c.USERID).Select(a => a.ROLEID).Join();
+                var roles = userRoles.Where(a => a.USERID == c.USERID).Select(a => a.ROLEID).ToList();
+                c.ROLE = roles.Join();
+                var roleCorps = ports.Where(a => a.OPTYPE == _roletype).DistinctBy(c => c.CORPID).ToList();
+                c.RoleCorp = roles.ToDictionary(c => c.Value.ToString(), c => roleCorps.Where(a => a.CORPID == c.Value.ToString()).Select(a => a.REMARK).FirstOrDefault());
+
                 var corps = ports.Where(a => a.OPTYPE == _opertype).DistinctBy(c => c.CORPID).ToList();
                 c.CORP = corps.Select(a => a.CORPID).Join();
                 c.CorpStation = corps.ToDictionary(c => c.CORPID, c => c.REMARK);
@@ -107,6 +113,7 @@ namespace Gksyb.Server.Services.Auth
                 {
                     c.QQ = ports.Where(a => a.OPTYPE == _weixinType).Select(a => a.CORPID).FirstOrDefault();
                 }
+                c.QQ = string.IsNullOrWhiteSpace(c.QQ) ? "0" : "1";
             }
             return data;
         }
@@ -119,10 +126,22 @@ namespace Gksyb.Server.Services.Auth
         public async Task<AjaxResult> Save(SaveRequest<UserRequest> request)
         {
             sysdate = await _dbContext.GetSysdate();
-            return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.REALNAME, c.TITLE, c.SEX, c.PHONE, c.FAX, c.EMAIL, c.NICKNAME, c.ADDRESS, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS, c.USER_STATE, c.WORK_CODE },
+            var messages = new List<string>();
+            var result = await _dbContext.SaveEntityAnsyc(request,
+                c => new { c.REALNAME, c.PHONE, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
                 c => a => a.USERID == c.USERID
-                , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, AfterSave);
+                , BeforeAdd, BeforeUpdate, BeforeDelete, false, async (added, updated, deleted) =>
+                {
+                    foreach (var entity in added)
+                    {
+                        var password = PasswordHelper.Generate();
+                        entity.LOGINPASSWORD = password;
+                        messages.Add($"{entity.LOGINNAME}的初始密码为{password}");
+                    }
+                    await Task.CompletedTask;
+                }, AfterSave);
+            if (!result.IsError) result.Data = messages;
+            return result;
         }
 
         /// <summary>
@@ -130,16 +149,22 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> DoInitPassword(long? id)
+        public async Task<string> DoInitPassword(long? id)
         {
-            if (!id.HasValue) return AjaxResult.Error("请传递参数");
-            var initPassWord = UserSession.Encrypt(_options.InitPassWord);
-            var row = await _dbContext.UpdateAsync<CF_USER>(c => c.USERID == id.Value, c => new CF_USER()
+            MessageException.ThrowIf(!id.HasValue, "请传递参数");
+            var user = await _dbContext.Query<CF_USER>().Where(c => c.USERID == id.Value).Select(c => new CF_USER()
             {
-                LOGINPASSWORD = initPassWord
-            });
-            if (row < 1) return AjaxResult.Error("找不到此用户");
-            return AjaxResult.Success("成功");
+                USERID = c.USERID,
+                LOGINNAME = c.LOGINNAME,
+                LOGINPASSWORD = c.LOGINPASSWORD
+            }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(user == null, "找不到此用户");
+            var initPassWord = PasswordHelper.Generate();
+            _dbContext.TrackEntity(user);
+            user.LOGINPASSWORD = UserSession.Encrypt(initPassWord);
+            _dbContext.Update(user);
+            await _dbContext.UserLogAsync("密码修改", $"{user.LOGINNAME}密码修改", $"{_user.UserName}初始化{user.LOGINNAME}的密码");
+            return initPassWord;
         }
 
         /// <summary>
@@ -149,11 +174,11 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task BeforeAdd(UserRequest entity)
         {
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME).AnyAsync())
-                throw new MessageException($"已经存在用户{entity.LOGINNAME}");
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME).AnyAsync())
-                throw new MessageException($"已经存在用户名{entity.REALNAME}");
-            entity.LOGINPASSWORD = UserSession.Encrypt(_options.InitPassWord);
+            entity.CLASS ??= "0";
+            MessageException.ThrowIf(!_user.IsOurCompany && entity.CLASS != "0", "您无权设置用户属性");
+            await Handle(entity);
+
+            entity.LOGINPASSWORD = UserSession.Encrypt(entity.LOGINPASSWORD);
             entity.RECORDSTATUS = Oper.Add;
             entity.APPNAME = _options.UserAppName;
 
@@ -167,10 +192,10 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task BeforeUpdate(UserRequest entity)
         {
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME && c.USERID != entity.USERID).AnyAsync())
-                throw new MessageException($"已经存在用户{entity.LOGINNAME}");
-            if (await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME && c.USERID != entity.USERID).AnyAsync())
-                throw new MessageException($"已经存在用户名{entity.REALNAME}");
+            var old = await _dbContext.Query<CF_USER>().Where(c => c.USERID == entity.USERID).Select(c => new CF_USER() { CLASS = c.CLASS }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(!_user.IsOurCompany && ((entity.CLASS ?? "0") != (old.CLASS ?? "0")), "您无权设置用户属性");
+            await Handle(entity);
+
             entity.RECORDSTATUS = Oper.Modify;
             await RoleHandle(entity);
             await CorpHandle(entity);
@@ -183,9 +208,11 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task BeforeDelete(UserRequest entity)
         {
+            var old = await _dbContext.Query<CF_USER>().Where(c => c.USERID == entity.USERID).Select(c => new CF_USER() { CLASS = c.CLASS }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(!_user.IsOurCompany && (old.CLASS ?? "0") != "0", "您无权删除此用户");
             var corps = await _dbContext.Query<CF_USER_PORT>()
                 .Where(c => c.LOGINNAME == entity.LOGINNAME && c.OPTYPE == _opertype && c.APPNAME == _options.UserAppName).Select(c => c.CORPID).ToListAsync();
-            if (!_user.IsAdmin)
+            if (!_user.IsAdmin && !(_user.IsOurCompany && (old.CLASS ?? "0") == "0"))//非管理员并且非内部用户操作外部用户
             {
                 if (corps.Count < 1 || corps.Exists(c => !_user.AllCorps.Exists(a => a.CorpID == c)))
                     throw new MessageException($"用户{entity.LOGINNAME}所属组织与您当前的组织不匹配，您无权进行此操作");
@@ -206,6 +233,25 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
+        /// 检查和预处理
+        /// </summary>
+        private async Task Handle(CF_USER entity)
+        {
+            var isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.LOGINNAME == entity.LOGINNAME)
+                .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            if (isExists) throw new MessageException($"已经存在用户{entity.LOGINNAME}");
+            //isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.REALNAME == entity.REALNAME)
+            //    .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            //if (isExists) throw new MessageException($"已经存在账号{entity.REALNAME}");
+            //if (!string.IsNullOrWhiteSpace(entity.PHONE))
+            //{
+            //    isExists = await _dbContext.Query<CF_USER>().Where(c => c.APPNAME == _options.UserAppName && c.PHONE == entity.PHONE)
+            //        .WhereIfNotNull(entity.USERID, c => c.USERID != entity.USERID).AnyAsync();
+            //    if (isExists) throw new MessageException($"已经存在手机号{entity.PHONE}");
+            //}
+        }
+
+        /// <summary>
         /// 角色处理
         /// </summary>
         /// <returns></returns>
@@ -223,9 +269,23 @@ namespace Gksyb.Server.Services.Auth
             }
             var roles = await _dbContext.Query<CF_ROLE>().Where(roleCondition).Select(c => c.ROLEID).ToListAsync();
             roles = roles.Distinct().OrderBy(i => i).ToList();
+
+            //角色公司处理
+            var roleCorps = entity.RoleCorp == null ? "" : roles.Where(c => entity.RoleCorp.ContainsKey(c.Value.ToString())).ToStr(",");
+            await UserPortHandle(entity.LOGINNAME, roleCorps, _roletype, null, id =>
+            {
+                if (entity.RoleCorp?.ContainsKey(id) == true)
+                {
+                    var corps = (entity.RoleCorp[id] ?? "").Split(",").DistinctAndOrderBy().ToList();
+                    if (corps.Count < 1) return null;
+                    corps.RemoveAll(c => !_user.AllCorps.Exists(a => a.CorpID == c));
+                    return corps.ToStr(",");
+                }
+                return null;
+            });
+
             var oldRoles = (await _dbContext.Query<CF_USERROLE>().Where(condition).Select(c => c.ROLEID).ToListAsync()).Join();
-            entity.ADDRESS = roles.ToStr(",");
-            if (entity.ADDRESS == oldRoles) return;
+            if (roles.ToStr(",") == oldRoles) return;
             await _dbContext.DeleteAsync<CF_PRIVILEGE>(c => c.APPNAME == _options.AppName && c.PRIVILEGEMASTER == "CF_USER" && c.PRIVILEGEMASTERKEY == entity.LOGINNAME);
             await _dbContext.DeleteAsync(condition);
             foreach (var roleid in roles)
@@ -257,7 +317,7 @@ namespace Gksyb.Server.Services.Auth
                 condition = (Expression<Func<CF_USER_PORT, bool>>)condition.And(conditionAppend);
             }, corpid =>
             {
-                return entity.CorpStation.ContainsKey(corpid) ? entity.CorpStation[corpid] : null;
+                return entity.CorpStation?.ContainsKey(corpid) == true ? entity.CorpStation[corpid] : null;
             });
         }
 
@@ -297,7 +357,7 @@ namespace Gksyb.Server.Services.Auth
             }
         }
 
-        private readonly string[] _optypes = new string[] { _opertype };
+        private readonly string[] _optypes = new string[] { _opertype, _roletype };
 
         /// <summary>
         /// 公司过滤
@@ -330,7 +390,15 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 过滤超管
         /// </summary>
-        private static Expression<Func<CF_USER, bool>> FilterSuper(SysContextOptions options) =>
-            c => c.APPNAME == options.UserAppName && Sql.IsNotEqual(c.USERID, options.AdminUserID);
+        private Expression<Func<CF_USER, bool>> FilterSuper(SysContextOptions options)
+        {
+            if (_hasSuper) return c => c.APPNAME == options.UserAppName;
+            return c => c.APPNAME == options.UserAppName && Sql.IsNotEqual(c.USERID, options.AdminUserID);
+        }
+
+        /// <summary>
+        /// 包含超管
+        /// </summary>
+        private bool _hasSuper = false;
     }
 }

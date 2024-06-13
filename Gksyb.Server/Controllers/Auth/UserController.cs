@@ -1,5 +1,7 @@
-﻿using Gksyb.Core.Auth;
+﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.Weixin;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Server.Services.Auth;
@@ -34,9 +36,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 role = (await _service.RoleData()).Rows,
                 corp = (await _service.CorpData()).Rows,
-                station = await codeService.Get("岗位"),
-                initPassword = _service.GetInitPassword(),
-                UserState = await codeService.Get("userState")
+                station = await codeService.Get("岗位")
             });
         }
 
@@ -76,7 +76,7 @@ namespace Gksyb.Server.Controllers.Auth
         [JsToken]
         public async Task<AjaxResult> DoInitPassword(long? id)
         {
-            return await _service.DoInitPassword(id);
+            return AjaxResult.Success(await _service.DoInitPassword(id), default);
         }
 
         /// <summary>
@@ -91,5 +91,17 @@ namespace Gksyb.Server.Controllers.Auth
             if (result.IsError) return result;
             return await _service.Save(request);
         }
+
+        /// <summary>
+        /// 微信解绑
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> UnBind([FromServices] IWeixinService weixinService, string openid)
+        {
+            if (string.IsNullOrWhiteSpace(openid)) return AjaxResult.Error("请传递参数");
+            await weixinService.UnBind(openid);
+            return AjaxResult.Success();
+        }
     }
 }
+#pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

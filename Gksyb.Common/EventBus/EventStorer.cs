@@ -14,13 +14,13 @@ namespace Gksyb.Common.EventBus
         /// <summary>
         /// 消息队列Group
         /// </summary>
-        private static readonly string MessageQueueGroup = "StreamGroup";
+        private const string MessageQueueGroup = "StreamGroup";
 
         private readonly LogPath _logPath = new("EventBus");
         private bool _disposed;
         private readonly RedisCacheOptions _options;
         private readonly ILogger<EventStorer> _logger;
-        private readonly Channel<string> _channel;
+        private readonly Channel<ActionData<string>> _channel;
         private static string _keyStream;
         private static string _groupName;
         private static string _consumerName;
@@ -39,7 +39,7 @@ namespace Gksyb.Common.EventBus
             if (optionsAccessor == null) throw new ArgumentNullException(nameof(optionsAccessor));
             _logger = logger;
             // 创建有限容量通道
-            _channel = Channel.CreateBounded<string>(new BoundedChannelOptions(int.MaxValue)
+            _channel = Channel.CreateBounded<ActionData<string>>(new BoundedChannelOptions(int.MaxValue)
             {
                 FullMode = BoundedChannelFullMode.Wait
             });
@@ -61,7 +61,7 @@ namespace Gksyb.Common.EventBus
         public async ValueTask WriteAsync(ActionData data)
         {
             if (data == null) throw new ArgumentNullException(nameof(data));
-            await _channel.Writer.WriteAsync(data.ToString());
+            await _channel.Writer.WriteAsync(data.ToActionString());
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Gksyb.Common.EventBus
             }
             if (data == default) throw new ArgumentNullException(nameof(data));
             await ConnectAsync();
-            await _bus!.PublishAsync(_channelName, data.ToString(), CommandFlags.None);
+            await _bus!.PublishAsync(_channelName, data.ToActionString().ToJson(), CommandFlags.None);
         }
 
         /// <summary>
@@ -92,14 +92,14 @@ namespace Gksyb.Common.EventBus
                 return;
             }
             await ConnectAsync();
-            await _redis.StreamAddAsync(_keyStream, data.Action, data.ToString(), null, 5000, false, CommandFlags.None);
+            await _redis.StreamAddAsync(_keyStream, data.Action, data.ToActionString().ToJson(), null, int.MaxValue, false, CommandFlags.None);
             await _bus!.PublishAsync(_channelName, MessageQueueGroup, CommandFlags.None);
         }
 
         /// <summary>
         /// 事件读取
         /// </summary>
-        public async ValueTask<string> ReadAsync(CancellationToken cancellationToken)
+        public async ValueTask<ActionData<string>> ReadAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace Gksyb.Common.EventBus
                     {
                         var message = value.Value.ToString();
                         _logger.LogInformation(_logPath, $"接到来自{value.Name}的数据{message}");
-                        await _channel.Writer.WriteAsync(message);
+                        await _channel.Writer.WriteAsync(message.ToObject<ActionData<string>>());
                     }
                 }
             }
@@ -169,7 +169,7 @@ namespace Gksyb.Common.EventBus
                         return;
                     }
                     _logger.LogInformation(_logPath, $"接到来自{channelMessage.Channel}的数据{message}");
-                    await _channel.Writer.WriteAsync(message);
+                    await _channel.Writer.WriteAsync(message.ToObject<ActionData<string>>());
                 }
                 catch (Exception ex)
                 {
@@ -182,12 +182,7 @@ namespace Gksyb.Common.EventBus
         {
             CheckDisposed();
             token.ThrowIfCancellationRequested();
-
-            if (_redis != null)
-            {
-                return;
-            }
-
+            if (_redis != null) return;
             await _connectionLock.WaitAsync(token);
             try
             {
@@ -197,16 +192,16 @@ namespace Gksyb.Common.EventBus
                     {
                         if (_options.ConfigurationOptions is not null)
                         {
-                            _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions).ConfigureAwait(false);
+                            _connection = await ConnectionMultiplexer.ConnectAsync(_options.ConfigurationOptions);
                         }
                         else
                         {
-                            _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration).ConfigureAwait(false);
+                            _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
                         }
                     }
                     else
                     {
-                        _connection = await _options.ConnectionMultiplexerFactory().ConfigureAwait(false);
+                        _connection = await _options.ConnectionMultiplexerFactory();
                     }
 
                     TryRegisterProfiler();

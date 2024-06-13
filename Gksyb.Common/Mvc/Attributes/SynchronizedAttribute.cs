@@ -29,8 +29,13 @@ namespace Microsoft.AspNetCore.Mvc
             var httpContext = context.HttpContext;
             if (string.IsNullOrWhiteSpace(key))
             {
+                var clientId = httpContext.GetClientID();
+                if (string.IsNullOrWhiteSpace(clientId))
+                {
+                    clientId = CryptographyHelper.GetMd5($"{httpContext.Request.GetRealIP()}_{httpContext.Request.GetUserAgent()}");
+                }
                 key = httpContext.Request.Path.Value.TrimStart('/').TrimEnd('/').ToLower();
-                key = $"{httpContext.GetClientID()}-{key}";
+                key = $"{clientId}-{key}";
             }
             key = $"{key}-{nameof(SynchronizedAttribute)}";
             await DistributedLockHelper.LockAsync(key, 30 * 1000, async (isFail) =>

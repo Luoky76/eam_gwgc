@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Gksyb.Common.Static;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -7,7 +10,7 @@ namespace Gksyb.Common.TCP
 {
     public class BaseTcpServer : IDisposable
     {
-        private static Socket _listener = null;
+        private Socket _listener = null;
         private readonly IPAddress _address;
         private readonly int _port;
         private readonly int _max;
@@ -15,9 +18,9 @@ namespace Gksyb.Common.TCP
         private ServerState serverState;
         private readonly ILogger _logger;
         private readonly LogPath _logPath;
-        private readonly List<ClientInfo> _clients = new();
-        private readonly double _interval;
-        private System.Timers.Timer _timerCheckClient;
+        private readonly ConcurrentDictionary<ClientInfo, Socket> _clients = new();
+        private readonly int _interval;
+        private readonly Timer _timer;
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
         /// <summary>
@@ -26,43 +29,24 @@ namespace Gksyb.Common.TCP
         public int ClientTimeOut = 3 * 60;
 
         /// <summary>
-        /// 定时器(业务逻辑)
-        /// </summary>
-        public System.Timers.Timer TimerCheckClient
-        {
-            get
-            {
-                if (_timerCheckClient == null)
-                {
-                    _timerCheckClient = new System.Timers.Timer
-                    {
-                        Interval = _interval
-                    };
-                    _timerCheckClient.Elapsed += TimerCheckClient_Elapsed;
-                }
-                return _timerCheckClient;
-            }
-        }
-
-        /// <summary>
         /// TCP/IP 服务端
         /// </summary>
-        /// <param name="logger">日志</param>
         /// <param name="port">端口</param>
+        /// <param name="logPath">路径</param>
         /// <param name="max">最大连接数</param>
         /// <param name="interval">定时移除不活动连接的间隔时间，默认1分钟</param>
         /// <param name="backlog">最大排队数</param>
         /// <param name="address">IP地址，默认监听本机所有网卡</param>
-        /// <param name="logPath">路径</param>
-        public BaseTcpServer(ILogger logger, int port, int max = 10 * 1000, double interval = 60 * 1000, int backlog = 1000, IPAddress address = null, LogPath logPath = null)
+        public BaseTcpServer(int port, LogPath logPath = null, int max = 10 * 1000, int interval = 60 * 1000, int backlog = 1000, IPAddress address = null)
         {
-            _logger = logger;
+            _logger = HttpContext.RequestServices.GetRequiredService<ILogger<BaseTcpServer>>();
+            _logPath = logPath ?? new LogPath($"TcpServer-{port}");
             _port = port;
             _max = max;
             _interval = interval;
             _backlog = backlog;
             _address = address ?? IPAddress.Any;
-            _logPath = logPath ?? new LogPath("TcpServer");
+            _timer = new Timer(CheckInactiveClients, null, _interval, _interval);
         }
 
         /// <summary>
@@ -105,8 +89,6 @@ namespace Gksyb.Common.TCP
                 case ServerState.None:
                 case ServerState.Stopped:
                     {
-                        TimerCheckClient.Stop();
-                        TimerCheckClient.Start();
                         Listen();
                         break;
                     }
@@ -123,24 +105,19 @@ namespace Gksyb.Common.TCP
             return this;
         }
 
-        private bool IsCheckRun = false;
-
         /// <summary>
         /// 定时关闭不活动的连接
         /// </summary>
-        private void TimerCheckClient_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        private void CheckInactiveClients(object state)
         {
-            if (IsCheckRun) return;
+            if (ClientTimeOut <= 0) return;
             try
             {
-                IsCheckRun = true;
                 var now = DateTime.Now;
-                for (var i = _clients.Count - 1; i >= 0; i--)
+                foreach (var client in _clients.Keys)
                 {
-                    var client = _clients[i];
                     if (client.Socket?.Connected == true)
                     {
-                        if (ClientTimeOut < 0) continue;
                         if ((client.ActieveTime ?? DateTime.MinValue).AddSeconds(ClientTimeOut) > now) continue;
                     }
                     RemoveClient(client);
@@ -150,54 +127,88 @@ namespace Gksyb.Common.TCP
             {
                 _logger?.LogError(_logPath, ex.ToString());
             }
-            finally
-            {
-                IsCheckRun = false;
-            }
         }
-
-        private static readonly object _lockObj = new();
 
         /// <summary>
         /// 监听
         /// </summary>
         private void Listen()
         {
+            MessageException.ThrowIf(_disposed, "对象已释放");
+            _listener = new Socket(_address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var result = OnPrepareListen?.Invoke(_listener) ?? SocketError.Success;
+            if (result != SocketError.Success) return;
+
+            _logger?.LogError(_logPath, $"准备监听{_address}:{_port}");
+            _listener.Bind(new IPEndPoint(_address, _port));
+            _listener.Listen(_backlog);
+            _logger?.LogError(_logPath, $"开始监听{_address}:{_port}");
+
+            var eventArgs = new SocketAsyncEventArgs
+            {
+                UserToken = _listener
+            };
+            eventArgs.Completed += Accept_Completed;
+            ListenAccept(_listener, eventArgs);
+        }
+
+        /// <summary>
+        /// 监听客户端连接
+        /// </summary>
+        private void ListenAccept(Socket listener, SocketAsyncEventArgs e)
+        {
             try
             {
-                lock (_lockObj)//同一时间不能建立多个socket
+                e.AcceptSocket = null;
+                if (_disposed) return;
+                if (listener?.AcceptAsync(e) == false)
                 {
-                    _listener = new Socket(_address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                    var result = OnPrepareListen?.Invoke(_listener) ?? SocketError.Success;
-                    if (result != SocketError.Success) return;
-                    _logger?.LogError(_logPath, $"准备监听{_address}:{_port}");
-                    _listener.Bind(new IPEndPoint(_address, _port));
-
-                    _listener.Listen(_backlog);
-                    var acceptEventArg = new SocketAsyncEventArgs
-                    {
-                        UserToken = _listener
-                    };
-                    acceptEventArg.Completed += AcceptEventArg_Completed;
-                    if (!_listener.AcceptAsync(acceptEventArg))
-                    {
-                        ProcessAccept(acceptEventArg);
-                    }
+                    Accept_Completed(listener, e);
                 }
             }
             catch (Exception ex)
             {
-                _logger?.LogError(_logPath, $"在监听{_address}:{_port}时发生错误。{ex}");
+                _logger?.LogError(_logPath, ex.ToString());
             }
         }
 
         /// <summary>
         /// 客户端连接
         /// </summary>
-        private void AcceptEventArg_Completed(object sender, SocketAsyncEventArgs e)
+        private void Accept_Completed(object sender, SocketAsyncEventArgs e)
         {
-            if (e.LastOperation != SocketAsyncOperation.Accept) return;
-            ProcessAccept(e);
+            var doNext = true;
+            var listener = (Socket)e.UserToken;
+            try
+            {
+                if (e.SocketError != SocketError.Success)
+                {
+                    switch (e.SocketError)
+                    {
+                        case SocketError.OperationAborted:
+                            doNext = false;
+                            _logger?.LogInformation(_logPath, $"主动关闭服务器");
+                            break;
+
+                        default:
+                            _logger?.LogError(_logPath, $"{nameof(Accept_Completed)}操作{e.LastOperation}失败:{e.SocketError}");
+                            break;
+                    }
+                    return;
+                }
+                if (e.LastOperation != SocketAsyncOperation.Accept) return;
+                ProcessAccept(e);
+            }
+            catch (Exception ex)
+            {
+                e.AcceptSocket?.Dispose();//处理异常，关闭此次链接
+                _logger?.LogError(_logPath, ex.ToString());
+            }
+            finally
+            {
+                if (doNext)
+                    ListenAccept(listener, e);
+            }
         }
 
         /// <summary>
@@ -205,76 +216,62 @@ namespace Gksyb.Common.TCP
         /// </summary>
         private void ProcessAccept(SocketAsyncEventArgs e)
         {
-            if (_disposed) return;
-            try
+            if (e.AcceptSocket == null) return;
+            Socket newSocket = e.AcceptSocket;
+            if (_disposed)//对象如果释放，不再接收
             {
-                if (e.SocketError == SocketError.Success && e.AcceptSocket != null)
-                {
-                    try
-                    {
-                        Socket newSocket = e.AcceptSocket;
-                        _logger?.LogInformation(_logPath, $"客户端{newSocket.RemoteEndPoint}连接服务器：{newSocket.LocalEndPoint}");
-                        if (_clients.Count > _max)
-                        {
-                            _logger?.LogError(_logPath, $"客户端数量已达到设定最大值{_max}，拒绝本次连接");
-                            newSocket.Close();
-                            newSocket.Dispose();
-                            return;
-                        }
-                        var clientInfo = new ClientInfo()
-                        {
-                            ID = newSocket.RemoteEndPoint.ToString(),
-                            Socket = newSocket,
-                        };
-                        Accept(clientInfo);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger?.LogError(_logPath, ex.ToString());
-                    }
-                }
-                e.AcceptSocket = null;
-                if (!((Socket)e.UserToken).AcceptAsync(e))
-                {
-                    ProcessAccept(e);
-                }
+                newSocket.Dispose();
+                return;
             }
-            catch
+            _logger?.LogInformation(_logPath, $"客户端{newSocket.RemoteEndPoint}连接服务器：{newSocket.LocalEndPoint}");
+            if (_clients.Count > _max)
             {
+                _logger?.LogError(_logPath, $"客户端数量已达到设定最大值{_max}，拒绝本次连接");
+                newSocket.Dispose();
+                return;
             }
+            var clientInfo = new ClientInfo()
+            {
+                ID = newSocket.RemoteEndPoint.ToString(),
+                Socket = newSocket,
+            };
+            Accept(clientInfo);
         }
 
         /// <summary>
-        /// 客户端连接
+        /// 客户端成功连接处理
         /// </summary>
         protected virtual void Accept(ClientInfo client)
         {
-            try
+            var result = OnAccept?.Invoke(client, _listener) ?? SocketError.Success;
+            if (result != SocketError.Success || string.IsNullOrWhiteSpace(client.ID))
             {
-                var result = OnAccept?.Invoke(client, _listener) ?? SocketError.Success;
-                if (result != SocketError.Success || string.IsNullOrWhiteSpace(client.ID))
-                {
-                    RemoveClient(client);
-                    return;
-                }
-                _clients.FindAll(c => c.ID == client.ID).ForEach(c =>
-                {
-                    RemoveClient(c);
-                });
-                client.ReceiveBuffer = new byte[client.BufferLength];
-                _clients.Add(client);
-                var readEventArgs = new SocketAsyncEventArgs();
-                readEventArgs.Completed += IO_Completed;
-                readEventArgs.UserToken = client;
-                readEventArgs.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
-                if (!client.Socket.ReceiveAsync(readEventArgs))
-                {
-                    ProcessReceived(readEventArgs);
-                }
+                RemoveClient(client);
+                return;
             }
-            catch (Exception ex)
+            _clients.Keys.Where(c => c.ID == client.ID).ForEach(c =>
             {
-                _logger?.LogError(_logPath, ex.ToString());
+                RemoveClient(c);
+            });
+            _clients[client] = client.Socket;
+            var eventArgs = new SocketAsyncEventArgs()
+            {
+                UserToken = client
+            };
+            eventArgs.Completed += IO_Completed;
+            ListenReceive(client, eventArgs);
+        }
+
+        /// <summary>
+        /// 监听下一次数据接收
+        /// </summary>
+        private void ListenReceive(ClientInfo client, SocketAsyncEventArgs e)
+        {
+            var buffer = new byte[client.BufferLength];
+            e.SetBuffer(buffer, 0, buffer.Length);
+            if (client.Socket?.ReceiveAsync(e) == false)
+            {
+                IO_Completed(client.Socket, e);
             }
         }
 
@@ -283,59 +280,83 @@ namespace Gksyb.Common.TCP
         /// </summary>
         private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {
-            if (e.LastOperation != SocketAsyncOperation.Receive) return;
-            ProcessReceived(e);
-        }
-
-        /// <summary>
-        /// 处理接收的数据
-        /// </summary>
-        private void ProcessReceived(SocketAsyncEventArgs e)
-        {
-            if (e.SocketError != SocketError.Success || e.BytesTransferred <= 0) return;
-            var client = e.UserToken as ClientInfo;
+            var doNext = true;
+            var client = (ClientInfo)e.UserToken;
             try
             {
-                client.ActieveTime = DateTime.Now;
-                var buffer = new byte[e.BytesTransferred];
-                Array.Copy(client.ReceiveBuffer, 0, buffer, 0, e.BytesTransferred);
-                client.ReceiveBuffer = buffer;
-                _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{Encoding.GetString(client.ReceiveBuffer)}");
-                var result = SocketError.Success;
-                if (client.Packet != null)
+                if (e.SocketError != SocketError.Success || e.BytesTransferred <= 0)
                 {
-                    result = client.Packet.PackHandle(client.ReceiveBuffer, bytes =>
+                    switch (e.SocketError)
                     {
-                        return OnReceive?.Invoke(client, bytes, _listener) ?? SocketError.Success;
-                    });
-                }
-                else
-                {
-                    result = OnReceive?.Invoke(client, client.ReceiveBuffer, _listener) ?? SocketError.Success;
-                }
-                if (result != SocketError.Success)
-                {
-                    RemoveClient(client);
+                        case SocketError.Success:
+                            _logger?.LogInformation(_logPath, $"已关闭的客户端{client.ID}");
+                            break;
+
+                        case SocketError.OperationAborted:
+                            _logger?.LogInformation(_logPath, $"关闭客户端{client.ID}");
+                            break;
+
+                        case SocketError.ConnectionReset:
+                            _logger?.LogInformation(_logPath, $"断开客户端{client.ID}");
+                            break;
+
+                        default:
+                            _logger?.LogError(_logPath, $"{nameof(IO_Completed)}操作{e.LastOperation}失败:{e.SocketError}");
+                            break;
+                    }
+                    doNext = false;
                     return;
                 }
+                if (e.LastOperation != SocketAsyncOperation.Receive) return;
+                doNext = ProcessReceived(client, e);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(_logPath, ex.ToString());
             }
-            try
+            finally
             {
-                client.ReceiveBuffer = new byte[client.BufferLength];
-                e.SetBuffer(client.ReceiveBuffer, 0, client.ReceiveBuffer.Length);
-                if (client.Socket?.ReceiveAsync(e) == false)
+                if (doNext)
                 {
-                    ProcessReceived(e);
+                    try
+                    {
+                        ListenReceive(client, e);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger?.LogError(_logPath, ex.ToString());
+                    }
                 }
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// 处理接收的客户端数据
+        /// </summary>
+        private bool ProcessReceived(ClientInfo client, SocketAsyncEventArgs e)
+        {
+            client.ActieveTime = DateTime.Now;
+            var buffer = new byte[e.BytesTransferred];
+            Array.Copy(e.Buffer, 0, buffer, 0, e.BytesTransferred);
+            _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{BitConverter.ToString(buffer)}");
+            var result = SocketError.Success;
+            if (client.Packet != null)
             {
-                _logger?.LogError(_logPath, $"{client.ID}：{ex}");
+                result = client.Packet.PackHandle(buffer, bytes =>
+                {
+                    return OnReceive?.Invoke(client, bytes, _listener) ?? SocketError.Success;
+                });
             }
+            else
+            {
+                result = OnReceive?.Invoke(client, buffer, _listener) ?? SocketError.Success;
+            }
+            if (result != SocketError.Success)
+            {
+                RemoveClient(client);
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -346,9 +367,10 @@ namespace Gksyb.Common.TCP
             try
             {
                 if (client == null) return;
-                _logger?.LogInformation(_logPath, $"关闭客户端{client.ID}");
-                OnClose?.Invoke(client, _listener);
-                _clients.Remove(client);
+                if (_clients.TryRemove(client, out var _))
+                {
+                    OnClose?.Invoke(client, _listener);
+                }
                 client.Dispose();
                 client = null;
             }
@@ -381,10 +403,10 @@ namespace Gksyb.Common.TCP
         {
             try
             {
-                var client = _clients.FindLast(c => c.ID == id);
+                var client = _clients.Keys.Last(c => c.ID == id);
                 var result = OnSend?.Invoke(client, buffer, _listener) ?? SocketError.Success;
                 if (result != SocketError.Success) return false;
-                _logger?.LogInformation(_logPath, $"准备向{id}发送：{Encoding.GetString(buffer)}");
+                _logger?.LogInformation(_logPath, $"准备向{id}发送：{BitConverter.ToString(buffer)}");
                 var times = 0;
                 if (retry < 1) retry = 1;
                 while (times < retry)
@@ -392,7 +414,7 @@ namespace Gksyb.Common.TCP
                     times++;
                     try
                     {
-                        client = _clients.FindLast(c => c.ID == id);
+                        client = _clients.Keys.Last(c => c.ID == id);
                         if (client == null)
                         {
                             await Task.Delay(delay);
@@ -426,7 +448,7 @@ namespace Gksyb.Common.TCP
         public void Broadcast(string data)
         {
             var buffer = Encoding.GetBytes(data);
-            Parallel.ForEach(_clients, client =>//开启多线程
+            Parallel.ForEach(_clients.Keys, client =>//开启多线程
             {
                 try
                 {
@@ -446,20 +468,20 @@ namespace Gksyb.Common.TCP
         {
             try
             {
-                TimerCheckClient.Stop();
-                for (var i = _clients.Count - 1; i >= 0; i--)
+                foreach (var client in _clients.Keys)
                 {
-                    var client = _clients[i];
                     RemoveClient(client);
                 }
             }
             catch (Exception)
             {
             }
-            _listener?.Dispose();
-            _listener = null;
-            serverState = ServerState.Stopped;
-            TimerCheckClient.Dispose();
+            finally
+            {
+                _listener?.Dispose();
+                _listener = null;
+                serverState = ServerState.Stopped;
+            }
         }
 
         public void Dispose()
@@ -474,6 +496,7 @@ namespace Gksyb.Common.TCP
         {
             if (_disposed) return;
             _logger?.LogInformation(_logPath, $"关闭服务器{_listener.LocalEndPoint}");
+            _timer.Dispose();
             Stop();
             OnShutdown?.Invoke(_listener);
             _disposed = true;

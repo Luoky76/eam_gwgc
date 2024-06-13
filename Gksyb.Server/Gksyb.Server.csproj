@@ -3,17 +3,9 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<RuntimeIdentifiers>win-x64;linux-x64;win-x86;</RuntimeIdentifiers>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'1'=='1'">
-		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+		<RuntimeIdentifiers>win-x64;linux-x64;win-x86;linux-arm64;</RuntimeIdentifiers>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Gksyb.Common\Gksyb.Common.csproj" />

@@ -1,16 +1,16 @@
 ﻿namespace Gksyb.Model.Tree
 {
-    public interface ITreeable
+    public interface ITreeable<T> where T : IEquatable<T>
     {
         /// <summary>
         /// 节点
         /// </summary>
-        string ID { get; set; }
+        T ID { get; set; }
 
         /// <summary>
         /// 父节点
         /// </summary>
-        string PARENTID { get; set; }
+        T PARENTID { get; set; }
 
         /// <summary>
         /// 树节点（用于快速搜索）

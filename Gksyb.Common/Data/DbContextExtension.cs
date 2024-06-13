@@ -8,7 +8,6 @@ using Gksyb.Common;
 using Gksyb.Common.Data;
 using System.Data;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Chloe
 {
@@ -30,17 +29,11 @@ namespace Chloe
         /// </summary>
         public static async Task<T> InsertOrUpdateAsync<T>(this IDbContext source, T entity, Expression<Func<T, bool>> condition = null)
         {
-            var fakes = source.TryGetTrackedEntityState(entity).Fakes;
-            var oldFakes = new Dictionary<MemberInfo, object>(fakes);
             var task = condition == null ? source.UpdateAsync(entity) : source.UpdateAsync(entity, condition);
             var row = await task;
             if (row < 1)
             {
-                var keys = fakes.Keys;
-                foreach (var key in keys)
-                {
-                    fakes[key] = oldFakes[key];
-                }
+                source.TryGetTrackedEntityState(entity).Fakes.Clear();
                 return await source.InsertAsync(entity);
             }
             return entity;
@@ -227,6 +220,7 @@ namespace Chloe
                 MySql.MySqlContext => "mysql",
                 SQLite.SQLiteContext => "sqlite",
                 Dameng.DamengContext => "dameng",
+                KingbaseES.KingbaseESContext => "kingbase",
                 PostgreSQL.PostgreSQLContext => "pgsql",
                 SqlServer.MsSqlContext => "sqlserver",
                 _ => "oracle",
@@ -365,7 +359,7 @@ namespace Chloe
         /// <summary>
         /// 关闭数据库日志标识
         /// </summary>
-        private static readonly string _sqlLogKey = "NotSqlLog";
+        private const string _sqlLogKey = "NotSqlLog";
 
         /// <summary>
         /// 是否关闭数据库日志
