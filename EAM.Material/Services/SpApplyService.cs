@@ -376,7 +376,7 @@ namespace EAM.Material.Services
                 dict.TryAdd("Sid", sid);
                 dict.TryAdd("isView", false);
                 flowExecuteInfo.FormData = dict;
-                flowExecuteInfo.FlowId = "2YIFgkk2ruk";
+                flowExecuteInfo.FlowCode = "sp_apply";
                 await _flowEngineService.StartAsync(flowExecuteInfo);
             }
         }
