@@ -1,4 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml.Vml.Office;
 using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
@@ -6,13 +6,13 @@ using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
-using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Gksyb.Workflow.Services.Workflow;
 using Microsoft.AspNetCore.Http;
+using System.ComponentModel;
 using System.Data;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services
@@ -22,17 +22,15 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
-        private readonly TaskService _taskService;
         private string _rentID = string.Empty, errMsg = string.Empty;
 
-        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, TaskService taskService)
+        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
             _dbContext = dbContext;
             //添加船舶物资需求的软删除字段过滤
             _dbContext.HasQueryFilter<SP_APPLY_DETAIL>(x => x.IS_DELETED != "1" || x.IS_DELETED == null);
             _comboxDataService = comboxDataService;
             _userSession = userSession;
-            _taskService = taskService;
         }
 
         #region 船舶物资申请
@@ -342,14 +340,11 @@ namespace EAM.Material.Services
                     await _dbContext.UpdateAsync(sp_apply_details[i]);
                 }
 
-                //创建内部审批流程
-                CreateWorkFlow(sids);
-
                 //更新记录状态
                 updateCnt = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                     x => new SP_APPLY
                     {
-                        AUDITING = "2"
+                        AUDITING = "1"
                     });
 
                 //更新采购状态
@@ -359,27 +354,7 @@ namespace EAM.Material.Services
                        SP_STATUS = "20"//待需求确认
                    });
             });
-            
             return updateCnt;
-        }
-
-        /// <summary>
-        /// 创建审批流程
-        /// </summary>
-        /// <param name="sids">主键数组</param>
-        /// <returns></returns>
-        public async void CreateWorkFlow(List<string> sids)
-        {
-            foreach (string sid in sids)
-            {
-                var flowExecuteInfo = new FlowExecuteInfo();
-                var dict = new Dictionary<string, object>();
-                dict.TryAdd("Sid", sid);
-                dict.TryAdd("isView", false);
-                flowExecuteInfo.FormData = dict;
-                flowExecuteInfo.FlowId = "2YIFgkk2ruk";
-                await _taskService.StartAsync(flowExecuteInfo);
-            }
         }
 
         /// <summary>
@@ -537,10 +512,10 @@ namespace EAM.Material.Services
                     c.SP_CODE
                 },
                 c => a => a.SPDET_ID == c.SPDET_ID
-                , null, null, BeforeDeleteApplyDetail, true, null, null);
+                , null, null, beforeDeleteApplyDetail, true, null, null);
         }
 
-        private Task BeforeDeleteApplyDetail(SP_APPLY_DETAIL entity)
+        private Task beforeDeleteApplyDetail(SP_APPLY_DETAIL entity)
         {
             entity.IS_DELETED = "1";
             return Task.CompletedTask;

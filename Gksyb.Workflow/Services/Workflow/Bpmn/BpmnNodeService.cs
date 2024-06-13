@@ -1,7 +1,11 @@
-﻿using Gksyb.Core.Auth;
+﻿using Gksyb.Common.EventBus;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
+using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
+using Gksyb.Workflow.EventSubscriber.Dtos;
+using Gksyb.Workflow.Services.Workflow.Dtos;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq.Expressions;
 
@@ -14,7 +18,6 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
     {
         protected readonly IServiceProvider _serviceProvider;
         protected bool _isTask = false;
-        private bool _doPostInterceptors = false;
 
         private ScopeUser _user;
 
@@ -33,6 +36,11 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             _serviceProvider = serviceProvider;
         }
 
+        public new void Init(FlowGraphNode flowGraphNode)
+        {
+            base.Init(flowGraphNode);
+        }
+
         /// <summary>
         /// 输入
         /// </summary>
@@ -46,39 +54,39 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 执行模型
         /// </summary>
-        protected abstract Task Exec();
+        protected abstract Task Exec(FlowExecuteInfo info);
 
-        public override async Task Execute()
+        public override async Task Execute(FlowExecuteInfo info)
         {
-            await Intercept(PreInterceptors);
-            await Exec();
-            await DoPostInterceptors();
+            await Intercept(PreInterceptors, info);
+            await Exec(info);
+            await Intercept(PostInterceptors, info);
         }
 
         /// <summary>
         /// 完成当前节点
         /// </summary>
-        public override async Task Complate()
+        public override async Task Complate(FlowExecuteInfo info)
         {
-            if (_info.NodeStatus == NodeStatus.Back) //退回特殊处理
+            info.NodeStatus ??= WF_NODEExtensions.Agree;
+            await ComplateTask(info);
+            switch (info.NodeStatus)
             {
-                await ComplateTask(c => c.TASK_ID == _info.TaskId && c.NODE_STATUS == NodeStatus.Active, c =>
-                {
-                    c.NODE_STATUS = NodeStatus.BackArchived;
-                });
-                return;
-            }
-            _info.NodeStatus ??= NodeStatus.Agree;
-            await ComplateTask();
-            switch (_info.NodeStatus)
-            {
-                case NodeStatus.Agree:
-                    if (!_info.ToNodeIsEmpty) break;
-                    await ExecuteOutputs();
+                case WF_NODEExtensions.Agree:
+                    if (!info.ToNodeIsEmpty) break;
+                    await ExecuteOutputs(info);
                     break;
 
-                case NodeStatus.Transfer:
-                    await AddTask();
+                case WF_NODEExtensions.Back:
+                    //退回同时完成同节点的其他任务
+                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == Id && c.NODE_STATUS == WF_NODEExtensions.Active, c =>
+                    {
+                        c.NODE_STATUS = WF_NODEExtensions.Archived;
+                    });
+                    break;
+
+                case WF_NODEExtensions.Transfer:
+                    await AddTask(info);
                     break;
 
                 default:
@@ -87,46 +95,21 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
-        /// 获取退回节点
-        /// </summary>
-        public async Task<string> GetBackNode()
-        {
-            var backNode = BackNode;
-            if (string.IsNullOrWhiteSpace(backNode) || backNode == "start") return null;
-            if (backNode != "previous") return backNode;
-            var nodes = new List<string>();
-            PreviousTaskForEach(Inputs, c =>
-            {
-                nodes.Add(c.Id);
-                return false;
-            });
-            var node = await _dbContext.Query<WF_NODE>().Where(c => c.TASK_ID == _info.TaskId && nodes.Contains(c.NODE_ID) && c.NODE_STATUS == NodeStatus.Agree)
-                .Select(c => new WF_NODE()
-                {
-                    ID = c.ID,
-                    NODE_ID = c.NODE_ID,
-                    FINISHDATE = c.FINISHDATE
-                })
-                .OrderByDesc(c => c.FINISHDATE).FirstOrDefaultAsync();
-            return node?.NODE_ID;
-        }
-
-        /// <summary>
         /// 加入日志
         /// </summary>
-        public async Task AddLog(string operType)
+        public async Task AddLog(FlowExecuteInfo info, string operType)
         {
             var id = GuidHelper.NewSnowflakeId();
             await _dbContext.InsertAsync(() => new WF_TASK_LOG()
             {
                 ID = id,
-                TASK_ID = _info.TaskId,
-                WF_NODE_ID = _info.Id,
+                TASK_ID = info.TaskId,
+                WF_NODE_ID = info.Id,
                 NODE_ID = Id,
                 OPERATOR = User.RealName,
                 OPERTITLE = Title,
                 OPERTYPE = operType,
-                OPERDETAIL = _info.NodeReason,
+                OPERDETAIL = info.NodeReason,
                 OPERDATE = DateTime.Now
             });
         }
@@ -134,27 +117,25 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 节点转任务
         /// </summary>
-        protected async Task<string> AddTask()
+        protected async Task<string> AddTask(FlowExecuteInfo info, bool publishEvent = true)
         {
-            var users = _info.Users ?? new List<UserInfo>();
-            _info.Users = null;
-            if (users.Count < 1 && !string.IsNullOrWhiteSpace(OperatorType))
+            var users = info.Users;
+            info.Users = null;
+            if (users == null || users.Count < 1)
             {
-                users = OperatorType == "FromService" ?
-                    await FindeOperatorsFromService() :
-                    await FindeOperators();
-            }
-            if (users.Count < 1)
-            {
-                if (AutoNext)
+                var operatorType = OperatorType ?? "";
+                if (string.IsNullOrWhiteSpace(operatorType)) return info.NodeId;
+                var service = _serviceProvider.GetService<IUserService>();
+                var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();
+                users = await service.FindOperators(new FindOperatorInfo()
                 {
-                    await ExecuteOutputs();
-                    await DoPostInterceptors();
-                    return _info.NodeId;
-                }
-                throw new MessageException($"找不到下一节点的处理人");
+                    Type = operatorType,
+                    Corp = corpid,
+                    Operators = Operators
+                });
             }
-            var nodeId = _info.NodeId;
+            if (users.Count < 1) throw new MessageException($"找不到下一节点的处理人");
+            var nodeId = info.NodeId;
             var sysdate = await _dbContext.GetSysdate();
             var nodes = new List<WF_NODE>();
             foreach (var user in users)
@@ -162,8 +143,8 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 var node = new WF_NODE()
                 {
                     ID = GuidHelper.NewShortId(),
-                    FLOW_ID = _info.FlowId,
-                    TASK_ID = _info.TaskId,
+                    FLOW_ID = info.FlowId,
+                    TASK_ID = info.TaskId,
                     NODE_ID = Id,
                     NODE_NAME = Name,
                     NODE_TITLE = Title,
@@ -171,8 +152,8 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                     NODE_USERID = user.Id,
                     NODE_USERNAME = user.Account,
                     NODE_USER = user.Name,
-                    NODE_STATUS = NodeStatus.Active,
-                    TO_NODE_ID = _info.ToNode,
+                    NODE_STATUS = WF_NODEExtensions.Active,
+                    TO_NODE_ID = info.ToNode,
                     CREATEUSER = User.RealName,
                     CREATEDATE = sysdate
                 };
@@ -180,50 +161,57 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 nodes.Add(node);
                 nodeId = node.ID;
             }
-            var nodeInfos = nodes.Select(c => c.ToNodeInfo()).ToList();
-            _info.ToNode = null;
-            _info.ToNodeInfos.AddRange(nodeInfos);
-            _info.ToDos.AddRange(nodeInfos);
+            if (publishEvent) await EventPublish(WorkflowEventAction.AddTask, nodes);
+            info.ToNode = null;
             return nodeId;
         }
 
         /// <summary>
         /// 完成任务并发布事件
         /// </summary>
-        protected async Task<List<WF_NODE>> ComplateTask(Expression<Func<WF_NODE, bool>> expression, Action<WF_NODE> action)
+        protected async Task<List<WF_NODE>> ComplateTask(Expression<Func<WF_NODE, bool>> expression, Action<WF_NODE> action, bool isAll = false)
         {
-            var allNodes = await _dbContext.Query<WF_NODE>().Where(expression).ToListAsync();
-            var nodes = allNodes.FindAll(c => !c.FINISHDATE.HasValue);
-            if (nodes.Count < 1) return allNodes;
+            var query = _dbContext.Query<WF_NODE>().Where(expression);
+            query = isAll ? query : query.Select(c => new WF_NODE()
+            {
+                ID = c.ID,
+                FLOW_ID = c.FLOW_ID,
+                TASK_ID = c.TASK_ID,
+                NODE_TITLE = c.NODE_TITLE,
+                NODE_STATUS = c.NODE_STATUS,
+                NODE_REASON = c.NODE_REASON,
+                FINISHDATE = c.FINISHDATE
+            });
+            var nodes = await query.ToListAsync();
+            if (nodes.Count < 1) return nodes;
             var sysdate = await _dbContext.GetSysdate();
             foreach (var node in nodes)
             {
+                if (node.FINISHDATE.HasValue) continue;
                 _dbContext.TrackEntity(node);
                 node.FINISHDATE = sysdate;
                 action(node);
                 await _dbContext.UpdateAsync(node);
             }
-            var nodeInfos = nodes.Select(c => c.ToNodeInfo()).ToList();
-            _info.Dones.AddRange(nodeInfos);
-            return allNodes;
+            return nodes;
         }
 
         /// <summary>
-        /// 完成任务并发布事件
+        /// 节点转任务
         /// </summary>
-        protected async Task ComplateTask()
+        protected async Task ComplateTask(FlowExecuteInfo info)
         {
-            await ComplateTask(c => c.ID == _info.Id && c.NODE_STATUS == NodeStatus.Active, c =>
+            await ComplateTask(c => c.ID == info.Id && c.NODE_STATUS == WF_NODEExtensions.Active, c =>
             {
-                c.NODE_STATUS = _info.NodeStatus;
-                c.NODE_REASON = _info.NodeReason;
+                c.NODE_STATUS = info.NodeStatus;
+                c.NODE_REASON = info.NodeReason;
             });
         }
 
         /// <summary>
         /// 完成来源节点的任务
         /// </summary>
-        protected async Task ComplatePreviousTask(List<BpmnSequenceFlowService> inputs)
+        protected async Task ComplatePreviousTask(FlowExecuteInfo info, List<BpmnSequenceFlowService> inputs)
         {
             if (inputs == null || inputs.Count < 1) return;
             foreach (var input in inputs)
@@ -231,33 +219,29 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 if (input.Source == null) continue;
                 if (input.Source._isTask)
                 {
-                    await ComplateTask(c => c.TASK_ID == _info.TaskId && c.NODE_ID == input.Source.Id && c.NODE_STATUS == NodeStatus.Active, c =>
+                    await ComplateTask(c => c.TASK_ID == info.TaskId && c.NODE_ID == input.Source.Id && c.NODE_STATUS == WF_NODEExtensions.Active, c =>
                     {
-                        c.NODE_STATUS = NodeStatus.Archived;
+                        c.NODE_STATUS = WF_NODEExtensions.Archived;
                     });
                 }
-                await ComplatePreviousTask(input.Source.Inputs);
+                await ComplatePreviousTask(info, input.Source.Inputs);
             }
         }
 
         /// <summary>
-        /// 获取来源任务节点的名称
+        /// 获取来源节点的任务ID
         /// </summary>
-        protected static List<string> GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs)
+        protected List<string> GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs)
         {
             var nodes = new List<string>();
-            PreviousTaskForEach(inputs, c =>
-            {
-                nodes.Add(c.Name);
-                return false;
-            });
+            GetPreviousNodeNames(inputs, nodes);
             return nodes;
         }
 
         /// <summary>
-        /// 来源任务节点遍历
+        /// 获取来源节点的任务ID
         /// </summary>
-        private static void PreviousTaskForEach(List<BpmnSequenceFlowService> inputs, Func<BpmnBaseService, bool> func)
+        private void GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs, List<string> nodes)
         {
             if (inputs == null || inputs.Count < 1) return;
             foreach (var input in inputs)
@@ -265,38 +249,57 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 if (input.Source == null) continue;
                 if (input.Source._isTask)
                 {
-                    if (!func(input.Source)) continue;
+                    nodes.Add(input.Source.Name);
+                    continue;
                 }
-                PreviousTaskForEach(input.Source.Inputs, func);
+                GetPreviousNodeNames(input.Source.Inputs, nodes);
             }
         }
 
         /// <summary>
-        /// 加入发布事件
+        /// 事件发布
         /// </summary>
-        public void AddEvent(string action, List<WF_NODE> nodes)
+        public async Task EventPublish(string action, List<WF_NODE> nodes)
         {
             if (nodes.Count < 1) return;
-            var eventData = FlowEventInfo.FromFlowExecuteInfo(_info);
-            eventData.NodeInfos = nodes.Select(c => c.ToNodeInfo()).ToList();
-            _info.Events.Add(new ActionData<FlowEventInfo>()
+            var taskId = nodes.First().TASK_ID;
+            var flow = await _dbContext.Query<WF_TASK>().Where(c => c.ID == taskId).Select(c => new WF_TASK()
             {
-                Action = action,
-                Data = eventData
-            });
+                FLOW_NAME = c.FLOW_NAME,
+                FLOW_TITLE = c.FLOW_TITLE,
+                APPNAME = c.APPNAME
+            }).FirstOrDefaultAsync();
+            var eventPublisher = _serviceProvider.GetService<IEventPublisher>();
+            var message = new MessageInfo()
+            {
+                Title = flow.FLOW_NAME,
+                Content = flow.FLOW_TITLE,
+                Appname = flow.APPNAME
+            };
+            foreach (var node in nodes)
+            {
+                message.Key = node.ID;
+                message.Receives = new List<string>() { node.NODE_USERNAME };
+                message.Data = WF_NODEExtensions.GetDesc(node.NODE_STATUS);
+                await eventPublisher.PublishAsync(new ActionData<MessageInfo>()
+                {
+                    Action = action,
+                    Data = message
+                });
+            }
         }
 
         /// <summary>
         /// 执行后续节点
         /// </summary>
-        protected async Task ExecuteOutputs() => await Outputs.ForEachAsync(async c => await c.Execute());
+        protected async Task ExecuteOutputs(FlowExecuteInfo info) => await Outputs.ForEachAsync(async c => await c.Execute(info));
 
         private List<IFlowInterceptor> preInterceptors;
 
         /// <summary>
         /// 前置拦截器
         /// </summary>
-        private List<IFlowInterceptor> PreInterceptors
+        public List<IFlowInterceptor> PreInterceptors
         {
             get
             {
@@ -306,22 +309,12 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             }
         }
 
-        /// <summary>
-        /// 执行后置拦截器
-        /// </summary>
-        protected async Task DoPostInterceptors()
-        {
-            if (_doPostInterceptors) return;
-            _doPostInterceptors = true;
-            await Intercept(PostInterceptors);
-        }
-
         private List<IFlowInterceptor> postInterceptors;
 
         /// <summary>
         /// 前置拦截器
         /// </summary>
-        private List<IFlowInterceptor> PostInterceptors
+        public List<IFlowInterceptor> PostInterceptors
         {
             get
             {
@@ -341,7 +334,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             var list = new List<IFlowInterceptor>();
             interceptors.ForEach(c =>
             {
-                if (_serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == c) is IFlowInterceptor service)
+                if (_serviceProvider.GetService(a => a.ServiceType.Name == c && a.ServiceType is IFlowInterceptor) is IFlowInterceptor service)
                 {
                     list.Add(service);
                 }
@@ -352,41 +345,11 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// <summary>
         /// 拦截方法
         /// </summary>
-        private async Task Intercept(List<IFlowInterceptor> interceptorList)
+        private static async Task Intercept(List<IFlowInterceptor> interceptorList, FlowExecuteInfo taskInfo)
         {
-            if (interceptorList.Count < 1) return;
-            await SetFormData();
             await interceptorList.ForEachAsync(async c =>
             {
-                await c.Intercept(_info);
-            });
-        }
-
-        /// <summary>
-        /// 从自定义的服务里面找处理人
-        /// </summary>
-        /// <returns></returns>
-        private async Task<List<UserInfo>> FindeOperatorsFromService()
-        {
-            var serviceName = Operators;
-            if (string.IsNullOrWhiteSpace(serviceName)) return new List<UserInfo>();
-            var service = _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == serviceName) as IFindOperators;
-            return await service.Find(_info);
-        }
-
-        /// <summary>
-        /// 从预制的服务里面找处理人
-        /// </summary>
-        /// <returns></returns>
-        private async Task<List<UserInfo>> FindeOperators()
-        {
-            var service = _serviceProvider.GetService<IUserService>();
-            var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == _info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();
-            return await service.FindOperators(new FindOperatorInfo()
-            {
-                Type = OperatorType,
-                Corp = corpid,
-                Operators = Operators
+                await c.Intercept(taskInfo);
             });
         }
 
@@ -431,28 +394,6 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             get
             {
                 return GetProperties("operators").CastTo<string>();
-            }
-        }
-
-        /// <summary>
-        /// 自动流转
-        /// </summary>
-        private bool AutoNext
-        {
-            get
-            {
-                return GetProperties("autoNext").CastTo(false);
-            }
-        }
-
-        /// <summary>
-        /// 退回节点
-        /// </summary>
-        private string BackNode
-        {
-            get
-            {
-                return GetProperties("backNode").CastTo<string>();
             }
         }
     }

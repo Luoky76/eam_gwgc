@@ -3,7 +3,6 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
-using Gksyb.Workflow.Controllers.Workflow.Dtos;
 using Gksyb.Workflow.Services.Workflow;
 using Microsoft.AspNetCore.Mvc;
 
@@ -90,9 +89,9 @@ namespace Gksyb.Workflow.Controllers.Workflow
         /// 任务详情
         /// </summary>
         [JsToken]
-        public async Task<AjaxResult> TaskInfoAsync(TaskInfoRequest request)
+        public async Task<AjaxResult> TaskInfoAsync(string id, string flowId)
         {
-            return AjaxResult.Success(await _service.TaskInfoAsync(request));
+            return AjaxResult.Success(await _service.TaskInfoAsync(id, flowId));
         }
     }
 }

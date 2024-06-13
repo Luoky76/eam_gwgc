@@ -1,4 +1,6 @@
-﻿namespace Gksyb.Workflow.Services.Workflow.Bpmn
+﻿using Gksyb.Core.Interfaces.WorkFlow;
+
+namespace Gksyb.Workflow.Services.Workflow.Bpmn
 {
     [ServiceLifetime]
     public class BpmnUserTaskService : BpmnNodeService, IBaseService
@@ -8,10 +10,10 @@
             _isTask = true;
         }
 
-        protected override async Task Exec()
+        protected override async Task Exec(FlowExecuteInfo info)
         {
-            await AddTask();
-            await ComplatePreviousTask(Inputs);
+            await AddTask(info);
+            await ComplatePreviousTask(info, Inputs);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
+using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Services.Workflow;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,7 +32,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
         [JsToken]
         public async Task<AjaxResult> DraftAsync(FlowExecuteInfo info)
         {
-            info.NodeStatus = NodeStatus.Draft;
+            info.NodeStatus = WF_NODEExtensions.Draft;
             await _service.StartAsync(info);
             return AjaxResult.Success(info);
         }
@@ -42,7 +43,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
         [JsToken]
         public async Task<AjaxResult> AgreeAsync(FlowExecuteInfo info)
         {
-            info.NodeStatus = NodeStatus.Agree;
+            info.NodeStatus = WF_NODEExtensions.Agree;
             return await ExcuteAsync(info);
         }
 
@@ -52,7 +53,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
         [JsToken]
         public async Task<AjaxResult> RejectAsync(FlowExecuteInfo info)
         {
-            info.NodeStatus = NodeStatus.Reject;
+            info.NodeStatus = WF_NODEExtensions.Reject;
             return await ExcuteAsync(info);
         }
 
@@ -62,7 +63,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
         [JsToken]
         public async Task<AjaxResult> BackAsync(FlowExecuteInfo info)
         {
-            info.NodeStatus = NodeStatus.Back;
+            info.NodeStatus = WF_NODEExtensions.Back;
             return await ExcuteAsync(info);
         }
 
@@ -77,7 +78,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
         }
 
         /// <summary>
-        /// 标记成已阅
+        /// 取消
         /// </summary>
         [JsToken]
         public async Task<AjaxResult> ReadAsync(List<string> ids)
@@ -87,7 +88,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
         }
 
         /// <summary>
-        /// 全部标记成已阅
+        /// 取消
         /// </summary>
         [JsToken]
         public async Task<AjaxResult> ReadAllAsync()

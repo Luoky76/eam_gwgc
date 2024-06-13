@@ -1,5 +1,6 @@
 ﻿using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
+using Gksyb.Workflow.EventSubscriber.Dtos;
 
 namespace Gksyb.Workflow.Services.Workflow.Bpmn
 {
@@ -10,35 +11,35 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         {
         }
 
-        protected override async Task Exec()
+        protected override async Task Exec(FlowExecuteInfo info)
         {
-            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == _info.TaskId).FirstOrDefaultAsync() ??
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).FirstOrDefaultAsync() ??
                 throw new MessageException($"找不到流程任务");
-            var logs = await _dbContext.Query<WF_TASK_LOG>().Where(c => c.TASK_ID == _info.TaskId).ToListAsync();
+            var logs = await _dbContext.Query<WF_TASK_LOG>().Where(c => c.TASK_ID == info.TaskId).ToListAsync();
 
             //完成处理
             var sysdate = await _dbContext.GetSysdate();
-            task.FLOW_STATUS = _info.NodeStatus == NodeStatus.Cancel ? WF_TASKExtensions.Cancel : WF_TASKExtensions.Finish;
+            task.FLOW_STATUS = info.NodeStatus == WF_NODEExtensions.Cancel ? WF_TASKExtensions.Cancel : WF_TASKExtensions.Finish;
             task.FINISHDATE = sysdate;
-            var nodes = await ComplateTask(c => c.TASK_ID == _info.TaskId, c =>
+            var nodes = await ComplateTask(c => c.TASK_ID == info.TaskId, c =>
             {
-                c.NODE_STATUS = NodeStatus.Archived;
-            });
+                c.NODE_STATUS = WF_NODEExtensions.Archived;
+            }, true);
 
             //更新抄送表的任务完成标志
-            await _dbContext.UpdateAsync<WF_NODE_SHARE>(c => c.TASK_ID == _info.TaskId, c => new WF_NODE_SHARE()
+            await _dbContext.UpdateAsync<WF_NODE_SHARE>(c => c.TASK_ID == info.TaskId, c => new WF_NODE_SHARE()
             {
                 TASK_FINISH_FLAG = "1"
             });
 
             //删除并插入历史表
             var node = nodes.OrderBy(c => c.ID).First();
-            AddEvent(WorkflowEventAction.ComplateTask, new List<WF_NODE>() { new()
+            await EventPublish(WorkflowEventAction.ComplateTask, new List<WF_NODE>() { new WF_NODE()
             {
-                TASK_ID = _info.TaskId,
+                TASK_ID = info.TaskId,
                 ID = node.ID,
                 NODE_USERNAME = node.NODE_USERNAME,
-                NODE_STATUS = _info.NodeStatus
+                NODE_STATUS = info.NodeStatus
             }});
             await _dbContext.InsertAsync(task.MapTo<WF_HISTORY_TASK>());
             await _dbContext.InsertRangeAsync(nodes.MapTo<List<WF_HISTORY_NODE>>());
@@ -54,7 +55,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             });
         }
 
-        public override async Task Complate()
+        public override async Task Complate(FlowExecuteInfo info)
         {
             await Task.CompletedTask;
             throw new MessageException($"终止节点{Title}不能被完成");

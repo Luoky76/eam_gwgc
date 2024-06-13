@@ -31,27 +31,27 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             }
         }
 
-        protected override async Task Exec()
+        protected override async Task Exec(FlowExecuteInfo info)
         {
             var expression = Expression;
             var outputs = Outputs;
-            if (_info.FormData == null)
+            if (info.FormData == null)
             {
-                await SetFormData();
+                await SetFormData(info);
             }
             var handle = GetHandle();
-            var result = handle == null ? null : await handle.Eval(_info);
+            var result = handle == null ? null : await handle.Eval(info);
             if (!string.IsNullOrWhiteSpace(expression))
             {
-                result = Eval(expression, _info.FormData, _info.TaskId, GetPreviousNodeNames(Inputs));
+                result = Eval(expression, info.FormData, info.TaskId, GetPreviousNodeNames(Inputs));
             }
             if (Outputs.Count < 2 && result == "False") return;
             if (result != "True") outputs = outputs.Where(c => c.Name.EqualsTo(result)).ToList();
             MessageException.ThrowIf(outputs.Count < 1 && !string.IsNullOrWhiteSpace(result), $"找不到连线{result}");
-            await outputs.ForEachAsync(async c => await c.Execute());
+            await outputs.ForEachAsync(async c => await c.Execute(info));
         }
 
-        public override async Task Complate()
+        public override async Task Complate(FlowExecuteInfo info)
         {
             await Task.CompletedTask;
             MessageException.Throw($"分支节点{Title}不能被完成");
@@ -64,7 +64,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         {
             var handle = Handle;
             if (string.IsNullOrWhiteSpace(handle)) return null;
-            return _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == handle) as IFlowGatewayHandle;
+            return _serviceProvider.GetService(a => a.ServiceType.Name == handle && a.ServiceType is IFlowGatewayHandle) as IFlowGatewayHandle;
         }
     }
 }
