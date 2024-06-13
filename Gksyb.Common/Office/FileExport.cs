@@ -1,8 +1,8 @@
-﻿using Gksyb.Common.Office.Core;
-using Gksyb.Common.Office.Excel;
-using Gksyb.Common.Office.Html;
-using Gksyb.Common.Office.Pdf;
-using Gksyb.Common.Office.Word;
+﻿using Magicodes.ExporterAndImporter.Core;
+using Magicodes.ExporterAndImporter.Excel;
+using Magicodes.ExporterAndImporter.Html;
+using Magicodes.ExporterAndImporter.Pdf;
+using Magicodes.ExporterAndImporter.Word;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +25,7 @@ namespace Gksyb.Common.Office
         public static async Task<FileResult> ExportToExcel(DataTable data, string fileName = null, ExcelExporter exporter = null)
         {
             exporter ??= new ExcelExporter();
-            var content = await exporter.ExportAsByteArray<DataTable>(data);
+            var content = await exporter.ExportAsByteArray(data);
             return GetFileResult(content, fileName ?? $"{DateTime.Now:yyyyMMddHHmmss}.xlsx");
         }
 
@@ -130,8 +130,8 @@ namespace Gksyb.Common.Office
             {
                 ExcelExporter => "xlsx",
                 PdfExporter => "pdf",
-                WordExporter => "docx",
                 HtmlExporter => "html",
+                WordExporter => "docx",
                 _ => "xlsx",
             };
             return GetFileResult(content, fileName ?? $"{DateTime.Now:yyyyMMddHHmmss}.{fix}");
@@ -217,7 +217,7 @@ namespace Gksyb.Common.Office
         /// 获取文件类型
         /// </summary>
         /// <returns></returns>
-        public static FileResult GetFileResult(byte[] content, string fileName)
+        private static FileResult GetFileResult(byte[] content, string fileName)
         {
             fileName.CheckNotNullOrWhiteSpace("文件名");
             var contentType = Path.GetExtension(fileName).ToLower()[1..];

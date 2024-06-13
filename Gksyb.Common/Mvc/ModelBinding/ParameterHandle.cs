@@ -39,7 +39,7 @@ namespace Gksyb.Common.Mvc.ModelBinding
         private readonly Dictionary<MemberInfo, MemberSetter> _setterCache = new();
         private readonly ActionExecutingContext _context;
         private int times = 0;
-        private const int MaxTimes = 20;
+        private static readonly int MaxTimes = 20;
 
         public ParameterHandle(ActionExecutingContext context)
         {
@@ -278,7 +278,7 @@ namespace Gksyb.Common.Mvc.ModelBinding
         {
             handles ??= new List<ParameterHandleAttribute>();
             if (!handles.Any(c => c is SqlFilterAttribute))
-                handles = handles.Append(new SqlFilterAttribute());
+                handles = handles.Append(new SqlFilterAttribute(-1));
             return handles;
         }
 

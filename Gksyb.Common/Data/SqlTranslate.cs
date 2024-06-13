@@ -1,6 +1,5 @@
 ﻿using Chloe.SQLite;
 using Dm;
-using Kdbndp;
 using Microsoft.Data.SqlClient;
 using MySqlConnector;
 using Npgsql;
@@ -42,10 +41,6 @@ namespace Gksyb.Common.Data
 
                 case DmConnection _:
                     sql = DamengTranslate(sql);
-                    break;
-
-                case KdbndpConnection _:
-                    sql = KdbndpTranslate(sql);
                     break;
             }
             source.CommandText = sql;
@@ -151,8 +146,6 @@ namespace Gksyb.Common.Data
             sql = Regex.Replace(sql, @":(\w+)", "@$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "DATETIME('now','localtime')", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(from)\b\s*\b(dual)\b", "", RegexOptions.IgnoreCase);
-            sql = Regex.Replace(sql, @"\b(nvl)\b", "IFNULL", RegexOptions.IgnoreCase);
-            sql = Regex.Replace(sql, @"\b(isnull)\b\s*\((?<f1>[^(\(|,)]*),", "IFNULL(${f1},", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(wm_concat)\b", "group_concat", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(len)\b", "LENGTH", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(substring)\b", "substr", RegexOptions.IgnoreCase);
@@ -210,19 +203,6 @@ namespace Gksyb.Common.Data
             sql = Regex.Replace(sql, @"(?<!@)@(\w+)", ":$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "now()", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(group_concat)\b", "wm_concat", RegexOptions.IgnoreCase);
-            return sql;
-        }
-
-        /// <summary>
-        /// 人大金仓差异化处理
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <returns></returns>
-        private static string KdbndpTranslate(string sql)
-        {
-            sql = Regex.Replace(sql, @":(\w+)", "@$1");
-            sql = Regex.Replace(sql, @"{Sysdate}", "systimestamp", RegexOptions.IgnoreCase);
-            sql = Regex.Replace(sql, @"\b(sysdate)\b", "systimestamp", RegexOptions.IgnoreCase);
             return sql;
         }
     }

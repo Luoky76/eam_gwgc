@@ -17,28 +17,23 @@ namespace Gksyb.Common
         /// <summary>
         /// 方法名
         /// </summary>
-        [JsonProperty(Order = 10)]
         public string Action { get; set; }
 
         /// <summary>
         /// 传递数据
         /// </summary>
-        [JsonProperty(Order = 20)]
         public object Data { get; set; }
 
         /// <summary>
         /// 操作时间
         /// </summary>
-        [JsonProperty(Order = 30)]
         public DateTime ActionTime { get; set; } = DateTime.Now;
 
-        public ActionData<string> ToActionString() => new ActionData<string>()
-        {
-            Action = Action,
-            Data = Data.ToJson()
-        };
 
-        public override string ToString() => this.ToJson();
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
     }
 
     /// <summary>
@@ -47,11 +42,6 @@ namespace Gksyb.Common
     /// <typeparam name="T"></typeparam>
     public class ActionData<T> : ActionData
     {
-        [JsonProperty(Order = 20)]
-        public new T Data
-        {
-            get { return (T)base.Data; }
-            set { base.Data = value; }
-        }
+        public new T Data { get; set; }
     }
 }

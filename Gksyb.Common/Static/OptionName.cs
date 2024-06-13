@@ -5,51 +5,46 @@
         /// <summary>
         /// 数据库配置
         /// </summary>
-        public const string DataBase = "DataBase";
+        public static readonly string DataBase = "DataBase";
 
         /// <summary>
         /// 系统配置
         /// </summary>
-        public const string SysContext = "SysContext";
+        public static readonly string SysContext = "SysContext";
 
         /// <summary>
         /// Redis配置
         /// </summary>
-        public const string RedisCache = "RedisCache";
+        public static readonly string RedisCache = "RedisCache";
 
         /// <summary>
         /// 微信配置
         /// </summary>
-        public const string Weixin = "Weixin";
-
-        /// <summary>
-        /// 微信小程序配置
-        /// </summary>
-        public const string MiniProgram = "MiniProgram";
+        public static readonly string Weixin = "Weixin";
 
         /// <summary>
         /// 安全类型
         /// </summary>
-        public const string SafeContentType = "SafeContentType";
+        public static readonly string SafeContentType = "SafeContentType";
 
         /// <summary>
         /// 安全类型
         /// </summary>
-        public const string FileContentType = "FileContentType";
+        public static readonly string FileContentType = "FileContentType";
 
         /// <summary>
         /// 插件
         /// </summary>
-        public const string PluginsPrefix = "PluginsPrefix";
+        public static readonly string PluginsPrefix = "PluginsPrefix";
 
         /// <summary>
         /// 上传路径
         /// </summary>
-        public const string UploadDirectory = $"{SysContext}:UploadDirectory";
+        public static readonly string UploadDirectory = $"{SysContext}:UploadDirectory";
 
         /// <summary>
         /// 上传路径映射
         /// </summary>
-        public const string UploadDirectoryMapPath = $"{SysContext}:UploadDirectoryMapPath";
+        public static readonly string UploadDirectoryMapPath = $"{SysContext}:UploadDirectoryMapPath";
     }
 }

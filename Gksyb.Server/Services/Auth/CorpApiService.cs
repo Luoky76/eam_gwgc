@@ -21,25 +21,6 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <inheritdoc/>
-        public async Task<List<CorpInfo>> Corps()
-        {
-            var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
-            return await _dbContext.Query<CF_CORP>().WhereIf(!_user.IsAdmin, c => corpids.Contains(c.CORPID))
-                .Select(CorpInfoExtensions.SelectCorpInfo)
-                .ToListAsync();
-        }
-
-        /// <inheritdoc/>
-        public async Task<CorpInfo> ParentCompany(string corpId)
-        {
-            var allCorps = await _dbContext.Query<CF_CORP>().Select(CorpInfoExtensions.SelectCorpInfo)
-            .ToListAsync();
-            var corp = allCorps.FirstOrDefault(c => c.CorpID == corpId);
-            if (corp == null) return corp;
-            return corp.ClassFlag == CorpInfoExtensions.Company ? corp : corp.ParentCorp(allCorps, c => c.ClassFlag == CorpInfoExtensions.Company);
-        }
-
-        /// <inheritdoc/>
         public async Task<List<CorpInfo>> FindCorpsAsync(Expression<Func<CorpInfo, bool>> filter = null)
         {
             return await _dbContext.Query<CF_CORP>().Select(CorpInfoExtensions.SelectCorpInfo)

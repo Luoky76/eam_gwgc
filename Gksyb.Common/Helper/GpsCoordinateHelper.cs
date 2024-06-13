@@ -5,10 +5,10 @@
     /// </summary>
     public static class GpsCoordinateHelper
     {
-        private const double _pi = 3.14159265358979324;
-        private const double _a = 6378245.0;
-        private const double _ee = 0.00669342162296594323;
-        private const double _xpi = 3.14159265358979324 * 3000.0 / 180.0;
+        private static readonly double _pi = 3.14159265358979324;
+        private static readonly double _a = 6378245.0;
+        private static readonly double _ee = 0.00669342162296594323;
+        private static readonly double _xpi = 3.14159265358979324 * 3000.0 / 180.0;
 
         /// <summary>
         /// wgs坐标转百度坐标

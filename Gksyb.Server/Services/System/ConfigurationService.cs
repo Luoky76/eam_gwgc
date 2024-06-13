@@ -13,7 +13,6 @@ namespace Gksyb.Server.Services.System
     {
         private readonly ICommonService _commonService;
         private readonly IDbContext _dbContext;
-        private readonly SysContextOptions _options;
         private readonly string _appName;
 
         /// <summary>
@@ -23,8 +22,7 @@ namespace Gksyb.Server.Services.System
         {
             _dbContext = dbContext;
             _commonService = commonService;
-            _options = options.Value;
-            _appName = _options.ConfigAppName ?? _options.AppName;
+            _appName = options.Value.ConfigAppName ?? options.Value.AppName;
         }
 
         /// <summary>
@@ -50,7 +48,6 @@ namespace Gksyb.Server.Services.System
             {
                 ids.Add((c.FirstOrDefault(a => a.APPNAME == _appName) ?? c.FirstOrDefault()).MENUID);
             });
-            var mobileAppname = _options.MobileAppName;
             return await _dbContext.Query<CF_CONFIGURATION>()
                 .Where(c => c.APPNAME == _appName)
                 .LeftJoin<SYS_MENU>((config, menu) => config.VIEWS == menu.MENUNO && ids.Contains(menu.MENUID))
@@ -62,7 +59,6 @@ namespace Gksyb.Server.Services.System
                     menu.MENUURL,
                     menu.MENUNO,
                     menu.MENUNAME,
-                    IsMobile = menu.APPNAME == mobileAppname ? "1" : "0",
                     PMENUNAME = menuParent.MENUNAME ?? config.FORM.Substring(0, 200),
                     DESC = (menuParent.MENUNAME ?? config.FORM.Substring(0, 200)) + "->" + menu.MENUNAME
                 }).GetGridData(request);

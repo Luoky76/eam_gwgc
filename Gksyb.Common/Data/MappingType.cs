@@ -26,7 +26,7 @@ namespace Chloe.Infrastructure
     /// <summary>
     /// 处理 Guid
     /// </summary>
-    public class Guid_MappingType : DbParameterAssembler
+    internal class Guid_MappingType : DbParameterAssembler
     {
         public override void SetupParameter(IDbDataParameter parameter, DbParam param)
         {

@@ -23,7 +23,7 @@ namespace Gksyb.Common.Weixin
 
     public static class WeixinHelper
     {
-        internal const string ApiHost = WeixinSetting.ApiHost;
+        internal static readonly string ApiHost = "https://api.weixin.qq.com";//微信api地址
 
         /// <summary>
         /// 获取验证地址
@@ -46,22 +46,8 @@ namespace Gksyb.Common.Weixin
         /// <returns></returns>
         public static async Task<OAuthAccessTokenResponse> GetOauthAccessToken(string code)
         {
-            try
-            {
-                var url = $"{ApiHost}/sns/oauth2/access_token";
-                return await url.PostUrlEncodedAsync(new
-                {
-                    appid = WeixinSetting.AppId,
-                    secret = WeixinSetting.AppSecret,
-                    code,
-                    grant_type = "authorization_code"
-                }).ReceiveJson<OAuthAccessTokenResponse>();
-            }
-            catch (Exception ex)
-            {
-                if (!(ex.Message ?? "").Contains(WeixinSetting.AppSecret)) throw;
-                throw new Exception(ex.Message.Replace(WeixinSetting.AppSecret, "").Replace(WeixinSetting.AppId, ""), ex);
-            }
+            var url = $"{ApiHost}/sns/oauth2/access_token?appid={WeixinSetting.AppId}&secret={WeixinSetting.AppSecret}&code={code}&grant_type=authorization_code";
+            return await url.GetJsonAsync<OAuthAccessTokenResponse>();
         }
 
         /// <summary>

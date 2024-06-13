@@ -26,6 +26,5 @@
         public string Op { get; set; }
         public string Type { get; set; }
         public string ParamName { get; set; }
-        public string Split { get; set; }
     }
 }

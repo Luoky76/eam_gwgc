@@ -70,7 +70,6 @@ namespace Gksyb.Server.Job
         /// </summary>
         private static MessageInfo ToMessageInfo(SYS_MESSAGE notice) => new()
         {
-            Id = notice.ID,
             Title = notice.MSG_TITLE,
             Content = notice.MSG_CONTENT,
             DialogMode = notice.DIALOG_MODE,

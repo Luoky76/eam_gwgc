@@ -8,8 +8,6 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class SqlFilterAttribute : ParameterHandleAttribute
     {
-        private readonly int? _limit;
-
         /// <summary>
         /// 防sql注入
         /// </summary>
@@ -22,13 +20,18 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public SqlFilterAttribute(int limit)
         {
-            _limit = limit < 0 ? null : limit;
+            Limit = limit < 0 ? null : limit;
         }
 
         /// <summary>
         /// 请慎用（可能会出安全性问题），跳过SqlFilter处理校验
         /// </summary>
         public bool Skip { get; set; }
+
+        /// <summary>
+        /// 字数限制
+        /// </summary>
+        private int? Limit { get; set; }
 
         public override int GetOrder() => int.MaxValue;
 
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc
             if (Skip) return value;
             if (value == null) return value;
             if (value is not string sValue) return value;
-            return sValue.SqlFilter(_limit);
+            return sValue.SqlFilter(Limit);
         }
     }
 }

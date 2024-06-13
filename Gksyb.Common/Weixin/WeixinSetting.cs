@@ -5,11 +5,6 @@ namespace Gksyb.Common.Weixin
     public class WeixinSetting
     {
         /// <summary>
-        /// 微信api地址
-        /// </summary>
-        public const string ApiHost = "https://api.weixin.qq.com";
-
-        /// <summary>
         /// 应用ID
         /// </summary>
         public static string AppId { get; set; }

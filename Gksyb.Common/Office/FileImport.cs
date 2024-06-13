@@ -1,5 +1,6 @@
-﻿using Gksyb.Common.Office.Core;
-using Gksyb.Common.Office.Excel;
+﻿using Magicodes.ExporterAndImporter.Core;
+using Magicodes.ExporterAndImporter.Core.Models;
+using Magicodes.ExporterAndImporter.Excel;
 using Microsoft.AspNetCore.Http;
 
 namespace Gksyb.Common.Office
@@ -57,7 +58,7 @@ namespace Gksyb.Common.Office
         /// <returns></returns>
         public static async Task<Dictionary<string, ImportResult<object>>> ImportMultipleSheet<T>(this IFormFile formFile, Func<Dictionary<string, ImportResult<object>>, Task> func = null) where T : class, new()
         {
-            var importer = new ExcelImporter();
+            IExcelImporter importer = new ExcelImporter();
             using var stream = formFile.OpenReadStream();
             return await stream.ImportMultipleSheet<T>(importer, func);
         }
@@ -73,7 +74,7 @@ namespace Gksyb.Common.Office
         {
             if (string.IsNullOrWhiteSpace(filePath)) throw new MessageException($"文件路径不能为空!");
             if (!File.Exists(filePath)) throw new MessageException($"文件{filePath}不存在!");
-            var importer = new ExcelImporter();
+            IExcelImporter importer = new ExcelImporter();
             using var stream = new FileStream(filePath, FileMode.Open);
             return await stream.ImportMultipleSheet<T>(importer, func);
         }
@@ -82,7 +83,7 @@ namespace Gksyb.Common.Office
         /// excel导入多sheet
         /// </summary>
         /// <returns></returns>
-        public static async Task<Dictionary<string, ImportResult<object>>> ImportMultipleSheet<T>(this Stream stream, ExcelImporter importer, Func<Dictionary<string, ImportResult<object>>, Task> func = null) where T : class, new()
+        public static async Task<Dictionary<string, ImportResult<object>>> ImportMultipleSheet<T>(this Stream stream, IExcelImporter importer, Func<Dictionary<string, ImportResult<object>>, Task> func = null) where T : class, new()
         {
             var importDic = await importer.ImportMultipleSheet<T>(stream);
             importDic.Values.ForEach(c => c.Check());

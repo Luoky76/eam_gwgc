@@ -5,7 +5,7 @@ namespace Gksyb.Server.Services.Auth
 {
     public class MyInfoService : IBaseService
     {
-        private const string _customColumn = "定制列";
+        private readonly string _customColumn = "定制列";
         private readonly IDbContext _dbContext;
         private readonly UserSession _user;
 
@@ -128,14 +128,6 @@ namespace Gksyb.Server.Services.Auth
                 });
             }
             await _dbContext.UserLogAsync(_customColumn, id, $"账号【{_user.Display}】{_customColumn}【{columns}】，编号{id}", _user); ;
-        }
-
-        /// <summary>
-        /// 用户日志
-        /// </summary>
-        public async Task UserLogAsync(string type, string title, string summary)
-        {
-            await _dbContext.UserLogAsync(type, title, $"账号【{_user.Display}】{summary}", _user);
         }
     }
 }

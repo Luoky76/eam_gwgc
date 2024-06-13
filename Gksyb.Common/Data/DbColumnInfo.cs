@@ -30,7 +30,7 @@
         /// <summary>
         /// 最大长度
         /// </summary>
-        public long? MaxLength { get; set; }
+        public int? MaxLength { get; set; }
 
         /// <summary>
         /// 整数长度

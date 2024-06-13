@@ -48,25 +48,6 @@ namespace Gksyb.Server.Services.Message
         /// <inheritdoc/>
         public async Task SendAsync(MessageInfo info, bool isCode = false)
         {
-            if (!string.IsNullOrWhiteSpace(info.MsgGroup) && string.IsNullOrWhiteSpace(info.Code))
-            {
-                var codes = await _dbContext.Query<SYS_MESSAGE_TEMPLATE>().Where(c => c.MSG_GROUP == info.MsgGroup).Select(c => c.CODE).ToListAsync();
-                foreach (var code in codes)
-                {
-                    var model = info.MapTo<MessageInfo>();
-                    model.Code = code;
-                    await SendInnerAsync(model, isCode);
-                }
-                return;
-            }
-            await SendInnerAsync(info, isCode);
-        }
-
-        /// <summary>
-        /// 消息发送
-        /// </summary>
-        public async Task SendInnerAsync(MessageInfo info, bool isCode = false)
-        {
             var hasCode = await InitWithTemplate(info);
             if (!hasCode && isCode) return;
             info.MsgType = string.IsNullOrWhiteSpace(info.MsgType) ? "Message" : info.MsgType;
@@ -96,19 +77,16 @@ namespace Gksyb.Server.Services.Message
                 info.Href = string.IsNullOrWhiteSpace(info.Href) ? model.MSG_HREF : info.Href;
                 info.MobileHref = string.IsNullOrWhiteSpace(info.MobileHref) ? model.MSG_MOBILE_HREF : info.MobileHref;
                 info.Receives ??= new List<string>();
-                if (!string.IsNullOrWhiteSpace(model.NOTICE_TYPE))
+                if (string.IsNullOrWhiteSpace(model.NOTICE_TYPE)) return true;
+                var userService = _serviceProvider.GetService<IUserService>();
+                var receives = await userService.FindOperators(new FindOperatorInfo()
                 {
-                    var userService = _serviceProvider.GetService<IUserService>();
-                    var receives = await userService.FindOperators(new FindOperatorInfo()
-                    {
-                        Type = model.NOTICE_TYPE,
-                        Corp = info.CorpId ?? _user.Corp?.CorpID,
-                        Operators = model.NOTICE_USERS,
-                        HasSuper = true
-                    });
-                    info.Receives.AddRange(receives.Select(c => c.Account));
-                    info.Receives = info.Receives.DistinctAndOrderBy().ToList();
-                }
+                    Type = model.NOTICE_TYPE,
+                    Corp = info.CorpId ?? _user.Corp?.CorpID,
+                    Operators = model.NOTICE_USERS
+                });
+                info.Receives.AddRange(receives.Select(c => c.Account));
+                info.Receives = info.Receives.DistinctAndOrderBy().ToList();
             }
             info.Handle();
             return hasCode;

@@ -1,5 +1,4 @@
-﻿using Gksyb.Common;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Gksyb.Model.Grid
 {
@@ -48,26 +47,21 @@ namespace Gksyb.Model.Grid
         /// 排序
         /// </summary>
         [ModelEncrypt]
-        [SqlFilter(5)]
+        [SqlFilter(80)]
         public string SortName { get; set; }
 
         /// <summary>
         /// 排序方向
         /// </summary>
         [ModelEncrypt]
-        [SqlFilter(0)]
+        [SqlFilter(5)]
         public string SortOrder { get; set; }
-
-        /// <summary>
-        /// 排序方向
-        /// </summary>
-        public string OrderBy => "asc".EqualsTo(SortOrder, true) ? "asc" : "desc";
 
         /// <summary>
         /// 分组
         /// </summary>
         [ModelEncrypt]
-        [SqlFilter(0)]
+        [SqlFilter(20)]
         public string GroupBy { get; set; }
 
         /// <summary>

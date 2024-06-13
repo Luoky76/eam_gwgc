@@ -8,7 +8,7 @@
         /// <summary>
         /// 账号
         /// </summary>
-        public string Key { get; set; }
+        public string Account { get; set; }
 
         /// <summary>
         /// 用户IP

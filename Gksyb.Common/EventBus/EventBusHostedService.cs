@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Gksyb.Common.EventBus
 {
@@ -21,6 +22,9 @@ namespace Gksyb.Common.EventBus
         /// </summary>
         private readonly IEventStorer _eventSourceStorer;
 
+        /// <summary>
+        /// 事件源存储器
+        /// </summary>
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public EventBusHostedService(ILogger<EventBusHostedService> logger, IServiceScopeFactory serviceScopeFactory, IEventStorer eventSourceStorer)
@@ -63,37 +67,31 @@ namespace Gksyb.Common.EventBus
             try
             {
                 // 从事件存储器中读取一条
-                var model = await _eventSourceStorer.ReadAsync(stoppingToken);
-                if (model == null) return;
-                _logger.LogInformation(_logPath, $"接到广播{model.Action}：{model.Data}，{model.ActionTime:yyyy-MM-dd HH:mm:ss}");
-                var eventHandlers = EventBusStore.EventHandlers.Where(c => c.EventId == model.Action).ToList();
-                if (eventHandlers.Count < 1) return;
-                Parallel.ForEach(eventHandlers, eventHandler =>
+                var message = await _eventSourceStorer.ReadAsync(stoppingToken);
+                if (message == null) return;
+                _logger.LogInformation(_logPath, $"接到广播:{message}");
+                var actionData = message.ToObject<ActionData<JToken>>();
+                var eventHandlers = EventBusStore.EventHandlers.Where(c => c.EventId == actionData.Action).ToList();
+                using var scope = _serviceScopeFactory.CreateAsyncScope();
+                foreach (var eventHandler in eventHandlers)
                 {
-                    Task.Factory.StartNew(async () =>//开启多线程，加大吞吐量
+                    try
                     {
-                        try
+                        var values = eventHandler.Handler.GetParametersValue(actionData.Data);
+                        object obj = null;
+                        if (!eventHandler.Handler.IsStatic)
                         {
-                            _logger.LogInformation(_logPath, $"触发事件:{eventHandler.Handler.DeclaringType}:{eventHandler.Handler.Name}");
-                            var values = eventHandler.Handler.GetParametersValue(model.Data);
-                            object obj = null, invokeResult = null;
-                            if (eventHandler.Handler.IsStatic)
-                            {
-                                invokeResult = eventHandler.Handler!.Invoke(obj, values);
-                                if (invokeResult is Task task2) await task2;
-                                return;
-                            }
-                            using var scope = _serviceScopeFactory.CreateAsyncScope();
                             obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
-                            invokeResult = eventHandler.Handler!.Invoke(obj, values);
-                            if (invokeResult is Task task) await task;
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(_logPath, ex.ToString());
-                        }
-                    }, stoppingToken);
-                });
+                        _logger.LogInformation(_logPath, $"触发事件:{eventHandler.Handler.DeclaringType}:{eventHandler.Handler.Name}");
+                        var invokeResult = eventHandler.Handler!.Invoke(obj, values);
+                        if (invokeResult is Task task) await task;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(_logPath, ex.ToString());
+                    }
+                }
             }
             catch (Exception ex)
             {

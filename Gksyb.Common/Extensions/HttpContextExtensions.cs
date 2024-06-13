@@ -108,7 +108,7 @@ namespace Gksyb.Common
             var uid = source.GetClientID();
             if (string.IsNullOrWhiteSpace(key))
             {
-                key = source.Request.Path;
+                key = $"{source.Request.PathBase}{source.Request.Path}";
             }
             key = key.TrimStart('/').TrimEnd('/').ToLower();
             key = $"{uid}-{key}";
@@ -137,18 +137,14 @@ namespace Gksyb.Common
             source.Items.Add(RequestBodyName, value is string ? value : value.ToMiniJson());
         }
 
-        public static string GetRequestBodyItem(this HttpContext source) => source.Request.GetContent().Result();
-
-        /// <summary>
-        /// 获取request内容
-        /// </summary>
-        public static async Task<string> GetContent(this HttpRequest source)
+        public static string GetRequestBodyItem(this HttpContext source)
         {
-            if (source.HttpContext.Items.ContainsKey(RequestBodyName))
+            var body = source.Request.ContentType;
+            if (source.Items.ContainsKey(RequestBodyName))
             {
-                return source.HttpContext.Items[RequestBodyName] as string;
+                body = source.Items[RequestBodyName] as string;
             }
-            return await source.GetBodyAsync();
+            return body;
         }
 
         public static void SetResponseBodyItem(this HttpContext source, object value)
@@ -160,11 +156,12 @@ namespace Gksyb.Common
 
         public static string GetResponseBodyItem(this HttpContext source)
         {
+            var body = source.Response.ContentType;
             if (source.Items.ContainsKey(ResponseBodyName))
             {
-                return source.Items[ResponseBodyName] as string;
+                body = source.Items[ResponseBodyName] as string;
             }
-            return source.Response.ContentType;
+            return body;
         }
 
         /// <summary>

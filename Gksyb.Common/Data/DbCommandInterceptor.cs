@@ -19,8 +19,8 @@ namespace Gksyb.Common.Data
         private ILogger _logger;
         private readonly bool _isLog = false;
         private readonly int _slowQuery = 10 * 1000;
-        private const string _contextName = nameof(IDbContext);
-        private const string _timeBag = "startTime";
+        private readonly string _contextName = nameof(IDbContext);
+        private readonly string _timeBag = "startTime";
 
         private ILogger Logger
         {

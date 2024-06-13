@@ -25,6 +25,6 @@
         /// <summary>
         /// 事件读取
         /// </summary>
-        ValueTask<ActionData<string>> ReadAsync(CancellationToken cancellationToken);
+        ValueTask<string> ReadAsync(CancellationToken cancellationToken);
     }
 }

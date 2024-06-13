@@ -19,16 +19,8 @@ namespace Gksyb.Common
         /// </summary>
         public static void AddIService(this Assembly source)
         {
-            source.GetTypes().AddIService();
-        }
-
-        /// <summary>
-        /// 批量注册IService的派生接口
-        /// </summary>
-        public static void AddIService(this Type[] types)
-        {
             var type = typeof(IService);
-            types.Where(t => type.IsAssignableFrom(t) && !t.IsAbstract).ForEach(c =>//动态注册
+            source.GetExportedTypes().Where(t => type.IsAssignableFrom(t) && !t.IsAbstract).ForEach(c =>//动态注册
             {
                 var lifeTime = c.GetAttribute<ServiceLifetimeAttribute>()?.Lifetime;
                 c.GetInterfaces().ForEach(t =>
@@ -58,9 +50,8 @@ namespace Gksyb.Common
         /// <param name="source"></param>
         public static void AddAllService(this Assembly source)
         {
-            var types = source.GetTypes();
-            types.AddIService();
-            types.AddIBaseService();
+            source.AddIService();
+            source.AddIBaseService();
         }
     }
 }

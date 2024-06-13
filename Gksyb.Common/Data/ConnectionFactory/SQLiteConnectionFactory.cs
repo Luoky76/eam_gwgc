@@ -1,5 +1,4 @@
 ﻿using Chloe.Infrastructure;
-using Chloe.RDBMS;
 using Chloe.SQLite;
 using Microsoft.Data.Sqlite;
 using System.Data;
@@ -10,18 +9,7 @@ namespace Gksyb.Common.Data
     {
         static SQLiteConnectionFactory()//初始化
         {
-            var methodHandlerDic = new Dictionary<string, IMethodHandler>()
-            {
-                {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
-                {Compare_Handler.MethodName, new Compare_Handler()},
-                {Contains_Handler.MethodName, new Contains_Handler()},
-                {SumString_Handler.MethodName, new SumString_Handler("GROUP_CONCAT",null)},
-                {MathAbs_Handler.MethodName, new MathAbs_Handler()}
-            };
-            foreach (var item in methodHandlerDic)
-            {
-                SQLiteContext.SetMethodHandler(item.Key, item.Value);
-            }
+            SQLiteContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
         }
 
         private readonly string _connString = null;

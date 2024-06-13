@@ -1,9 +1,4 @@
-﻿using Chloe.Reflection;
-using Chloe.Reflection.Emit;
-using System.Data;
-using System.Reflection;
-
-namespace Gksyb.Common
+﻿namespace Gksyb.Common
 {
     public static class EnumerableExtensions
     {
@@ -67,31 +62,6 @@ namespace Gksyb.Common
         public static string Join<TSource>(this IEnumerable<TSource> source, string separator = ",")
         {
             return source.DistinctAndOrderBy().ToStr(separator);
-        }
-
-        /// <summary>
-        /// 集合转DataTable
-        /// </summary>
-        public static DataTable ToDataTable<TSource>(this IEnumerable<TSource> source)
-        {
-            var dt = new DataTable();
-            if (!source.Any()) return dt;
-            var type = typeof(TSource);
-            var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            if (props.Length < 1) return dt;
-            var getters = new MemberGetter[props.Length];
-            for (var i = 0; i < props.Length; i++)
-            {
-                var prop = props[i];
-                dt.Columns.Add(prop.Name, prop.PropertyType.GetUnNullableType());
-                getters[i] = DelegateGenerator.CreateGetter(prop);
-            }
-            foreach (var item in source)
-            {
-                var values = getters.Select(getter => getter(item) ?? DBNull.Value).ToArray();
-                dt.Rows.Add(values);
-            }
-            return dt;
         }
     }
 }

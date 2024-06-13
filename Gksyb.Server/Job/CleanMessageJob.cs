@@ -21,7 +21,7 @@ namespace Gksyb.Server.Job
         {
             _dbContext.DisableSqlLog();
             _dbContext.Session.CommandTimeout = 10 * 60;
-            var days = _quartzTask.TaskData.CastTo(12 * 31) * -1;
+            var days = _quartzTask.TaskData.CastTo(6 * 30) * -1;
             await DeleteSysMessageAsync(days);
         }
 

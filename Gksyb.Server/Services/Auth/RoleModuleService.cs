@@ -214,11 +214,11 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 菜单缓存前缀
         /// </summary>
-        private const string MenuCachePrefix = "Menu_";
+        private static readonly string MenuCachePrefix = "Menu_";
 
         /// <summary>
         /// 按钮缓存前缀
         /// </summary>
-        private const string ButtonCachePrefix = "Button_";
+        private static readonly string ButtonCachePrefix = "Button_";
     }
 }

@@ -15,12 +15,14 @@ namespace Gksyb.Server.EventSubscriber
         private readonly ILogger<TaskSubscriber> _logger;
         private readonly IScheduler _scheduler;
         private readonly ITypeLoadHelper _typeLoadHelper;
+        private readonly List<string> _addresss;
 
         public TaskSubscriber(ISchedulerFactory schedulerFactory, ITypeLoadHelper typeLoadHelper, ILogger<TaskSubscriber> logger)
         {
             _logger = logger;
             _scheduler = schedulerFactory.GetScheduler().Result();
             _typeLoadHelper = typeLoadHelper;
+            _addresss = HttpContext.AddressList;
         }
 
         [EventSubscribe("QuartzTaskAdd")]
@@ -66,7 +68,6 @@ namespace Gksyb.Server.EventSubscriber
                 var isDelete = await _scheduler.DeleteJob(new JobKey(task.TaskName, task.TaskGroup));
                 if (task.IsStop) return;
                 var ips = (task.TaskIP ?? "").Split(",").DistinctAndOrderBy().ToList();
-                var _addresss = HttpContext.AddressList;
                 if (ips.Count > 0 && !_addresss.Any(ip => ips.Any(reg => Regex.IsMatch(ip, reg)))) return;
                 Type jobType = _typeLoadHelper.LoadType(task.TaskMethod);
                 IJobDetail job = JobBuilder.Create(jobType).WithIdentity(task.TaskName, task.TaskGroup).WithDescription(task.TaskDesc)

@@ -5,12 +5,10 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class WeixinServiceCollectionExtensions
     {
-        public static IServiceCollection AddWeixin(this IServiceCollection services, IConfiguration config)
+        public static IServiceCollection AddWeixin(this IServiceCollection services, IConfigurationSection config)
         {
             services.AddSingleton<IAccessTokenHandle, AccessTokenHandle>();
-            services.AddSingleton<IMiniProgramAccessTokenHandle, MiniProgramAccessTokenHandle>();
-            WeixinSetting.InitFromConifg(config.GetSection(OptionName.Weixin));
-            MiniProgramSetting.InitFromConifg(config.GetSection(OptionName.MiniProgram));
+            WeixinSetting.InitFromConifg(config);
             return services;
         }
     }

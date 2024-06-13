@@ -1,10 +1,10 @@
-﻿using Gksyb.Common.EventBus;
+﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
+using Gksyb.Common.EventBus;
 using Gksyb.Common.Quartz.Dtos;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Microsoft.Extensions.Options;
 using Quartz;
 using Quartz.Impl.Triggers;
 
@@ -15,7 +15,6 @@ namespace Gksyb.Server.Services.System
     /// </summary>
     public class TaskService : IBaseService
     {
-        private readonly SysContextOptions _options;
         private readonly IDbContext _dbContext;
         private readonly UserSession _user;
         private readonly IEventPublisher _eventPublisher;
@@ -23,19 +22,18 @@ namespace Gksyb.Server.Services.System
         /// <summary>
         /// 配置服务
         /// </summary>
-        public TaskService(IDbContext dbContext, UserSession userSession, IEventPublisher eventPublisher, IOptions<SysContextOptions> options)
+        public TaskService(IDbContext dbContext, UserSession userSession, IEventPublisher eventPublisher)
         {
             _dbContext = dbContext;
             _user = userSession;
             _eventPublisher = eventPublisher;
-            _options = options.Value;
         }
 
         /// <summary>
         /// 获取下次处理时间
         /// </summary>
         /// <returns></returns>
-        public static DateTimeOffset? GetNextFireTimeUtc(string cron, DateTimeOffset? afterTimeUtc = null)
+        public DateTimeOffset? GetNextFireTimeUtc(string cron, DateTimeOffset? afterTimeUtc = null)
         {
             try
             {
@@ -59,7 +57,7 @@ namespace Gksyb.Server.Services.System
         /// <returns></returns>
         public async Task<SYS_TASK> GetAsync(long id)
         {
-            return await _dbContext.Query<SYS_TASK>().Exclude(c => c.TASK_LAST_RESULT).Where(c => c.ID == id).FirstAsync();
+            return await _dbContext.Query<SYS_TASK>().Where(c => c.ID == id).FirstAsync();
         }
 
         /// <summary>
@@ -69,7 +67,7 @@ namespace Gksyb.Server.Services.System
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var gridData = await _dbContext.Query<TaskResponse>().Where(c => (c.APPNAME ?? _options.AppName) == _options.AppName).GetGridData(request);
+            var gridData = await _dbContext.Query<TaskResponse>().GetGridData(request);
             var rows = gridData.Rows as IList<TaskResponse>;
             foreach (var row in rows)
             {
@@ -152,7 +150,6 @@ namespace Gksyb.Server.Services.System
             entity.TASK_ERROR_REGEX = CryptographyHelper.DecryptFront(entity.TASK_ERROR_REGEX);
             entity.ID = GuidHelper.NewSnowflakeId();
             entity.MODIFYUSER = _user.IP;
-            entity.APPNAME = _options.AppName;
         }
 
         /// <summary>
@@ -212,3 +209,4 @@ namespace Gksyb.Server.Services.System
         }
     }
 }
+#pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

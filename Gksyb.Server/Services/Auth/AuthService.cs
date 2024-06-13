@@ -2,20 +2,17 @@
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Dtos;
-using Gksyb.Model.UI;
 using Microsoft.Extensions.Options;
-using System.Linq.Expressions;
 
 namespace Gksyb.Server.Services.Auth
 {
-    public partial class AuthService : IAuthService, IBaseService
+    public class AuthService : IAuthService
     {
         private readonly IDbContext _dbContext;
         private readonly IRoleModuleService _roleModuleService;
         private readonly SysContextOptions _options;
-        private const string _guestRole = "微信访客";
-        private const string _opertype = "用户公司";
-        private const string _roletype = "角色公司";
+        private static readonly string _guestRole = "微信访客";
+        private static readonly string _opertype = "用户公司";
 
         public AuthService(IDbContext dbContext, IRoleModuleService roleModuleService, IOptions<SysContextOptions> sysContext)
         {
@@ -28,12 +25,12 @@ namespace Gksyb.Server.Services.Auth
         /// 登陆
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true, Func<LoginResponse, Task<AjaxResult>> handle = null)
+        public async Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true)
         {
             AjaxResult result = null;
             try
             {
-                result = await LoginInnerAsync(request, action, checkPassword, handle);
+                result = await LoginInnerAsync(request, action, checkPassword);
             }
             catch (Exception ex)
             {
@@ -58,14 +55,14 @@ namespace Gksyb.Server.Services.Auth
         /// 登陆
         /// </summary>
         /// <returns></returns>
-        private async Task<AjaxResult> LoginInnerAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true, Func<LoginResponse, Task<AjaxResult>> handle = null)
+        private async Task<AjaxResult> LoginInnerAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true)
         {
             request.RoleAppname = request.RoleAppname.HasValue() ? request.RoleAppname : _options.RoleAppName;
             request.MenuAppname = request.MenuAppname.HasValue() ? request.MenuAppname : _options.AppName;
 
             CF_USER user = await GetUserAsync(request.Username, request.Password);
-            if (user == null) return AjaxResult.Error("账号密码错误");
-            if (user.LOGINPASSWORD != request.Password) return AjaxResult.Error("账号密码错误");
+            if (user == null) return AjaxResult.Error("用户名密码错误");
+            if (user.LOGINPASSWORD != request.Password) return AjaxResult.Error("用户名密码错误");
 
             var lastChangeTime = user.SUPPLIERID == null ? (await _dbContext.GetSysdate()) : DateTime.UnixEpoch.AddSeconds(user.SUPPLIERID.CastTo<double>());
             var errorMsg = await CheckPassword(request.Username, request.InputPassword, lastChangeTime);
@@ -80,35 +77,35 @@ namespace Gksyb.Server.Services.Auth
             var isSuper = user.USERID == _options.AdminUserID;
             var isAdmin = isSuper || roles.Contains(c => c.ROLEID == _options.AdminRole);
             var isOurCompany = isAdmin || ((user.CLASS ?? "0").CastTo(0) > 0);
-            var ports = await GetUserPortsAsync(user.LOGINNAME, c => c.OPTYPE == _roletype);
+            var forbinMenus = await GetForbidMenu(user.LOGINNAME);
+            var forbinButtons = await GetForbidButtons(user.LOGINNAME);
             var userSession = new UserSession()
             {
                 UserID = user.USERID.Value,
                 UserName = user.LOGINNAME,
                 RealName = user.REALNAME,
                 Class = user.CLASS,
-                WorkerCode = user.DEPARTCODE,
                 Group = user.STATION ?? "",
-                AllRoles = roles.Select(c => c.ROLENAME).Distinct().ToList(),
-                RoleCorps = ToRoleCorps(roles, ports),
+                Roles = roles.Select(c => c.ROLENAME).Distinct().ToList(),
                 IsSuper = isSuper,
                 IsAdmin = isAdmin,
+                Phone = user.PHONE,
                 IsOurCompany = isOurCompany,
                 IP = request.IP,
                 UserAgent = request.UserAgent,
                 UserAppName = _options.UserAppName,
                 RoleAppName = request.RoleAppname,
                 MenuAppname = request.MenuAppname,
-                ForbinMenus = await GetForbidMenu(user.LOGINNAME),
-                ForbinButtons = await GetForbidButtons(user.LOGINNAME)
+                ForbinMenus = forbinMenus,
+                ForbinButtons = forbinButtons
             };
-            if (isSuper) userSession.AllRoles.Add(UserSession.SuperRoleName);
+            if (isSuper) userSession.Roles.Add(UserSession.SuperRoleName);
             await LoginHandle(userSession, user);//当前系统登录的特殊处理
             action?.Invoke(userSession);
             //加入微信访客角色
-            if (!string.IsNullOrWhiteSpace(userSession.Openid) && !userSession.AllRoles.Contains(_guestRole))
+            if (!string.IsNullOrWhiteSpace(userSession.Openid) && !userSession.Roles.Contains(_guestRole))
             {
-                userSession.AllRoles.Add(_guestRole);
+                userSession.Roles.Add(_guestRole);
             }
             //登录成功，更新用户数据
             _dbContext.TrackEntity(user);
@@ -119,58 +116,19 @@ namespace Gksyb.Server.Services.Auth
             await _dbContext.UpdateAsync(user);
 
             var userResponse = await userSession.SaveAsync(_options);
-            AjaxResult result = null;
-            if (handle != null)
-            {
-                var lastImei = await _dbContext.Query<CF_USER_PORT>().Where(c => c.LOGINNAME == user.LOGINNAME && c.APPNAME == _options.UserAppName & c.OPTYPE == "IMEI")
-                    .Select(c => c.CORPID).FirstOrDefaultAsync();
-                var phone = (user.PHONE ?? "").Split(',').DistinctAndOrderBy()
-                    .Where(c => c.IsMobileNumber()).Select(c => new KeyValueItem(c, $"{c[..3]}****{c[7..]}")).ToList();
-                result = await handle(new LoginResponse()
-                {
-                    Account = userSession.UserName,
-                    IMEI = request.IMEI,
-                    LastIMEI = lastImei,
-                    IsAuth = _options.SmsAuth,
-                    Phone = phone,
-                    Response = userResponse,
-                    Session = userSession
-                });
-            }
-            return result ?? AjaxResult.Success(userResponse);
+            return AjaxResult.Success(userResponse);
         }
 
         /// <inheritdoc/>
-        public async Task SetUserImeiAsync(string account, string imei)
-        {
-            var now = (await _dbContext.GetSysdate()).Value.ToString("yyyy-MM-dd HH:mm:ss");
-            var entity = new CF_USER_PORT()
-            {
-                LOGINNAME = account,
-                APPNAME = _options.UserAppName,
-                OPTYPE = "IMEI"
-            };
-            _dbContext.TrackEntity(entity);
-            entity.CORPID = imei;
-            entity.REMARK = now;
-            await _dbContext.InsertOrUpdateAsync(entity, c => c.LOGINNAME == entity.LOGINNAME && c.APPNAME == entity.APPNAME & c.OPTYPE == entity.OPTYPE);
-        }
-
-        /// <inheritdoc/>
-        public async Task<CF_USER> GetUserAsync(string loginName, string password = null)
+        public async Task<CF_USER> GetUserAsync(string loginName, string password)
         {
             CF_USER user = null;
             if (loginName.IsMobileNumber())//手机号登录支持
             {
-                var users = await _dbContext.Query<CF_USER>()
-                .Where(c => c.PHONE == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").ToListAsync();
-                if (!string.IsNullOrWhiteSpace(password))
-                {
-                    users = users.Where(c => c.LOGINPASSWORD == password).ToList();
-                }
-                user = users.OrderBy(c => c.USERID).FirstOrDefault();
+                user = await _dbContext.Query<CF_USER>()
+                .Where(c => c.PHONE == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").FirstOrDefaultAsync();
+                user = (user != null && user.LOGINPASSWORD != password) ? null : user;
             }
-            loginName = loginName?.ToUpper();
             user ??= await _dbContext.Query<CF_USER>()
                     .Where(c => c.LOGINNAME == loginName && c.APPNAME == _options.UserAppName && c.FLAG == "1").FirstOrDefaultAsync();
             return user;
@@ -179,6 +137,8 @@ namespace Gksyb.Server.Services.Auth
         /// <summary>
         /// 修改密码
         /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public async Task<AjaxResult> ChangePasswordAsync(ChangePasswordRequest request)
         {
             if (request.OldPassword == request.NewPassword) return AjaxResult.Error("修改失败，密码不能与上次密码一样");
@@ -186,13 +146,7 @@ namespace Gksyb.Server.Services.Auth
             var user = await GetUserAsync(request.Username, request.OldPassword);
             if (user == null) return AjaxResult.Error("修改失败，请输入正确的账号密码");
             if (user.LOGINPASSWORD != request.OldPassword) return AjaxResult.Error("修改失败，请输入正确的账号密码");
-            return await ResetPasswordAsync(request, user, "修改");
-        }
-
-        /// <inheritdoc/>
-        public async Task<AjaxResult> ResetPasswordAsync(ChangePasswordRequest request, CF_USER user, string op = "重置")
-        {
-            var errorMsg = await CheckPassword(user.LOGINNAME, request.NewPassword);
+            var errorMsg = await CheckPassword(request.Username, request.NewPassword);
             if (!string.IsNullOrWhiteSpace(errorMsg)) return AjaxResult.Error(errorMsg);
             request.NewPassword = UserSession.Encrypt(request.NewPassword);
             var ticks = ((await _dbContext.GetSysdate()).Value - DateTime.UnixEpoch).TotalSeconds.CastTo<long>();
@@ -201,7 +155,7 @@ namespace Gksyb.Server.Services.Auth
                 SUPPLIERID = ticks,
                 LOGINPASSWORD = request.NewPassword
             });
-            await _dbContext.UserLogAsync($"密码{op}", $"{user.LOGINNAME}密码{op}", $"{user.LOGINNAME}{op}自己的密码");
+            await _dbContext.UserLogAsync("密码修改", "密码修改", "密码修改");
             return AjaxResult.Success();
         }
 
@@ -229,7 +183,7 @@ namespace Gksyb.Server.Services.Auth
                 var list = await _roleModuleService.GetMenuModule(roleName, appname);
                 menus.AddRange(list);
             }
-            if (userSession.ForbinMenus?.Count > 0)
+            if (userSession.ForbinMenus.Count > 0)
             {
                 menus.RemoveAll(c => userSession.ForbinMenus.Exists(m => c.MENUNO == m.MENUNO && c.APPNAME == m.APPNAME));
             }
@@ -258,7 +212,7 @@ namespace Gksyb.Server.Services.Auth
                 buttons.AddRange(list);
             }
             var key = $"{menuNo}__{appname}";
-            if (userSession.ForbinButtons?.ContainsKey(key) == true)
+            if (userSession.ForbinButtons.ContainsKey(key))
             {
                 buttons.RemoveAll(c => userSession.ForbinButtons[key].Exists(m => c.MENUNO == m.MENUNO && c.BTNNO == m.BTNNO && c.APPNAME == m.APPNAME));
             }
@@ -272,21 +226,9 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<string> GetPasswordAsync(string username)
         {
-            string password = null;
-            if (username.IsMobileNumber())//手机号支持
-            {
-                password = await _dbContext.Query<CF_USER>()
-                .Where(c => c.PHONE == username && c.APPNAME == _options.UserAppName && c.FLAG == "1")
-                .OrderByDesc(c => c.LASTLOGINTIME)
-                .Select(c => c.LOGINPASSWORD).FirstOrDefaultAsync();
-            }
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                password = await _dbContext.Query<CF_USER>()
+            return await _dbContext.Query<CF_USER>()
                 .Where(c => c.LOGINNAME == username && c.APPNAME == _options.UserAppName && c.FLAG == "1")
                 .Select(c => c.LOGINPASSWORD).FirstOrDefaultAsync();
-            }
-            return password;
         }
 
         /// <summary>
@@ -379,32 +321,9 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
-        /// 获取用户扩展数据
-        /// </summary>
-        private async Task<List<CF_USER_PORT>> GetUserPortsAsync(string userName, Expression<Func<CF_USER_PORT, bool>> predicate)
-        {
-            return await _dbContext.Query<CF_USER_PORT>().Where(c => c.LOGINNAME == userName && c.APPNAME == _options.UserAppName)
-                .WhereIfNotNull(predicate, predicate).ToListAsync();
-        }
-
-        /// <summary>
-        /// 获取用户扩展数据
-        /// </summary>
-        private static List<KeyValueItem> ToRoleCorps(List<CF_ROLE> roles, List<CF_USER_PORT> ports)
-        {
-            var roleCorps = ports.SelectMany(c =>
-            {
-                var name = roles.Where(a => a.ROLEID.Value.ToString() == c.CORPID).Select(a => a.ROLENAME).FirstOrDefault();
-                if (string.IsNullOrWhiteSpace(name)) return new List<KeyValueItem>();
-                var corps = (c.REMARK ?? "").Split(",").DistinctAndOrderBy().ToList();
-                return corps.Select(a => new KeyValueItem(name, a)).ToList();
-            }).ToList();
-            return roleCorps.Count < 1 ? null : roleCorps;
-        }
-
-        /// <summary>
         /// 获取用户禁止菜单
         /// </summary>
+        /// <returns></returns>
         private async Task<List<MenuModule>> GetForbidMenu(string userName)
         {
             var list = await _dbContext.Query<SYS_MENU>().Where(s => _dbContext.Query<CF_PRIVILEGE>().Where(c => c.PRIVILEGEMASTER == "CF_USER"
@@ -414,12 +333,13 @@ namespace Gksyb.Server.Services.Auth
                                                    && Sql.IsEqual(c.APPNAME, s.APPNAME)
                                                    && Sql.IsEqual(c.PRIVILEGEACCESSKEY, s.MENUNO)).Any())
                                                   .ToListAsync<MenuModule>();
-            return list.Count > 0 ? list : null;
+            return list;
         }
 
         /// <summary>
         /// 获取用户禁止按钮
         /// </summary>
+        /// <returns></returns>
         private async Task<SortedList<string, List<ButtonModule>>> GetForbidButtons(string userName)
         {
             var list = await _dbContext.Query<SYS_BUTTON>().Where(s => _dbContext.Query<CF_PRIVILEGE>().Where(c => c.PRIVILEGEMASTER == "CF_USER"
@@ -434,7 +354,7 @@ namespace Gksyb.Server.Services.Auth
             {
                 sortList.Add(list.Key, list.ToList() ?? new List<ButtonModule>());
             });
-            return sortList.Count > 0 ? sortList : null;
+            return sortList;
         }
     }
 }

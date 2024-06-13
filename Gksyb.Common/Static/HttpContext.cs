@@ -3,7 +3,6 @@ using Chloe.Reflection.Emit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -15,12 +14,12 @@ namespace Gksyb.Common.Static
     {
         static HttpContext()
         {
-            AddressList = new ReadOnlyCollection<string>(NetworkInterface.GetAllNetworkInterfaces()
+            AddressList = NetworkInterface.GetAllNetworkInterfaces()
                 .Where(c => c.NetworkInterfaceType == NetworkInterfaceType.Ethernet && c.OperationalStatus == OperationalStatus.Up
                 && !c.Description.ToLower().Contains("virtual") && !c.Description.ToLower().Contains("pseudo"))
                 .SelectMany(p => p.GetIPProperties().UnicastAddresses)
                 .Where(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))
-                .Select(c => c.Address.ToString()).Distinct().OrderBy(i => i).ToList());
+                .Select(c => c.Address.ToString()).Distinct().OrderBy(i => i).ToList();
         }
 
         private static IHttpContextAccessor _accessor;
@@ -56,7 +55,7 @@ namespace Gksyb.Common.Static
         /// <summary>
         /// 地址列表
         /// </summary>
-        public static ReadOnlyCollection<string> AddressList { get; private set; }
+        public static List<string> AddressList { get; private set; }
 
         /// <summary>
         /// 服务描述

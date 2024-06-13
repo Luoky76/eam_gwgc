@@ -53,11 +53,6 @@
         public string TicketVersion { get; set; }
 
         /// <summary>
-        /// 短信二次验证
-        /// </summary>
-        public bool SmsAuth { get; set; }
-
-        /// <summary>
         /// 密码超期时间，单位（天）
         /// </summary>
         public long? PasswordExpiresIn { private get; set; }

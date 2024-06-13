@@ -10,7 +10,7 @@ namespace Gksyb.Server.Services.Auth
     {
         protected readonly IDbContext _dbContext;
         protected readonly SysContextOptions _options;
-        protected string _opertype = "微信";
+        protected static readonly string _opertype = "微信";
 
         public WeixinBaseService(IDbContext dbContext, IOptions<SysContextOptions> sysContext)
         {

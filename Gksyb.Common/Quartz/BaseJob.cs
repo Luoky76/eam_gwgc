@@ -1,4 +1,4 @@
-ï»¿using Gksyb.Common;
+using Gksyb.Common;
 using Gksyb.Common.Quartz.Dtos;
 using Gksyb.Common.Static;
 using Microsoft.Extensions.Caching.Distributed;
@@ -17,7 +17,7 @@ namespace Quartz
         protected bool _isDistributedLock = false;
 
         /// <summary>
-        /// é”å®šè¶…æ—¶æ—¶é—´ å•ä½ç§’ é»˜è®¤ä¸¤åˆ†é’Ÿ
+        /// Ëø¶¨³¬Ê±Ê±¼ä µ¥Î»Ãë Ä¬ÈÏÁ½·ÖÖÓ
         /// </summary>
         protected double Expiry = 2 * 60;
 
@@ -40,38 +40,25 @@ namespace Quartz
                 _quartzTask.IsExcuted = false;
                 var key = _quartzTask.TaskID.ToString();
                 var isExcute = await distributedCache.GetStringAsync($"{key}{nameof(Expiry)}");
-                if (isExcute == "1")
-                {
-                    _logger.LogInformation(_logPath, $"ä¸Šæ¬¡ä»»åŠ¡æœªå®Œæˆï¼Œè·³è¿‡æœ¬æ¬¡è°ƒåº¦");
-                    return;
-                }
+                if (isExcute == "1") return;
                 _isDistributedLock = (_quartzTask.TaskIP ?? "").Split(",").DistinctAndOrderBy().Count() != 1;
-                if (_isDistributedLock)//ä¸æ˜¯å•IPï¼Œåˆ†å¸ƒå¼é”å¤„ç†
+                if (_isDistributedLock)//²»ÊÇµ¥IP£¬·Ö²¼Ê½Ëø´¦Àí
                 {
-                    var address = HttpContext.AddressList.ToStr(",").SubStr(0, 500, true); ;
+                    var address = HttpContext.AddressList.ToStr(",");
                     var value = await DistributedLockHelper.LockQueryAsync(key);
-                    if (!string.IsNullOrWhiteSpace(value) && value != address)
-                    {
-                        _logger.LogInformation(_logPath, $"ä»»åŠ¡å·²è¢«{value}é”å®š");
-                        return;//å·²è¢«å…¶ä»–æœåŠ¡å™¨é”å®š
-                    }
+                    if (!string.IsNullOrWhiteSpace(value) && value != address) return;//ÒÑ±»ÆäËû·şÎñÆ÷Ëø¶¨
                     var nextFireTimeUtc = context.NextFireTimeUtc ?? context.FireTimeUtc.AddSeconds(Expiry);
                     var expiry = (nextFireTimeUtc - context.FireTimeUtc).TotalSeconds * 3;
                     if (expiry < Expiry) expiry = Expiry;
                     expiry *= 1000;
-                    //é¦–æ¬¡è°ƒåº¦ï¼Œä¸ºäº†å»¶ç»­ä¹‹å‰IPï¼Œå…ˆé”å®šä¹‹å‰IP
+                    //Ê×´Îµ÷¶È£¬ÎªÁËÑÓĞøÖ®Ç°IP£¬ÏÈËø¶¨Ö®Ç°IP
                     var isChange = context.PreviousFireTimeUtc == null && !string.IsNullOrWhiteSpace(_quartzTask.LastRunIP) && _quartzTask.LastRunIP != address;
-                    var runIP = isChange ? _quartzTask.LastRunIP : address;
-                    if (!await DistributedLockHelper.LockExtendAsync(key, runIP, expiry) && !await DistributedLockHelper.LockTakeAsync(key, runIP, expiry))//åŠ å…¥é”
+                    address = isChange ? _quartzTask.LastRunIP : address;
+                    if (!await DistributedLockHelper.LockExtendAsync(key, address, expiry) && !await DistributedLockHelper.LockTakeAsync(key, address, expiry))//¼ÓÈëËø
                     {
-                        _logger.LogInformation(_logPath, $"é”å®šä»»åŠ¡{key}:{runIP}å¤±è´¥");
                         return;
                     }
-                    if (isChange)
-                    {
-                        _logger.LogInformation(_logPath, $"é¦–æ¬¡è°ƒåº¦è·³è¿‡ï¼Œå½“å‰{address}ï¼šå»¶ç»­{runIP}");
-                        return;
-                    }
+                    if (isChange) return;
                 }
                 taskKey = $"{key}{nameof(Expiry)}";
                 await distributedCache.SetStringAsync(taskKey, "1", new DistributedCacheEntryOptions()
@@ -105,13 +92,13 @@ namespace Quartz
         }
 
         /// <summary>
-        /// æ‰§è¡Œjob
+        /// Ö´ĞĞjob
         /// </summary>
         /// <returns></returns>
         public abstract Task Excute();
 
         /// <summary>
-        ///é”™è¯¯å¤„ç†
+        ///´íÎó´¦Àí
         /// </summary>
         /// <returns></returns>
         protected virtual async Task ErrorHandle(Exception ex)

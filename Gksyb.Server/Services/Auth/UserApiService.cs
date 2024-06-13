@@ -1,7 +1,6 @@
 ﻿using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.UI;
-using System.Linq.Expressions;
 
 namespace Gksyb.Server.Services.Auth
 {
@@ -51,20 +50,14 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
                .Where(c => ids.Contains(c.USERID))
-               .Select(UserInfoExtensions.SelectUserInfo);
+               .Select(c => new UserInfo()
+               {
+                   Id = c.USERID,
+                   Account = c.LOGINNAME,
+                   Name = c.REALNAME,
+                   WorkerCode = c.DEPARTCODE
+               });
             var users = await query.ToListAsync();
-            if (users.Count < 1) return users;
-            if (skipCorp) return users;
-            await HandleCorp(users);
-            return users;
-        }
-
-        /// <inheritdoc/>
-        public async Task<List<UserInfo>> FindUsersAsync(Expression<Func<UserInfo, bool>> filter = null, bool skipCorp = true)
-        {
-            var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options));
-            var users = await query.Select(UserInfoExtensions.SelectUserInfo)
-                .WhereIfNotNull(filter, filter).ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
             await HandleCorp(users);
@@ -77,7 +70,6 @@ namespace Gksyb.Server.Services.Auth
             var operators = (info.Operators ?? "").Split(UserInfo.DefaultSplit).DistinctAndOrderBy().ToList();
             var users = new List<UserInfo>();
             if (operators.Count < 1) return users;
-            _hasSuper = info.HasSuper;
             switch (info.Type)
             {
                 case "Station":
@@ -85,14 +77,6 @@ namespace Gksyb.Server.Services.Auth
                     foreach (var station in operators)
                     {
                         users.AddRange(await FindByStation(info.Corp, station));
-                    }
-                    break;
-
-                case "CoprStation":
-                    if (string.IsNullOrWhiteSpace(info.Corp)) return users;
-                    foreach (var station in operators)
-                    {
-                        users.AddRange(await FindByCorpStation(info.Corp, station));
                     }
                     break;
 
@@ -123,21 +107,18 @@ namespace Gksyb.Server.Services.Auth
             return users;
         }
 
-        /// <summary>
-        /// 查找上级公司指定岗位的人员
-        /// </summary>
-        public async Task<List<UserInfo>> FindByCorpStation(string CorpId, string station)
-        {
-            var parentId = await _dbContext.Query<CF_CORP>().Where(a => a.CORPID == CorpId).Select(a => a.CORPPARENTID).FirstOrDefaultAsync();
-            return await FindByStation(parentId, station);
-        }
-
         /// <inheritdoc/>
         public async Task<List<UserInfo>> FindByGroup(List<string> groups, bool skipCorp = true)
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
                 .Where(c => groups.Contains(c.STATION))
-                .Select(UserInfoExtensions.SelectUserInfo);
+                .Select(c => new UserInfo()
+                {
+                    Id = c.USERID,
+                    Account = c.LOGINNAME,
+                    Name = c.REALNAME,
+                    WorkerCode = c.DEPARTCODE
+                });
             var users = await query.ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
@@ -150,7 +131,13 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options))
                 .Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && roles.Contains(a.ROLEID) && a.APPNAME == _options.RoleAppName).Any())
-                .Select(UserInfoExtensions.SelectUserInfo);
+                .Select(c => new UserInfo()
+                {
+                    Id = c.USERID,
+                    Account = c.LOGINNAME,
+                    Name = c.REALNAME,
+                    WorkerCode = c.DEPARTCODE
+                });
             var users = await query.ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
@@ -173,7 +160,13 @@ namespace Gksyb.Server.Services.Auth
         {
             var query = _dbContext.Query<CF_USER>().Where(FilterSuper(_options));
             if (filter != null) query = filter(query);
-            var users = await query.Select(UserInfoExtensions.SelectUserInfo).ToListAsync();
+            var users = await query.Select(c => new UserInfo()
+            {
+                Id = c.USERID,
+                Account = c.LOGINNAME,
+                Name = c.REALNAME,
+                WorkerCode = c.DEPARTCODE
+            }).ToListAsync();
             if (users.Count < 1) return users;
             if (skipCorp) return users;
             await HandleCorp(users);

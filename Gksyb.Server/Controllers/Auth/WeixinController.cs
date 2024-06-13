@@ -6,10 +6,8 @@ using Gksyb.Server.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
-using System.Web;
 
 namespace Gksyb.Server.Controllers.Auth
 {
@@ -56,10 +54,8 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取微信授权地址
         /// </summary>
         /// <returns></returns>
-        public AjaxResult AuthorizeUrl([FromServices] IConfiguration config, [FromHeader] string redirectUrl)
+        public AjaxResult AuthorizeUrl([FromHeader] string redirectUrl)
         {
-            var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
-            if (!string.IsNullOrWhiteSpace(openid)) return AjaxResult.Success(HttpUtility.UrlDecode(redirectUrl), "成功");
             return AjaxResult.Success(WeixinHelper.GetAuthorizeUrl(redirectUrl), "成功");
         }
 
@@ -79,7 +75,6 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取JSSDK
         /// </summary>
         /// <returns></returns>
-        [GksybAuthorize(true)]
         public async Task<AjaxResult> JsSDK(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
@@ -102,9 +97,18 @@ namespace Gksyb.Server.Controllers.Auth
         /// <returns></returns>
         public async Task<AjaxResult> OAuth([FromServices] IConfiguration config, [FromHeader] string code)
         {
-            var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
-            var token = new OAuthAccessTokenResponse() { ErrCode = 0, Openid = openid };
-            if (string.IsNullOrWhiteSpace(openid))
+            OAuthAccessTokenResponse token;
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                var openid = config.GetValue($"{OptionName.Weixin}:Openid", defaultValue: "");
+                token = new OAuthAccessTokenResponse() { ErrCode = 0, Openid = openid };
+                if (string.IsNullOrWhiteSpace(openid))
+                {
+                    token.ErrCode = 1;
+                    token.ErrMsg = "请传递参数";
+                }
+            }
+            else
             {
                 token = await WeixinHelper.GetOauthAccessToken(code);
             }
@@ -123,11 +127,12 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取微信绑定状态
         /// </summary>
         /// <returns></returns>
-        [GksybAuthorize(true)]
-        public async Task<AjaxResult> BindingStaus([FromServices] UserSession user)
+        public async Task<AjaxResult> BindingStaus(string openid)
         {
-            if (string.IsNullOrWhiteSpace(user.Openid)) return AjaxResult.Error("无法获取微信号,请退出后重试");
-            var name = await _service.BindingStaus(user.Openid);
+            var user = await HttpContext.GetCurrentUserAsync();
+            if (user != null) openid = user.Openid;
+            if (string.IsNullOrWhiteSpace(openid)) return AjaxResult.Error("无法获取微信号,请退出后重试");
+            var name = await _service.BindingStaus(openid);
             return AjaxResult.Success(string.IsNullOrWhiteSpace(name) ? "0" : "1", name);
         }
 
@@ -135,25 +140,25 @@ namespace Gksyb.Server.Controllers.Auth
         /// 微信绑定
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> Bind([FromServices] IDistributedCache distributedCache, LoginRequest request)
+        public async Task<AjaxResult> Bind(LoginRequest request)
         {
             var user = await HttpContext.GetCurrentUserAsync();
             if (user != null) request.Verifycode = user.Openid;
             if (string.IsNullOrWhiteSpace(request.Verifycode)) return AjaxResult.Error("无法获取微信号,请退出后重试");
-            return await distributedCache.LimitRetry($"{request.Verifycode}_RC", "密码输错多次，请三分钟后重试", async () =>
-            {
-                return await _service.Bind(request);
-            });
+            var result = await _service.Bind(request);
+            return result;
         }
 
         /// <summary>
         /// 微信解绑
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> UnBind([FromServices] UserSession user)
+        public async Task<AjaxResult> UnBind(string openid)
         {
-            if (string.IsNullOrWhiteSpace(user.Openid)) return AjaxResult.Error("无法获取微信号,请退出后重试");
-            await _service.UnBind(user.Openid);
+            var user = await HttpContext.GetCurrentUserAsync();
+            if (user != null) openid = user.Openid;
+            if (string.IsNullOrWhiteSpace(openid)) return AjaxResult.Error("无法获取微信号,请退出后重试");
+            await _service.UnBind(openid);
             return AjaxResult.Success();
         }
     }

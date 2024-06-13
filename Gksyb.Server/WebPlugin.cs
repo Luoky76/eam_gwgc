@@ -46,7 +46,7 @@ namespace Gksyb.Server
             services.AddSingleton<IUserIdProvider, AuthUserIdProvider>();
 
             services.AddScoped(c => HttpContext.Current?.GetCurrentUserAsync().Result());
-            services.AddScoped(c => HttpContext.Current.GetCurrentUserOrDefault().MapTo<ScopeUser>());
+            services.AddScoped(c => HttpContext.Current?.GetCurrentUserOrDefault().MapTo<ScopeUser>());
 
             var assembly = Assembly.GetExecutingAssembly();
 

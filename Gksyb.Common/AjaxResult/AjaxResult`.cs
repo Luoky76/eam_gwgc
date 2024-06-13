@@ -8,32 +8,28 @@ namespace Gksyb.Common
     public class AjaxResult<T> : AjaxResult
     {
         [JsonProperty(Order = 40)]
-        public new T Data
-        {
-            get { return (T)base.Data; }
-            set { base.Data = value; }
-        }
+        public new T Data { get; set; }
 
-        public new static AjaxResult<T> Error(string message = default)
+        public static new AjaxResult<T> Error(string message = default)
         {
             return new AjaxResult<T>()
             {
                 IsError = true,
-                Message = message
+                Message = (message ?? "").Replace("ORA", "错误码")
             };
         }
 
-        public new static AjaxResult<T> Error(string message, object data)
+        public static new AjaxResult<T> Error(string message, object data)
         {
             return new AjaxResult<T>()
             {
                 IsError = true,
-                Message = message,
+                Message = (message ?? "").Replace("ORA", "错误码"),
                 Data = (T)data
             };
         }
 
-        public new static AjaxResult<T> Success(string message)
+        public static new AjaxResult<T> Success(string message)
         {
             return new AjaxResult<T>()
             {
@@ -42,7 +38,7 @@ namespace Gksyb.Common
             };
         }
 
-        public new static AjaxResult<T> Success(object data = default, string message = "成功")
+        public static new AjaxResult<T> Success(object data = default, string message = "成功")
         {
             return new AjaxResult<T>()
             {

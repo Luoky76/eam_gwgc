@@ -1,4 +1,9 @@
-﻿using SkiaSharp;
+﻿using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System.Reflection;
 using System.Text;
 
@@ -9,14 +14,18 @@ namespace Gksyb.Common
     /// </summary>
     public class VerifyCodeHelper
     {
-        private static readonly SKTypeface _font;
+        private static readonly List<FontFamily> _fontFamilies;
 
         static VerifyCodeHelper()
         {
+            _fontFamilies = new List<FontFamily>();
             var assembly = Assembly.GetExecutingAssembly();
-            var name = assembly.GetManifestResourceNames().Where(c => c.EndsWith("ttf", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-            using var stream = assembly.GetManifestResourceStream(name);
-            _font = SKTypeface.FromStream(stream);
+            var names = assembly.GetManifestResourceNames();
+            var collection = new FontCollection();
+            foreach (var name in names)
+            {
+                _fontFamilies.Add(collection.Add(assembly.GetManifestResourceStream(name)));
+            }
         }
 
         public static byte[] GetVerifyCode(out string code, ValidateCodeType codeType = ValidateCodeType.NumberAndLetter, int length = 4, int codeW = 80, int codeH = 30)
@@ -56,35 +65,36 @@ namespace Gksyb.Common
         /// <param name="code">验证码</param>
         /// <param name="codeType">验证码类型</param>
         /// <param name="length">验证码长度</param>
-        /// <param name="codeW">验证码宽度</param>
-        /// <param name="codeH">验证码高度</param>
+        /// <param name="codeW"></param>
+        /// <param name="codeH"></param>
         /// <returns></returns>
         private byte[] GetCode(out string code, ValidateCodeType codeType = ValidateCodeType.NumberAndLetter, int length = 4, int codeW = 80, int codeH = 30)
         {
-            float fontSize = (float)(codeH * 0.7), y = codeH - (1f / 3 * fontSize);
+            int fontSize = (int)(codeH * 0.8), y = (codeH - fontSize) / 2;
             var text = code = GetCode(length, codeType);
-            SKColor[] colors = { SKColors.Black, SKColors.Red, SKColors.Blue, SKColors.Green, SKColors.Orange, SKColors.Brown, SKColors.Brown, SKColors.DarkBlue };
+            Color[] color = { Color.Black, Color.Red, Color.Blue, Color.Green, Color.Orange, Color.Brown, Color.Brown, Color.DarkBlue };
 
-            using var surface = SKSurface.Create(new SKImageInfo(codeW, codeH, SKColorType.Rgba8888, SKAlphaType.Premul));
-            var canvas = surface.Canvas;
-            canvas.Clear(SKColors.White);
-
-            for (int i = 0; i < text.Length; i++)
+            //创建画布
+            var font = _fontFamilies[random.Next(_fontFamilies.Count)].CreateFont(fontSize, FontStyle.Bold);
+            using var img = new Image<Rgba32>(codeW, codeH, Color.White);
+            img.Mutate(ctx =>
             {
-                var paint = new SKPaint
+                for (int i = 0; i < text.Length; i++)
                 {
-                    Color = colors[random.Next(colors.Length)],
-                    Typeface = _font,
-                    TextSize = fontSize,
-                    IsAntialias = true,
-                    Style = SKPaintStyle.Fill
-                };
-                canvas.DrawText(text[i].ToString(), i * (fontSize * 4f / 5), y, paint);
+                    ctx.DrawLine(new SolidPen(color[random.Next(color.Length)], 1), new Point(random.Next(codeW), random.Next(codeH)), new Point(random.Next(codeW), random.Next(codeH)));
+                    ctx.DrawText(text[i].ToString(), font, color[random.Next(color.Length)], new Point(i * 18, y));
+                }
+            });
+            using var ms = new MemoryStream();
+            try
+            {
+                img.SaveAsPng(ms, new PngEncoder());
+                return ms.ToArray();
             }
-
-            using var image = surface.Snapshot();
-            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-            return data.ToArray();
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private string GetRandomNums(int length)

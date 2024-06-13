@@ -11,7 +11,7 @@ namespace Gksyb.Common
         /// </summary>
         public static object GetService(this IServiceProvider source, string serviceType)
         {
-            return source.GetService(c => c.ServiceType.FullName == serviceType);
+            return source.GetService(c => c.ServiceType.Name == serviceType);
         }
 
         /// <summary>
@@ -19,12 +19,10 @@ namespace Gksyb.Common
         /// </summary>
         public static object GetService(this IServiceProvider source, Func<ServiceDescriptor, bool> func)
         {
-            var collection = HttpContext.ServiceCollection;
-            var descriptor = collection.Where(a => func(a)).LastOrDefault();
-            if (descriptor == null) return null;
-            var services = source.GetServices(descriptor.ServiceType).ToList();
-            if (services.Count == 1) return services[0];
-            return services.FirstOrDefault(c => c.GetType() == descriptor.ImplementationType);
+            var services = HttpContext.ServiceCollection;
+            var type = services.Where(a => func(a)).Select(c => c.ServiceType).LastOrDefault();
+            if (type == null) return null;
+            return source.GetService(type);
         }
 
         /// <summary>

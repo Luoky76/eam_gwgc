@@ -285,14 +285,19 @@ namespace Gksyb.Common
         /// <summary>
         /// 获取字节数组的MD5哈希值
         /// </summary>
-        public static byte[] GetMd5(byte[] bytes) => MD5.HashData(bytes);
+        public static byte[] GetMd5(byte[] bytes)
+        {
+            using var hash = MD5.Create();
+            return hash.ComputeHash(bytes);
+        }
 
         /// <summary>
         /// 获取字符串的SHA1哈希值，默认编码为<see cref="Encoding.UTF8"/>
         /// </summary>
         public static string GetSha1(string value, Encoding encoding = null)
         {
-            return Convert.ToHexString(SHA1.HashData((encoding ?? Encoding.UTF8).GetBytes(value)));
+            using var hash = SHA1.Create();
+            return Convert.ToHexString(hash.ComputeHash((encoding ?? Encoding.UTF8).GetBytes(value)));
         }
 
         /// <summary>
@@ -300,7 +305,8 @@ namespace Gksyb.Common
         /// </summary>
         public static string GetSha256(string value, Encoding encoding = null)
         {
-            return Convert.ToHexString(SHA256.HashData((encoding ?? Encoding.UTF8).GetBytes(value)));
+            using var hash = SHA256.Create();
+            return Convert.ToHexString(hash.ComputeHash((encoding ?? Encoding.UTF8).GetBytes(value)));
         }
 
         /// <summary>
@@ -308,7 +314,8 @@ namespace Gksyb.Common
         /// </summary>
         public static string GetSha512(string value, Encoding encoding = null)
         {
-            return Convert.ToHexString(SHA512.HashData((encoding ?? Encoding.UTF8).GetBytes(value)));
+            using var hash = SHA512.Create();
+            return Convert.ToHexString(hash.ComputeHash((encoding ?? Encoding.UTF8).GetBytes(value)));
         }
 
         /// <summary>

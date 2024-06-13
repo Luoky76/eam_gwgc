@@ -1,5 +1,7 @@
 ﻿using Gksyb.Common;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Builder
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 var request = ctx.Context.Request;
                 var response = ctx.Context.Response;
-                if (!request.IsInnerRequest(HttpResponseExtensions.Domain))//防盗链
+                if (!request.IsInnerRequest(Domin))//防盗链
                 {
                     response.ClearWithStatusCode();
                     return;
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
                 if (noHtml && response.ContentType != "text/javascript") return;
                 var cache = request.QueryString.HasValue ? request.QueryString.Value.GetParm("cache") : "";
                 if (cache == "1") return;
-                if (cache != "0" && noHtml && ((response.ContentLength ?? long.MaxValue) > _cacheSize || (request.Path.StartsWithSegments("/lib") && !request.Path.Value.EndsWith("boot.js")))) return;
+                if (cache != "0" && noHtml && ((response.ContentLength ?? long.MaxValue) > _cacheSize || request.Path.StartsWithSegments("/lib"))) return;
                 response.Headers[HeaderNames.CacheControl] = _cacheControl;
             };
             return app.UseStaticFiles(options);
@@ -38,11 +40,27 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// 不缓存
         /// </summary>
-        private const string _cacheControl = "no-cache, no-store, must-revalidate, max-age=0";
+        private static readonly string _cacheControl = "no-cache, no-store, must-revalidate, max-age=0";
 
         /// <summary>
         /// 最小不缓存大小
         /// </summary>
-        private const long _cacheSize = 100 * 1024;
+        private static readonly long _cacheSize = 100 * 1024;
+
+        private static string _domin = null;
+
+        /// <summary>
+        /// 安全域名
+        /// </summary>
+        private static string Domin
+        {
+            get
+            {
+                if (_domin != null) return _domin;
+                var configuration = Gksyb.Common.Static.HttpContext.RequestServices.GetService<IConfiguration>();
+                _domin = configuration.GetValue<string>("Security:Domin");
+                return _domin;
+            }
+        }
     }
 }

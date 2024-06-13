@@ -1,5 +1,4 @@
-﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Server.Services.System;
@@ -30,13 +29,13 @@ namespace Gksyb.Server.Controllers.System
         /// <returns></returns>
         public AjaxResult NextFireTime(string cron)
         {
-            var nextTime = TaskService.GetNextFireTimeUtc(cron);
+            var nextTime = _service.GetNextFireTimeUtc(cron);
             if (!nextTime.HasValue) return AjaxResult.Success("", "成功");
             var build = new StringBuilder();
             build.Append($"[{nextTime.Value.ToLocalTime().DateTime:yyyy-MM-dd HH:mm:ss}]");
             for (var i = 0; i < 2; i++)
             {
-                nextTime = TaskService.GetNextFireTimeUtc(cron, nextTime);
+                nextTime = _service.GetNextFireTimeUtc(cron, nextTime);
                 build.Append("  ");
                 build.Append($"[{nextTime.Value.ToLocalTime().DateTime:yyyy-MM-dd HH:mm:ss}]");
             }
@@ -85,4 +84,3 @@ namespace Gksyb.Server.Controllers.System
         }
     }
 }
-#pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

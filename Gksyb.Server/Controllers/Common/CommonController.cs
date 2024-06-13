@@ -3,6 +3,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Common;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
+using Gksyb.Server.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -69,7 +70,7 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous]
         public async Task<AjaxResult> QueryConfigAsync([Required] string viewName)
         {
-            viewName = await HttpContext.ValidViewAsync(viewName);
+            await HttpContext.ValidViewAsync(viewName);
             return await _commonService.QueryConfigAsync(viewName);
         }
 
@@ -82,29 +83,16 @@ namespace Gksyb.Server.Controllers.Auth
         public async Task<AjaxResult> QueryAsync(GridRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.View)) return AjaxResult.Error("视图名称不能为空");
-            request.View = await HttpContext.ValidViewAsync(request.View);
+            await HttpContext.ValidViewAsync(request.View);
             return AjaxResult.Success(await _commonService.QueryAsync(request), "");
         }
 
-        /// <summary>
-        /// 缓存
-        /// </summary>
-        [HeadAuthorize]
-        [AllowAnonymous]
-        public async Task<AjaxResult> StoreAsync(string json)
+        public async Task<List<string>> GetDeptList(string dept)
         {
-            var key = await _commonService.StoreAsync(json);
-            return AjaxResult.Success(key, default);
+            var result = await _commonService.GetDeptList(dept);
+            return result;
         }
 
-        /// <summary>
-        /// 获取缓存
-        /// </summary>
-        [JsToken]
-        public async Task<AjaxResult> GetStoreAsync([FromHeader] string key)
-        {
-            return AjaxResult.Success(await _commonService.GetStoreAsync<string>(key), key);
-        }
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问
