@@ -16,5 +16,10 @@
         /// 操作人
         /// </summary>
         public string Operators { get; set; }
+
+        /// <summary>
+        /// 包含超管
+        /// </summary>
+        public bool HasSuper { get; set; }
     }
 }

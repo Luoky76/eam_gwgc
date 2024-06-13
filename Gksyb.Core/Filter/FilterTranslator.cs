@@ -111,7 +111,8 @@ namespace Gksyb.Core.Filter
             }
             if (op == "in" || op == "notin")
             {
-                var values = rule.Value.ToString().Split(',');
+                var split = string.IsNullOrWhiteSpace(rule.Split) ? "," : rule.Split;
+                var values = rule.Value.ToString().Split(split);
                 var appended = false;
                 bulider.Append('(');
                 foreach (var value in values)
@@ -174,9 +175,16 @@ namespace Gksyb.Core.Filter
             return bulider.ToString();
         }
 
-        protected string CreateFilterParam(object value, string type, string pname)
+        protected string CreateFilterParam(object value, string type, string paramName)
         {
-            string paramName = string.IsNullOrEmpty(pname) ? (paramPrefix + (paramCounter++)) : pname;
+            if (string.IsNullOrWhiteSpace(paramName))
+            {
+                paramName = $"{paramPrefix}{paramCounter++}";
+            }
+            else
+            {
+                if (Parms.Any(c => c.Name == paramName)) return paramName;
+            }
             type = (type ?? "").ToLower();
             DbParam param;
             switch (type)
@@ -208,7 +216,7 @@ namespace Gksyb.Core.Filter
                     break;
 
                 default:
-                    param = new DbParam(paramName, value);
+                    param = value == null ? new DbParam(paramName, value, typeof(string)) : new DbParam(paramName, value);
                     break;
             }
             Parms.Add(param);

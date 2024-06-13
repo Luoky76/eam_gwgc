@@ -49,7 +49,7 @@ namespace Gksyb.Core.Auth
             }
 
             //验证属性
-            async Task<bool> ValidAsync(object[] attributes)
+            async Task<bool> ValidAsync(object[] attributes, bool skipGksyb = false)
             {
                 foreach (var attribute in attributes)
                 {
@@ -62,6 +62,7 @@ namespace Gksyb.Core.Auth
                     if (authorizeAttribute is GksybAuthorizeAttribute gksybAuthorizeAttribute)
                     {
                         isAuth = true;
+                        if (skipGksyb) continue;
                         if (string.IsNullOrWhiteSpace(gksybAuthorizeAttribute.MenuNo)) gksybAuthorizeAttribute.MenuNo = validMenuNo;
                     }
                     if (!await authorizeAttribute.ValidAsync(httpContext)) return false;
@@ -76,7 +77,7 @@ namespace Gksyb.Core.Auth
             if (methodAttributes.Any(c => c is AllowAnonymousAttribute)) return true;
 
             //验证类型属性
-            isValid = await ValidAsync(typeAttributes);
+            isValid = await ValidAsync(typeAttributes, isAuth);//方法存在GksybAuthorizeAttribute则不验证类型的
             if (!isValid) return false;
             if (typeAttributes.Any(c => c is AllowAnonymousAttribute)) return true;
 

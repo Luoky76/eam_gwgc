@@ -5,10 +5,5 @@
     /// </summary>
     public partial class UserSession
     {
-
-        /// <summary>
-        /// Token
-        /// </summary>
-        public string Phone { get; set; }
     }
 }

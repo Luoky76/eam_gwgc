@@ -53,7 +53,7 @@ namespace Gksyb.Core.Auth
         {
             var user = source?.GetCurrentUserAsync().Result();
             if (user != null) return user;
-            var ip = source == null ? Gksyb.Common.Static.HttpContext.AddressList.ToStr(",") : source.Request?.GetRealIP();
+            var ip = source == null ? Gksyb.Common.Static.HttpContext.AddressList.FirstOrDefault() : source.Request?.GetRealIP();
             return new UserSession()
             {
                 RealName = ip,
@@ -65,18 +65,24 @@ namespace Gksyb.Core.Auth
         /// 验证视图
         /// </summary>
         /// <returns></returns>
-        public static async Task<bool> ValidViewAsync(this HttpContext source, string view, bool throwEx = true)
+        public static async Task<string> ValidViewAsync(this HttpContext source, string view, bool throwEx = true)
         {
             view ??= "";
-            if (view.EndsWith("Public")) return true;
+            if (view.EndsWith("Public")) return view;
             var isBaseAuth = false;
             if (view.EndsWith("Common")) isBaseAuth = true;
             var request = source?.Request;
-            if (request == null) return true;
+            if (request == null) return view;
             var menuNo = request.GetRealUrl().GetParm("MenuNo");
             var referer = request.Headers[HeaderNames.Referer].ToString();
             if (menuNo.IsNullOrWhiteSpace()) menuNo = referer.GetParm("MenuNo");
             if (menuNo.IsNullOrWhiteSpace() || !view.StartsWith(menuNo)) menuNo = view;
+            if ((menuNo ?? "").EndsWith("@"))
+            {
+                menuNo = menuNo.TrimEnd('@');
+                var user = await source.GetCurrentUserAsync();
+                if (user?.IsSuper == true) return menuNo;
+            }
             bool isValid = await new GksybAuthorizeAttribute()
             {
                 MenuNo = menuNo,
@@ -84,7 +90,7 @@ namespace Gksyb.Core.Auth
                 Mode = GksybAuthorizeMode.StartsWith
             }.ValidAsync(source);
             if (!isValid && throwEx) throw new MessageException($"用户无权操作视图{menuNo}");
-            return isValid;
+            return view;
         }
     }
 }

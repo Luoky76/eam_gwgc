@@ -31,6 +31,16 @@
         public string RealName { get; set; }
 
         /// <summary>
+        /// 组织Id
+        /// </summary>
+        public string CorpId { get; set; }
+
+        /// <summary>
+        /// 组织名称
+        /// </summary>
+        public string CorpName { get; set; }
+
+        /// <summary>
         /// 是否管理员
         /// </summary>
         public bool IsAdmin { get; set; }

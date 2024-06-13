@@ -11,13 +11,18 @@ namespace Gksyb.Core.Interfaces.Auth
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true);
+        Task<AjaxResult> LoginAsync(LoginRequest request, Action<UserSession> action = null, bool checkPassword = true, Func<LoginResponse, Task<AjaxResult>> handle = null);
+
+        /// <summary>
+        /// 设置用户的常用设备码（设备码变化，触发短信验证）
+        /// </summary>
+        Task SetUserImeiAsync(string account, string imei);
 
         /// <summary>
         /// 获取用户对象
         /// </summary>
         /// <returns></returns>
-        Task<CF_USER> GetUserAsync(string loginName, string password);
+        Task<CF_USER> GetUserAsync(string loginName, string password = null);
 
         /// <summary>
         /// 修改密码
@@ -25,6 +30,11 @@ namespace Gksyb.Core.Interfaces.Auth
         /// <param name="request"></param>
         /// <returns></returns>
         Task<AjaxResult> ChangePasswordAsync(ChangePasswordRequest request);
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        Task<AjaxResult> ResetPasswordAsync(ChangePasswordRequest request, CF_USER user, string op = "重置");
 
         /// <summary>
         /// 获取菜单

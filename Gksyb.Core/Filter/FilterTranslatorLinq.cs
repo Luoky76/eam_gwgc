@@ -1,6 +1,5 @@
 ﻿using Chloe.Descriptors;
 using Gksyb.Model.Filter;
-using OfficeOpenXml.FormulaParsing.Utilities;
 using System.Collections;
 
 namespace Gksyb.Core.Filter
@@ -69,7 +68,8 @@ namespace Gksyb.Core.Filter
 
             if (op == "in" || op == "notin")
             {
-                var values = rule.Value.ToString().Split(',');
+                var split = string.IsNullOrWhiteSpace(rule.Split) ? "," : rule.Split;
+                var values = rule.Value.ToString().Split(split);
                 var appended = false;
                 bulider.Append('(');
                 foreach (var value in values)
@@ -137,7 +137,7 @@ namespace Gksyb.Core.Filter
             {
                 type = property.PropertyType.GetUnNullableType().Name;
             }
-            return CreateFilterParam(value, type, rule.ParamName);
+            return CreateFilterParam(value, type, string.Empty);
         }
 
         /// <summary>

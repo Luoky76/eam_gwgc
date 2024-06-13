@@ -6,6 +6,11 @@
     public class MessageInfoBase
     {
         /// <summary>
+        /// 消息主键
+        /// </summary>
+        public long Id { get; set; }
+
+        /// <summary>
         /// 标题
         /// </summary>
         public string Title { get; set; }
@@ -134,5 +139,17 @@
         /// 应用名
         /// </summary>
         public string Appname { get; set; }
+    }
+
+    /// <summary>
+    /// 消息
+    /// </summary>
+    public class MessageInfo<T> : MessageInfo
+    {
+        public new T Data
+        {
+            get { return (T)base.Data; }
+            set { base.Data = value; }
+        }
     }
 }
