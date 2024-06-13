@@ -34,22 +34,27 @@
                 me.detailWidth = window.innerWidth * 0.9;
                 me.detailHeight = window.innerHeight * 0.9;
             },
-            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             typeData: [],
             exigData: [],
             cgfsData: [],
+            Auditing: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.Auditing } },
                             { display: "申请单号", name: "_search_APPLY_NO", dbname: "APPLY_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
+                            {
+                                display: "已提交", name: "AUDITING", width: 100, type: "select", editor: {
+                                    type: "select",
+                                    data: me.Auditing
+                                }
+                            },
                             { display: "申请单号", name: "APPLY_NO", width: 180, type: "text" },
                             {
                                 display: "采购分类", name: "TYPE_ID", minWidth: 150, type: "select", validate: { required: true },
@@ -98,6 +103,7 @@
                         me.typeData = data.BasePurtype
                         me.exigData = data.BCCode;
                         me.cgfsData = data.CGFS;
+                        me.Auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);

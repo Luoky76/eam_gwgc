@@ -96,8 +96,9 @@ namespace EAM.Material.Services
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode", "exig_dev" },
-                    { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)null},
-                    { "SpUnit", (Expression<Func<SP_UNIT, bool>>)null},
+                    { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)(x => true)},
+                    { "SpUnit", (Expression<Func<SP_UNIT, bool>>)(x => true)},
+                    { "Auditing", null }
                 });
                 var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
