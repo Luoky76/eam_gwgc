@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using EAM.Material.DTO;
+﻿using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;

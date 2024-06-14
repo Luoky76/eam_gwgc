@@ -145,7 +145,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetPmPepListAsync(GridRequest request, string exeId, string doneitemId)
         {
-            return AjaxResult.Success(await _service.GetPmPepList(request,exeId,doneitemId), "成功");
+            return AjaxResult.Success(await _service.GetPmPepList(request, exeId, doneitemId), "成功");
         }
 
         /// <summary>

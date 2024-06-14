@@ -1,22 +1,22 @@
-﻿using Gksyb.Core.Interfaces.Material;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
+using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
-using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace EAM.Material.Services
 {
@@ -375,7 +375,8 @@ namespace EAM.Material.Services
                         var apply = _dbContext.Query<SP_APPLY>()
                             .LeftJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
                             .Where((a, b) => b.SPDET_ID == det.REQUEST_DET_ID)
-                            .Select((a, b) => new {
+                            .Select((a, b) => new
+                            {
                                 a.APPLY_NO,
                                 a.USE_MEMO
                             })
@@ -887,7 +888,8 @@ namespace EAM.Material.Services
             JObject job = JObject.Parse(result);
             if (job["success"] != null && job["success"].ToString().ToLower() == "true")
             {
-                await _dbContext.UseTransactionAsync(async () => {
+                await _dbContext.UseTransactionAsync(async () =>
+                {
                     //成功后将记录状态改为审批中，保存OA编号和Excel附件的网络地址
                     _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
                     {

@@ -1,9 +1,6 @@
 ﻿using Chloe;
-using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -120,7 +117,7 @@ namespace EAM.Special.Services
                     a.FAILURE_TIME,
                     a.FAILURE_DESCRIBE,
                     a.APPLY_MEMO,
-                    
+
                     b.ASSET_NAME,
                     b.ASSET_CODE,
                     b.ASSETNO,
@@ -227,7 +224,7 @@ namespace EAM.Special.Services
                     b.PRODUCE,
                     b.SERIAL_NUM,
                     b.INSTALL_SITE,
-                    
+
                     a.IS_UNDER_WARRANTY,
                     a.PROVIDER,
                     a.PROVIDER_TEL,
@@ -312,7 +309,8 @@ namespace EAM.Special.Services
             var query = await _dbContext.Query<ASSET_REPORT>()
                 .Where(c => c.REPORT_ID == id)
                 .LeftJoin<ASSET_CARD>((a, b) => a.ASSET_ID == b.ASSET_ID)
-                .Select((a, b) => new ASSET_REPORT_AND_CARD {
+                .Select((a, b) => new ASSET_REPORT_AND_CARD
+                {
                     REPORT_ID = a.REPORT_ID,
                     AUDITING_APPLY = a.AUDITING_APPLY,
                     AUDITING_CHECK = a.AUDITING_CHECK,

@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using EAM.Device.Interfaces;
+﻿using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -147,7 +146,7 @@ namespace EAM.Device.Controller
         [HttpPost]
         public async Task<AjaxResult<GridData>> DeviceListAllAsync(GridRequest request)
         {
-            var result =  await _service.DeviceListAllAsync(request);
+            var result = await _service.DeviceListAllAsync(request);
             return AjaxResult<GridData>.Success(result);
         }
         #endregion

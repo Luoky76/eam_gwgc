@@ -7,7 +7,7 @@ namespace EAM.Device.Interfaces
     public interface IDeviceCardService : IService
     {
         #region 设备卡片
-        
+
         /// <summary>
         /// 获取列表
         /// </summary>

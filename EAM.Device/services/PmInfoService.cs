@@ -83,7 +83,7 @@ namespace EAM.Device.services
             //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<PM_PLAN_EXE>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
-                .Where(c => c.PM_TYPE=="20")
+                .Where(c => c.PM_TYPE == "20")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
@@ -357,7 +357,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> ImportSpList(GridRequest request)
         {
-            return await _dbContext.Query<SP_STORE>(c => c.NUM>0)
+            return await _dbContext.Query<SP_STORE>(c => c.NUM > 0)
                 .GetGridData(request);
         }
         /// <summary>
@@ -366,7 +366,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetPmPepList(GridRequest request, string exeId, string doneitemId)
         {
-            return await _dbContext.Query<PM_PLAN_LABOR>(c => c.EXE_ID.Equals(exeId)&&c.DONEITEM_ID.Equals(doneitemId))
+            return await _dbContext.Query<PM_PLAN_LABOR>(c => c.EXE_ID.Equals(exeId) && c.DONEITEM_ID.Equals(doneitemId))
                 .GetGridData(request);
         }
 
@@ -379,7 +379,7 @@ namespace EAM.Device.services
             var query = _dbContext.Query<PM_PLAN_SP>(c => c.EXE_ID.Equals(exeId));
             if (!string.IsNullOrEmpty(doneitemId))
             {
-                query = query.Where(c=> c.DONEITEM_ID.Equals(doneitemId));
+                query = query.Where(c => c.DONEITEM_ID.Equals(doneitemId));
             }
             return await query.GetGridData(request);
         }
@@ -511,7 +511,7 @@ namespace EAM.Device.services
                     throw new MessageException("是否有遗留问题没选！");
                 }
                 var qrydet = _dbContext.Query<PM_PLAN_DONEITEM>()
-                 .Where(c => c.EXE_ID == query.EXE_ID && (c.CHECK_USER == null || c.EXECUTE_USER == null|| c.COMPLETE == null))
+                 .Where(c => c.EXE_ID == query.EXE_ID && (c.CHECK_USER == null || c.EXECUTE_USER == null || c.COMPLETE == null))
                  .Select(c =>
                  new
                  {

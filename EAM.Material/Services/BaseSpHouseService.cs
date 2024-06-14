@@ -1,6 +1,4 @@
-﻿using Chloe;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -8,7 +6,6 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services

@@ -1,17 +1,17 @@
-﻿using Gksyb.Core.Auth;
-using Gksyb.Core.Application;
+﻿using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.Material;
+using Gksyb.Core.Interfaces.Repair;
+using Gksyb.Model;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Options;
-using Gksyb.Model;
-using Gksyb.Core.Interfaces.Material;
-using Gksyb.Core.Interfaces.Repair;
 
 namespace EAM.Third.Services
 {
-    public class OAService: BaseService
+    public class OAService : BaseService
     {
         private IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -21,7 +21,7 @@ namespace EAM.Third.Services
         private readonly ISpCollectService _spCollectService;
         private readonly IRepairPlanService _repairPlanService;
 
-        public OAService(IDbContext dbContext,UserSession userSession, IMessageCenterService messageCenterService, IOptions<SysContextOptions> sysContext,
+        public OAService(IDbContext dbContext, UserSession userSession, IMessageCenterService messageCenterService, IOptions<SysContextOptions> sysContext,
             ISpCollectService spCollectsService, IRepairPlanService repairPlanService)
         {
             _dbContext = dbContext;

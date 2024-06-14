@@ -1,7 +1,5 @@
 ﻿using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
-using Magicodes.ExporterAndImporter.Pdf;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace EAM.Device.services.Dto

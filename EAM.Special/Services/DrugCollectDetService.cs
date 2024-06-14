@@ -1,8 +1,6 @@
 ﻿using Chloe;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -80,7 +78,8 @@ namespace EAM.Special.Services
             var requestQuery = _dbContext.Query<DRUG_REQUEST>()
                 .Where(a => a.AUDITING == "1")
                 .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                .Select((a, b) => new {
+                .Select((a, b) => new
+                {
                     b.SP_ID,
                     b.SP_NAME,
                     b.SP_CODE,

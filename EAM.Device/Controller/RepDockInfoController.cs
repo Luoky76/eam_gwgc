@@ -167,7 +167,7 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(await _service.SubmitRepDockExe(sids), "成功");
         }
-        
+
         /// <summary>
         /// 反提交维修实施
         /// </summary>
@@ -236,7 +236,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetRepDockConfirmDetailAsync(string ID)
         {
-            if (ID==null) return AjaxResult.Error("参数错误");
+            if (ID == null) return AjaxResult.Error("参数错误");
             return AjaxResult.Success(await _service.GetRepDockConfirmDetail(ID), "成功");
         }
 

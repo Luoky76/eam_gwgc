@@ -1,15 +1,9 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
-using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
@@ -71,27 +65,27 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> Save(SaveRequest<SP_ORDER_STOP> request)
         {
-             await _dbContext.SaveEntityAnsyc(request,
-                c => new
-                {
+            await _dbContext.SaveEntityAnsyc(request,
+               c => new
+               {
 
-                    c.AUDITING,
-                    c.STOP_CODE,
-                    c.USER_ID,
-                    c.USER_NAME,
-                    c.DEPT_ID,
-                    c.DEPT_NAME,
-                    c.SEC_DEPTID,
-                    c.SEC_DEPT,
-                    c.EDIT_DATE,
-                    c.MEMO,
-                    c.STOP_ID,
-                    c.CREATE_USERID,
-                    c.CREATEDATE,
-                    c.MODIFY_USERID,
-                    c.MODIFYDATE
-                },
-                c => a => a.STOP_ID == c.STOP_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+                   c.AUDITING,
+                   c.STOP_CODE,
+                   c.USER_ID,
+                   c.USER_NAME,
+                   c.DEPT_ID,
+                   c.DEPT_NAME,
+                   c.SEC_DEPTID,
+                   c.SEC_DEPT,
+                   c.EDIT_DATE,
+                   c.MEMO,
+                   c.STOP_ID,
+                   c.CREATE_USERID,
+                   c.CREATEDATE,
+                   c.MODIFY_USERID,
+                   c.MODIFYDATE
+               },
+               c => a => a.STOP_ID == c.STOP_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
             var id = "";
             if (request.Added?.Count > 0)
                 id = request.Added[0].STOP_ID;
@@ -189,7 +183,7 @@ namespace EAM.Material.Services
 
                     if (count == detcount)
                     {
-                        await _dbContext.UpdateAsync<SP_ORDER>(x =>x.ORDER_ID == id,
+                        await _dbContext.UpdateAsync<SP_ORDER>(x => x.ORDER_ID == id,
                         x => new SP_ORDER
                         {
                             IS_STOP = "1"
@@ -229,7 +223,7 @@ namespace EAM.Material.Services
                 var orderDet = _dbContext.Query<SP_ORDER_DETAIL>().Where(x => detIds.Contains(x.ORDERDET_ID)).ToList();
                 foreach (var item in orderDet)
                 {
-                    await _dbContext.UpdateAsync<SP_ORDER_DETAIL>(x =>x.ORDERDET_ID == item.ORDERDET_ID,
+                    await _dbContext.UpdateAsync<SP_ORDER_DETAIL>(x => x.ORDERDET_ID == item.ORDERDET_ID,
                        x => new SP_ORDER_DETAIL
                        {
                            IS_STOP = "0",
@@ -274,8 +268,8 @@ namespace EAM.Material.Services
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_STOP_DET>()
-                .LeftJoin<SP_ORDER_DETAIL>((a,b)=>a.ORDERDET_ID == b.ORDERDET_ID)
-                 .LeftJoin<SP_ORDER>((a, b,c) => a.ORDER_ID == c.ORDER_ID)
+                .LeftJoin<SP_ORDER_DETAIL>((a, b) => a.ORDERDET_ID == b.ORDERDET_ID)
+                 .LeftJoin<SP_ORDER>((a, b, c) => a.ORDER_ID == c.ORDER_ID)
                  .Select((a, b, c) => new SpOrderStopDetRes
                  {
                      ORDER_CODE = c.ORDER_CODE,

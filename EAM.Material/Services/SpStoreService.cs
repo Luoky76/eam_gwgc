@@ -287,7 +287,7 @@ namespace EAM.Material.Services
                     SP_CODE = a.SP_CODE,
                     SP_NAME = a.SP_NAME,
                     STOCK_ID = a.STOCK_ID ?? "",
-                    STOCK_NAME = a.STOCK_NAME ,
+                    STOCK_NAME = a.STOCK_NAME,
                     LIMIT_ID = a.LIMIT_ID,
                     STORE_LOWER = a.STORE_LOWER,
                     STORE_TOP = a.STORE_TOP
@@ -300,7 +300,8 @@ namespace EAM.Material.Services
                 if (string.IsNullOrEmpty(item.STOCK_ID))
                 {
                     query = query.Where(t => string.IsNullOrEmpty(item.STOCK_ID));
-                } else
+                }
+                else
                 {
                     query = query.Where(t => t.STOCK_ID == item.STOCK_ID);
                 }
@@ -327,7 +328,7 @@ namespace EAM.Material.Services
             }
             return res;
         }
-     
+
         /// <summary>
         /// 仓库库存预警
         /// </summary>
@@ -340,7 +341,7 @@ namespace EAM.Material.Services
                 .Select(t => new
                 {
                     t.SP_ID,
-                    STOCK_ID = t.STOCK_ID??"",
+                    STOCK_ID = t.STOCK_ID ?? "",
                     t.SP_SIZE,
                     t.UNIT,
                     t.PRODUCE,
@@ -419,7 +420,7 @@ namespace EAM.Material.Services
         /// <param name="TOP">上限</param>
         /// <param name="LOWER">下限</param>
         /// <returns></returns>
-        public async Task<int> SetTopLower(string LIMITID,int? TOP,int? LOWER)
+        public async Task<int> SetTopLower(string LIMITID, int? TOP, int? LOWER)
         {
             DateTime? dt = await _dbContext.GetSysdate();
             var updatedevice = await _dbContext.UpdateAsync<SP_LIMIT>(x => x.LIMIT_ID == LIMITID,
@@ -502,7 +503,7 @@ namespace EAM.Material.Services
                 .GetGridData(request);
         }
 
-        public class StoreInOutReq: SP_STORE
+        public class StoreInOutReq : SP_STORE
         {
             /// <summary>
             /// 期初

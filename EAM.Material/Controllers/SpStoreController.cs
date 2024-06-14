@@ -124,7 +124,7 @@ namespace EAM.Material.Controllers
         [HttpPost]
         public async Task<AjaxResult<GridData>> StoreInOutListAsync(DateTime? CREATEDATE, GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.StoreInOutListAsync(CREATEDATE,request), "成功");
+            return AjaxResult<GridData>.Success(await _service.StoreInOutListAsync(CREATEDATE, request), "成功");
         }
         #endregion
     }

@@ -28,7 +28,7 @@ namespace EAM.Special.Services
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userService = userService;
-            _userSession=  userSession;
+            _userSession = userSession;
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace EAM.Special.Services
 
                     if (data != null)
                     {
-                        throw new MessageException("已存在"+ c.STARTDATE.ToString("yyyy-MM-dd") + "日期数据，无法重复添加！");
+                        throw new MessageException("已存在" + c.STARTDATE.ToString("yyyy-MM-dd") + "日期数据，无法重复添加！");
                     }
 
                     if (string.IsNullOrWhiteSpace(c.DEVICE_NAME))
@@ -319,7 +319,7 @@ namespace EAM.Special.Services
             DateTime e_time = Convert.ToDateTime(enddate);
             var filterData = await _dbContext.Query<BUILD_COUNT>()
                 .Where(c => c.STARTDATE >= b_time && c.STARTDATE < e_time)
-                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new
                 {
                     b.DEPT_ID,
@@ -464,7 +464,7 @@ namespace EAM.Special.Services
             {
                 if (dataDictionary.TryGetValue(month, out var data))
                 {
-                    data.DEVICE_NAME = boat[0]??"";
+                    data.DEVICE_NAME = boat[0] ?? "";
                     data.MonthName = monthNames[month - 1];
                     result.Add(data);
                 }

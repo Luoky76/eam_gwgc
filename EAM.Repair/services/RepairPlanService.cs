@@ -413,7 +413,7 @@ namespace EAM.Repair.services
         {
             if (entity.AUDITING_A == "0")
             {
-                entity.EXE_ID = _rentID =GuidHelper.NewSnowflakeId().ToString();
+                entity.EXE_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
                 //request.AUDIT_TIME = DateTime.Now;
 
                 entity.REPORT_USER = _userSession.UserName;
@@ -462,7 +462,7 @@ namespace EAM.Repair.services
             }
             if (request.AUDITING == "1" && request.AUDITING_D == null)
             {
-                var qry = _dbContext.Query<REP_PLAN_EXE_ITEM>(c=>c.EXE_ID == request.EXE_ID).Select(c=>c.IS_COMPLETE).ToList();
+                var qry = _dbContext.Query<REP_PLAN_EXE_ITEM>(c => c.EXE_ID == request.EXE_ID).Select(c => c.IS_COMPLETE).ToList();
                 if (qry.Contains(null))
                 {
                     throw new MessageException("请确认是否完成");
@@ -470,13 +470,13 @@ namespace EAM.Repair.services
                 // request.EIDT_DATE = DateTime.Now;
                 request.AUDITING_D = "0";
                 request.PLAN_STATE = "40"; // 待验收
-/*
-                string type = "WXYS" + DateTime.Now.ToString("yyyyMM");
-                string def = type + "0000";
-                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.CHECK_CODE.Contains(type))
-                    .Select(x => Sql.Max(x.CHECK_CODE) ?? def).FirstOrDefaultAsync();
-                var index = model.SubStr(10, 4).CastTo<int>() + 1;
-                request.CHECK_CODE = type + index.ToString("D4");*/
+                /*
+                                string type = "WXYS" + DateTime.Now.ToString("yyyyMM");
+                                string def = type + "0000";
+                                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.CHECK_CODE.Contains(type))
+                                    .Select(x => Sql.Max(x.CHECK_CODE) ?? def).FirstOrDefaultAsync();
+                                var index = model.SubStr(10, 4).CastTo<int>() + 1;
+                                request.CHECK_CODE = type + index.ToString("D4");*/
             }
             if (request.AUDITING_D == "1")
             {

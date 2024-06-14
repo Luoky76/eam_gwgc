@@ -1,7 +1,6 @@
 ﻿using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using System.Threading.Tasks;
 
 namespace EAM.Special.Interfaces
 {

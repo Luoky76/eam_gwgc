@@ -1,15 +1,9 @@
 ﻿using Chloe;
 using EAM.Device.interfaces;
-using Gksyb.Common;
 using Gksyb.Core.Auth;
-using Gksyb.Core.Grid;
-using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Gksyb.Model.UI;
-using Org.BouncyCastle.Asn1.Esf;
-using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
@@ -93,7 +87,7 @@ namespace EAM.Device.services
             //{
             //    req = req.Where(x => _userSession.Corp.CorpID == x.DEPT_ID);
             //}
-            var query = await req.Where(t => t.STATUS == "1" && t.TYPE_ID =="1")
+            var query = await req.Where(t => t.STATUS == "1" && t.TYPE_ID == "1")
                 .Select(a => new
                 {
                     a.DEVICE_ID,
@@ -134,7 +128,7 @@ namespace EAM.Device.services
 
                     //订单
                     item.ORDER = _dbContext.Query<SP_ORDER>()
-                       .Where(a=> a.DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.ORDER_DATE >= b_time && a.ORDER_DATE <= e_time)
+                       .Where(a => a.DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.ORDER_DATE >= b_time && a.ORDER_DATE <= e_time)
                        .Sum(t => t.ORDER_MONEY);
 
                     //物资消耗

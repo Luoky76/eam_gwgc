@@ -76,7 +76,7 @@ namespace EAM.Material.Services
         public async Task<AjaxResult> HouseList()
         {
             var list = await _dbContext.Query<SP_HOUSE>(a => a.AUDITING == "1")
-                .Select(c => new { STOCK_ID = c.HOUSE_ID, STOCK_NAME = c.HOUSE_NAME,STOCK_CODE = c.HOUSE_CODE })
+                .Select(c => new { STOCK_ID = c.HOUSE_ID, STOCK_NAME = c.HOUSE_NAME, STOCK_CODE = c.HOUSE_CODE })
                 .ToListAsync();
             return AjaxResult.Success(list);
         }
@@ -88,7 +88,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> DetListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<SP_INSTORE_DET>(a=>a.IS_STOP=="0").GetGridData(request);
+            var list = await _dbContext.Query<SP_INSTORE_DET>(a => a.IS_STOP == "0").GetGridData(request);
             return list;
         }
 
@@ -96,10 +96,10 @@ namespace EAM.Material.Services
         {
             var list = await _dbContext.Query<SP_INSTORE_DET>()
                 .LeftJoin<SP_INSTORE>((a, b) => a.IN_ID == b.IN_ID)
-                .LeftJoin<BASE_SPCATALOG>((a,b,c) => a.SP_CODE == c.SP_CODE)
-                .LeftJoin<SP_STORE>((a,b,c,d) => a.STORE_ID == d.STORE_ID)
-                .Where((a, b, c, d)=> a.IS_STOP=="0"&& b.AUDITING =="1")
-                .Select((a, b,c,d) => new
+                .LeftJoin<BASE_SPCATALOG>((a, b, c) => a.SP_CODE == c.SP_CODE)
+                .LeftJoin<SP_STORE>((a, b, c, d) => a.STORE_ID == d.STORE_ID)
+                .Where((a, b, c, d) => a.IS_STOP == "0" && b.AUDITING == "1")
+                .Select((a, b, c, d) => new
                 {
                     a.DELIVERY_CODE,
                     b.IN_CODE,
@@ -228,7 +228,7 @@ namespace EAM.Material.Services
             else if (request.AUDITING == "1")
             {
                 var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID)
-                    .LeftJoin<SP_APPLY>((a,b)=>a.APPLY_NO == b.APPLY_NO)
+                    .LeftJoin<SP_APPLY>((a, b) => a.APPLY_NO == b.APPLY_NO)
                     .Select((a, b) => new
                     {
                         b.DEPT_NAME,

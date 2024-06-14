@@ -49,14 +49,14 @@ namespace EAM.Device.services
             foreach (var sid in sids)
             {
                 var qry = await _dbContext.Query<REP_OUT>()
-                    .Where(c => c.OUT_ID==sid)
+                    .Where(c => c.OUT_ID == sid)
                     .Select(c => new
                     {
                         c.REP_DEVICE,
                         c.CONFIRM_USER,
                         c.OUT_REPAIR_MEMO,
                     }).FirstAsync();
-                if (qry.REP_DEVICE == null||qry.CONFIRM_USER == null||qry.OUT_REPAIR_MEMO == null)
+                if (qry.REP_DEVICE == null || qry.CONFIRM_USER == null || qry.OUT_REPAIR_MEMO == null)
                 {
                     throw new MessageException("核对委外维修确认单是否填写完成！");
                 }
@@ -99,7 +99,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetRepOutCheckList(GridRequest request)
         {
             return await _dbContext.Query<REP_OUT>()
-                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new
                 {
                     a.AUDITING,
@@ -149,7 +149,7 @@ namespace EAM.Device.services
             foreach (var sid in sids)
             {
                 var qry = await _dbContext.Query<REP_OUT>()
-                    .Where(c => c.OUT_ID==sid)
+                    .Where(c => c.OUT_ID == sid)
                     .Select(c => new
                     {
                         c.CHECK_DESC,
@@ -205,7 +205,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetRepOutAcceptList(GridRequest request)
         {
             return await _dbContext.Query<REP_OUT>()
-                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new
                 {
                     a.AUDITING,
@@ -244,7 +244,7 @@ namespace EAM.Device.services
                     a.CHECK_DESC,
                     a.OUT_ID,
                 })
-                .Where(c => c.AUDITING=="1")
+                .Where(c => c.AUDITING == "1")
                 .GetGridData(request);
         }
 

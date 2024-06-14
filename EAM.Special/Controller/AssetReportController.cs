@@ -41,7 +41,7 @@ namespace EAM.Special.Controller
         [HttpPost]
         public async Task<AjaxResult> ApplyListAsync(GridRequest request)
         {
-            var result =  await _service.ApplyListAsync(request);
+            var result = await _service.ApplyListAsync(request);
             return AjaxResult.Success(result);
         }
 

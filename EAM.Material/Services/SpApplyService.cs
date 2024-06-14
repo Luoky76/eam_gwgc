@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using EAM.Material.DTO;
+﻿using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Application;
@@ -250,7 +249,8 @@ namespace EAM.Material.Services
         public async Task<int> Submit(List<string> sids)
         {
             int updateCnt = 0;
-            await _dbContext.UseTransactionAsync(async () => {
+            await _dbContext.UseTransactionAsync(async () =>
+            {
                 //匹配物资信息
                 var sp_apply_details = await _dbContext.Query<SP_APPLY_DETAIL>(x => sids.Contains(x.APPLY_ID))
                     .ToListAsync();

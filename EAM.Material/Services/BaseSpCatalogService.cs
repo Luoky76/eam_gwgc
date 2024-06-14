@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -41,7 +40,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> TreeAsync()
         {
-            var spcatalogData = await _dbContext.Query<BASE_SPCATALOG>().Where(c => c.IS_CANCEL != "1"&&c.IS_RECOVERY != "1").ToListAsync();
+            var spcatalogData = await _dbContext.Query<BASE_SPCATALOG>().Where(c => c.IS_CANCEL != "1" && c.IS_RECOVERY != "1").ToListAsync();
             var spcatalogList = spcatalogData.Select(c => new
             {
                 c.SP_CODE,

@@ -104,7 +104,8 @@ namespace EAM.Special.Services
             //               //
             var list = await _dbContext.Query<LABOR_USER>()
                               .LeftJoin<LABOR_SIZE>((a, b) => a.USER_ID == b.USER_ID)
-                              .Select((a, b) => new {
+                              .Select((a, b) => new
+                              {
                                   a.USER_CODE,
                                   a.USER_NAME,
                                   a.DEPT_ID,
@@ -114,7 +115,8 @@ namespace EAM.Special.Services
                                   a.BIRTHDAY,
                                   a.IS_NOVALID,
                                   b.SIZE_ID
-                              }).GroupBy(g => new {
+                              }).GroupBy(g => new
+                              {
                                   g.USER_CODE,
                                   g.USER_NAME,
                                   g.DEPT_ID,
@@ -123,7 +125,8 @@ namespace EAM.Special.Services
                                   g.SEX,
                                   g.BIRTHDAY,
                                   g.IS_NOVALID,
-                              }).Select(x=> new {
+                              }).Select(x => new
+                              {
                                   x.USER_CODE,
                                   x.USER_NAME,
                                   x.DEPT_ID,
@@ -189,7 +192,7 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeDelete(LABOR_USER entity)
         {
-            var sizeList = await _dbContext.DeleteAsync<LABOR_SIZE>(x=>x.USER_ID==entity.USER_ID);
+            var sizeList = await _dbContext.DeleteAsync<LABOR_SIZE>(x => x.USER_ID == entity.USER_ID);
 
             await Task.CompletedTask;
 
@@ -612,7 +615,7 @@ namespace EAM.Special.Services
 
         public async Task<GridData> LaborRentList(GridRequest request)
         {
-        
+
             return await _dbContext.Query<LABOR_RENT>().GetGridData(request);
         }
         public async Task<GridData> GetLaborRentDetList(string rentId)

@@ -1,9 +1,6 @@
 ﻿using Chloe;
-using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
@@ -257,7 +254,8 @@ namespace EAM.Special.Services
                         throw new MessageException("采购订单需求明细保存失败");
                     }
                 });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return AjaxResult.Error(ex.Message);
             }

@@ -1,16 +1,6 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using Magicodes.ExporterAndImporter.Core;
+﻿using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * 使用 _TYPE 为后缀的字段进行 hh:mm 时长格式的识别
@@ -61,7 +51,8 @@ namespace EAM.Special.DTO
         /// </summary>
         [ImporterHeader(Name = "施工准备")]
         [Display(Name = "施工准备 hh:mm")]
-        public string CONPLAN_TYPE {
+        public string CONPLAN_TYPE
+        {
             get
             {
                 return CONPLAN.ToString();
