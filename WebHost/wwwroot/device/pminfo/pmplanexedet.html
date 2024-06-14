@@ -141,11 +141,11 @@
                     },
                     grid: {
                         columns: [
-                            { display: "*完成情况", name: "COMPLETE", type: "select", minWidth: 100, validate: { required: true }, editor: { type: 'select', data: me.complete } },
+                            { display: "完成情况", name: "COMPLETE", type: "select", minWidth: 100, validate: { required: true }, editor: { type: 'select', data: me.complete } },
                             { display: "执行岗位", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "*执行人", name: "EXECUTE_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "执行人", name: "EXECUTE_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             { display: "检查岗位", name: "CHK_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "*检查人", name: "CHECK_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "检查人", name: "CHECK_USER", minWidth: 100, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             {
                                 display: "附件材料", name: "ATTACH_EXE", dbname: "ATTACH_EXE", width: 90, type: "text",
                                 render: function (rowdata, index, value) {
@@ -183,7 +183,7 @@
                             { display: "仓库名称", name: "HOUSE_NAME", minWidth: 100, type: "text", },
                             { display: "库位名称", name: "STOCK_NAME", minWidth: 100, type: "text", },
                             { display: "库存数量", name: "STORE_NUM", minWidth: 100, type: "float", },
-                            { display: "*实际消耗数量", name: "FACT_NUM", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
+                            { display: "实际消耗数量", name: "FACT_NUM", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
                             { display: "计量单位", name: "UNIT", minWidth: 100, type: "text", },
                             { display: "含税金额(元)", name: "TAX_MONEY", minWidth: 100, type: "float" },
                             { display: "不含税金额(元)", name: "UNTAX_MONEY", minWidth: 100, type: "float" },
@@ -200,7 +200,7 @@
                         columns: [
                             { display: "人员姓名", name: "USER_NAME", minWidth: 200, type: "text", editor: { type: 'text' } },
                             { display: "人员ID", name: "LABOR_ID", minWidth: 100, hide: true },
-                            { display: "*工时(H)", name: "PLAN_DATE", minWidth: 200, validate: { required: true }, type: "float", editor: { type: 'float' } },
+                            { display: "工时(H)", name: "PLAN_DATE", minWidth: 200, validate: { required: true }, type: "float", editor: { type: 'float' } },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
                             { display: "主键", name: "PLAN_LABOR_ID", width: 100, hide: true },
                             { display: "外键", name: "EXE_ID", width: 100, hide: true },
@@ -210,7 +210,7 @@
                     },
                     grid4: {
                         columns: [
-                            { display: "*特殊作业", name: "WORK_NAME", minWidth: 150, validate: { required: true }, type: "text", editor: { type: 'text' } },
+                            { display: "特殊作业", name: "WORK_NAME", minWidth: 150, validate: { required: true }, type: "text", editor: { type: 'text' } },
                             {
                                 display: "日期", name: "WORK_DATE", minWidth: 100, validate: { required: true }, type: "date",
                                 editor: {
@@ -288,7 +288,7 @@
                                 }
                             },
                             { display: "作业时间/小时", name: "WORK_HOUR", minWidth: 100, type: "float", editor: { type: 'float', disabled: true } },
-                            { display: "*作业耗油/吨", name: "WORK_OIL", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
+                            { display: "作业耗油/吨", name: "WORK_OIL", minWidth: 100, validate: { required: true }, type: "float", editor: { type: 'float' } },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
                             { display: "主键", name: "WORK_ID", minWidth: 100, type: "text", hide: true },
                             { display: "实施单ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },

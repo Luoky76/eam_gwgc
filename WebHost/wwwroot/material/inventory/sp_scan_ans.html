@@ -46,9 +46,9 @@
                             { display: "盘点类型", name: "SCAN_TYPE", width: 120, type: "select", format: { data: me.scanType } },
                             { display: "来源类型", name: "SRC_TYPE", dbname: "HOUSE_CODE", width: 100, type: "select", format: { data: me.storeSou } },
                             { display: "库存数量", name: "STORE_NUM", dbname: "NUM", width: 150, type: "text", },
-                            { display: "*盘点数量", name: "SCAN_NUM", dbname: "SCAN_NUM", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "盘点数量", name: "SCAN_NUM", dbname: "SCAN_NUM", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             {
-                                display: "*盘点结果", name: "SCAN_RESULT", dbname: "SCAN_RESULT", width: 150, type: "text", validate: { required: true }, editor: {
+                                display: "盘点结果", name: "SCAN_RESULT", dbname: "SCAN_RESULT", width: 150, type: "text", validate: { required: true }, editor: {
                                     type: 'select',
                                     data: me.scanResult
                                 }

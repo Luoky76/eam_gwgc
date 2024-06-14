@@ -1,1 +1,4 @@
-﻿
+﻿.l-grid-hd-cell-required::before {
+    content: "*";
+    color: red;
+}

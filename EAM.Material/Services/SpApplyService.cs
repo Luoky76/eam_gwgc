@@ -343,7 +343,7 @@ namespace EAM.Material.Services
                 }
 
                 //创建内部审批流程
-                CreateWorkFlow(sids);
+                await CreateWorkFlow(sids);
 
                 //更新记录状态
                 updateCnt = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
@@ -368,7 +368,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids">主键数组</param>
         /// <returns></returns>
-        public async void CreateWorkFlow(List<string> sids)
+        public async Task CreateWorkFlow(List<string> sids)
         {
             foreach (string sid in sids)
             {
