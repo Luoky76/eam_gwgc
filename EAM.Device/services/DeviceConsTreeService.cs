@@ -1,7 +1,6 @@
 ﻿using Chloe;
 using EAM.Device.interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -197,7 +196,7 @@ namespace EAM.Device.services
                 {
                     var queryType = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
                         .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID).FirstOrDefaultAsync();
-                    if (queryType!=null)
+                    if (queryType != null)
                         entity.TYPE_ID = queryType.TYPE_ID;
 
                 }

@@ -91,7 +91,7 @@ namespace EAM.Device.services
                     c.MODIFYDATE,
                     c.FRDB_ID,
                 },
-                c => a => a.FRDB_ID  == c.FRDB_ID, BeforeAdd);
+                c => a => a.FRDB_ID == c.FRDB_ID, BeforeAdd);
         }
 
         public async Task BeforeAdd(REP_FRDB entity)

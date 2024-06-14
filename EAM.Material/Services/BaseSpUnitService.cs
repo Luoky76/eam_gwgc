@@ -1,14 +1,9 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using EAM.Material.Interfaces;
+﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
-using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
@@ -17,7 +12,7 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
 
-        public BaseSpUnitService(IDbContext dbContext,  UserSession userSession)
+        public BaseSpUnitService(IDbContext dbContext, UserSession userSession)
         {
             _dbContext = dbContext;
             _userSession = userSession;

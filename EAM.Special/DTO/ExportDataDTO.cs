@@ -1,7 +1,6 @@
 ﻿using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
 using Magicodes.ExporterAndImporter.Pdf;
-using System.ComponentModel.DataAnnotations;
 using WkHtmlToPdfDotNet;
 
 namespace EAM.Special.DTO
@@ -27,7 +26,7 @@ namespace EAM.Special.DTO
     [PdfExporter(Orientation = Orientation.Landscape, PaperKind = PaperKind.A4, IsWriteHtml = true, IsEnablePagesCount = false)]
     public class BuildExportData
     {
-        
+
         [ExporterHeader(DisplayName = "船名")]
         public string DEVICE_NAME { get; set; }
 

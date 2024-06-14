@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using Gksyb.Common;
+﻿using Gksyb.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 
@@ -45,9 +44,9 @@ namespace EAM.Special.Interfaces
         public Task<AjaxResult> SaveAllAsync
             (SaveRequest<DRUG_COLLECT> request1, SaveRequest<DRUG_COLLECT_DET> request2, SaveRequest<DRUG_COLLECT_REQUEST> request3);
 
-            /// <summary>
-            /// 获取下拉框数据
-            /// </summary>
-            public Task<AjaxResult> ComboxData();
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
+        public Task<AjaxResult> ComboxData();
     }
 }

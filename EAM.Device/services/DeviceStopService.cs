@@ -5,7 +5,6 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
-using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
@@ -77,7 +76,6 @@ namespace EAM.Device.services
                     c.DEVICE_ID,
                     c.DEVICE_NAME,
                     c.DEVICE_TYPE,
-                    c.DEVICE_NO,
                     c.TYPE_NAME,
                     c.STOP_SOURCE,
                     c.RUN_START,

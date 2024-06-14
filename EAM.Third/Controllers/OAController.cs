@@ -9,7 +9,7 @@ namespace EAM.Third.Controllers
     public class OAController : ThirdAreaController
     {
         private readonly OAService _service;
-        
+
         public OAController(OAService service)
         {
             _service = service;

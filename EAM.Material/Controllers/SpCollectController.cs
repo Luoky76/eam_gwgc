@@ -1,5 +1,5 @@
-﻿using Gksyb.Core.Interfaces.Material;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
+using Gksyb.Core.Interfaces.Material;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
@@ -75,9 +75,9 @@ namespace EAM.Material.Controllers
         }
 
         [HttpPost]
-        public async Task<AjaxResult> RevokeAsync(List<string> sids)
+        public async Task<AjaxResult> CancelSubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Revoke(sids), "成功");
+            return AjaxResult.Success(await _service.CancelSubmit(sids), "成功");
         }
 
         [HttpPost]
@@ -117,7 +117,7 @@ namespace EAM.Material.Controllers
         }
 
         [HttpPost]
-        public async Task<AjaxResult> SelectApplyAsync(List<string> SpdetID,string Cid)
+        public async Task<AjaxResult> SelectApplyAsync(List<string> SpdetID, string Cid)
         {
             return AjaxResult.Success(await _service.SelectApply(SpdetID, Cid), "成功");
         }

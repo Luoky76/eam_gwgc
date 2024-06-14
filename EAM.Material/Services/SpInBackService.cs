@@ -40,8 +40,9 @@ namespace EAM.Material.Services
                {
                    JoinType.LeftJoin,a.IN_ID.Equals(b.IN_ID)
                })
-               .Where((a,b) => a.AUDITING == "1")
-               .Select((a, b) => new {
+               .Where((a, b) => a.AUDITING == "1")
+               .Select((a, b) => new
+               {
                    a.AUDITING,
                    a.IN_CODE,
                    a.IN_DATE,
@@ -86,7 +87,8 @@ namespace EAM.Material.Services
                    JoinType.LeftJoin,a.IN_BACK_ID.Equals(b.IN_BACK_ID)
                })
                .Where((a, b) => a.AUDITING == "1")
-               .Select((a, b) => new {
+               .Select((a, b) => new
+               {
                    a.AUDITING,
                    a.BACK_DATE,
                    a.BACK_CODE,
@@ -228,7 +230,7 @@ namespace EAM.Material.Services
                     });
                 }
             }
-            
+
             await Task.CompletedTask;
         }
 

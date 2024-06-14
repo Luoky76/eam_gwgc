@@ -1,5 +1,4 @@
 ﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -41,7 +40,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> TreeAsync()
         {
-            var spcatalogData = await _dbContext.Query<BASE_SPCATALOG>().Where(c => c.IS_CANCEL != "1"&&c.IS_RECOVERY != "1").ToListAsync();
+            var spcatalogData = await _dbContext.Query<BASE_SPCATALOG>().Where(c => c.IS_CANCEL != "1" && c.IS_RECOVERY != "1").ToListAsync();
             var spcatalogList = spcatalogData.Select(c => new
             {
                 c.SP_CODE,
@@ -165,9 +164,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(BASE_SPCATALOG entity)
         {
-            var model = await _dbContext.Query<BASE_SPCATALOG>(x => x.TYPE_ID == entity.TYPE_ID).Select(x => Sql.Max(x.SP_CODE)).FirstOrDefaultAsync();
-            var index = string.IsNullOrEmpty(model) ? 1 : model.Substring(model.Length - 4).CastTo<int>() + 1;
-            entity.SP_CODE = $"{entity.TYPE_CODE}-{index.ToString("D4")}";
+            var typeCount = _dbContext.Query<BASE_SPCATALOG>().Where(t => t.TYPE_ID == entity.TYPE_ID).Count();
+            entity.SP_CODE = $"{entity.TYPE_CODE}-{(typeCount + 1).ToString("D4")}";
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }

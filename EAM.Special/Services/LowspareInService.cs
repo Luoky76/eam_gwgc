@@ -1,17 +1,12 @@
 ﻿using Chloe;
-using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
-using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using System.Linq.Expressions;
 
 namespace EAM.Special.Services
 {
@@ -87,14 +82,15 @@ namespace EAM.Special.Services
         {
             //return await _dbContext.Query<SPEC_LOWSPARE_IN>().GetGridData(request);
             var list = await _dbContext.Query<SPEC_LOWSPARE_IN>()
-            .Select(c => new {
+            .Select(c => new
+            {
                 c.AUDITING,
                 c.IN_CODE,
                 c.IN_DATE,
                 c.SP_CODE,
                 c.SP_NAME,
-                c.SP_SIZE,
-                c.PRODUCE,
+                c.SP_TYPE,
+                c.BRAND,
                 c.UNIT,
                 c.TYPE_NAME,
                 c.LOW_TYPE,
@@ -142,8 +138,8 @@ namespace EAM.Special.Services
                     c.IN_DATE,
                     c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_SIZE,
-                    c.PRODUCE,
+                    c.SP_TYPE,
+                    c.BRAND,
                     c.UNIT,
                     c.TYPE_NAME,
                     c.LOW_TYPE,
@@ -178,7 +174,7 @@ namespace EAM.Special.Services
             entity.IN_DATE = Sysdate;
             entity.ADD_USERID = _userSession.UserID.ToString();
             entity.ADD_DATE = Sysdate;
-            entity.MODIFY_USERID =_userSession.UserID.ToString();
+            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFY_DATE = Sysdate;
 
             string aa = "RZ" + DateTime.Now.ToString("yyyyMM");
@@ -213,8 +209,8 @@ namespace EAM.Special.Services
                 {
                     SP_CODE = add.SP_CODE,
                     SP_NAME = add.SP_NAME,
-                    SP_SIZE = add.SP_SIZE,
-                    PRODUCE = add.PRODUCE,
+                    SP_TYPE = add.SP_TYPE,
+                    BRAND = add.BRAND,
                     LOWSPARE_NUM = add.IN_NUM,
                     USER_NAME = add.USER_NAME,
                     TYPE_NAME = add.TYPE_NAME,
@@ -227,8 +223,8 @@ namespace EAM.Special.Services
                     SP_ID = add.SP_ID,
                     LOWSPARE_ID = GuidHelper.NewSnowflakeId().ToString(),
                     ADD_USERID = add.ADD_USERID,
-                    ADD_DATE =add.ADD_DATE,
-                    MODIFY_DATE =add.MODIFY_DATE,
+                    ADD_DATE = add.ADD_DATE,
+                    MODIFY_DATE = add.MODIFY_DATE,
                     MODIFY_USERID = add.MODIFY_USERID
                 };
             }

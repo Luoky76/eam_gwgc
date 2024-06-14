@@ -5,10 +5,7 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using System;
 using System.Collections.Concurrent;
-using System.Data.SqlTypes;
-using System.Linq;
 
 namespace EAM.Material.Services
 {
@@ -228,7 +225,7 @@ namespace EAM.Material.Services
                                     SP_ID = result.SP_ID,
                                     SP_NAME = result.SP_NAME,
                                     SP_SIZE = result.SP_SIZE,
-                                    PRODUCE= result.PRODUCE,
+                                    PRODUCE = result.PRODUCE,
                                     TYPE_CODE = result.TYPE_CODE,
                                     TYPE_NAME = result.TYPE_NAME,
                                     TYPE_ID = result.TYPE_ID,
@@ -257,7 +254,7 @@ namespace EAM.Material.Services
                             result.AUDITING = "1"; //修正数据后确认处理
                             await _dbContext.UpdateAsync(result);
                         }
-                       
+
                     }
 
                 }

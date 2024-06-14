@@ -4,12 +4,7 @@ using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Http;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAM.Special.Interfaces
 {
@@ -21,7 +16,7 @@ namespace EAM.Special.Interfaces
         /// </summary>
         /// <returns></returns>
         Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
-        Task<GridData> ListAsync(GridRequest request);
+        Task<GridData> ListAsync(GridRequest request, bool isAll = true);
 
         Task<AjaxResult> GetAsync(string ID);
 

@@ -83,7 +83,7 @@ namespace EAM.Device.services
             //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<PM_PLAN_EXE>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
-                .Where(c => c.PM_TYPE=="20")
+                .Where(c => c.PM_TYPE == "20")
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
@@ -153,7 +153,6 @@ namespace EAM.Device.services
             var index = model.SubStr(10, 4).CastTo<int>() + 1;
             entity.PLAN_CODE = aa + index.ToString("D4");
             entity.AUDITING = "0";
-            entity.AUDITING_EXE = "0";
             entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -163,14 +162,6 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> SubmitPmPlan(List<string> sids)
         {
-            //判断是否有明细，无明细的维保计划不允许提交
-            foreach (var sid in sids)
-            {
-                var list = await _dbContext.Query<PM_PLAN_DONEITEM>(a => a.EXE_ID == sid)
-                    .ToListAsync();
-                if (!list.Any()) throw new MessageException("维保计划无明细数据，请添加维保项目！");
-            }
-
             string aa = "BYSS" + DateTime.Now.ToString("yyyyMM");
             string def = aa + "0000";
 
@@ -190,9 +181,6 @@ namespace EAM.Device.services
                         AUDITING = "1",
                         AUDITING_EXE = "0",
                         EXE_CODE = newExeCode,
-                        EDIT_USER = _userSession.UserName,
-                        EDIT_USERID = _userSession.UserID.ToString(),
-                        EDIT_DATE = Sysdate
                     });
             }
             return AjaxResult.Success("更新成功");
@@ -218,7 +206,7 @@ namespace EAM.Device.services
                     x => new PM_PLAN_EXE
                     {
                         AUDITING = "0",
-                        AUDITING_EXE = "0",
+                        AUDITING_EXE = "",
                         EXE_CODE = "",
                     });
             }
@@ -242,7 +230,6 @@ namespace EAM.Device.services
 
             return AjaxResult.Success(list);
         }
-
         /// <summary>
         /// 获取计划明细
         /// </summary>
@@ -270,44 +257,8 @@ namespace EAM.Device.services
                      ATTACH_EXE = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_EXE").Count(),
                      ATTACH_PLAN = _dbContext.Query<SYS_ATTACH>().Where(a => a.data_id == c.DONEITEM_ID.ToString() && a.table_name == "PM_PLAN_DONEITEM").Count()
                  }).GetGridData(request);
-        }
 
-        /// <summary>
-        /// 获取计划主表和明细信息
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetExtendPlanList(GridRequest request)
-        {
-            return await _dbContext.Query<PM_PLAN_EXE>()
-                .LeftJoin<PM_PLAN_DONEITEM>((a, b) => a.EXE_ID == b.EXE_ID)
-                .Select((a, b) => new
-                {
-                    a.AUDITING,
-                    a.AUDITING_EXE,
-                    a.EXE_ID,
-                    a.DEPT_NAME,
-                    a.SHIP_DEPT,
-                    a.PLAN_FINISH_TIME,
-                    a.AUDIT_TIME,
-                    a.PLAN_CODE,
-                    b.STD_CODE,
-                    b.OBJECT_NAME,
-                    b.CONTENT,
-                    b.STD_LEVEL,
-                    b.WORK_STATE,
-                    b.MAINT_CYCLE,
-                    b.PLAN_MONTH,
-                    b.EXE_USER,
-                    b.EXECUTE_USER,
-                    b.CHK_USER,
-                    b.CHECK_USER,
-                    b.MEMO,
-                    b.DONEITEM_ID,
-                    b.COMPLETE,
-                    ATTACH_EXE = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == b.DONEITEM_ID.ToString() && c.table_name == "PM_PLAN_EXE").Count(),
-                    ATTACH_PLAN = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == b.DONEITEM_ID.ToString() && c.table_name == "PM_PLAN_DONEITEM").Count()
-                })
-                .GetGridData(request);
+
         }
 
         /// <summary>
@@ -343,10 +294,10 @@ namespace EAM.Device.services
 
         public async Task BeforeAddPlandet(PM_PLAN_DONEITEM entity)
         {
-            //entity.COMPLETE = "0";
             entity.DONEITEM_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
+
 
         #endregion 维保计划
 
@@ -357,7 +308,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> ImportSpList(GridRequest request)
         {
-            return await _dbContext.Query<SP_STORE>(c => c.NUM>0)
+            return await _dbContext.Query<SP_STORE>(c => c.NUM > 0)
                 .GetGridData(request);
         }
         /// <summary>
@@ -366,7 +317,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> GetPmPepList(GridRequest request, string exeId, string doneitemId)
         {
-            return await _dbContext.Query<PM_PLAN_LABOR>(c => c.EXE_ID.Equals(exeId)&&c.DONEITEM_ID.Equals(doneitemId))
+            return await _dbContext.Query<PM_PLAN_LABOR>(c => c.EXE_ID.Equals(exeId) && c.DONEITEM_ID.Equals(doneitemId))
                 .GetGridData(request);
         }
 
@@ -379,7 +330,7 @@ namespace EAM.Device.services
             var query = _dbContext.Query<PM_PLAN_SP>(c => c.EXE_ID.Equals(exeId));
             if (!string.IsNullOrEmpty(doneitemId))
             {
-                query = query.Where(c=> c.DONEITEM_ID.Equals(doneitemId));
+                query = query.Where(c => c.DONEITEM_ID.Equals(doneitemId));
             }
             return await query.GetGridData(request);
         }
@@ -459,8 +410,7 @@ namespace EAM.Device.services
                 {
                     c.SP_SOURCE,
                     c.SP_CODE,
-                    c.SP_SIZE,
-                    c.PRODUCE,
+                    c.SP_TYPE,
                     c.SP_NAME,
                     c.OTHER_CODE,
                     c.UNIT,
@@ -511,7 +461,7 @@ namespace EAM.Device.services
                     throw new MessageException("是否有遗留问题没选！");
                 }
                 var qrydet = _dbContext.Query<PM_PLAN_DONEITEM>()
-                 .Where(c => c.EXE_ID == query.EXE_ID && (c.CHECK_USER == null || c.EXECUTE_USER == null|| c.COMPLETE == null))
+                 .Where(c => c.EXE_ID == query.EXE_ID && (c.CHECK_USER == null || c.EXECUTE_USER == null || c.COMPLETE == null))
                  .Select(c =>
                  new
                  {
@@ -521,7 +471,7 @@ namespace EAM.Device.services
                  }).ToList();
                 if (qrydet.Count > 0)
                 {
-                    throw new MessageException("维保实施明细数据没填完整！");
+                    throw new MessageException("保养实施明细数据没填完整！");
                 }
             }
             return await _dbContext.UpdateAsync<PM_PLAN_EXE>(x => sids.Contains(x.EXE_ID),
@@ -587,7 +537,7 @@ namespace EAM.Device.services
             return await _dbContext.Query<PM_PLAN_EXE>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .Where(c => c.AUDITING == "1")
-                .OrderBy(c => c.AUDITING_EXE)
+                .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.PLAN_CODE)
                 .GetGridData(request);
         }

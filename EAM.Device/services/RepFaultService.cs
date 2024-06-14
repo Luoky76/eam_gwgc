@@ -67,7 +67,7 @@ namespace EAM.Device.services
         public async Task<GridData> ImportList(GridRequest request)
         {
             return await _dbContext.Query<SP_STORE>()
-                .Where(c => c.NUM>0)
+                .Where(c => c.NUM > 0)
                 .GetGridData(request);
         }
 
@@ -102,7 +102,7 @@ namespace EAM.Device.services
         {
             var qry = await _dbContext.QueryByKeyAsync<REP_FAULT_IMG>(ID);
             qry.ImageSrcList = await _dbContext.Query<SYS_ATTACH>()
-                      .Where(img => img.data_id == ID && img.attach_type ==".jpg"||img.attach_type ==".jpeg")
+                      .Where(img => img.data_id == ID && img.attach_type == ".jpg" || img.attach_type == ".jpeg")
                       .Select(img => img.attach_path)
                       .ToListAsync();
 
@@ -163,7 +163,7 @@ namespace EAM.Device.services
                 },
                 c => a => a.FAULT_ID == c.FAULT_ID, BeforeAdd);
             var ID = "";
-            if (request.Added.Count>0)
+            if (request.Added.Count > 0)
             {
                 ID = request.Added[0].FAULT_ID;
             }
@@ -219,7 +219,7 @@ namespace EAM.Device.services
             var qryfaultitem = await _dbContext.Query<REP_FAULT>(x => sid == x.FAULT_ID)
                 .Select(c => c.AUDITING_D)
                 .FirstOrDefaultAsync();
-            if (qryfaultitem == "1" )
+            if (qryfaultitem == "1")
             {
                 throw new MessageException("故障已验收，不可撤销提交！");
             }
@@ -415,7 +415,7 @@ namespace EAM.Device.services
             //除超管和船机部外，按部门过滤数据
             return await _dbContext.Query<REP_FAULT>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
-                .Where(c => c.DISPOSE_TYPE=="2"&&(c.AUDITING_B=="1"||c.AUDITING_C=="1"))
+                .Where(c => c.DISPOSE_TYPE == "2" && (c.AUDITING_B == "1" || c.AUDITING_C == "1"))
                 .OrderBy(c => c.AUDITING_D)
                 .ThenByDesc(c => c.FAULT_CODE)
                 .GetGridData(request);

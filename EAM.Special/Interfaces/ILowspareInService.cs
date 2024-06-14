@@ -1,5 +1,4 @@
 ﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 
@@ -13,7 +12,7 @@ namespace EAM.Special.Interfaces
         /// 
         /// </summary>
         /// <returns></returns>
-        public  Task<GridData> ListAsync(GridRequest request);
+        public Task<GridData> ListAsync(GridRequest request);
 
 
         /// <summary>

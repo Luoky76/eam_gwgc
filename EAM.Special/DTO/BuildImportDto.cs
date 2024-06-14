@@ -1,16 +1,6 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using Magicodes.ExporterAndImporter.Core;
+﻿using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
-using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 /*
  * 使用 _TYPE 为后缀的字段进行 hh:mm 时长格式的识别
@@ -61,7 +51,8 @@ namespace EAM.Special.DTO
         /// </summary>
         [ImporterHeader(Name = "施工准备")]
         [Display(Name = "施工准备 hh:mm")]
-        public string CONPLAN_TYPE {
+        public string CONPLAN_TYPE
+        {
             get
             {
                 return CONPLAN.ToString();
@@ -309,10 +300,10 @@ namespace EAM.Special.DTO
         }
 
         /// <summary>
-        /// 淡水消耗
+        /// 淡水日耗
         /// </summary>
-        [ImporterHeader(Name = "淡水消耗")]
-        [Display(Name = "淡水消耗")]
+        [ImporterHeader(Name = "淡水日耗")]
+        [Display(Name = "淡水日耗")]
         public decimal? DAILYCONSUMPTION { get; set; }
 
         /// <summary>
@@ -330,31 +321,31 @@ namespace EAM.Special.DTO
         public decimal? STOCK { get; set; }
 
         /// <summary>
-        /// 主机消耗
+        /// 主机日耗
         /// </summary>
-        [ImporterHeader(Name = "主机消耗")]
-        [Display(Name = "主机消耗")]
+        [ImporterHeader(Name = "主机日耗")]
+        [Display(Name = "主机日耗")]
         public decimal? MASTER { get; set; }
 
         /// <summary>
-        /// 辅机消耗
+        /// 辅机日耗
         /// </summary>
-        [ImporterHeader(Name = "辅机消耗")]
-        [Display(Name = "辅机消耗")]
+        [ImporterHeader(Name = "辅机日耗")]
+        [Display(Name = "辅机日耗")]
         public decimal? AUXILIARY { get; set; }
 
         /// <summary>
-        /// 泵机消耗
+        /// 泵机日耗
         /// </summary>
-        [ImporterHeader(Name = "泵机消耗")]
-        [Display(Name = "泵机消耗")]
+        [ImporterHeader(Name = "泵机日耗")]
+        [Display(Name = "泵机日耗")]
         public decimal? PUMP { get; set; }
 
         /// <summary>
-        /// 柴油总消耗
+        /// 柴油总日耗
         /// </summary>
-        [ImporterHeader(Name = "柴油总消耗")]
-        [Display(Name = "柴油总消耗")]
+        [ImporterHeader(Name = "柴油总日耗")]
+        [Display(Name = "柴油总日耗")]
         public decimal? SUBTOTAL { get; set; }
 
         /// <summary>
@@ -365,25 +356,11 @@ namespace EAM.Special.DTO
         public decimal? SUPPLEMENT2 { get; set; }
 
         /// <summary>
-        /// 滑油消耗
+        /// 滑油日耗
         /// </summary>
-        [ImporterHeader(Name = "滑油消耗")]
-        [Display(Name = "滑油消耗")]
+        [ImporterHeader(Name = "滑油日耗")]
+        [Display(Name = "滑油日耗")]
         public decimal? LUBRICATE { get; set; }
-
-        /// <summary>
-        /// 滑油补充
-        /// </summary>
-        [ImporterHeader(Name = "滑油补充")]
-        [Display(Name = "滑油补充")]
-        public decimal? LUBRICATE_SUPPLEMENT { get; set; }
-
-        /// <summary>
-        /// 滑油库存
-        /// </summary>
-        [ImporterHeader(Name = "滑油库存")]
-        [Display(Name = "滑油库存")]
-        public decimal? LUBRICATE_STOCK { get; set; }
 
         /// <summary>
         /// 柴油库存
@@ -697,92 +674,6 @@ namespace EAM.Special.DTO
                 catch (Exception e)
                 {
                     throw new MessageException("停泊发电机累计时间有误\n" + e.Message);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 主机运行时间
-        /// </summary>
-        public decimal? MAIN_ENGINE_RUNTIME { get; set; }
-
-        /// <summary>
-        /// 主机运行时间 hh:mm
-        /// </summary>
-        [ImporterHeader(Name = "主机运行时间")]
-        [Display(Name = "主机运行时间 hh:mm")]
-        public string MAIN_ENGINE_RUNTIME_TYPE
-        {
-            get
-            {
-                return MAIN_ENGINE_RUNTIME.ToString();
-            }
-            set
-            {
-                try
-                {
-                    if (value == null) return;
-                    //格式：mm hh:mm dd:hh:mm
-                    string[] duration = value.Split(':', '：');
-                    if (duration.Length == 1)
-                    {
-                        MAIN_ENGINE_RUNTIME = decimal.Parse(duration[0]);
-                    }
-                    else if (duration.Length == 2)
-                    {
-                        MAIN_ENGINE_RUNTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
-                    }
-                    else if (duration.Length == 3)
-                    {
-                        MAIN_ENGINE_RUNTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new MessageException("主机运行时间有误\n" + e.Message);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 主机累计时间
-        /// </summary>
-        public decimal? MAIN_ENGINE_CUMTIME { get; set; }
-
-        /// <summary>
-        /// 主机累计时间 hh:mm
-        /// </summary>
-        [ImporterHeader(Name = "主机累计时间")]
-        [Display(Name = "主机累计时间 hh:mm")]
-        public string MAIN_ENGINE_CUMTIME_TYPE
-        {
-            get
-            {
-                return MAIN_ENGINE_CUMTIME.ToString();
-            }
-            set
-            {
-                try
-                {
-                    if (value == null) return;
-                    //格式：mm hh:mm dd:hh:mm
-                    string[] duration = value.Split(':', '：');
-                    if (duration.Length == 1)
-                    {
-                        MAIN_ENGINE_CUMTIME = decimal.Parse(duration[0]);
-                    }
-                    else if (duration.Length == 2)
-                    {
-                        MAIN_ENGINE_CUMTIME = decimal.Parse(duration[0]) * 60 + decimal.Parse(duration[1]);
-                    }
-                    else if (duration.Length == 3)
-                    {
-                        MAIN_ENGINE_CUMTIME = decimal.Parse(duration[0]) * 1440 + decimal.Parse(duration[1]) * 60 + decimal.Parse(duration[2]);
-                    }
-                }
-                catch (Exception e)
-                {
-                    throw new MessageException("主机累计时间有误\n" + e.Message);
                 }
             }
         }

@@ -167,7 +167,7 @@ namespace EAM.Material.Services
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
         }
-       
+
         private async Task BeforeUpdate(SP_SCAN entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -279,7 +279,7 @@ namespace EAM.Material.Services
                 return AjaxResult.Error("没有对应申请单");
             }
             var dets = _dbContext.Query<SP_STORE>()
-                .Where(a => a.TYPE_ID == scan.TYPE_ID && scan.STOCK_ID ==a.STOCK_ID).ToList();
+                .Where(a => a.TYPE_ID == scan.TYPE_ID && scan.STOCK_ID == a.STOCK_ID).ToList();
 
             if (dets.Count == 0)
             {
@@ -348,7 +348,7 @@ namespace EAM.Material.Services
                     CREATEDATE = a.CREATEDATE,
                     STORE_CODE = a.STORE_CODE,
                     SCAN_CODE = b.SCAN_CODE,
-                    SCAN_TYPE= b.SCAN_TYPE,
+                    SCAN_TYPE = b.SCAN_TYPE,
                     SCAN_USER = b.SCAN_USER,
                     DEPT_NAME = b.DEPT_NAME,
                     SEC_DEPT = b.SEC_DEPT,

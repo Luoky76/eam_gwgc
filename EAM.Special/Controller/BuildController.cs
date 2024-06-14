@@ -8,11 +8,6 @@ using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EAM.Special.Controller
 {
@@ -40,9 +35,9 @@ namespace EAM.Special.Controller
             _service = service;
         }
 
-        public async Task<AjaxResult> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request, bool isAll = true)
         {
-            var result = await _service.ListAsync(request);
+            var result = await _service.ListAsync(request, isAll);
             return AjaxResult.Success(result);
         }
 

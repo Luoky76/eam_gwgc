@@ -1,17 +1,17 @@
-﻿using Gksyb.Core.Auth;
-using Gksyb.Core.Application;
+﻿using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.Material;
+using Gksyb.Core.Interfaces.Repair;
+using Gksyb.Model;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Options;
-using Gksyb.Model;
-using Gksyb.Core.Interfaces.Material;
-using Gksyb.Core.Interfaces.Repair;
 
 namespace EAM.Third.Services
 {
-    public class OAService: BaseService
+    public class OAService : BaseService
     {
         private IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -21,7 +21,7 @@ namespace EAM.Third.Services
         private readonly ISpCollectService _spCollectService;
         private readonly IRepairPlanService _repairPlanService;
 
-        public OAService(IDbContext dbContext,UserSession userSession, IMessageCenterService messageCenterService, IOptions<SysContextOptions> sysContext,
+        public OAService(IDbContext dbContext, UserSession userSession, IMessageCenterService messageCenterService, IOptions<SysContextOptions> sysContext,
             ISpCollectService spCollectsService, IRepairPlanService repairPlanService)
         {
             _dbContext = dbContext;
@@ -53,12 +53,6 @@ namespace EAM.Third.Services
             return true;
         }
 
-        //接口返回参数
-        private class RETURN_PARAM
-        {
-            public bool status;
-            public string msg;
-        }
 
         /// <summary>
         /// oa 回调数据
@@ -67,23 +61,14 @@ namespace EAM.Third.Services
         /// <returns></returns>
         public async Task<string> GetOADataAsync(dynamic data)
         {
-            await _dbContext.DBLog("OA创建流程", "", $"收到OA回调请求，回调参数：\n{data}", "");
-
-            var returnParam = new RETURN_PARAM
-            {
-                status = true,
-                msg = "回调成功"
-            };
-
+            string msg = "回调成功";
             #region data 格式
             /* { 
              * taskId:1,
              * isFinish:false,
-             * primary_key: 1735590940259123200,
-             * fun_name: "_spCollectService.ApprovalCompletedAsync",
              * detail:[{
              *      operation:"提交",//"退回"
-             *      memo:"意见",
+             *      memo:"意见"
              *      receiveTime:"2021-10-01 10:10:10",//任务接收时间
              *      dealTime:"2021-10-01 10:10:10",//任务处理时间
              *      delUser:"任务处理人",
@@ -96,25 +81,26 @@ namespace EAM.Third.Services
 
             if (data == null)
             {
-                returnParam.status = false;
-                returnParam.msg = "回调参数为空串";
-                return returnParam.ToJson();
+                msg = "回调参数为空串";
+                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
             }
             string json = JsonConvert.SerializeObject(data);
 
-            //判断必须有内容的参数
+            await LogAsync("oa回调", "开始", json);
+
             JObject jObj = JObject.Parse(json);
-            var checkValidParams = new string[] { "taskId", "primary_key", "fun_name", "detail" };
-            foreach (string param in checkValidParams)
+            if (jObj["taskId"] == null || string.IsNullOrEmpty(jObj["taskId"]?.ToString()))
             {
-                if (!jObj.ContainsKey(param) || string.IsNullOrEmpty(jObj.GetValue(param).ToString()))
-                {
-                    returnParam.status = false;
-                    returnParam.msg = $"回调参数{param}缺少值";
-                    return returnParam.ToJson();
-                }
+                msg = "回调参数taskId缺少值";
+                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
+            }
+            if (jObj["detail"] == null || string.IsNullOrEmpty(jObj["detail"]?.ToString()))
+            {
+                msg = "回调参数detail缺少值";
+                return "{\"status\":false,\"msg\":\"" + msg + "\"}";
             }
 
+            bool flag = true;
             //启用事务
             var canTransationOper = false;
             try
@@ -143,15 +129,15 @@ namespace EAM.Third.Services
                 if (canTransationOper) _dbContext.Session.CommitTransaction();
 
                 //调用物资采购的回调函数
-                var isPass = item["operation"]?.ToString() == "提交"; //!= "退回"
-                var fun_name = jObj["fun_name"]?.ToString();
+                var isReject = item["operation"]?.ToString() == "退回";
+                var fun_name = item["fun_name"]?.ToString();
                 switch (fun_name)
                 {
                     case "_spCollectService.ApprovalCompletedAsync":
-                        await _spCollectService.ApprovalCompletedAsync(jObj["primary_key"]?.ToString(), isPass);
+                        await _spCollectService.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
                         break;
                     case "_repairPlanService.ApprovalCompletedAsync":
-                        await _repairPlanService.ApprovalCompletedAsync(jObj["primary_key"]?.ToString(), isPass);
+                        await _repairPlanService.ApprovalCompletedAsync(jObj["taskId"]?.ToString(), isReject);
                         break;
                     default:
                         throw new MessageException("未找到匹配的回调函数");
@@ -159,8 +145,9 @@ namespace EAM.Third.Services
             }
             catch (Exception ex)
             {
-                returnParam.status = false;
-                returnParam.msg = "回调异常：" + ex.Message;
+                await LogAsync("oa回调", ex.Message, json);
+                msg = "回调异常：" + ex.Message;
+                flag = false;
             }
             finally
             {
@@ -170,8 +157,7 @@ namespace EAM.Third.Services
                 }
             }
 
-            await _dbContext.DBLog("OA创建流程", "", "OA回调结束", returnParam.ToJson());
-            return returnParam.ToJson();
+            return "{\"status\":" + flag.ToString().ToLower() + ",\"msg\":\"" + msg + "\"}";
         }
 
         public string RemoveHtml(string html)
