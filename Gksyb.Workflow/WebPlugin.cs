@@ -18,6 +18,7 @@ namespace Gksyb.Workflow
         {
             var assembly = Assembly.GetExecutingAssembly();
             assembly.AddAllService();
+            assembly.AddEntityTypeBuilder();
             assembly.AddIEventSubscriber();
             builder.AddApplicationPart(assembly);
         }

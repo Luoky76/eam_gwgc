@@ -64,7 +64,7 @@
                 },
                 renderItem: function (item) {
                     return `<li style="height:48px;">
-                                <a href="/flow-create/${item.ID}" class="item-link item-content">
+                                <a href="/flow-create/${item.FLOW_CODE || item.ID}" class="item-link item-content">
                                     <div class="item-inner">
                                       <div>${item.FLOW_NAME}</div>
                                       <span class="badge color-blue">V${item.FLOW_VERSION}</span>
