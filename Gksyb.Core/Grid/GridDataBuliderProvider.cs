@@ -23,7 +23,7 @@ namespace Gksyb.Core.Grid
         /// <param name="source"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static async Task<GridData<IList>> GetGridData(this IDbContext source, GridRequest request, Action<IList<DbParam>> action = null)
+        public static async Task<GridData<List<T>>> GetGridData<T>(this IDbContext source, GridRequest request, Action<IList<DbParam>> action = null)
         {
             var whereTranslator = request.GetFilterTranslator();
             request.Where = whereTranslator.CommandText;
@@ -87,8 +87,8 @@ namespace Gksyb.Core.Grid
             {
                 sql = $"{request.View} {order}";
             }
-            var list = await source.SqlQueryAsync<dynamic>(sql, whereTranslator.Parms);
-            return new GridData<IList>() { Rows = list, Total = total };
+            var list = await source.SqlQueryAsync<T>(sql, whereTranslator.Parms);
+            return new GridData<List<T>>() { Rows = list, Total = total };
         }
 
         /// <summary>

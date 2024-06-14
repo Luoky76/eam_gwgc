@@ -1,8 +1,8 @@
 ﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
 using Gksyb.Core.Auth;
 using Gksyb.Core.Common;
-using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
+using Gksyb.Server.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +13,9 @@ namespace Gksyb.Server.Controllers.Auth
     [GksybAuthorize(true)]
     public class CommonController : BaseController
     {
-        private readonly ICommonService _commonService;
+        private readonly CommonService _commonService;
 
-        public CommonController(ICommonService commonService)
+        public CommonController(CommonService commonService)
         {
             _commonService = commonService;
         }
@@ -46,6 +46,7 @@ namespace Gksyb.Server.Controllers.Auth
         public async Task<AjaxResult> JsonValueAsync(QueryViewRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.ViewName)) return AjaxResult.Error("请传递视图参数");
+            request.ViewName = await HttpContext.ValidViewAsync(request.ViewName);
             var list = await _commonService.JsonValueAsync<dynamic>(request);
             return AjaxResult.Success(list, list.Count.CastTo<string>());
         }
@@ -58,7 +59,16 @@ namespace Gksyb.Server.Controllers.Auth
         [HttpPost, HttpGet]
         public async Task<AjaxResult> JsonValueMulAsync(IDictionary<string, IDictionary<string, object>> param)
         {
-            var data = await _commonService.JsonValueMulAsync(param);
+            var dic = new Dictionary<string, IDictionary<string, object>>();
+            if (param != null)
+            {
+                await param.ForEachAsync(async item =>
+                {
+                    var key = await HttpContext.ValidViewAsync(item.Key);
+                    dic[key] = item.Value;
+                });
+            }
+            var data = await _commonService.JsonValueMulAsync(dic);
             return AjaxResult.Success(data);
         }
 
@@ -83,7 +93,7 @@ namespace Gksyb.Server.Controllers.Auth
         {
             if (string.IsNullOrWhiteSpace(request.View)) return AjaxResult.Error("视图名称不能为空");
             request.View = await HttpContext.ValidViewAsync(request.View);
-            return AjaxResult.Success(await _commonService.QueryAsync(request), "");
+            return AjaxResult.Success(await _commonService.QueryAsync<dynamic>(request), "");
         }
 
         /// <summary>

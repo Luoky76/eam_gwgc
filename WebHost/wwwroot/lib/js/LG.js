@@ -8,25 +8,46 @@
         toolbarShowInLeft: true,
         onHeaderMenuBuild: function (menu, column) {
             var g = this, p = g.options;
-            var chartOpt = p.chartOptions;
-            if (!chartOpt) return;
-            var charMenu = $('<li class="l-grid-header-menu-chart"><i class="fa fa-bar-chart-o"></i> 图表</li>').insertBefore($(".l-grid-header-menu-columns", menu));
-            charMenu.bind('mouseup', function (e) {
-                if (e.button !== 0) return false;
-                var data = {}, type = g.getColumnRealType(column);
-                data[(type === "float" || type === "int") ? "y" : "x"] = column.name;
-                chartOpt.data = data;
-                $.ligerDialog.open({
-                    url: window.gksybConfigs.getUrl("System/grid-chart.html", window.gksybConfigs.urlBase),
-                    showMax: true,
-                    isResize: true,
-                    show: false,
-                    data: {
-                        gridid: g.id, chartOptions: chartOpt
-                    }
+            if (p.chartOptions) {
+                var chartOpt = p.chartOptions;
+                var charMenu = $('<li class="l-grid-header-menu-chart"><i class="fa fa-bar-chart-o"></i> 图表</li>').insertBefore($(".l-grid-header-menu-columns", menu));
+                charMenu.bind('mouseup', function (e) {
+                    if (e.button !== 0) return false;
+                    var data = {}, type = g.getColumnRealType(column);
+                    data[(type === "float" || type === "int") ? "y" : "x"] = column.name;
+                    chartOpt.data = data;
+                    $.ligerDialog.open({
+                        url: window.gksybConfigs.getUrl("System/grid-chart.html", window.gksybConfigs.urlBase),
+                        showMax: true,
+                        isResize: true,
+                        show: false,
+                        data: {
+                            gridid: g.id, chartOptions: chartOpt
+                        }
+                    });
+                    g._hideHeaderMenu();
                 });
-                g._hideHeaderMenu();
-            });
+            }
+            if (p.reportOptions) {
+                var reportOptions = p.reportOptions;
+                var charMenu = $('<li class="l-grid-header-menu-report"><i class="fa fa-tasks"></i> 报表</li>').insertBefore($(".l-grid-header-menu-columns", menu));
+                charMenu.bind('mouseup', function (e) {
+                    if (e.button !== 0) return false;
+                    var data = {}, type = g.getColumnRealType(column);
+                    data[(type === "float" || type === "int") ? "y" : "x"] = column.name;
+                    reportOptions.data = data;
+                    $.ligerDialog.open({
+                        url: window.gksybConfigs.getUrl("System/grid-report.html", window.gksybConfigs.urlBase),
+                        showMax: true,
+                        isResize: true,
+                        show: false,
+                        data: {
+                            gridid: g.id, reportOptions: p.reportOptions
+                        }
+                    });
+                    g._hideHeaderMenu();
+                });
+            }
         }
     });
 

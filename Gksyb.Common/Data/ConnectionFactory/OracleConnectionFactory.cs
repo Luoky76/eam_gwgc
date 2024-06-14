@@ -166,7 +166,7 @@ namespace Gksyb.Common.Data
         public override async Task<IDataReader> ExecuteReaderAsync()
         {
             DateTimeParamHandle();
-            var reader = await _oracleCommand.ExecuteReaderAsync() as OracleDataReader;
+            var reader = await _oracleCommand.ExecuteReaderAsync();
             reader.SuppressGetDecimalInvalidCastException = true;
             return reader;
         }
@@ -174,7 +174,7 @@ namespace Gksyb.Common.Data
         public override async Task<IDataReader> ExecuteReaderAsync(CommandBehavior behavior)
         {
             DateTimeParamHandle();
-            var reader = await _oracleCommand.ExecuteReaderAsync(behavior) as OracleDataReader;
+            var reader = await _oracleCommand.ExecuteReaderAsync(behavior);
             reader.SuppressGetDecimalInvalidCastException = true;
             return reader;
         }

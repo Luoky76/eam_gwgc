@@ -17,7 +17,7 @@
                 </a>
             </div>
         </div>
-        <div class="panel-setting panel panel-right panel-cover panel-resizable panel-init">
+        <div class="panel-setting panel panel-right panel-cover panel-resizable panel-init" style="overflow:auto;">
         </div>
         <div class="fab-setting fab fab-right-top display-none">
             <a><i class="icon material-icons">add</i></a>
@@ -90,7 +90,7 @@
                         options = chartOpt.options(options, me) || options;
                     }
                     else {
-                        $.extend(true, options, chartOpt.options);
+                        Framework7.utils.extend(options, chartOpt.options);
                     }
                 }
                 me.chart.setOption(options, true);

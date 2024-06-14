@@ -17,10 +17,13 @@ namespace Gksyb.Common.TCP
         private ClientInfo _client;
         private IPEndPoint _server;
         private bool _closed = false;
+        private bool _connected = false;
         private bool _reConnect = false;
 
         private readonly SocketAsyncEventArgs _connectEventArgs;
         private readonly SocketAsyncEventArgs _receiveEventArgs;
+        private readonly int _interval;
+        private readonly Timer _timer;
 
         /// <summary>
         /// 标识
@@ -38,7 +41,7 @@ namespace Gksyb.Common.TCP
         /// TCP客户端
         /// </summary>
         /// <param name="logPath">路径</param>
-        public BaseTcpClient(string id = null, LogPath logPath = null)
+        public BaseTcpClient(string id = null, LogPath logPath = null, int? interval = null)
         {
             ID = id;
             _logPath = logPath;
@@ -48,6 +51,11 @@ namespace Gksyb.Common.TCP
 
             _receiveEventArgs = new SocketAsyncEventArgs();
             _receiveEventArgs.Completed += OnReceiveCompleted;
+            if (interval.HasValue)
+            {
+                _interval = interval.Value;
+                _timer = new Timer(CheckInactive, null, _interval, _interval);
+            }
         }
 
         /// <summary>
@@ -71,6 +79,26 @@ namespace Gksyb.Common.TCP
         public event Action<ClientInfo, SocketError> OnClose;
 
         /// <summary>
+        /// 服务器不活动，重连
+        /// </summary>
+        private void CheckInactive(object state)
+        {
+            try
+            {
+                if (!_connected) return;
+                var now = DateTime.Now;
+                var lastActieveTime = _client?.ActieveTime ?? now;
+                if (lastActieveTime.AddMilliseconds(_interval) > now) return;
+                _logger?.LogError(_logPath, $"{_interval}毫秒内未接到{_server}的数据，重新连接");
+                Reconnect(SocketError.ConnectionReset);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(_logPath, ex.ToString());
+            }
+        }
+
+        /// <summary>
         /// 连接
         /// </summary>
         public void Connect(string ip, int port)
@@ -82,6 +110,7 @@ namespace Gksyb.Common.TCP
 
         private void Connect(IPEndPoint endPoint)
         {
+            _connected = false;
             _server = endPoint;
             _connectEventArgs.RemoteEndPoint = _server;
             var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
@@ -115,6 +144,7 @@ namespace Gksyb.Common.TCP
             }
             var buffer = new byte[_client.BufferLength];
             _receiveEventArgs.SetBuffer(buffer, 0, buffer.Length);
+            _connected = true;
             StartReceive();
         }
 
@@ -225,6 +255,7 @@ namespace Gksyb.Common.TCP
         {
             try
             {
+                _connected = false;
                 if (error != SocketError.Success)
                 {
                     if (_client?.Socket?.Connected == true)

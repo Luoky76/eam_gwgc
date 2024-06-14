@@ -1,7 +1,7 @@
 ﻿using Gksyb.Core.Grid;
-using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Gksyb.Server.Services.Common;
 using Microsoft.Extensions.Options;
 
 namespace Gksyb.Server.Services.System
@@ -11,7 +11,7 @@ namespace Gksyb.Server.Services.System
     /// </summary>
     public class ConfigurationService : IBaseService
     {
-        private readonly ICommonService _commonService;
+        private readonly CommonService _commonService;
         private readonly IDbContext _dbContext;
         private readonly SysContextOptions _options;
         private readonly string _appName;
@@ -19,7 +19,7 @@ namespace Gksyb.Server.Services.System
         /// <summary>
         /// 配置服务
         /// </summary>
-        public ConfigurationService(IDbContext dbContext, ICommonService commonService, IOptions<SysContextOptions> options)
+        public ConfigurationService(IDbContext dbContext, CommonService commonService, IOptions<SysContextOptions> options)
         {
             _dbContext = dbContext;
             _commonService = commonService;
