@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Bibliography;
 using EAM.Device.Interfaces;
 using EAM.Device.services.Dto;
 using Gksyb.Common;
@@ -64,7 +65,7 @@ namespace EAM.Device.Services
         public async Task<AjaxResult> ImportPmAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile)
         {
             //获取导入数据
-            _ = await formFile.Import<PmImportDto>(async c =>
+            _=await formFile.Import<PmImportDto>(async c =>
             {
                 var zhouqi = "";
                 var is_fj = "";
@@ -102,7 +103,7 @@ namespace EAM.Device.Services
                 //主键生成
                 //var mainKey = GuidHelper.NewSnowflakeId().ToString();
                 //查船舶的ID
-                var deviceId = await _dbContext.Query<DEVICE_CARD>(b => c.DEVICE_CODE == b.DEVICE_NO).Select(b => b.DEVICE_ID).FirstOrDefaultAsync() ?? throw new MessageException($"序号为 {c.ID} 的船舶编号异常");
+                var deviceId =await _dbContext.Query<DEVICE_CARD>(b => c.DEVICE_CODE==b.DEVICE_NO).Select(b => b.DEVICE_ID).FirstOrDefaultAsync()??throw new MessageException($"序号为 {c.ID} 的船舶编号异常");
                 var pmlists = c.MapTo<PM_STD_LIST>();
                 pmlists.CYCLE = zhouqi;
                 pmlists.IS_ATTACH = is_fj;
@@ -212,6 +213,7 @@ namespace EAM.Device.Services
                     b.ASSET_CODE,
                     b.INSTALL_SITE,
                     b.DEPT_NAME,
+                    b.DEPT_ID,
                     b.CARD_USER,
                     b.CARD_USERID,
                 })
@@ -222,7 +224,7 @@ namespace EAM.Device.Services
                     continue;
 
                 //获取维保项目清单基础数据
-                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "每周" && c.DEPARTMENT == department);
+                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE=="每周"&&c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
                     var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
@@ -236,6 +238,7 @@ namespace EAM.Device.Services
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         SHIP_DEPT = shipDept,
                         WDEPT_ID = shipDept,
                         EXE_USER = qrycard.CARD_USER ?? "",
@@ -303,6 +306,7 @@ namespace EAM.Device.Services
                     b.ASSET_CODE,
                     b.INSTALL_SITE,
                     b.DEPT_NAME,
+                    b.DEPT_ID,
                     b.CARD_USER,
                     b.CARD_USERID,
                 })
@@ -313,7 +317,7 @@ namespace EAM.Device.Services
                     continue;
 
                 //获取维保项目清单基础数据
-                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "月度" && c.DEPARTMENT == department);
+                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE=="月度"&&c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
                     var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
@@ -324,6 +328,7 @@ namespace EAM.Device.Services
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
@@ -389,6 +394,7 @@ namespace EAM.Device.Services
                 {
                     b.DEVICE_ID,
                     b.DEVICE_NAME,
+                    b.DEPT_ID,
                     a.DEVICE_CODE,
                     b.DEVICE_TYPE,
                     b.ASSET_CODE,
@@ -404,7 +410,7 @@ namespace EAM.Device.Services
                     continue;
 
                 //获取维保项目清单基础数据
-                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "季度" && c.DEPARTMENT == department);
+                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE=="季度"&&c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
                     var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
@@ -415,6 +421,7 @@ namespace EAM.Device.Services
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",
@@ -480,6 +487,7 @@ namespace EAM.Device.Services
                 {
                     b.DEVICE_ID,
                     b.DEVICE_NAME,
+                    b.DEPT_ID,
                     a.DEVICE_CODE,
                     b.DEVICE_TYPE,
                     b.ASSET_CODE,
@@ -495,7 +503,7 @@ namespace EAM.Device.Services
                     continue;
 
                 //获取维保项目清单基础数据
-                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "年度" && c.DEPARTMENT == department);
+                var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE=="年度"&&c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
                     var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
@@ -506,6 +514,7 @@ namespace EAM.Device.Services
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
+                        DEPT_ID = qrycard.DEPT_ID ?? "",
                         DEVICE_CODE = qrycard.DEVICE_CODE ?? "",
                         ASSET_CODE = qrycard.ASSET_CODE ?? "",
                         DEPT_NAME = qrycard.DEPT_NAME ?? "",

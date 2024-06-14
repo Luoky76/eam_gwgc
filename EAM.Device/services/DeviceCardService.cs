@@ -1,6 +1,8 @@
 ﻿using Chloe;
 using EAM.Device.Interfaces;
 using Gksyb.Common;
+using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -69,7 +71,7 @@ namespace EAM.Device.Services
             {
                 c.DEVICE_NAME,
                 c.DEVICE_ID,
-                DEPT_ID = c.DEPT_ID + c.DEVICE_ID,
+                DEPT_ID = c.DEPT_ID+c.DEVICE_ID,
                 c.DEPT_NAME,
                 TYPE = "0",
                 PARENTID = c.DEPT_ID,
@@ -187,7 +189,7 @@ namespace EAM.Device.Services
         private async Task BeforeAdd(DEVICE_CARD entity)
         {
             entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
-            if (entity.TYPE_ID == "2")
+            if (entity.TYPE_ID =="2")
             {
                 entity.STATUS = "1";
             }

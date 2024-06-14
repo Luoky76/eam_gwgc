@@ -12,6 +12,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 
@@ -41,11 +42,11 @@ namespace EAM.Repair.services
         public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
         {
             var result = await _comboxDataService.Get(new Dictionary<string, object>(){
-                    {"ShipList",null },
-                    {"MaintDept", null},
-                    {"RepairType",null },
-                    {"RepitemType",null },
-                    {"RepairDealType",null },
+                    { "ShipList", null },
+                    { "MaintDept", null},
+                    { "RepairType", null },
+                    { "RepitemType", null },
+                    { "RepairDealType", null },
                     { "Auditing", null },
                     { "User", null },
                     { "PlanState", null },
@@ -346,7 +347,7 @@ namespace EAM.Repair.services
                 mainSuccess = !execResult.IsError;
                 if (mainSuccess)  //主表是否保存成功
                 {
-                    requestdet = requestdet ?? new SaveRequest<REP_PLAN_EXE_ITEM>();
+                    requestdet ??= new SaveRequest<REP_PLAN_EXE_ITEM>();
 
                     execResult = await _dbContext.SaveEntityAnsyc(requestdet,
                          c => new
@@ -412,7 +413,7 @@ namespace EAM.Repair.services
         {
             if (entity.AUDITING_A == "0")
             {
-                entity.EXE_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+                entity.EXE_ID = _rentID =GuidHelper.NewSnowflakeId().ToString();
                 //request.AUDIT_TIME = DateTime.Now;
 
                 entity.REPORT_USER = _userSession.UserName;
@@ -461,7 +462,7 @@ namespace EAM.Repair.services
             }
             if (request.AUDITING == "1" && request.AUDITING_D == null)
             {
-                var qry = _dbContext.Query<REP_PLAN_EXE_ITEM>(c => c.EXE_ID == request.EXE_ID).Select(c => c.IS_COMPLETE).ToList();
+                var qry = _dbContext.Query<REP_PLAN_EXE_ITEM>(c=>c.EXE_ID == request.EXE_ID).Select(c=>c.IS_COMPLETE).ToList();
                 if (qry.Contains(null))
                 {
                     throw new MessageException("请确认是否完成");
@@ -469,13 +470,13 @@ namespace EAM.Repair.services
                 // request.EIDT_DATE = DateTime.Now;
                 request.AUDITING_D = "0";
                 request.PLAN_STATE = "40"; // 待验收
-                /*
-                                string type = "WXYS" + DateTime.Now.ToString("yyyyMM");
-                                string def = type + "0000";
-                                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.CHECK_CODE.Contains(type))
-                                    .Select(x => Sql.Max(x.CHECK_CODE) ?? def).FirstOrDefaultAsync();
-                                var index = model.SubStr(10, 4).CastTo<int>() + 1;
-                                request.CHECK_CODE = type + index.ToString("D4");*/
+/*
+                string type = "WXYS" + DateTime.Now.ToString("yyyyMM");
+                string def = type + "0000";
+                var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.CHECK_CODE.Contains(type))
+                    .Select(x => Sql.Max(x.CHECK_CODE) ?? def).FirstOrDefaultAsync();
+                var index = model.SubStr(10, 4).CastTo<int>() + 1;
+                request.CHECK_CODE = type + index.ToString("D4");*/
             }
             if (request.AUDITING_D == "1")
             {
@@ -563,7 +564,7 @@ namespace EAM.Repair.services
             var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == exeId && c.table_name == "REP_PLAN_EXE").ToList();
             var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
             string attachName = string.Empty, attachUrl = string.Empty;
-            if (fj != null && fj.Count() > 0)
+            if (fj != null && fj.Count > 0)
             {
                 foreach (var item in fj)
                 {
@@ -588,24 +589,23 @@ namespace EAM.Repair.services
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
             string directoryPath = "UploadDirectory/RepairPlan/";
-            string fileUrl = directoryPath + fileRealName;
+            string fileUrl = "";
             //创建文件夹
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            if (detQuery.Count() > 0)
+            if (detQuery.Count > 0)
             {
-                try
-                {
-                    IExporter exporter = new ExcelExporter();
-                    var fileResult = await exporter.Export(fileUrl, detQuery);
-                    fileName = "维修计划(" + query.PLAN_CODE + ").xlsx";
-                }
-                catch (Exception ex)
-                {
-                    return AjaxResult.Error("推送OA 创建维修项目明细失败：" + ex.Message, "失败");
-                }
+                fileName = "维修计划(" + query.PLAN_CODE + ").xlsx";
+
+                //创建EXCEL文件
+                IExporter exporter = new ExcelExporter();
+                var content = await exporter.ExportAsByteArray(detQuery);
+                using var stream = new MemoryStream();
+                stream.Write(content, 0, content.Length);
+                var ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
+                fileUrl = await ff.SaveAs("RepairPlan", fileRealName);
             }
 
             string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$"
@@ -614,11 +614,11 @@ namespace EAM.Repair.services
             var mainQuery = await _dbContext.Query<REP_PLAN_EXE>(c => c.EXE_ID == exeId)
                 .Select(c => new
                 {
-                    c.PLAN_CODE,
+                    plan_code = c.PLAN_CODE,
                     primary_key = c.EXE_ID,
                     fun_name = "_repairPlanService.ApprovalCompletedAsync",
                     bdmc = c.DEPT_NAME + "维修计划申请",
-                    bz = c.PLAN_MEMO,
+                    sm = c.PLAN_MEMO,
                     fjsc = attach
                 }).FirstAsync();
 
@@ -628,8 +628,8 @@ namespace EAM.Repair.services
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
-            OAHandle oa = new OAHandle(_dbContext);
-            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "{}");
+            var oa = new OAHandle(_dbContext);
+            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.plan_code}）- {_userSession.RealName}", _userSession.Phone, _userSession.UserName, mainQuery, null);
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 

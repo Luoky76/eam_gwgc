@@ -58,26 +58,26 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var res = await _dbContext.Query<SPARE_APPLY>()
-                 .Select(c => new SpareApplyRes
-                 {
-                     APPLY_ID = c.APPLY_ID,
-                     AUDITING = c.AUDITING,
-                     APPLY_CODE = c.APPLY_CODE,
-                     MEMO = c.MEMO,
-                     APPLY_DATE = c.APPLY_DATE,
-                     EDIT_USERID = c.EDIT_USERID,
-                     EDIT_USER = c.EDIT_USER,
-                     DEPT_ID = c.DEPT_ID,
-                     DEPT_NAME = c.DEPT_NAME,
-                     SEC_DEPTID = c.SEC_DEPTID,
-                     SEC_DEPT = c.SEC_DEPT,
-                     CREATE_USERID = c.CREATE_USERID,
-                     CREATE_DATE = c.CREATE_DATE,
-                     MODIFY_USERID = c.MODIFY_USERID,
-                     MODIFY_DATE = c.MODIFY_DATE
-                 })
-                 .GetGridData(request);
+           var res =  await _dbContext.Query<SPARE_APPLY>()
+                .Select(c => new SpareApplyRes
+                {
+                    APPLY_ID = c.APPLY_ID,
+                    AUDITING = c.AUDITING,
+                    APPLY_CODE = c.APPLY_CODE,
+                    MEMO = c.MEMO,
+                    APPLY_DATE = c.APPLY_DATE,
+                    EDIT_USERID = c.EDIT_USERID,
+                    EDIT_USER = c.EDIT_USER,
+                    DEPT_ID = c.DEPT_ID,
+                    DEPT_NAME = c.DEPT_NAME,
+                    SEC_DEPTID = c.SEC_DEPTID,
+                    SEC_DEPT = c.SEC_DEPT,
+                    CREATE_USERID = c.CREATE_USERID,
+                    CREATE_DATE = c.CREATE_DATE,
+                    MODIFY_USERID = c.MODIFY_USERID,
+                    MODIFY_DATE = c.MODIFY_DATE
+                })
+                .GetGridData(request);
             foreach (var item in (List<SpareApplyRes>)res.Rows)
             {
                 item.DETAILCOUNT = _dbContext.Query<SPARE_APPLY_DET>().Where(t => t.APPLY_ID == item.APPLY_ID).Count();
@@ -177,7 +177,7 @@ namespace EAM.Material.Services
                 var dets = det.Where(t => t.APPLY_ID == item.APPLY_ID).ToList();
                 foreach (var d in dets)
                 {
-                    if (_dbContext.Query<BASE_SPCATALOG>().Any(t => t.SP_CODE == d.SP_CODE))
+                    if (_dbContext.Query<BASE_SPCATALOG>().Any(t=>t.SP_CODE == d.SP_CODE))
                     {
                         throw new MessageException("物资编码不可重复！");
                     }
@@ -239,8 +239,7 @@ namespace EAM.Material.Services
         public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
         {
             var apply = _dbContext.QueryByKey<SPARE_APPLY>(sid);
-            if (apply == null)
-            {
+            if (apply == null) {
                 return AjaxResult.Error("参数错误");
             }
 
@@ -275,9 +274,9 @@ namespace EAM.Material.Services
                     temp.MEMO = c.MEMO;
                     temp.APPLY_ID = apply.APPLY_ID;
                     temp.IS_RECOVERY = "0";
-
+                  
                     importResult.Add(temp);
-
+                 
                 });
                 if (importResult.Count > 0)
                 {
@@ -353,14 +352,15 @@ namespace EAM.Material.Services
         private async Task BeforeAddDet(SPARE_APPLY_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
+           
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
             if (string.IsNullOrEmpty(entity.SP_CODE))
             {
-                var typeCount = _dbContext.Query<SPARE_APPLY_DET>().Where(t => t.TYPE_ID == entity.TYPE_ID).Count();
-                entity.SP_CODE = $"{entity.TYPE_CODE}-{(typeCount + 1).ToString("D4")}";
+                var model = await _dbContext.Query<SPARE_APPLY_DET>(x => x.TYPE_ID == entity.TYPE_ID).Select(x => Sql.Max(x.SP_CODE)).FirstOrDefaultAsync();
+                var index = string.IsNullOrEmpty(model) ? 1 : model.Substring(model.Length - 4).CastTo<int>() + 1;
+                entity.SP_CODE = $"{entity.TYPE_CODE}-{index.ToString("D4")}";
             }
-
+          
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.EDIT_DATE = dt;
@@ -409,7 +409,7 @@ namespace EAM.Material.Services
                 c.LAST_PROVIDER,
                 c.STORE_NUM,
                 c.STORE_PRICE,
-                SEARCH = c.SP_CODE + c.SP_NAME + c.SP_SIZE + c.PRODUCE + c.UNIT + c.TYPE_NAME
+                SEARCH = c.SP_CODE + c.SP_NAME + c.SP_SIZE + c.PRODUCE + c.UNIT+ c.TYPE_NAME
             }).GetGridData(request);
         }
 
@@ -456,31 +456,31 @@ namespace EAM.Material.Services
 
         public async Task<AjaxResult> SpDisableSave(SaveRequest<SP_DISABLE> request)
         {
-            await _dbContext.SaveEntityAnsyc(request,
-               c => new
-               {
-                   c.DISABLE_ID,
-                   c.DISABLE_CODE,
-                   c.MEMO,
-                   c.DISABLE_DATE,
-                   c.SEC_DEPTID,
-                   c.SEC_DEPT,
-                   c.DEPT_ID,
-                   c.DEPT_NAME,
-                   c.AUDITING,
-                   c.EDIT_USER,
-                   c.EDIT_USERID,
-                   c.CREATE_USERID,
-                   c.CREATEDATE,
-                   c.MODIFY_USERID,
-                   c.MODIFYDATE
-               },
-               c => a => a.DISABLE_ID == c.DISABLE_ID, SpDisableBeforeAdd, SpDisableBeforeUpdate);
+             await _dbContext.SaveEntityAnsyc(request,
+                c => new
+                {
+                    c.DISABLE_ID,
+                    c.DISABLE_CODE,
+                    c.MEMO,
+                    c.DISABLE_DATE,
+                    c.SEC_DEPTID,
+                    c.SEC_DEPT,
+                    c.DEPT_ID,
+                    c.DEPT_NAME,
+                    c.AUDITING,
+                    c.EDIT_USER,
+                    c.EDIT_USERID,
+                    c.CREATE_USERID,
+                    c.CREATEDATE,
+                    c.MODIFY_USERID,
+                    c.MODIFYDATE
+                },
+                c => a => a.DISABLE_ID == c.DISABLE_ID, SpDisableBeforeAdd, SpDisableBeforeUpdate);
             var id = "";
             if (request.Added?.Count > 0)
                 id = request.Added[0].DISABLE_ID;
 
-            return AjaxResult.Success(id);
+           return AjaxResult.Success(id);
         }
         private async Task SpDisableBeforeAdd(SP_DISABLE entity)
         {

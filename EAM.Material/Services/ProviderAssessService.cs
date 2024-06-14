@@ -1,5 +1,6 @@
 ﻿using EAM.Material.DTO;
 using EAM.Material.Interfaces;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -93,7 +94,9 @@ namespace EAM.Material.Services
                     b.END_TIME,
                     b.PROVIDER_PRODUCTION,
                     b.CREATE_USERID,
-                }).GetGridData(request);
+                })
+                .OrderBy(c => c.AUDITING)
+                .GetGridData(request);
             return list;
         }
 
@@ -119,7 +122,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFYDATE
                 })
-                .Where(c => c.ASSESS_TASK_ID == assessTaskId)
+                .Where(c => c.ASSESS_TASK_ID == assessTaskId )
                 .GetGridData(null);
             return list;
         }

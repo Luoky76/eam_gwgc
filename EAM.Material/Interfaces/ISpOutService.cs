@@ -1,7 +1,12 @@
-﻿using Gksyb.Model;
-using Gksyb.Model.Grid;
+﻿using Gksyb.Model.Grid;
+using Gksyb.Model;
 using Gksyb.Model.UI;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace EAM.Material.Interfaces
 {
@@ -113,13 +118,13 @@ namespace EAM.Material.Interfaces
         /// </summary>
         /// <returns></returns>
         public Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request);
-
+        
         /// <summary>
         /// 提交
         /// </summary>
         /// <returns></returns>
         public Task<int> SubmitSpOutBack(string sid);
-
+        
         /// <summary>
         /// 撤销提交
         /// </summary>

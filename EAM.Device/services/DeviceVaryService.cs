@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
@@ -7,7 +8,12 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace EAM.Device.Services
 {

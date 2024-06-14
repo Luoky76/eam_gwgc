@@ -72,7 +72,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetRepOutDetailAsync(string ID)
         {
-            if (ID == null) return AjaxResult.Error("参数错误");
+            if (ID==null) return AjaxResult.Error("参数错误");
             return AjaxResult.Success(await _service.GetRepOutDetail(ID), "成功");
         }
 

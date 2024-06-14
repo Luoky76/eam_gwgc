@@ -1,4 +1,5 @@
-﻿using EAM.Material.DTO;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using EAM.Material.DTO;
 using EAM.Material.Interfaces;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -7,7 +8,11 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
+using static StackExchange.Redis.Role;
 
 namespace EAM.Material.Services
 {
@@ -234,8 +239,8 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_ORDER entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-            entity.DEPT_ID = string.IsNullOrEmpty(entity.DEPT_ID) ? _userSession.Corp.CorpID : entity.DEPT_ID;
-            entity.DEPT_NAME = string.IsNullOrEmpty(entity.DEPT_NAME) ? _userSession.Corp.CName : entity.DEPT_NAME;
+            entity.DEPT_ID = string.IsNullOrEmpty(entity.DEPT_ID)? _userSession.Corp.CorpID: entity.DEPT_ID;
+            entity.DEPT_NAME = string.IsNullOrEmpty(entity.DEPT_NAME) ? _userSession.Corp.CName: entity.DEPT_NAME;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
@@ -253,11 +258,11 @@ namespace EAM.Material.Services
                         AUDITING = "1",
                         BUY_USER = _userSession.RealName,
                         BUY_USERID = _userSession.UserID.ToString(),
-                        BUY_USERDEPTID = _userSession.Corp.CorpID
+                        BUY_USERDEPTID= _userSession.Corp.CorpID
                     });
 
             //数据同步到物资收货中
-            var order = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.ORDER_ID)).ToList();
+            var order = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.ORDER_ID)).ToList();         
             foreach (var s in order)
             {
                 var dets = _dbContext.Query<SP_ORDER_DETAIL>().Where(t => t.ORDER_ID == s.ORDER_ID).ToList();
@@ -515,14 +520,14 @@ namespace EAM.Material.Services
                 query = query.Where(t => t.ORDER_DATE.Value.Year.Equals(YEAR));
             }
             var res = await query.Select(t => new OrderExportData
-            {
-                ORDER_CODE = t.ORDER_CODE,
-                ORDER_TYPE = t.ORDER_TYPE,
-                ORDER_DATE = t.ORDER_DATE,
-                DEPT_NAME = t.DEPT_NAME,
-                ORDER_MONEY = t.ORDER_MONEY,
-                PROVIDER_NAME = t.PROVIDER_NAME
-            })
+                {
+                    ORDER_CODE = t.ORDER_CODE,
+                    ORDER_TYPE = t.ORDER_TYPE,
+                    ORDER_DATE = t.ORDER_DATE,
+                    DEPT_NAME = t.DEPT_NAME,
+                    ORDER_MONEY = t.ORDER_MONEY,
+                    PROVIDER_NAME = t.PROVIDER_NAME
+                })
                 .GetGridData(request);
             var dic = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "order_src").ToList();
             foreach (var item in (List<OrderExportData>)res.Rows)

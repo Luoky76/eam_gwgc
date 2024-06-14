@@ -209,7 +209,7 @@ namespace EAM.Material.Services
                     if (orderDetail != null)
                     {
                         //超期
-                        if (orderDetail.REQ_DATE.HasValue && entity.RECEIVE_DATE > orderDetail.REQ_DATE)
+                        if (orderDetail.REQ_DATE.HasValue && entity.RECEIVE_DATE > orderDetail.REQ_DATE) 
                         {
                             orderDetail.OVERDUE = "1";
                         }
@@ -232,8 +232,7 @@ namespace EAM.Material.Services
                 var detquery = await _dbContext.Query<SP_RECEIVE_DET>()
                     .Where(x => x.RECEIVE_ID == entity.RECEIVE_ID)
                     .LeftJoin<SP_ORDER_DETAIL>((a, b) => a.ORDERDET_ID == b.ORDERDET_ID)
-                    .Select((a, b) => new
-                    {
+                    .Select((a, b) => new {
                         DSCOUNT = b.COUNT - (b.STOP_NUM ?? 0) - (b.RECEIVE_COUNT2 ?? 0),
                         a.COUNT,
                         a.ORDERDET_ID,
@@ -398,7 +397,7 @@ namespace EAM.Material.Services
             })
             .OrderByDesc(x => x.ORDER_DATE)
             .ToListAsync();
-
+            
             return AjaxResult.Success(orderQuery);
         }
 
@@ -410,13 +409,13 @@ namespace EAM.Material.Services
         {
             var spQuery = await _dbContext.JoinQuery<SP_ORDER_DETAIL, SP_ORDER>((a, b) => new object[] {
                 JoinType.LeftJoin,a.ORDER_ID==b.ORDER_ID
-            }).Where((a, b) => b.AUDITING == "1" && (a.COUNT - (a.STOP_NUM ?? 0)) > (a.RECEIVE_COUNT2 ?? 0)).Select((a, b) => new
+            }).Where((a, b) => b.AUDITING == "1" && (a.COUNT-(a.STOP_NUM ?? 0)) > (a.RECEIVE_COUNT2 ?? 0)).Select((a, b) => new
             {
                 a.ORDER_ID,
                 a.ORDERDET_ID,
                 a.COUNT,
                 a.STOP_NUM,
-                DSCOUNT = a.COUNT - (a.STOP_NUM ?? 0) - (a.RECEIVE_COUNT2 ?? 0),
+                DSCOUNT = a.COUNT-(a.STOP_NUM ?? 0)-(a.RECEIVE_COUNT2 ?? 0),
                 a.PRICE,
                 a.SP_CODE,
                 a.SP_NAME,
@@ -460,7 +459,7 @@ namespace EAM.Material.Services
                 DDCOUNT = b.COUNT,
                 a.ORDERDET_ID,
                 a.COUNT,
-                DSCOUNT = b.COUNT - (b.STOP_NUM ?? 0) - (b.RECEIVE_COUNT2 ?? 0),
+                DSCOUNT = b.COUNT -(b.STOP_NUM ?? 0) -(b.RECEIVE_COUNT2 ?? 0),
                 a.PRICE,
                 a.SP_CODE,
                 a.SP_NAME,

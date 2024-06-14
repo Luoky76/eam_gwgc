@@ -119,7 +119,7 @@ namespace EAM.Device.Services
         {
             //默认值
             var def = "000";
-            if (entity.PRE_TYPEID != "")
+            if (entity.PRE_TYPEID !=  "")
             {
                 //取出父级节点的最大值
                 var pacode = await _dbContext.Query<BASE_DEVICETYPE>(x => x.TYPE_ID == entity.PRE_TYPEID)

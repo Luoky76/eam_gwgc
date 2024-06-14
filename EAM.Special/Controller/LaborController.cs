@@ -4,6 +4,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
+using System.Formats.Asn1;
 
 namespace EAM.Special.Controller
 {
@@ -12,10 +13,9 @@ namespace EAM.Special.Controller
     {
         private readonly ILaborService _service;
 
-        public LaborController(ILaborService laborService)
-        {
-
-            _service = laborService;
+        public LaborController(ILaborService laborService) { 
+        
+        _service= laborService;
         }
 
         [HttpPost]
@@ -141,7 +141,7 @@ namespace EAM.Special.Controller
         {
             return await _service.LaboExchangeGet(id);
         }
-
+     
         [HttpPost]
         public async Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet)
         {

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Data;
 
 namespace EAM.Material.DTO
 {

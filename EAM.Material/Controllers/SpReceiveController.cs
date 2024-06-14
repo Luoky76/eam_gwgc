@@ -1,8 +1,13 @@
 ﻿using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
-using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Gksyb.Model;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace EAM.Material.Controllers
 {
@@ -41,7 +46,7 @@ namespace EAM.Material.Controllers
         }
         public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
         {
-            return await _service.Save(request, requestdet);
+            return await _service.Save(request,requestdet);
         }
 
         public async Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request)

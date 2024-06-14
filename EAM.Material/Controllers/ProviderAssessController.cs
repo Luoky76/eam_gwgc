@@ -1,4 +1,5 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.DTO;
+using EAM.Material.Interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;

@@ -1,6 +1,9 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
+using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -91,8 +94,8 @@ namespace EAM.Special.Services
                     c.TYPE_NAME,
                     c.TYPE_CODE,
                     c.ASSETNO,
-                    c.BRAND,
-                    c.ASSET_TYPE,
+                    c.PRODUCE,
+                    c.ASSET_SIZE,
                     c.DEPT_ID,
                     c.DEPT_NAME,
                     c.PERSON,
@@ -156,8 +159,8 @@ namespace EAM.Special.Services
                     c.INSTALL_SITE,
                     c.TYPE_NAME,
                     c.ASSETNO,
-                    c.BRAND,
-                    c.ASSET_TYPE,
+                    c.PRODUCE,
+                    c.ASSET_SIZE,
                     c.SERIAL_NUM,
                     c.CONFIG_INFO,
                     c.USE_STATE,

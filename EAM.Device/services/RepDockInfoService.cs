@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.Wordprocessing;
 using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -96,7 +97,7 @@ namespace EAM.Device.services
                     c.MODIFYDATE,
                     c.DOCK_ID,
                 },
-                c => a => a.DOCK_ID == c.DOCK_ID, BeforeAdd);
+                c => a => a.DOCK_ID  == c.DOCK_ID, BeforeAdd);
         }
 
         public async Task BeforeAdd(BASE_DOCK entity)
@@ -243,9 +244,8 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> UnSubmitRepDockPlan(string sid)
         {
-            var qryplan = await _dbContext.Query<REP_DOCK_PLAN>(c => c.PLAN_ID == sid && c.AUDITING_EXE == "1").FirstOrDefaultAsync();
-            if (qryplan == null)
-            {
+            var qryplan =await _dbContext.Query<REP_DOCK_PLAN>(c => c.PLAN_ID == sid && c.AUDITING_EXE == "1").FirstOrDefaultAsync();
+            if (qryplan == null) {
                 await _dbContext.UpdateAsync<REP_DOCK_PLAN>(
                     x => x.PLAN_ID == sid,
                     x => new REP_DOCK_PLAN
@@ -300,8 +300,7 @@ namespace EAM.Device.services
 
         public async Task BeforeAddPlandet(REP_DOCK_PLAN_ITEM entity)
         {
-            if (entity.LABOR_NUM < 0 || entity.TAKE_TIME < 0)
-            {
+            if (entity.LABOR_NUM<0||entity.TAKE_TIME<0) {
                 throw new MessageException("预计人员数量或预计花费时间不可为负数！");
             }
             entity.PLAN_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
@@ -310,7 +309,7 @@ namespace EAM.Device.services
         }
         public async Task UpdateAddPlandet(REP_DOCK_PLAN_ITEM entity)
         {
-            if (entity.LABOR_NUM < 0 || entity.TAKE_TIME < 0)
+            if (entity.LABOR_NUM<0||entity.TAKE_TIME<0)
             {
                 throw new MessageException("预计人员数量或预计花费时间不可为负数！");
             }
@@ -339,7 +338,7 @@ namespace EAM.Device.services
                  }).ToList();
             foreach (var query in querys)
             {
-                if (query.IS_LEAVE == null || query.EXE_EDATE == null || query.EXE_BDATE == null)
+                if (query.IS_LEAVE==null||query.EXE_EDATE==null||query.EXE_BDATE==null)
                 {
                     throw new MessageException("码头实施详情没填完整！");
                 }
@@ -400,7 +399,7 @@ namespace EAM.Device.services
         public async Task<int> UnSubmitRepDockExe(string sid)
         {
             var qryexeitem = await _dbContext.Query<REP_DOCK_CHECK>(c => c.EXE_CODE == sid)
-                .Select(c => c.AUDITING_CONFIRM)
+                .Select(c=>c.AUDITING_CONFIRM)
                 .ToListAsync();
             if (qryexeitem.Contains("1"))
             {
@@ -458,7 +457,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetRepDockExeList(GridRequest request)
         {
             return await _dbContext.Query<REP_DOCK_PLAN>()
-                .Where(c => c.AUDITING_PLAN == "1")
+                .Where(c => c.AUDITING_PLAN=="1")
                 .OrderBy(c => c.AUDITING_EXE)
                 .ThenByDesc(c => c.EXE_CODE)
                 .GetGridData(request);
@@ -476,13 +475,13 @@ namespace EAM.Device.services
             foreach (var sid in sids)
             {
                 var qry = await _dbContext.Query<REP_DOCK_CHECK>()
-                    .Where(c => c.CHECK_ID == sid)
+                    .Where(c => c.CHECK_ID==sid)
                     .Select(c => new
                     {
                         c.IS_LEAVE,
                         c.REP_CONTENT,
                     }).FirstAsync();
-                if (qry.IS_LEAVE == null || qry.REP_CONTENT == null)
+                if (qry.IS_LEAVE == null||qry.REP_CONTENT == null)
                 {
                     throw new MessageException("核对码头维修确认单是否填写完成！");
                 }
@@ -502,7 +501,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<int> UnSubmitRepDockConfirm(string sid)
         {
-            var updaterepout = await _dbContext.UpdateAsync<REP_DOCK_CHECK>(x => sid == x.CHECK_ID,
+            var updaterepout = await _dbContext.UpdateAsync<REP_DOCK_CHECK>(x => sid==x.CHECK_ID,
                  x => new REP_DOCK_CHECK
                  {
                      AUDITING_CHECK = "",
@@ -547,7 +546,7 @@ namespace EAM.Device.services
             foreach (var sid in sids)
             {
                 var qry = await _dbContext.Query<REP_DOCK_CHECK>()
-                    .Where(c => c.CHECK_ID == sid)
+                    .Where(c => c.CHECK_ID==sid)
                     .Select(c => new
                     {
                         c.CHECK_DESC,
@@ -625,7 +624,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetRepDockCheckList(GridRequest request)
         {
             return await _dbContext.Query<REP_DOCK_CHECK>()
-                .Where(c => c.AUDITING_CONFIRM == "1")
+                .Where(c => c.AUDITING_CONFIRM=="1")
                 .OrderBy(c => c.AUDITING_CHECK)
                 .ThenByDesc(c => c.CHECK_CODE)
                 .GetGridData(request);

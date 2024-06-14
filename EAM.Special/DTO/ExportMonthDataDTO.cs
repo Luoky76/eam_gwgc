@@ -1,6 +1,7 @@
 ﻿using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
 using Magicodes.ExporterAndImporter.Pdf;
+using System.ComponentModel.DataAnnotations;
 using WkHtmlToPdfDotNet;
 
 namespace EAM.Special.DTO

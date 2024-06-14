@@ -5,7 +5,10 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using System;
 using System.Collections.Concurrent;
+using System.Data.SqlTypes;
+using System.Linq;
 
 namespace EAM.Material.Services
 {
@@ -333,9 +336,9 @@ namespace EAM.Material.Services
                 var appmoney = 0m;
                 foreach (var qryoutappdet in qryoutappdets)
                 {
-                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.NUM > 0)
-                        .Where(c => c.SP_CODE == qryoutappdet.SP_CODE && c.SP_ID == qryoutappdet.SP_ID && c.STOCK_ID == qryoutappdet.STOCK_ID
-                             && c.SP_SIZE == qryoutappdet.SP_SIZE && c.UNIT == qryoutappdet.UNIT && c.SP_NAME == qryoutappdet.SP_NAME && c.STOCK_NAME == qryoutappdet.STOCK_NAME)
+                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.NUM>0)
+                        .Where(c => c.SP_CODE==qryoutappdet.SP_CODE&&c.SP_ID == qryoutappdet.SP_ID&&c.STOCK_ID == qryoutappdet.STOCK_ID
+                             &&c.SP_SIZE == qryoutappdet.SP_SIZE&&c.UNIT == qryoutappdet.UNIT&&c.SP_NAME == qryoutappdet.SP_NAME&&c.STOCK_NAME == qryoutappdet.STOCK_NAME)
                         .OrderBy(c => c.IN_DATE)
                         .ToListAsync();
                     //取总数量
@@ -525,7 +528,7 @@ namespace EAM.Material.Services
         public async Task<int> SubmitSpOutStore(string sid)
         {
             var qry = await _dbContext.Query<SP_OUTSTORE>()
-                    .Where(c => c.OUT_ID == sid)
+                    .Where(c => c.OUT_ID==sid)
                     .Select(c => new
                     {
                         c.OUT_DATE,
@@ -802,7 +805,7 @@ namespace EAM.Material.Services
                     request1.BACK_CODE = aa + (model.SubStr(8, 4).CastTo<int>() + index).ToString("D4");
                     request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
                     request1.MEMO = "";
-                    outDic[request1.OUT_ID] = request1.OUT_BACK_ID;
+                    outDic[request1.OUT_ID] =  request1.OUT_BACK_ID;
                 }
                 await _dbContext.InsertRangeAsync(request2);
                 if (request2.Count > 0)
@@ -918,7 +921,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<int> UnSubmitSpOutBack(string sid)
         {
-
+            
             return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_BACK_ID,
                       x => new SP_OUT_BACK
                       {
@@ -933,7 +936,7 @@ namespace EAM.Material.Services
         public async Task<GridData> ImportList(GridRequest request)
         {
             return await _dbContext.Query<SP_OUTSTORE>()
-                .Where(c => c.AUDITING_A == "1")
+                .Where(c => c.AUDITING_A =="1")
                 .GetGridData(request);
         }
 
@@ -962,7 +965,7 @@ namespace EAM.Material.Services
         {
             return await _dbContext.Query<SP_OUTSTORE_DET>()
                 .InnerJoin<SP_OUTSTORE>((a, b) => a.OUT_ID == b.OUT_ID)
-                .Where((a, b) => b.AUDITING_A == "1")
+                .Where((a, b) => b.AUDITING_A=="1")
                 .Select((a, b) => new
                 {
                     b.OUT_CODE,

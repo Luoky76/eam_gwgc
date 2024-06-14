@@ -3,9 +3,11 @@ using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using System.Numerics;
 
 namespace EAM.Material.Controllers
 {
@@ -26,7 +28,7 @@ namespace EAM.Material.Controllers
         /// <param name="YEAR"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request, string YEAR)
+        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request,string YEAR)
         {
             return AjaxResult<GridData>.Success(await _service.ListAsync(request, YEAR), "成功");
         }

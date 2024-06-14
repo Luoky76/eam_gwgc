@@ -1,9 +1,17 @@
-﻿using EAM.Device.interfaces;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
+using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 
 namespace EAM.Device.controller
@@ -67,8 +75,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> MakeScanList(string sid, string deptid, string typeid)
         {
-            if (sid.IsNullOrEmpty() || deptid.IsNullOrEmpty())
-            {
+            if (sid.IsNullOrEmpty()||deptid.IsNullOrEmpty()) {
                 return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
             }
             return AjaxResult.Success(await _service.MakeScanList(sid, deptid, typeid), "成功");

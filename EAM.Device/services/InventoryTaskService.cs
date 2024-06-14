@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using DocumentFormat.OpenXml.InkML;
 using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
@@ -10,6 +11,7 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Linq.Expressions;
 
 namespace EAM.Device.services
@@ -132,7 +134,7 @@ namespace EAM.Device.services
             entity.AUDITING = "0";
             entity.STATUS = "1";
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            entity.SEC_DEPT = _userSession.ParentCompany.CName; 
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
@@ -182,10 +184,10 @@ namespace EAM.Device.services
             var qrydetsid = qrydet.Contains(sid);
             if (qrydetsid)
             {
-                var deleteRows = await _dbContext.DeleteAsync<DEVICE_SCAN_DET>(a => a.SCAN_ID == sid);
+                var deleteRows = await _dbContext.DeleteAsync<DEVICE_SCAN_DET>(a => a.SCAN_ID==sid);
             }
             //根据部门,类型 获取设备卡片
-            var corpPath = _dbContext.Query<CF_CORP>().Where(a => a.CORPID == deptid)
+            var corpPath = _dbContext.Query<CF_CORP>().Where(a => a.CORPID==deptid)
                 .Select(c => c.CORP_PATH).ToList().Join();
             //从 BC_CODE 取船机部的部门 ID
             var engineCorpId = (await _dbContext.Query<BC_CODE>(a => a.CODE_TYPE == "engineCorpId")
@@ -195,7 +197,7 @@ namespace EAM.Device.services
             var qry = _dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .WhereIf(!string.IsNullOrWhiteSpace(typeid), c => typeid == c.TYPE_ID)
-                .LeftJoin<CF_CORP>((a, b) => a.DEPT_ID == b.CORPID)
+                .LeftJoin<CF_CORP>((a, b) => a.DEPT_ID==b.CORPID)
                 .Where((a, b) => b.CORP_PATH.StartsWith(corpPath));
             if (qry != null)
             {
@@ -229,7 +231,7 @@ namespace EAM.Device.services
                         SEC_DEPT = qrylist.SEC_DEPT,
                         CREATE_USERID = _userSession.UserID.ToString(),
                         CREATEDATE = Sysdate,
-                        HANDLE = "0",
+                        HANDLE ="0",
                     };
                     dsdList.Add(scandet);
                 }
@@ -274,7 +276,7 @@ namespace EAM.Device.services
         public async Task<GridData> GetDeviceScanDetails(GridRequest request)
         {
             var info = await _dbContext.Query<DEVICE_SCAN_DET>()
-                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
+                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID==b.DEVICE_ID)
                 .Select((a, b) => new
                 {
                     a.SCAN_ID,
@@ -342,12 +344,12 @@ namespace EAM.Device.services
         private async Task BeforeUpdate(DEVICE_SCAN_DET entity)
         {
             var queryScan = _dbContext.Query<DEVICE_SCAN>()
-                     .Where(c => c.SCAN_ID == entity.SCAN_ID).Select(c => c.STATUS).First();
-            if (queryScan == "3")
+                     .Where(c => c.SCAN_ID==entity.SCAN_ID).Select(c => c.STATUS).First();
+            if (queryScan=="3")
             {
                 throw new MessageException("已经盘点完成，无法保存！");
             }
-            if (entity.SCAN_RESULT != null)
+            if (entity.SCAN_RESULT!=null)
             {
                 entity.HANDLE = "1";
             }
@@ -363,13 +365,13 @@ namespace EAM.Device.services
             try
             {
                 var queryScan = _dbContext.Query<DEVICE_SCAN>()
-                     .Where(c => c.SCAN_ID == sid).Select(c => c.STATUS).First();
-                if (queryScan == "3")
+                     .Where(c => c.SCAN_ID==sid).Select(c => c.STATUS).First();
+                if (queryScan=="3")
                 {
                     throw new MessageException("已经盘点完成，无法再次提交！");
                 }
                 var query = _dbContext.Query<DEVICE_SCAN_DET>()
-                     .Where(c => c.SCAN_ID == sid).Select(c =>
+                     .Where(c => c.SCAN_ID==sid).Select(c =>
                          c.HANDLE
                      ).ToList();
                 if (query.Contains("0"))
@@ -378,7 +380,7 @@ namespace EAM.Device.services
                 }
                 else
                 {
-                    await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID == sid,
+                    await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==sid,
                        x => new DEVICE_SCAN
                        {
                            STATUS = "3",
@@ -387,8 +389,8 @@ namespace EAM.Device.services
                     string aa = DateTime.Now.ToString("yyyyMM");
                     string def = aa + "0000";
                     var queryups = _dbContext.Query<DEVICE_SCAN_DET>()
-                     .Where(c => c.SCAN_ID == sid && c.SCAN_RESULT != "正常").ToList();
-                    if (queryups != null)
+                     .Where(c => c.SCAN_ID==sid && c.SCAN_RESULT!="正常").ToList();
+                    if (queryups!=null)
                     {
                         var scandetreList = new List<DEVICE_SCAN_RESULT>();
                         var scan_code = 0;
@@ -407,7 +409,7 @@ namespace EAM.Device.services
                                 RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
                                 AUDITING = "0",
                                 SCAN_ID = sid,
-                                SCAN_CODE = pyk + aa + scan_code.ToString("D4"),
+                                SCAN_CODE = pyk+ aa + scan_code.ToString("D4"),
                                 SCAN_DATE = Sysdate,
                                 SCAN_TYPE = scan_type,
                                 DEVICE_NO = queryup.DEVICE_NO,
@@ -463,19 +465,19 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> SubmitUpDown(string sid)
         {
-            await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.RESULT_ID == sid,
+            await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid,
                 x => new DEVICE_SCAN_RESULT
                 {
                     AUDITING = "1",
                 });
-            var scanid = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.RESULT_ID == sid)
+            var scanid = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid)
                 .Select(c => c.SCAN_ID).FirstOrDefaultAsync();
             var qry = await _dbContext.Query<DEVICE_SCAN>()
                 .LeftJoin<DEVICE_SCAN_RESULT>((a, b) => a.SCAN_ID == b.SCAN_ID)
-                .Where((a, b) => a.SCAN_ID == scanid).Select((a, b) => b.AUDITING).ToListAsync();
+                .Where((a, b) => a.SCAN_ID==scanid).Select((a, b) => b.AUDITING).ToListAsync();
             if (!qry.Contains("0"))
             {
-                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID == scanid,
+                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==scanid,
                 x => new DEVICE_SCAN
                 {
                     STATUS = "4",
@@ -490,19 +492,19 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> UnSubmitUpDown(string sid)
         {
-            await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.RESULT_ID == sid,
+            await _dbContext.UpdateAsync<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid,
                 x => new DEVICE_SCAN_RESULT
                 {
                     AUDITING = "0",
                 });
-            var scanid = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.RESULT_ID == sid)
+            var scanid = await _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.RESULT_ID==sid)
                 .Select(c => c.SCAN_ID).FirstOrDefaultAsync();
             var qry = await _dbContext.Query<DEVICE_SCAN>()
                 .LeftJoin<DEVICE_SCAN_RESULT>((a, b) => a.SCAN_ID == b.SCAN_ID)
-                .Where((a, b) => a.SCAN_ID == scanid).Select((a, b) => b.AUDITING).ToListAsync();
+                .Where((a, b) => a.SCAN_ID==scanid).Select((a, b) => b.AUDITING).ToListAsync();
             if (qry.Contains("0"))
             {
-                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID == scanid,
+                await _dbContext.UpdateAsync<DEVICE_SCAN>(x => x.SCAN_ID==scanid,
                 x => new DEVICE_SCAN
                 {
                     STATUS = "3",

@@ -1,6 +1,8 @@
 ﻿using Chloe;
 using EAM.Special.Interfaces;
 using Gksyb.Common;
+using Gksyb.Core.Application;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
@@ -109,8 +111,7 @@ namespace EAM.Special.Services
             var query = _dbContext.Query<DRUG_REQUEST>()
                 .Where(whereCondition)
                 .LeftJoin<DRUG_REQUEST_DET>((a, b) => a.REQUEST_ID == b.REQUEST_ID)
-                .Select((a, b) => new
-                {
+                .Select((a, b) => new {
                     b.SP_ID,
                     SUM_REQUEST_NUM = Sql.Sum(b.REQUEST_NUM)
                 })
@@ -124,7 +125,7 @@ namespace EAM.Special.Services
             if (month >= 4 && month <= 9)
             {
                 var limitList = await _dbContext.Query<DRUG_LIMIT>()
-                .LeftJoin(query, (a, b) => a.SP_ID == b.SP_ID)
+                .LeftJoin(query,(a,b)=>a.SP_ID==b.SP_ID)
                 .Select((a, b) => new
                 {
                     a.LIMIT_ID,
@@ -137,7 +138,7 @@ namespace EAM.Special.Services
                     a.TYPE_CODE,
                     a.PRODUCE,
                     a.UNIT,
-                    LEFTOVER = position == "1" ? a.INSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM) :
+                    LEFTOVER = position == "1" ? a.INSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM):
                     a.OUTSIDE_APRIL - (b.SUM_REQUEST_NUM == null ? 0 : b.SUM_REQUEST_NUM)
                 })
                 //对于临时需求，返回所有药品；其它需求，仅返回剩余可申请量>0的药品
@@ -291,8 +292,7 @@ namespace EAM.Special.Services
         {
             try
             {
-                var data = await _comboxDataService.Get(new Dictionary<string, object>()
-                {
+                var data = await _comboxDataService.Get(new Dictionary<string, object>(){
 
                 });
 

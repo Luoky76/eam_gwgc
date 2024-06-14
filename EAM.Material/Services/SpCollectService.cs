@@ -1,20 +1,22 @@
-﻿using Gksyb.Core.Application;
+﻿using Gksyb.Core.Interfaces.Material;
+using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
-using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Magicodes.ExporterAndImporter.Core;
 using Magicodes.ExporterAndImporter.Excel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.Data;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace EAM.Material.Services
 {
@@ -69,6 +71,8 @@ namespace EAM.Material.Services
                     CONSULT_PROVIDER = c.CONSULT_PROVIDER,
                     MEMO = c.MEMO
                 })
+                .OrderBy(c => c.AUDITING)
+                .ThenByDesc(c => c.COLLECT_CODE)
                 .GetGridData(request);
             foreach (var item in (List<SpCollectRes>)res.Rows)
             {
@@ -168,15 +172,15 @@ namespace EAM.Material.Services
                       c => new
                       {
                           c.REQUEST_CODE,
+                          c.REQUEST_DATE,
                           c.REQUEST_USER,
                           c.REQUEST_USERID,
                           c.SP_CODE,
                           c.SP_NAME,
-                          c.SP_TYPE,
-                          c.BRAND,
+                          c.SP_SIZE,
+                          c.PRODUCE,
                           c.OTHER_CODE,
                           c.UNIT,
-                          c.FACTORY,
                           c.DEPT_NAME,
                           c.DEPT_ID,
                           c.SEC_DEPT,
@@ -229,7 +233,7 @@ namespace EAM.Material.Services
 
             entity.COLLECT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            string type = $"QG{dt.Value.ToString("yyyyMM")}";
+            string type = $"QG{dt.Value:yyyyMM}";
             string def = type + "0000";
             var model = await _dbContext.Query<SP_COLLECT>(x => x.COLLECT_CODE.Contains(type)).Select(x => Sql.Max(x.COLLECT_CODE) ?? def).FirstOrDefaultAsync();
             var index = model.SubStr(8, 4).CastTo<int>() + 1;
@@ -244,6 +248,7 @@ namespace EAM.Material.Services
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.AUDITING = "0";
+            entity.CONFIRM_AUDIT = "0";
 
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
@@ -323,7 +328,7 @@ namespace EAM.Material.Services
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                   x => new SP_APPLY_DETAIL
                   {
-                      SP_STATUS = "40"//采购中
+                      SP_STATUS = "50"//采购订单待提交
                   });
 
             var list = _dbContext.Query<SP_COLLECT>().Where(x => x.COLLECT_ID == sid).ToList();
@@ -333,7 +338,7 @@ namespace EAM.Material.Services
                 DateTime? dt = await _dbContext.GetSysdate();
                 var importDetail = new List<SP_ORDER_DETAIL>();
                 var importList = new List<SP_ORDER>();
-                string type = $"DD{dt.Value.ToString("yyyyMM")}";
+                string type = $"DD{dt.Value:yyyyMM}";
                 string def = type + "0000";
                 var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
                 var i = 1;
@@ -353,9 +358,9 @@ namespace EAM.Material.Services
                         BUY_USER = item.COLLECT_USER,
                         PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
-                        CREATE_USERID = _userSession.UserID.ToString(),
+                        CREATE_USERID = "", //原为_userSession.UserID.ToString()，因OA回调时并无登录用户，故取消
                         CREATEDATE = dt,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
+                        MODIFY_USERID = "",
                         MODIFYDATE = dt,
                         AUDITING = "0",
                         IS_STOP = "0"
@@ -370,8 +375,7 @@ namespace EAM.Material.Services
                         var apply = _dbContext.Query<SP_APPLY>()
                             .LeftJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
                             .Where((a, b) => b.SPDET_ID == det.REQUEST_DET_ID)
-                            .Select((a, b) => new
-                            {
+                            .Select((a, b) => new {
                                 a.APPLY_NO,
                                 a.USE_MEMO
                             })
@@ -384,9 +388,9 @@ namespace EAM.Material.Services
                         req.SPDET_ID = det.REQUEST_DET_ID;
 
                         req.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        req.CREATE_USERID = _userSession.UserID.ToString();
+                        req.CREATE_USERID = "";
                         req.CREATEDATE = dt;
-                        req.MODIFY_USERID = _userSession.UserID.ToString();
+                        req.MODIFY_USERID = "";
                         req.MODIFYDATE = dt;
 
                         req.COUNT = det.CHECK_NUM;
@@ -399,14 +403,14 @@ namespace EAM.Material.Services
                     }
                 }
 
-                await _dbContext.InsertRangeAsync<SP_ORDER>(importList);
-                await _dbContext.InsertRangeAsync<SP_ORDER_DETAIL>(importDetail);
+                await _dbContext.InsertRangeAsync(importList);
+                await _dbContext.InsertRangeAsync(importDetail);
             }
 
             return AjaxResult.Success("成功");
         }
 
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        public async Task<AjaxResult> Revoke(List<string> sids)
         {
             var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
 
@@ -429,7 +433,7 @@ namespace EAM.Material.Services
                 await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => appledetId.Contains(x.SPDET_ID),
                       x => new SP_APPLY_DETAIL
                       {
-                          SP_STATUS = "30"//请购中
+                          SP_STATUS = "30"//待需求申请
                       });
 
                 var orderId = _dbContext.Query<SP_ORDER>().Where(t => sids.Contains(t.PURPLAN_ID)).Select(t => t.ORDER_ID).ToList();
@@ -446,7 +450,9 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_COLLECT_DET>().GetGridData(request);
+            return await _dbContext.Query<SP_COLLECT_DET>()
+                .OrderBy(a => a.SP_CODE)
+                .GetGridData(request);
         }
 
         /// <summary>
@@ -461,9 +467,9 @@ namespace EAM.Material.Services
                 {
                     c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
+                    c.SP_SIZE,
+                    c.PRODUCE,
                     c.OTHER_CODE,
-                    c.BRAND,
                     c.UNIT,
                     c.FACTORY,
                     c.COLLECT_NUM,
@@ -534,11 +540,10 @@ namespace EAM.Material.Services
                     c.REQUEST_USERID,
                     c.SP_CODE,
                     c.SP_NAME,
-                    c.SP_TYPE,
-                    c.BRAND,
+                    c.SP_SIZE,
+                    c.PRODUCE,
                     c.OTHER_CODE,
                     c.UNIT,
-                    c.FACTORY,
                     c.DEPT_NAME,
                     c.DEPT_ID,
                     c.SEC_DEPT,
@@ -614,12 +619,6 @@ namespace EAM.Material.Services
             entity.SEC_DEPTID = appledet.SEC_DEPTID;
             entity.TYPE_ID = appledet.TYPE_ID;
             entity.TYPE_CODE = appledet.TYPE_CODE;
-
-            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == entity.REQUEST_DET_ID,
-             x => new SP_APPLY_DETAIL
-             {
-                 SP_STATUS = "30"//请购中
-             });
         }
         private async Task BeforeUpdateRequest(SP_COLLECT_REQUEST entity)
         {
@@ -630,55 +629,7 @@ namespace EAM.Material.Services
         }
         private async Task BeforeDeleteRequest(SP_COLLECT_REQUEST entity)
         {
-            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.SPDET_ID == entity.REQUEST_DET_ID,
-                 x => new SP_APPLY_DETAIL
-                 {
-                     SP_STATUS = "20"//请购中
-                 });
-        }
-        private async Task AfterSaveRequest(List<SP_COLLECT_REQUEST> added, List<SP_COLLECT_REQUEST> updated, List<SP_COLLECT_REQUEST> deleted)
-        {
-            var applyId = added.Count == 0 ? (updated.Count == 0 ? deleted.Select(c => c.COLLECT_ID).FirstOrDefault() : updated.Select(c => c.COLLECT_ID).FirstOrDefault()) : added.Select(c => c.COLLECT_ID).FirstOrDefault();
             await Task.CompletedTask;
-            if (!string.IsNullOrEmpty(applyId))
-            {
-                var data = _dbContext.Query<SP_COLLECT_REQUEST>().Where(t => t.COLLECT_ID == applyId)
-                    .Select(t => new
-                    {
-                        t.COLLECT_DET_ID,
-                        t.COLLECT_MONEY,
-                        t.TAX_MONEY,
-                        t.NOTAX_MONEY,
-                        t.CHECK_NUM
-                    }).ToList();
-
-                var COLLECT_PRICE = data.Sum(t => t.COLLECT_MONEY) ?? 0;
-                var TAX_MONEY = data.Sum(t => t.TAX_MONEY) ?? 0;
-                var NOTAX_MONEY = data.Sum(t => t.NOTAX_MONEY) ?? 0;
-                await _dbContext.UpdateAsync<SP_COLLECT>(x => x.COLLECT_ID == applyId,
-                    x => new SP_COLLECT
-                    {
-                        COLLECT_PRICE = COLLECT_PRICE,
-                        TAX_MONEY = TAX_MONEY,
-                        NOTAX_MONEY = NOTAX_MONEY
-                    });
-
-                //var det = data.GroupBy(x => x.COLLECT_DET_ID)
-                //    .Select(x => new
-                //    {
-                //        x.Key,
-                //        CHECK_NUM = x.Sum(x => x.CHECK_NUM)
-                //    });
-
-                //foreach (var sp in det)
-                //{
-                //    await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.COLLECT_DET_ID == sp.Key,
-                //   x => new SP_COLLECT_DET
-                //   {
-                //       COLLECT_NUM = sp.CHECK_NUM
-                //   });
-                //}
-            }
         }
 
         /// <summary>
@@ -688,24 +639,32 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<GridData> SpApplyListAsync(GridRequest request)
         {
+            var request_det_ids = _dbContext.Query<SP_COLLECT_REQUEST>().Select(x => x.REQUEST_DET_ID)
+                .ToList();
+
             return await _dbContext.Query<SP_APPLY_DETAIL>()
                 .LeftJoin<SP_APPLY>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                  .Where((a, b) => a.SP_STATUS == "20" && b.AUDITING == "1")
+                .Where((a, b) => a.AUDITING_CHECK == "1" && !request_det_ids.Contains(a.SPDET_ID))
                 .Select((a, b) => new
                 {
                     a.SPDET_ID,
                     a.SP_ID,
-                    b.APPLY_NO,
                     a.SP_CODE,
                     a.SP_NAME,
                     a.SP_SIZE,
                     a.PRODUCE,
                     a.UNIT,
+                    a.TYPE_ID,
                     a.TYPE_NAME,
+                    a.TYPE_CODE,
                     a.COUNT,
+                    b.APPLY_NO,
                     b.APPLY_USER,
-                    b.DEPT_NAME
+                    b.DEPT_NAME,
+                    b.APPLY_DATE
                 })
+                .OrderByDesc(c => c.APPLY_NO)
+                .ThenBy(c => c.SP_CODE)
                 .GetGridData(request);
         }
 
@@ -787,16 +746,6 @@ namespace EAM.Material.Services
                     SYDD = a.SYDD,
                     CGFS = a.CGFS,
                     SYDDDEPTID = a.SYDDDEPTID,
-                    COUNT2 = a.COUNT2,
-                    CGFS2 = a.CGFS2,
-                    SP_CODE2 = a.SP_CODE2,
-                    COMP_CODE2 = a.COMP_CODE2,
-                    SP_NAME2 = a.SP_NAME2,
-                    SYDD2 = a.SYDD2,
-                    SYDDDEPTID2 = a.SYDDDEPTID2,
-                    SP_SIZE2 = a.SP_SIZE2,
-                    PRODUCE2 = a.PRODUCE2,
-                    UNIT2 = a.UNIT2,
                     ZKCS = a.ZKCS,
                     QYKCSL = a.QYKCSL,
                     APPLY_NO = b.APPLY_NO,
@@ -806,7 +755,9 @@ namespace EAM.Material.Services
                     SEC_DEPT = b.SEC_DEPT,
                     SEC_DEPTID = b.SEC_DEPTID,
                     APPLY_USERID = b.APPLY_USERID
-                }).ToList();
+                })
+                .OrderBy(a => a.SP_CODE)
+                .ToList();
 
             var importRequest = new List<SP_COLLECT_REQUEST>();
             foreach (var item in appledet)
@@ -845,6 +796,8 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> CreateWorkFlow(string collectId)
         {
+            await _dbContext.DBLog("OA创建流程", "", $"即将请求创建OA流程 COLLECT_ID = {collectId}", "");
+
             #region 推送oa
             var taskId = GuidHelper.NewSnowflakeId().ToString();
             var corpId = _userSession.Corp.CorpID;
@@ -857,7 +810,7 @@ namespace EAM.Material.Services
             var fj = _dbContext.Query<SYS_ATTACH>().Where(c => c.data_id == collectId && c.table_name == "SP_COLLECT").ToList();
             var webUrl = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "网站地址").First().CODE_EN;
             string attachName = string.Empty, attachUrl = string.Empty;
-            if (fj != null && fj.Count() > 0)
+            if (fj != null && fj.Count > 0)
             {
                 foreach (var item in fj)
                 {
@@ -870,10 +823,14 @@ namespace EAM.Material.Services
             var detQuery = await _dbContext.Query<SP_COLLECT_REQUEST>(c => c.COLLECT_ID == collectId)
                 .Select(c => new SP_COLLECT_REQUEST_DTO
                 {
+                    REQUEST_CODE = c.REQUEST_CODE,
+                    REQUEST_DATE = c.REQUEST_DATE,
+                    DEPT_NAME = c.DEPT_NAME,
+                    REQUEST_USER = c.REQUEST_USER,
                     SP_CODE = c.SP_CODE,
                     SP_NAME = c.SP_NAME,
-                    SP_TYPE = c.SP_TYPE,
-                    BRAND = c.BRAND,
+                    SP_SIZE = c.SP_SIZE,
+                    PRODUCE = c.PRODUCE,
                     UNIT = c.UNIT,
                     REQUEST_NUM = c.REQUEST_NUM,
                     TYPE_NAME = c.TYPE_NAME,
@@ -883,13 +840,13 @@ namespace EAM.Material.Services
             string fileName = "";
             string fileRealName = GuidHelper.NewSnowflakeId().ToString() + ".xlsx";
             string directoryPath = "UploadDirectory/SpCollect/";
-            string fileUrl = directoryPath + fileRealName;
+            string fileUrl = "";
             //创建文件夹
             if (!Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
-            if (detQuery.Count() > 0)
+            if (detQuery.Count > 0)
             {
                 fileName = "物资需求申请(" + query.COLLECT_CODE + ").xlsx";
 
@@ -898,33 +855,30 @@ namespace EAM.Material.Services
                 var content = await exporter.ExportAsByteArray(detQuery);
                 using var stream = new MemoryStream();
                 stream.Write(content, 0, content.Length);
-                FormFile ff = new FormFile(stream, 0, stream.Length, fileName, fileName);
-
-                await ff.SaveAs("SpCollect", fileRealName);
+                FormFile ff = new(stream, 0, stream.Length, fileName, fileName);
+                fileUrl = await ff.SaveAs("SpCollect", fileRealName);
             }
 
+            string excelUrl = attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl + fileUrl);
+
             string attach = attachName + (string.IsNullOrEmpty(fileName) ? "" : fileName) + "$$$"
-                + attachUrl + (string.IsNullOrEmpty(fileName) ? "" : webUrl + fileUrl);
+                + excelUrl;
 
             var mainQuery = await _dbContext.Query<SP_COLLECT>(c => c.COLLECT_ID == collectId)
                 .Select(c => new
                 {
-                    c.COLLECT_CODE,
+                    collect_code = c.COLLECT_CODE,
                     primary_key = c.COLLECT_ID,
                     fun_name = "_spCollectService.ApprovalCompletedAsync",
-                    bdmc = c.DEPT_NAME + "物资需求申请",
                     sm = c.MEMO,
                     fjsc = attach
                 }).FirstAsync();
 
-            string jsonData = mainQuery.ToJson();
-
-
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
-            OAHandle oa = new OAHandle(_dbContext);
-            string result = await oa.CreateFlow(url, "SJQS", "工作请示（采购）-" + _userSession.RealName, _userSession.Phone, _userSession.UserName, jsonData, "{}");
+            OAHandle oa = new(_dbContext);
+            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.collect_code}）- {_userSession.RealName}", _userSession.Phone, null, mainQuery, null);
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 
@@ -933,11 +887,23 @@ namespace EAM.Material.Services
             JObject job = JObject.Parse(result);
             if (job["success"] != null && job["success"].ToString().ToLower() == "true")
             {
-                //成功后将记录状态改为审批中
-                _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
-                {
-                    AUDITING = "2",
-                    OA_CODE = job["code"].ToString()
+                await _dbContext.UseTransactionAsync(async () => {
+                    //成功后将记录状态改为审批中，保存OA编号和Excel附件的网络地址
+                    _dbContext.Update<SP_COLLECT>(a => a.COLLECT_ID == collectId, a => new SP_COLLECT
+                    {
+                        AUDITING = "2",
+                        OA_CODE = job["code"].ToString(),
+                        EXCEL_URL = excelUrl
+                    });
+
+                    //修改船舶物资申请明细的物资采购状态
+                    var request_det_ids = _dbContext.Query<SP_COLLECT_REQUEST>(x => x.COLLECT_ID == collectId)
+                        .Select(x => x.REQUEST_DET_ID)
+                        .ToList();
+                    await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => request_det_ids.Contains(x.SPDET_ID), x => new SP_APPLY_DETAIL
+                    {
+                        SP_STATUS = "40"
+                    });
                 });
             }
             else
@@ -948,7 +914,6 @@ namespace EAM.Material.Services
             #endregion
 
             return AjaxResult.Success("创建流程成功", "成功");
-
         }
     }
 
@@ -956,52 +921,97 @@ namespace EAM.Material.Services
 
     public class SP_COLLECT_REQUEST_DTO
     {
+        /// <summary>
+        /// 需求计划单号
+        /// </summary>
+        [ExporterHeader(DisplayName = "申请单号", Width = 15)]
+        [Display(Name = "申请单号")]
+        [Description("需求计划单号")]
+        public string REQUEST_CODE { get; set; }
 
         /// <summary>
-        /// 备件品种编码
+        /// 申请部门
         /// </summary>
-        [Description("备件品种编码")]
+        [ExporterHeader(DisplayName = "申请部门", Width = 10)]
+        [Display(Name = "申请部门")]
+        [Description("申请部门")]
+        public string DEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 申请人
+        /// </summary>
+        [ExporterHeader(DisplayName = "申请人", Width = 10)]
+        [Display(Name = "申请人")]
+        [Description("申请人")]
+        public string REQUEST_USER { get; set; }
+
+        /// <summary>
+        /// 申请日期
+        /// </summary>
+        [ExporterHeader(DisplayName = "申请日期", Format = "yyyy-MM-dd hh:mm:ss")]
+        [Display(Name = "申请日期")]
+        [Description("申请日期")]
+        public DateTime? REQUEST_DATE { get; set; }
+
+        /// <summary>
+        /// 物资编码
+        /// </summary>
+        [ExporterHeader(DisplayName = "物资编码", Width = 15)]
+        [Display(Name = "物资编码")]
+        [Description("物资编码")]
         public string SP_CODE { get; set; }
 
         /// <summary>
-        /// 备件品种名称
+        /// 物资名称
         /// </summary>
-        [Description("备件品种名称")]
+        [ExporterHeader(DisplayName = "物资名称", Width = 30)]
+        [Display(Name = "物资名称")]
+        [Description("物资名称")]
         public string SP_NAME { get; set; }
 
         /// <summary>
-        /// 备件型号
+        /// 型号规格
         /// </summary>
-        [Description("备件型号")]
-        public string SP_TYPE { get; set; }
+        [ExporterHeader(DisplayName = "型号规格", Width = 30)]
+        [Display(Name = "型号规格")]
+        [Description("型号规格")]
+        public string SP_SIZE { get; set; }
 
         /// <summary>
-        /// 品牌
+        /// 品牌、厂家
         /// </summary>
-        [Description("品牌")]
-        public string BRAND { get; set; }
+        [ExporterHeader(DisplayName = "品牌、厂家", Width = 30)]
+        [Display(Name = "品牌、厂家")]
+        [Description("品牌、厂家")]
+        public string PRODUCE { get; set; }
 
         /// <summary>
         /// 计量单位
         /// </summary>
+        [Display(Name = "计量单位")]
         [Description("计量单位")]
         public string UNIT { get; set; }
 
         /// <summary>
         /// 申请数量
         /// </summary>
+        [Display(Name = "申请数量")]
         [Description("申请数量")]
         public decimal? REQUEST_NUM { get; set; }
 
         /// <summary>
-        /// 备件类别名称
+        /// 物资类别
         /// </summary>
-        [Description("备件类别名称")]
+        [ExporterHeader(DisplayName = "物资类别", Width = 30)]
+        [Display(Name = "物资类别")]
+        [Description("物资类别")]
         public string TYPE_NAME { get; set; }
 
         /// <summary>
         /// 备注
         /// </summary>
+        [ExporterHeader(DisplayName = "备注", Width = 30)]
+        [Display(Name = "备注")]
         [Description("备注")]
         public string MEMO { get; set; }
     }
