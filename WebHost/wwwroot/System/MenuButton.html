@@ -48,7 +48,8 @@
                                 }
                             },
                             { display: '样式', name: 'BTNCLASS', editor: { type: 'text' } },
-                            { display: '组', name: 'INITSTATUS', editor: { type: 'text' } }
+                            { display: '组', name: 'INITSTATUS', editor: { type: 'text' } },
+                            { display: '提示信息', name: 'BTNSCRIPT', editor: { type: 'text' } }
                         ]
                     }
                 };
@@ -110,8 +111,8 @@
                         case "Excel":
                             $.ligerDialog.open({ url: "../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo, modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({ url: "../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo, modal: true });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: "../System/Export.html?exporttype=pdf&MenuNo=" + me.menuNo, modal: true });
                             break;
                     }
                 }
@@ -239,8 +240,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

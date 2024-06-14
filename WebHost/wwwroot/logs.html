@@ -27,16 +27,17 @@
                 if (!result.IsError) {
                     var data = result.Data;
                     var array = [];
-                    for (var i = data.length - 1; i >= 0; i--) {
-                        array.push('<li class="list-group-item"><p>' + data[i].replace(/[<">']/g,
-                            function (a) {
-                                return {
-                                    '<': '&lt;',
-                                    '"': '&quot;',
-                                    '>': '&gt;',
-                                    "'": '&#39;'
-                                }[a]
-                            }) + '</p></li>');
+                    for (var i = data.length - 1; i >= 0; i--) {//\r\n
+                        var content = data[i].replace(/[<">']/g, function (a) {
+                            return {
+                                '<': '&lt;',
+                                '"': '&quot;',
+                                '>': '&gt;',
+                                "'": '&#39;'
+                            }[a]
+                        });
+                        content = content.replace(/\n/g, "<br/>");
+                        array.push('<li class="list-group-item"><p>' + content + '</p></li>');
                     }
                     $("#logs").html(array.join(""));
                 }

@@ -1,5 +1,4 @@
-﻿#pragma warning disable CA1822 // 将成员标记为 static
-
+﻿#pragma warning disable CA1822
 using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
@@ -11,7 +10,7 @@ namespace Gksyb.Server.Services.Auth
     public class WeixinService : WeixinBaseService, IBaseService
     {
         private readonly IAuthService _authService;
-        private static readonly string _guest = "WXGUEST";
+        protected const string _guest = "WXGUEST";
 
         public WeixinService(IDbContext dbContext, IAuthService authService, IOptions<SysContextOptions> sysContext) : base(dbContext, sysContext)
         {
@@ -22,23 +21,24 @@ namespace Gksyb.Server.Services.Auth
         /// 微信单点登录
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> OauthAsync(LoginRequest request)
+        public async Task<AjaxResult> OauthAsync(LoginRequest request, Action<UserSession> action = null)
         {
             var openid = request.Username;
             var userPort = await _dbContext.Query<CF_USER_PORT>()
                 .Where(c => c.CORPID == openid && c.APPNAME == _options.UserAppName && c.OPTYPE == _opertype).FirstOrDefaultAsync();
             userPort ??= new CF_USER_PORT() { LOGINNAME = _guest };
-            var loginName = userPort.LOGINNAME;
+            request.Username = userPort.LOGINNAME;
+            request.MenuAppname = string.IsNullOrWhiteSpace(request.MenuAppname) ? _options.MobileAppName : request.MenuAppname;
+            request.Source = string.IsNullOrWhiteSpace(request.Source) ? "微信登录" : request.Source;
+
             var user = await _dbContext.Query<CF_USER>()
-                .Where(c => c.LOGINNAME == loginName && c.APPNAME == _options.UserAppName).FirstOrDefaultAsync();
+                .Where(c => c.LOGINNAME == request.Username && c.APPNAME == _options.UserAppName).FirstOrDefaultAsync();
             if (user == null) return AjaxResult.Error("-1");
-            request.Username = user.LOGINNAME;
             request.Password = user.LOGINPASSWORD;
-            request.MenuAppname = _options.MobileAppName;
-            request.Source = "微信登录";
             var result = await _authService.LoginAsync(request, userSession =>
             {
                 userSession.Openid = openid;
+                action?.Invoke(userSession);
             }, false);
             if (result.IsError) return result;
             var userResponse = result.Data as UserResponse;
@@ -79,7 +79,7 @@ namespace Gksyb.Server.Services.Auth
                 request.Username = (request.Username ?? "").ToUpper();
                 request.PasswordHandle();
                 var user = await _authService.GetUserAsync(request.Username, request.Password);
-                if (user == null || user.LOGINPASSWORD != request.Password) return AjaxResult.Error("用户名密码错误，无法绑定");
+                if (user == null || user.LOGINPASSWORD != request.Password) return AjaxResult.Error("账号密码错误，无法绑定");
                 request.Username = user.LOGINNAME;
             }
             await RemoveInvalid(openid);
@@ -129,3 +129,4 @@ namespace Gksyb.Server.Services.Auth
         }
     }
 }
+#pragma warning restore CA1822

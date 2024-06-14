@@ -33,7 +33,7 @@
                 comment = changeName[item.Name];
                 editor = "";
             }
-            columns.Add($@"{{ display: "*"{comment}"", name: ""{item.Name}"", type: ""{colType}""{((item.IsNullable == true) ? "" : ", validate: { required: true }")}{editor} }}");
+            columns.Add($@"{{ display: ""{comment}"", name: ""{item.Name}"", type: ""{colType}""{((item.IsNullable == true) ? "" : ", validate: { required: true }")}{editor} }}");
         }
     }
 }
@@ -163,8 +163,8 @@
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=doc", window.gksybConfigs.urlBase), modal: true });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -191,7 +191,7 @@
             },
             modify: function () { //修改
                 var me = this;
-                var row = me.grid.getSelectedRow(true);
+                var row = me.grid.getSelectedRow();
                 if (!row) {
                     LG.tip('请选择行!');
                     return;
@@ -241,14 +241,20 @@
                 var me = this;
                 me.buttons[0].click();
             },
-            delete: function () { //删除
+            getSelectedRows: function (remove) {
                 var me = this;
-                if (me.grid.endEdit() === false) return;
-                var rows = me.grid.getSelectedRows();
+                if (me.grid.endEdit() === false) return false;
+                var rows = me.grid.getSelectedRows(remove);
                 if (rows.length < 1) {
                     LG.tip('请选择行!');
-                    return;
+                    return false;
                 }
+                return rows;
+            },
+            delete: function () { //删除
+                var me = this;
+                var rows = me.getSelectedRows();
+                if (!rows) return;
                 $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                     if (!confirm) return;
                     me.grid.deleteRange(rows);
@@ -270,12 +276,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

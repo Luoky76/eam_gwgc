@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
+﻿using Gksyb.Common.Office.Core;
+using Gksyb.Common.Office.Excel;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -8,8 +9,6 @@ using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
-using Magicodes.ExporterAndImporter.Core;
-using Magicodes.ExporterAndImporter.Excel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json.Linq;
@@ -36,13 +35,15 @@ namespace EAM.Material.Services
         }
 
         #region 请购申请
-        class SpCollectRes : SP_COLLECT
+
+        private class SpCollectRes : SP_COLLECT
         {
             /// <summary>
             /// 填写的明细数量
             /// </summary>
             public int DETAILCOUNT;
         }
+
         /// <summary>
         /// 获取列表
         /// </summary>
@@ -108,7 +109,6 @@ namespace EAM.Material.Services
                 throw new Exception("获取下拉数据失败！原因：" + e.Message);
             }
         }
-
 
         /// <summary>
         /// 保存
@@ -262,7 +262,6 @@ namespace EAM.Material.Services
             _rentID = entity.COLLECT_ID;
             entity.MODIFY_USERID = _userSession.UserName;
             entity.MODIFYDATE = dt;
-
         }
 
         private async Task BeforeDelete(SP_COLLECT entity)
@@ -513,7 +512,6 @@ namespace EAM.Material.Services
 
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
-
         }
 
         /// <summary>
@@ -577,6 +575,7 @@ namespace EAM.Material.Services
                 },
                 c => a => a.COLLECT_REQUEST_ID == c.COLLECT_REQUEST_ID, BeforeAddRequest, BeforeUpdateRequest, BeforeDeleteRequest);
         }
+
         private async Task BeforeAddRequest(SP_COLLECT_REQUEST entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -621,13 +620,14 @@ namespace EAM.Material.Services
             entity.TYPE_ID = appledet.TYPE_ID;
             entity.TYPE_CODE = appledet.TYPE_CODE;
         }
+
         private async Task BeforeUpdateRequest(SP_COLLECT_REQUEST entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
-
         }
+
         private async Task BeforeDeleteRequest(SP_COLLECT_REQUEST entity)
         {
             await Task.CompletedTask;
@@ -669,7 +669,7 @@ namespace EAM.Material.Services
                 .GetGridData(request);
         }
 
-        class SpApplyDetRes : SP_APPLY_DETAIL
+        private class SpApplyDetRes : SP_APPLY_DETAIL
         {
             /// <summary>
             /// 申请编号
@@ -695,6 +695,7 @@ namespace EAM.Material.Services
             /// </summary>
             public string SEC_DEPTID { get; set; }
         }
+
         /// <summary>
         /// 选中的采购申请明细
         /// </summary>
@@ -788,7 +789,8 @@ namespace EAM.Material.Services
                 });
             return appledet.Count;
         }
-        #endregion
+
+        #endregion 请购申请
 
         /// <summary>
         /// 创建流程
@@ -800,6 +802,7 @@ namespace EAM.Material.Services
             await _dbContext.DBLog("OA创建流程", "", $"即将请求创建OA流程 COLLECT_ID = {collectId}", "");
 
             #region 推送oa
+
             var taskId = GuidHelper.NewSnowflakeId().ToString();
             var corpId = _userSession.Corp.CorpID;
 
@@ -913,13 +916,13 @@ namespace EAM.Material.Services
                 return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
             }
 
-            #endregion
+            #endregion 推送oa
 
             return AjaxResult.Success("创建流程成功", "成功");
         }
     }
 
-    #region  SP_COLLECT_REQUEST DTO
+    #region SP_COLLECT_REQUEST DTO
 
     public class SP_COLLECT_REQUEST_DTO
     {
@@ -1018,5 +1021,5 @@ namespace EAM.Material.Services
         public string MEMO { get; set; }
     }
 
-    #endregion
+    #endregion SP_COLLECT_REQUEST DTO
 }

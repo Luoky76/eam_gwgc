@@ -1,4 +1,5 @@
 ﻿using Chloe;
+using Flurl.Http;
 using Gksyb.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
                 context.ExceptionHandled = true;
                 if (context.Exception != null)
                 {
+                    var error = context.Exception.Message;
                     if (context.Exception is not MessageException)//非消息异常，打印日志
                     {
                         var message = context.Exception.ToString();
@@ -31,14 +33,17 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             var methodInfo = ((ControllerActionDescriptor)context.ActionDescriptor).MethodInfo;
                             message = $"{methodInfo.ReflectedType.Name}.{methodInfo.Name}:{message}";
+                            if (context.Exception is FlurlHttpException ex)
+                            {
+                                error = $"{error}:{ex.GetResponseStringAsync().Result()}";
+                            }
                         }
                         catch (Exception)
                         {
                         }
                         _logger.LogError(_logPath, message);
                     }
-                    context.Result = new ObjectResult(AjaxResult.Error(context.Exception.Message));
-                    return;
+                    context.Result = new ObjectResult(AjaxResult.Error(error));
                 }
                 if (context.Result != null && context.Result is ObjectResult objectResult)
                 {

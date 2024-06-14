@@ -60,16 +60,14 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                     UserName = "UserName",
                     RealName = "RealName",
                     Group = "Group",
-                    Roles = new List<string>(),
+                    AllRoles = new List<string>(),
                     IsAdmin = true,
                     IsOurCompany = true,
                     IP = source.Request.GetRealIP(),
                     UserAgent = source.Request.GetUserAgent(),
                     UserAppName = _options?.UserAppName,
                     RoleAppName = _options?.RoleAppName,
-                    MenuAppname = _authAppName,
-                    ForbinMenus = new List<MenuModule>(),
-                    ForbinButtons = new SortedList<string, List<ButtonModule>>()
+                    MenuAppname = _authAppName
                 };
             }
             lock (source)//source.Items不是多线程安全

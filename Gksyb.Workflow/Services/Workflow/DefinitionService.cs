@@ -38,7 +38,7 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var query = _dbContext.Query<WF_FLOW>().Where(c => c.APPNAME == _options.AppName);
+            var query = _dbContext.Query<WF_FLOW>();
             if (!_user.IsAdmin)
             {
                 var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
@@ -198,17 +198,15 @@ namespace Gksyb.Workflow.Services.Workflow
         private async Task Handle(WF_FLOW entity)
         {
             entity.FLOW_NAME.CheckNotNullOrWhiteSpace("流程名称");
+            entity.FLOW_CODE.CheckNotNullOrWhiteSpace("流程编码");
             var isExists = await _dbContext.Query<WF_FLOW>()
-                .Where(c => c.FLOW_NAME == entity.FLOW_NAME && c.CORPID == entity.CORPID && c.FLAG == "1" && c.APPNAME == _options.AppName)
+                .Where(c => c.FLOW_NAME == entity.FLOW_NAME && c.CORPID == entity.CORPID && c.FLAG == "1")
                 .WhereIfNotNullOrEmpty(entity.ID, c => c.ID != entity.ID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在流程名称{entity.FLOW_NAME}");
-            if (!string.IsNullOrWhiteSpace(entity.FLOW_CODE))
-            {
-                isExists = await _dbContext.Query<WF_FLOW>()
-                    .Where(c => c.FLOW_CODE == entity.FLOW_CODE && c.FLAG == "1" && c.APPNAME == _options.AppName)
+            isExists = await _dbContext.Query<WF_FLOW>()
+                    .Where(c => c.FLOW_CODE == entity.FLOW_CODE && c.FLAG == "1")
                     .WhereIfNotNullOrEmpty(entity.ID, c => c.ID != entity.ID).AnyAsync();
-                if (isExists) throw new MessageException($"已经存在流程编码{entity.FLOW_CODE}");
-            }
+            if (isExists) throw new MessageException($"已经存在流程编码{entity.FLOW_CODE}");
         }
     }
 }

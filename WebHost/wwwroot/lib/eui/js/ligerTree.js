@@ -12,6 +12,7 @@
         urlParms: null,                     //url带参数
         data: null,         //数据
         checkbox: true,  //是否复选框
+        onlyCheckbox: true,//是否只单击复选框才起作用，关闭后单击内容体也可以触发复选
         autoCheckboxEven: true,  //复选框联动
         enabledCompleteCheckbox: true,     //是否启用半选择
         parentIcon: 'fa-folder', //父节点图标
@@ -33,7 +34,7 @@
         onBeforeSelect: function () { }, //选择前事件
         onSelect: function () { }, //选择事件
         onBeforeCancelSelect: function () { }, //取消选择前事件
-        onCancelselect: function () { }, //取消选择事件
+        onCancelSelect: function () { }, //取消选择事件
         onCheck: function () { }, //选择事件
         onSuccess: function () { }, //加载成功事件
         onError: function () { }, //加载错误事件

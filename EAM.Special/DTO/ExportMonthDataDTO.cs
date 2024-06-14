@@ -1,6 +1,4 @@
-﻿using Magicodes.ExporterAndImporter.Core;
-using Magicodes.ExporterAndImporter.Excel;
-using Magicodes.ExporterAndImporter.Pdf;
+﻿using Gksyb.Common.Office.Core;
 using WkHtmlToPdfDotNet;
 
 namespace EAM.Special.DTO

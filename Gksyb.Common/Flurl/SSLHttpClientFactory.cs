@@ -7,7 +7,7 @@ namespace Flurl.Http
         public override HttpMessageHandler CreateMessageHandler()
         {
             var httpClientHandler = base.CreateMessageHandler() as HttpClientHandler;
-            httpClientHandler.ServerCertificateCustomValidationCallback = (sender, certificate, chain, errors) => { return true; };
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             return httpClientHandler;
         }
     }

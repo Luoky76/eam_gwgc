@@ -61,7 +61,7 @@
                 [
                     { id: 'Excel', text: '导出Excel', click: toolbarBtnItemClick, icon: "fa fa-file-excel-o" },
                     { line: true },
-                    { id: 'Word', text: '导出Word', click: toolbarBtnItemClick, icon: "fa fa-file-word-o" }
+                    { id: 'Pdf', text: '导出Pdf', click: toolbarBtnItemClick, icon: "fa fa-file-word-o" }
                 ]
         });
 
@@ -136,8 +136,8 @@
             switch (item.id) {
                 case "Excel":
                     $.ligerDialog.open({ url: "../System/Export.html?exporttype=xls", modal: true }); break;
-                case "Word":
-                    $.ligerDialog.open({ url: "../System/Export.html?exporttype=doc", modal: true }); break;
+                case "Pdf":
+                    $.ligerDialog.open({ url: "../System/Export.html?exporttype=pdf", modal: true }); break;
             }
         }
     </script>

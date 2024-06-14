@@ -17,7 +17,9 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <returns></returns>
         public static T Get<T>(this IDistributedCache source, string key)
         {
-            return typeof(T).IsComplexType() ? source.GetString(key).ToObject<T>() : source.GetString(key).CastTo<T>();
+            var value = source.GetString(key);
+            if (value == null) return default;
+            return typeof(T).IsComplexType() ? value.ToObject<T>() : value.CastTo<T>();
         }
 
         /// <summary>
@@ -30,18 +32,16 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <returns></returns>
         public static T Get<T>(this IDistributedCache source, string key, T defaultValue)
         {
-            if (typeof(T).IsComplexType())
+            try
             {
-                try
-                {
-                    return source.GetString(key).ToObject<T>();
-                }
-                catch
-                {
-                    return defaultValue;
-                }
+                var value = source.GetString(key);
+                if (value == null) return defaultValue;
+                return typeof(T).IsComplexType() ? value.ToObject<T>() : value.CastTo<T>();
             }
-            return source.GetString(key).CastTo<T>(defaultValue);
+            catch
+            {
+                return defaultValue;
+            }
         }
 
         public static async Task<T> GetAsync<T>(this IDistributedCache source, string key)
@@ -101,14 +101,36 @@ namespace Microsoft.Extensions.Caching.Distributed
         }
 
         /// <summary>
+        /// 限制调用次数
+        /// </summary>
+        public static async Task<AjaxResult> LimitInvoke(this IDistributedCache source, string key, Func<Task<AjaxResult>> func, double minitues = 2, string error = "操作过于频繁，请稍后再试")
+        {
+            var value = await source.GetAsync<string>(key);
+            if (value == "1") return AjaxResult.Error(error);
+            await source.SetAsync(key, "1", new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(minitues)
+            });
+            return await func();
+        }
+
+        /// <summary>
         /// 限制重试次数
         /// </summary>
         /// <returns></returns>
-        public static async Task<AjaxResult> LimitRetry(this IDistributedCache source, string key, string error, Func<Task<AjaxResult>> func, int limit = 3, int minitues = 3)
+        public static async Task<AjaxResult> LimitRetry(this IDistributedCache source, string key, string error, Func<Task<AjaxResult>> func, int limit = 3, double minitues = 3)
         {
             var retryCount = await source.GetAsync<int?>(key) ?? 0;
             if (retryCount >= limit) return AjaxResult.Error(error);
-            var result = await func();
+            AjaxResult result;
+            try
+            {
+                result = await func();
+            }
+            catch (Exception ex)
+            {
+                result = AjaxResult.Error(ex.Message);
+            }
             if (result.IsError)
             {
                 await source.SetAsync(key, (++retryCount), new DistributedCacheEntryOptions()

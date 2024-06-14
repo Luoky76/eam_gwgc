@@ -8,7 +8,7 @@ namespace Gksyb.Common
     /// </summary>
     public static class ObjectExtensions
     {
-        private static readonly string _keys = "0123456789abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ";//编码,可加一些字符也可以实现72,96等任意进制转换，但是有符号数据不直观，会影响阅读。
+        private const string _keys = "0123456789ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz";//编码,可加一些字符也可以实现72,96等任意进制转换，但是有符号数据不直观，会影响阅读。
         private static readonly int _exponent = _keys.Length;//幂数
 
         /// <summary>

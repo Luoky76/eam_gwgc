@@ -20,6 +20,7 @@
                     jsToken: true,
                     _toLogin: true,
                     url: 'oauth/generateToken',
+                    data: { userType: getQueryStringByName("userType") },
                     success: function (result) {
                         if (result.IsError) {
                             location.href = "../login.html?FromUrl=" + encodeURIComponent(location.href);

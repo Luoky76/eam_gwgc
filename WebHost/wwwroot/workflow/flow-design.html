@@ -233,7 +233,7 @@
                     inputWidth: 180,
                     fields: [
                         { name: "FLOW_FORM", type: "hidden" },
-                        { display: "流程编码", name: "FLOW_CODE", newline: true, type: "text", options: {} },
+                        { display: "流程编码", name: "FLOW_CODE", newline: true, type: "text", validate: { required: true }, options: {} },
                         { display: "流程名称", name: "FLOW_NAME", newline: true, type: "text", validate: { required: true }, options: {} },
                         { display: "所属组", name: "FLOW_GROUP", newline: true, type: "text", options: {} },
                         { display: "流程标题", name: "FLOW_TITLE", newline: true, type: "textarea", options: { rows: 3 } },

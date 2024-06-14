@@ -47,8 +47,8 @@
                             <ul class="dropdown-menu">
                                 <li class="user-header">
                                     <img src="lib/dist/img/user.png" class="img-circle" alt="User Image">
-                                    <p>
-                                    </p>
+                                    <p id="user-realname"></p>
+                                    <p><small id="user-corp"></small></p>
                                 </li>
                                 <li class="user-footer">
                                     <div class="pull-left">
@@ -58,7 +58,7 @@
                                     </div>
                                     <div class="pull-left" style="padding-left: 5px;">
                                         <a href="#" class="btn btn-default btn-flat" data-toggle="modal" data-target="#myModal1">
-                                            当前组织
+                                            切换组织
                                         </a>
                                     </div>
                                     <div class="pull-right">
@@ -258,6 +258,18 @@
                     url: 'auth/usercorps',
                     loading: '正在获取中...',
                     success: function (data, message) {
+                        if (data.length > 20) {
+                            $("#corp").ligerComboBox({
+                                valueField: "CorpID",
+                                textField: 'CName',
+                                width: 270,
+                                initSelect: true,
+                                cancelable: false,
+                                data: data,
+                                value: message
+                            });
+                            return;
+                        }
                         $("#corp").ligerRadioList({
                             valueField: "CorpID",
                             textField: 'CName',
@@ -281,7 +293,8 @@
                                 "corpid": ids
                             },
                             loading: '正在切换中...',
-                            success: function (data, message) {
+                            success: function (data) {
+                                window.session = data;
                                 location.reload(true);
                             },
                             error: function (message) {
@@ -653,8 +666,23 @@
                     me.showMessageCenter();
                 });
             },
-            toDetail: function (dom, title, href, target) {
+            readMessage: function (id) {
+                var me = this;
+                LG.ajax({
+                    loading:false,
+                    url: 'message/read',
+                    data: { id: id },
+                    success: function () {
+                        me.refershUnReadCount();
+                    },
+                    error: function (message) {
+                    }
+                });
+            },
+            toDetail: function (dom,id, title, href, target) {
+                var me = this;
                 liger.get($(dom).parents(".l-dialog")).close();
+                me.readMessage(id);
                 LG.toDetail(title, href, target);
             },
             showMessage: function (info) {
@@ -663,7 +691,7 @@
                 var content = info.Content;
                 var time = undefined;
                 if (info.Href) {
-                    content = '<a href="javascript:void(0);" onclick="business.toDetail(this,\'' + info.Title + '\',\'' + info.Href + '\', \'' + (info.Target || "") + '\');">' + content + '</a>';
+                    content = '<a href="javascript:void(0);" onclick="business.toDetail(this,\'' + info.Id + '\',\'' + info.Title + '\',\'' + info.Href + '\', \'' + (info.Target || "") + '\');">' + content + '</a>';
                     time = 0;
                 }
                 switch (dialogMode) {
@@ -715,6 +743,8 @@
             init: function () {
                 var me = this;
                 $("#realname").text(window.session.RealName);
+                $("#user-realname").text(window.session.RealName);
+                $("#user-corp").text(window.session.CorpName);
                 me.bindEvent();
                 me.initMessageCenter();
             }

@@ -5,10 +5,10 @@ namespace Gksyb.Common.Weixin
     /// <summary>
     /// 实现微信AccessToken处理封装
     /// </summary>
-    internal sealed class AccessTokenHandle : IAccessTokenHandle
+    internal class AccessTokenHandle : IAccessTokenHandle
     {
         private static AccessTokenResponse _accessToken;//微信AccessToken
-        private static readonly string AccessTokenCacheName = "Weixin_AccessToken";//微信AccessToken缓存名
+        protected string AccessTokenCacheName = "Weixin_AccessToken";//微信AccessToken缓存名
         private readonly IDistributedCache _distributedCache;
 
         public AccessTokenHandle(IDistributedCache distributedCache)

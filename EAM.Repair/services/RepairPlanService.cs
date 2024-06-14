@@ -1,5 +1,7 @@
 ﻿using Chloe;
 using Gksyb.Common;
+using Gksyb.Common.Office.Core;
+using Gksyb.Common.Office.Excel;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
@@ -10,8 +12,6 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Magicodes.ExporterAndImporter.Core;
-using Magicodes.ExporterAndImporter.Excel;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
@@ -26,6 +26,7 @@ namespace EAM.Repair.services
         private readonly UserSession _userSession;
         private readonly ICorpService _corpService;
         private string _rentID = string.Empty, errMsg = string.Empty;
+
         public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
@@ -54,6 +55,7 @@ namespace EAM.Repair.services
             result.TryAdd("Corp", await _corpService.ComboxDataAsync());
             return result;
         }
+
         #region 维修计划
 
         /// <summary>
@@ -139,7 +141,8 @@ namespace EAM.Repair.services
             var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "2").GetGridData(request);
             return query;
         }
-        #endregion
+
+        #endregion 维修计划
 
         #region 维修计划实施
 
@@ -423,7 +426,6 @@ namespace EAM.Repair.services
                 var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.EXE_CODE.Contains(type)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
                 var index = model.SubStr(10, 4).CastTo<int>() + 1;
                 entity.EXE_CODE = type + index.ToString("D4");
-
             }
             await Task.CompletedTask;
         }
@@ -553,6 +555,7 @@ namespace EAM.Repair.services
         public async Task<AjaxResult> CreateWorkFlow(string exeId)
         {
             #region 推送oa
+
             var taskId = GuidHelper.NewSnowflakeId().ToString();
             var corpId = _userSession.Corp.CorpID;
 
@@ -624,7 +627,6 @@ namespace EAM.Repair.services
 
             string jsonData = mainQuery.ToJson();
 
-
             //对接OA 取配置地址
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
@@ -650,10 +652,9 @@ namespace EAM.Repair.services
                 return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
             }
 
-            #endregion
+            #endregion 推送oa
 
             return AjaxResult.Success("创建流程成功", "成功");
-
         }
 
         /// <summary>
@@ -684,7 +685,6 @@ namespace EAM.Repair.services
             }
         }
 
-        #endregion
-
+        #endregion 维修计划实施
     }
 }

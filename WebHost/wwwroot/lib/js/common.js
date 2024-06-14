@@ -19,7 +19,7 @@
         apiBase: urlBase, // api 接口的访问路径
         getUrl: function (url, baseUrl) {
             if (url.toLowerCase().indexOf("http") === 0) return url;
-            url = url.replace(/\.\.\//g, "");
+            url = url.replace(/\.\.\//g, "").replace(/\/+/g, "\/");
             baseUrl = baseUrl || this.apiBase;
             if (baseUrl && url.indexOf(baseUrl) === 0) return url;
             url = baseUrl + url;
@@ -52,7 +52,7 @@
             opt = opt || { jsToken: "JsToken" };
             var key = opt.jsToken;
             if (key === true) {
-                key = gksybConfigs.getUrl(opt.url || "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "");
+                key = gksybConfigs.getUrl(opt.url || "").replace(gksybConfigs.apiBase, "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "");
             }
             var data = (typeof key === "string" ? { key: key } : null);
             var tokenOptions = $.extend(true, {
@@ -73,9 +73,9 @@
             if (window.session.Token) jqXHR.setRequestHeader("GKSYBTOKEN", window.session.Token);
         },
         _toLogin: function () {
-            var loginUrl = gksybConfigs.urlBase + "login.html?FromUrl=" + encodeURIComponent(topWindow.location.href);
-            topWindow.location.href = loginUrl;
-            return;
+            var loc = topDomainWindow.location;
+            var loginUrl = gksybConfigs.urlBase + "login.html?FromUrl=" + encodeURIComponent(loc.href);
+            loc.href = loginUrl;
         },
         innerDialogTip: function (msg, _toLogin) {
             if (_toLogin === true) {
@@ -92,7 +92,6 @@
                 alert(msg);
                 window._toLogin();
             }
-            return;
         },
         refreshGksybToken: function (callback, _toLogin) {
             var innerTip = window.innerDialogTip;
@@ -479,6 +478,23 @@
 
     if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
+            get: function () {//获取不跨域的有gksybConfigs的顶层窗口
+                var parentWindow = window;
+                try {
+                    for (var i = 0; i < 10; i++) {
+                        if (parentWindow.parent.location.href && parentWindow.parent.setGksybToken) {
+                            parentWindow = parentWindow.parent;
+                        }
+                    }
+                } catch (err) {
+                }
+                return parentWindow;
+            }
+        });
+    }
+
+    if (window.topDomainWindow === undefined) {
+        Object.defineProperty(window, 'topDomainWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;
                 try {

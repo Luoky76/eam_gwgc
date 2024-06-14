@@ -20,34 +20,54 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            class: getQueryStringByName("c"),
             dataRole: [],
             dataCorp: [],
-            initPassword: "",
             setConfig: function () {
                 var me = this;
                 var charLength = 7;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "用户名", name: "_search_LOGINNAME", width: 100, type: "text" },
-                            { display: "名称", name: "_search_REALNAME", width: 100, type: "text" },
-                            { display: "角色", name: "_search_ROLE", width: 180, userSearch: false, type: "select", options: { data: me.dataRole, autocomplete: true } },
-                            { display: "组织", name: "_search_CORP", width: 180, userSearch: false, type: "select", options: { data: me.dataCorp, autocomplete: true } }
+                            { display: "账号", name: "_search_LOGINNAME", width: 100, upper: true, type: "text" },
+                            { display: "名称", name: "_search_REALNAME", width: 100, upper: true, type: "text" },
+                            { display: "角色", name: "_search_ROLE", width: 180, userSearch: false, type: "select", options: { data: [], autocomplete: true } },
+                            { display: "组织", name: "_search_CORP", width: 180, userSearch: false, type: "select", options: { data: [], autocomplete: true } }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "*用户名", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { type: 'text' } },
+                            { display: "*账号", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { upper: true, type: 'text' } },
                             {
                                 display: "隶属角色", name: "ROLE", isSort: false, width: 100, minWidth: 130, type: "text", align: "center", formatType: "select", format: {
-                                    data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column) {
-                                        var strHref = "javascript:business.transferSelect('角色','" + column.name + "','user/roleData')";
+                                    data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column, ids) {
+                                        var strHref = "javascript:business.roleSelect('" + column.name + "','user/roleData')";
                                         var strUrl = "<a style=\"color:Red\" href=" + strHref + ">设置</a>";
                                         if (value.length < 1) return strUrl;
-                                        var texts = value.join(",");
+                                        value.sort(function (val1, val2) { return $.ligerDefaults.Grid.sorters['string'](val1, val2); });
+                                        var txts = [];
+                                        for (var i = 0, l = value.length; i < l; i++) {
+                                            var port = rowdata.RoleCorp[ids[i]] || "";
+                                            var ports = port.split(",");
+                                            var corps = [];
+                                            for (var j = 0, l2 = ports.length; j < l2; j++) {
+                                                var corpId = ports[j];
+                                                for (var k = 0, l3 = me.dataCorp.length; k < l3; k++) {
+                                                    var item = me.dataCorp[k];
+                                                    if (item.ID === corpId) {
+                                                        corps.push(item.TEXT);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            txts.push(corps.length > 0 ? (value[i] + '(' + corps.join(',') + ')') : value[i]);
+                                        }
+                                        var texts = txts.join(",");
+                                        rowdata.__RoleFormatText = texts;
                                         return "<a href=" + strHref + ">" + "<acronym title=\"" + texts + "\">" + (texts.length > charLength ? texts.substring(0, charLength) + "..." : texts) + "</acronym></a>";
                                     }
                                 }, export: function (value, rowdata, column) {//导出处理
+                                    if (rowdata.__RoleFormatText) return rowdata.__RoleFormatText;
                                     return this.options.formatters['select'](value, column, rowdata, function (value) {
                                         return value.join(",");
                                     });
@@ -57,19 +77,22 @@
                             { display: "本司否", name: "CLASS", width: 60, type: "chk", editor: { type: 'chkStr' } },
                             {
                                 display: "组织岗位", name: "CORP", isSort: false, width: 120, type: "text", align: "center", formatType: "select", format: {
-                                    data: function () { return me.dataCorp; }, split: ",", formatRender: function (value, rowdata, column,ids) {
-                                        var strHref = "javascript:business.corpSelect('组织','" + column.name + "','user/corpData')";
+                                    data: function () { return me.dataCorp; }, split: ",", formatRender: function (value, rowdata, column, ids) {
+                                        var strHref = "javascript:business.corpSelect('" + column.name + "','user/corpData')";
                                         var strUrl = "<a style=\"color:Red\" href=" + strHref + ">设置</a>";
                                         if (value.length < 1) return strUrl;
+                                        value.sort(function (val1, val2) { return $.ligerDefaults.Grid.sorters['string'](val1, val2); });
                                         var txts = [];
                                         for (var i = 0, l = value.length; i < l; i++) {
-                                            var station = rowdata.CorpStation[ids[i]];
-                                            txts.push(station ? (value[i] + '(' + station + ')') : value[i]);
+                                            var port = rowdata.CorpStation[ids[i]];
+                                            txts.push(port ? (value[i] + '(' + port + ')') : value[i]);
                                         }
                                         var texts = txts.join(",");
+                                        rowdata.__CorpFormatText = texts;
                                         return "<a href=" + strHref + ">" + "<acronym title=\"" + texts + "\">" + (texts.length > charLength ? texts.substring(0, charLength) + "..." : texts) + "</acronym></a>";
                                     }
                                 }, export: function (value, rowdata, column) {//导出处理
+                                    if (rowdata.__CorpFormatText) return rowdata.__CorpFormatText;
                                     return this.options.formatters['select'](value, column, rowdata, function (value) {
                                         return value.join(",");
                                     });
@@ -79,21 +102,25 @@
                             {
                                 display: "在岗状态", name: "USER_STATE", width: 100, type: "select", editor: {
                                     type: 'select',
-                                    data: me.userState
+                                    data: function () { return me.userState; }
                                 }
                             },
-                            { display: "联系电话", name: "PHONE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "手机", name: "PHONE", width: 100, type: "text", editor: { type: 'long' } },
                             { display: "工会号", name: "WORK_CODE", width: 100, type: "text", editor: { type: 'text' } },
-                            //{
-                            //    display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "text", align: "left", render: function (rowdata, rowindex, value, column) {
-                            //        return value ? "绑定" : "未绑定";
-                            //    }
-                            //},
+                            //{ display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "chk", align: "center" },
                             { display: "最后登录时间", name: "LASTLOGINTIME", width: 140, type: "date", format: "yyyy-MM-dd hh:mm", align: "left" },
                             { display: "有效否", name: "FLAG", width: 80, type: "chk", editor: { type: 'chkStr' } }
                         ]
                     }
                 };
+                if (me.class === "1") {
+                    me.config.search.fields.push({ display: "本司否", name: "_search_CLASS", width: 70, upper: true, type: "select", options: { data: me.dataFlag, autocomplete: true } });
+                }
+                if (me.class === "0") {
+                    me.config.grid.columns.removeNull(function (item) {
+                        return item.name === "CLASS";
+                    });
+                }
             },
             grid: null,
             searchForm: null,
@@ -108,18 +135,14 @@
                         me.dataRole = data.role;
                         me.dataCorp = data.corp;
                         me.dataStation = data.station;
-                        me.initPassword = data.initPassword;
                         me.userState = data.UserState;
-                        if (me.grid) {
-                            me.grid.set('title', '<span style="color: Red; ">初始密码为' + me.initPassword + '</span>');
-                        }
-                        /*var editor = null;
+                        var editor = null;
                         if (me.searchForm) {
                             editor = me.searchForm.getEditor("_search_ROLE");
                             if (editor) editor.setData(me.dataRole);
                             editor = me.searchForm.getEditor("_search_CORP");
                             if (editor) editor.setData(me.dataCorp);
-                        }*/
+                        }
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -128,9 +151,14 @@
             },
             setGrid: function () {
                 var me = this;
+                var group = (me.class === "0") ? {
+                    op: 'or', rules: [
+                        { field: 'CLASS', op: 'equal', value: me.class },
+                        { field: 'CLASS', op: 'isnull', value: "" }
+                    ]
+                } : { op: 'and', rules: [] };
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    title: '<span style="color: Red; ">初始密码为' + me.initPassword + '</span>',
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
@@ -139,10 +167,7 @@
                     toolbar: {},
                     url: 'user/list',
                     parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
+                        where: JSON.stringify(group)
                     },
                     sortName: 'LOGINNAME',
                     sortOrder: 'asc',
@@ -159,15 +184,16 @@
                                 break;
                         }
                     },
-                    onSuccess: function (data, g) {
+                    onSuccess: function (data) {
                         if (data && data.Rows) {
-                            var rows = data.Rows;
-                            for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDUSERID = rows[i].USERID;
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDUSERID = row.USERID;
                             }
                         }
                     },
-                    rowAttrRender: function (rowdata, rowid) {
+                    rowAttrRender: function (rowdata) {
                         if (rowdata && rowdata.FLAG && rowdata.FLAG == "0") {
                             return "style='color:red;'";
                         }
@@ -203,47 +229,66 @@
                     data: options
                 });
             },
-            corpSelect: function (detailType, name, url) {
+            roleSelect: function (name, url) {
+                var me = this;
+                me.userPortSelect("角色", name, url, "RoleCorp", [
+                    { display: "角色", name: "TEXT", type: "text" },
+                    {
+                        display: "组织", name: "Port", type: "select", minWidth: 180, editor: {
+                            isMultiSelect: true, split: ",",
+                            type: 'select', data: me.dataCorp
+                        }
+                    }
+                ]);
+            },
+            corpSelect: function (name, url) {
+                var me = this;
+                me.userPortSelect("组织", name, url, "CorpStation", [
+                    { display: "组织", name: "TEXT", type: "text" },
+                    {
+                        display: "岗位", name: "Port", type: "select", minWidth: 180, editor: {
+                            isMultiSelect: true, split: ",",
+                            type: 'select', data: me.dataStation
+                        }
+                    }
+                ]);
+            },
+            userPortSelect: function (detailType, name, url, portName, columns) {
                 var me = this;
                 var row = me.grid.getSelectedRow();
                 me.transferGridSelect(detailType, name, url, 600, 500, {
                     leftWidth: '38%',
                     callback: function (values, rows) {
-                        var corpStation = {};
+                        var ports = {};
                         for (var i = 0, l = rows.length; i < l; i++) {
                             var item = rows[i];
-                            corpStation[item.ID] = item.Station;
+                            ports[item.ID] = item.Port;
                         }
-                        var newRowData = { CorpStation: corpStation };
+                        var newRowData = {};
+                        if (portName) newRowData[portName] = ports;
                         newRowData[name] = values.join(",");
                         me.grid.updateRow(row, newRowData);
                     },
                     grid2: {
-                        corpStation: row.CorpStation,
+                        ports: (portName ? row[portName] : null),
                         enabledEdit: true,
                         clickToEdit: true,
                         onLoadData: function (data) {
                             var g = this, p = g.options;
+                            if (!p.ports) return;
                             var rows = data[p.root];
                             for (var i = 0, l = rows.length; i < l; i++) {
                                 var row = rows[i];
-                                row.Station = p.corpStation[row.ID];
+                                row.Port = p.ports[row.ID];
                             }
                         },
-                        columns: [
-                            { display: "组织", name: "TEXT", type: "text" },
-                            {
-                                display: "岗位", name: "Station", type: "select",minWidth:180, editor: {
-                                    isMultiSelect: true, split:",",
-                                    type: 'select', data: me.dataStation
-                                }
-                            }
-                        ]
+                        columns: columns
                     }
                 });
             },
             transferGridSelect: function (detailType, name, url, width, height, options) {
                 var me = this;
+                options = options || {};
                 var row = me.grid.getSelectedRow();
                 options = $.extend({
                     url: url,
@@ -285,11 +330,14 @@
                         case "initPassword":
                             me.doInitPassword();
                             break;
+                        case "unbind":
+                            me.unbind();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({ url: "../System/Export.html?exporttype=xls", modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({ url: "../System/Export.html?exporttype=doc", modal: true });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: "../System/Export.html?exporttype=pdf", modal: true });
                             break;
                     }
                 }
@@ -297,47 +345,77 @@
             },
             doInitPassword: function () {
                 var me = this;
-                var grid = me.grid;
-                if (grid.endEdit() != false) {
-                    var selected = grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        if (selected.length != 1) {
-                            LG.tip('只能选择一行做密码初始化服务!');
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                if (rows.length != 1) {
+                    LG.tip('只能选择一行做密码初始化服务!');
+                    return;
+                }
+                $.ligerDialog.confirm('确定初始化密码吗?', function (confirm) {
+                    if (!confirm) return;
+                    for (var i = 0, len = rows.length; i < len; i++) {
+                        var row = rows[i];
+                        if (!row.USERID) {
+                            LG.tip('此记录还未保存,无法进行密码初始化!');
                             return;
                         }
-                        jQuery.ligerDialog.confirm('确定初始化密码为' + me.initPassword + '吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    if (selected[i].USERID) {
-                                        LG.ajax({
-                                            jsToken: true,
-                                            url: 'user/doInitPassword',
-                                            loading: '正在保存中...',
-                                            data: { id: selected[i].USERID },
-                                            success: function () {
-                                                LG.showSuccess('密码被初始化为' + me.initPassword);
-                                            },
-                                            error: function (message) {
-                                                LG.showError(message);
-                                            }
-                                        });
-                                    }
-                                    else {
-                                        LG.tip('此记录还未保存,无法进行密码初始化!');
-                                        return;
-                                    }
-                                }
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'user/doInitPassword',
+                            loading: '正在保存中...',
+                            data: { id: row.USERID },
+                            success: function (data) {
+                                LG.showSuccess('密码被初始化为' + data);
+                            },
+                            error: function (message) {
+                                LG.showError(message);
                             }
                         });
                     }
-                    else {
-                        LG.tip('请选择行!');
-                    }
+                });
+            },
+            unbind: function () {
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
                 }
+                if (rows.length != 1) {
+                    LG.tip('只能选择一行做微信解绑!');
+                    return;
+                }
+                var row = rows[0];
+                if (row.QQ !== "1") {
+                    LG.tip('微信未绑定');
+                    return;
+                }
+                $.ligerDialog.confirm('确定解绑微信吗?', function (confirm) {
+                    if (!confirm) return;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'user/unbind',
+                        loading: '正在保存中...',
+                        data: { "openid": row.LOGINNAME },
+                        success: function () {
+                            LG.showSuccess('保存成功');
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });;
+                });
             },
             add: function () { //新增
                 var me = this;
-                me.grid.addEditRow({ "CLASS": "0", "FLAG": "1" }, true);
+                me.grid.addEditRow({ "CLASS": (me.class === "1" ? "1" : "0"), "FLAG": "1" }, true);
             },
             save: function () { //保存
                 var me = this;
@@ -353,8 +431,11 @@
                         url: 'user/save',
                         loading: '正在保存中...',
                         data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
+                        success: function (data, message) {
+                            if (data && data.length > 0) {
+                                message = data.join('<br/>');
+                            }
+                            LG.showSuccess(message);
                             me.grid.isDataChanged = false;
                             me.reload();
                         },
@@ -371,21 +452,17 @@
             },
             delete: function () { //删除
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
                 }
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    me.grid.deleteRange(rows);
+                    me.save();
+                });
             },
             bindGridEvent: function () {
                 var me = this;
@@ -402,8 +479,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
@@ -459,16 +536,18 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
+                        if (me.class === "1") {
+                            me.searchForm.setData({ _search_CLASS: "1" });
+                        }
                     }
                 });
             },
             init: function () {
                 var me = this;
-                me.loadComboxData();
                 me.setConfig();
                 me.setGrid();
                 me.setForm();
-                //me.loadComboxData();
+                me.loadComboxData();
                 me.buttons[0].click(); //查询
                 return me;
             }

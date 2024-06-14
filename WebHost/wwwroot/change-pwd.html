@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui, viewport-fit=cover">
-    <title>生产管理系统</title>
+    <title>修改密码</title>
     <script src="lib/jquery/jquery.js" type="text/javascript"></script>
-    <script src="lib/js/common.js" type="text/javascript"></script>
+    <script src="lib/js/common.js?v=1" type="text/javascript"></script>
     <style type="text/css">
         * {
             padding: 0;
@@ -38,6 +38,7 @@
             height: 520px;
             background-image: url("lib/images/login/login-bg.jpg?v=1");
             background-position: center;
+            background-size: cover;
             position: relative;
             padding-top: 60px;
         }
@@ -64,8 +65,8 @@
 
             #div-login-panel .login-panel {
                 position: absolute;
-                left: 50px;
-                top: 42px;
+                left: 40px;
+                top: 48px;
             }
 
         #div-footer {
@@ -80,9 +81,9 @@
         .login-input {
             position: relative;
             text-align: left;
-            height: 40px;
-            line-height: 40px;
-            margin-bottom: 16px;
+            height: 42px;
+            line-height: 42px;
+            margin-bottom: 10px;
         }
 
         .login-text {
@@ -90,8 +91,8 @@
             position: absolute;
             left: 5px;
             top: 0px;
-            height: 40px;
-            line-height: 40px;
+            height: 42px;
+            line-height: 42px;
             width: 270px;
             border: none;
             font-size: 18px;
@@ -116,7 +117,8 @@
         }
 
         #btnLogin {
-            width: 260px;
+            margin-left:20px;
+            width: 240px;
             height: 41px;
             line-height: 41px;
             background-color: #2e75e3;
@@ -245,27 +247,27 @@
                 <div class="login-panel">
                     <div class="login-input">
                         <input type="text" name="txtUsername" id="txtUsername" value="" class="login-text" />
-                        <label class="login-text login-null">
-                            请输入用户名
-                        </label>
+                        <span class="login-text login-null">
+                            请输入账号
+                        </span>
                     </div>
                     <div class="login-input">
                         <input type="password" name="txtOld" id="txtOld" value="" class="login-text" />
-                        <label class="login-text login-null">
+                        <span class="login-text login-null">
                             请输入旧密码
-                        </label>
+                        </span>
                     </div>
                     <div class="login-input">
                         <input type="password" name="txtNew" id="txtNew" value="" class="login-text" />
-                        <label class="login-text login-null">
+                        <span class="login-text login-null">
                             请输入新密码
-                        </label>
+                        </span>
                     </div>
                     <div class="login-input">
                         <input type="password" name="txtAgain" id="txtAgain" value="" class="login-text" />
-                        <label class="login-text login-null">
+                        <span class="login-text login-null">
                             请再次输入新密码
-                        </label>
+                        </span>
                     </div>
                     <div id="btnLogin">
                         确定
@@ -377,6 +379,9 @@
                     cache: false,
                     dataType: 'json',
                     url: 'Auth/ChangePassword',
+                    jsToken: {
+                        url: "auth/logintoken"
+                    },
                     data: formData,
                     success: function (result) {
                         $('.myModa').remove();
@@ -400,19 +405,9 @@
                         $('.myModa').remove();
                         myAlert('发送系统错误,请与系统管理员联系!');
                     },
-                    beforeSend: function (jqXHR, options) {
+                    beforeSend: function () {
                         $("#btnLogin").attr("disabled", true);
                         myLoadding();
-                        $.ajax({
-                            noGlobal: true,
-                            async: false,
-                            url: "Auth/LoginToken",
-                            type: 'post',
-                            dataType: "text",
-                            success: function (result) {
-                                eval(result);
-                            }
-                        });
                     },
                     complete: function () {
                         $("#btnLogin").attr("disabled", false);

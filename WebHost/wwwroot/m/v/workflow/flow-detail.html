@@ -1,0 +1,414 @@
+﻿<template>
+    <div class="page" data-name="workflow-detail">
+        <div class="navbar">
+            <div class="navbar-bg"></div>
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href='javascript:app.methods.toUrl("back")' class="link external">
+                        <i class="f7-icons">arrow_left</i>
+                        <span class="ios-only">返回</span>
+                    </a>
+                </div>
+                <div class="navbar-segmented segmented segmented-strong">
+                    <a class="button tab-link tab-link-active" href="#tab-flow-form">申请信息</a>
+                    <a id="flow-timeline-tab" class="button tab-link" href="#tab-flow-timeline">流转意见</a>
+                    <span class="segmented-highlight"></span>
+                </div>
+            </div>
+        </div>
+        <div id="audit-toolbar" class="toolbar toolbar-with-icon toolbar-bottom">
+            <div class="toolbar-inner">
+                <a href="javascript:void(0);" action="other" class="link external">
+                    <i class="f7-icons">more</i>
+                    <span>其他操作</span>
+                </a>
+                <a href="javascript:void(0);" action="reject" class="link external">
+                    <i class="f7-icons">close</i>
+                    <span>不同意</span>
+                </a>
+                <a href="javascript:void(0);" action="back" class="link external">
+                    <i class="f7-icons">reply</i>
+                    <span>退回</span>
+                </a>
+                <a href="javascript:void(0);" action="agree" class="link external">
+                    <i class="f7-icons">check</i>
+                    <span>同意</span>
+                </a>
+            </div>
+        </div>
+        <div class="tabs-animated-wrap">
+            <div class="tabs custom-tab">
+                <div id="tab-flow-form" class="page-content tab tab-active">
+                    <div class="display-none item-input-wrapper"><input id="select-user" type="hidden" /></div>
+                    <div id="flow-audit-form" class="card card-outline">
+                        <div id="task-title" class="card-header"></div>
+                        <div class="card-content">
+                            <form>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card card-outline">
+                        <div class="card-content">
+                            <${FlowForm} parentBusiness="${business}" />
+                            <form id="flow-form">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div id="tab-flow-timeline" class="page-content tab">
+                    <div id="flow-timeline" class="timeline margin-top">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    'use strict';
+    var business = {
+        page: null,
+        split: "@#",
+        nodeStatus: {
+            Agree: "agree",//同意
+            Reject: "reject",//拒绝,
+            Back: "back",//退回
+            Draft: "draft" //草稿
+        },
+        data: [],
+        initAuditForm: function () {
+            var me = this, page = me.page.$el, toolbar = page.find("#audit-toolbar"), form = page.find("#flow-audit-form");
+            if (me.isView || me.isStart) {
+                form.hide();
+                toolbar.remove();
+                return;
+            }
+            toolbar.find("a").off("click").on("click", function (e) {
+                var action = this.getAttribute("action");
+                if (!action || !me[action]) return;
+                me[action](this);
+            });
+            page.find("#task-title").html("【" + me.data.Title + "】" + me.data.NodeTitle);
+            me.auditForm = app.mform.create({
+                el: form.find("form"),
+                fields: [
+                    { display: "发起人", name: "Creator", width: 160, newline: true, type: "text", options: { readonly: true } },
+                    { display: "发起时间", name: "CreateDate", labelWidth: 70, width: 180, newline: false, type: "date", options: { format: "yyyy-MM-dd hh:mm:ss", readonly: true } }
+                ]
+            });
+            me.auditForm.setData(me.data);
+            me.auditForm.orginData = me.auditForm.getData();
+        },
+        initForm: function () {
+            var me = this, page = me.page.$el, form = page.find("#flow-form");
+            if (me.data.FormMobileUrl) return;
+            window._displayOptions = {};
+            try {
+                eval("window._displayOptions = " + (me.data.FormContent || "{}"));
+                window._displayOptions = Framework7.utils.extend({ el: form }, window._displayOptions);
+            }
+            catch (e) {
+                return;
+            }
+            if (me.isOper) {
+                window._displayOptions = Framework7.utils.extend({
+                    validate: true,
+                    buttons: [
+                        {
+                            text: '保存草稿', type: "default", icon: "f7-icons document", click: function () {
+                                me.draft();
+                            }
+                        },
+                        {
+                            text: '提交', type: "primary", icon: "f7-icons check", newline: true, click: function () {
+                                me.add();
+                            }
+                        }
+                    ]
+                }, window._displayOptions);
+            }
+            me.mainForm = app.mform.create(window._displayOptions);
+            delete window._displayOptions;
+            if (me.nid) {
+                me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
+            }
+            else {
+                if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
+            }
+            if (!me.isOper) {
+                me.mainForm._setDisabled(true);
+            }
+        },
+        initTimeline: function () {
+            var me = this, page = me.page.$el, timelineTab = page.find("#flow-timeline-tab");
+            if (!me.nid) {
+                timelineTab.remove();
+                return;
+            }
+            timelineTab.show();
+            var logs = me.data.Logs;
+            var htmls = [];
+            for (var i = 0, l = logs.length; i < l; i++) {
+                var item = logs[i];
+                var detail = item.OperType;
+                if (item.OperDetail && item.OperDetail !== detail) detail += '：' + item.OperDetail;
+                var title = item.Operator + "【" + item.OperTitle + " / <b>" + detail + "</b>】";
+                var date = item.OperDate.toDate().format("yyyy-MM-dd HH:mm");
+                title += '<span style="padding-left:5px;color:gray">' + item.OperDate.toDate().format("yyyy-MM-dd HH:mm") + "</span>";
+                htmls.push(`<div class="timeline-item">
+                                <div class="timeline-item-date">${date}</div>
+                                <div class="timeline-item-divider"></div>
+                                <div class="timeline-item-content">
+                                    <div class="timeline-item-inner">${title}</div>
+                                </div>
+                            </div>`);
+            }
+            page.find("#flow-timeline").html(htmls.join(''));
+        },
+        getNodeData: function (fn) {
+            var me = this;
+            if (!me.graphData || !me.graphData.nodes || !me.graphData.nodes.length)
+                return { properties: {} };
+            for (var i = 0, l = me.graphData.nodes.length; i < l; i++) {
+                var item = me.graphData.nodes[i];
+                if (fn(item)) return item;
+            }
+        },
+        loadData: function (param) {
+            var me = this, param = param || me.param;
+            app.ajax({
+                jsToken: true,
+                async: false,
+                url: 'workflow/query/taskInfo',
+                data: { Id: param.id, FlowId: param.flowId, FlowCode: param.flowCode },
+                success: function (data) {
+                    me.data = data || {};
+                    var startType = "bpmn:startEvent";
+                    me.isStart = !data.NodeType || (startType === data.NodeType);
+                    if (data.NodeStatus && data.NodeStatus !== 1) {
+                        me.isView = true;
+                    }
+                    me.isOper = me.isStart && !me.isView;
+                    try {
+                        me.graphData = JSON.parse(me.data.FlowContent || "{}");
+                        var nodeId = me.data.WorkNodeId || me.data.NodeId;
+                        me.nodeData = me.getNodeData(function (item) {
+                            return nodeId ? (item.id === nodeId) : (item.type === startType);
+                        });
+                        me.isAssign = me.nodeData.properties.assign;
+                    }
+                    catch (e) {
+
+                    }
+                }
+            });
+        },
+        other: function (dom) {
+            var me = this;
+            if (!me.actions) {
+                me.actions = app.actions.create({
+                    forceToPopover: true,
+                    targetEl: $$(dom),
+                    buttons: [
+                        {
+                            text: '转办',
+                            icon: '<i class="f7-icons">forward</i>',
+                            onClick: function () {
+                                me.transfer();
+                            }
+                        },
+                        {
+                            text: '抄送',
+                            icon: '<i class="f7-icons">chat_bubble</i>',
+                            onClick: function () {
+                                me.share();
+                            }
+                        },
+                        {
+                            text: '取消',
+                            icon: '<i class="f7-icons">undo</i>',
+                            color: 'red'
+                        }
+                    ]
+                });
+            }
+            me.actions.open();
+        },
+        agree: function () {
+            var me = this;
+            app.dialog.prompt("", '处理意见', function (reason) {
+                me.excute(me.nodeStatus.Agree, { NodeReason: reason });
+            }, undefined, "同意");
+        },
+        reject: function () {
+            var me = this;
+            app.dialog.prompt("", '处理意见', function (reason) {
+                if (!reason) {
+                    app.dialog.error("请输入处理意见");
+                    return;
+                }
+                me.excute(me.nodeStatus.Reject, { NodeReason: reason });
+            }, undefined, "不同意");
+        },
+        back: function () {
+            var me = this;
+            app.dialog.prompt("", '处理意见', function (reason) {
+                me.excute(me.nodeStatus.Back);
+            }, undefined, "");
+        },
+        excute: function (nodeStatus, data, skipAssign) {
+            var me = this;
+            data = Framework7.utils.extend({ Id: me.data.Id }, data);
+            var inner = function () {
+                app.ajax({
+                    jsToken: true,
+                    url: 'workflow/task/' + nodeStatus,
+                    data: data,
+                    success: function () {
+                        app.dialog.alert("保存成功", function () {
+                            app.methods.toUrl("back");
+                        });
+                    }
+                });
+            };
+            if (nodeStatus == me.nodeStatus.Agree && me.isAssign && !skipAssign) {
+                me.selectUser(function (values) {
+                    if (values.length < 1) return;
+                    data.Operators = values.join(me.split);
+                    inner();
+                }, me.nodeData.properties.assignUrl);
+                return;
+            }
+            inner();
+        },
+        share: function (url, isClose) {
+            var me = this;
+            url = url || 'workflow/task/share';
+            me.selectUser(function (values) {
+                if (values.length < 1) return;
+                var formData = me.auditForm.getData();
+                app.ajax({
+                    jsToken: true,
+                    url: url,
+                    data: { Id: me.data.Id, Operators: values.join(me.split), NodeReason: formData.Reason },
+                    success: function () {
+                        app.dialog.alert("操作成功", function () {
+                            if (isClose) app.methods.toUrl("back");
+                        });
+                    }
+                });
+            });
+        },
+        transfer: function () {
+            var me = this;
+            me.share('workflow/task/transfer', true);
+        },
+        selectUser: function (callback, url) {
+            var me = this, page = me.page.$el, dom = page.find("#select-user");
+            url = url || "popup/users";
+            if (!me.userSelect) {
+                me.userSelect = new Framework7.MForm.editors["select"](dom, {
+                    pageTitle: "人员挑选",
+                    url: url,
+                    split: me.split,
+                    isMultiSelect: true,
+                    validate: { required: true },
+                    valueField: 'Id',//实际值
+                    textField: 'Name',
+                    onChangeValue: function (input, value, g) {
+                        callback((value || "").split(g.options.split), g.findDataByValue(value));
+                    }
+                }, app);
+            }
+            me.userSelect.setValue("", false);
+            me.userSelect.smartSelect.open();
+        },
+        draft: function (formData) {
+            var me = this;
+            me.add(formData, me.nodeStatus.Draft);
+        },
+        add: function (formData, nodeStatus) { //保存
+            var me = this;
+            var isDraft = nodeStatus === me.nodeStatus.Draft;
+            if (formData === undefined) {
+                if (!me.mainForm.valid()) {
+                    me.mainForm.showInvalid();
+                    return;
+                }
+                formData = me.mainForm.getData();
+            }
+            var data = { FlowId: me.data.FlowId, Id: me.data.Id, FormData: formData };
+            var inner = function (operators) {
+                if (operators) data.Operators = operators;
+                var url = isDraft ? me.nodeStatus.Draft : "start";
+                app.ajax({
+                    jsToken: true,
+                    url: 'workflow/task/' + url,
+                    data: data,
+                    success: function () {
+                        app.dialog.alert('保存成功', function () {
+                            app.methods.toUrl("back");
+                        });
+                    }
+                });
+            }
+            if (me.isAssign && !isDraft && !me.nid) {
+                me.selectUser(function (values) {
+                    if (values.length < 1) return;
+                    inner(values.join(me.split));
+                }, me.nodeData.properties.assignUrl);
+                return;
+            }
+            inner();
+        },
+        destroy: function () {
+            var me = this;
+            if (me.userSelect) {
+                me.userSelect.destroy();
+                me.userSelect = null;
+            }
+            if (me.actions) {
+                me.actions.destroy();
+                me.actions = null;
+            }
+        },
+        init: function (page, ctx, param) {
+            var me = this;
+            me.page = page;
+            me.ctx = ctx;
+            me.param = param || {};
+            me.nid = me.param.id;
+            me.initAuditForm();
+            me.initForm();
+            me.initTimeline();
+        }
+    };
+    return function (props, ctx) {
+        var me = business;
+        me.isView = props.isView === "1";
+        me.loadData(props);
+        var FlowForm = (props, { $h }) => {
+            return () => $h`<div></div>`;
+        }
+        if (me.data.FormMobileUrl) {
+            var url = window.gksybConfigs.getUrl(me.data.FormMobileUrl, window.gksybConfigs.apiBase);
+            app.request({
+                noGlobal: true,
+                async: false,
+                url: url,
+                type: 'get',
+                dataType: "text",
+                success: function (result) {
+                    FlowForm = app.component.parse(result);
+                }
+            });
+        }
+        ctx.$on('pageInit', function (_e, page) {
+            me.init(page, ctx, props);
+            if (me.childBusiness) me.childBusiness.init(page, ctx, me);
+        });
+        ctx.$on('pageAfterOut', (e, page) => {
+            me.destroy();
+        });
+        return $render;
+    };
+</script>

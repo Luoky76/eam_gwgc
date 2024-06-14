@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Builder
         private static string Passport;
         private static List<string> Whitelist;
         private static string MapPath;
-        private static readonly IDbContext _dbContext;
 
         /// <summary>
         /// 上传目录安全处理
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Builder
                 RequestPath = new PathString($"/{path}"),
                 FileProvider = new PhysicalFileProvider(MapPath)
             };
-            app.UseSafeStaticFiles(staticFileOptions, async ctx =>
+            app.UseSafeStaticFiles(staticFileOptions, ctx =>
             {
                 if (ctx.File.PhysicalPath.Contains($"{IFormFileExtensions.Public}\\", StringComparison.OrdinalIgnoreCase)) return;//带有Public的文件夹不验证权限
                 if (ctx.Context.Request.Headers["Passport"] == Passport) return;//有通行证的不验证权限
@@ -42,13 +41,8 @@ namespace Microsoft.AspNetCore.Builder
 
                 if (ctx.Context.Request.Path != null && ctx.Context.Request.Path.ToString().Contains("UploadDirectory"))
                 {
-                    SYS_LOG log = new SYS_LOG();
-                    log.LOGID = GuidHelper.NewSnowflakeId();
-                    log.LOGDATE = DateTime.Now;
-                    log.LOGTYPE = "请求附件";
-                    log.LOGDETAIL = "请求ip：" + ip;
-                    log.LOGSUMMARY = "附件路径：" + ctx.Context.Request.Host + " " + ctx.Context.Request.Path;
-                    await _dbContext.InsertAsync(log);
+                    var context = ctx.Context.RequestServices.GetService<IDbContext>();
+                    context.DBLog("请求附件", $"请求ip：{ip}", $"附件路径：{ctx.Context.Request.Host} {ctx.Context.Request.Path}").Result();
                 }
 
                 if (Whitelist.Any(pattern => Regex.IsMatch(ip, pattern))) return;

@@ -1,6 +1,4 @@
-﻿using Gksyb.Common.Static;
-using Gksyb.Core.Auth;
-using Gksyb.Core.Common;
+﻿using Gksyb.Core.Common;
 using Gksyb.Core.Filter;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -21,7 +19,7 @@ namespace Gksyb.Server.Services.Common
     /// <summary>
     /// 查询视图
     /// </summary>
-    public class CommonService : ICommonService
+    public class CommonService : IBaseService, ICommonService
     {
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
@@ -75,22 +73,13 @@ namespace Gksyb.Server.Services.Common
             return (datetime, addDatetime);
         }
 
-        /// <summary>
-        /// 根据配置获取json
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public async Task<List<T>> JsonValueAsync<T>(QueryViewRequest request)
         {
             return await JsonValueAsync<T>(request, false);
         }
 
-        /// <summary>
-        /// 多线程执行 根据配置获取json
-        /// </summary>
-        /// <param name="param"></param>
-        /// <returns></returns>
+        /// <inheritdoc/>
         public async Task<IDictionary<string, object>> JsonValueMulAsync(IDictionary<string, IDictionary<string, object>> param)
         {
             var dicReturn = new ConcurrentDictionary<string, object>();
@@ -116,7 +105,6 @@ namespace Gksyb.Server.Services.Common
         /// <summary>
         /// 获取视图配置
         /// </summary>
-        /// <returns></returns>
         public async Task<AjaxResult> QueryConfigAsync(string view)
         {
             var entity = await GetViewAsync(_dbContext, view, isThrow: true)
@@ -124,31 +112,22 @@ namespace Gksyb.Server.Services.Common
             return AjaxResult.Success(new { entity.FORM, entity.GRID, entity.Fields }, "");
         }
 
-        /// <summary>
-        /// 视图查询
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData<IList>> QueryAsync(GridRequest request)
+        /// <inheritdoc/>
+        public async Task<GridData<List<T>>> QueryAsync<T>(GridRequest request)
         {
-            var entity = await GetViewAsync(_dbContext, request.View, isThrow: true)
+            var entity = await GetViewAsync(_dbContext, request.View)
                 ?? throw new MessageException($"视图{request.View}不存在");
             var dbContextLind = await _dbContext.GetDbContext(entity.DataSource);
             request.View = entity.SEARCH;
-            return await dbContextLind.GetGridData(request);
+            return await dbContextLind.GetGridData<T>(request);
         }
 
         /// <summary>
         /// 根据配置获取json
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
-        /// <param name="isClone"></param>
-        /// <returns></returns>
         private async Task<List<T>> JsonValueAsync<T>(QueryViewRequest request, bool isClone)
         {
             var view = request.ViewName;
-            if (string.IsNullOrWhiteSpace(view)) throw new MessageException("请传递视图参数");
-            await HttpContext.Current.ValidViewAsync(view);
             var dbContext = isClone ? _dbContext.Clone() : _dbContext;
             var entity = await GetViewAsync(dbContext, view)
                 ?? throw new MessageException($"视图{view}不存在");
@@ -255,7 +234,7 @@ namespace Gksyb.Server.Services.Common
                         }
                         try
                         {
-                            string sortExp = (request.Sort ?? "").SqlFilter(80);
+                            string sortExp = (request.Sort ?? "").SqlFilter(5);
                             if (sortExp.HasValue())
                             {
                                 var upperText = sql.ToUpper();
@@ -264,7 +243,7 @@ namespace Gksyb.Server.Services.Common
                                 {
                                     sql = sql[..lastIndex];
                                 }
-                                sql = "SELECT * FROM ({0}) tmptableinner ORDER BY {1}".FormatWith(sql, sortExp);
+                                sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
                             }
                         }
                         catch (Exception) { }
@@ -284,8 +263,7 @@ namespace Gksyb.Server.Services.Common
         /// <summary>
         /// 获取视图
         /// </summary>
-        /// <returns></returns>
-        public async Task<QueryView> GetViewAsync(IDbContext dbContext, string view, string appname = null, bool isThrow = false)
+        private async Task<QueryView> GetViewAsync(IDbContext dbContext, string view, string appname = null, bool isThrow = false)
         {
             appname ??= _appName;
             var cacheName = $"{CachePrefix}{view}";
@@ -311,7 +289,6 @@ namespace Gksyb.Server.Services.Common
         /// 移除缓存
         /// </summary>
         /// <param name="view">视图名称</param>
-        /// <returns></returns>
         public async Task RemoveCacheAsync(string view)
         {
             view = $"{CachePrefix}{view}";
@@ -321,7 +298,6 @@ namespace Gksyb.Server.Services.Common
         /// <summary>
         /// 清空缓存
         /// </summary>
-        /// <returns></returns>
         public async Task<bool> ClearAsync()
         {
             var list = await _dbContext.Query<CF_CONFIGURATION>().Select(c => c.VIEWS).ToListAsync();
@@ -330,6 +306,34 @@ namespace Gksyb.Server.Services.Common
                 await RemoveCacheAsync(view);
             });
             return true;
+        }
+
+        /// <summary>
+        /// 一次性寄存数据（被使用后就丢弃）
+        /// </summary>
+        public async Task<string> StoreAsync<T>(T data, TimeSpan? expiry = null)
+        {
+            var key = Guid.NewGuid().ToString("N").ToLower();
+            await _distributedCache.SetAsync(key, data, new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = expiry ?? TimeSpan.FromMinutes(3)
+            });
+            return key;
+        }
+
+        /// <summary>
+        /// 获取寄存数据（获取后同时删除）
+        /// </summary>
+        public async Task<T> GetStoreAsync<T>(string key)
+        {
+            try
+            {
+                return await _distributedCache.GetAsync<T>(key);
+            }
+            finally
+            {
+                await _distributedCache.RemoveAsync(key);
+            }
         }
 
         public async Task<List<string>> GetDeptList(string dept)
@@ -359,6 +363,6 @@ namespace Gksyb.Server.Services.Common
         }
 
         //缓存前缀
-        private static readonly string CachePrefix = "View_";
+        private const string CachePrefix = "View_";
     }
 }

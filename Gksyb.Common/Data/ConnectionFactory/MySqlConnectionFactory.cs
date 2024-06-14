@@ -1,5 +1,6 @@
 ﻿using Chloe.Infrastructure;
 using Chloe.MySql;
+using Chloe.RDBMS;
 using MySqlConnector;
 using System.Data;
 
@@ -9,7 +10,18 @@ namespace Gksyb.Common.Data
     {
         static MySqlConnectionFactory()//初始化
         {
-            MySqlContext.SetMethodHandler(IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler());
+            var methodHandlerDic = new Dictionary<string, IMethodHandler>()
+            {
+                {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
+                {Compare_Handler.MethodName, new Compare_Handler()},
+                {Contains_Handler.MethodName, new ContainsConcat_Handler()},
+                {SumString_Handler.MethodName, new SumString_Handler("GROUP_CONCAT",null)},
+                {MathAbs_Handler.MethodName, new MathAbs_Handler()}
+            };
+            foreach (var item in methodHandlerDic)
+            {
+                MySqlContext.SetMethodHandler(item.Key, item.Value);
+            }
         }
 
         private readonly string _connString = null;

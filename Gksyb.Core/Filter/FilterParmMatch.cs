@@ -19,6 +19,7 @@ namespace Gksyb.Core.Filter
             { "{CurrentAllCorps}", () => User?.AllCorps.Select(c=>c.CorpID) },
             { "{CurrentCorp}", () => User?.Corp.CorpID },
             { "{CurrentStations}", () => User?.Corp.Station },
+            { "{CurrentParentCompany}", () => User?.ParentCompany?.CorpID },
             { "{CurrentOpenid}", () => User?.Openid },
             { "{IsAdmin}", () => User?.IsAdmin.ToString() == "True" ? "1" : "0" },
         };

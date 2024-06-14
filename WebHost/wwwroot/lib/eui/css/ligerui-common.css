@@ -19,10 +19,24 @@ input::-ms-clear {
     display: none;
 }
 
+.l-display-none {
+    display: none !important;
+}
+
+.l-noborder {
+    border: none !important;
+}
+
 .l-overflow-hidden {
     overflow: hidden !important;
     overflow-x: hidden !important;
     overflow-y: hidden !important;
+}
+
+.l-overflow-auto {
+    overflow: auto !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
 }
 
 .l-loading {

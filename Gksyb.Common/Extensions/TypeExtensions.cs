@@ -111,6 +111,12 @@ namespace Gksyb.Common
         }
 
         /// <summary>
+        /// 获取成员的显示名称
+        /// </summary>
+        public static string GetDisplayName(this MemberInfo memberInfo)
+            => memberInfo.GetAttribute<DisplayAttribute>()?.Name ?? memberInfo.GetAttribute<DisplayNameAttribute>()?.DisplayName;
+
+        /// <summary>
         /// 从类型成员获取指定Attribute特性
         /// </summary>
         /// <typeparam name="T">Attribute特性类型</typeparam>
@@ -213,7 +219,7 @@ namespace Gksyb.Common
         /// <summary>
         /// 获取指定类型的方法
         /// </summary>
-        public static Dictionary<string, MethodInfo> GetDicMethods(this Type type, BindingFlags? flags = null)
+        public static Dictionary<string, MethodInfo> GetDicMethods(this Type type, BindingFlags? flags = null, Func<MethodInfo, bool> func = null)
         {
             flags ??= BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.IgnoreCase;
             var methodInfos = new Dictionary<string, MethodInfo>(StringComparer.OrdinalIgnoreCase);
@@ -221,6 +227,7 @@ namespace Gksyb.Common
             foreach (var method in methods)
             {
                 if (string.IsNullOrWhiteSpace(method.Name)) continue;
+                if (func?.Invoke(method) == false) continue;
                 methodInfos.Add(method.Name, method);
             }
             return methodInfos;

@@ -143,12 +143,12 @@
             },
             add: function () { //修改
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
+                var row = me.grid.getSelectedRow();
+                if (!row) {
                     LG.tip('请选择行!');
                     return;
                 }
-                me.addTab('创建【' + selected.FLOW_NAME + '】', 'flow-detail.html?sid=' + selected.ID);
+                me.addTab('创建【' + row.FLOW_NAME + '】', 'flow-detail.html?code=' + (row.FLOW_CODE || row.ID));
             },
             reload: function () { //刷新
                 var me = this;

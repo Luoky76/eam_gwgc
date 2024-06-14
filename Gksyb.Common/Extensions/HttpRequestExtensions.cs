@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,6 +12,20 @@ namespace Gksyb.Common
 {
     public static class HttpRequestExtensions
     {
+        static HttpRequestExtensions()
+        {
+            var configuration = Static.HttpContext.RequestServices.GetService<IConfiguration>();
+            XForwardedFor = configuration.GetValue<string>("Security:XForwardedFor");
+            if (string.IsNullOrWhiteSpace(XForwardedFor))
+            {
+                var cacheOptions = configuration.GetSection(OptionName.RedisCache).Get<RedisCacheOptions>();
+                if (!string.IsNullOrWhiteSpace(cacheOptions.Configuration))
+                {
+                    XForwardedFor = "X-Real-IP";
+                }
+            }
+        }
+
         /// <summary>
         /// 获取URI参数
         /// </summary>
@@ -60,7 +77,7 @@ namespace Gksyb.Common
         /// 是否Ajax请求
         /// </summary>
         /// <param name="source"></param>
-        public static bool IsAjax(this HttpRequest source) => source.Headers[HeaderNames.XRequestedWith] == "XMLHttpRequest";
+        public static bool IsAjax(this HttpRequest source) => "XMLHttpRequest".Equals(source.Headers[HeaderNames.XRequestedWith], StringComparison.OrdinalIgnoreCase);
 
         /// <summary>
         /// 获取真实IP
@@ -70,7 +87,7 @@ namespace Gksyb.Common
         /// <returns></returns>
         public static string GetRealIP(this HttpRequest source, bool hasPort = false)
         {
-            var ip = "".FindFirstHasValue(source.Headers["X-Forwarded-For"], source.Headers["X-Original-For"], source.Headers["X-Real-IP"], source.Headers["Remote-Addr"]);
+            var ip = string.IsNullOrWhiteSpace(XForwardedFor) ? string.Empty : source.Headers[XForwardedFor].ToString();
             if (!ip.Contains('.')) ip = null;
             if (string.IsNullOrWhiteSpace(ip))
             {
@@ -114,15 +131,7 @@ namespace Gksyb.Common
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static string GetRealHost(this HttpRequest source)
-        {
-            string host = source.Headers["X-Original-Host"];
-            if (host.IsNullOrEmpty())
-            {
-                host = source.Host.Value;
-            }
-            return host;
-        }
+        public static string GetRealHost(this HttpRequest source) => source.Host.Value;
 
         /// <summary>
         /// 判断是否内部IP
@@ -233,11 +242,9 @@ namespace Gksyb.Common
         }
 
         /// <summary>
-        /// 获取request内容
+        /// 获取request内容体
         /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static async Task<string> GetContent(this HttpRequest source)
+        internal static async Task<string> GetBodyAsync(this HttpRequest source)
         {
             var json = string.Empty;
             try
@@ -294,5 +301,22 @@ namespace Gksyb.Common
             if (source.Headers.ContainsKey(parm)) return source.Headers[parm];
             return null;
         }
+
+        /// <summary>
+        /// 允许重复读取body
+        /// </summary>
+        public static void EnableRewind(this HttpRequest source, long maxLength = 10 * 1024)
+        {
+            if (!source.HasFormContentType) return;
+            if (source.ContentLength > maxLength) return;
+            if (source.Body?.CanSeek == true) return;
+            if (source.ContentType.StartsWith("multipart/form-data", StringComparison.OrdinalIgnoreCase)) return;
+            source.EnableBuffering();
+        }
+
+        /// <summary>
+        /// XFF头
+        /// </summary>
+        private static readonly string XForwardedFor;
     }
 }

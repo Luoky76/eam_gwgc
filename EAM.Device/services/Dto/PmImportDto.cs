@@ -1,5 +1,4 @@
-﻿using Magicodes.ExporterAndImporter.Core;
-using Magicodes.ExporterAndImporter.Excel;
+﻿using Gksyb.Common.Office.Core;
 using System.ComponentModel.DataAnnotations;
 
 namespace EAM.Device.services.Dto

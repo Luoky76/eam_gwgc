@@ -35,11 +35,11 @@
                         columns: [
                             { display: "角色ID", name: "ROLEID", width: 100, type: "text", hide: true },
                             {
-                                display: "*角色名称", name: "ROLENAME", width: 200, type: "text", validate: { required: true, }, editor: {
+                                display: "角色名称", name: "ROLENAME", width: 200, type: "text", validate: { required: true, }, editor: {
                                     upper: true, type: 'text', onChangeValue: function (input, value, g) { }
                                 }
                             },
-                            { display: "*角色描述", name: "ROLEDESC", width: 300, type: "text", validate: { required: true }, editor: { upper: true, type: 'text' } },
+                            { display: "角色描述", name: "ROLEDESC", width: 300, type: "text", validate: { required: true }, editor: { upper: true, type: 'text' } },
                             { display: "所属组织", name: "CORPID", minWidth: 200, type: "select", editor: { type: 'select', data: me.dataCorp, selectBoxHeight: 400 } },
                             { display: "修改人", name: "MODIFYUSER", dbname: "MODIFYUSER", width: 100, type: "text", align: "center" },
                             { display: "修改日期", name: "MODIFYDATE", dbname: "MODIFYDATE", width: 100, type: "date", align: "center" }
@@ -96,15 +96,16 @@
                                 break;
                         }
                     },
-                    onSuccess: function (data, g) {
+                    onSuccess: function (data) {
                         if (data && data.Rows) {
-                            var rows = data.Rows;
-                            for (var i = 0, len = (rows || []).length; i < len; i++) {
-                                rows[i].OLDROLEID = rows[i].ROLEID;
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDROLEID = row.ROLEID;
                             }
                         }
                     },
-                    rowAttrRender: function (rowdata, rowid) {
+                    rowAttrRender: function (rowdata) {
                         if (rowdata && rowdata.RECORDSTATUS && rowdata.RECORDSTATUS == "不可用") {
                             return "style='color:red;'";
                         }
@@ -137,9 +138,9 @@
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../System/Export.html?exporttype=pdf&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
@@ -149,7 +150,11 @@
             },
             add: function () { //新增
                 var me = this;
-                me.grid.addEditRow({}, true);
+                var row = {};
+                if (!window.session.IsAdmin) {
+                    row.CORPID = window.session.CorpId;
+                }
+                me.grid.addEditRow(row, true);
             },
             save: function () { //保存
                 var me = this;
@@ -214,8 +219,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

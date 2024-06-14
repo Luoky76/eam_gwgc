@@ -1,11 +1,9 @@
 ﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
 using Gksyb.Common.Office;
+using Gksyb.Common.Office.Core;
 using Gksyb.Common.Weixin;
 using Gksyb.Core.Auth;
 using Gksyb.Model.Core;
-using Magicodes.ExporterAndImporter.Core;
-using Magicodes.ExporterAndImporter.Excel;
-using Magicodes.ExporterAndImporter.Pdf;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

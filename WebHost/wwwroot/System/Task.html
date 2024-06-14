@@ -132,9 +132,9 @@
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: "../System/Export.html?exporttype=pdf&MenuNo=" + me.menuNo,
                                 modal: true
                             });
                             break;
@@ -172,146 +172,125 @@
             },
             modify: function (rowid) { //修改
                 var me = this;
-                var selected = null;
-                if (rowid) selected = me.grid.getRow(rowid);
-                else selected = me.grid.getSelectedRow();
-                if (selected) {
-                    var sid = selected.ID;
-                    me.dialog = $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '修改任务',
-                        url: "TaskDetail.html?sid=" + sid,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me)
-                    });
-                }
-                else {
+                var row = rowid ? me.grid.getRow(rowid) : me.grid.getSelectedRow();
+                if (!row) {
                     LG.tip('请选择行!');
+                    return;
                 }
-
+                var sid = row.ID;
+                me.dialog = $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '修改任务',
+                    url: "TaskDetail.html?sid=" + sid,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me)
+                });
             },
             save: function () { //保存
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'task/save',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
+                if (me.grid.endEdit() === false) return;
+                if (!me.grid.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
                 }
-
+                if (!me.grid.validChangeRows()) return false;
+                var changeRow = me.grid.getChangedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'task/save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
             },
+            rowHandle: function (row) {
+                delete row["TASK_RUNSTATUS"];
+                delete row["TASK_LAST_RESULT"];
+            },
+            getSelectedRows: function (remove) {
+                var me = this;
+                if (me.grid.endEdit() === false) return false;
+                var rows = me.grid.getSelectedRows(remove);
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return false;
+                }
+                for (var i = 0, l = rows.length; i < l; i++) {
+                    me.rowHandle(rows[i]);
+                }
+                return rows;
+            },
             delete: function () { //删除
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                me.grid.deleteSelectedRow();
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
+                var rows = me.getSelectedRows(true);
+                if (!rows) return;
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    me.grid.deleteRange(rows);
+                    me.save();
+                });
             },
             excute: function () { //执行
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定执行吗?', function (confirm) {
-                            if (confirm) {
-                                LG.ajax({
-                                    jsToken: true,
-                                    url: 'task/excute',
-                                    loading: '正在执行中...',
-                                    data: selected,
-                                    success: function () {
-                                        LG.showSuccess('执行成功', function () {
-                                            me.reload();
-                                        });
-                                    },
-                                    error: function (message) {
-                                        LG.showError(message);
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
+                var rows = me.getSelectedRows(true);
+                if (!rows) return;
+                $.ligerDialog.confirm('确定执行吗?', function (confirm) {
+                    if (!confirm) return;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'task/excute',
+                        loading: '正在执行中...',
+                        data: rows,
+                        success: function () {
+                            LG.showSuccess('执行成功', function () {
+                                me.reload();
+                            });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            setTaskStatus: function (title, status) {
+                var me = this;
+                var rows = me.getSelectedRows();
+                if (!rows) return;
+                $.ligerDialog.confirm(title, function (confirm) {
+                    if (!confirm) return;
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var row = rows[i];
+                        me.grid._updateHandle(row);
+                        row.TASK_STATUS = status;
+                        me.rowHandle(rows);
                     }
-                }
+                    me.grid.isDataChanged = true;
+                    me.save();
+                });
             },
             start: function () { //启用
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定启用吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, l = selected.length; i < l; i++) {
-                                    var row = selected[i];
-                                    me.grid._updateHandle(row);
-                                    row.TASK_STATUS = "正常";
-                                }
-                                me.grid.isDataChanged = true;
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
+                this.setTaskStatus("确定启用吗", "正常");
             },
             stop: function () { //停止
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定停止吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, l = selected.length; i < l; i++) {
-                                    var row = selected[i];
-                                    me.grid._updateHandle(row);
-                                    row.TASK_STATUS = "停止";
-                                }
-                                me.grid.isDataChanged = true;
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
+                this.setTaskStatus("确定停止吗", "停止");
             },
             bindGridEvent: function () {
                 var me = this;
@@ -328,8 +307,8 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },

@@ -18,7 +18,7 @@
         apiBase: urlBase, // api 接口的访问路径
         getUrl: function (url, baseUrl) {
             if (url.toLowerCase().indexOf("http") === 0) return url;
-            url = url.replace(/\.\.\//g, "");
+            url = url.replace(/\.\.\//g, "").replace(/\/+/g, "\/");
             baseUrl = baseUrl || this.apiBase;
             if (baseUrl && url.indexOf(baseUrl) === 0) return url;
             url = baseUrl + url;
@@ -63,9 +63,45 @@
             }
         });
     }
-    //顶层窗口
+    if (window[imeiKey] === undefined) {
+        var imeiKey = "GksybIMEI";
+        Object.defineProperty(window, imeiKey, {
+            get: function () {
+                var val = window.localStorage.getItem(imeiKey);
+                if (val) return val;
+                val = new Date().getTime();
+                app.ajax({
+                    noGlobal: true,
+                    async: false,
+                    url: "auth/imei",
+                    success: function (data) {
+                        val = data;
+                    }
+                });
+                window.localStorage.setItem(imeiKey, val);
+                return val;
+            }
+        });
+    }
     if (window.topWindow === undefined) {
         Object.defineProperty(window, 'topWindow', {
+            get: function () {//获取不跨域的有gksybConfigs的顶层窗口
+                var parentWindow = window;
+                try {
+                    for (var i = 0; i < 10; i++) {
+                        if (parentWindow.parent.location.href && parentWindow.parent.setGksybToken) {
+                            parentWindow = parentWindow.parent;
+                        }
+                    }
+                } catch (err) {
+                }
+                return parentWindow;
+            }
+        });
+    }
+
+    if (window.topDomainWindow === undefined) {
+        Object.defineProperty(window, 'topDomainWindow', {
             get: function () {//获取不跨域的顶层窗口
                 var parentWindow = window;
                 try {
@@ -91,21 +127,21 @@
         },
         generateJsToken: function (jqXHR, opt) {//js票据 eval用到jqXHR
             opt = opt || { jsToken: "JsToken" };
+            var key = (opt.jsToken === true) ? opt.url.replace(gksybConfigs.apiBase, "").replace(/^\/|(\?.*)$/g, '').replace(/\/$/, "") : opt.jsToken;
+            var data = (typeof key === "string" ? { key: key } : null);
             var tokenOptions = Framework7.utils.extend(true, {
                 noGlobalBeforeOpen: true,
                 noGlobalBeforeSend: true,
                 url: "Auth/JsToken",
                 async: false,
-                data: {
-                    key: (opt.jsToken === true) ? opt.url : opt.jsToken
-                },
+                data: data,
                 dataType: "text",
                 type: 'post',
                 success: function (result) {
                     eval(result);
                 },
                 error: function () { }
-            }, opt.tokenOptions);
+            }, opt.tokenOptions || (data === null ? key : null));
             app.request(tokenOptions);
         },
         setGksybToken: function (jqXHR) {//token验证
@@ -615,6 +651,22 @@
                     mainView.router.navigate(url, options);
                 }
             }
+        },
+        //加载组件
+        loadComponent: function (url) {
+            url = window.gksybConfigs.getUrl(url, window.gksybConfigs.apiBase);
+            var component = null;
+            app.request({
+                noGlobal: true,
+                async: false,
+                url: url,
+                type: 'get',
+                dataType: "text",
+                success: function (result) {
+                    component = app.component.parse(result);
+                }
+            });
+            return component;
         },
         android: {
             getIMEI: function () {

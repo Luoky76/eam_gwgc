@@ -1,7 +1,9 @@
 ﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
 using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
+using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Dtos;
+using Gksyb.Model.UI;
 using Gksyb.Server.Services.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +20,12 @@ namespace Gksyb.Server.Controllers.Auth
     [GksybAuthorize(true)]
     public partial class AuthController : BaseController
     {
+        /// <summary>
+        /// 设备（个人）唯一ID
+        /// </summary>
+        [AllowAnonymous]
+        public AjaxResult IMEI() => AjaxResult.Success(Guid.NewGuid().ToString("N").ToLower(), default);
+
         /// <summary>
         /// 是否内部IP
         /// </summary>
@@ -51,7 +59,7 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous]
         public async Task<string> LoginTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync($"{Request.PathBase}Auth/Login");
+            return await HttpContext.GenerateTokenAsync("Auth/Login");
         }
 
         /// <summary>
@@ -71,20 +79,71 @@ namespace Gksyb.Server.Controllers.Auth
             if ("0".Equals(IsInnerIP().Data) && !await ValidVerifyCodeAsync(request.Verifycode))
                 return AjaxResult.Error("请输入正确的验证码");
             request.Username = (request.Username ?? "").ToUpper();
-            try
+            request.IP = Request.GetRealIP();
+            request.UserAgent = Request.GetUserAgent();
+            request.IMEI = CryptographyHelper.GetMd5(request.IMEI);
+            var result = await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
             {
-                request.IP = Request.GetRealIP();
-                request.UserAgent = Request.GetUserAgent();
-                var result = await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
+                return await service.LoginAsync(request.PasswordHandle(), handle: async result =>
                 {
-                    return await service.LoginAsync(request.PasswordHandle());
+                    if (!result.IsAuth || (result.LastIMEI == request.IMEI) || result.Phone == null || result.Phone.Count < 1) return null;
+                    return await SmsHandleAsync(distributedCache, result);
                 });
-                return result;
-            }
-            catch (Exception ex)
+            });
+            return result;
+        }
+
+        /// <summary>
+        /// 短信二次验证
+        /// </summary>
+        private async Task<AjaxResult> SmsHandleAsync(IDistributedCache distributedCache, LoginResponse result)
+        {
+            await distributedCache.SetAsync(result.IMEI, result, new DistributedCacheEntryOptions()
             {
-                return AjaxResult.Error(ex.Message);
-            }
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
+            if (result.Phone.Count > 1) return AjaxResult.Success(result.Phone, "999");
+            var smsService = HttpContext.RequestServices.GetService<ISmsService>();
+            await smsService.GenerateCodeAsync(result.Phone.FirstOrDefault().Key);
+            return AjaxResult.Success("99");
+        }
+
+        /// <summary>
+        /// 短信验证
+        /// </summary>
+        [AllowAnonymous, JsToken("Auth/Login")]
+        public async Task<AjaxResult> PhoneSelect([FromServices] IDistributedCache distributedCache, KeyValueItem request)
+        {
+            var imei = CryptographyHelper.GetMd5(request.Key);
+            var phone = CryptographyHelper.DecryptFront(request.Value);
+            var error = "超过有效期，请重新登录";
+            var model = await distributedCache.GetAsync<LoginResponse>(imei);
+            MessageException.ThrowIf(model == null, $"{error}状态码：1002");
+            MessageException.ThrowIf(model.Phone == null || !model.Phone.Any(a => a.Key == phone), $"{error}状态码：1003");
+            var item = model.Phone.FirstOrDefault(a => a.Key == phone);
+            model.Phone = new List<KeyValueItem> { item };
+            return await SmsHandleAsync(distributedCache, model);
+        }
+
+        /// <summary>
+        /// 短信验证
+        /// </summary>
+        [AllowAnonymous, JsToken("Auth/Login")]
+        public async Task<AjaxResult> SmsAuth([FromServices] IDistributedCache distributedCache, [FromServices] ISmsService smsService, [FromServices] IAuthService service, KeyValueItem request)
+        {
+            var imei = CryptographyHelper.GetMd5(request.Key);
+            var code = CryptographyHelper.DecryptFront(request.Value);
+            var error = "超过有效期，请重新登录。";
+            var model = await distributedCache.GetAsync<LoginResponse>(imei);
+            MessageException.ThrowIf(model == null, $"{error}状态码：1002");
+            MessageException.ThrowIf(model.Phone == null || model.Phone.Count != 1, $"{error}状态码：1003");
+            var phone = model.Phone.FirstOrDefault().Key;
+            var times = await smsService.CheckCodeAsync(phone, code);
+            MessageException.ThrowIf(times < 0, $"验证码已失效，请重新登录");
+            if (times > 0) return AjaxResult.Success($"验证失败，剩余次数:{times}", "99");
+            await service.SetUserImeiAsync(model.Account, imei);
+            await distributedCache.RemoveAsync(imei);
+            return AjaxResult.Success(model.Response);
         }
 
         /// <summary>
@@ -97,11 +156,42 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 request.Username = CurrentUser?.UserName;
             }
-            if (string.IsNullOrWhiteSpace(request.Username)) return AjaxResult.Error("请输入用户名");
+            if (string.IsNullOrWhiteSpace(request.Username)) return AjaxResult.Error("请输入账号");
             request.Username = request.Username.ToUpper();
             return await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
             {
                 return await service.ChangePasswordAsync(request);
+            });
+        }
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        [AllowAnonymous, JsToken("Auth/Login")]
+        public async Task<AjaxResult> ResetPasswordAsync([FromServices] ISmsService smsService, [FromServices] IAuthService service, ChangePasswordRequest request)
+        {
+            var times = await smsService.CheckCodeAsync(request.Username, request.OldPassword);
+            MessageException.ThrowIf(times < 0, $"验证码已失效");
+            if (times > 0) return AjaxResult.Error($"验证失败，剩余次数:{times}", "99");
+            var user = await service.GetUserAsync(request.Username);
+            return await service.ResetPasswordAsync(request, user);
+        }
+
+        [AllowAnonymous]
+        public async Task<string> SmsTokenAsync()
+        {
+            return await HttpContext.GenerateTokenAsync($"auth/smscode");
+        }
+
+        [AllowAnonymous, JsToken]
+        public async Task<AjaxResult> SmsCodeAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, [FromServices] ISmsService smsService, [ModelEncrypt] string phone)
+        {
+            return await distributedCache.LimitInvoke($"{phone}_SMS", async () =>
+            {
+                var user = await service.GetUserAsync(phone);
+                if (user == null) return AjaxResult.Success();
+                await smsService.GenerateCodeAsync(user.PHONE, key: phone);
+                return AjaxResult.Success();
             });
         }
 
@@ -204,7 +294,7 @@ namespace Gksyb.Server.Controllers.Auth
             var user = CurrentUser;
             await service.ChangeCorp(user, corpid);
             await user.SaveAsync();
-            return AjaxResult.Success(user.Corp);
+            return AjaxResult.Success(user.ToUserResponse(null));
         }
 
         /// <summary>
@@ -269,6 +359,8 @@ namespace Gksyb.Server.Controllers.Auth
         {
             await configurationService.UpdateCacheAsync();
             await roleModuleService.Clear(options.Value.RoleAppName, CurrentUser.MenuAppname);
+            await roleModuleService.Clear(options.Value.RoleAppName, options.Value.AppName);
+            await roleModuleService.Clear(options.Value.RoleAppName, options.Value.MobileAppName);
             return AjaxResult.Success();
         }
     }

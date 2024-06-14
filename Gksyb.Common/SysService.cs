@@ -61,7 +61,7 @@ namespace Gksyb.Common
             //事件总线
             services.AddEventBus();
             //微信
-            services.AddWeixin(config.GetSection(OptionName.Weixin));
+            services.AddWeixin(config);
             return services;
         }
 

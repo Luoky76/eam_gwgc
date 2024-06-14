@@ -14,8 +14,8 @@ namespace Gksyb.Server.Services.Auth
     public class OAuthService : IBaseService
     {
         private const int ShortExpiration = 30;
-        private const string KEY = "eokW6j8@DZfwFBMiIa7ghzELcKYSuyAR";
-        private static readonly string _opertype = "用户公司";
+        private const string KEY = OAuthRequest<object>.KEY;
+        private const string _opertype = "用户公司";
         private readonly IDbContext _dbContext;
         private readonly IDistributedCache _distributedCache;
         private readonly UserSession _user;
@@ -82,30 +82,34 @@ namespace Gksyb.Server.Services.Auth
             if (isExists) throw new MessageException($"已经存在编码{entity.APPID}");
         }
 
-        public async Task<UserSession> AccessTokenAsync(OAuthRequest<string> request)
+        public async Task<AccessTokenResponse> AccessTokenAsync(OAuthRequest<string> request)
         {
-            var model = await Check(request);
+            var model = await request.Check(_dbContext);
             var userSession = new UserSession()
             {
                 Token = Guid.NewGuid().ToString("N"),
+                Version = _options.TicketVersion,
                 UserID = model.ID.Value,
                 UserName = model.APPID,
                 RealName = model.NAME,
                 IsApi = true,
                 Group = model.INFORMATION ?? "",
-                Roles = new List<string>(),
+                AllRoles = new List<string>(),
                 IP = request.IP,
                 UserAgent = request.UA,
                 UserAppName = _options.UserAppName,
                 RoleAppName = _options.RoleAppName,
-                MenuAppname = _options.AppName,
-                ForbinMenus = new List<MenuModule>(),
-                ForbinButtons = new SortedList<string, List<ButtonModule>>()
+                MenuAppname = _options.AppName
             };
             var key = CryptographyHelper.GetSM3($"{model.APPID}{model.IP}{nameof(AccessTokenAsync)}");
             var lastToken = await _distributedCache.GetAsync<string>(key);
             if (!string.IsNullOrWhiteSpace(lastToken)) await _distributedCache.RemoveAsync(lastToken);
-            var expiration = TimeSpan.FromSeconds(model.EXPIRES ?? 7200);
+            var response = new AccessTokenResponse()
+            {
+                AccessToken = userSession.Token,
+                ExpiresIn = model.EXPIRES ?? 7200
+            };
+            var expiration = TimeSpan.FromSeconds(response.ExpiresIn);
             await _distributedCache.SetAsync(key, userSession.Token, new DistributedCacheEntryOptions()
             {
                 AbsoluteExpirationRelativeToNow = expiration
@@ -114,16 +118,16 @@ namespace Gksyb.Server.Services.Auth
             {
                 AbsoluteExpirationRelativeToNow = expiration
             });
-            return userSession;
+            return response;
         }
 
         /// <summary>
-        /// 生成token
+        /// 生成单点凭据
         /// </summary>
-        public async Task<string> GenerateTokenAsync()
+        public async Task<string> TokenAsync(TokenRequest request)
         {
             var token = Guid.NewGuid().ToString("N");
-            await _distributedCache.SetStringAsync(token, _user.UserName, new DistributedCacheEntryOptions()
+            await _distributedCache.SetAsync(token, request, new DistributedCacheEntryOptions()
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ShortExpiration)
             });
@@ -131,67 +135,68 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
-        /// 获取ticket
-        /// </summary>
-        public async Task<string> TicketAsync(TokenRequest request)
-        {
-            var name = request.Account;
-            var query = _dbContext.Query<CF_USER>();
-            if (name.IsMobileNumber())
-            {
-                query = query.Where(c => c.PHONE == name);
-            }
-            else
-            {
-                query = query.Where(c => c.LOGINNAME == name || c.DEPARTCODE == name);
-            }
-            var list = await query.Where(c => c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).ToListAsync();
-            MessageException.ThrowIf(list.Count < 1, $"找不到用户{name}");
-            var model = list.FirstOrDefault(c => c.Phone == name) ?? list.FirstOrDefault(c => c.WorkerCode == name) ?? list.FirstOrDefault();
-            request.Account = model.Account;
-            var ticket = Guid.NewGuid().ToString("N");
-            await _distributedCache.SetAsync(ticket, request, new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ShortExpiration)
-            });
-            return ticket;
-        }
-
-        /// <summary>
         /// token换取用户信息
         /// </summary>
         /// <returns></returns>
-        public async Task<UserInfoResponse> UserInfoAsync(string ticketCode)
+        public async Task<string> UserInfoAsync(TokenRequest request)
         {
             try
             {
-                var userName = await _distributedCache.GetStringAsync(ticketCode);
-                if (string.IsNullOrWhiteSpace(userName)) throw new MessageException("token已失效");
-                var userInfo = await UserInfoResponseAsync(userName);
-                await CorpInfoResponseAsync(userInfo, userInfo.CorpID);
-                return userInfo;
+                var token = await _distributedCache.GetAsync<TokenRequest>(request.Key);
+                MessageException.ThrowIf(string.IsNullOrWhiteSpace(token?.Key), "验证失败：1001");
+                var error = string.Empty;
+                var hasIp = !string.IsNullOrWhiteSpace(token.IP);
+                var hasUA = !string.IsNullOrWhiteSpace(token.UA);
+                if (!hasIp && !hasUA) return token.Key;
+                var times = 0;
+                if (!string.IsNullOrWhiteSpace(token.IP))
+                {
+                    if (token.IP == request.IP)
+                    {
+                        times += 1;
+                    }
+                    else
+                    {
+                        error = "验证失败：1002";
+                    }
+                }
+                if (!string.IsNullOrWhiteSpace(token.UA))
+                {
+                    if (token.UA == request.UA)
+                    {
+                        times += 1;
+                    }
+                    else
+                    {
+                        error = "验证失败：1003";
+                    }
+                }
+                MessageException.ThrowIf(times < 1, error);
+                return token.Key;
             }
             finally
             {
-                if (!string.IsNullOrWhiteSpace(ticketCode)) await _distributedCache.RemoveAsync(ticketCode);
+                if (!string.IsNullOrWhiteSpace(request.Key)) await _distributedCache.RemoveAsync(request.Key);
             }
         }
 
         /// <summary>
         /// 获取用户信息
         /// </summary>
-        private async Task<UserInfoResponse> UserInfoResponseAsync(string userName)
+        public async Task<UserInfoResponse> GetUserAsync(string userName = null, bool hasCorp = false)
         {
+            userName ??= _user.UserName;
             var userInfo = await _dbContext.Query<CF_USER>()
-                 .Where(c => c.LOGINNAME == userName && c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).FirstOrDefaultAsync()
+                 .Where(c => (c.LOGINNAME == userName || c.PHONE == userName || c.DEPARTCODE == userName) && c.APPNAME == _options.UserAppName && c.FLAG == "1").Select(UserInfoResponse.FromCfUser).FirstOrDefaultAsync()
                  ?? throw new MessageException($"找不到用户{userName}");
+            if (hasCorp) await GetCorpInfoAsync(userInfo, userInfo.CorpID);
             return userInfo;
         }
 
         /// <summary>
         /// 获取公司数据
         /// </summary>
-        public async Task CorpInfoResponseAsync(UserInfoResponse user, string corpid)
+        public async Task GetCorpInfoAsync(UserInfoResponse user, string corpid)
         {
             user.Corp = null;
             user.AllCorp = new List<CorpInfo>();

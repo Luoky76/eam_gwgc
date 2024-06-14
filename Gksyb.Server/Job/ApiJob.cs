@@ -98,17 +98,17 @@ namespace Gksyb.Server.Job
         {
             get
             {
-                var action = (Action ?? "").ToUpper();
+                var action = (Action ?? "").ToLower();
                 return action switch
                 {
-                    "" or "POST" => HttpMethod.Post,
-                    "GET" => HttpMethod.Get,
-                    "PUT" => HttpMethod.Put,
-                    "DELETE" => HttpMethod.Delete,
-                    "Head" => HttpMethod.Head,
-                    "OPTIONS" => HttpMethod.Options,
-                    "PATCH" => HttpMethod.Patch,
-                    "Trace" => HttpMethod.Trace,
+                    "" or "post" => HttpMethod.Post,
+                    "get" => HttpMethod.Get,
+                    "put" => HttpMethod.Put,
+                    "delete" => HttpMethod.Delete,
+                    "head" => HttpMethod.Head,
+                    "options" => HttpMethod.Options,
+                    "patch" => HttpMethod.Patch,
+                    "trace" => HttpMethod.Trace,
                     _ => HttpMethod.Post,
                 };
             }
@@ -118,14 +118,14 @@ namespace Gksyb.Server.Job
         {
             get
             {
-                var contentType = (ContentType ?? "").ToUpper();
+                var contentType = (ContentType ?? "").ToLower();
                 var content = Content ?? "";
                 return contentType switch
                 {
-                    "" or "JSON" => new CapturedJsonContent(content),
-                    "URLENCODED" => new CapturedUrlEncodedContent(content),
-                    "STRING" => new CapturedStringContent(content),
-                    "FILE" => new FileContent(content),
+                    "" or "json" => new CapturedJsonContent(content),
+                    "urlencoded" => new CapturedUrlEncodedContent(content),
+                    "string" => new CapturedStringContent(content),
+                    "file" => new FileContent(content),
                     _ => new CapturedStringContent(content)
                 };
             }

@@ -5,7 +5,6 @@
     <title>文件上传</title>
     <script src="../lib/LGboot.js" type="text/javascript"></script>
     <script src="../lib/webuploader/webuploader.js?v=1" type="text/javascript"></script>
-    <script src="../lib/js-export/FileSaver.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="../lib/webuploader/webuploader.css?v=1" />
     <link rel="stylesheet" type="text/css" href="uploadfile.css?v=1" />
 </head>
@@ -229,6 +228,7 @@
                     mimeTypes: dialogData.mimeTypes || mimeTypes
                 },
                 compress: compressOptions,
+                timeout: 0,
                 auto: dialogData.auto || false,
                 runtimeOrder: dialogData.runtimeOrder || "html5,flash",
                 formData: dialogData.data,
@@ -237,7 +237,8 @@
                 fileNumLimit: dialogData.fileNumLimit || dialogData.queueSizeLimit || 5,
                 fileSingleSizeLimit: fileSizeLimit,
                 duplicate: dialogData.duplicate || true,
-                jsToken: dialogData.jsToken
+                jsToken: dialogData.jsToken,
+                tokenOptions: dialogData.tokenOptions
             };
             if (!webUploaderOptions.pick.multiple) webUploaderOptions.fileNumLimit = 1;
             if (webUploaderOptions.fileNumLimit == 1) webUploaderOptions.auto = true;

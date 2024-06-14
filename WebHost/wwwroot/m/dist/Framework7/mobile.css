@@ -19964,10 +19964,10 @@
   [class*='border-color-'] {
     border-color: var(--f7-theme-color-border-color) !important;
   }
-  
-  
-  
-  
+
+
+
+
 
 
 
@@ -20101,6 +20101,8 @@
 
 /* === 微信九宫格 === */
 .md {
+    --f7-navbar-height: 48px;
+    --f7-subnavbar-height: 40px;
     --f7-card-margin-horizontal: 8px;
     --f7-card-margin-vertical: 8px;
     --f7-card-border-radius: 8px;
@@ -20123,7 +20125,7 @@
 
 .small-card {
     --menu-card-size: 36px;
-    padding:3px
+    padding: 3px
 }
 
     .small-card .card-header {
@@ -20156,7 +20158,247 @@
 
 /* === 微信九宫格 === */
 
+/* === m-form === */
+.toolbar.toolbar-with-icon a.link {
+    flex-direction: column;
+    width: 100%;
+    line-height: normal;
+}
+
+.l-button-icon i {
+    font-size: 21px;
+}
+
+.l-button-icon.button-small i {
+    font-size: 16px;
+}
+
+.l-button-icon.button-large i {
+    font-size: 28px;
+}
+
+.m-form {
+    --f7-toggle-width: 55px;
+    --f7-toggle-height: 20px;
+}
+
+    .m-form .l-field-required {
+        color: blue !important;
+    }
+
+        .m-form .l-field-required:after {
+            content: "*";
+            display: inline-block;
+            position: relative;
+            top: 2px;
+            padding-right: 2px;
+            font-size: inherit;
+            color: red;
+        }
+
+    .m-form .item-input-with-error-message {
+        padding-bottom: 0px;
+    }
+
+    .m-form .item-input-invalid .item-input-error-message {
+        display: inline;
+        background-color: white;
+        top: 70%;
+        z-index: 1;
+        padding: 0px;
+        margin-left: 16px;
+        width: initial;
+    }
+
+    .m-form .item-input-invalid.item-input-wrap:after {
+        border-color: red;
+    }
+
+    .m-form .list .item-link .item-inner:before {
+        right: -5px;
+    }
+
+.item-input-disabled .input-outline:after, .item-input-disabled .item-input-outline .item-input-wrap:after,
+.item-input-readonly .input-outline:after, .item-input-readonly .item-input-outline .item-input-wrap:after,
+.item-input-display .input-outline:after, .item-input-display .item-input-outline .item-input-wrap:after {
+    display: none;
+}
+
+.item-input-disabled input, .item-input-readonly input, .item-input-display input {
+    text-align: right;
+}
+
+.item-input-disabled textarea, .item-input-readonly textarea {
+    border: 1px solid var(--f7-input-outline-border-color);
+    border-radius: var(--f7-input-outline-border-radius);
+}
+
+.m-form-smart-select {
+    --f7-list-margin-vertical: 5px;
+}
+
+.l-upload-wrapper .item-title {
+    flex-shrink: 0;
+}
+
+.l-upload-wrapper .item-after {
+    flex-shrink: 1;
+}
+
+.l-upload-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.l-upload-item {
+    position: relative;
+    vertical-align: top;
+    display: inline-block;
+    line-height: inherit;
+    text-align: center;
+    border-radius: 8px;
+    margin: 8px 8px 8px 0px;
+}
+
+    .l-upload-item.l-upload-select {
+        background-color: rgba(0, 0, 0, 0.02);
+        border: 1px dashed #dddee1;
+        cursor: pointer;
+    }
+
+        .l-upload-item.l-upload-select .f7-icons {
+            font-size: 50px;
+            line-height: inherit;
+        }
+
+.l-upload-item-display {
+    border: 1px solid #dddee1;
+    cursor: pointer;
+}
+
+    .l-upload-item-display img {
+        position: static;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+    }
+
+    .l-upload-item-display .fileName {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+        width: 100%;
+        max-height: 40%;
+        overflow: hidden;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 5px 5px 8px 8px;
+        text-align: center;
+        font-size: 12px;
+        line-height: normal;
+        z-index: 10;
+    }
+
+.l-upload-item-actions {
+    position: absolute;
+    line-height: inherit;
+    top: 0;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    border-radius: inherit;
+    color: white;
+    z-index: 100;
+}
+
+    .l-upload-item-actions .l-upload-remove {
+        position: absolute;
+        z-index: 10;
+        font-size: 24px;
+        right: -8px;
+        top: -8px;
+        color: red;
+    }
+
+        .l-upload-item-actions .l-upload-remove:before {
+            position: absolute;
+            z-index: -1;
+            background-color: white;
+            content: "";
+            width: 70%;
+            height: 70%;
+            font-size: 24px;
+            right: 15%;
+            top: 15%;
+        }
+
+.item-input-readonly .l-upload-remove, .item-input-disabled .l-upload-remove {
+    display: none !important;
+}
+
+.item-input-readonly .l-upload-list .l-upload-select, .item-input-disabled .l-upload-list .l-upload-select {
+    display: none !important;
+}
+
+/* === 通用虚拟报表 === */
+.common-virtual-list {
+    --f7-searchbar-top: 48px;
+}
+
+    .common-virtual-list .content-wrapper {
+        margin-top: calc(var(--f7-searchbar-top) + 26px);
+    }
+
+    .common-virtual-list .virtual-list {
+        --f7-badge-font-size: 14px;
+        --f7-badge-padding: 14px;
+    }
+
+    .common-virtual-list .searchbar-wrap {
+        position: fixed !important;
+        top: var(--f7-searchbar-top);
+        background-color: #EAEEFA;
+        width: 100%;
+        z-index: 100;
+    }
+
+    .common-virtual-list .searchbar {
+        width: 95% !important;
+        --f7-searchbar-input-bg-color: #DBE2F9;
+        --f7-searchbar-search-icon-color: rgb(27, 27, 31);
+    }
+
+    .common-virtual-list .searchbar-disable-button:after {
+        color: rgb(27, 27, 31);
+    }
+
+    .common-virtual-list .card-footer .button {
+        min-width: 100px;
+    }
+
+    .common-virtual-list .simple-list li {
+        height: auto;
+        align-items: baseline;
+        white-space: normal;
+    }
+
+        .common-virtual-list .simple-list li div.title {
+            white-space: nowrap;
+            padding-right: var(--f7-typography-padding);
+        }
+
+        .common-virtual-list .simple-list li div.content {
+            word-break: break-all;
+            word-wrap: break-word;
+            line-height: normal;
+        }
+
 /* === 扩展 === */
+.visibility-hidden {
+    visibility: hidden;
+}
 
 .left50 {
     width: 50%;
@@ -20197,3 +20439,15 @@
     word-break: break-all;
     text-overflow: ellipsis;
 }
+
+.navbar-segmented {
+    width: 80%;
+}
+
+    .navbar-segmented .tab-link {
+        color: white;
+    }
+
+        .navbar-segmented .tab-link.tab-link-active {
+            color: black;
+        }

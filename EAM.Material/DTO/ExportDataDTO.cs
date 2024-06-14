@@ -1,7 +1,5 @@
 ﻿using Chloe.Annotations;
-using Magicodes.ExporterAndImporter.Core;
-using Magicodes.ExporterAndImporter.Excel;
-using Magicodes.ExporterAndImporter.Pdf;
+using Gksyb.Common.Office.Core;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
