@@ -93,13 +93,13 @@
         delayLoad: false, //初始化时是否不加载
         where: null, //数据过滤查询函数,(参数一 data item，参数二 data item index)
         selectRowButtonOnly: false, //复选框模式时，是否只允许点击复选框才能选择行
-        selectable: true,
+        selectable: true, //是否可选择
         whenRClickToSelect: false, //右击行时是否选中
         ajaxOptions: null,//ajax扩展属性
         contentType: null, //Ajax contentType参数
         clickToEdit: true, //是否点击单元格的时候就编辑
         detailToEdit: false, //是否点击明细的时候进入编辑
-        onEndEdit: null,
+        onEndEdit: null, //结束编辑事件
         minColumnWidth: null,//列最小宽度
         tree: null, //treeGrid模式
         crosstab: false,//交叉表模式
@@ -111,7 +111,7 @@
         frozenDetail: false, //明细按钮是否在固定列中
         detailColWidth: 40, //明细列宽度
         detailIndex: 3, //明细列位置
-        detailHeight: 260,
+        detailHeight: 260, //明细列高度
         isShowDetailToggle: null, //是否显示展开/收缩明细的判断函数
         rownumbers: false, //是否显示行序号
         frozenRownumbers: true, //行序号是否在固定列中
@@ -119,8 +119,8 @@
         rownumbersName: "#", //序号列名称
         rownumbersIndex: 1,//序号列位置
         colDraggable: true, //是否允许表头拖拽
-        rowDraggable: false, //是否允许行拖拽
-        rowDraggingRender: null,
+        rowDraggable: false, //是否允许行拖拽 {true:允许序号列和选择框列拖拽,"row":允许整行拖拽}
+        rowDraggingRender: null, //行拖动时渲染函数
         autoCheckChildren: true, //是否自动选中子节点
         rowHeight: 32, //行默认的高度
         headerRowHeight: 32, //表头行的高度
@@ -172,7 +172,7 @@
         onTreeExpanded: null, //树展开事件
         onTreeCollapsed: null, //树收缩事件
         onLoadData: null, //加载数据前事件
-        onHeaderCellBuild: null,
+        onHeaderCellBuild: null, //标题列创建事件
         onHeaderMenuBuild: null,//表头菜单创建时，拦截用于加入自定义功能
         onlySelectColumns: false, //是否只查询grid.columns的内容
         appendSelectColumns: null, //onlySelectColumns为true时起作用,追加查询列
@@ -200,31 +200,32 @@
     };
 
     $.ligerDefaults.Grid_columns = {
-        id: null,
-        name: null,
+        id: null, //自定义id 默认为c10列位置
+        name: null, //名称
         dbname: null, //数据库实际名称
         sortdbname: null, //排序用数据库实际名称
         sortFix: false, //排序后缀
         totalSummary: null,//{name:"默认为当前列，可指定其他列进行统计",type:"sum,tsum,count,max,min,avg",hastext:false,igronNull:false,render:function(info, column, allData, groupData){}}
-        display: null,
-        headerRender: null,
-        isAllowHide: true,
-        isSort: false,
-        type: null,
-        columns: null,//多级表头
+        display: null, //显示名称
+        headerRender: null, //标题头渲染函数 function(column)
+        isAllowHide: true, //允许隐藏
+        isSort: false, //允许排序
+        type: null, //数据类型 string(text),date,int,float(number) 括号内是别名
+        columns: null,//多级表头[{name:''}]
         frozen: false, //浮动 true false right
-        width: 120,
+        width: 120, //初始宽度
         minWidth: 80, //最小宽度
         maxWidth: null, //最大宽度
         appendWidth: null,//追加宽度 用于自动宽度算不准的情况
-        format: null,
-        formatType: null, //格式化类型若无则取type
-        headerAlign: null,
-        align: 'center',
-        hide: false,
-        editor: null,
-        render: null,
-        mergeColumn: null, //合并单元格
+        format: null, //格式化 'yyyy-MM-dd hh:mm:ss'或者针对select{data:null,formatRender:function(texts, rowdata, column, ids),precision:'小数位数配合numberbox'}
+        formatType: null, //格式化类型不指定则取type  select,date,chk,numberbox,currency
+        headerAlign: null, //标题的text-align属性
+        align: 'center', //内容的text-align属性
+        cls: null, //列样式 给标题列和具体的内容列追加样式，这样可以进行样式重载
+        hide: false, //默认是否隐藏
+        editor: null, //行内编辑器 {type: 'text',options:{  onChangeValue: function (input, value, g) { }}} options同表单元素一致
+        render: null, //单元格渲染器 function(rowdata, rowindex, value, column)
+        mergeColumn: null, //合并单元格 true或者具体的列名（可指定根据其他列合并）
         crosstab: false,//交叉列 设定后会根据值生成列
         values: null,//交叉列对应的统计值,列名或者函数function (rows, name)
         textField: null //真正显示的字段名,如果设置了，在编辑状态时,会调用创建编辑器的setText和getText方法
