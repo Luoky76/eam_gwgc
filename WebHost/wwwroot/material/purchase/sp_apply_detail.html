@@ -24,7 +24,7 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath:'Material/SpApply/',
+            rootPath: 'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
             //明细页面大小
             detailWidth: window.innerWidth * 0.9,
@@ -34,7 +34,7 @@
             Sid: null,
             typeData: [],
             exigData: [],
-            unitData:[],
+            unitData: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -43,8 +43,8 @@
                         fields: [
                             //基础信息
                             { display: "申请单号", name: "APPLY_NO", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "申请日期", name: "APPLY_DATE", validate: { required: true }, newline: false, upper: true, type: "date", format: "yyyy-MM-dd", options: { type: 'date', disabled: true, format: "yyyy-MM-dd" } },
-                            { display: "申请人", name: "APPLY_USER", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
+                            { display: "申请日期", name: "APPLY_DATE", validate: { required: true }, newline: false, type: "date", format: "yyyy-MM-dd", options: { type: 'date', disabled: true, format: "yyyy-MM-dd" } },
+                            { display: "申请人", name: "APPLY_USER", validate: { required: true }, newline: false, type: "text", options: { type: 'text', disabled: true } },
                             {
                                 display: "采购分类", name: "TYPE_ID", type: "select", validate: { required: true },
                                 editor: {
@@ -61,15 +61,15 @@
                             },
                             { display: "紧急程度", name: "EXIG_DEV", type: "select", editor: { type: 'select', data: me.exigData }, validate: { required: true }, },
 
-                           
-                            { display: "申请部门", name: "DEPT_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
-                            { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
+
+                            { display: "申请部门", name: "DEPT_NAME", validate: { required: true }, newline: false, type: "text", options: { type: 'text', disabled: true } },
+                            { display: "二级单位", name: "SEC_DEPT", newline: false, type: "text", options: { disabled: true } },
                             { display: "用途", name: "USE_MEMO", newline: true, type: "textarea", editor: { type: 'textarea' }, validate: { required: true }, width: 786, },
-                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: 786, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, width: 786, type: "textarea", options: {} },
 
                             //隐藏
-                            { display: "主键", name: "APPLY_ID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "AUDITING", name: "AUDITING", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "主键", name: "APPLY_ID", newline: false, type: "hidden", options: {} },
+                            { display: "AUDITING", name: "AUDITING", newline: false, type: "hidden", options: {} },
                             { display: "采购分类名", name: "TYPE_NAME", width: 100, type: "text", type: "hidden", },
                             { display: "采购分类编码", name: "TYPE_CODE", width: 100, type: "text", type: "hidden", },
                         ]
@@ -103,7 +103,7 @@
                             { display: "物料名称", name: "SP_NAME", width: 150, type: "text", editor: { type: "text", }, validate: { required: true } },
                             { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", editor: { type: "text", } },
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", editor: { type: "text", } },
-                           
+
                             { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
                             { display: "库存数量", name: "STORE_NUM", width: 150, type: "decimal", },
                             { display: "质保期(月)", name: "WARRANTY", width: 150, type: "text", },
@@ -140,7 +140,7 @@
                 };
             },
             //物资本身信息的字段
-            spColumns: ["SP_ID", "SP_CODE", "UNIT", "SP_NAME", "SP_SIZE", "PRODUCE", "TYPE_NAME", "WARRANTY", "LAST_PROVIDER", "LAST_PROVIDERID", "IS_XY", "NO_PRODUCE" ],
+            spColumns: ["SP_ID", "SP_CODE", "UNIT", "SP_NAME", "SP_SIZE", "PRODUCE", "TYPE_NAME", "WARRANTY", "LAST_PROVIDER", "LAST_PROVIDERID", "IS_XY", "NO_PRODUCE"],
             grid: null,
             mainform: null,
             buttons: null,
@@ -203,7 +203,7 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
-                    toolbar: { group:"detail" },
+                    toolbar: { group: "detail" },
                     url: me.rootPath + 'DetailList',
                     parms: {
                         where: JSON.stringify({
@@ -238,7 +238,7 @@
                             if (e.value < 0) {
                                 LG.showError("不可为负数！");
                                 return false;
-                            } 
+                            }
                         }
                         return true;
                     }
@@ -271,7 +271,7 @@
                     }
                 }
                 if (!me.isView)
-                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+                    LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             add: function () { //新增
                 var me = this;
@@ -324,7 +324,7 @@
                     isResize: true,
                     slide: false,
                     data: {
-                        isCancel:"0",
+                        isCancel: "0",
                         mainReloadBtn: me.reload,
                         callback: callback,
                         dataValue: dataValue
@@ -379,7 +379,7 @@
                         changeRow["original"] = [original];
                     }
                     var changeRowDet = me.grid.getChangedRows();
-                   
+
                     var isSave = true
                     for (var i = 0; i < changeRowDet.updated.length; i++) {
                         if (changeRowDet.updated[i].COUNT < 0) {
@@ -526,12 +526,20 @@
             },
             init: function () {
                 var me = this;
+                debugger
 
                 me.dialog = frameElement.dialog;
-                me.dialogData = me.dialog.get('data');
-                me.Sid = me.dialogData.Sid;
-                me.isView = Boolean(me.dialogData.view);
-                
+                me.dialogData = me.dialog?.get('data');
+                if (me.dialogData) {
+                    me.Sid = me.dialogData.Sid;
+                    me.isView = Boolean(me.dialogData.view);
+                }
+                else {
+                    var formData = JSON.parse(parent.window.business.data.FormData);
+                    me.Sid = formData.Sid;
+                    me.isView = Boolean(formData.isView);
+                }
+
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
