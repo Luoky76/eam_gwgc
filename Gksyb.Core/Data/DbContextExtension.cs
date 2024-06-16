@@ -229,22 +229,14 @@ namespace Chloe
             var user = HttpContext.Current.GetCurrentUserOrDefault();
             detail ??= "";
             detail += $"{Environment.NewLine}IP:{user.IP}";
-            var entity = new SYS_LOG
+            keyWord = keyWord.SubStr(0, 100, true);
+            var summary = detail.SubStr(0, 2000);
+            var isClob = "1";
+            if (summary.Length == detail.Length)
             {
-                LOGTYPE = op,
-                LOGNO = keyWord.SubStr(0, 100, true),
-                LOGSUMMARY = detail.SubStr(0, 2000)
-            };
-            if (entity.LOGSUMMARY.Length == detail.Length)
-            {
-                entity.ISCLOB = "0";
+                isClob = "0";
+                detail = null;
             }
-            else
-            {
-                entity.ISCLOB = "1";
-                entity.LOGDETAIL = detail;
-            }
-            entity.LOGDATE = await source.GetSysdate();
             if (string.IsNullOrEmpty(curoper))
             {
                 curoper = user.UserName;
@@ -253,11 +245,19 @@ namespace Chloe
             {
                 curoper = user.IP;
             }
-            entity.LOGOP = curoper;
-            entity.APPNAME = user.MenuAppname;
             await source.NotSqlLog(async () =>
             {
-                await source.InsertAsync(entity);
+                await source.InsertAsync(() => new SYS_LOG()
+                {
+                    LOGTYPE = op,
+                    LOGNO = keyWord,
+                    LOGSUMMARY = summary,
+                    ISCLOB = isClob,
+                    LOGDETAIL = detail,
+                    LOGDATE = DateTime.Now,
+                    LOGOP = curoper,
+                    APPNAME = user.MenuAppname
+                });
             });
         }
 
