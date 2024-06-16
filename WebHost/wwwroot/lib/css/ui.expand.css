@@ -1,4 +1,12 @@
-﻿.l-grid-hd-cell-required::before {
+﻿.l-grid-hd-cell-edit {
+    color: #2B73AF;
+}
+
+.l-grid-hd-cell-required {
+    color: blue;
+}
+
+.l-grid-hd-cell-required::before {
     content: "*";
     color: red;
 }

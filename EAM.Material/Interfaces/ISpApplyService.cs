@@ -35,7 +35,21 @@ namespace EAM.Material.Interfaces
         /// <param name="sids">主键数组</param>
         /// <returns>匹配记录数</returns>
         Task<int> Submit(List<string> sids);
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids">主键数组</param>
+        /// <returns></returns>
         Task<AjaxResult> CancelSubmit(List<string> sids);
+
+        /// <summary>
+        /// 审批完成
+        /// </summary>
+        /// <param name="apply_id">主键</param>
+        /// <returns></returns>
+        Task WorkFlowFinish(string apply_id);
+
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_APPLY_DETAIL> request);
 

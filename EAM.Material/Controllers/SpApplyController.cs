@@ -89,6 +89,18 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(await _service.CancelSubmit(sids), "成功");
         }
 
+        /// <summary>
+        /// 审批完成
+        /// </summary>
+        /// <param name="apply_id">主键</param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> WorkFlowFinishAsync(string apply_id)
+        {
+            await _service.WorkFlowFinish(apply_id);
+            return AjaxResult.Success("成功");
+        }
+
         [HttpPost]
         public async Task<AjaxResult<GridData>> DetailListAsync(GridRequest request)
         {

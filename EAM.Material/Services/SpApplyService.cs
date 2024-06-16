@@ -368,7 +368,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids">主键数组</param>
         /// <returns></returns>
-        public async Task CreateWorkFlow(List<string> sids)
+        private async Task CreateWorkFlow(List<string> sids)
         {
             foreach (string sid in sids)
             {
@@ -380,6 +380,21 @@ namespace EAM.Material.Services
                 flowExecuteInfo.FlowCode = "sp_apply";
                 await _flowEngineService.StartAsync(flowExecuteInfo);
             }
+        }
+
+        /// <summary>
+        /// 审批完成
+        /// </summary>
+        /// <param name="apply_id">主键</param>
+        /// <returns></returns>
+        public async Task WorkFlowFinish(string apply_id)
+        {
+            //更新记录状态
+            await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
+                x => new SP_APPLY
+                {
+                    AUDITING = "3"
+                });
         }
 
         /// <summary>
