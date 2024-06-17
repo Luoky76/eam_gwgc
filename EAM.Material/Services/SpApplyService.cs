@@ -10,6 +10,7 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.Linq.Expressions;
 
@@ -125,7 +126,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet)
         {
-            if (request.Added.Count > 0)
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
             {
                 string apply_id;
                 if (request.Added[0].APPLY_ID.IsNullOrEmpty())
