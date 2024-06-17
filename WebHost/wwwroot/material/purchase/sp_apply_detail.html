@@ -499,7 +499,7 @@
                 var me = this;
                 //表单底部按钮
                 var buttons = [];
-                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (me.dialog) buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
                 if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
 
                 LG.addFormButtons(buttons);
@@ -529,8 +529,8 @@
                 debugger
 
                 me.dialog = frameElement.dialog;
-                me.dialogData = me.dialog?.get('data');
-                if (me.dialogData) {
+                if (me.dialog) {
+                    me.dialogData = me.dialog?.get('data');
                     me.Sid = me.dialogData.Sid;
                     me.isView = Boolean(me.dialogData.view);
                 }

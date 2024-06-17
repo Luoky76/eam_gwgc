@@ -10,18 +10,19 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpApplyService : BaseService, ISpApplyService
+    public class SpApplyService : BaseService, ISpApplyService, IFlowInterceptor
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
         private readonly IFlowEngineService _flowEngineService;
-        private string _rentID = string.Empty, errMsg = string.Empty;
+        private string errMsg = string.Empty;
 
         public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IFlowEngineService flowEngineService)
         {
@@ -125,6 +126,26 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet)
         {
+            if (request.Added.Count > 0)
+            {
+                string apply_id;
+                if (request.Added[0].APPLY_ID.IsNullOrEmpty())
+                {
+                    apply_id = request.Added[0].APPLY_ID = GuidHelper.NewSnowflakeId().ToString(); ;
+                }
+                else
+                {
+                    apply_id = request.Added[0].APPLY_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    if (entity.APPLY_ID.IsNullOrEmpty())
+                    {
+                        entity.APPLY_ID = apply_id;
+                    }
+                }
+            }
+            
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = true, detSuccess = true;
@@ -193,8 +214,10 @@ namespace EAM.Material.Services
         private async Task BeforeAdd(SP_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.APPLY_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.APPLY_ID.IsNullOrEmpty())
+            {
+                entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
 
             string type = $"SQ{DateTime.Now:yyyyMM}";
             string def = type + "0000";
@@ -220,10 +243,8 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-            _rentID = entity.APPLY_ID;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
-
         }
         private async Task BeforeDelete(SP_APPLY entity)
         {
@@ -385,10 +406,11 @@ namespace EAM.Material.Services
         /// <summary>
         /// 审批完成
         /// </summary>
-        /// <param name="apply_id">主键</param>
+        /// <param name="taskInfo">任务信息</param>
         /// <returns></returns>
-        public async Task WorkFlowFinish(string apply_id)
+        public async Task Intercept(FlowExecuteInfo taskInfo)
         {
+            var apply_id = taskInfo.FormData.GetValueOrDefault("Sid").ToString();
             //更新记录状态
             await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
                 x => new SP_APPLY
@@ -715,8 +737,6 @@ namespace EAM.Material.Services
         private async Task BeforeAddDet(SP_APPLY_DETAIL entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.APPLY_ID = string.IsNullOrEmpty(entity.APPLY_ID) ? _rentID : entity.APPLY_ID;
             entity.SPDET_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;

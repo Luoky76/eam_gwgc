@@ -190,7 +190,7 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (row.AUDITING == "1") {
+                    if (["1", "2", "3"].includes(row.AUDITING)) {
                         LG.tip("有数据已提交，无法变更！");
                         return true;
                     }

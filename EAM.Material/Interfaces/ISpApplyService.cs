@@ -43,13 +43,6 @@ namespace EAM.Material.Interfaces
         /// <returns></returns>
         Task<AjaxResult> CancelSubmit(List<string> sids);
 
-        /// <summary>
-        /// 审批完成
-        /// </summary>
-        /// <param name="apply_id">主键</param>
-        /// <returns></returns>
-        Task WorkFlowFinish(string apply_id);
-
         Task<GridData> DetailListAsync(GridRequest request);
         Task<AjaxResult> DetailSave(SaveRequest<SP_APPLY_DETAIL> request);
 
