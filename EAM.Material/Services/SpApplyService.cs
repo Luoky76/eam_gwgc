@@ -10,7 +10,6 @@ using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Linq.Expressions;
 
@@ -504,7 +503,7 @@ namespace EAM.Material.Services
         {
             var res = await _dbContext.Query<SP_APPLY>()
                 .InnerJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) => a.AUDITING == "1" && b.AUDITING_CHECK == "0")
+                .Where((a, b) => new[] { "1", "3" }.Contains(a.AUDITING) && b.AUDITING_CHECK == "0")
                 .Select((a, b) => new SP_APPLY_DET_DTO
                 {
                     //主表数据
