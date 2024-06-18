@@ -5,6 +5,8 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 
 namespace EAM.Material.Services
@@ -15,7 +17,7 @@ namespace EAM.Material.Services
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
-        private string _rentID = string.Empty, errMsg = string.Empty;
+        private string errMsg = string.Empty;
         private string _outID = string.Empty, errMsg2 = string.Empty;
         private Dictionary<string, string> outDic = new();
         /// <summary>
@@ -118,6 +120,27 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> ManageSpOutApp(SaveRequest<SP_OUT_APP> request, SaveRequest<SP_OUTAPP_DET> requestdet)
         {
+            //添加主子表新增记录的关联键值
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            {
+                string out_id;
+                if (request.Added[0].OUT_ID.IsNullOrEmpty())
+                {
+                    out_id = request.Added[0].OUT_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                else
+                {
+                    out_id = request.Added[0].OUT_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    if (entity.OUT_ID.IsNullOrEmpty())
+                    {
+                        entity.OUT_ID = out_id;
+                    }
+                }
+            }
+
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = true, detSuccess = true;
@@ -198,6 +221,10 @@ namespace EAM.Material.Services
 
         private async Task BeforeAdd(SP_OUT_APP entity)
         {
+            if (entity.OUT_ID.IsNullOrWhiteSpace())
+            {
+                entity.OUT_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
@@ -208,13 +235,18 @@ namespace EAM.Material.Services
             var model = await _dbContext.Query<SP_OUT_APP>(x => x.APPLY_CODE.Contains(aa)).Select(x => Sql.Max(x.APPLY_CODE) ?? def).FirstOrDefaultAsync();
             var index = model.SubStr(8, 4).CastTo<int>() + 1;
             entity.APPLY_CODE = aa + index.ToString("D4");
-            entity.OUT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
             entity.AUDITING_A = "0";
         }
         private async Task BeforeAddSpOutAppdet(SP_OUTAPP_DET entity)
         {
-            entity.OUT_ID = entity.OUT_ID ?? _rentID;
-            entity.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.OUT_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 OUT_ID 为空！");
+            }
+            if (entity.OUTDET_ID.IsNullOrWhiteSpace())
+            {
+                entity.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             await Task.CompletedTask;
         }
 
@@ -223,7 +255,6 @@ namespace EAM.Material.Services
             if (entity.AUDITING_A.Equals("0"))
             {
                 var sysDate = await _dbContext.GetSysdate();
-                _rentID = entity.OUT_ID;
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }

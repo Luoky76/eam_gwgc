@@ -11,6 +11,7 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CodeAnalysis;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,7 +26,7 @@ namespace EAM.Material.Services
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
 
-        private string _rentID = string.Empty, errMsg = string.Empty;
+        private string errMsg = string.Empty;
 
         public SpCollectService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
         {
@@ -118,6 +119,27 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
         {
+            //添加主子表新增记录的关联键值
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            {
+                string collect_id;
+                if (request.Added[0].COLLECT_ID.IsNullOrEmpty())
+                {
+                    collect_id = request.Added[0].COLLECT_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                else
+                {
+                    collect_id = request.Added[0].COLLECT_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    if (entity.COLLECT_ID.IsNullOrEmpty())
+                    {
+                        entity.COLLECT_ID = collect_id;
+                    }
+                }
+            }
+
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = true, detSuccess = true;
@@ -229,9 +251,12 @@ namespace EAM.Material.Services
 
         private async Task BeforeAdd(SP_COLLECT entity)
         {
+            if (entity.COLLECT_ID.IsNullOrWhiteSpace())
+            {
+                entity.COLLECT_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.COLLECT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            
             //单号
             string type = $"QG{dt.Value:yyyyMM}";
             string def = type + "0000";
@@ -259,7 +284,6 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_COLLECT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-            _rentID = entity.COLLECT_ID;
             entity.MODIFY_USERID = _userSession.UserName;
             entity.MODIFYDATE = dt;
         }
@@ -578,8 +602,11 @@ namespace EAM.Material.Services
 
         private async Task BeforeAddRequest(SP_COLLECT_REQUEST entity)
         {
+            if (entity.COLLECT_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 COLLECT_ID 为空！");
+            }
             DateTime? dt = await _dbContext.GetSysdate();
-            entity.COLLECT_ID = string.IsNullOrEmpty(entity.COLLECT_ID) ? _rentID : entity.COLLECT_ID;
             entity.COLLECT_REQUEST_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;

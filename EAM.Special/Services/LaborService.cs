@@ -8,6 +8,8 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EAM.Special.Services
 {
@@ -19,7 +21,7 @@ namespace EAM.Special.Services
         private readonly IUserService _userService;
         private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
-        private string _rentID = string.Empty, errMsg = string.Empty;
+        private string errMsg = string.Empty;
 
         public LaborService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
         {
@@ -462,7 +464,26 @@ namespace EAM.Special.Services
         }
         public async Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet)
         {
-            //从表保存的主表ID通过公共变量 _rendID 来传递给从表
+            //添加主子表新增记录的关联键值
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            {
+                string exchange_id;
+                if (request.Added[0].EXCHANGE_ID.IsNullOrEmpty())
+                {
+                    exchange_id = request.Added[0].EXCHANGE_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                else
+                {
+                    exchange_id = request.Added[0].EXCHANGE_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    if (entity.EXCHANGE_ID.IsNullOrEmpty())
+                    {
+                        entity.EXCHANGE_ID = exchange_id;
+                    }
+                }
+            }
 
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
@@ -541,6 +562,10 @@ namespace EAM.Special.Services
         }
         private async Task LaborExchangeBeforAdd(LABOR_EXCHANGE entity)
         {
+            if (entity.EXCHANGE_ID.IsNullOrWhiteSpace())
+            {
+                entity.EXCHANGE_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             var sysDate = await _dbContext.GetSysdate();
 
             string rentCode = "LBZJ" + sysDate.Value.ToString("yyyyMM");
@@ -548,8 +573,7 @@ namespace EAM.Special.Services
             var lastCode = await _dbContext.Query<LABOR_EXCHANGE>(x => x.EXCHANGE_CODE.Contains(rentCode)).Select(x => Sql.Max(x.EXCHANGE_CODE)).FirstOrDefaultAsync();
             if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
             else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
-
-            entity.EXCHANGE_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            
             entity.AUDITING = "0";
             entity.EXCHANGE_CODE = rentCode;
 
@@ -562,7 +586,6 @@ namespace EAM.Special.Services
             if (olddata.AUDITING.Equals("0"))
             {
                 var sysDate = await _dbContext.GetSysdate();
-                _rentID = entity.EXCHANGE_ID;
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }
@@ -584,9 +607,15 @@ namespace EAM.Special.Services
         }
         private async Task LaborExchangeAppDetBeforAdd(LABOR_EXCHANGE_APPDET entity)
         {
+            if (entity.EXCHANGE_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 EXCHANGE_ID 为空！");
+            }
+            if (entity.EXCHANGE_APPDET_ID.IsNullOrWhiteSpace())
+            {
+                entity.EXCHANGE_APPDET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             var sysDate = await _dbContext.GetSysdate();
-            entity.EXCHANGE_APPDET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.EXCHANGE_ID = _rentID;
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
@@ -646,7 +675,26 @@ namespace EAM.Special.Services
         }
         public async Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet)
         {
-            //从表保存的主表ID通过公共变量 _rendID 来传递给从表
+            //添加主子表新增记录的关联键值
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            {
+                string rent_id;
+                if (request.Added[0].RENT_ID.IsNullOrEmpty())
+                {
+                    rent_id = request.Added[0].RENT_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                else
+                {
+                    rent_id = request.Added[0].RENT_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    if (entity.RENT_ID.IsNullOrEmpty())
+                    {
+                        entity.RENT_ID = rent_id;
+                    }
+                }
+            }
 
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
@@ -721,6 +769,10 @@ namespace EAM.Special.Services
         }
         private async Task LaborRentBeforAdd(LABOR_RENT entity)
         {
+            if (entity.RENT_ID.IsNullOrWhiteSpace())
+            {
+                entity.RENT_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             var sysDate = await _dbContext.GetSysdate();
 
             string rentCode = "LBZJ" + sysDate.Value.ToString("yyyyMM");
@@ -728,8 +780,7 @@ namespace EAM.Special.Services
             var lastCode = await _dbContext.Query<LABOR_RENT>(x => x.RENT_CODE.Contains(rentCode)).Select(x => Sql.Max(x.RENT_CODE)).FirstOrDefaultAsync();
             if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
             else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
-
-            entity.RENT_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
+            
             entity.AUDITING = "0";
             entity.RENT_CODE = rentCode;
             entity.USER_ID = _userSession.UserID.ToString();
@@ -746,7 +797,6 @@ namespace EAM.Special.Services
             if (model.AUDITING.Equals("0"))
             {
                 var sysDate = await _dbContext.GetSysdate();
-                _rentID = entity.RENT_ID;
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }
@@ -768,9 +818,16 @@ namespace EAM.Special.Services
         }
         private async Task LaborRentDetBeforAdd(LABOR_RENT_DET entity)
         {
+            if (entity.RENT_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 RENT_ID 为空！");
+            }
+            if (entity.RENT_DET_ID.IsNullOrWhiteSpace())
+            {
+                entity.RENT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             var sysDate = await _dbContext.GetSysdate();
-            entity.RENT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.RENT_ID = _rentID;
+            
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }

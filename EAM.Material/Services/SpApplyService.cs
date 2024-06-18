@@ -736,6 +736,10 @@ namespace EAM.Material.Services
 
         private async Task BeforeAddDet(SP_APPLY_DETAIL entity)
         {
+            if (entity.APPLY_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 APPLY_ID 为空！");
+            }
             DateTime? dt = await _dbContext.GetSysdate();
             entity.SPDET_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.CREATE_USERID = _userSession.UserID.ToString();

@@ -5,6 +5,8 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 
 namespace EAM.Material.Services
@@ -15,7 +17,7 @@ namespace EAM.Material.Services
         private readonly IComboxDataService _comboxService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
-        private string _rentID = string.Empty, errMsg = string.Empty;
+        private string errMsg = string.Empty;
         /// <summary>
         /// 获取数据库时间
         /// </summary>
@@ -73,6 +75,26 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> SaveAsync(SaveRequest<SP_CATALOG_SCAN> request, SaveRequest<SP_CATALOG_SCAN_DET> requestdet)
         {
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            {
+                string scan_id;
+                if (request.Added[0].SCAN_ID.IsNullOrEmpty())
+                {
+                    scan_id = request.Added[0].SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                else
+                {
+                    scan_id = request.Added[0].SCAN_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    if (entity.SCAN_ID.IsNullOrEmpty())
+                    {
+                        entity.SCAN_ID = scan_id;
+                    }
+                }
+            }
+
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = true, detSuccess = true;
@@ -153,6 +175,10 @@ namespace EAM.Material.Services
 
         private async Task BeforeAdd(SP_CATALOG_SCAN entity)
         {
+            if (entity.SCAN_ID.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
@@ -163,13 +189,18 @@ namespace EAM.Material.Services
             var model = await _dbContext.Query<SP_CATALOG_SCAN>(x => x.SCAN_CODE.Contains(aa)).Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
             var index = model.SubStr(8, 4).CastTo<int>() + 1;
             entity.SCAN_CODE = aa + index.ToString("D4");
-            entity.SCAN_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
             entity.AUDITING = "0";
         }
         private async Task BeforeAddDet(SP_CATALOG_SCAN_DET entity)
         {
-            entity.SCAN_ID = entity.SCAN_ID ?? _rentID;
-            entity.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.SCAN_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 SCAN_ID 为空！");
+            }
+            if (entity.SCAN_DET_ID.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             entity.AUDITING = "0";
             await Task.CompletedTask;
         }
@@ -179,7 +210,6 @@ namespace EAM.Material.Services
             var sysDate = await _dbContext.GetSysdate();
             if (entity.AUDITING.Equals("0"))
             {
-                _rentID = entity.SCAN_ID;
                 entity.MODIFY_USERID = _userSession.UserID.ToString();
                 entity.MODIFYDATE = sysDate;
             }

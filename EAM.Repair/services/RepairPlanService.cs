@@ -13,6 +13,8 @@ using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 
@@ -25,7 +27,7 @@ namespace EAM.Repair.services
         private readonly IUserService _userService;
         private readonly UserSession _userSession;
         private readonly ICorpService _corpService;
-        private string _rentID = string.Empty, errMsg = string.Empty;
+        private string errMsg = string.Empty;
 
         public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
         {
@@ -296,6 +298,22 @@ namespace EAM.Repair.services
 
         public async Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
         {
+            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            {
+                string exe_id;
+                if (request.Added[0].EXE_ID.IsNullOrEmpty())
+                {
+                    exe_id = request.Added[0].EXE_ID = GuidHelper.NewSnowflakeId().ToString();
+                }
+                else
+                {
+                    exe_id = request.Added[0].EXE_ID;
+                }
+                foreach (var entity in requestdet.Added)
+                {
+                    entity.EXE_ID ??= exe_id;
+                }
+            }
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = false, detSuccess = false;
@@ -414,11 +432,12 @@ namespace EAM.Repair.services
         /// <returns></returns>
         private async Task BeforeAdd(REP_PLAN_EXE entity)
         {
+            if (entity.EXE_ID.IsNullOrEmpty())
+            {
+                entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             if (entity.AUDITING_A == "0")
             {
-                entity.EXE_ID = _rentID = GuidHelper.NewSnowflakeId().ToString();
-                //request.AUDIT_TIME = DateTime.Now;
-
                 entity.REPORT_USER = _userSession.UserName;
                 entity.REPORT_USERID = _userSession.UserID.ToString();
                 string type = "WXSB" + DateTime.Now.ToString("yyyyMM");
@@ -494,8 +513,14 @@ namespace EAM.Repair.services
         /// <returns></returns>
         private async Task BeforeAddDet(REP_PLAN_EXE_ITEM entity)
         {
-            entity.EXE_ID = string.IsNullOrWhiteSpace(entity.EXE_ID) ? _rentID : entity.EXE_ID;
-            entity.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.EXE_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 EXE_ID 为空！");
+            }
+            if (entity.EXE_ITEM_ID.IsNullOrWhiteSpace())
+            {
+                entity.EXE_ITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             await Task.CompletedTask;
         }
 
