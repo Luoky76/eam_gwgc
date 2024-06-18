@@ -131,7 +131,7 @@ namespace EAM.Material.Services
                 string apply_id;
                 if (request.Added[0].APPLY_ID.IsNullOrEmpty())
                 {
-                    apply_id = request.Added[0].APPLY_ID = GuidHelper.NewSnowflakeId().ToString(); ;
+                    apply_id = request.Added[0].APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
                 }
                 else
                 {
