@@ -12,15 +12,13 @@
 </head>
 <body style="padding: 5px; height: 100%;">
     <div id="mainsearch" style="width: 100%">
-        <form action="" id="formsearch" class="l-form">
+        <form id="formsearch" class="l-form">
             <div id="formsearch1">
             </div>
         </form>
     </div>
-    <form action="" id="mainform">
-        <div id="gridform">
-            <div id="maingrid" hidetitle=true>
-            </div>
+    <form id="mainform">
+        <div id="maingrid">
         </div>
     </form>
     <script type="text/javascript">
@@ -269,7 +267,7 @@
                             isResize: true,
                             slide: false,
                             onClosed: me.reload.bind(me),
-                            data: { "sid": sid, }
+                            data: { "sid": sid, "isNew": false, "isView": false }
                         });
                     }
                 }
@@ -409,16 +407,12 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.EXE_ID, "view": true }
+                        data: { "sid": selected.EXE_ID, "isView": true }
                     });
                 } else {
                     LG.tip('请选择行!');
                 }
             },
-            initSearchData: function () {
-
-            },
-
             init: function () {
                 var me = this;
                 me.loadComboxData();
@@ -429,10 +423,6 @@
             }
         };
         business.init();
-        $("#gridform").ligerLayout({
-            leftWidth: '58%',
-            allowRightCollapse: false,
-            allowLeftCollapse: false,
-        });</script>
+    </script>
 </body>
 </html>

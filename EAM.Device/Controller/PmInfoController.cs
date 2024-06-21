@@ -38,6 +38,28 @@ namespace EAM.Device.controller
         }
 
         /// <summary>
+        /// 同时保存维保计划、维保实施的所有主子表
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SaveAllAsync
+            (SaveRequest<PM_PLAN_EXE> request1, SaveRequest<PM_PLAN_DONEITEM> request2, SaveRequest<PM_PLAN_SP> request3, SaveRequest<PM_PLAN_LABOR> request4, SaveRequest<PM_SPECIAL_WORK> request5)
+        {
+            request1.Added ??= new List<PM_PLAN_EXE>();
+            request1.Updated ??= new List<PM_PLAN_EXE>();
+            request1.Deleted ??= new List<PM_PLAN_EXE>();
+            if (request1.Added.Count + request1.Updated.Count != 1)
+            {
+                return AjaxResult.Error("主表修改记录有且只能有一条");
+            }
+            if (request1.Deleted.Any())
+            {
+                return AjaxResult.Error("同时保存方法不能删除主表");
+            }
+            return await _service.SaveAllAsync(request1, request2, request3, request4, request5);
+        }
+
+        /// <summary>
         /// 导入功能
         /// </summary>
         /// <returns></returns>
@@ -226,16 +248,6 @@ namespace EAM.Device.controller
         public async Task<AjaxResult> UnSubmitPmExeAsync(string sid)
         {
             return AjaxResult.Success(await _service.UnSubmitPmExe(sid), "成功");
-        }
-
-        /// <summary>
-        /// 管理维保实施结果
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<AjaxResult> ManagePmExeAsync(SaveRequest<PM_PLAN_EXE> request)
-        {
-            return await _service.ManagePmExe(request);
         }
 
         /// <summary>

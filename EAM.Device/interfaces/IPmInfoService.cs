@@ -15,6 +15,13 @@ namespace EAM.Device.interfaces
         public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
 
         /// <summary>
+        /// 同时保存维保计划、维保实施的所有主子表
+        /// </summary>
+        /// <returns></returns>
+        public Task<AjaxResult> SaveAllAsync
+            (SaveRequest<PM_PLAN_EXE> request1, SaveRequest<PM_PLAN_DONEITEM> request2, SaveRequest<PM_PLAN_SP> request3, SaveRequest<PM_PLAN_LABOR> request4, SaveRequest<PM_SPECIAL_WORK> request5);
+
+        /// <summary>
         /// 导入功能
         /// </summary>
         /// <returns></returns>
@@ -121,12 +128,6 @@ namespace EAM.Device.interfaces
         /// </summary>
         /// <returns></returns>
         public Task<int> UnSubmitPmExe(string sid);
-
-        /// <summary>
-        /// 管理维保实施结果
-        /// </summary>
-        /// <returns></returns>
-        public Task<AjaxResult> ManagePmExe(SaveRequest<PM_PLAN_EXE> request);
 
         /// <summary>
         /// 获取维保实施记录

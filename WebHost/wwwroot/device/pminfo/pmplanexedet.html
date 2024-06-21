@@ -15,8 +15,6 @@
 <body style="padding: 5px; height: 100%; overflow:auto;">
     <form id="mainform" style="width:97%;">
     </form>
-    <div style="margin-bottom: 5px; width: 98%;" id="paramform">
-    </div>
     <div style="width: 94.5%;" class="l-form">
         <div class="l-form-container">
             <div class="l-group" style="width: 100%;"><span>保养实施明细</span></div>
@@ -49,6 +47,7 @@
             </ul>
         </div>
     </div>
+
     <script type="text/javascript">
         'use strict';
         var tableName;
@@ -59,7 +58,7 @@
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
@@ -279,9 +278,7 @@
                                                 var timeDiff = date2.getTime() - date1.getTime();
                                                 // 将时间差值转换为小时数
                                                 var minutesDiff = Math.round(timeDiff / 1000 / 60 / 60).toFixed(2);
-                                                debugger
                                                 liger.get("workgird").updateCell("WORK_HOUR", minutesDiff, rowdata.record);
-
                                             }
                                         }
                                     },
@@ -307,20 +304,9 @@
                 if (start >= complete) {
                     $('#BEGIN_DATE').val("");
                     $('#END_DATE').val("");
-                    LG.showError("保养开始时间不能大于保养结束时间或者当前时间！请重新选择！");
+                    LG.showError("保养开始时间不能大于保养结束时间！请重新选择！");
                     return;
                 }
-
-                var now = new Date();
-                if (complete > now) {
-                    $('#END_DATE').val("");
-                    LG.showError("保养结束时间不能大于当前时间！");
-                    return;
-                }
-
-                var timeDiff = complete - start;
-                //var minutesDiff = (timeDiff / (1000 * 60 * 60)).toFixed(2);
-                //$('#EXE_HOUR').val(minutesDiff);
             },
             //实施附件管理
             f_exeAttachManage: function (dataid) {
@@ -390,7 +376,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({ AUDITING_EXE: "0", SOURCE: "3", PM_TYPE: "maint", });
                     inner();
                 }
@@ -418,13 +404,21 @@
                 input.focus();
                 input.select();
             },
-            //保存
-            save: function () { //保存
+            //同时保存所有
+            saveAll: function () {
                 var me = this;
+                //保存前验证
+                if (!me.grid.endEdit() || !me.grid2.endEdit() || !me.grid3.endEdit() || !me.grid4.endEdit()) return;
+                if ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged && !me.grid2.isDataChanged && !me.grid3.isDataChanged && !me.grid4.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
                 }
+
+                //构造保存请求
                 function handle(data) {
                     data.GRID = encrypt(data.GRID);
                     data.SEARCH = encrypt(data.SEARCH);
@@ -434,24 +428,48 @@
                 var data = handle(me.mainform.getData());
                 var original = handle(me.orginData);
 
-                var changeRow = new Object();
-                if (me.isAddNew) {
-                    changeRow["added"] = [data];
+                var changeRow1 = new Object();
+                if (me.isNew) {
+                    changeRow1["added"] = [data];
                 }
                 else {
-                    changeRow["updated"] = [data];
-                    changeRow["original"] = [original];
+                    changeRow1["updated"] = [data];
+                    changeRow1["original"] = [original];
                 }
 
+                var changeRow2 = new Object();
+                if (me.grid.validChangeRows()) changeRow2 = me.grid.getChangedRows();
+
+                var changeRow3 = new Object();
+                if (me.grid2.validChangeRows()) changeRow3 = me.grid2.getChangedRows();
+
+                var changeRow4 = new Object();
+                if (me.grid3.validChangeRows()) changeRow4 = me.grid3.getChangedRows();
+
+                var changeRow5 = new Object();
+                if (me.grid4.validChangeRows()) changeRow5 = me.grid4.getChangedRows();
+
+                //统一保存请求
                 LG.ajax({
                     jsToken: true,
-                    url: 'Device/PmInfo/ManagePmExe',
+                    url: 'Device/PmInfo/SaveAll',
                     loading: '正在保存中...',
-                    data: { request: changeRow },
+                    data: { request1: changeRow1, request2: changeRow2, request3: changeRow3, request4: changeRow4, request5: changeRow5 },
                     success: function (result) {
-                        LG.showSuccess('保存成功', function () {
-                            if (me.dialog) me.dialog.close();
-                        });
+                        LG.showSuccess('保存成功');
+                        //保存过一次后自动变为修改模式
+                        me.isNew = false;
+                        //保存后原始数据变为当前数据
+                        me.orginData = data;
+                        me.loadData();
+                        me.grid.isDataChanged = false;
+                        me.reloadDet();
+                        me.grid2.isDataChanged = false;
+                        me.reloadSp();
+                        me.grid3.isDataChanged = false;
+                        me.reloadPep();
+                        me.grid4.isDataChanged = false;
+                        me.reloadWork();
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -491,7 +509,11 @@
                 //表单底部按钮
                 var buttons = [];
                 buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+                if (!me.isView) buttons.push({
+                    text: '保存', icon: 'fa fa-save', onclick: function () {
+                        me.saveAll();
+                    }.bind(me)
+                });
 
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
@@ -526,7 +548,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.grid.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/PmInfo/GetPlandetList',
                     parms: {
@@ -535,12 +557,10 @@
                             rules: [{ field: 'EXE_ID', op: 'equal', value: $('#EXE_ID').val() }]
                         })
                     },
-                    //sortName: 'MODIFY_DATE',
-                    //sortOrder: 'desc',
                     width: '99%',
                     height: '100%',
                     checkbox: false,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
@@ -667,12 +687,12 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.grid2.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/PmInfo/GetPmSpList',
                     parms: {
                         exeId: "",
-                        doneitemId:"",
+                        doneitemId: "",
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
@@ -683,7 +703,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
@@ -925,7 +945,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.grid3.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/PmInfo/GetPmPepList',
                     parms: {
@@ -939,7 +959,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
@@ -1093,7 +1113,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.grid4.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/PmInfo/GetWorkList',
                     parms: {
@@ -1107,7 +1127,7 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
@@ -1219,7 +1239,7 @@
                     }
                     if (!me.grid4.validChangeRows()) return false;
                     var changeRow = me.grid4.getChangedRows();
-                   
+
                     LG.ajax({
                         jsToken: true,
                         url: 'Device/PmInfo/ManageWork',
@@ -1279,20 +1299,20 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
-                    if (me.dialogData.view != undefined) {
-                        me.isView = me.dialogData.view;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) {
+                        me.isView = me.dialogData.isView;
                     }
                 }
 
-                //加在基础信息
+                //加载基础信息
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.loadData();
 
 
-                //加载重大改造履历
+                //加载子表
                 me.setGrid();
                 me.setGrid2();
                 me.setGrid3();
@@ -1307,17 +1327,6 @@
                 me.reloadPep();
                 me.reloadSp();
                 me.reloadDet();
-                if (me.dialogData.view != undefined) {
-                    const commonGridOptions = {
-                        enabledEdit: false,
-                    };
-                    me.grid.setOptions(commonGridOptions);
-                    me.grid2.setOptions(commonGridOptions);
-                    me.grid3.setOptions(commonGridOptions);
-                    if (me.dialogData.qry == undefined) {
-                        me.grid4.setOptions(commonGridOptions);
-                    }
-                }
                 return me;
             }
         };

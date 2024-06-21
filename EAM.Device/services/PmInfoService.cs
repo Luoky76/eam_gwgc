@@ -59,6 +59,72 @@ namespace EAM.Device.services
             });
         }
 
+        /// <summary>
+        /// 同时保存维保计划、维保实施的所有主子表
+        /// </summary>
+        /// <param name="request1">维保计划</param>
+        /// <param name="request2">维保项目明细</param>
+        /// <param name="request3">物资明细</param>
+        /// <param name="request4">人员明细</param>
+        /// <param name="request5">特殊作业明细</param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveAllAsync
+            (SaveRequest<PM_PLAN_EXE> request1, SaveRequest<PM_PLAN_DONEITEM> request2, SaveRequest<PM_PLAN_SP> request3, SaveRequest<PM_PLAN_LABOR> request4, SaveRequest<PM_SPECIAL_WORK> request5)
+        {
+            //填写主子表关联键值
+            var exe_id = request1.Updated.FirstOrDefault()?.EXE_ID ?? request1.Added.FirstOrDefault()?.EXE_ID ?? GuidHelper.NewSnowflakeId().ToString();
+            if (request1.Added.Any()) request1.Added[0].EXE_ID ??= exe_id;
+            foreach (var entity in request2.Added)
+            {
+                if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
+            }
+            foreach (var entity in request3.Added)
+            {
+                if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
+            }
+            foreach (var entity in request4.Added)
+            {
+                if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
+            }
+            foreach (var entity in request5.Added)
+            {
+                if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
+            }
+
+            //启用事务保存所有表
+            try
+            {
+                await _dbContext.UseTransactionAsync(async () =>
+                {
+                    if ((await ManagePmPlan(request1)).IsError)
+                    {
+                        throw new MessageException("维保计划保存失败");
+                    }
+                    if ((await ManagePlandet(request2)).IsError)
+                    {
+                        throw new MessageException("维保项目明细保存失败");
+                    }
+                    if ((await ManagePmSp(request3)).IsError)
+                    {
+                        throw new MessageException("物资明细保存失败");
+                    }
+                    if ((await ManagePmPep(request4)).IsError)
+                    {
+                        throw new MessageException("人员明细保存失败");
+                    }
+                    if ((await ManageWork(request5)).IsError)
+                    {
+                        throw new MessageException("特殊作业明细保存失败");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
+            }
+            return AjaxResult.Success("保存成功");
+        }
+
         #region 维保计划
 
         /// <summary>
@@ -130,6 +196,8 @@ namespace EAM.Device.services
                     c.EXE_USERID,
                     c.MEMO,
                     c.EXE_ID,
+                    c.IS_LOSE,
+                    c.LEG_DESC,
                     c.CREATE_USERID,
                     c.CREATEDATE,
                     c.MODIFY_USERID,
@@ -140,6 +208,10 @@ namespace EAM.Device.services
 
         public async Task BeforeAdd(PM_PLAN_EXE entity)
         {
+            if (entity.EXE_ID.IsNullOrWhiteSpace())
+            {
+                entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
@@ -154,7 +226,6 @@ namespace EAM.Device.services
             entity.PLAN_CODE = aa + index.ToString("D4");
             entity.AUDITING = "0";
             entity.AUDITING_EXE = "0";
-            entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
         /// <summary>
@@ -343,8 +414,14 @@ namespace EAM.Device.services
 
         public async Task BeforeAddPlandet(PM_PLAN_DONEITEM entity)
         {
-            //entity.COMPLETE = "0";
-            entity.DONEITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.DONEITEM_ID.IsNullOrWhiteSpace())
+            {
+                entity.DONEITEM_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            if (entity.EXE_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 EXE_ID 为空！");
+            }
             await Task.CompletedTask;
         }
 
@@ -418,7 +495,14 @@ namespace EAM.Device.services
 
         public async Task BeforeAddWork(PM_SPECIAL_WORK entity)
         {
-            entity.WORK_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.WORK_ID.IsNullOrWhiteSpace())
+            {
+                entity.WORK_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            if (entity.EXE_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 EXE_ID 为空！");
+            }
             await Task.CompletedTask;
         }
 
@@ -444,7 +528,14 @@ namespace EAM.Device.services
 
         public async Task BeforeAddLabor(PM_PLAN_LABOR entity)
         {
-            entity.PLAN_LABOR_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.PLAN_LABOR_ID.IsNullOrWhiteSpace())
+            {
+                entity.PLAN_LABOR_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            if (entity.EXE_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 EXE_ID 为空！");
+            }
             await Task.CompletedTask;
         }
 
@@ -486,7 +577,14 @@ namespace EAM.Device.services
 
         public async Task BeforeAddSp(PM_PLAN_SP entity)
         {
-            entity.PLAN_SP_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.PLAN_SP_ID.IsNullOrWhiteSpace())
+            {
+                entity.PLAN_SP_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            if (entity.EXE_ID.IsNullOrWhiteSpace())
+            {
+                throw new MessageException("外键 EXE_ID 为空！");
+            }
             await Task.CompletedTask;
         }
 
@@ -546,24 +644,6 @@ namespace EAM.Device.services
                             AUDIT_TIME = null,
                         });
 
-        }
-
-        /// <summary>
-        /// 管理维保实施结果
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> ManagePmExe(SaveRequest<PM_PLAN_EXE> request)
-        {
-            return await _dbContext.SaveEntityAnsyc(request,
-                c => new
-                {
-                    c.IS_LOSE,
-                    c.LEG_DESC,
-                    c.MEMO,
-                    c.BEGIN_DATE,
-                    c.END_DATE,
-                },
-                c => a => a.EXE_ID == c.EXE_ID, null, BeforeUpdateExe);
         }
 
         public async Task BeforeUpdateExe(PM_PLAN_EXE entity)
