@@ -456,20 +456,24 @@
                     loading: '正在保存中...',
                     data: { request1: changeRow1, request2: changeRow2, request3: changeRow3, request4: changeRow4, request5: changeRow5 },
                     success: function (result) {
-                        LG.showSuccess('保存成功');
-                        //保存过一次后自动变为修改模式
-                        me.isNew = false;
-                        //保存后原始数据变为当前数据
-                        me.orginData = data;
-                        me.loadData();
-                        me.grid.isDataChanged = false;
-                        me.reloadDet();
-                        me.grid2.isDataChanged = false;
-                        me.reloadSp();
-                        me.grid3.isDataChanged = false;
-                        me.reloadPep();
-                        me.grid4.isDataChanged = false;
-                        me.reloadWork();
+                        LG.showSuccess('保存成功', function () {
+                            if (me.isNew && me.dialog) {
+                                me.dialog.close();
+                            }
+                            else {
+                                //保存后原始数据变为当前数据
+                                me.orginData = data;
+                                me.loadData();
+                                me.grid.isDataChanged = false;
+                                me.reloadDet();
+                                me.grid2.isDataChanged = false;
+                                me.reloadSp();
+                                me.grid3.isDataChanged = false;
+                                me.reloadPep();
+                                me.grid4.isDataChanged = false;
+                                me.reloadWork();
+                            }
+                        });
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -631,7 +635,7 @@
                             me.reloadDet();
                             break;
                         case "save":
-                            me.saveDet();
+                            me.saveAll();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -649,32 +653,6 @@
                 }
                 me.grid.toolbarManager.options.group = 'detail';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            //保存
-            saveDet: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/PmInfo/ManagePlandet',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reloadDet();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
             },
             //物料消耗明细
             grid2: null,
@@ -772,7 +750,7 @@
                             me.deletesp();
                             break;
                         case "save":
-                            me.savesp();
+                            me.saveAll();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -858,7 +836,7 @@
                                     });
                                 }
                             }
-                            me.savesp();
+                            me.saveAll();
                         }
                     }
                     $.ligerDialog.open({
@@ -883,54 +861,11 @@
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
                                     me.grid2.deleteRow(selected[i]);
                                 }
-                                me.savesp();
+                                me.saveAll();
                             }
                         });
                     } else {
                         LG.tip('请选择行!');
-                    }
-                }
-            },
-            //保存
-            savesp: function () { //保存
-                var me = this;
-                var flag = true;
-                if (me.grid2.endEdit() != false) {
-                    if (!me.grid2.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid2.validChangeRows()) return false;
-                    var changeRow = me.grid2.getChangedRows();
-
-                    for (var i = 0; i < changeRow.updated.length; i++) {
-                        var row = changeRow.updated[i];
-                        if (row.STORE_NUM < row.FACT_NUM) {
-                            flag = false;
-                            LG.showSuccess('实际消耗数量不可大于库存数量！');
-                            break;
-                        }
-                        if (row.FACT_NUM < 0) {
-                            flag = false;
-                            LG.showSuccess('实际消耗数量不可为负数！');
-                            break;
-                        }
-                    }
-                    if (flag) {
-                        LG.ajax({
-                            jsToken: true,
-                            url: 'Device/PmInfo/ManagePmSp',
-                            loading: '正在保存中...',
-                            data: changeRow,
-                            success: function () {
-                                LG.showSuccess('保存成功');
-                                me.grid2.isDataChanged = false;
-                                me.reloadSp();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
                     }
                 }
             },
@@ -1028,7 +963,7 @@
                             me.deletePep();
                             break;
                         case "save":
-                            me.savePep();
+                            me.saveAll();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -1057,32 +992,6 @@
                 me.grid3.addEditRow({ "EXE_ID": $('#EXE_ID').val(), "DONEITEM_ID": selected.DONEITEM_ID });
                 me.grid3._applyEditor.ligerDefer(me.grid3, 200, [me.grid3.getCellObj(0, 2)]);
             },
-            //保存
-            savePep: function () { //保存
-                var me = this;
-                if (me.grid3.endEdit() != false) {
-                    if (!me.grid3.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid3.validChangeRows()) return false;
-                    var changeRow = me.grid3.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/PmInfo/ManagePmPep',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid3.isDataChanged = false;
-                            me.reloadPep();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
-            },
             //删除
             deletePep: function () { //删除
                 var me = this;
@@ -1094,7 +1003,7 @@
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
                                     me.grid3.deleteRow(selected[i]);
                                 }
-                                me.savePep();
+                                me.saveAll();
                             }
                         });
                     } else {
@@ -1195,7 +1104,7 @@
                             me.deleteWork();
                             break;
                         case "save":
-                            me.saveWork();
+                            me.saveAll();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -1229,33 +1138,6 @@
                 me.grid4.addEditRow({ "EXE_ID": $('#EXE_ID').val() });
                 me.grid4._applyEditor.ligerDefer(me.grid4, 200, [me.grid4.getCellObj(0, 2)]);
             },
-            //保存
-            saveWork: function () { //保存
-                var me = this;
-                if (me.grid4.endEdit() != false) {
-                    if (!me.grid4.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid4.validChangeRows()) return false;
-                    var changeRow = me.grid4.getChangedRows();
-
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/PmInfo/ManageWork',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid4.isDataChanged = false;
-                            me.reloadWork();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
-            },
             //删除
             deleteWork: function () { //删除
                 var me = this;
@@ -1267,7 +1149,7 @@
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
                                     me.grid4.deleteRow(selected[i]);
                                 }
-                                me.saveWork();
+                                me.saveAll();
                             }
                         });
                     } else {

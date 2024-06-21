@@ -90,8 +90,6 @@
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
-                //me.config.gridtop.columns.removeNull();
-                //me.config.gridcenter.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
                     fixedCellHeight: true,
                     autoWidth: true,
@@ -105,8 +103,6 @@
                             rules: []
                         })
                     },
-                    //sortName: 'RECEIVEDATE',
-                    //sortOrder: 'desc',
                     width: '98%',
                     height: '100%',
                     checkbox: true,
@@ -114,7 +110,6 @@
                     clickToEdit: false,
                     page: 1,
                     pageSize: 50,
-                    //isSingleCheck: true,
                     usePager: false,
                     onBeforeEdit: function (editParm) {
 
@@ -131,7 +126,6 @@
                     onDblClickRow: function (rowdata) {
                         me.view(rowdata);
                     }
-
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
@@ -369,7 +363,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.buttons[0].click,
-                    data: { "sdid": null, "isNew": true }
+                    data: { "sid": null, "isNew": true, "isView": false }
                 });
             },
 
@@ -394,7 +388,7 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.buttons[0].click,
-                        data: { "sid": selected.EXE_ID, "view": true }
+                        data: { "sid": selected.EXE_ID, "isNew": false, "isView": true }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -434,15 +428,12 @@
                             isResize: true,
                             slide: false,
                             onClosed: me.buttons[0].click,
-                            data: { "sid": selected.EXE_ID }
+                            data: { "sid": selected.EXE_ID, isNew: false, isView: false }
                         });
-
-
                     } else {
                         LG.tip('请选择行!');
                     }
                 }
-
             },
 
             save: function () { //保存
@@ -495,12 +486,7 @@
                         LG.tip('请选择行!');
                     }
                 }
-
             },
-            initSearchData: function () {
-
-            },
-
             init: function () {
                 var me = this;
                 me.loadComboxData();

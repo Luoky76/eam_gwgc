@@ -38,7 +38,7 @@
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
@@ -210,7 +210,6 @@
                     }
                 });
             },
-
             loadData: function () {
                 var me = this;
                 function inner() {
@@ -219,7 +218,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({ AUDITING: "0", PM_TYPE: "20", SOURCE: "3" });
                     inner();
                 }
@@ -246,13 +245,21 @@
                 input.focus();
                 input.select();
             },
-            //保存
-            save: function () { //保存
+            //同时保存所有
+            saveAll: function () {
                 var me = this;
+                //保存前验证
+                if (!me.grid.endEdit()) return;
+                if ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
                 if (!me.mainform.valid()) {
                     me.mainform.showInvalid();
                     return;
                 }
+
+                //构造保存请求
                 function handle(data) {
                     data.GRID = encrypt(data.GRID);
                     data.SEARCH = encrypt(data.SEARCH);
@@ -262,23 +269,36 @@
                 var data = handle(me.mainform.getData());
                 var original = handle(me.orginData);
 
-                var changeRow = new Object();
-                if (me.isAddNew) {
-                    changeRow["added"] = [data];
+                var changeRow1 = new Object();
+                if (me.isNew) {
+                    changeRow1["added"] = [data];
                 }
                 else {
-                    changeRow["updated"] = [data];
-                    changeRow["original"] = [original];
+                    changeRow1["updated"] = [data];
+                    changeRow1["original"] = [original];
                 }
 
+                var changeRow2 = new Object();
+                if (me.grid.validChangeRows()) changeRow2 = me.grid.getChangedRows();
+
+                //统一保存请求
                 LG.ajax({
                     jsToken: true,
-                    url: 'Device/PmInfo/ManagePmPlan',
+                    url: 'Device/PmInfo/SaveAll',
                     loading: '正在保存中...',
-                    data: { request: changeRow },
+                    data: { request1: changeRow1, request2: changeRow2 },
                     success: function (result) {
                         LG.showSuccess('保存成功', function () {
-                            if (me.dialog) me.dialog.close();
+                            if (me.isNew && me.dialog) {
+                                me.dialog.close();
+                            }
+                            else {
+                                //保存后原始数据变为当前数据
+                                me.orginData = data;
+                                me.loadData();
+                                me.grid.isDataChanged = false;
+                                me.reloadDet();
+                            }
                         });
                     },
                     error: function (message) {
@@ -319,7 +339,7 @@
                 //表单底部按钮
                 var buttons = [];
                 buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
-                if (!me.isView) buttons.push({ text: '保存基础信息', icon: 'fa fa-save', onclick: me.save.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.saveAll.bind(me) });
 
                 LG.addFormButtons(buttons);
                 me.formButtons = buttons;
@@ -354,7 +374,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.grid.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/PmInfo/GetPlandetList',
                     parms: {
@@ -363,12 +383,10 @@
                             rules: [{ field: 'EXE_ID', op: 'equal', value: $('#EXE_ID').val() }]
                         })
                     },
-                    //sortName: 'MODIFY_DATE',
-                    //sortOrder: 'desc',
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
                         switch (editParm.column.name) {
@@ -437,14 +455,10 @@
                             me.deleteDet();
                             break;
                         case "save":
-                            me.saveDet();
+                            me.saveAll();
                             break;
                         case "import":
-                            //导入前需要先保存主表
-                            if ($('#EXE_ID').val() == '') {
-                                LG.showError("请先保存设备基础数据");
-                            }
-                            else me.import();
+                            me.import();
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -484,13 +498,7 @@
                     options: {
                         deviceId: $("#DEVICE_ID").val(),
                         deptId: $("#WDEPT_ID").val(),
-                        url: 'Device/PmInfo/ImportList',/*
-                        parms: {
-                            where: JSON.stringify({
-                                op: 'and',
-                                rules: [{ field: 'DEVICE_ID', op: 'equal', value: $('#DEVICE_ID').val() }, { field: 'DEPARTMENT', op: 'equal', value: $('#WDEPT_ID').val() }]
-                            })
-                        },*/
+                        url: 'Device/PmInfo/ImportList',
                         rowKey: "STD_CODE",
                         columns: [
                             { display: "编号", name: "STD_CODE", minWidth: 100, type: "text", },
@@ -508,13 +516,11 @@
                         ]
                     },
                     fields: [
-                        //{ display: "编号", name: "STD_CODE", width: 150, type: "text" },
                         { display: "周期", name: "CYCLE", width: 150, type: "select", options: { data: me.pmcycleUnit } },
                         {
                             display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 150, type: "select", align: "left",
                             options: {
                                 data: me.deviceInfo,
-                                //defaultValue: deviceId
                             }
                         },
                         {
@@ -542,7 +548,7 @@
                                 });
                             }
                         }
-                        me.saveDet();
+                        me.saveAll();
                     }
                 }
                 $.ligerDialog.open({
@@ -563,38 +569,8 @@
             //新增
             addDet: function () {
                 var me = this;
-                if ($('#EXE_ID').val() == '') {
-                    LG.showError("请先保存设备基础数据");
-                    return;
-                }
                 me.grid.addEditRow({ "EXE_ID": $('#EXE_ID').val(), "ATTACH_PLAN": "0" });
                 me.grid._applyEditor.ligerDefer(me.grid, 200, [me.grid.getCellObj(0, 2)]);
-            },
-            //保存
-            saveDet: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/PmInfo/ManagePlandet',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reloadDet();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                }
             },
             //删除
             deleteDet: function () { //删除
@@ -607,7 +583,7 @@
                                 for (var i = 0, len = (selected || []).length; i < len; i++) {
                                     me.grid.deleteRow(selected[i]);
                                 }
-                                me.saveDet();
+                                me.saveAll();
                             }
                         });
                     } else {
@@ -664,18 +640,17 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
-                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
 
-                //加在基础信息
+                //加载基础信息
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.loadData();
 
-
-                //加载重大改造履历
+                //加载维保项目明细
                 me.setGrid();
                 if (!me.isView) {
                     $('#EXE_USER').bind('click', function () {
@@ -683,12 +658,6 @@
                     });
                 }
                 me.reloadDet();
-                if (me.dialogData.view != undefined) {
-                    const commonGridOptions = {
-                        enabledEdit: false,
-                    };
-                    me.grid.setOptions(commonGridOptions);
-                }
                 return me;
             }
         };

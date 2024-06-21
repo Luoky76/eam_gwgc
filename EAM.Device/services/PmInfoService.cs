@@ -71,22 +71,35 @@ namespace EAM.Device.services
         public async Task<AjaxResult> SaveAllAsync
             (SaveRequest<PM_PLAN_EXE> request1, SaveRequest<PM_PLAN_DONEITEM> request2, SaveRequest<PM_PLAN_SP> request3, SaveRequest<PM_PLAN_LABOR> request4, SaveRequest<PM_SPECIAL_WORK> request5)
         {
+            string exe_id;
             //填写主子表关联键值
-            var exe_id = request1.Updated.FirstOrDefault()?.EXE_ID ?? request1.Added.FirstOrDefault()?.EXE_ID ?? GuidHelper.NewSnowflakeId().ToString();
-            if (request1.Added.Any()) request1.Added[0].EXE_ID ??= exe_id;
-            foreach (var entity in request2.Added)
+            if (request1.Updated.Any() && !request1.Updated.First().EXE_ID.IsNullOrWhiteSpace())
+            {
+                exe_id = request1.Updated.First().EXE_ID;
+            }
+            else if (request1.Added.Any() && !request1.Added.First().EXE_ID.IsNullOrWhiteSpace())
+            {
+                exe_id = request1.Added.First().EXE_ID;
+            }
+            else exe_id = GuidHelper.NewSnowflakeId().ToString();
+            if (request1.Added.Any() && request1.Added.First().EXE_ID.IsNullOrWhiteSpace())
+            {
+                request1.Added[0].EXE_ID = exe_id;
+            }
+
+            foreach (var entity in request2.Added ??= new List<PM_PLAN_DONEITEM>())
             {
                 if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
             }
-            foreach (var entity in request3.Added)
+            foreach (var entity in request3.Added ??= new List<PM_PLAN_SP>())
             {
                 if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
             }
-            foreach (var entity in request4.Added)
+            foreach (var entity in request4.Added ??= new List<PM_PLAN_LABOR>())
             {
                 if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
             }
-            foreach (var entity in request5.Added)
+            foreach (var entity in request5.Added ??= new List<PM_SPECIAL_WORK>())
             {
                 if (entity.EXE_ID.IsNullOrWhiteSpace()) entity.EXE_ID = exe_id;
             }
