@@ -25,6 +25,60 @@ namespace Microsoft.AspNetCore.Http
         public const string Auth = "auth";
 
         /// <summary>
+        /// 文件压缩
+        /// </summary>
+        /// <param name="source">上传文件</param>
+        /// <param name="quality">图片质量</param>
+        /// <param name="width">图片宽度</param>
+        /// <param name="height">图片高度</param>
+        public static async Task<IFormFile> CompressAsync(this IFormFile source, int quality = 90, int width = 800, int height = 0)
+        {
+            using var inputStream = new MemoryStream();
+            await source.CopyToAsync(inputStream);
+            var outputStream = Compress(inputStream, quality, width, height);
+            // 创建 IFormFile 对象
+            var formFile = new FormFile(outputStream, 0, outputStream.Length, source.Name, source.FileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            };
+            return formFile;
+        }
+
+        /// <summary>
+        /// 文件压缩
+        /// </summary>
+        /// <param name="source">上传文件</param>
+        /// <param name="quality">图片质量</param>
+        /// <param name="width">图片宽度</param>
+        /// <param name="height">图片高度</param>
+        public static Stream Compress(this Stream source, int quality = 90, int width = 800, int height = 0)
+        {
+            if(source.CanSeek)source.Seek(0, SeekOrigin.Begin);
+            using var original = SKBitmap.Decode(source);
+
+            var scale = 1.0;
+            if (width > 0)
+            {
+                scale = width * 1.0 / original.Width;
+            }
+            else if (height > 0)
+            {
+                scale = height * 1.0 / original.Height;
+            }
+            width = (int)(original.Width * scale);
+            height = (int)(original.Height * scale);
+
+            using var resized = original.Resize(new SKImageInfo(width, height), SKFilterQuality.High);
+            using var image = SKImage.FromBitmap(resized);
+            var outputStream = new MemoryStream();
+            // 将压缩后的图片保存为 JPEG 格式
+            image.Encode(SKEncodedImageFormat.Jpeg, quality).SaveTo(outputStream);
+            outputStream.Seek(0, SeekOrigin.Begin);
+            return outputStream;
+        }
+
+        /// <summary>
         /// 文件另存
         /// </summary>
         /// <returns></returns>
