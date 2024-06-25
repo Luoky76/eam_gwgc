@@ -43,34 +43,35 @@ namespace Gksyb.Server.Job
             var json = list?.Count == 1 ? list[0].ToJson() : list.ToJson();
             if (!string.IsNullOrWhiteSpace(_quartzTask.TaskErrorMatch) && Regex.IsMatch(json, _quartzTask.TaskErrorMatch))//符合错误匹配
             {
-                ErrorHandle(json);
+                await ErrorHandle(json);
             }
         }
 
         protected override async Task ErrorHandle(Exception ex)
         {
-            ErrorHandle(ex.ToString());
+            await ErrorHandle(ex.ToString());
             await base.ErrorHandle(ex);
         }
 
         /// <summary>
         /// 错误处理
         /// </summary>
-        private void ErrorHandle(string content)
+        private async Task ErrorHandle(string content)
         {
             var _methods = (_quartzTask.TaskErrorMethod ?? "").Split(";").Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
-            foreach (var method in _methods)
+            await Parallel.ForEachAsync(_methods, async (method, token) =>
             {
                 try
                 {
                     var serviceType = Type.GetType(method, false);
-                    var noticeHandle = _serviceProvider.GetService(serviceType) as INoticeHandle;
-                    _ = noticeHandle?.Excute("DbJob", content);
+                    if (_serviceProvider.GetService(serviceType) is INoticeHandle noticeHandle)
+                        await noticeHandle.Excute("DbJob", content);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(_logPath, $"{ex}");
                 }
-            }
+            });
         }
     }
 }
