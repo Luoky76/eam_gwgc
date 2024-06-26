@@ -240,7 +240,7 @@
             },
             delete: function () { //删除
                 var me = this;
-                var rows = me.getSelectedRows(true);
+                var rows = me.getSelectedRows();
                 if (!rows) return;
                 $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                     if (!confirm) return;
