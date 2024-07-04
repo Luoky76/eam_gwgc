@@ -3,6 +3,7 @@ using Gksyb.Common.Office.Excel;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Interfaces.OA;
@@ -25,14 +26,16 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
+        private readonly IUserService _userService;
 
         private string errMsg = string.Empty;
 
-        public SpCollectService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpCollectService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IUserService userService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userSession = userSession;
+            _userService = userService;
         }
 
         #region 请购申请
@@ -909,7 +912,8 @@ namespace EAM.Material.Services
             string url = _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "OA接口地址").First().CODE_EN;
 
             OAHandle oa = new(_dbContext);
-            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.collect_code}）- {_userSession.RealName}", _userSession.Phone, null, mainQuery, null);
+            var phone = (await _userService.Find(new List<long?> { _userSession.UserID })).FirstOrDefault().Phone;
+            string result = await oa.CreateFlow(url, "SJQS", $"工作请示（采购需求{mainQuery.collect_code}）- {_userSession.RealName}", phone, null, mainQuery, null);
             //OA返回结果：{"msg":"创建流程成功","code":"1162464","success":true,"url":"999"}
             await _dbContext.DBLog("OA创建流程返回结果", "", "案件审批流程创建" + "\n" + result, "");
 
