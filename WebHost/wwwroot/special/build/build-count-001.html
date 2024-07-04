@@ -71,8 +71,9 @@
                             {
                                 display: "施工时间（小时:分钟）", columns: [
                                     {
-                                        display: "施工准备", name: "CONPLAN", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "施工准备", name: "CONPLAN", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -82,8 +83,9 @@
                                         }
                                     },
                                     {
-                                        display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "挖泥时间", name: "DREDGETIME", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -93,8 +95,9 @@
                                         }
                                     },
                                     {
-                                        display: "航行时间", name: "SAILTIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "航行时间", name: "SAILTIME", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -108,8 +111,9 @@
                             {
                                 display: "停工时间（小时:分钟）", columns: [
                                     {
-                                        display: "检修时间", name: "REPAIRTIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "检修时间", name: "REPAIRTIME", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -119,8 +123,9 @@
                                         }
                                     },
                                     {
-                                        display: "天气影响", name: "WEATHEREFFECT", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "天气影响", name: "WEATHEREFFECT", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -130,8 +135,9 @@
                                         }
                                     },
                                     {
-                                        display: "其他停工", name: "OTHERSTOP", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "其他停工", name: "OTHERSTOP", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {

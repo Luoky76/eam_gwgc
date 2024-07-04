@@ -57,8 +57,9 @@
                             {
                                 display: "施工时间（小时:分钟）", columns: [
                                     {
-                                        display: "作业时间", name: "WORK_TIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "作业时间", name: "WORK_TIME", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -68,8 +69,9 @@
                                         }
                                     },
                                     {
-                                        display: "锚泊时间", name: "ANCHOR_TIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "锚泊时间", name: "ANCHOR_TIME", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -83,8 +85,9 @@
                             {
                                 display: "停工时间（小时:分钟）", columns: [
                                     {
-                                        display: "检修时间", name: "REPAIRTIME", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "检修时间", name: "REPAIRTIME", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -94,8 +97,9 @@
                                         }
                                     },
                                     {
-                                        display: "天气影响", name: "WEATHEREFFECT", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "天气影响", name: "WEATHEREFFECT", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -105,8 +109,9 @@
                                         }
                                     },
                                     {
-                                        display: "待工", name: "WAIT_WORK", minWidth: 100, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "待工", name: "WAIT_WORK", minWidth: 100, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -120,8 +125,9 @@
                             {
                                 display: "主机运行时间（小时:分钟）", columns: [
                                     {
-                                        display: "运行时间", name: "MAIN_ENGINE_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "运行时间", name: "MAIN_ENGINE_RUNTIME", minWidth: 110, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -130,24 +136,15 @@
                                             }
                                         }
                                     },
-                                    {
-                                        display: "累计时间", name: "MAIN_ENGINE_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
+                                    { display: "累计时间", name: "MAIN_ENGINE_CUMTIME", minWidth: 110, type: "duration" },
                                 ]
                             },
                             {
                                 display: "发电机运行时间（小时:分钟）", columns: [
                                     {
-                                        display: "运行时间", name: "MAIN_RUNTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
+                                        display: "运行时间", name: "MAIN_RUNTIME", minWidth: 110, type: "duration", totalSummary:
                                         {
+                                            isDisplay: false,
                                             type: 'sum',
                                             align: 'center',
                                             render: function (e) {
@@ -156,17 +153,7 @@
                                             }
                                         }
                                     },
-                                    {
-                                        display: "累计时间", name: "MAIN_CUMTIME", minWidth: 110, type: "duration", editor: { type: 'duration' }, totalSummary:
-                                        {
-                                            type: 'sum',
-                                            align: 'center',
-                                            render: function (e) {
-                                                var text = $.ligerDefaults.Grid.formatters['duration'](e.sum);
-                                                return "<div>" + text + "</div>";
-                                            }
-                                        }
-                                    },
+                                    { display: "累计时间", name: "MAIN_CUMTIME", minWidth: 110, type: "duration" },
                                 ]
                             },
                             {
