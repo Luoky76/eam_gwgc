@@ -93,6 +93,7 @@ namespace Gksyb.Server.Services.Auth
                 RoleCorps = ToRoleCorps(roles, ports),
                 IsSuper = isSuper,
                 IsAdmin = isAdmin,
+                Phone = user.PHONE,
                 IsOurCompany = isOurCompany,
                 IP = request.IP,
                 UserAgent = request.UserAgent,

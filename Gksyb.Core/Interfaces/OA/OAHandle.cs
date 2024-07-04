@@ -74,9 +74,9 @@ namespace Gksyb.Core.Interfaces.OA
                 loginid = await GetUserIdAsync(phone, url);
             }
 
-            if (string.IsNullOrEmpty(loginid))
+            if (string.IsNullOrEmpty(loginid) || loginid == "0")
             {
-                return "未成功获取到oa登录id";
+                throw new MessageException("未成功获取到oa登录id");
             }
 
             var queryParams = new

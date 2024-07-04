@@ -301,7 +301,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<int> Submit(List<string> sids)
         {
-            var updatedevice = await _dbContext.UpdateAsync<SP_COLLECT>(x => sids.Contains(x.COLLECT_ID),
+            var updateRowCnt = await _dbContext.UpdateAsync<SP_COLLECT>(x => sids.Contains(x.COLLECT_ID),
                     x => new SP_COLLECT
                     {
                         AUDITING = "1"
@@ -318,7 +318,7 @@ namespace EAM.Material.Services
                 }
             }
 
-            return updatedevice;
+            return updateRowCnt;
         }
 
         /// <summary>
@@ -940,7 +940,7 @@ namespace EAM.Material.Services
             }
             else
             {
-                return AjaxResult.Error("推送OA创建流程失败：" + job["msg"].ToString(), "失败");
+                throw new MessageException("推送OA创建流程失败：" + job["msg"].ToString());
             }
 
             #endregion 推送oa
