@@ -155,7 +155,7 @@ namespace Gksyb.Server.Services.Auth
             _dbContext.TrackEntity(entity);
             entity.CORPID = request.IMEI;
             entity.MODIFYDATE = now;
-            await _dbContext.InsertOrUpdateAsync(entity, c => c.LOGINNAME == entity.LOGINNAME && c.APPNAME == entity.APPNAME & c.OPTYPE == entity.OPTYPE);
+            await _dbContext.InsertOrUpdateAsync(entity, c => c.LOGINNAME == entity.LOGINNAME && c.APPNAME == entity.APPNAME && c.REMARK == entity.REMARK && c.OPTYPE == entity.OPTYPE);
         }
 
         /// <inheritdoc/>
