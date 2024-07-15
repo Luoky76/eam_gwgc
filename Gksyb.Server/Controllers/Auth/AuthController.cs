@@ -228,16 +228,16 @@ namespace Gksyb.Server.Controllers.Auth
             var result = await ValidTicket(ticket);
             if (result.IsError) return result;
             var user = result.Data;
-            var request = new LoginRequest()
+            var request = new LoginRequest
             {
                 Username = user.UserName,
                 MenuAppname = user.MenuAppname,
                 RoleAppname = user.RoleAppName,
                 IP = Request.GetRealIP(),
-                UserAgent = Request.GetUserAgent()
+                UserAgent = Request.GetUserAgent(),
+                Source = "刷新Token"
             };
             request.Password = await service.GetPasswordAsync(request.Username);
-            request.Source = "刷新Token";
             var response = await service.LoginAsync(request, userSession =>
             {
                 userSession.ExtendData = user.ExtendData;
