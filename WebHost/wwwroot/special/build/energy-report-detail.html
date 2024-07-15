@@ -1,0 +1,518 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>企业能耗月报</title>
+    <script src="../../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <form id="mainform" style="margin-bottom:60px;">
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            menuNo: getQueryStringByName("MenuNo"),
+            dialogData: {},
+            isAddNew: false,
+            isView: true,
+            sid: getQueryStringByName("sid"),
+            pid: "",
+            orginData: {},
+            dataType: [{ ID: "集装箱", TEXT: "集装箱" }, { ID: "散杂货", TEXT: "散杂货" }, { ID: "其它", TEXT: "其它" }], 
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        labelwidth: 220,
+                        fields: [
+
+                            { display: "公司名称", name: "COMPANY_NAME", dbname: "COMPANY_NAME", width: 150, type: "text", align: "left", options: { readonly: true } },
+                            { display: "公司id", name: "COMPANY_ID", dbname: "COMPANY_ID", width: 150, type: "hidden", align: "left", },
+                            { display: "统计年月", name: "STATISTICAL_MONTH", dbname: "STATISTICAL_MONTH", width: 150, type: "date", align: "left", editor: { type: 'date', format: "yyyy-MM" } },
+                            { display: "类型", name: "TYPE", dbname: "TYPE", width: 150, type: "select", align: "left", options: { autocomplete: true, data: me.dataType } },
+
+                            {
+                                display: "柴油(吨)", name: "PRODUCTION_DIESEL_OIL_TONS", dbname: "PRODUCTION_DIESEL_OIL_TONS", width: 150, type: 'float',
+                                align: "left", editor: { type: 'float', precision: 4 }, group: "生产用能源消耗量",
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "柴油(万元)", name: "PRODUCTION_DIESEL_OIL_MONEY", dbname: "PRODUCTION_DIESEL_OIL_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "汽油(吨)", name: "PRODUCTION_GASOLINE_TONS", dbname: "PRODUCTION_GASOLINE_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "汽油(万元)", name: "PRODUCTION_GASOLINE_MONEY", dbname: "PRODUCTION_GASOLINE_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "重油(吨)", name: "PRODUCTION_HEAVY_OIL_TONS", dbname: "PRODUCTION_HEAVY_OIL_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "重油(万元)", name: "PRODUCTION_HEAVY_OIL_MONEY", dbname: "PRODUCTION_HEAVY_OIL_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "电(千千瓦小时)", name: "PRODUCTION_ELECTRIC_TONS", dbname: "PRODUCTION_ELECTRIC_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "电(万元)", name: "PRODUCTION_ELECTRIC_MONEY", dbname: "PRODUCTION_ELECTRIC_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "天然气(千立方米)", name: "PRODUCTION_NATURAL_GAS_TONS", dbname: "PRODUCTION_NATURAL_GAS_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "天然气(万元", name: "PRODUCTION_NATURAL_GAS_MONEY", dbname: "PRODUCTION_NATURAL_GAS_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            { display: "小计(吨标煤)", name: "PRODUCTION_TOTAL_TONS", dbname: "PRODUCTION_TOTAL_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "小计(万元)", name: "PRODUCTION_TOTAL_MONEY", dbname: "PRODUCTION_TOTAL_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+
+                            {
+                                display: "柴油(吨)", name: "NONPRODUCTION_DIESEL_OIL_TONS", dbname: "NONPRODUCTION_DIESEL_OIL_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                group: "非生产用能源消耗量", options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "柴油(万元)", name: "NONPRODUCTION_DIESEL_OIL_MONEY", dbname: "NONPRODUCTION_DIESEL_OIL_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "汽油(吨)", name: "NONPRODUCTION_GASOLINE_TONS", dbname: "NONPRODUCTION_GASOLINE_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "汽油(万元)", name: "NONPRODUCTION_GASOLINE_MONEY", dbname: "NONPRODUCTION_GASOLINE_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "重油(吨)", name: "NONPRODUCTION_HEAVY_OIL_TONS", dbname: "NONPRODUCTION_HEAVY_OIL_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "重油(万元)", name: "NONPRODUCTION_HEAVY_OIL_MONEY", dbname: "NONPRODUCTION_HEAVY_OIL_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "电(千千瓦小时)", name: "NONPRODUCTION_ELECTRIC_TONS", dbname: "NONPRODUCTION_ELECTRIC_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "电(万元)", name: "NONPRODUCTION_ELECTRIC_MONEY", dbname: "NONPRODUCTION_ELECTRIC_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            { display: "小计(吨标煤)", name: "NONPRODUCTION_TOTAL_TONS", dbname: "NONPRODUCTION_TOTAL_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "小计(万元)", name: "NONPRODUCTION_TOTAL_MONEY", dbname: "NONPRODUCTION_TOTAL_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+
+                            {
+                                display: "柴油(吨)", name: "COMPRE_DIESEL_OIL_TONS", dbname: "COMPRE_DIESEL_OIL_TONS", width: 150, type: 'float', align: "left", group: "综合能源消耗", options: { readonly: true, precision: 4 }
+                            },
+                            { display: "柴油(万元)", name: "COMPRE_DIESEL_OIL_MONEY", dbname: "COMPRE_DIESEL_OIL_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "汽油(吨)", name: "COMPRE_GASOLINE_TONS", dbname: "COMPRE_GASOLINE_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "汽油(万元)", name: "COMPRE_GASOLINE_MONEY", dbname: "COMPRE_GASOLINE_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "重油(吨)", name: "COMPRE_HEAVY_OIL_TONS", dbname: "COMPRE_HEAVY_OIL_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "重油(万元)", name: "COMPRE_HEAVY_OIL_MONEY", dbname: "COMPRE_HEAVY_OIL_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "电(千千瓦小时)", name: "COMPRE_ELECTRIC_TONS", dbname: "COMPRE_ELECTRIC_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "电(万元)", name: "COMPRE_ELECTRIC_MONEY", dbname: "COMPRE_ELECTRIC_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "天然气(吨)", name: "COMPRE_NATURAL_GAS_TONS", dbname: "COMPRE_NATURAL_GAS_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "天然气(万元)", name: "COMPRE_NATURAL_GAS_MONEY", dbname: "COMPRE_NATURAL_GAS_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "小计(吨标煤)", name: "COMPRE_TOTAL_TONS", dbname: "COMPRE_TOTAL_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "小计(万元)", name: "COMPRE_TOTAL_MONEY", dbname: "COMPRE_TOTAL_MONEY", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+
+                            {
+                                display: "万TEU、万人、艘次", name: "FINISH_PEOPLE_NUM", dbname: "FINISH_PEOPLE_NUM", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                group: "完成生产量",
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "万吨（万方、万吨公里、吨海里）", name: "FINISH_TONS", dbname: "FINISH_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            {
+                                display: "万元", name: "FINISH_MONEY", dbname: "FINISH_MONEY", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+
+                            { display: "吨标煤/万TEU", name: "COMPRE_COAL_C", dbname: "COMPRE_COAL_C", width: 150, type: 'float', align: "left", group: "综合能源单耗", options: { readonly: true, precision: 4 } },
+                            { display: "吨标煤/万吨", name: "COMPRE_COAL_D", dbname: "COMPRE_COAL_D", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "吨标煤/万元", name: "COMPRE_COAL_E", dbname: "COMPRE_COAL_E", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+
+                            {
+                                display: "其它电耗(千千瓦小时)", name: "OTHER_ELECTRIC_WATT_HOUR", dbname: "OTHER_ELECTRIC_WATT_HOUR", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 }, group: "其它能耗",
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            { display: "其它电耗(吨标煤)", name: "OTHER_ELECTRIC_TONS", dbname: "OTHER_ELECTRIC_TONS", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            {
+                                display: "其它油耗(吨)", name: "OTHER_OIL_TONS", dbname: "OTHER_OIL_TONS", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            { display: "其它油耗(吨标煤)", name: "OTHER_OIL_TONS_COAL", dbname: "OTHER_OIL_TONS_COAL", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "其他能耗合计", name: "OTHER_TOTAL", dbname: "OTHER_TOTAL", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            {
+                                display: "其它收入", name: "OTHER_INCOME", dbname: "OTHER_INCOME", width: 150, type: 'float', align: "left", editor: { type: 'float', precision: 4 },
+                                options: {
+                                    onChangeValue(input, value, g) {
+                                        me.countAll();
+                                    }
+                                }
+                            },
+                            { display: "其它产值单耗", name: "OTHER_OUTPUT_VALUE", dbname: "OTHER_OUTPUT_VALUE", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
+                            { display: "分析说明", name: "REMARK", dbname: "REMARK", width: 1057, newline: true, type: "textarea", align: "left", options: { } },
+
+                            { display: "ADD_USERID", name: "ADD_USERID", dbname: "ADD_USERID", width: 150, type: "hidden", align: "left" },
+                            { display: "添加日期", name: "ADD_DATE", dbname: "ADD_DATE", width: 150, type: "hidden", align: "left" },
+                            { display: "添加人", name: "ADD_USERNAME", dbname: "ADD_USERNAME", width: 150, type: "hidden", align: "left" },
+                            { display: "MODIFY_USERID", name: "MODIFY_USERID", dbname: "MODIFY_USERID", width: 150, type: "hidden", align: "left" },
+                            { display: "修改日期", name: "MODIFY_DATE", dbname: "MODIFY_DATE", width: 150, type: "hidden", align: "left" },
+                            { display: "修改人", name: "MODIFY_USERNAME", dbname: "MODIFY_USERNAME", width: 150, type: "hidden", align: "left" },
+                            { display: "下属公司表ID", name: "REPORT_ID", dbname: "REPORT_ID", width: 150, type: "hidden", align: "left" },
+                            { display: "主键", name: "MAINKEY", dbname: "MAINKEY", width: 150, type: "hidden", align: "left" },
+                        ]
+                    }
+                };
+            },
+            mainform: null,
+            buttons: null,
+            loadData: function () {
+                var me = this;
+                function inner() {
+                    var data = me.mainform.getData();
+                    LG.getFormCombChanges(data, me.orginData, true);
+                    delete me.orginData;
+                    me.orginData = data;
+                }
+                if (me.isAddNew) {
+                    me.mainform.setData({});
+                    inner();
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Special/EnergyReport/Get',
+                        loading: '正在获取中...',
+                        data: { id: me.sid },
+                        success: function (data, message) {
+                            data.OLDMODIFYDATE = data.MODIFYDATE;
+                            me.mainform.setData(data);
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    if (me.isView) {
+                        me.mainform.setReadonly(true);
+                    }
+                }
+                var input = me.mainform.getEditor(me.config.form.fields[0].name).inputText;
+                input.focus();
+                input.select();
+            },
+            save: function () { //保存
+                var me = this;
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                function handle(data) {
+                    data.GRID = encrypt(data.GRID);
+                    data.SEARCH = encrypt(data.SEARCH);
+                    data.FORM = encrypt(data.FORM);
+                    return data;
+                }
+                var data = handle(me.mainform.getData());
+                var original = handle(me.orginData);
+                var changeRow = new Object();
+                if (me.isAddNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/EnergyReport/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功', function () {
+                            //location.reload(true);
+                            if (me.dialog) me.dialog.close();
+                        });
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            close: function () {
+                var me = this;
+                function inner(callback) {
+                    var data = me.mainform.getData();
+                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    if (updateFields) {
+                        $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                            if (confirm) {
+                                if (callback) callback(2);
+                            }
+                            else {
+                                if (callback) callback(0);
+                            }
+                        });
+                        if (callback) return callback(-1);
+                        return false;
+                    }
+                    if (callback) return callback(1);
+                    return true;
+                }
+                inner(function (status) {
+                    if (status > 0) {
+                        if (me.dialog) me.dialog.close();
+                        if (me.callback) me.callback(false);
+                    }
+                });
+            },
+            setFormDefaultBtn: function (cancleCallback, savedCallback) {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                buttons.push({ text: '关闭', icon: 'fa fa-window-close', onclick: me.close.bind(me) });
+                if (!me.isView) buttons.push({ text: '保存', icon: 'fa fa-save', onclick: me.save.bind(me) });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $formsearch = $("#mainform")
+                //搜索表单应用ligerui样式
+                me.mainform = $formsearch.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 150,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            countAll: function () {
+                var me = this;
+                var m = business.mainform;
+                var d = m.getData();
+                //生产
+                //单位-吨
+                var sc_cy = parseFloat(d.PRODUCTION_DIESEL_OIL_TONS == '' ? '0' : d.PRODUCTION_DIESEL_OIL_TONS);;//柴油
+                var sc_qy = parseFloat(d.PRODUCTION_GASOLINE_TONS == '' ? '0' : d.PRODUCTION_GASOLINE_TONS);//汽油
+                var sc_zy = parseFloat(d.PRODUCTION_HEAVY_OIL_TONS == '' ? '0' : d.PRODUCTION_HEAVY_OIL_TONS);//重油
+                var sc_d = parseFloat(d.PRODUCTION_ELECTRIC_TONS == '' ? '0' : d.PRODUCTION_ELECTRIC_TONS);//电
+                var sc_trq = parseFloat(d.PRODUCTION_NATURAL_GAS_TONS == '' ? '0' : d.PRODUCTION_NATURAL_GAS_TONS);//天然气
+                //单位-万元
+                var sc_cy1 = parseFloat(d.PRODUCTION_DIESEL_OIL_MONEY == '' ? '0' : d.PRODUCTION_DIESEL_OIL_MONEY);;//柴油
+                var sc_qy1 = parseFloat(d.PRODUCTION_GASOLINE_MONEY == '' ? '0' : d.PRODUCTION_GASOLINE_MONEY);//汽油
+                var sc_zy1 = parseFloat(d.PRODUCTION_HEAVY_OIL_MONEY == '' ? '0' : d.PRODUCTION_HEAVY_OIL_MONEY);//重油
+                var sc_d1 = parseFloat(d.PRODUCTION_ELECTRIC_MONEY == '' ? '0' : d.PRODUCTION_ELECTRIC_MONEY);//电
+                var sc_trq1 = parseFloat(d.PRODUCTION_NATURAL_GAS_MONEY == '' ? '0' : d.PRODUCTION_NATURAL_GAS_MONEY);//天然气
+
+                //非生产
+                //单位-吨
+                var fsc_cy = parseFloat(d.NONPRODUCTION_DIESEL_OIL_TONS == '' ? '0' : d.NONPRODUCTION_DIESEL_OIL_TONS);;//柴油
+                var fsc_qy = parseFloat(d.NONPRODUCTION_GASOLINE_TONS == '' ? '0' : d.NONPRODUCTION_GASOLINE_TONS);//汽油
+                var fsc_zy = parseFloat(d.NONPRODUCTION_HEAVY_OIL_TONS == '' ? '0' : d.NONPRODUCTION_HEAVY_OIL_TONS);//重油
+                var fsc_d = parseFloat(d.NONPRODUCTION_ELECTRIC_TONS == '' ? '0' : d.NONPRODUCTION_ELECTRIC_TONS);//电
+                //单位-万元
+                var fsc_cy1 = parseFloat(d.NONPRODUCTION_DIESEL_OIL_MONEY == '' ? '0' : d.NONPRODUCTION_DIESEL_OIL_MONEY);;//柴油
+                var fsc_qy1 = parseFloat(d.NONPRODUCTION_GASOLINE_MONEY == '' ? '0' : d.NONPRODUCTION_GASOLINE_MONEY);//汽油
+                var fsc_zy1 = parseFloat(d.NONPRODUCTION_HEAVY_OIL_MONEY == '' ? '0' : d.NONPRODUCTION_HEAVY_OIL_MONEY);//重油
+                var fsc_d1 = parseFloat(d.NONPRODUCTION_ELECTRIC_MONEY == '' ? '0' : d.NONPRODUCTION_ELECTRIC_MONEY);//电
+
+                //完成生产量
+                var scl = parseFloat(d.FINISH_PEOPLE_NUM == '' ? '0' : d.FINISH_PEOPLE_NUM);//万TEU、万人、艘次
+                var sc2 = parseFloat(d.FINISH_TONS == '' ? '0' : d.FINISH_TONS);//吨标煤/万吨
+                var sc3 = parseFloat(d.FINISH_MONEY == '' ? '0' : d.FINISH_MONEY);//吨标煤/万元
+
+                //其他能耗
+                var qt_d = parseFloat(d.OTHER_ELECTRIC_WATT_HOUR == '' ? '0' : d.OTHER_ELECTRIC_WATT_HOUR);//其它电耗
+                var qt_y = parseFloat(d.OTHER_OIL_TONS == '' ? '0' : d.OTHER_OIL_TONS);//其它油耗
+                var qt_sr = parseFloat(d.OTHER_INCOME == '' ? '0' : d.OTHER_INCOME);//其它收入
+
+                //计算
+                //生产小计
+                var count_sc = sc_cy * 1.4571 + sc_qy * 1.4714 + sc_zy * 3 + sc_d * 0.1229 + sc_trq * 1.2143;
+                var count_sc1 = sc_cy1 + sc_qy1 + sc_zy1 + sc_d1 + sc_trq1;
+                m.setData({ "PRODUCTION_TOTAL_TONS": count_sc });
+                m.setData({ "PRODUCTION_TOTAL_MONEY": count_sc1 });
+
+                //非生产小计
+                var count_fsc = fsc_cy * 1.4571 + fsc_qy * 1.4714 + fsc_zy * 3 + fsc_d * 0.1229;
+                var count_fsc1 = fsc_cy1 + fsc_qy1 + fsc_zy1 + fsc_d1;
+                m.setData({ "NONPRODUCTION_TOTAL_TONS": count_fsc });
+                m.setData({ "NONPRODUCTION_TOTAL_MONEY": count_fsc1 });
+
+                //综合能耗
+                m.setData({ "COMPRE_DIESEL_OIL_TONS": sc_cy + fsc_cy });
+                m.setData({ "COMPRE_GASOLINE_TONS": sc_qy + fsc_qy });
+                m.setData({ "COMPRE_HEAVY_OIL_TONS": sc_zy + fsc_zy });
+                m.setData({ "COMPRE_ELECTRIC_TONS": sc_d + fsc_d });
+                m.setData({ "COMPRE_NATURAL_GAS_TONS": sc_trq });
+
+                m.setData({ "COMPRE_DIESEL_OIL_MONEY": sc_cy1 + fsc_cy1 });
+                m.setData({ "COMPRE_GASOLINE_MONEY": sc_qy1 + fsc_qy1 });
+                m.setData({ "COMPRE_HEAVY_OIL_MONEY": sc_zy1 + fsc_zy1 });
+                m.setData({ "COMPRE_ELECTRIC_MONEY": sc_d1 + fsc_d1 });
+                m.setData({ "COMPRE_NATURAL_GAS_MONEY": sc_trq1 });
+
+                m.setData({ "COMPRE_TOTAL_TONS": count_sc + count_fsc });
+                m.setData({ "COMPRE_TOTAL_MONEY": count_sc1 + count_fsc1 });
+
+                //其它能耗
+                m.setData({ "OTHER_ELECTRIC_TONS": qt_d * 0.1229 });
+                m.setData({ "OTHER_OIL_TONS_COAL": qt_y * 1.4571 });
+                var count_qtAll = qt_d * 0.1229 + qt_y * 1.4571;
+                m.setData({ "OTHER_TOTAL": count_qtAll });
+                var count_qt_dh = qt_sr == 0 ? 0 : Math.round((count_qtAll / qt_sr) * 10000) / 10000;
+                m.setData({ "OTHER_OUTPUT_VALUE": count_qt_dh });
+
+                //综合能源单耗
+                var zh_dh_c = scl == 0 ? 0 : Math.round(((count_sc + count_fsc - count_qtAll) / scl) * 10000) / 10000;
+                var zh_dh_d = sc2 == 0 ? 0 : Math.round(((count_sc + count_fsc - count_qtAll) / sc2) * 10000) / 10000;
+                var zh_dh_e = sc3 == 0 ? 0 : Math.round(((count_sc + count_fsc) / sc3) * 10000) / 10000;
+                m.setData({ "COMPRE_COAL_C": zh_dh_c });
+                m.setData({ "COMPRE_COAL_D": zh_dh_d });
+                m.setData({ "COMPRE_COAL_E": zh_dh_e });
+
+            },
+            init: function () {
+                var me = this;
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.dialogData = me.dialog.get('data');
+                    me.callback = me.dialogData.callback;
+                    if (me.dialogData.sid) me.sid = me.dialogData.sid
+                    if (me.dialogData.pid) me.pid = me.dialogData.pid
+                    me.isView = me.dialogData.view === "1";
+                }
+                if ((me.sid || "0") === "0") me.sid = "";
+                me.isAddNew = (me.sid === "");
+                me.isView = (me.dialogData.view || "" === "1") === "1";
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                return me;
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>
