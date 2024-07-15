@@ -37,6 +37,10 @@ namespace Gksyb.Core.Interfaces.Auth
         /// 组织类别
         /// </summary>
         public string ClassFlag { get; set; }
+        /// <summary>
+        /// 树节点
+        /// </summary>
+        public string TreeNode { get; set; }
 
         /// <summary>
         /// 岗位

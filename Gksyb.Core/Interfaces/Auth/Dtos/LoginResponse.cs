@@ -1,6 +1,5 @@
 ﻿using Gksyb.Core.Auth;
 using Gksyb.Model.UI;
-using Newtonsoft.Json;
 
 namespace Gksyb.Model.Dtos
 {
@@ -10,6 +9,11 @@ namespace Gksyb.Model.Dtos
         /// 账号
         /// </summary>
         public string Account { get; set; }
+
+        /// <summary>
+        /// 菜单应用名
+        /// </summary>
+        public string MenuAppname { get; set; }
 
         /// <summary>
         /// 上次设备唯一识别码
@@ -35,11 +39,5 @@ namespace Gksyb.Model.Dtos
         /// 返回前台的用户信息
         /// </summary>
         public UserResponse Response { get; set; }
-
-        /// <summary>
-        /// 当前存储的用户信息
-        /// </summary>
-        [JsonIgnore]
-        public UserSession Session { get; set; }
     }
 }

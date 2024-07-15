@@ -141,7 +141,7 @@ namespace Gksyb.Server.Controllers.Auth
             var times = await smsService.CheckCodeAsync(phone, code);
             MessageException.ThrowIf(times < 0, $"验证码已失效，请重新登录");
             if (times > 0) return AjaxResult.Success($"验证失败，剩余次数:{times}", "99");
-            await service.SetUserImeiAsync(model.Account, imei);
+            await service.SetUserImeiAsync(model);
             await distributedCache.RemoveAsync(imei);
             return AjaxResult.Success(model.Response);
         }
@@ -228,10 +228,6 @@ namespace Gksyb.Server.Controllers.Auth
             var result = await ValidTicket(ticket);
             if (result.IsError) return result;
             var user = result.Data;
-            await distributedCache.SetStringAsync(ticket, "1", new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpiration = user.Expiration
-            });
             var request = new LoginRequest()
             {
                 Username = user.UserName,
@@ -242,10 +238,20 @@ namespace Gksyb.Server.Controllers.Auth
             };
             request.Password = await service.GetPasswordAsync(request.Username);
             request.Source = "刷新Token";
-            return await service.LoginAsync(request, userSession =>
+            var response = await service.LoginAsync(request, userSession =>
             {
                 userSession.ExtendData = user.ExtendData;
             }, false);
+            if(user.ExpirationType == "1" && response.Data is UserResponse userResponse)//绝对过期处理
+            {
+                userResponse.Ticket = ticket;
+                return response;
+            }
+            await distributedCache.SetStringAsync(ticket, "1", new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpiration = user.Expiration
+            });
+            return response;
         }
 
         /// <summary>
@@ -320,8 +326,8 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>();
                 var user = UserSession.ParseTicket(ticket, options.Value.TicketVersion);
-                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent, "无效票据");
-                MessageException.ThrowIf(Request.GetRealIP() != user.IP, "无效票据");
+                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent 
+                    && Request.GetRealIP() != user.IP, "无效票据");
                 var distributedCache = HttpContext.RequestServices.GetService<IDistributedCache>();
                 MessageException.ThrowIf(await distributedCache.GetStringAsync(ticket) == "1", "无效票据");
                 return AjaxResult<UserSession>.Success(user);
