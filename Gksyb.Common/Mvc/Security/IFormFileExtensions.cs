@@ -1,4 +1,5 @@
 ﻿using Gksyb.Common;
+using Gksyb.Common.Mvc.Dtos;
 using Gksyb.Common.Mvc.Interface;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="height">图片高度</param>
         public static Stream Compress(this Stream source, int quality = 90, int width = 800, int height = 0)
         {
-            if(source.CanSeek)source.Seek(0, SeekOrigin.Begin);
+            if (source.CanSeek) source.Seek(0, SeekOrigin.Begin);
             using var original = SKBitmap.Decode(source);
 
             var scale = 1.0;
@@ -81,6 +82,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// 文件另存
         /// </summary>
+        /// <param name="source">上传文件</param>
+        /// <param name="folder">主文件夹</param>
+        /// <param name="fileName">文件名称（自定义文件名称后可忽略hash比对）</param>
+        /// <param name="isCreateDayDirectory">文件按天分文件夹</param>
         /// <returns></returns>
         public static async Task<string> SaveAs(this IFormFile source, string folder = null, string fileName = null, bool isCreateDayDirectory = false)
         {
@@ -88,14 +93,19 @@ namespace Microsoft.AspNetCore.Http
             folder = new Regex(@"[\\\/\:\*\?\042\<\>\|]").Replace(folder, "");
             var now = DateTime.Now;
             var path = Path.Combine(folder, now.ToString("yyyyMM"), isCreateDayDirectory ? now.ToString("dd") : "");
-            if (string.IsNullOrWhiteSpace(fileName)) fileName = $"{GuidHelper.NewShortId()}_{source.FileName[Math.Max(0, source.FileName.Length - 120)..]}";
-            return await Save(source, Path.Combine(path, fileName));
+            var emptyName = string.IsNullOrWhiteSpace(fileName);
+            if (emptyName) fileName = $"{GuidHelper.NewShortId()}_{source.FileName[Math.Max(0, source.FileName.Length - 120)..]}";
+            return await Save(source, Path.Combine(path, fileName), !emptyName);
         }
 
         /// <summary>
         /// 文件保存
         /// </summary>
-        public static async Task<string> Save(IFormFile source, string path)
+        /// <param name="source">上传文件</param>
+        /// <param name="path">文件相对路径</param>
+        /// <param name="ignoreHash">忽略hash比对</param>
+        /// <returns></returns>
+        public static async Task<string> Save(IFormFile source, string path, bool ignoreHash = false)
         {
             var mapPath = MapPath(out var uploadDirectory);
             var allPath = Path.GetFullPath(Path.Combine(mapPath, path.TrimStart(Path.DirectorySeparatorChar)));
@@ -106,7 +116,15 @@ namespace Microsoft.AspNetCore.Http
             var url = $"{uploadDirectory}/{path.Replace(Path.DirectorySeparatorChar, '/')}";
             url = HttpUtility.UrlPathEncode(url);
             var service = Gksyb.Common.Static.HttpContext.Current.RequestServices.GetService<IFormFileService>();
-            var saveUrl = await service?.SaveAsync(url, path, mapPath, source);
+            var fileRequest = new FormFileRequest()
+            {
+                Url = url,
+                Path = path,
+                MapPath = mapPath,
+                FormFile = source,
+                IgnoreHash = ignoreHash
+            };
+            var saveUrl = await service?.SaveAsync(fileRequest);
             if (saveUrl != url) return saveUrl;
             using var stream = File.Create(allPath);
             await source.CopyToAsync(stream);
