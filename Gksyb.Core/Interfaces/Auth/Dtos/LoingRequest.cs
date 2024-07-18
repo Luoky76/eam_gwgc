@@ -48,6 +48,7 @@ namespace Gksyb.Model.Dtos
         /// <summary>
         /// 设备唯一识别码
         /// </summary>
+        [Required(ErrorMessage = "设备号不能为空")]
         public string IMEI { get; set; }
 
         /// <summary>
