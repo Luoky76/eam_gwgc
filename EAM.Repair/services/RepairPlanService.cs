@@ -388,7 +388,7 @@ namespace EAM.Repair.services
                          c.ACT_MONEY
                      },
                      c => a => a.EXE_ID == c.EXE_ID
-                     , BeforeAdd, null, null, false, null, null, true, null);
+                     , BeforeAdd, null, BeforeDelete, false, null, null, true, null);
 
                 mainSuccess = !execResult.IsError;
                 if (mainSuccess)  //主表是否保存成功
@@ -409,7 +409,7 @@ namespace EAM.Repair.services
         }
 
         /// <summary>
-        /// 新增
+        /// 新增前
         /// </summary>
         /// <returns></returns>
         private async Task BeforeAdd(REP_PLAN_EXE entity)
@@ -430,6 +430,16 @@ namespace EAM.Repair.services
             var index = model.SubStr(10, 4).CastTo<int>() + 1;
             entity.EXE_CODE = type + index.ToString("D4");
 
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 删除前
+        /// </summary>
+        /// <returns></returns>
+        private async Task BeforeDelete(REP_PLAN_EXE entity)
+        {
+            await _dbContext.DeleteAsync<REP_PLAN_EXE_ITEM>(x => x.EXE_ID == entity.EXE_ID);
             await Task.CompletedTask;
         }
 
