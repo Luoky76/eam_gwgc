@@ -45,8 +45,8 @@
                             { display: "维修设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
                             { display: "维修内容", name: "REP_CONTENT", width: 300, type: "text", validate: { required: true },  editor: { type: 'text' } },
                             { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
-                            { display: "外键", name: "PLAN_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
-                            { display: "主键", name: "PLAN_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "外键", name: "EXE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
+                            { display: "主键", name: "EXE_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "维修部位ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "检修负责人", name: "REP_LEADER", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "是否月度询价", name: "IS_ASKBID", width: 100, type: "select", editor: { type: 'select', data: me.isaskbid, selectBoxHeight: 100 } },
@@ -84,13 +84,13 @@
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: { group: 'item' },
                     url: 'Repair/RepairPlan/ExeItemList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: [{ field: 'PLAN_ID', op: 'equal', value: me.sid }]
+                            rules: [{ field: 'EXE_ID', op: 'equal', value: me.sid }]
                         })
                     },
                     sortName: '',
@@ -196,9 +196,8 @@
                         var currentSet = new Set(gridKeys);
                         for (let item of rows) {
                             if (!currentSet.has(item.DEVICE_ID)) {
-                                
                                 me.grid.addEditRow({
-                                    PLAN_ID: me.sid,
+                                    EXE_ID: me.sid,
                                     DEVICE_ID: item.DEVICE_ID,
                                     DEVICE_NAME: item.DEVICE_NAME,
                                     DEVICE_TYPE: item.DEVICE_TYPE,
@@ -223,8 +222,8 @@
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
                     if (selected.length == 1) {
-                        if (selected[0].PLAN_ITEM_ID != undefined) {
-                            me.f_rowAttachManage(selected[0].PLAN_ITEM_ID);
+                        if (selected[0].EXE_ITEM_ID != undefined) {
+                            me.f_rowAttachManage(selected[0].EXE_ITEM_ID);
                         } else {
                             LG.showError("请先保存该记录再上传！");
                         }
@@ -266,7 +265,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Repair/RepairPlan/SaveItem',
+                        url: 'Repair/RepairPlan/SaveExeItem',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {
@@ -279,7 +278,6 @@
                         }
                     });
                 }
-
             },
             reload: function () { //刷新
                 var me = this;

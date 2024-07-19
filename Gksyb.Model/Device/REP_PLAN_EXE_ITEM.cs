@@ -5,18 +5,63 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
-
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类rep_plan_exe_item
+    /// 实体类REP_PLAN_EXE_ITEM
     /// </summary>
-    [Table("rep_plan_exe_item")]
+    [Table("REP_PLAN_EXE_ITEM")]
     public class REP_PLAN_EXE_ITEM
     {
+        /// <summary>
+        /// 主键
+        /// </summary>
+        [Description("主键")]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        public string EXE_ITEM_ID { get; set; }
+
+        /// <summary>
+        /// 设备ID
+        /// </summary>
+        [Description("设备ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_ID { get; set; }
+
+        /// <summary>
+        /// 设备名称
+        /// </summary>
+        [Description("设备名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NAME { get; set; }
+
+        /// <summary>
+        /// 设备编号
+        /// </summary>
+        [Description("设备编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NO { get; set; }
+
+        /// <summary>
+        /// 设备规格
+        /// </summary>
+        [Description("设备规格")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_SIZE { get; set; }
+
+        /// <summary>
+        /// 设备型号
+        /// </summary>
+        [Description("设备型号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_TYPE { get; set; }
+
+        /// <summary>
+        /// 设备数量
+        /// </summary>
+        [Description("设备数量")]
+        public decimal? DEVICE_NUM { get; set; }
 
         /// <summary>
         /// 维修处理方式
@@ -24,13 +69,6 @@ namespace Gksyb.Model
         [Description("维修处理方式")]
         [Column(DbType = DbType.AnsiString)]
         public string DEAL_TYPE { get; set; }
-
-        /// <summary>
-        /// 维修部位
-        /// </summary>
-        [Description("维修部位")]
-        [Column(DbType = DbType.AnsiString)]
-        public string BOM_NAME { get; set; }
 
         /// <summary>
         /// 维修内容
@@ -57,12 +95,12 @@ namespace Gksyb.Model
         /// 人员数量
         /// </summary>
         [Description("人员数量")]
-        public decimal? LABOR_NUM { get; set; }
+        public long? LABOR_NUM { get; set; }
 
         /// <summary>
-        /// 花费时间(分钟)
+        /// 花费时间(小时)
         /// </summary>
-        [Description("花费时间(分钟)")]
+        [Description("花费时间(小时)")]
         public decimal? TAKE_TIME { get; set; }
 
         /// <summary>
@@ -71,48 +109,6 @@ namespace Gksyb.Model
         [Description("备注")]
         [Column(DbType = DbType.AnsiString)]
         public string MEMO { get; set; }
-
-        /// <summary>
-        /// 维修部位ID
-        /// </summary>
-        [Description("维修部位ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string BOM_ID { get; set; }
-
-        /// <summary>
-        /// 设备ID
-        /// </summary>
-        [Description("设备ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEVICE_ID { get; set; }
-
-        /// <summary>
-        /// 设备名字
-        /// </summary>
-        [Description("设备名字")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEVICE_NAME { get; set; }   
-
-        /// <summary>
-        /// 外键
-        /// </summary>
-        [Description("外键")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PLAN_ID { get; set; }
-
-        /// <summary>
-        /// 维修计划项目ID
-        /// </summary>
-        [Description("维修计划项目ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PLAN_ITEM_ID { get; set; }
-
-        /// <summary>
-        /// 主键
-        /// </summary>
-        [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string EXE_ITEM_ID { get; set; }
 
         /// <summary>
         /// 添加人ID
@@ -194,36 +190,9 @@ namespace Gksyb.Model
         public string ITEM_TYPE { get; set; }
 
         /// <summary>
-        /// 设备编号
+        /// 负责人
         /// </summary>
-        [Description("设备编号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEVICE_NO { get; set; }
-
-        /// <summary>
-        /// 设备规格
-        /// </summary>
-        [Description("设备规格")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEVICE_SIZE { get; set; }
-
-        /// <summary>
-        /// 设备型号
-        /// </summary>
-        [Description("设备型号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEVICE_TYPE { get; set; }
-
-        /// <summary>
-        /// 设备数量
-        /// </summary>
-        [Description("设备数量")]
-        public decimal? DEVICE_NUM { get; set; }
-
-        /// <summary>
-        /// 检修负责人
-        /// </summary>
-        [Description("检修负责人")]
+        [Description("负责人")]
         [Column(DbType = DbType.AnsiString)]
         public string STOCK_NAME { get; set; }
 

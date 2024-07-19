@@ -41,13 +41,6 @@ namespace EAM.Repair.Controller
             return AjaxResult.Success(result);
         }
 
-
-        [HttpPost]
-        public async Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request)
-        {
-            return await _service.SaveItem(request);
-        }
-
         [HttpPost]
         public async Task<AjaxResult> ShipList()
         {
@@ -86,5 +79,58 @@ namespace EAM.Repair.Controller
             return await _service.SaveExeItem(requestdet);
         }
 
+        /// <summary>
+        /// 维修计划提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SubmitPlanAsync(string exeId)
+        {
+            return await _service.SubmitPlanAsync(exeId);
+        }
+
+        /// <summary>
+        /// 维修实施提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SubmitExeAsync(string exeId)
+        {
+            return await _service.SubmitExeAsync(exeId);
+        }
+
+        /// <summary>
+        /// 维修验收提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SubmitCheckAsync(string exeId)
+        {
+            return await _service.SubmitCheckAsync(exeId);
+        }
+
+        /// <summary>
+        /// 维修计划撤销提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> RevokePlanAsync(string exeId)
+        {
+            return await _service.RevokePlanAsync(exeId);
+        }
+
+        /// <summary>
+        /// 维修实施撤销提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> RevokeExeAsync(string exeId)
+        {
+            return await _service.RevokeExeAsync(exeId);
+        }
+
+        /// <summary>
+        /// 维修验收撤销提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> RevokeCheckAsync(string exeId)
+        {
+            return await _service.RevokeCheckAsync(exeId);
+        }
     }
 }

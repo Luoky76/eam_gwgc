@@ -188,7 +188,7 @@
                 me.config.docgrid.columns.removeNull();
                 me.grid = $("#docgird").ligerGrid({
                     columns: me.config.docgrid.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'DEVICE/DeviceCard/DocList',
                     parms: {
@@ -224,7 +224,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.paramgird.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/DeviceCard/ParamList',
                     parms: {
@@ -260,7 +260,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.remouldgird.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/DeviceCard/RemList',
                     parms: {
@@ -296,7 +296,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.pmgrid.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Device/DeviceCard/PmListAsync',
                     parms: {
@@ -332,7 +332,7 @@
                     delayLoad: true,
                     usePager: true,
                     columns: me.config.outgrid.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Material/SpOut/GetSpOutStoreDetailList',
                     parms: {

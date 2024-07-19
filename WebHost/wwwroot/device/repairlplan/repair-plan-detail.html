@@ -41,7 +41,7 @@
                     form: {
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
-                            { display: "计划单号", name: "PLAN_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "单号", name: "EXE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", newline: true, upper: true, type: "select", options: {
@@ -77,7 +77,6 @@
                             { display: "维保部门", name: "WSEC_DEPT", newline: false, upper: true, type: "select", options: { data: me.maintdept } },
                             { display: "维修类型", name: "MAINT_TYPE", newline: true, upper: true, type: "select", options: { data: me.repairtype } },
                             { display: "维修处理方式", name: "DEAL_TYPE", newline: false, upper: true, type: "select", options: { data: me.repairhandtype } },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: true, width: 880, upper: true, type: "text", options: {} },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, upper: true, type: "textarea", options: { rows: "2" } },
                             {

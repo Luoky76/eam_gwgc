@@ -1,7 +1,9 @@
 ﻿using Gksyb.Common;
+using Gksyb.Core.Application;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 
 namespace Gksyb.Core.Interfaces.Repair
@@ -9,8 +11,6 @@ namespace Gksyb.Core.Interfaces.Repair
     public interface IRepairPlanService : IService
     {
         Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData();
-
-        Task<AjaxResult> SaveItem(SaveRequest<REP_PLAN_ITEM> request);
 
         Task<AjaxResult> ShipList();
 
@@ -27,5 +27,17 @@ namespace Gksyb.Core.Interfaces.Repair
         Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet);
 
         Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass);
+
+        Task<AjaxResult> SubmitPlanAsync(string exeId);
+
+        Task<AjaxResult> SubmitExeAsync(string exeId);
+
+        Task<AjaxResult> SubmitCheckAsync(string exeId);
+
+        Task<AjaxResult> RevokePlanAsync(string exeId);
+
+        Task<AjaxResult> RevokeExeAsync(string exeId);
+
+        Task<AjaxResult> RevokeCheckAsync(string exeId);
     }
 }

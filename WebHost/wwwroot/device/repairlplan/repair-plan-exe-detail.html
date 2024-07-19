@@ -414,7 +414,7 @@
                     autoWidth: true,
                     usePager: true,
                     columns: me.config.grid.columns,
-                    dataAction: 'local',
+                    dataAction: 'server',
                     toolbar: { group: 'item' },
                     url: 'Repair/RepairPlan/ExeItemList',
                     parms: {
@@ -423,8 +423,6 @@
                             rules: [{ field: 'EXE_ID', op: 'equal', value: me.sid }]
                         })
                     },
-                    //sortName: 'MODIFY_DATE',
-                    //sortOrder: 'desc',
                     width: '99%',
                     height: '100%',
                     checkbox: true,

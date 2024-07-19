@@ -19,30 +19,23 @@ namespace Gksyb.Model
     {
 
         /// <summary>
-        /// 记录状态
+        /// 维修计划记录状态
         /// </summary>
-        [Description("记录状态")]
+        [Description("维修计划记录状态")]
         [Column(DbType = DbType.AnsiString)]
         public string AUDITING { get; set; }
 
         /// <summary>
-        /// 记录状态
+        /// 维修实施记录状态
         /// </summary>
-        [Description("记录状态")]
-        [Column(DbType = DbType.AnsiString)]
-        public string AUDITING_A { get; set; }
-
-        /// <summary>
-        /// 记录状态
-        /// </summary>
-        [Description("记录状态")]
+        [Description("维修实施记录状态")]
         [Column(DbType = DbType.AnsiString)]
         public string AUDITING_B { get; set; }
 
         /// <summary>
-        /// 记录状态
+        /// 维修验收记录状态
         /// </summary>
-        [Description("记录状态")]
+        [Description("维修验收记录状态")]
         [Column(DbType = DbType.AnsiString)]
         public string AUDITING_D { get; set; }
         
