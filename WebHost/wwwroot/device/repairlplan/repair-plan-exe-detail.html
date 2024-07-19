@@ -64,7 +64,7 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
+                            { display: "记录状态", name: "AUDITING_B", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
                             { display: "故障申报单号", name: "EXE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维修状态", name: "PLAN_STATE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -252,7 +252,7 @@
                     me.orginData = data;
                 }
                 if (!me.sid) {
-                    me.mainform.setOrginData({ AUDITING: "0"});
+                    me.mainform.setOrginData({ AUDITING_B: "0"});
                     inner();
                 }
                 else {
@@ -426,18 +426,13 @@
                     width: '99%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
+                        
                     },
                     onSuccess: function (data, g) {
-                        //me.iframeloading.hide();
+                        
                     }
                 });
                 me.grid.isValid = true;
@@ -609,13 +604,6 @@
                 me.setForm();
                 me.loadData();
                 me.setGrid();
-
-                if (me.dialogData.isView != undefined) {
-                    const commonGridOptions = {
-                        enabledEdit: false,
-                    };
-                    me.grid.setOptions(commonGridOptions);
-                }
                 return me;
             }
         };
