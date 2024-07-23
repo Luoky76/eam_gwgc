@@ -50,16 +50,18 @@
                     grid: {
                         columns: [
                             { display: "已提交", name: "AUDITING_EXE", width: 100, type: "chk" },
-                            { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
-                            { display: "船舶编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "保养负责人", name: "EXE_USER", minWidth: 100, type: "text", editor: { type: 'text' } },
-                            { display: "实施完成时间", name: "AUDIT_TIME", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text" },
+                            { display: "船舶编号", name: "DEVICE_CODE", minWidth: 100, type: "text" },
+                            { display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text" },
+                            { display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text" },
+                            { display: "维保部门", name: "SHIP_DEPT", minWidth: 100, type: "text" },
+                            { display: "保养负责人", name: "EXE_USER", minWidth: 100, type: "text" },
+                            { display: "保养开始时间", name: "BEGIN_DATE", minWidth: 100, type: "date", showTime: true, format: "yyyy-MM-dd hh:mm" },
+                            { display: "保养结束时间", name: "END_DATE", minWidth: 100, type: "date", showTime: true, format: "yyyy-MM-dd hh:mm" },
+                            { display: "保养时长（小时）", name: "MAINTENANCE_HOUR", minWidth: 100, type: "float" },
                             { display: "是否有遗留问题", name: "IS_LOSE", dbname: "IS_LOSE", width: 100, type: "select", format: { data: me.isLose } },
-                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
-                            { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
+                            { display: "保养计划单号", name: "PLAN_CODE", minWidth: 150, type: "text" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "text" },
                             //隐藏字段
                             { display: "EXE_ID", name: "EXE_ID", hide: true },
                         ]
@@ -87,8 +89,6 @@
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
-                //me.config.gridtop.columns.removeNull();
-                //me.config.gridcenter.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
                     fixedCellHeight: true,
                     autoWidth: true,

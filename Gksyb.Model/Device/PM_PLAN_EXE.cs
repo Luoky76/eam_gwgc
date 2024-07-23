@@ -156,6 +156,12 @@ namespace Gksyb.Model
         public DateTime? END_DATE { get; set; }
 
         /// <summary>
+        /// 维保时长（小时）
+        /// </summary>
+        [Description("维保时长（小时）")]
+        public decimal? MAINTENANCE_HOUR { get; set; }
+
+        /// <summary>
         /// 点检实施时间(H)
         /// </summary>
         [Description("点检实施时间(H)")]

@@ -113,8 +113,8 @@
                             { display: "维保部门", name: "SHIP_DEPT", type: "hidden", options: {} },
                             { display: "保养负责人", name: "EXE_USER", type: "text", editor: { disabled: true }, options: {} },
                             { display: "是否有遗留问题", name: "IS_LOSE", type: "select", options: { data: me.isLose }, validate: { required: true }, },
-                            { display: "遗留问题描述", name: "LEG_DESC", newline: true, upper: true, width: 826, type: "textarea", options: {} },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 826, type: "textarea", options: {} },
+                            { display: "遗留问题描述", name: "LEG_DESC", newline: true, width: 826, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, width: 826, type: "textarea", options: {} },
 
                             {
                                 display: "保养开始时间", name: "BEGIN_DATE", type: "date", validate: { required: true },
@@ -134,6 +134,7 @@
                                     },
                                 }
                             },
+                            { display: "保养时长（小时）", name: "MAINTENANCE_HOUR", type: "float", validate: { required: true } },
 
                             //隐藏
                             { display: "主键", name: "EXE_ID", type: "hidden", options: {} },]
