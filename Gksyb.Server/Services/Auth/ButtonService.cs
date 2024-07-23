@@ -121,15 +121,23 @@ namespace Gksyb.Server.Services.Auth
         public async Task<GridData> DistinctListAsync(GridRequest request)
         {
             return await _dbContext.Query<SYS_BUTTON>()
-                .Select(x => new
-                {
+                .GroupBy(x => new {
                     x.BTNNO,
                     x.BTNNAME,
                     x.BTNICON,
                     x.BTNCLASS,
                     x.BTNSCRIPT
                 })
-                .Distinct()
+                .Select(x => new
+                {
+                    USE_COUNT = Sql.Count(),
+                    x.BTNNO,
+                    x.BTNNAME,
+                    x.BTNICON,
+                    x.BTNCLASS,
+                    x.BTNSCRIPT
+                })
+                .Where(x => x.USE_COUNT > 1)
                 .GetGridData(request);
         }
 
