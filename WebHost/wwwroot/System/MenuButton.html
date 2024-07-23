@@ -105,6 +105,9 @@
                         case "batchAdd":
                             me.batchAdd();
                             break;
+                        case "import":
+                            me.import();
+                            break;
                         case "clear":
                             me.clear();
                             break;
@@ -129,6 +132,8 @@
                             { line: true },
                             { id: "batchAdd", text: '快速增加 【增删改查】', click: me.toolbarBtnItemClick, icon: "fa fa-bolt" },
                             { line: true },
+                            { id: "import", text: '导入按钮', click: me.toolbarBtnItemClick, icon: "fa fa-reply" },
+                            { line: true },
                             { id: "clear", text: '清空按钮', click: me.toolbarBtnItemClick, icon: "fa fa-eraser" }
                         ]
                     }
@@ -151,6 +156,73 @@
                             LG.showError(message);
                         }
                     });
+                });
+            },
+            import: function () {
+                var me = this;
+                var dataOptions = {
+                    values: [],
+                    options: {
+                        url: 'button/DistinctList',
+                        parms: {},
+                        sortName: 'BTNNO',
+                        rowKey: null,
+                        columns: [
+                            { display: '按钮编号', name: 'BTNNO', validate: { required: true }, editor: { type: 'text' } },
+                            { display: '按钮名称', name: 'BTNNAME', validate: { required: true }, editor: { type: 'text' } },
+                            {
+                                display: '图标', name: 'BTNICON', minWidth: 150, editor: { type: 'text' },
+                                render: function (rowdata, rowindex, value, column) {
+                                    if (!value) return "";
+                                    if (value.indexOf("fa") >= 0) {
+                                        return '<i class="fa ' + value + '"aria-hidden="true"></i>';
+                                    }
+                                    else if (value.indexOf(".") >= 0) {
+                                        return "<div style='width:100%;height:100%;'><img src='../" + value + "' /></div>";
+                                    }
+                                    else {
+                                        var array = value.split(" ");
+                                        return '<i class="' + value + '">' + array[array.length - 1] + '</i>';
+
+                                    }
+                                }
+                            },
+                            { display: '样式', name: 'BTNCLASS', editor: { type: 'text' } },
+                            { display: '提示信息', name: 'BTNSCRIPT', editor: { type: 'text' } }
+                        ]
+                    },
+                    fields: [
+                        {
+                            display: "通用搜索",
+                            name: "_search_all",
+                            hideLabel: true,
+                            filter: [
+                                { op: "like", field: "BTNNO", type: "string" },
+                                { op: "like", field: "BTNNAME", type: "string" },
+                                { op: "like", field: "BTNICON", type: "string" },
+                                { op: "like", field: "BTNCLASS", type: "string" },
+                                { op: "like", field: "BTNSCRIPT", type: "string" }
+                            ],
+                        },
+                    ],
+                    callback: function (values, rows) {
+                        for (let i = 0; i < rows.length; ++i) {
+                            rows[i].APPNAME = me.appname;
+                            rows[i].MENUNO = me.menuNo;
+                            rows[i].SEQNO = (i + 1) * 10;
+                            me.grid.addEditRow(rows[i], true);
+                        }
+                        me.save();
+                    }
+                };
+                parent.$.ligerDialog.open({
+                    width: 600,
+                    height: 370,
+                    title: '挑选按钮',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
                 });
             },
             clear: function () {
