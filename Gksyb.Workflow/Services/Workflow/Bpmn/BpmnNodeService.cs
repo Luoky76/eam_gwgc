@@ -371,6 +371,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             var serviceName = Operators;
             if (string.IsNullOrWhiteSpace(serviceName)) return new List<UserInfo>();
             var service = _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == serviceName) as IFindOperators;
+            await SetFormData();
             return await service.Find(_info);
         }
 
