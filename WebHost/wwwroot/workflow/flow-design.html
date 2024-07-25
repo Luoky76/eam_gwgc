@@ -153,6 +153,7 @@
                     { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: { onChangeValue: me.changeAssign } },
                     { display: "处理人URL", name: "assignUrl", newline: true, bpmn: "no", type: "text", options: {} },
                     { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} },
+                    { display: "跳过自动同意", name: "skipAutoAgree", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} },
                     { display: "退回节点", name: "backNode", newline: true, bpmn: "bpmn:userTask", type: "select", options: { canDifferent: true, data: me.dataBackNode } }
                 ];
                 for (var i = 0, l = fields.length; i < l; i++) {

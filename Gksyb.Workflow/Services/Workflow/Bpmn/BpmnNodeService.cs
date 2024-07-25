@@ -447,6 +447,17 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
+        /// 跳过自动同意
+        /// </summary>
+        public bool SkipAutoAgree
+        {
+            get
+            {
+                return GetProperties("skipAutoAgree").CastTo(false);
+            }
+        }
+
+        /// <summary>
         /// 退回节点
         /// </summary>
         private string BackNode

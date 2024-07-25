@@ -63,7 +63,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
                     if (toNodeService != null) await toNodeService.Execute();
                 }
-                if (info.NodeStatus == NodeStatus.Agree)
+                if (!nodeService.SkipAutoAgree && info.NodeStatus == NodeStatus.Agree)
                 {
                     await AutoAgreeAsync(info);
                 }
