@@ -1,6 +1,7 @@
 ﻿using Chloe.Descriptors;
 using Gksyb.Model.Filter;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace Gksyb.Core.Filter
 {
@@ -11,6 +12,7 @@ namespace Gksyb.Core.Filter
     public class FilterTranslatorLinq : FilterTranslator
     {
         private readonly TypeDescriptor _typeDescriptor;
+        private readonly Regex _start;
 
         public FilterTranslatorLinq(TypeDescriptor typeDescriptor)
             : this(typeDescriptor, null)
@@ -20,6 +22,7 @@ namespace Gksyb.Core.Filter
         public FilterTranslatorLinq(TypeDescriptor typeDescriptor, FilterGroup group) : base(group)
         {
             _typeDescriptor = typeDescriptor;
+            _start = new Regex($@"^{_typeDescriptor.EntityType?.Name ?? _typeDescriptor.Table?.Name}\.", RegexOptions.IgnoreCase);
             leftToken = "";
             rightToken = "";
             paramPrefix = "";
@@ -46,6 +49,7 @@ namespace Gksyb.Core.Filter
         {
             var bulider = new StringBuilder();
             var op = rule.Op.ToLower();
+            if (!string.IsNullOrWhiteSpace(rule.Field)) rule.Field = _start.Replace(rule.Field, "");
             //如果字段名采用了 用户信息参数
             if (FilterParmMatch.CurrentParmMatch.ContainsKey(rule.Field))
             {
