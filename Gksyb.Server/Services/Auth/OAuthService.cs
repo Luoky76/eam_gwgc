@@ -1,4 +1,5 @@
-﻿using Gksyb.Core.Auth;
+﻿using Gksyb.Common.Mvc.Interface;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Gksyb.Server.Services.Auth
 {
-    public class OAuthService : IBaseService
+    public class OAuthService : IBaseService, IWhitelistService
     {
         private const int ShortExpiration = 30;
         private const string KEY = OAuthRequest<object>.KEY;
@@ -211,6 +212,12 @@ namespace Gksyb.Server.Services.Auth
             user.AllCorp = user.AllCorp.DistinctBy(c => c.CorpID).OrderBy(c => c.CorpID).ToList();
             if (corps == null || corps.Count < 1) return;
             user.Corp = corps.FirstOrDefault(c => c.CorpID == corpid) ?? corps[0];
+        }
+
+        /// <inheritdoc/>
+        public async Task<string> GetAsync(string appid)
+        {
+            return await _dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == appid).Select(c => c.IP).FirstOrDefaultAsync();
         }
     }
 }

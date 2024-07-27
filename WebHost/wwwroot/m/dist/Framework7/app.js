@@ -420,6 +420,16 @@
                 if ($$(page.router.tempDom).find(scriptEl).length > 0) {
                     app.methods.initPage(page, scriptEl);
                 }
+                var menuno = page.route.route.id;
+                if (!menuno) return;
+                setTimeout(function () {
+                    Framework7.ajax({
+                        noGlobal: true,
+                        async: true,
+                        url: 'myinfo/menuclick',
+                        data: { menuNo: menuno }
+                    });
+                }, 1000);
             },
             pageAfterIn: function (page) {
                 if ($$(page.router.tempDom).find("#scriptMounted").length > 0) {

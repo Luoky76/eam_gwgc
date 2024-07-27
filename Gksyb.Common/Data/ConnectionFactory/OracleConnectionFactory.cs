@@ -15,6 +15,7 @@ namespace Gksyb.Common.Data
     {
         static OracleConnectionFactory()//初始化
         {
+            OracleConfiguration.SuppressGetDecimalInvalidCastException = true;
             OracleConfiguration.SuppressErrorURL = true;
             OracleConfiguration.SqlNetAllowedLogonVersionClient = OracleAllowedLogonVersionClient.Version8;
             var methodHandlerDic = new Dictionary<string, IMethodHandler>()
@@ -32,19 +33,26 @@ namespace Gksyb.Common.Data
         }
 
         private readonly string _connString = null;
-        private readonly bool _isInit = false;
+        private readonly bool _hasInit = false;
+        private readonly bool _hasTAFMod = false;
 
         public OracleConnectionFactory(string connString)
         {
             _connString = connString;
-            _isInit = _connString.Contains("SessionInit");
-            if (_isInit) _connString = _connString.Replace("SessionInit", "");
+            _hasInit = _connString.Contains("SessionInit");
+            if (_hasInit) _connString = _connString.Replace("SessionInit", "");
+            _hasTAFMod = _connString.Contains("TAFMode");
+            if (_hasTAFMod) _connString = _connString.Replace("TAFMode", "");
         }
 
         public IDbConnection CreateConnection()
         {
             var oracleConnection = new OracleConnection(_connString);
-            IDbConnection conn = new OracleConnectionDecorator(oracleConnection, _isInit);
+            if (_hasTAFMod)
+            {
+                oracleConnection.TAFMode = new OracleTAFMode(OracleFailoverType.None, OracleFailoverRestore.NONE);
+            }
+            IDbConnection conn = new OracleConnectionDecorator(oracleConnection, _hasInit);
             return conn;
         }
     }
@@ -150,33 +158,25 @@ namespace Gksyb.Common.Data
         public override IDataReader ExecuteReader()
         {
             DateTimeParamHandle();
-            var reader = _oracleCommand.ExecuteReader();
-            reader.SuppressGetDecimalInvalidCastException = true;
-            return reader;
+            return _oracleCommand.ExecuteReader();
         }
 
         public override IDataReader ExecuteReader(CommandBehavior behavior)
         {
             DateTimeParamHandle();
-            var reader = _oracleCommand.ExecuteReader(behavior);
-            reader.SuppressGetDecimalInvalidCastException = true;
-            return reader;
+            return _oracleCommand.ExecuteReader(behavior);
         }
 
         public override async Task<IDataReader> ExecuteReaderAsync()
         {
             DateTimeParamHandle();
-            var reader = await _oracleCommand.ExecuteReaderAsync();
-            reader.SuppressGetDecimalInvalidCastException = true;
-            return reader;
+            return await _oracleCommand.ExecuteReaderAsync();
         }
 
         public override async Task<IDataReader> ExecuteReaderAsync(CommandBehavior behavior)
         {
             DateTimeParamHandle();
-            var reader = await _oracleCommand.ExecuteReaderAsync(behavior);
-            reader.SuppressGetDecimalInvalidCastException = true;
-            return reader;
+            return await _oracleCommand.ExecuteReaderAsync(behavior);
         }
 
         public override object ExecuteScalar()

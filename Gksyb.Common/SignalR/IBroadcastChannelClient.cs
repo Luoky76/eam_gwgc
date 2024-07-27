@@ -1,4 +1,7 @@
-﻿using Gksyb.Common;
+﻿using Chloe.Reflection;
+using Chloe.Reflection.Emit;
+using Gksyb.Common;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -15,6 +18,34 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public static class BroadcastChannelClientExtension
     {
+        private static MemberGetter _proxyGetter;
+        private static MemberGetter _lifetimeManagerGetter;
+        private static MemberGetter _connectionsManagerGetter;
+
+        /// <summary>
+        /// 获取所有连接
+        /// </summary>
+        public static List<HubConnectionContext> GetConnections(this IBroadcastChannelClient source)
+        {
+            _proxyGetter ??= DelegateGenerator.CreateGetter(source.GetType().GetField("_proxy",
+                    BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
+            var proxy = _proxyGetter(source);
+
+            _lifetimeManagerGetter ??= DelegateGenerator.CreateGetter(proxy.GetType().GetField("_lifetimeManager",
+                    BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
+            var lifetimeManager = _lifetimeManagerGetter(proxy);
+
+            _connectionsManagerGetter ??= DelegateGenerator.CreateGetter(lifetimeManager.GetType().GetField("_connections",
+                    BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
+            var store = _connectionsManagerGetter(lifetimeManager) as HubConnectionStore;
+            var connections = new List<HubConnectionContext>();
+            foreach (var connection in store)
+            {
+                connections.Add(connection);
+            }
+            return connections;
+        }
+
         /// <summary>
         /// 发送消息给调用者
         /// </summary>

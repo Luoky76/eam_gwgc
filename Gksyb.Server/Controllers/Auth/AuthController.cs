@@ -8,9 +8,12 @@ using Gksyb.Server.Services.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Security.Claims;
 
 namespace Gksyb.Server.Controllers.Auth
 {
@@ -358,6 +361,19 @@ namespace Gksyb.Server.Controllers.Auth
                 .OrderByDescending(c => c.ServiceType.FullName).Select(c => $"Lifetime = {c.Lifetime}, ServiceType = {c.ServiceType}, ImplementationType = {c.ImplementationType}");
             if (!string.IsNullOrWhiteSpace(search)) services = services.Where(c => c.Contains(search, StringComparison.OrdinalIgnoreCase));
             return AjaxResult.Success(services);
+        }
+
+        [GksybAuthorize(IsSuper = true)]
+        public AjaxResult Connections([FromServices] IHubContext<BroadcastChannelHub, IBroadcastChannelClient> hubContext)
+        {
+            var connections = hubContext.Clients.All.GetConnections();
+            var msgs = connections.Select(c =>
+            {
+                var loginDate = c.User.FindFirstValue(ClaimTypes.DateOfBirth);
+                var duration = DateTime.Now.Subtract(DateTime.ParseExact(loginDate, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)).ToString(@"dd\.hh\:mm\:ss");
+                return $"{c.ConnectionId} {c.User.FindFirstValue(ClaimTypes.UserData)}，登录时间：{loginDate}，时长：{duration}";
+            });
+            return AjaxResult.Success(msgs);
         }
 
         [GksybAuthorize(IsSuper = true)]

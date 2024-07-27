@@ -248,7 +248,9 @@ namespace Gksyb.Core.Auth
                     new Claim(ClaimTypes.Sid, Token),
                     new Claim(ClaimTypes.NameIdentifier, UserID.ToString()),
                     new Claim(ClaimTypes.Name, UserName),
-                    new Claim(ClaimTypes.GroupSid, Group ??"")
+                    new Claim(ClaimTypes.GroupSid, Group ??""),
+                    new Claim(ClaimTypes.DateOfBirth, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new Claim(ClaimTypes.UserData, $"【{Display}_{Group}_{Corp?.CName}】，IP：{IP}，UA：{UserAgent}")
                }, "GKSYB")
             {
                 Label = RealName
