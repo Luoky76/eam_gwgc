@@ -89,9 +89,9 @@ namespace EAM.Repair.services
         }
 
         /// <summary>
-        /// 维修计划提交
+        /// 故障报修提交
         /// </summary>
-        public async Task<AjaxResult> SubmitPlanAsync(string exeId)
+        public async Task<AjaxResult> SubmitReportAsync(string exeId)
         {
             var qry = await _dbContext.Query<REP_PLAN_EXE_ITEM>(c => c.EXE_ID == exeId).ToListAsync();
             if (!qry.Any())
@@ -100,7 +100,25 @@ namespace EAM.Repair.services
             }
             await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
             {
-                AUDITING = "1",
+                AUDITING_A = "1",
+                PLAN_STATE = "20" // 故障待审
+            });
+            return AjaxResult.Success();
+        }
+
+        /// <summary>
+        /// 故障核验提交
+        /// </summary>
+        public async Task<AjaxResult> SubmitAuditAsync(string exeId)
+        {
+            var qry = await _dbContext.Query<REP_PLAN_EXE_ITEM>(c => c.EXE_ID == exeId).ToListAsync();
+            if (!qry.Any())
+            {
+                throw new MessageException("请添加维修项目明细");
+            }
+            await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
+            {
+                AUDITING_B = "1",
                 PLAN_STATE = "30" // 待实施
             });
             //创建OA流程
@@ -118,12 +136,14 @@ namespace EAM.Repair.services
             {
                 throw new MessageException("请确认「是否完成」全部填写");
             }
+            var sysdate = await _dbContext.GetSysdate();
             await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
             {
-                AUDITING_B = "1",
+                AUDITING_C = "1",
                 PLAN_STATE = "40", // 待验收
                 EXE_USER = _userSession.UserName,
-                EXE_USERID = _userSession.UserID.ToString()
+                EXE_USERID = _userSession.UserID.ToString(),
+                EIDT_DATE = sysdate
             });
             return AjaxResult.Success();
         }
@@ -136,28 +156,46 @@ namespace EAM.Repair.services
             await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
             {
                 AUDITING_D = "1",
-                PLAN_STATE = "50" // 已验收
+                PLAN_STATE = "50", // 已验收
+                CHECK_USER = _userSession.UserName,
+                CHECK_USERID = _userSession.UserID.ToString()
             });
             return AjaxResult.Success();
         }
 
         /// <summary>
-        /// 维修计划撤销提交
+        /// 故障报修撤销提交
         /// </summary>
-        public async Task<AjaxResult> RevokePlanAsync(string exeId)
+        public async Task<AjaxResult> RevokeReportAsync(string exeId)
         {
             var qry = await _dbContext.QueryByKeyAsync<REP_PLAN_EXE>(exeId);
             if (qry.AUDITING_B != "0")
+            {
+                throw new MessageException("已核验，无法撤回");
+            }
+            await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
+            {
+                AUDITING_A = "0",
+                PLAN_STATE = "10" // 故障上报
+            });
+            return AjaxResult.Success();
+        }
+
+        /// <summary>
+        /// 故障核验撤销提交
+        /// </summary>
+        public async Task<AjaxResult> RevokeAuditAsync(string exeId)
+        {
+            var qry = await _dbContext.QueryByKeyAsync<REP_PLAN_EXE>(exeId);
+            if (qry.AUDITING_C != "0")
             {
                 throw new MessageException("已实施，无法撤回");
             }
             await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
             {
-                AUDITING = "0",
-                PLAN_STATE = "10" // 故障上报
+                AUDITING_B = "0",
+                PLAN_STATE = "20" // 故障待审
             });
-            //创建OA流程
-            //await CreateWorkFlow(exeId);
             return AjaxResult.Success();
         }
 
@@ -173,7 +211,7 @@ namespace EAM.Repair.services
             }
             await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == exeId, x => new REP_PLAN_EXE()
             {
-                AUDITING_B = "0",
+                AUDITING_C = "0",
                 PLAN_STATE = "30", // 待实施
             });
             return AjaxResult.Success();
@@ -204,8 +242,9 @@ namespace EAM.Repair.services
             })
             .Select((a, b) => new
             {
-                a.AUDITING,
+                a.AUDITING_A,
                 a.AUDITING_B,
+                a.AUDITING_C,
                 a.AUDITING_D,
                 a.EXE_CODE,
                 a.CHECK_CODE,
@@ -258,8 +297,9 @@ namespace EAM.Repair.services
             })
             .Select((a, b) => new
             {
-                a.AUDITING,
+                a.AUDITING_A,
                 a.AUDITING_B,
+                a.AUDITING_C,
                 a.AUDITING_D,
                 a.EXE_CODE,
                 a.PLAN_STATE,
@@ -277,6 +317,7 @@ namespace EAM.Repair.services
                 a.REP_LEVEL,
                 a.PLAN_CODE,
                 a.PLAN_MEMO,
+                a.DEPT_ID,
                 a.DEPT_NAME,
                 a.CHARGE_USER,
                 a.REPAIR_MEMO,
@@ -303,7 +344,7 @@ namespace EAM.Repair.services
                 a.COLLECT_METHOD,
                 a.PLAN_MONEY,
                 a.ACT_MONEY
-            }).Where(x => x.EXE_ID == ID).ToListAsync();
+            }).Where(x => x.EXE_ID == ID).FirstAsync();
 
             return AjaxResult.Success(query);
         }
@@ -346,8 +387,9 @@ namespace EAM.Repair.services
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
                      {
-                         c.AUDITING,
+                         c.AUDITING_A,
                          c.AUDITING_B,
+                         c.AUDITING_C,
                          c.AUDITING_D,
                          c.EXE_CODE,
                          c.MAINT_TYPE,
@@ -418,8 +460,9 @@ namespace EAM.Repair.services
             {
                 entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            if (entity.AUDITING.IsNullOrWhiteSpace()) entity.AUDITING = "0";
+            if (entity.AUDITING_A.IsNullOrWhiteSpace()) entity.AUDITING_A = "0";
             if (entity.AUDITING_B.IsNullOrWhiteSpace()) entity.AUDITING_B = "0";
+            if (entity.AUDITING_C.IsNullOrWhiteSpace()) entity.AUDITING_C = "0";
             if (entity.AUDITING_D.IsNullOrWhiteSpace()) entity.AUDITING_D = "0";
 
             entity.REPORT_USER = _userSession.UserName;
@@ -608,7 +651,7 @@ namespace EAM.Repair.services
                 //成功后将记录状态改为审批中
                 _dbContext.Update<REP_PLAN_EXE>(a => a.EXE_ID == exeId, a => new REP_PLAN_EXE
                 {
-                    AUDITING = "2",
+                    AUDITING_B = "2",
                     OA_CODE = job["code"].ToString()
                 });
             }
@@ -635,7 +678,7 @@ namespace EAM.Repair.services
                 var updatedevice = await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == sid,
                 x => new REP_PLAN_EXE
                 {
-                    AUDITING = "3"
+                    AUDITING_B = "3"
                 });
                 return AjaxResult.Success("审批成功");
             }
@@ -644,7 +687,7 @@ namespace EAM.Repair.services
                 var updatedevice = await _dbContext.UpdateAsync<REP_PLAN_EXE>(x => x.EXE_ID == sid,
                 x => new REP_PLAN_EXE
                 {
-                    AUDITING = "4"
+                    AUDITING_B = "4"
                 });
                 return AjaxResult.Success("审批否决");
             }

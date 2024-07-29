@@ -111,7 +111,7 @@ namespace EAM.Device.services
                 {
                     //维修
                     item.REP = _dbContext.Query<REP_PLAN_EXE>()
-                        .Where(a => a.DEVICE_ID == item.DEVICE_ID && a.AUDITING == "1" && a.ACT_START_DATE >= b_time && a.ACT_START_DATE <= e_time)
+                        .Where(a => a.DEVICE_ID == item.DEVICE_ID && a.AUDITING_D == "1" && a.ACT_START_DATE >= b_time && a.ACT_START_DATE <= e_time)
                         .Sum(t => t.ACT_MONEY);
 
                     //维保

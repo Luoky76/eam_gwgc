@@ -33,25 +33,25 @@ namespace Gksyb.Server.Services.Message
         {
             //维保部门 WSEC_DEPT ，设备名称
             GetTodoListDataCountResponse result = new GetTodoListDataCountResponse();
-            result.exe = await _dbContext.Query<REP_PLAN_EXE>().WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
-            result.exeTitle = "维修计划";
-            result.exeList = await _dbContext.Query<REP_PLAN_EXE>()
+            result.exe = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_A == "1" || x.AUDITING_A == "3") && x.AUDITING_B == "0").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.exeTitle = "故障核验";
+            result.exeList = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_A == "1" || x.AUDITING_A == "3") && x.AUDITING_B == "0")
                                                .WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                                                .Select((a, b) => new todolist
                                                {
                                                    ID = a.EXE_ID,
                                                    TEXT = a.EXE_CODE + "," + a.WDEPT_NAME??" " + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
-                                                   TYPENAME = "维修计划",
+                                                   TYPENAME = "故障核验",
                                                    MENUNAME = "exe",
                                                    IDKEY = "EXE_ID",
                                                }).ToListAsync();
 
 
 
-            result.check = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.DEAL_TYPE == "自修").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.check = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_C == "1" || x.AUDITING_C == "3") && x.AUDITING_D == "0").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
             result.checkTitle = "维修验收";
-            result.checkList = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.DEAL_TYPE == "自修")
+            result.checkList = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_C == "1" || x.AUDITING_C == "3") && x.AUDITING_D == "0")
                                                 .WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                                                 .Select((a, b) => new todolist
@@ -62,34 +62,6 @@ namespace Gksyb.Server.Services.Message
                                                     MENUNAME = "check",
                                                     IDKEY = "EXE_ID",
                                                 }).ToListAsync();
-
-            result.ExtMainteCheck = await _dbContext.Query<REP_OUT>(x => x.AUDITING == "1").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
-            result.ExtMainteCheckTitle = "委外维修验收";
-            result.ExtMainteCheckList = await _dbContext.Query<REP_OUT>(x => x.AUDITING == "1")
-                                                   .WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName)
-                                                   .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                                                   .Select((a, b) => new todolist
-                                                   {
-                                                       ID = a.OUT_ID,
-                                                       TEXT = a.OUT_CODE + "," + (a.WDEPT_NAME ?? " ") + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
-                                                       TYPENAME = "委外维修验收",
-                                                       MENUNAME = "ExtMainteCheck",
-                                                       IDKEY = "OUT_ID",
-                                                   }).ToListAsync();
-
-            result.ExtCheck = await _dbContext.Query<REP_OUT>().WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
-            result.ExtCheckTitle = "委外维修确认";
-            result.ExtCheckList = await _dbContext.Query<REP_OUT>()
-                                                  .WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName)
-                                                  .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                                                  .Select((a, b) => new todolist
-                                                  {
-                                                      ID = a.OUT_ID,
-                                                      TEXT = a.OUT_CODE + "," + (a.WDEPT_NAME ?? " ") + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
-                                                      TYPENAME = "委外维修确认",
-                                                      MENUNAME = "ExtCheck",
-                                                      IDKEY = "OUT_ID"
-                                                  }).ToListAsync();
 
             result.RepDockExe = await _dbContext.Query<REP_DOCK_PLAN>(x => x.AUDITING_PLAN == "1").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
             result.RepDockExeTitle = "码头维修实施";
@@ -155,8 +127,8 @@ namespace Gksyb.Server.Services.Message
             //DateTime startTime = new DateTime(datetime.Year, datetime.Month, 1);
             GetDeviceRepairCountResponse result = new GetDeviceRepairCountResponse();
             result.deviceCount = await _dbContext.Query<DEVICE_CARD>(x => x.TYPE_NAME == "船舶" && x.AUDITING == "0").CountAsync();
-            result.repairCount = await _dbContext.Query<REP_PLAN_EXE>(x => x.DEAL_TYPE == "自修" && x.AUDITING == "0").CountAsync();
-            result.outrepairCount = await _dbContext.Query<REP_PLAN_EXE>(x => x.DEAL_TYPE == "外协" && x.AUDITING == "0").CountAsync();
+            result.repairCount = await _dbContext.Query<REP_PLAN_EXE>(x => x.DEAL_TYPE == "自修" && x.AUDITING_D == "0").CountAsync();
+            result.outrepairCount = await _dbContext.Query<REP_PLAN_EXE>(x => x.DEAL_TYPE == "外协" && x.AUDITING_D == "0").CountAsync();
             result.shiprepairCount = await _dbContext.Query<REP_DOCK_PLAN>(x => x.AUDITING_PLAN == "0").CountAsync();
 
             return result;
@@ -171,7 +143,7 @@ namespace Gksyb.Server.Services.Message
             DateTime nowTime = _dbContext.GetSysdate().Result().Value;
             DateTime startTime = new DateTime(nowTime.Year, 1, 1);
             DateTime EndTime = new DateTime(nowTime.Year, 12, 31);
-            var query = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.ACT_END_DATE.HasValue)
+            var query = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING_D == "1" && x.ACT_END_DATE.HasValue)
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new
                 {
@@ -244,7 +216,7 @@ namespace Gksyb.Server.Services.Message
 
             var startTime = new DateTime(Now.Value.Year, month, 1);
             var endTime = startTime.AddMonths(1).AddMilliseconds(-1);
-            var query = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING == "1" && x.ACT_END_DATE >= startTime && x.ACT_END_DATE <= endTime)
+            var query = await _dbContext.Query<REP_PLAN_EXE>(x => x.AUDITING_D == "1" && x.ACT_END_DATE >= startTime && x.ACT_END_DATE <= endTime)
                                         .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                                         .Select((a, b) => new
                                         {

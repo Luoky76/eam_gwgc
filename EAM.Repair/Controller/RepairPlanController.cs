@@ -16,6 +16,17 @@ namespace EAM.Repair.Controller
             _service = service;
         }
 
+        /// <summary>
+        /// 生成主键
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        [HttpPost]
+        public AjaxResult<string> CreatePrimaryKey()
+        {
+            return AjaxResult<string>.Success(GuidHelper.NewSnowflakeId().ToString(), "成功");
+        }
+
         [HttpPost]
         public async Task<AjaxResult> ComboxData()
         {
@@ -80,12 +91,21 @@ namespace EAM.Repair.Controller
         }
 
         /// <summary>
-        /// 维修计划提交
+        /// 故障报修提交
         /// </summary>
         [JsToken]
-        public async Task<AjaxResult> SubmitPlanAsync(string exeId)
+        public async Task<AjaxResult> SubmitReportAsync(string exeId)
         {
-            return await _service.SubmitPlanAsync(exeId);
+            return await _service.SubmitReportAsync(exeId);
+        }
+
+        /// <summary>
+        /// 故障核验提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SubmitAuditAsync(string exeId)
+        {
+            return await _service.SubmitAuditAsync(exeId);
         }
 
         /// <summary>
@@ -107,12 +127,21 @@ namespace EAM.Repair.Controller
         }
 
         /// <summary>
-        /// 维修计划撤销提交
+        /// 故障报修撤销提交
         /// </summary>
         [JsToken]
-        public async Task<AjaxResult> RevokePlanAsync(string exeId)
+        public async Task<AjaxResult> RevokeReportAsync(string exeId)
         {
-            return await _service.RevokePlanAsync(exeId);
+            return await _service.RevokeReportAsync(exeId);
+        }
+
+        /// <summary>
+        /// 故障核验撤销提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> RevokeAuditAsync(string exeId)
+        {
+            return await _service.RevokeAuditAsync(exeId);
         }
 
         /// <summary>

@@ -28,7 +28,6 @@
                 me.config = {
                     search: {
                         fields: [
-                            //{ display: "维修实施单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "故障申报单号", name: "_search_EXE_CODE", dbname: "EXE_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "船舶名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
@@ -37,7 +36,7 @@
                         columns: [
                             { display: "EXE_ID", name: "EXE_ID", minWidth: 100, type: "text", hide: true },
                             {
-                                display: "记录状态", name: "AUDITING_B", width: 100, type: "select", editor: {
+                                display: "记录状态", name: "AUDITING_C", width: 100, type: "select", editor: {
                                     type: "select",
                                     data: me.auditing
                                 }
@@ -52,11 +51,6 @@
                             { display: "维修处理方式", name: "DEAL_TYPE", minWidth: 100, type: "select", options: { data: me.repairhandtype } },
                             { display: "实际开工时间", name: "ACT_START_DATE", minWidth: 100, type: "text", },
                             { display: "实际完工时间", name: "ACT_END_DATE", minWidth: 100, type: "text", },
-                            
-                            //{ display: "船舶编号", name: "DEVICE_NO", minWidth: 100, type: "text", },
-                            //{ display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", },
-                            //{ display: "使用部门", name: "DEPT_NAME", minWidth: 100, type: "text", },
-                            //{ display: "负责人", name: "CHARGE_USER", minWidth: 100, type: "text", },
                             { display: "备注", name: "PLAN_MEMO", minWidth: 100, type: "text", }
                         ],
                     }
@@ -67,10 +61,6 @@
             detailWidth: window.innerWidth * 0.9,
             detailHeight: window.innerHeight * 0.9,
             repairhandtype:[],
-            auditingStatus: [
-                { ID: "0", TEXT: "未提交", VALUE: "0" },
-                { ID: "1", TEXT: "已提交", VALUE: "1" }
-            ],
             searchForm: null,
             buttons: null,
             UserInfo:null,
@@ -107,8 +97,9 @@
                     url: 'Repair/RepairPlan/ExeList',
                     parms: {
                         where: JSON.stringify({
-                            op: 'and',
-                            rules: [{ field: 'AUDITING', op: 'equal', value: "1" }]
+                            op: 'or',
+                            rules: [{ field: 'AUDITING_B', op: 'equal', value: "1" },
+                                { field: 'AUDITING_B', op: 'equal', value: "3" }]
                         })
                     },
                     sortName: '',
@@ -174,7 +165,7 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (!["1", "2", "3"].includes(row.AUDITING_B)) {
+                    if (!["1", "2", "3"].includes(row.AUDITING_C)) {
                         if (msg) {
                             LG.tip(msg);
                         }
@@ -187,7 +178,7 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (["1", "2", "3"].includes(row.AUDITING_B)) {
+                    if (["1", "2", "3"].includes(row.AUDITING_C)) {
                         if (msg) {
                             LG.tip(msg);
                         }
@@ -266,7 +257,7 @@
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]',
+                    title: '[新增]维修实施',
                     url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: true,
@@ -276,7 +267,7 @@
                     slide: false,
                     rownumbers: true,
                     onClosed: null,
-                    data: { sid: "", isView: false }
+                    data: { sid: "", isNew: true, isView: false }
                 });
             },
             submit: function () { //提交
@@ -316,7 +307,7 @@
                         width: me.detailWidth,
                         height: me.detailHeight,
                         allowClose: true,
-                        title: '查看',
+                        title: '[查看]维修实施',
                         url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo,
                         isHidden: false,
                         showMax: false,
@@ -342,7 +333,7 @@
                         width: me.detailWidth,
                         height: me.detailHeight,
                         allowClose: true,
-                        title: '[修改]',
+                        title: '[修改]维修实施',
                         url: "repair-plan-exe-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                         isHidden: false,
                         showMax: false,

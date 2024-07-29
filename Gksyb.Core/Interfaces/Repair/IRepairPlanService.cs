@@ -28,13 +28,17 @@ namespace Gksyb.Core.Interfaces.Repair
 
         Task<AjaxResult> ApprovalCompletedAsync(string sid, bool isPass);
 
-        Task<AjaxResult> SubmitPlanAsync(string exeId);
+        Task<AjaxResult> SubmitReportAsync(string exeId);
+
+        Task<AjaxResult> SubmitAuditAsync(string exeId);
 
         Task<AjaxResult> SubmitExeAsync(string exeId);
 
         Task<AjaxResult> SubmitCheckAsync(string exeId);
 
-        Task<AjaxResult> RevokePlanAsync(string exeId);
+        Task<AjaxResult> RevokeReportAsync(string exeId);
+
+        Task<AjaxResult> RevokeAuditAsync(string exeId);
 
         Task<AjaxResult> RevokeExeAsync(string exeId);
 
