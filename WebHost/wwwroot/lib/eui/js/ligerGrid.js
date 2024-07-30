@@ -181,6 +181,7 @@
         autoWidth: false, //自动列宽
         sortFix: false, //排序后缀
         useVirtualDom: true, //使用虚拟dom
+        isFilter: true, //允许筛选
         enterMoveNextControl: true //回车变tab
     };
     $.ligerDefaults.GridString = {
@@ -210,6 +211,7 @@
         headerRender: null, //标题头渲染函数 function(column)
         isAllowHide: true, //允许隐藏
         isSort: false, //允许排序
+        isFilter: true, //允许筛选
         type: null, //数据类型 string(text),date,int,float(number) 括号内是别名
         columns: null,//多级表头[{name:''}]
         frozen: false, //浮动 true false right
