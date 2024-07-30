@@ -347,7 +347,6 @@ namespace Gksyb.Workflow.Services.Workflow
         {
             var flow = _bpmns[info];
             Nodes = flow.Nodes;
-            Sequences = flow.Sequences;
         }
 
         private readonly ConcurrentDictionary<FlowExecuteInfo, FlowBpmnData> _bpmns = new();
@@ -360,10 +359,5 @@ namespace Gksyb.Workflow.Services.Workflow
         /// 任务节点
         /// </summary>
         private List<BpmnNodeService> Nodes { get; set; }
-
-        /// <summary>
-        /// 变迁
-        /// </summary>
-        private List<BpmnSequenceFlowService> Sequences { get; set; }
     }
 }
