@@ -166,10 +166,11 @@
                         url: 'button/DistinctList',
                         parms: {},
                         sortName: 'USE_COUNT',
+                        sortOrder: 'desc',
                         rowKey: null,
                         columns: [
-                            { display: '按钮编号', name: 'BTNNO', validate: { required: true }, editor: { type: 'text' } },
-                            { display: '按钮名称', name: 'BTNNAME', validate: { required: true }, editor: { type: 'text' } },
+                            { display: '按钮编号', name: 'BTNNO'},
+                            { display: '按钮名称', name: 'BTNNAME'},
                             {
                                 display: '图标', name: 'BTNICON', minWidth: 150, editor: { type: 'text' },
                                 render: function (rowdata, rowindex, value, column) {
@@ -187,8 +188,8 @@
                                     }
                                 }
                             },
-                            { display: '样式', name: 'BTNCLASS', editor: { type: 'text' } },
-                            { display: '提示信息', name: 'BTNSCRIPT', editor: { type: 'text' } }
+                            { display: '样式', name: 'BTNCLASS'},
+                            { display: '提示信息', name: 'BTNSCRIPT' }
                         ]
                     },
                     fields: [
@@ -202,15 +203,16 @@
                                 { op: "like", field: "BTNICON", type: "string" },
                                 { op: "like", field: "BTNCLASS", type: "string" },
                                 { op: "like", field: "BTNSCRIPT", type: "string" }
-                            ],
-                        },
+                            ]
+                        }
                     ],
                     callback: function (values, rows) {
-                        for (let i = 0; i < rows.length; ++i) {
-                            rows[i].APPNAME = me.appname;
-                            rows[i].MENUNO = me.menuNo;
-                            rows[i].SEQNO = (i + 1) * 10;
-                            me.grid.addEditRow(rows[i], true);
+                        for (var i = 0; i < rows.length; ++i) {
+                            var row = rows[i];
+                            row.APPNAME = me.appname;
+                            row.MENUNO = me.menuNo;
+                            row.SEQNO = (i + 1) * 10;
+                            me.grid.addEditRow(row, true);
                         }
                         me.save();
                     }

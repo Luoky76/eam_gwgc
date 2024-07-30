@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.Caching.Distributed
         {
             var retryCount = await source.GetAsync<int?>(key) ?? 0;
             if (retryCount >= limit) return AjaxResult.Error(error);
-            AjaxResult result;
+            AjaxResult result = null;
             try
             {
                 result = await func();
@@ -130,16 +130,22 @@ namespace Microsoft.Extensions.Caching.Distributed
             catch (Exception ex)
             {
                 result = AjaxResult.Error(ex.Message);
+                throw;
             }
-            if (result.IsError)
+            finally
             {
-                await source.SetAsync(key, (++retryCount), new DistributedCacheEntryOptions()
+                if (result.IsError)
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(minitues)
-                });
-                return result;
+                    await source.SetAsync(key, (++retryCount), new DistributedCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(minitues)
+                    });
+                }
+                else
+                {
+                    if (retryCount > 0) await source.RemoveAsync(key);
+                }
             }
-            if (retryCount > 0) await source.RemoveAsync(key);
             return result;
         }
 
