@@ -33,16 +33,16 @@ namespace Gksyb.Server.Services.Message
         {
             //维保部门 WSEC_DEPT ，设备名称
             GetTodoListDataCountResponse result = new GetTodoListDataCountResponse();
-            result.exe = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_A == "1" || x.AUDITING_A == "3") && x.AUDITING_B == "0").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
-            result.exeTitle = "故障核验";
-            result.exeList = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_A == "1" || x.AUDITING_A == "3") && x.AUDITING_B == "0")
+            result.exe = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_B == "1" || x.AUDITING_B == "3") && x.AUDITING_C == "0").WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName).CountAsync();
+            result.exeTitle = "维修实施";
+            result.exeList = await _dbContext.Query<REP_PLAN_EXE>(x => (x.AUDITING_B == "1" || x.AUDITING_B == "3") && x.AUDITING_C == "0")
                                                .WhereIf(allDataShow, x => x.DEPT_NAME == _user.ParentCompany.CName)
                                                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                                                .Select((a, b) => new todolist
                                                {
                                                    ID = a.EXE_ID,
                                                    TEXT = a.EXE_CODE + "," + a.WDEPT_NAME??" " + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
-                                                   TYPENAME = "故障核验",
+                                                   TYPENAME = "维修实施",
                                                    MENUNAME = "exe",
                                                    IDKEY = "EXE_ID",
                                                }).ToListAsync();

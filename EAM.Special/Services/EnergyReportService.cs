@@ -155,8 +155,8 @@ namespace EAM.Special.Services
         private async Task BeforeAdd(REPORT_ENERGY entity)
         {
             entity.MAINKEY = GuidHelper.NewSnowflakeId().ToString();
-            entity.COMPANY_ID = _userSession.Corp.CorpID;
-            entity.COMPANY_NAME = _userSession.Corp.SName;
+            entity.COMPANY_ID = "800502";
+            entity.COMPANY_NAME = "疏浚工程";
             entity.REPORT_ID = entity.MAINKEY;
             entity.ADD_DATE = Sysdate;
             entity.ADD_USERID = _userSession.UserID.ToString();
