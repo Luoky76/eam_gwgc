@@ -5,6 +5,7 @@ using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Services.Workflow.Bpmn;
 using Gksyb.Workflow.Services.Workflow.Dtos;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Concurrent;
 
 namespace Gksyb.Workflow.Services.Workflow
 {
@@ -63,7 +64,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     info.ToNode = info.NodeStatus == NodeStatus.Back ? nodeService.Id : null;
                     if (toNodeService != null) await toNodeService.Execute();
                 }
-                if (info.NodeStatus == NodeStatus.Agree)
+                if (!nodeService.SkipAutoAgree && info.NodeStatus == NodeStatus.Agree)
                 {
                     await AutoAgreeAsync(info);
                 }
@@ -287,27 +288,30 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         private async Task Init(FlowExecuteInfo info)
         {
-            if (isInit) return;
+            if (_bpmns.ContainsKey(info))
+            {
+                SetBpmn(info);
+                return;
+            }
             var flow = await _dbContext.Query<WF_FLOW>()
                 .WhereIfNotNullOrEmpty(info.FlowId, c => c.ID == info.FlowId)
                 .WhereIfNotNullOrEmpty(info.FlowCode, c => c.FLOW_CODE == info.FlowCode && c.FLAG == "1").FirstOrDefaultAsync();
             MessageException.ThrowIf(flow == null, $"找不到编号{info.FlowId ?? info.FlowCode}的流程");
+            var bpmn = new FlowBpmnData();
             var graphData = flow.FLOW_CONTENT.ToObject<FlowGraphData>();
-            Nodes.Clear();
-            Sequences.Clear();
             graphData.Nodes?.ForEach(c =>
             {
                 var serviceName = $"Gksyb.Workflow.Services.Workflow.Bpmn.{c.ServiceName}";
                 if (_serviceProvider.GetService(serviceName) is not BpmnNodeService service) return;
                 service.Init(info, c);
-                Nodes.Add(service);
+                bpmn.Nodes.Add(service);
             });
             graphData.Edges?.ForEach(c =>
             {
                 var service = _serviceProvider.GetService<BpmnSequenceFlowService>();
                 if (service is null) return;
-                service.Init(info, c, Nodes);
-                Sequences.Add(service);
+                service.Init(info, c, bpmn.Nodes);
+                bpmn.Sequences.Add(service);
             });
             info.Users = await FindUsers(info.Operators);
             info.CorpId = string.IsNullOrWhiteSpace(info.CorpId) ? _user.Corp?.CorpID : info.CorpId;
@@ -322,7 +326,8 @@ namespace Gksyb.Workflow.Services.Workflow
             info.FlowGroup = flow.FLOW_GROUP;
             info.Title = flow.FLOW_TITLE;
             info.KeyName = flow.KEY_NAME;
-            isInit = true;
+            _bpmns.TryAdd(info, bpmn);
+            SetBpmn(info);
         }
 
         /// <summary>
@@ -335,7 +340,16 @@ namespace Gksyb.Workflow.Services.Workflow
             return await _userService.Find(users, true);
         }
 
-        private bool isInit = false;
+        /// <summary>
+        /// 设置当前执行对象对应的流程数据
+        /// </summary>
+        private void SetBpmn(FlowExecuteInfo info)
+        {
+            var flow = _bpmns[info];
+            Nodes = flow.Nodes;
+        }
+
+        private readonly ConcurrentDictionary<FlowExecuteInfo, FlowBpmnData> _bpmns = new();
 
         private BpmnStartEventService StartNode => Nodes.FirstOrDefault(c => c is BpmnStartEventService) as BpmnStartEventService;
 
@@ -344,11 +358,6 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <summary>
         /// 任务节点
         /// </summary>
-        private List<BpmnNodeService> Nodes { get; set; } = new List<BpmnNodeService>();
-
-        /// <summary>
-        /// 变迁
-        /// </summary>
-        private List<BpmnSequenceFlowService> Sequences { get; set; } = new List<BpmnSequenceFlowService> { };
+        private List<BpmnNodeService> Nodes { get; set; }
     }
 }

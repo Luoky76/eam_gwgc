@@ -248,7 +248,9 @@ namespace Gksyb.Core.Auth
                     new Claim(ClaimTypes.Sid, Token),
                     new Claim(ClaimTypes.NameIdentifier, UserID.ToString()),
                     new Claim(ClaimTypes.Name, UserName),
-                    new Claim(ClaimTypes.GroupSid, Group ??"")
+                    new Claim(ClaimTypes.GroupSid, Group ??""),
+                    new Claim(ClaimTypes.DateOfBirth, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")),
+                    new Claim(ClaimTypes.UserData, $"【{Display}_{Group}_{Corp?.CName}】，IP：{IP}，UA：{UserAgent}")
                }, "GKSYB")
             {
                 Label = RealName
@@ -314,24 +316,31 @@ namespace Gksyb.Core.Auth
         }
 
         /// <summary>
-        /// 保存
+        /// 保存并返回票据
         /// </summary>
         /// <returns></returns>
-        public async Task<UserResponse> SaveAsync(SysContextOptions options)
+        public async Task<UserResponse> SaveToTicketAsync()
         {
+            var configuration = HttpContext.RequestServices.GetService<IConfiguration>();
+            var version = configuration.GetValue<string>($"{OptionName.SysContext}:{nameof(SysContextOptions.TicketVersion)}");
+            var hours = configuration.GetValue<int?>($"{OptionName.SysContext}:{MenuAppname}_{nameof(SysContextOptions.RememberHours)}") ??
+                configuration.GetValue<int?>($"{OptionName.SysContext}:{nameof(SysContextOptions.RememberHours)}") ?? 0;
+            var expirationType = configuration.GetValue<string>($"{OptionName.SysContext}:{MenuAppname}_{nameof(ExpirationType)}") ??
+                configuration.GetValue<string>($"{OptionName.SysContext}:{nameof(ExpirationType)}");
             Token = GuidHelper.NewShortId();
-            Version = options.TicketVersion;
+            Version = version;
             await SaveAsync();
             HttpContext.Current.SetClientID(Token);
             var ticket = new string[]
             {
-                $"{DateTime.Now.AddHours(options.RememberHours):yyyyMMddHHmmss}",
+                $"{DateTime.Now.AddHours(hours):yyyyMMddHHmmss}",
                 Hash(UserAgent),
                 IP,
-                options.TicketVersion,
+                version,
                 UserName,
                 MenuAppname,
                 RoleAppName,
+                expirationType,
                 ExtendData.ToJson()
             }.ToStr("@#");
             ticket = CryptographyHelper.EncryptSM4(ticket, KEY);
@@ -344,7 +353,7 @@ namespace Gksyb.Core.Auth
         public static UserSession ParseTicket(string ticket, string version)
         {
             var ticketArray = CryptographyHelper.DecryptSM4(ticket, KEY).Split("@#");
-            MessageException.ThrowIf(ticketArray.Length != 8, "无效票据");
+            MessageException.ThrowIf(ticketArray.Length != 9, "无效票据");
             MessageException.ThrowIf(version != ticketArray[3], "无效票据");
             var expiration = DateTime.ParseExact(ticketArray[0], "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
             MessageException.ThrowIf(expiration < DateTime.Now, "票据过时");
@@ -356,7 +365,8 @@ namespace Gksyb.Core.Auth
                 UserName = ticketArray[4],
                 MenuAppname = ticketArray[5],
                 RoleAppName = ticketArray[6],
-                ExtendData = ticketArray[7].ToObject<Dictionary<string, object>>()
+                ExpirationType = ticketArray[7],
+                ExtendData = ticketArray[8].ToObject<Dictionary<string, object>>()
             };
         }
 
@@ -365,6 +375,12 @@ namespace Gksyb.Core.Auth
         /// </summary>
         [JsonIgnore]
         public DateTime? Expiration { get; set; }
+
+        /// <summary>
+        /// 过期方式 1:绝对过期 其他:滑动过期
+        /// </summary>
+        [JsonIgnore]
+        public string ExpirationType { get; set; }
 
         /// <summary>
         /// 密码加密

@@ -28,23 +28,25 @@ namespace Gksyb.Server.Job
             if (_quartzTask == null || string.IsNullOrWhiteSpace(_quartzTask.TaskData)) return;
             _apiInvoke = _quartzTask.TaskData.ToObject<ApiInvoke>();
             if (string.IsNullOrWhiteSpace(_apiInvoke.Url)) return;
+            _logger.LogInformation(_logPath, $"准备向{_apiInvoke.Url}发送：{_apiInvoke.Content}");
             var response = await _apiInvoke.Url.SendAsync(_apiInvoke.Verb, _apiInvoke.HttpContent).ReceiveString();
+            _logger.LogInformation(_logPath, $"接到{_apiInvoke.Url}的返回：{response}");
             if (!string.IsNullOrWhiteSpace(_quartzTask.TaskErrorMatch) && Regex.IsMatch(response, _quartzTask.TaskErrorMatch))//符合错误匹配
             {
-                ErrorHandle(response);
+                await ErrorHandle(response);
             }
         }
 
         protected override async Task ErrorHandle(Exception ex)
         {
-            ErrorHandle(ex.ToString());
+            await ErrorHandle(ex.ToString());
             await base.ErrorHandle(ex);
         }
 
         /// <summary>
         /// 错误处理
         /// </summary>
-        private void ErrorHandle(string content)
+        private async Task ErrorHandle(string content)
         {
             if (_apiInvoke == null)
             {
@@ -52,18 +54,19 @@ namespace Gksyb.Server.Job
             }
             var _methods = (_quartzTask.TaskErrorMethod ?? "").Split(";").Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
             var type = string.IsNullOrWhiteSpace(_apiInvoke.ErrorType) ? "API" : _apiInvoke.ErrorType;
-            foreach (var method in _methods)
+            await Parallel.ForEachAsync(_methods, async (method, token) =>
             {
                 try
                 {
                     var serviceType = Type.GetType(method, false);
-                    var noticeHandle = _serviceProvider.GetService(serviceType) as INoticeHandle;
-                    _ = noticeHandle?.Excute(type, content);
+                    if (_serviceProvider.GetService(serviceType) is INoticeHandle noticeHandle)
+                        await noticeHandle.Excute(type, content);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError(_logPath, $"{ex}");
                 }
-            }
+            });
         }
     }
 

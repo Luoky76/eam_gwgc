@@ -115,12 +115,6 @@ namespace Gksyb.Server.Controllers.Auth
         {
             return AjaxResult.Success(await _commonService.GetStoreAsync<string>(key), key);
         }
-
-        public async Task<List<string>> GetDeptList(string dept)
-        {
-            var result = await _commonService.GetDeptList(dept);
-            return result;
-        }
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

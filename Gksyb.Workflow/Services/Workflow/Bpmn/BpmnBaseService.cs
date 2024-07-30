@@ -100,7 +100,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                 var group = nodes.Where(c => c.NODE_NAME == nodeName).ToList();
                 funcData.Add(key, () => group.Count < 1 ? 0 : group.Count(c => c.NODE_STATUS == NodeStatus.Agree) * 1.0 / group.Count);
             }
-            if (expression.Contains("{通过率}"))
+            if (expression.Contains("{通过率}"))//参与审批人数的通过率（同意的人数/总人数）
             {
                 funcData.Add("{通过率}", () =>
                 {
@@ -108,7 +108,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
                     return nodes.Count < 1 ? 0 : nodes.Count(c => c.NODE_STATUS == NodeStatus.Agree) * 1.0 / nodes.Count;
                 });
             }
-            if (expression.Contains("{节点通过率}"))
+            if (expression.Contains("{节点通过率}"))//任务节点的通过率（走过的上级节点数/上级总节点数）
             {
                 funcData.Add("{节点通过率}", () =>
                 {

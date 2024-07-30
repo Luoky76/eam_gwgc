@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -257,6 +258,11 @@ namespace Gksyb.Common
                 ms.Position = 0;
                 using var reader = new StreamReader(ms, source.GetEncoding());
                 json = await reader.ReadToEndAsync();
+            }
+            catch (BadHttpRequestException ex)
+            {
+                var logger = source.HttpContext.RequestServices.GetRequiredService<ILogger<HttpRequest>>();
+                logger.LogError(new LogPath("Exception"), ex.ToString());
             }
             finally
             {

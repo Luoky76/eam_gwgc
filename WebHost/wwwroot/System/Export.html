@@ -240,8 +240,11 @@
                 $("#export-div").html(tableHtml);
                 switch (exporttype) {
                     case "xlsx":
-                        var dataURI = liger.ooxml.tableToExcel($("#export-table"), skipStyle, me.dialogData.callBack, options);
-                        me.saveAs(dataURI, exporttype);
+                        liger.ooxml.tableToExcel($("#export-table"), skipStyle, function (workbook) {
+                            if (me.dialogData.callBack) me.dialogData.callBack(workbook);
+                            var dataURI = workbook.toDataURL();
+                            me.saveAs(dataURI, exporttype);
+                        }, options);
                         break;
                     case "pdf":
                         liger.toPdf($("#export-table"), options, function (data) {

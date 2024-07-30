@@ -72,23 +72,6 @@ namespace Chloe
         }
 
         /// <summary>
-        /// 复制连接
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static IDbContext Clone(this IDbContext source)
-        {
-            if (source is DbContext dbContext)
-            {
-                using IDbConnection dbConnection = dbContext.DatabaseProvider.CreateConnection();
-                var clone = DbContextFactory.CreateContext(dbContext.DatabaseProvider.DatabaseType, dbConnection.ConnectionString);
-                source.SetItem(GuidHelper.NewShortId(), clone);
-                return clone;
-            }
-            return null;
-        }
-
-        /// <summary>
         /// 清除所有更新列
         /// </summary>
         public static void ClearModifyFields<T>(this IDbContext source, T entity)

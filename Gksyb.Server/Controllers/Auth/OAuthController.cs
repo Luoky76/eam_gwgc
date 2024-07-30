@@ -182,24 +182,6 @@ namespace Gksyb.Server.Controllers.Auth
                 _logger.LogInformation(_logPath, $"接到来自{ip}的【UserInfo】请求，请求参数：{json},应答数据：{response}");
             }
         }
-
-        /// <summary>
-        /// 单点登录
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        [AllowAnonymous]
-        public async Task<AjaxResult> Check([FromHeader] string code, [FromHeader] string appName = "EAM")
-        {
-            var userName = await _service.GetUserNameAsync(code);
-            var request = new LoginRequest()
-            {
-                Username = userName,
-                IP = Request.GetRealIP(),
-                UserAgent = Request.GetUserAgent()
-            };
-            return await _service.OauthAsync(request, appName);
-        }
     }
 }
 #pragma warning restore CA1822 // 将成员标记为 static 会使路由不可访问

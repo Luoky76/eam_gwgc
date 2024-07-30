@@ -1,9 +1,8 @@
-﻿using Flurl.Http;
+﻿using Gksyb.Common.Mvc.Interface;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
-using Gksyb.Model.Dtos;
 using Gksyb.Model.Grid;
 using Gksyb.Server.Controllers.Auth.Dtos;
 using Microsoft.Extensions.Caching.Distributed;
@@ -11,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Gksyb.Server.Services.Auth
 {
-    public class OAuthService : IBaseService
+    public class OAuthService : IBaseService, IWhitelistService
     {
         private const int ShortExpiration = 30;
         private const string KEY = OAuthRequest<object>.KEY;
@@ -20,15 +19,13 @@ namespace Gksyb.Server.Services.Auth
         private readonly IDistributedCache _distributedCache;
         private readonly UserSession _user;
         private readonly SysContextOptions _options;
-        private readonly IAuthService _authService;
 
-        public OAuthService(IDbContext dbContext, IDistributedCache distributedCache, UserSession userSession, IOptions<SysContextOptions> sysContext, IAuthService authService)
+        public OAuthService(IDbContext dbContext, IDistributedCache distributedCache, UserSession userSession, IOptions<SysContextOptions> sysContext)
         {
             _dbContext = dbContext;
             _distributedCache = distributedCache;
             _user = userSession;
             _options = sysContext.Value;
-            _authService = authService;
         }
 
         /// <summary>
@@ -217,47 +214,10 @@ namespace Gksyb.Server.Services.Auth
             user.Corp = corps.FirstOrDefault(c => c.CorpID == corpid) ?? corps[0];
         }
 
-        /// <summary>
-        /// 检查
-        /// </summary>
-        public async Task<SYS_OAUTH> Check<T>(OAuthRequest<T> request)
+        /// <inheritdoc/>
+        public async Task<string> GetAsync(string appid)
         {
-            var model = await _dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == request.AppId && c.FLAG == "1").FirstOrDefaultAsync();
-            MessageException.ThrowIf(model == null, $"找不到{request.AppId}的记录");
-            request.Check(model.SECRET, model.IP);
-            return model;
-        }
-
-        public async Task<string> GetAuthorizeUrlAsync()
-        {
-            var url = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "AuthorizeUrl" && c.CODE_EN == "AuthorizeUrl").Select(c => c.CODE_CN).FirstOrDefaultAsync();
-            return url.TrimEnd('/');
-        }
-
-        public async Task<string> GetUserNameAsync(string code)
-        {
-            var url = await GetAuthorizeUrlAsync();
-            url = $"{url}/oauth/userinfo";
-            var response = await url.PostUrlEncodedAsync(new { ticketCode = code }).ReceiveString();
-            var result = response.ToObject<AjaxResult<dynamic>>();
-            if (result.IsError) throw new MessageException(result.Message);
-            return result.Data.WorkCode;
-        }
-
-        /// <summary>
-        /// 单点登录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> OauthAsync(LoginRequest request, string appName = "EAM")
-        {
-            var user = await _dbContext.Query<CF_USER>().Where(c => c.WORK_CODE == request.Username).FirstOrDefaultAsync();
-            if (user == null) return AjaxResult.Error("-1");
-            request.Username = user.LOGINNAME;
-            request.Password = user.LOGINPASSWORD;
-            request.MenuAppname = appName;
-            var result = await _authService.LoginAsync(request, null, false);
-            if (result.IsError) return result;
-            return result;
+            return await _dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == appid).Select(c => c.IP).FirstOrDefaultAsync();
         }
     }
 }

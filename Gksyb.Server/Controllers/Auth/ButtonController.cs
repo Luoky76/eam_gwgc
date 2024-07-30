@@ -69,5 +69,15 @@ namespace Gksyb.Server.Controllers.Auth
             appname.CheckNotNullOrWhiteSpace("应用名称");
             return await _service.Clear(menuNo, appname);
         }
+
+        /// <summary>
+        /// 获取去重列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult<GridData>> DistinctListAsync(GridRequest request)
+        {
+            return AjaxResult<GridData>.Success(await _service.DistinctListAsync(request));
+        }
     }
 }

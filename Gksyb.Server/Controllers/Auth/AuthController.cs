@@ -8,9 +8,12 @@ using Gksyb.Server.Services.System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Globalization;
+using System.Security.Claims;
 
 namespace Gksyb.Server.Controllers.Auth
 {
@@ -141,7 +144,7 @@ namespace Gksyb.Server.Controllers.Auth
             var times = await smsService.CheckCodeAsync(phone, code);
             MessageException.ThrowIf(times < 0, $"验证码已失效，请重新登录");
             if (times > 0) return AjaxResult.Success($"验证失败，剩余次数:{times}", "99");
-            await service.SetUserImeiAsync(model.Account, imei);
+            await service.SetUserImeiAsync(model);
             await distributedCache.RemoveAsync(imei);
             return AjaxResult.Success(model.Response);
         }
@@ -228,24 +231,30 @@ namespace Gksyb.Server.Controllers.Auth
             var result = await ValidTicket(ticket);
             if (result.IsError) return result;
             var user = result.Data;
-            await distributedCache.SetStringAsync(ticket, "1", new DistributedCacheEntryOptions()
-            {
-                AbsoluteExpiration = user.Expiration
-            });
-            var request = new LoginRequest()
+            var request = new LoginRequest
             {
                 Username = user.UserName,
                 MenuAppname = user.MenuAppname,
                 RoleAppname = user.RoleAppName,
                 IP = Request.GetRealIP(),
-                UserAgent = Request.GetUserAgent()
+                UserAgent = Request.GetUserAgent(),
+                Source = "刷新Token"
             };
             request.Password = await service.GetPasswordAsync(request.Username);
-            request.Source = "刷新Token";
-            return await service.LoginAsync(request, userSession =>
+            var response = await service.LoginAsync(request, userSession =>
             {
                 userSession.ExtendData = user.ExtendData;
             }, false);
+            if(user.ExpirationType == "1" && response.Data is UserResponse userResponse)//绝对过期处理
+            {
+                userResponse.Ticket = ticket;
+                return response;
+            }
+            await distributedCache.SetStringAsync(ticket, "1", new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpiration = user.Expiration
+            });
+            return response;
         }
 
         /// <summary>
@@ -320,8 +329,8 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>();
                 var user = UserSession.ParseTicket(ticket, options.Value.TicketVersion);
-                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent, "无效票据");
-                MessageException.ThrowIf(Request.GetRealIP() != user.IP, "无效票据");
+                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent 
+                    && Request.GetRealIP() != user.IP, "无效票据");
                 var distributedCache = HttpContext.RequestServices.GetService<IDistributedCache>();
                 MessageException.ThrowIf(await distributedCache.GetStringAsync(ticket) == "1", "无效票据");
                 return AjaxResult<UserSession>.Success(user);
@@ -352,6 +361,19 @@ namespace Gksyb.Server.Controllers.Auth
                 .OrderByDescending(c => c.ServiceType.FullName).Select(c => $"Lifetime = {c.Lifetime}, ServiceType = {c.ServiceType}, ImplementationType = {c.ImplementationType}");
             if (!string.IsNullOrWhiteSpace(search)) services = services.Where(c => c.Contains(search, StringComparison.OrdinalIgnoreCase));
             return AjaxResult.Success(services);
+        }
+
+        [GksybAuthorize(IsSuper = true)]
+        public AjaxResult Connections([FromServices] IHubContext<BroadcastChannelHub, IBroadcastChannelClient> hubContext)
+        {
+            var connections = hubContext.Clients.All.GetConnections();
+            var msgs = connections.Select(c =>
+            {
+                var loginDate = c.User.FindFirstValue(ClaimTypes.DateOfBirth);
+                var duration = DateTime.Now.Subtract(DateTime.ParseExact(loginDate, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)).ToString(@"dd\.hh\:mm\:ss");
+                return $"{c.ConnectionId} {c.User.FindFirstValue(ClaimTypes.UserData)}，登录时间：{loginDate}，时长：{duration}";
+            });
+            return AjaxResult.Success(msgs);
         }
 
         [GksybAuthorize(IsSuper = true)]

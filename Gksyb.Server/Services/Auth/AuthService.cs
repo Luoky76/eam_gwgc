@@ -118,42 +118,44 @@ namespace Gksyb.Server.Services.Auth
             user.SUPPLIERID ??= (user.LASTLOGINTIME.Value - DateTime.UnixEpoch).TotalSeconds.CastTo<long>();
             await _dbContext.UpdateAsync(user);
 
-            var userResponse = await userSession.SaveAsync(_options);
+            var userResponse = await userSession.SaveToTicketAsync();
             AjaxResult result = null;
             if (handle != null)
             {
-                var lastImei = await _dbContext.Query<CF_USER_PORT>().Where(c => c.LOGINNAME == user.LOGINNAME && c.APPNAME == _options.UserAppName & c.OPTYPE == "IMEI")
+                var lastImei = await _dbContext.Query<CF_USER_PORT>().Where(c => c.LOGINNAME == user.LOGINNAME && c.APPNAME == _options.UserAppName && c.REMARK == request.MenuAppname & c.OPTYPE == "IMEI")
                     .Select(c => c.CORPID).FirstOrDefaultAsync();
                 var phone = (user.PHONE ?? "").Split(',').DistinctAndOrderBy()
                     .Where(c => c.IsMobileNumber()).Select(c => new KeyValueItem(c, $"{c[..3]}****{c[7..]}")).ToList();
                 result = await handle(new LoginResponse()
                 {
                     Account = userSession.UserName,
+                    MenuAppname = request.MenuAppname,
                     IMEI = request.IMEI,
                     LastIMEI = lastImei,
                     IsAuth = _options.SmsAuth,
                     Phone = phone,
-                    Response = userResponse,
-                    Session = userSession
+                    Response = userResponse
                 });
             }
             return result ?? AjaxResult.Success(userResponse);
         }
 
         /// <inheritdoc/>
-        public async Task SetUserImeiAsync(string account, string imei)
+        public async Task SetUserImeiAsync(LoginResponse request)//string account, string imei
         {
-            var now = (await _dbContext.GetSysdate()).Value.ToString("yyyy-MM-dd HH:mm:ss");
+            var now = await _dbContext.GetSysdate();
             var entity = new CF_USER_PORT()
             {
-                LOGINNAME = account,
+                LOGINNAME = request.Account,
                 APPNAME = _options.UserAppName,
-                OPTYPE = "IMEI"
+                REMARK = request.MenuAppname,
+                OPTYPE = "IMEI",
+                CREATEDATE = now
             };
             _dbContext.TrackEntity(entity);
-            entity.CORPID = imei;
-            entity.REMARK = now;
-            await _dbContext.InsertOrUpdateAsync(entity, c => c.LOGINNAME == entity.LOGINNAME && c.APPNAME == entity.APPNAME & c.OPTYPE == entity.OPTYPE);
+            entity.CORPID = request.IMEI;
+            entity.MODIFYDATE = now;
+            await _dbContext.InsertOrUpdateAsync(entity, c => c.LOGINNAME == entity.LOGINNAME && c.APPNAME == entity.APPNAME && c.REMARK == entity.REMARK && c.OPTYPE == entity.OPTYPE);
         }
 
         /// <inheritdoc/>

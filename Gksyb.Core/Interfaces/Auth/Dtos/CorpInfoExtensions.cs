@@ -38,7 +38,8 @@ namespace Gksyb.Core.Interfaces.Auth
                 SName = source.CORP_SNAME,
                 CName = source.CNAME,
                 CorpParentID = source.CORPPARENTID,
-                ClassFlag = source.CLASSFLAG
+                ClassFlag = source.CLASSFLAG,
+                TreeNode = source.CORP_PATH
             };
         }
 
@@ -52,7 +53,8 @@ namespace Gksyb.Core.Interfaces.Auth
             SName = corp.CORP_SNAME,
             CName = corp.CNAME,
             CorpParentID = corp.CORPPARENTID,
-            ClassFlag = corp.CLASSFLAG
+            ClassFlag = corp.CLASSFLAG,
+            TreeNode = corp.CORP_PATH
         };
     }
 }

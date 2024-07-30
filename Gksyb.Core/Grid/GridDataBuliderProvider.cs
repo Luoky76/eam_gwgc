@@ -143,6 +143,7 @@ namespace Gksyb.Core.Grid
                 paraname ??= type.Name;
                 var parameterExpressions = new ParameterExpression[] { Expression.Parameter(typeof(T), paraname) };
                 source = source.Where(request.Where, parameterExpressions);
+                request.RemoveTableName(type.Name);
                 if (!string.IsNullOrEmpty(request.GroupBy))//分组处理 限制非常大请考虑直接在Query查询
                 {
                     var groupExpression = DynamicExpressionParser.ParseLambda(parameterExpressions, null, $"new ({request.GroupBy})");
@@ -258,6 +259,20 @@ namespace Gksyb.Core.Grid
             var rule = request.Where.ToObject<FilterGroup>()?.GetRule(name);
             if (rule == null) return default;
             return rule.Value.CastTo<T>(default);
+        }
+
+        /// <summary>
+        /// 移除类似TABLE.的表名前缀
+        /// </summary>
+        private static void RemoveTableName(this GridRequest request, string name)
+        {
+            var regx = new Regex($@"\b({name}\.)\b", RegexOptions.IgnoreCase);
+            if (!string.IsNullOrWhiteSpace(request.SortName))
+                request.SortName = regx.Replace(request.SortName, "");
+            if (!string.IsNullOrWhiteSpace(request.GroupBy))
+                request.GroupBy = regx.Replace(request.GroupBy, "");
+            if (!string.IsNullOrWhiteSpace(request.Columns))
+                request.Columns = regx.Replace(request.Columns, "");
         }
     }
 }

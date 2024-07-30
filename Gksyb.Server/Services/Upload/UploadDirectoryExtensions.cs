@@ -38,13 +38,6 @@ namespace Microsoft.AspNetCore.Builder
                 if (ctx.File.PhysicalPath.Contains($"{IFormFileExtensions.Public}\\", StringComparison.OrdinalIgnoreCase)) return;//带有Public的文件夹不验证权限
                 if (ctx.Context.Request.Headers["Passport"] == Passport) return;//有通行证的不验证权限
                 var ip = ctx.Context.Request.GetRealIP();
-
-                if (ctx.Context.Request.Path != null && ctx.Context.Request.Path.ToString().Contains("UploadDirectory"))
-                {
-                    var context = ctx.Context.RequestServices.GetService<IDbContext>();
-                    context.DBLog("请求附件", $"请求ip：{ip}", $"附件路径：{ctx.Context.Request.Host} {ctx.Context.Request.Path}").Result();
-                }
-
                 if (Whitelist.Any(pattern => Regex.IsMatch(ip, pattern))) return;
                 if (Valid(ctx.Context, ctx.File)) return;
                 ctx.Context.Response.ClearWithStatusCode();

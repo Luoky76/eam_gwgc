@@ -114,6 +114,34 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
+        /// 获取去重列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> DistinctListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SYS_BUTTON>()
+                .GroupBy(x => new {
+                    x.BTNNO,
+                    x.BTNNAME,
+                    x.BTNICON,
+                    x.BTNCLASS,
+                    x.BTNSCRIPT
+                })
+                .Select(x => new
+                {
+                    USE_COUNT = Sql.Count(),
+                    x.BTNNO,
+                    x.BTNNAME,
+                    x.BTNICON,
+                    x.BTNCLASS,
+                    x.BTNSCRIPT
+                })
+                .Where(x => x.USE_COUNT > 1)
+                .GetGridData(request);
+        }
+
+        /// <summary>
         /// 新增前
         /// </summary>
         /// <param name="entity"></param>

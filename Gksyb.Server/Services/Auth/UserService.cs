@@ -128,7 +128,7 @@ namespace Gksyb.Server.Services.Auth
             sysdate = await _dbContext.GetSysdate();
             var messages = new List<string>();
             var result = await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.REALNAME, c.PHONE, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS, c.USER_STATE, c.WORK_CODE },
+                c => new { c.REALNAME, c.PHONE, c.FLAG, c.DEPARTCODE, c.STATION, c.CLASS },
                 c => a => a.USERID == c.USERID
                 , BeforeAdd, BeforeUpdate, BeforeDelete, false, async (added, updated, deleted) =>
                 {

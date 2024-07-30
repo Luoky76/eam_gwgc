@@ -20,6 +20,7 @@ namespace Gksyb.Core.Filter
             { "{CurrentCorp}", () => User?.Corp.CorpID },
             { "{CurrentStations}", () => User?.Corp.Station },
             { "{CurrentParentCompany}", () => User?.ParentCompany?.CorpID },
+            { "{CurrentCorpTreeNode}", () => User?.Corp.TreeNode },
             { "{CurrentOpenid}", () => User?.Openid },
             { "{IsAdmin}", () => User?.IsAdmin.ToString() == "True" ? "1" : "0" },
         };

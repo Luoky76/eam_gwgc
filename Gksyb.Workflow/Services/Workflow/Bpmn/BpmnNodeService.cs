@@ -241,7 +241,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
-        /// 获取来源任务节点的名称
+        /// 获取来源任务节点的名称，只取所有变迁的上一个任务节点
         /// </summary>
         protected static List<string> GetPreviousNodeNames(List<BpmnSequenceFlowService> inputs)
         {
@@ -249,7 +249,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             PreviousTaskForEach(inputs, c =>
             {
                 nodes.Add(c.Name);
-                return false;
+                return false;//通过返回false，追到任务节点，这个变迁就停止追踪
             });
             return nodes;
         }
@@ -371,6 +371,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             var serviceName = Operators;
             if (string.IsNullOrWhiteSpace(serviceName)) return new List<UserInfo>();
             var service = _serviceProvider.GetService(a => (a.ImplementationType ?? a.ServiceType).FullName == serviceName) as IFindOperators;
+            await SetFormData();
             return await service.Find(_info);
         }
 
@@ -442,6 +443,17 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             get
             {
                 return GetProperties("autoNext").CastTo(false);
+            }
+        }
+
+        /// <summary>
+        /// 跳过自动同意
+        /// </summary>
+        public bool SkipAutoAgree
+        {
+            get
+            {
+                return GetProperties("skipAutoAgree").CastTo(false);
             }
         }
 
