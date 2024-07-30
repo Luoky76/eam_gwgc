@@ -36,7 +36,6 @@
 		<PackageReference Include="Serilog.Sinks.Async" Version="2.0.0" />
 		<PackageReference Include="Serilog.Sinks.Map" Version="2.0.0" />
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.5.0" />
-		<!--<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.150" />-->
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.32" />
 		<PackageReference Include="StackExchange.Redis" Version="2.8.0" />
 		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.3" />
