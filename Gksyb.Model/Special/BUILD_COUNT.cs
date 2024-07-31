@@ -277,5 +277,11 @@ namespace Gksyb.Model
         /// </summary>
         [Description("主机累计时间")]
         public decimal? MAIN_ENGINE_CUMTIME { get; set; }
+
+        /// <summary>
+        /// 作业量（万元）
+        /// </summary>
+        [Description("作业量（万元）")]
+        public decimal? WORK_INCOME { get; set; }
     }
 }

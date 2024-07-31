@@ -55,6 +55,13 @@
                                 display: "船舶名称", name: "DEVICE_NAME", minWidth: 100, type: "text"
                             },
                             {
+                                display: "作业量（万元）", name: "WORK_INCOME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                {
+                                    type: 'sum',
+                                    align: 'center',
+                                }
+                            },
+                            {
                                 display: "施工时间（小时:分钟）", columns: [
                                     {
                                         display: "作业时间", name: "WORK_TIME", minWidth: 100, type: "duration", totalSummary:

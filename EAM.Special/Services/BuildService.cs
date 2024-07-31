@@ -91,7 +91,8 @@ namespace EAM.Special.Services
                     a.MOORING_RUNTIME,
                     a.MOORING_CUMTIME,
                     a.MAIN_ENGINE_RUNTIME,
-                    a.MAIN_ENGINE_CUMTIME
+                    a.MAIN_ENGINE_CUMTIME,
+                    a.WORK_INCOME
                 })
                 .OrderByDesc(a => a.STARTDATE)
                 .GetGridData(request);
@@ -147,7 +148,8 @@ namespace EAM.Special.Services
                     c.MOORING_RUNTIME,
                     c.MOORING_CUMTIME,
                     c.MAIN_ENGINE_RUNTIME,
-                    c.MAIN_ENGINE_CUMTIME
+                    c.MAIN_ENGINE_CUMTIME,
+                    c.WORK_INCOME
                 },
                 c => a => a.BUILD_ID == c.BUILD_ID, BeforeAdd, BeforeUpdate, BeforeDelete, false);
         }
@@ -356,6 +358,7 @@ namespace EAM.Special.Services
                     a.MAIN_CUMTIME,
                     a.MOORING_RUNTIME,
                     a.MOORING_CUMTIME,
+                    a.WORK_INCOME
                 }).GetGridData(request);
             var dataList = JsonConvert.DeserializeObject<List<BUILDCOUNT>>(filterData.Rows.ToJson());
 
@@ -397,7 +400,8 @@ namespace EAM.Special.Services
                 LUBRICATE_STOCK = c.Sum(item => item.LUBRICATE_STOCK ?? 0m),
                 MAIN_ENGINE_RUNTIME = c.Sum(item => item.MAIN_ENGINE_RUNTIME ?? 0m),
                 MAIN_RUNTIME = c.Sum(item => item.MAIN_RUNTIME ?? 0m),
-                MOORING_RUNTIME = c.Sum(item => item.MOORING_RUNTIME ?? 0m)
+                MOORING_RUNTIME = c.Sum(item => item.MOORING_RUNTIME ?? 0m),
+                WORK_INCOME = c.Sum(item => item.WORK_INCOME ?? 0m)
             }).ToList();
             GridData gridData = new GridData()
             {

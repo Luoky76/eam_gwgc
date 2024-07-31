@@ -776,5 +776,12 @@ namespace EAM.Special.DTO
                 }
             }
         }
+
+        /// <summary>
+        /// 作业量（万元）
+        /// </summary>
+        [ImporterHeader(Name = "作业量（万元）")]
+        [Display(Name = "作业量（万元）")]
+        public decimal? WORK_INCOME { get; set; }
     }
 }

@@ -47,7 +47,6 @@
                     },
                     grid: {
                         columns: [
-                            //{ display: "主键", name: "BUILD_ID", minWidth: 100, type: "text", hide: true },
                             {
                                 display: "日期", name: "START_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM" },
                                 totalSummary: { render: function (column, data) { return "<span style='color:red'>&emsp;合计：</span>" } }
@@ -64,6 +63,13 @@
                                     },
                                     {
                                         display: "船方", name: "SHIPNUM", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
+                                        {
+                                            type: 'sum',
+                                            align: 'center',
+                                        }
+                                    },
+                                    {
+                                        display: "作业量（万元）", name: "WORK_INCOME", minWidth: 100, type: "float", editor: { type: 'float' }, totalSummary:
                                         {
                                             type: 'sum',
                                             align: 'center',
