@@ -131,6 +131,7 @@ namespace Gksyb.Server.Services.Common
             var entity = await GetViewAsync(dbContext, view)
                 ?? throw new MessageException($"视图{view}不存在");
             var dbContextLind = await dbContext.GetDbContext(entity.DataSource);
+            var doTransation = false;
             try
             {
                 var paramPrefix = dbContextLind.GetParamPrefix();
@@ -205,55 +206,58 @@ namespace Gksyb.Server.Services.Common
                     }
                 });
                 var arraySql = view.Split(';').Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
-                await dbContextLind.UseTransactionAsync(async () =>
+                doTransation = (!dbContextLind.Session.IsInTransaction) && (arraySql.Length > 1);
+                if (doTransation) dbContextLind.Session.BeginTransaction();
+                for (int i = 0, j = (arraySql.Length - 1); i <= j; i++)
                 {
-                    for (int i = 0, j = (arraySql.Length - 1); i <= j; i++)
+                    var commandType = CommandType.Text;
+                    var sql = arraySql[i];
+                    var parameters = listPara.FindAll(c => sql.Contains(c.Name));
+                    if (sql.StartsWith("StoredProcedure"))
                     {
-                        var commandType = CommandType.Text;
-                        var sql = arraySql[i];
-                        var parameters = listPara.FindAll(c => sql.Contains(c.Name));
-                        if (sql.StartsWith("StoredProcedure"))
-                        {
-                            sql = sql.Replace("StoredProcedure", "");
-                            sql = sql[..sql.IndexOf("(")].Trim();
-                            commandType = CommandType.StoredProcedure;
-                        }
-                        parameters.ForEach(c =>
-                        {
-                            if (c.Direction == ParamDirection.InputOutput) c.Direction = ParamDirection.Input;
-                            if (commandType == CommandType.StoredProcedure && c.Direction == ParamDirection.Input && !c.Name.EndsWith("_in"))
-                            {
-                                c.Direction = ParamDirection.InputOutput;
-                            }
-                        });
-                        if (i < j)
-                        {
-                            await dbContextLind.Session.ExecuteNonQueryAsync(sql, commandType, parameters.ToArray());
-                            continue;
-                        }
-                        try
-                        {
-                            string sortExp = (request.Sort ?? "").SqlFilter(5);
-                            if (sortExp.HasValue())
-                            {
-                                var upperText = sql.ToUpper();
-                                var lastIndex = upperText.LastIndexOf("ORDER BY ");
-                                if (lastIndex >= 0 && upperText.IndexOf(" WHERE ", lastIndex) < 0)
-                                {
-                                    sql = sql[..lastIndex];
-                                }
-                                sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
-                            }
-                        }
-                        catch (Exception) { }
-                        list = await dbContextLind.SqlQueryAsync<T>(sql, commandType, parameters.ToArray());
+                        sql = sql.Replace("StoredProcedure", "");
+                        sql = sql[..sql.IndexOf("(")].Trim();
+                        commandType = CommandType.StoredProcedure;
                     }
-                });
+                    parameters.ForEach(c =>
+                    {
+                        if (c.Direction == ParamDirection.InputOutput) c.Direction = ParamDirection.Input;
+                        if (commandType == CommandType.StoredProcedure && c.Direction == ParamDirection.Input && !c.Name.EndsWith("_in"))
+                        {
+                            c.Direction = ParamDirection.InputOutput;
+                        }
+                    });
+                    if (i < j)
+                    {
+                        await dbContextLind.Session.ExecuteNonQueryAsync(sql, commandType, parameters.ToArray());
+                        continue;
+                    }
+                    try
+                    {
+                        string sortExp = (request.Sort ?? "").SqlFilter(5);
+                        if (sortExp.HasValue())
+                        {
+                            var upperText = sql.ToUpper();
+                            var lastIndex = upperText.LastIndexOf("ORDER BY ");
+                            if (lastIndex >= 0 && upperText.IndexOf(" WHERE ", lastIndex) < 0)
+                            {
+                                sql = sql[..lastIndex];
+                            }
+                            sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
+                        }
+                    }
+                    catch (Exception) { }
+                    list = await dbContextLind.SqlQueryAsync<T>(sql, commandType, parameters.ToArray());
+                }
                 list ??= new List<T>();
                 return list;
             }
             finally
             {
+                if (doTransation && dbContextLind.Session.IsInTransaction)
+                {
+                    dbContextLind.Session.RollbackTransaction();
+                }
                 if (dbContextLind != _dbContext) dbContextLind.Dispose();
                 if (isClone) dbContext.Dispose();
             }
