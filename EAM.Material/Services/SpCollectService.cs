@@ -905,7 +905,8 @@ namespace EAM.Material.Services
                     primary_key = c.COLLECT_ID,
                     fun_name = "_spCollectService.ApprovalCompletedAsync",
                     sm = c.MEMO,
-                    fjsc = attach
+                    fjsc = attach,
+                    fileurl = excelUrl
                 }).FirstAsync();
 
             //对接OA 取配置地址
