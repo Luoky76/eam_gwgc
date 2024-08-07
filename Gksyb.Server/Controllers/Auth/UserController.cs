@@ -36,7 +36,8 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 role = (await _service.RoleData()).Rows,
                 corp = (await _service.CorpData()).Rows,
-                station = await codeService.Get("岗位")
+                station = await codeService.Get("岗位"),
+                userState = await codeService.Get("UserState"),
             });
         }
 
