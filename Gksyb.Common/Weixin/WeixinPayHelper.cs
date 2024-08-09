@@ -1,4 +1,5 @@
 ﻿using Flurl.Http;
+using Flurl.Http.Content;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -43,7 +44,7 @@ namespace Gksyb.Common.Weixin
         }
 
         /// <summary>
-        /// JSAPI下单
+        /// JSAPI下单 微信不认null，所以序列化用 ToMiniJson
         /// </summary>
         /// <returns></returns>
         public static async Task<WeixinTransactionsResponse> Transactions(WeixinTransactionsRequest transactionsRequest, Action<JsApiTransactionsRequest> action = null)
@@ -51,7 +52,7 @@ namespace Gksyb.Common.Weixin
             var request = new JsApiTransactionsRequest(WeixinSetting.AppId, WeixinSetting.Mchid, transactionsRequest);
             action?.Invoke(request);
             var url = $"{ApiHost}/v3/pay/transactions/jsapi";
-            var response = await ApiRequest(url).PostJsonAsync(request).ReceiveJson<JsApiTransactionsResponse>();
+            var response = await ApiRequest(url).PostAsync(new CapturedJsonContent(request.ToMiniJson())).ReceiveJson<JsApiTransactionsResponse>();
             if (response.IsError) throw new MessageException(response.ToString());
             var nonceStr = Guid.NewGuid().ToString("N").ToLower();
             return WeixinTransactionsResponse.GetInstance(response.PrepayId, nonceStr, "RSA");

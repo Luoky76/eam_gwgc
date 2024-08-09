@@ -92,7 +92,7 @@ namespace Gksyb.Common.Weixin
         ///电子发票入口开放标识
         /// </summary>
         [JsonProperty("support_fapiao")]
-        public string SupportFapiao { get; set; }
+        public bool SupportFapiao { get; set; }
 
         /// <summary>
         ///优惠功能 具体查看https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_1.shtml

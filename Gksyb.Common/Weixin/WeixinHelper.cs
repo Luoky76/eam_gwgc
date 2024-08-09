@@ -1,4 +1,5 @@
 ﻿using Flurl.Http;
+using Flurl.Http.Content;
 using Gksyb.Common.Static;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -114,7 +115,7 @@ namespace Gksyb.Common.Weixin
                         data = data.ToObject<JToken>(),
                         miniprogram = miniProgram
                     };
-                    response = await url.PostJsonAsync(request).ReceiveJson<TemplateMessageResponse>();
+                    response = await url.PostAsync(new CapturedJsonContent(request.ToMiniJson())).ReceiveJson<TemplateMessageResponse>();
                     return response;
                 });
                 if (response.IsError) return AjaxResult.Error(response.ToString());
