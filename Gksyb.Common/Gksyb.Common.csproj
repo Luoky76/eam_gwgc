@@ -13,9 +13,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DM.DmProvider" Version="8.3.1.22640" />
+		<PackageReference Include="DM.DmProvider" Version="8.3.1.21595" />
 		<PackageReference Include="Flurl.Http" Version="3.2.4" />
-		<PackageReference Include="Haukcode.WkHtmlToPdfDotNet" Version="1.5.90" />
+		<PackageReference Include="Haukcode.WkHtmlToPdfDotNet" Version="1.5.93" />
 		<PackageReference Include="Mapster" Version="7.4.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="6.0.32" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
@@ -25,7 +25,7 @@
 		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
 		<PackageReference Include="MySqlConnector" Version="2.3.7" />
 		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-		<PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.11.0" />
+		<PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.13.0" />
 		<PackageReference Include="RazorEngineCore" Version="2024.4.1" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
@@ -38,7 +38,7 @@
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.5.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.32" />
 		<PackageReference Include="StackExchange.Redis" Version="2.8.0" />
-		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.3" />
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.4" />
 		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="6.0.4" />
 	</ItemGroup>
 
