@@ -22,6 +22,10 @@ namespace Gksyb.Common.Data
         /// </summary>
         public static void SetDefault(string dbType, string connString)
         {
+            if (dbType == "sqlite")
+            {
+                connString = SQLiteConnectionFactory.MapPath(connString);
+            }
             DbType = dbType;
             ConnectionString = connString;
         }

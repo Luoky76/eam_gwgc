@@ -2,6 +2,7 @@
 using Dm;
 using Kdbndp;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.Sqlite;
 using MySqlConnector;
 using Npgsql;
 using Oracle.ManagedDataAccess.Client;
@@ -33,6 +34,7 @@ namespace Gksyb.Common.Data
                     break;
 
                 case ChloeSQLiteConcurrentConnection _:
+                case SqliteConnection _:
                     sql = SqliteTranslate(sql);
                     break;
 

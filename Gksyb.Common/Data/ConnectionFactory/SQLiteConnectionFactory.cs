@@ -28,24 +28,36 @@ namespace Gksyb.Common.Data
 
         public SQLiteConnectionFactory(string connString)
         {
-            //如果是~则表示当前目录
-            if (connString.Contains("~/") || connString.Contains("~\\"))
-            {
-                var rootPath = AppDomain.CurrentDomain.BaseDirectory;
-                var index = rootPath.IndexOf("\\bin\\");
-                if (index > 0)
-                {
-                    rootPath = Path.Combine(rootPath[..index], "");
-                }
-                connString = connString.Replace("/", "\\").Replace("~\\", rootPath.TrimEnd('\\') + "\\");
-            }
-            this._connString = connString;
+            this._connString = MapPath(connString);
         }
 
         public IDbConnection CreateConnection()
         {
             IDbConnection conn = new SqliteConnection(this._connString);
             return conn;
+        }
+
+        private static readonly string[] _splits = new string[] { "~\\", "~/" };
+
+        /// <summary>
+        /// 获取真实连接字符串
+        /// </summary>
+        public static string MapPath(string connString)
+        {
+            foreach (var split in _splits)
+            {
+                if (!connString.Contains(split)) continue;
+                var path = AppDomain.CurrentDomain.BaseDirectory;
+                var index = path.IndexOf($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}");
+                if (index > 0)
+                {
+                    path = $"{Path.Combine(path[..index], "")}{Path.DirectorySeparatorChar}";
+                }
+                connString = connString.Replace(split, path);
+                break;
+            }
+            connString = connString.Replace('\\', Path.DirectorySeparatorChar);
+            return connString;
         }
     }
 }
