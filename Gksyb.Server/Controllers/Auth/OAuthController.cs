@@ -101,7 +101,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         [JsToken, AllowAnonymous]
-        public async Task<AjaxResult> ValidTicketAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, [FromHeader, Required] string ticket)
+        public async Task<AjaxResult> ValidTicketAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, [FromHeader, Required] string ticket, [FromHeader] string menuAppname)
         {
             try
             {
@@ -122,6 +122,7 @@ namespace Gksyb.Server.Controllers.Auth
                 };
                 request.Password = await service.GetPasswordAsync(request.Username);
                 request.Source = "Ticket";
+                request.MenuAppname = menuAppname;
                 return await service.LoginAsync(request, checkPassword: false);
             }
             finally

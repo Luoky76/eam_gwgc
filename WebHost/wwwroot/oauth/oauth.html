@@ -75,7 +75,8 @@
                 me.httpRequest({
                     url: 'oauth/validTicket',
                     headers: {
-                        ticket: me.getQueryStringByName("ticket") || me.getQueryStringByName("token")
+                        ticket: me.getQueryStringByName("ticket") || me.getQueryStringByName("token"),
+                        menuAppname: me.getQueryStringByName("menuAppname")
                     },
                     success: function (data) {
                         window.localStorage.setItem("GksybTicket", data.Ticket);
