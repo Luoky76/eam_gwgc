@@ -38,6 +38,11 @@
         public string ConfigAppName { get; set; }
 
         /// <summary>
+        /// 流程应用名称
+        /// </summary>
+        public string WorkflowAppName { get; set; }
+
+        /// <summary>
         /// 初始密码
         /// </summary>
         public string InitPassWord { get; set; }

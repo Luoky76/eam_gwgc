@@ -46,7 +46,7 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<List<TaskLog>> TaskLogAsync(string taskId)
         {
             var info = await TaskInfoAsync(c => c.TaskId == taskId);
-            return info.Logs;
+            return info?.Logs;
         }
 
         /// <inheritdoc/>
