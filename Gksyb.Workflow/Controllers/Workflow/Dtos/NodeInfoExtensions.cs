@@ -27,10 +27,13 @@ namespace Gksyb.Workflow.Controllers.Workflow.Dtos
 
         public static IJoinQuery<T1, T2> CorpFilter<T1, T2>(this IJoinQuery<T1, T2> source, UserSession user, bool fromMe = false) where T1 : WF_NODE where T2 : WF_TASK
         {
-            var corpId = (user.ParentCompany ?? user.Corp).CorpID;
-            return source.Where(user.IsSuper ?
-                ((node, task) => task.COMPANY == corpId) :
-                fromMe ? ((node, task) => node.NODE_USERID == user.UserID || task.CREATEUSERID == user.UserID) :
+            if (user.IsSuper)
+            {
+                var corpId = user.Corp?.CorpID;
+                var company = user.ParentCompany?.CorpID;
+                return source.Where((node, task) => (task.COMPANY == company || task.CORPID == corpId));
+            }
+            return source.Where(fromMe ? ((node, task) => node.NODE_USERID == user.UserID || task.CREATEUSERID == user.UserID) :
                 ((node, task) => node.NODE_USERID == user.UserID));
         }
     }
