@@ -145,8 +145,9 @@ namespace Chloe
             return keyValueMap;
         }
 
+        private static double _diff = 0;
         /// <summary>
-        /// 获取数据库时间 默认会进行缓存
+        /// 获取数据库时间 默认会进行缓存 超过1秒会重新获取
         /// </summary>
         /// <param name="source"></param>
         /// <param name="isCache">是否从缓存获取</param>
@@ -159,12 +160,14 @@ namespace Chloe
             {
                 sysdate = value as DateTime?;
             }
-            if (!sysdate.HasValue)
+            if (!sysdate.HasValue || sysdate.Value.AddSeconds(_diff) < DateTime.Now)
             {
                 await source.NotSqlLog(async () =>
                 {
                     sysdate = (await source.Session.ExecuteScalarAsync("select sysdate from dual")).CastTo<DateTime?>();
                 });
+                var now = DateTime.Now;
+                _diff = (now - sysdate.Value).TotalSeconds + 1;
                 if (isCache && sysdate.HasValue)
                 {
                     source.SetItem(key, sysdate);

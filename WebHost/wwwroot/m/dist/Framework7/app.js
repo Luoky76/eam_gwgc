@@ -773,6 +773,48 @@
                 inner(app.WXJSSDK);
             }
         },
+        success: function (textContent) {
+            var toastSuccess = app.toast.create({
+                icon: '<i class="material-icons">checked</i>',
+                text: textContent,
+                position: 'center',
+                closeTimeout: 2000,
+                on: {
+                    closed: function () {
+                        toastSuccess.destroy();
+                    }
+                }
+            });
+            toastSuccess.open();
+        },
+        fail: function (textContent) {
+            var toastFail = app.toast.create({
+                icon: '<i class="material-icons">close</i>',
+                text: textContent,
+                position: 'center',
+                closeTimeout: 2000,
+                on: {
+                    closed: function () {
+                        toastFail.destroy();
+                    }
+                }
+            });
+            toastFail.open();
+        },
+        message: function (textContent) {
+            var toastFail = app.toast.create({
+                icon: '<i class="material-icons">error_outline</i>',
+                text: textContent,
+                position: 'center',
+                closeTimeout: 2000,
+                on: {
+                    closed: function () {
+                        toastFail.destroy();
+                    }
+                }
+            });
+            toastFail.open();
+        },
         //初始化主页
         initMainView: function (options) {
             options = options || {};

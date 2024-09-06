@@ -14,24 +14,14 @@ namespace Gksyb.Common.Data
 
         public void Process(DbMethodCallExpression exp, SqlGeneratorBase generator)
         {
-            DbMethodCallExpression trim = DbExpression.MethodCall(exp.Arguments.First(), PublicConstants.MethodInfo_String_Trim, new List<DbExpression>() { });
-
-            var equalNullExpression = DbExpression.Equal(trim, DbExpression.Constant(null, PublicConstants.TypeOfString));
-            var equalEmptyExpression = DbExpression.Equal(trim, DbExpression.Constant(string.Empty));
-
-            var orExpression = DbExpression.Or(equalNullExpression, equalEmptyExpression);
-
-            var whenThenPair = new DbCaseWhenExpression.WhenThenExpressionPair(orExpression, DbConstantExpression.One);
-
-            var whenThenExps = new List<DbCaseWhenExpression.WhenThenExpressionPair>(1)
+            var trim = new DbMethodCallExpression(exp.Arguments.First(), PublicConstants.MethodInfo_String_Trim, new List<DbExpression>() { });
+            DbExpression expression = new DbEqualExpression(trim, DbConstantExpression.StringNull);
+            if (!generator.Options.TreatEmptyStringAsNull)
             {
-                whenThenPair
-            };
-
-            DbCaseWhenExpression caseWhenExpression = DbExpression.CaseWhen(whenThenExps, DbConstantExpression.Zero, PublicConstants.TypeOfBoolean);
-
-            var eqExp = DbExpression.Equal(caseWhenExpression, DbConstantExpression.One);
-            eqExp.Accept(generator);
+                var equalEmptyExpression = new DbEqualExpression(trim, DbConstantExpression.StringEmpty);
+                expression = new DbOrExpression(expression, equalEmptyExpression);
+            }
+            expression.Accept(generator);
         }
     }
 }

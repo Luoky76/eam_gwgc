@@ -19,11 +19,11 @@ namespace Gksyb.Common.Data
             var right = exp.Arguments[1];
             var equalPair = new DbCaseWhenExpression.WhenThenExpressionPair(new DbEqualExpression(left, right), DbConstantExpression.Zero);
             var greaterThanPair = new DbCaseWhenExpression.WhenThenExpressionPair(new DbGreaterThanExpression(left, right), DbConstantExpression.One);
-            var caseWhenEqualExpression = DbExpression.CaseWhen(new List<DbCaseWhenExpression.WhenThenExpressionPair>(1)
+            var caseWhenEqualExpression = new DbCaseWhenExpression(PublicConstants.TypeOfBoolean, new List<DbCaseWhenExpression.WhenThenExpressionPair>(1)
             {
                 equalPair,
                 greaterThanPair
-            }, new DbConstantExpression(-1), PublicConstants.TypeOfBoolean);
+            }, new DbConstantExpression(-1));
             caseWhenEqualExpression.Accept(generator);
         }
     }

@@ -178,7 +178,7 @@ namespace Gksyb.Common
         public static string SqlFilter(this string value, int? limit = null)
         {
             if (string.IsNullOrWhiteSpace(value)) return value;
-            if (Regex.IsMatch(value, @"(\bselect\b|\bfrom\b\|\binsert\b|\bunion\b|\bupdate\b|\bdelete\b|\bdrop\b|\sor\s|\s=\s|\bdual\b|\bcreate\|\bdeclare\b|\bexec\b|--|sys\.|dbms_|extractvalue|dburitype|\buser_tab|\ball_)", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(value, @"(\bselect\b\s|\s\bfrom\b\s|\binsert\b\s|\bupdate\b\s|\bdelete\b\s|\bdrop\b\s|\sor\s|\s=\s|\bcreate\b\s|\bdeclare\b\s|\bexec\b\s|--|\bsys\.|\bdbms_|\bextractvalue|\bdburitype|\buser_tab|\ball_)", RegexOptions.IgnoreCase))
                 throw new MessageException("防注入:1001");
             if (limit.HasValue && value.Length > limit)
             {

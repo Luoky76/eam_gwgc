@@ -67,7 +67,7 @@ namespace Gksyb.Server.Controllers.Common
         }
 
         /// <summary>
-        /// 岗位数据
+        /// 公司数据
         /// </summary>
         public async Task<AjaxResult> CorpsAsync([FromServices] ICorpService service)
         {
