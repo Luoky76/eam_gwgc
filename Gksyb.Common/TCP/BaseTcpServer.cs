@@ -305,6 +305,7 @@ namespace Gksyb.Common.TCP
                             break;
                     }
                     doNext = false;
+                    RemoveClient(client);
                     return;
                 }
                 if (e.LastOperation != SocketAsyncOperation.Receive) return;
