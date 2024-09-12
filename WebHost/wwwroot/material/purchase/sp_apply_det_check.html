@@ -114,6 +114,7 @@
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
+                    rownumbers: true,
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
