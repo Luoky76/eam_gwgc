@@ -2,6 +2,8 @@
 using Flurl.Http.Configuration;
 using Gksyb.Common.Data;
 using Gksyb.Common.Static;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
@@ -79,6 +81,19 @@ namespace Gksyb.Common
                 });
             }
             return signalrBuilder;
+        }
+
+        /// <summary>
+        /// 将监听的端口写入HttpContext对象的Port
+        /// </summary>
+        public static IApplicationBuilder SetHttpContextPort(this IApplicationBuilder app)
+        {
+            var feature = app.ServerFeatures.Get<IServerAddressesFeature>();
+            if (feature != null)
+            {
+                HttpContext.Port = (feature.Addresses.FirstOrDefault() ?? "").Split(':').Last().CastTo<ushort>(0);
+            }
+            return app;
         }
     }
 }

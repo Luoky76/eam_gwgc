@@ -96,6 +96,7 @@ namespace WebHost
                 _env.WebRootPath = Path.Combine(rootPath[..index], "wwwroot");
                 _env.WebRootFileProvider = new PhysicalFileProvider(_env.WebRootPath);
             }
+            app.SetHttpContextPort();
             _plugins.ForEach(plugin =>
             {
                 plugin.PreConfigure(app, _env);

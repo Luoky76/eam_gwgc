@@ -33,9 +33,14 @@
         public string MobileAppName { get; set; }
 
         /// <summary>
-        /// 应用名称
+        /// 配置应用名称
         /// </summary>
         public string ConfigAppName { get; set; }
+
+        /// <summary>
+        /// 任务应用名称
+        /// </summary>
+        public string TaskAppName { get; set; }
 
         /// <summary>
         /// 流程应用名称

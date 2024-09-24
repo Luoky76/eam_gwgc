@@ -59,6 +59,28 @@ namespace Gksyb.Common.Static
         public static ReadOnlyCollection<string> AddressList { get; private set; }
 
         /// <summary>
+        /// 端口号
+        /// </summary>
+        public static ushort Port { get; internal set; }
+
+        private static string _address;
+
+        /// <summary>
+        /// Ip加端口
+        /// </summary>
+        public static string Address
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_address))
+                {
+                    _address = $"{AddressList.ToStr(",").SubStr(0, 495, true)}:{Port}";
+                }
+                return _address;
+            }
+        }
+
+        /// <summary>
         /// 服务描述
         /// </summary>
         public static IServiceCollection ServiceCollection { get; set; }
