@@ -689,6 +689,7 @@ namespace EAM.Material.Services
                     a.TYPE_NAME,
                     a.TYPE_CODE,
                     a.COUNT,
+                    a.MEMO,
                     b.APPLY_NO,
                     b.APPLY_USER,
                     b.DEPT_NAME,
@@ -1045,11 +1046,11 @@ namespace EAM.Material.Services
         public string TYPE_NAME { get; set; }
 
         /// <summary>
-        /// 备注
+        /// 说明
         /// </summary>
-        [ExporterHeader(DisplayName = "备注", Width = 30)]
-        [Display(Name = "备注")]
-        [Description("备注")]
+        [ExporterHeader(DisplayName = "说明", Width = 30)]
+        [Display(Name = "说明")]
+        [Description("说明")]
         public string MEMO { get; set; }
     }
 
