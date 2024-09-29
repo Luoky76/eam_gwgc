@@ -5,7 +5,7 @@
     <title></title>
     <link href="lib/dist/css/normalize.css" rel="stylesheet" />
     <link href="lib/dist/css/bootstrap.css" rel="stylesheet" />
-    <link href="/lib/dist/css/unity-page.min.css" rel="stylesheet" />
+    <link href="lib/dist/css/unity-page.min.css" rel="stylesheet" />
     <style>
         body, html {
             width: 100%;
@@ -64,10 +64,6 @@
             width: 210px;
         }
 
-        /*.ant-card :hover {
-                background: #ffffff;
-            }*/
-
         .ant-card-bordered {
             border-width: 0;
             border: 1px solid #f5f5f5;
@@ -82,16 +78,11 @@
             font-size: 15px;
         }
 
-            .centerItem a:hover {
-                color: #4ab1fc;
-                background: transparent;
-            }
+        .centerItem a:hover {
+            color: #4ab1fc;
+            background: transparent;
+        }
 
-        /*.fontItem {
-            border-width: 0;
-            border: 1px solid #f5f5f5;
-            border-bottom: 1px solid #666666;
-        }*/
         .vertical-text {
             display: flex;
             flex-direction: row;
@@ -209,107 +200,107 @@
                     <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">物资数据</span>
                 </div>
                 <div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); "id="MaterialPurchase">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); " id="MaterialPurchase">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">物资采购</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_apply">
+                                    <div class="fontItem" style="width: 100%;" id="sp_apply">
                                         <a href="javascript:void(0);" title="船舶物资申请" onclick="business.wzcgxq()">船舶物资申请</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_apply_check">
+                                    <div class="fontItem" style="width: 100%;" id="sp_apply_check">
                                         <a href="javascript:void(0);" title="物资需求确认" onclick="business.wzcgqr()">物资需求确认</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_collect">
+                                    <div class="fontItem" style="width: 100%;" id="sp_collect">
                                         <a href="javascript:void(0);" title="物资需求申请" onclick="business.wzcgsp()">物资需求申请</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_purplan">
+                                    <div class="fontItem" style="width: 100%;" id="sp_purplan">
                                         <a href="javascript:void(0);" title="物资询价方案" onclick="business.wzcgfa()">物资询价方案</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_order">
+                                    <div class="fontItem" style="width: 100%;" id="sp_order">
                                         <a href="javascript:void(0);" title="物资采购订单" onclick="business.wzcgdd()">物资采购订单</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); "id="MaterialWarehouse">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51); " id="MaterialWarehouse">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">物资入库</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="MaterialReceive">
+                                    <div class="fontItem" style="width: 100%;" id="MaterialReceive">
                                         <a href="javascript:void(0);" title="物料收货登记" onclick="business.wlshhdj()">物料收货登记</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="MaterialCheck">
+                                    <div class="fontItem" style="width: 100%;" id="MaterialCheck">
                                         <a href="javascript:void(0);" title="物料到货验收" onclick="business.wldhys()">物料到货验收</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="Instore">
+                                    <div class="fontItem" style="width: 100%;" id="Instore">
                                         <a href="javascript:void(0);" title="物资采购入库" onclick="business.wlcgrk()">物料收货登记</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="Inback">
+                                    <div class="fontItem" style="width: 100%;" id="Inback">
                                         <a href="javascript:void(0);" title="物资入库冲红" onclick="business.wzrkchh()">物资入库冲红</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialStore">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);" id="MaterialStore">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">物资库存</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_store_seafarer">
+                                    <div class="fontItem" style="width: 100%;" id="sp_store_seafarer">
                                         <a href="javascript:void(0);" title="库存明细 (船员)" onclick="business.kcmxcy()">库存明细 (船员)</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_store">
+                                    <div class="fontItem" style="width: 100%;" id="sp_store">
                                         <a href="javascript:void(0);" title="库存明细" onclick="business.kcmx()">库存明细</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialOut">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);" id="MaterialOut">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">物资出库</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="SpOutApp">
+                                    <div class="fontItem" style="width: 100%;" id="SpOutApp">
                                         <a href="javascript:void(0);" title="物资领用申请" onclick="business.wzlyshq()">物资领用申请</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="SpOutStore">
+                                    <div class="fontItem" style="width: 100%;" id="SpOutStore">
                                         <a href="javascript:void(0);" title="物资领用出库" onclick="business.wzlyck()">物资领用出库</a>
                                     </div>
                                 </div>
 
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="SpOutBack">
+                                    <div class="fontItem" style="width: 100%;" id="SpOutBack">
                                         <a href="javascript:void(0);" title="物资出库冲红" onclick="business.wzckch()">物资出库冲红</a>
                                     </div>
                                 </div>
@@ -317,14 +308,14 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);"id="MaterialInventory">
+                    <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 153, 51);" id="MaterialInventory">
                         <div class="wf-card-type-name">
                             <div class="ant-card-body">
                                 <div style="padding: 5px 0px 25px; text-align: center;">
                                     <span style="height: 36px; line-height: 36px; font-size:16px;">物资盘点</span>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="sp_scan">
+                                    <div class="fontItem" style="width: 100%;" id="sp_scan">
                                         <a href="javascript:void(0);" title="物资盘点任务" onclick="business.wzpdrw()">物资盘点任务</a>
                                     </div>
                                 </div>
@@ -339,26 +330,26 @@
                 <span style="line-height: 36px; font-size:20px;" class="vertical-text-content">专项数据</span>
             </div>
             <div>
-                <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 255, 0);"id="Drug">
+                <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 255, 0);" id="Drug">
                     <div class="wf-card-type-name">
                         <div class="ant-card-body">
                             <div style="padding: 5px 0px 25px; text-align: center;">
                                 <span style="height: 36px; line-height: 36px; font-size:16px;">药品管理</span>
                             </div>
                             <div class="centerItem">
-                                <div class="fontItem" style="width: 100%;"id="DrugRequest">
+                                <div class="fontItem" style="width: 100%;" id="DrugRequest">
                                     <a href="javascript:void(0);" title="药品需求登记" onclick="business.ypxqdj()">药品需求登记</a>
                                 </div>
                             </div>
                             <div class="centerItem">
-                                <div class="fontItem" style="width: 100%;"id="DrugCollect">
+                                <div class="fontItem" style="width: 100%;" id="DrugCollect">
                                     <a href="javascript:void(0);" title="药品采购登记" onclick="business.ypcgdj()">药品采购登记</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 255, 0);"id="labor">
+                <div class="ant-card ant-card-bordered card" style="border-top-color: rgb(255, 255, 0);" id="labor">
                     <div class="wf-card-type-name">
                         <div class="ant-card-body">
                             <div style="padding: 5px 0px 25px; text-align: center;">
@@ -366,17 +357,17 @@
                             </div>
                             <div class="centerItem">
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="labor-user">
+                                    <div class="fontItem" style="width: 100%;" id="labor-user">
                                         <a href="javascript:void(0);" title="劳保人员清单" onclick="business.lbryqd()">劳保人员清单</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="labor_exchange">
+                                    <div class="fontItem" style="width: 100%;" id="labor_exchange">
                                         <a href="javascript:void(0);" title="劳保用品退换" onclick="business.lbypth()">劳保用品退换</a>
                                     </div>
                                 </div>
                                 <div class="centerItem">
-                                    <div class="fontItem" style="width: 100%;"id="labor_rent">
+                                    <div class="fontItem" style="width: 100%;" id="labor_rent">
                                         <a href="javascript:void(0);" title="劳保用品租借" onclick="business.lbypzj()">劳保用品租借</a>
                                     </div>
                                 </div>
@@ -393,7 +384,8 @@
             <div>
                 <div class="ant-card ant-card-bordered card" style="border-top-color: #7a7a7a;">
                     <div class="wf-card-type-name">
-                        <div class="ant-card-body"><!--
+                        <div class="ant-card-body">
+                            <!--
                             <div style="padding: 5px 0px 25px; text-align: center;">
                                 <span style="height: 36px; line-height: 36px; font-size:16px;">报表</span>
                             </div>-->
@@ -546,7 +538,7 @@
                             // 判断元素的ID是否在数组中
                             if (!menuValues.includes(element.id)) {
                                 element.style.display = 'none';
-                            } 
+                            }
                         });
                     },
                     error: function (message) {
