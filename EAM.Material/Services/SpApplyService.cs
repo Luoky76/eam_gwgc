@@ -411,12 +411,33 @@ namespace EAM.Material.Services
         public async Task Intercept(FlowExecuteInfo taskInfo)
         {
             var apply_id = taskInfo.FormData.GetValueOrDefault("Sid").ToString();
-            //更新记录状态
-            await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
-                x => new SP_APPLY
-                {
-                    AUDITING = "3"
-                });
+            var status = taskInfo.NodeStatus;
+            //根据审批情况更新记录状态
+            switch (status)
+            {
+                case NodeStatus.Agree:
+                    
+                    await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
+                        x => new SP_APPLY
+                        {
+                            AUDITING = "3"
+                        });
+                    break;
+                case NodeStatus.Reject:
+                    await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
+                        x => new SP_APPLY
+                        {
+                            AUDITING = "4"
+                        });
+                    break;
+                case NodeStatus.Back:
+                    await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
+                        x => new SP_APPLY
+                        {
+                            AUDITING = "6"
+                        });
+                    break;
+            }
         }
 
         /// <summary>
