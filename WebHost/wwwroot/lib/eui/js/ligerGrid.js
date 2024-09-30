@@ -8,6 +8,7 @@
         if (p.DataPrivilege !== undefined && p.dataPrivilege === undefined) p.dataPrivilege = p.DataPrivilege;
         if (p.EnterMoveNextControl !== undefined && p.enterMoveNextControl === undefined) p.enterMoveNextControl = p.EnterMoveNextControl;
         //不分页本地处理数据
+        if (p.crosstab) p.usePager = false;
         var usePager = (p.usePager !== undefined) ? p.usePager : $.ligerDefaults.Grid.usePager;
         if (usePager === false) {
             p.dataAction = "local";
@@ -204,6 +205,7 @@
         id: null, //自定义id 默认为c10列位置
         name: null, //名称
         dbname: null, //数据库实际名称
+        sortType: null, //排序类型 string float
         sortdbname: null, //排序用数据库实际名称
         sortFix: false, //排序后缀
         totalSummary: null,//{name:"默认为当前列，可指定其他列进行统计",isDisplay:true,type:"sum,tsum,count,max,min,avg",hastext:false,igronNull:false,render:function(info, column, allData, groupData){}}
@@ -228,7 +230,7 @@
         editor: null, //行内编辑器 {type: 'text',options:{  onChangeValue: function (input, value, g) { }}} options同表单元素一致
         render: null, //单元格渲染器 function(rowdata, rowindex, value, column)
         mergeColumn: null, //合并单元格 true或者具体的列名（可指定根据其他列合并）
-        crosstab: false,//交叉列 设定后会根据值生成列
+        crosstab: false,//交叉列 true null false 设定后会根据值生成列 设置false则跳过列处理（不分组，取第一行数据）
         values: null,//交叉列对应的统计值,列名或者函数function (rows, name)
         textField: null //真正显示的字段名,如果设置了，在编辑状态时,会调用创建编辑器的setText和getText方法
     };
