@@ -95,16 +95,13 @@ namespace EAM.Material.Services
             {
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-                    { "BCCode", "exig_dev" },
+                    { "BCCode@#exigData", "exig_dev" },
+                    { "BCCode@#CGFS", "CGtype"},
                     { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)(x => true)},
                     { "SpUnit", (Expression<Func<SP_UNIT, bool>>)(x => true)},
-                    { "Auditing", null }
+                    { "Auditing", null },
+                    { "SpTypeName", null },
                 });
-                var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
-                {
-                    { "BCCode", "CGtype" }
-                });
-                dic.TryAdd("CGFS", dic1["BCCode"]);
                 return AjaxResult.Success(dic);
             }
             catch (Exception e)

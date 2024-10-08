@@ -25,8 +25,8 @@ namespace EAM.Material.Services
         public async Task<AjaxResult> ComboxData()
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
-                { "BasePurtype",null},
-                { "SpTypeName", null},
+                { "BasePurtype", null },
+                { "SpTypeName", null },
             });
 
             return AjaxResult.Success(data);

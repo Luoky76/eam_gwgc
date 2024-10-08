@@ -144,7 +144,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> SpTypeName(Expression<Func<BASE_SPTYPE, bool>> predicate)
         {
             var dbContext = _dbContext.Clone();
-            return await dbContext.Query<BASE_SPTYPE>(c => c.IS_CANCEL!="1").Where(predicate)
+            return await dbContext.Query<BASE_SPTYPE>(c => c.IS_CANCEL != "1").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
                 .Distinct()
                .ToListAsync();
