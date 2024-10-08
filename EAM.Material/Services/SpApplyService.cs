@@ -536,7 +536,7 @@ namespace EAM.Material.Services
         {
             var res = await _dbContext.Query<SP_APPLY>()
                 .InnerJoin<SP_APPLY_DETAIL>((a, b) => a.APPLY_ID == b.APPLY_ID)
-                .Where((a, b) => new[] { "1", "3" }.Contains(a.AUDITING) && b.AUDITING_CHECK == "0")
+                .Where((a, b) => new[] { "1", "3" }.Contains(a.AUDITING))
                 .Select((a, b) => new SP_APPLY_DET_DTO
                 {
                     //主表数据
@@ -566,8 +566,6 @@ namespace EAM.Material.Services
                     AUDITING_CHECK = b.AUDITING_CHECK,
                     MEMO = b.MEMO,
                 })
-                .OrderBy(c => c.AUDITING_CHECK)
-                .ThenByDesc(c => c.APPLY_DATE)
                 .GetGridData(request);
 
             return res;
@@ -628,9 +626,48 @@ namespace EAM.Material.Services
                 SP_STATUS = "30"
             });
 
-            return AjaxResult.Success("保存成功");
+            return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 物资需求确认撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeCheckList(List<string> sids)
+        {
+            //判断是否已在物资需求申请
+            var sp_collect_request_list = await _dbContext.Query<SP_COLLECT_REQUEST>(a => _dbContext.Query<SP_APPLY_DETAIL>(b => sids.Contains(b.SPDET_ID))
+                    .Select(b => b.SPDET_ID)
+                    .ToList()
+                    .Contains(a.REQUEST_DET_ID))
+                .InnerJoin<SP_COLLECT>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
+                .Select((a, b) => new {
+                    a.SP_NAME,
+                    b.COLLECT_CODE
+                })
+                .ToListAsync();
+            if (sp_collect_request_list.Any()) {
+                errMsg = "物资";
+                foreach (var sp_collect_request in sp_collect_request_list)
+                {
+                    errMsg += $"「{sp_collect_request.SP_NAME}」";
+                }
+                errMsg += "已在物资需求申请单中，无法撤销提交\n申请单号";
+                foreach (var sp_collect_request in sp_collect_request_list)
+                {
+                    errMsg += $"「{sp_collect_request.COLLECT_CODE}」";
+                }
+                MessageException.Throw(errMsg);
+            }
+            var sp_apply_details = await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.SPDET_ID), x => new SP_APPLY_DETAIL
+            {
+                AUDITING_CHECK = "0",
+                SP_STATUS = "20"    //状态变为「待需求确认」
+            });
+
+            return AjaxResult.Success("撤销成功");
+        }
 
         #endregion
 

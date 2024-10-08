@@ -209,5 +209,16 @@ namespace EAM.Material.Controllers
             return await _service.SubmitCheckList(sids);
         }
 
+        /// <summary>
+        /// 物资需求确认撤销提交
+        /// </summary>
+        /// <param name="sids">明细表主键数组</param>
+        /// <returns></returns>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> RevokeCheckList(List<string> sids)
+        {
+            return await _service.RevokeCheckList(sids);
+        }
     }
 }

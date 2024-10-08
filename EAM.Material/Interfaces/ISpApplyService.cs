@@ -73,12 +73,18 @@ namespace EAM.Material.Interfaces
         /// <returns></returns>
         Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DETAIL> request);
 
-
         /// <summary>
         /// 物资需求确认提交
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
         Task<AjaxResult> SubmitCheckList(List<string> sids);
+
+        /// <summary>
+        /// 物资需求确认撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        Task<AjaxResult> RevokeCheckList(List<string> sids);
     }
 }
