@@ -291,14 +291,28 @@ namespace EAM.Material.Services
                         //物资目录已有对应物资
                         sp_apply_details[i].SP_ID = sp_catalog.SP_ID;
                         sp_apply_details[i].SP_CODE = sp_catalog.SP_CODE;
-                        sp_apply_details[i].TYPE_ID = sp_catalog.TYPE_ID;
-                        sp_apply_details[i].TYPE_NAME = sp_catalog.TYPE_NAME;
-                        sp_apply_details[i].TYPE_CODE = sp_catalog.TYPE_CODE;
                         sp_apply_details[i].PURTYPE_ID = sp_catalog.PURTYPE_ID;
                         sp_apply_details[i].PURTYPE_NAME = sp_catalog.PURTYPE_NAME;
                         sp_apply_details[i].LAST_PROVIDERID = sp_catalog.LAST_PROVIDERID;
                         sp_apply_details[i].LAST_PROVIDER = sp_catalog.LAST_PROVIDER;
                         sp_apply_details[i].WARRANTY = sp_catalog.WARRANTY;
+
+                        //若物资目录中对应物资在临时类别，则将其更新为用户所选类别
+                        if (sp_catalog.TYPE_NAME != "临时类别")
+                        {
+                            sp_apply_details[i].TYPE_ID = sp_catalog.TYPE_ID;
+                            sp_apply_details[i].TYPE_NAME = sp_catalog.TYPE_NAME;
+                            sp_apply_details[i].TYPE_CODE = sp_catalog.TYPE_CODE;
+                        }
+                        else if (!sp_apply_details[i].TYPE_ID.IsNullOrWhiteSpace() && sp_apply_details[i].TYPE_NAME != "临时类别")
+                        {
+                            _dbContext.Update<BASE_SPCATALOG>(a => a.SP_ID == sp_catalog.SP_ID, a => new BASE_SPCATALOG
+                            {
+                                TYPE_ID = sp_apply_details[i].TYPE_ID,
+                                TYPE_NAME = sp_apply_details[i].TYPE_NAME,
+                                TYPE_CODE = sp_apply_details[i].TYPE_CODE
+                            });
+                        }
 
                         //获取库存数量
                         sp_apply_details[i].STORE_NUM = await GetStoreNumAsync(sp_apply_details[i].SP_ID);
