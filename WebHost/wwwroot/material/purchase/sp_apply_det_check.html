@@ -114,6 +114,7 @@
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
+                    title: '<input id="showChecked" />',
                     rownumbers: true,
                     autoWidth: true,
                     delayLoad: true,
@@ -150,6 +151,32 @@
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    }
+                });
+                //设置是否展示已确认记录按钮
+                $("#showChecked").ligerCheckBox({
+                    type: "switch",
+                    label: "展示已确认记录",
+                    value: false,
+                    initTrigger: true,
+                    onChangeValue: function (input, value, g) {
+                        if (value) {
+                            me.grid.set('parms', {
+                                "where": JSON2.stringify({
+                                    op: "and",
+                                    rules: []
+                                })
+                            });
+                        }
+                        else {
+                            me.grid.set('parms', {
+                                "where": JSON2.stringify({
+                                    op: "and",
+                                    rules: [{ field: 'AUDITING_CHECK', value: 0, op: 'equal' }]
+                                })
+                            });
+                        }
+                        me.reload();
                     }
                 });
                 me.grid.isValid = true;
