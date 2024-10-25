@@ -76,6 +76,7 @@ namespace Gksyb.Common.Data
                 if (fieldType == "int64") fieldType = "long";
                 if (fieldType == "int32") fieldType = "int";
                 if (fieldType == "int16") fieldType = "int";
+                if (fieldType == "single") fieldType = "float";
                 column.CsType = fieldType;
             }
             columns.ForEach(c =>
