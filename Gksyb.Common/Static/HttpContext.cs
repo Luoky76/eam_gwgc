@@ -16,7 +16,7 @@ namespace Gksyb.Common.Static
         static HttpContext()
         {
             AddressList = new ReadOnlyCollection<string>(NetworkInterface.GetAllNetworkInterfaces()
-                .Where(c => c.OperationalStatus == OperationalStatus.Up && !c.Description.Contains("virtual", StringComparison.OrdinalIgnoreCase) && !c.Description.Contains("pseudo", StringComparison.OrdinalIgnoreCase))
+                .Where(c => c.OperationalStatus == OperationalStatus.Up && !c.Description.ToLower().Contains("virtual") && !c.Description.ToLower().Contains("pseudo"))
                 .SelectMany(p => p.GetIPProperties().UnicastAddresses)
                 .Where(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))
                 .Select(c => c.Address.ToString()).Distinct().OrderBy(i => i).ToList());
