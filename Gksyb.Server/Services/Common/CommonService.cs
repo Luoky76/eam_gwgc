@@ -147,7 +147,8 @@ namespace Gksyb.Server.Services.Common
                     {
                         var keyname = mactch.Value;
                         paramname = Regex.Replace(keyname, @"[{}]", "");
-                        if (!dicParm.ContainsKey(paramname)) dicParm.TryAdd(paramname, keyname);
+                        if (!dicParm.ContainsKey(paramname))
+                            dicParm.Add(paramname, keyname);
                     }
                     view = Regex.Replace(view, @"{(\w+)}", $"{paramPrefix}$1");
                 }
@@ -163,7 +164,8 @@ namespace Gksyb.Server.Services.Common
                     }
                     foreach (var key in parmMatch.Keys)
                     {
-                        if (!dicParm.ContainsKey(key)) dicParm.TryAdd(key, parmMatch[key]);
+                        if (!dicParm.ContainsKey(key))
+                            dicParm.Add(key, parmMatch[key]);
                     }
                 }
                 foreach (var key in dicParm.Keys)
@@ -192,12 +194,15 @@ namespace Gksyb.Server.Services.Common
                     {
                         c.Type = typeof(string);
                     }
+                    c.Direction = ParamDirection.InputOutput;
                     if (c.Name.EndsWith("_in"))
                     {
+                        c.Name = Regex.Replace(c.Name, @"_d_in$", "");
                         c.Direction = ParamDirection.Input;
                     }
                     else if (c.Name.EndsWith("_out"))
                     {
+                        c.Name = Regex.Replace(c.Name, @"_d_out$", "");
                         c.Direction = ParamDirection.Output;
                     }
                     else if (c.Name.EndsWith("_cursor"))
@@ -205,31 +210,27 @@ namespace Gksyb.Server.Services.Common
                         c.ExplicitParameter = new OracleParameter(c.Name, OracleDbType.RefCursor, ParameterDirection.Output);
                     }
                 });
+                var directions = listPara.ToDictionary(c => c.Name, c => c.Direction);
                 var arraySql = view.Split(';').Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
                 doTransation = (!dbContextLind.Session.IsInTransaction) && (arraySql.Length > 1);
                 if (doTransation) dbContextLind.Session.BeginTransaction();
                 for (int i = 0, j = (arraySql.Length - 1); i <= j; i++)
                 {
-                    var commandType = CommandType.Text;
                     var sql = arraySql[i];
-                    var parameters = listPara.FindAll(c => sql.Contains(c.Name));
-                    if (sql.StartsWith("StoredProcedure"))
+                    var commandType = sql.StartsWith("StoredProcedure") ? CommandType.StoredProcedure : CommandType.Text;
+                    var parameters = listPara.Where(c => sql.Contains(c.Name)).Select(c =>
+                    {
+                        c.Direction = commandType == CommandType.Text ? ParamDirection.Input : directions[c.Name];
+                        return c;
+                    }).ToArray();
+                    if (commandType == CommandType.StoredProcedure)
                     {
                         sql = sql.Replace("StoredProcedure", "");
                         sql = sql[..sql.IndexOf("(")].Trim();
-                        commandType = CommandType.StoredProcedure;
                     }
-                    parameters.ForEach(c =>
-                    {
-                        if (c.Direction == ParamDirection.InputOutput) c.Direction = ParamDirection.Input;
-                        if (commandType == CommandType.StoredProcedure && c.Direction == ParamDirection.Input && !c.Name.EndsWith("_in"))
-                        {
-                            c.Direction = ParamDirection.InputOutput;
-                        }
-                    });
                     if (i < j)
                     {
-                        await dbContextLind.Session.ExecuteNonQueryAsync(sql, commandType, parameters.ToArray());
+                        await dbContextLind.Session.ExecuteNonQueryAsync(sql, commandType, parameters);
                         continue;
                     }
                     try
@@ -247,8 +248,9 @@ namespace Gksyb.Server.Services.Common
                         }
                     }
                     catch (Exception) { }
-                    list = await dbContextLind.SqlQueryAsync<T>(sql, commandType, parameters.ToArray());
+                    list = await dbContextLind.SqlQueryAsync<T>(sql, commandType, parameters);
                 }
+                if (doTransation) dbContextLind.Session.CommitTransaction();
                 list ??= new List<T>();
                 return list;
             }
