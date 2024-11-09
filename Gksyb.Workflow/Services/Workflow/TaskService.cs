@@ -1,4 +1,5 @@
-﻿using Gksyb.Core.Auth;
+﻿using Gksyb.Common.Data;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
@@ -122,6 +123,56 @@ namespace Gksyb.Workflow.Services.Workflow
                 await EndNode.Execute();
             });
             await info.PublishEvent();
+        }
+
+        /// <summary>
+        /// 还原流程
+        /// </summary>
+        public async Task RestoreAsync(FlowExecuteInfo info)
+        {
+            var taskId = info.TaskId;
+            var task = await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == taskId).MapTo<WF_TASK>().FirstOrDefaultAsync();
+            MessageException.ThrowIf(task == null, $"找不到{taskId}的任务");
+            var nodes = await _dbContext.Query<WF_HISTORY_NODE>().Where(c => c.TASK_ID == taskId).ToListAsync<WF_NODE>();
+            var nodeId = nodes.OrderBy(c => c.NODE_STATUS == NodeStatus.Archived ? 2 : 1)
+                .ThenByDescending(c => c.FINISHDATE)
+                .ThenByDescending(c => c.CREATEDATE).Select(c => c.NODE_ID).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(nodeId), $"找不到{taskId}的节点");
+            task.FINISHDATE = null;
+            var lastNodes = nodes.Where(c => c.NODE_ID == nodeId).ToList();
+            lastNodes.ForEach(c =>
+            {
+                c.FINISHDATE = null;
+                c.NODE_STATUS = NodeStatus.Active;
+            });
+            var logs = await _dbContext.Query<WF_HISTORY_TASK_LOG>().Where(c => c.TASK_ID == taskId).ToListAsync<WF_TASK_LOG>();
+            var nodeIds = nodes.Select(c => c.ID).DistinctAndOrderBy().ToList();
+            var logIds = logs.Select(c => c.ID).DistinctAndOrderBy().ToList();
+            var id = GuidHelper.NewSnowflakeId();
+            var wfNodeId = lastNodes.Where(c => c.NODE_STATUS != NodeStatus.Archived).Select(c => c.ID).FirstOrDefault();
+            var detail = string.IsNullOrWhiteSpace(info.NodeReason) ? "还原流程" : info.NodeReason;
+            var name = string.IsNullOrWhiteSpace(info.Operators) ? _user.RealName : info.Operators;
+            await _dbContext.UseTransactionAsync(async () =>
+            {
+                await _dbContext.InsertAsync(task);
+                await _dbContext.InsertRangeAsync(nodes);
+                await _dbContext.InsertRangeAsync(logs);
+                await _dbContext.DeleteAsync<WF_HISTORY_TASK>(c => c.ID == taskId);
+                await _dbContext.DeleteAsync<WF_HISTORY_NODE>(c => nodeIds.Contains(c.ID));
+                await _dbContext.DeleteAsync<WF_HISTORY_TASK_LOG>(c => logIds.Contains(c.ID));
+                await _dbContext.InsertAsync(() => new WF_TASK_LOG()
+                {
+                    ID = id,
+                    TASK_ID = taskId,
+                    WF_NODE_ID = wfNodeId,
+                    NODE_ID = nodeId,
+                    OPERATOR = name,
+                    OPERTITLE = "还原流程",
+                    OPERTYPE = "还原",
+                    OPERDETAIL = detail,
+                    OPERDATE = DateTime.Now
+                });
+            });
         }
 
         /// <summary>

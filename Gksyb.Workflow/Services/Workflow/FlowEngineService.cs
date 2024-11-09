@@ -62,6 +62,9 @@ namespace Gksyb.Workflow.Services.Workflow
         public Task CancelAsync(FlowExecuteInfo info) => _taskService.CancelAsync(info);
 
         /// <inheritdoc/>
+        public Task RestoreAsync(FlowExecuteInfo info) => _taskService.RestoreAsync(info);
+
+        /// <inheritdoc/>
         public Task ShareAsync(FlowExecuteInfo info) => _taskService.ShareAsync(info);
 
         /// <summary>

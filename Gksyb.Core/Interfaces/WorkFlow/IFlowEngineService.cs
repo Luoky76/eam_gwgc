@@ -46,5 +46,10 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         /// 取消流程 {"Id":"2NSLalmc5KB","TaskId":"2NSLakT4t9B"}
         /// </summary>
         public Task CancelAsync(FlowExecuteInfo info);
+
+        /// <summary>
+        /// 还原流程 {"TaskId":"2NSLakT4t9B"}
+        /// </summary>
+        public Task RestoreAsync(FlowExecuteInfo info);
     }
 }
