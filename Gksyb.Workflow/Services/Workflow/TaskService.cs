@@ -1,5 +1,4 @@
-﻿using Gksyb.Common.Data;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
@@ -288,9 +287,21 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         private async Task<BpmnNodeService> FindNodeService(FlowExecuteInfo info, Action<WF_NODE> action = null)
         {
-            var node = await _dbContext.Query<WF_NODE>().Where(c => c.ID == info.Id).FirstOrDefaultAsync()
-               ?? throw new MessageException($"找不到{info.Id}的任务节点");
-            MessageException.ThrowIf(!_user.IsSuper && node.NODE_USERID != _user.UserID, "您无权进行此操作");
+            var query = _dbContext.Query<WF_NODE>();
+            var id = info.Id;
+            var userId = info.NodeUserId ?? _user.UserID;
+            if (string.IsNullOrWhiteSpace(info.Id))
+            {
+                id = info.TaskId;
+                query = query.Where(c => c.TASK_ID == id && c.NODE_STATUS == NodeStatus.Active && c.NODE_USERID == userId);
+            }
+            else
+            {
+                query = query.Where(c => c.ID == id);
+            }
+            var node = await query.FirstOrDefaultAsync()
+                ?? throw new MessageException($"找不到{(string.IsNullOrWhiteSpace(info.Id) ? info.TaskId : info.Id)}的任务节点");
+            MessageException.ThrowIf(!_user.IsSuper && node.NODE_USERID != userId, "您无权进行此操作");
             MessageException.ThrowIf(node.NODE_STATUS != NodeStatus.Active, "节点已完成");
             info.FlowId = node.FLOW_ID;
             info.TaskId = node.TASK_ID;

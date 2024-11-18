@@ -5,6 +5,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Controllers.Workflow.Dtos;
 using System.Linq.Expressions;
+using NodeInfo = Gksyb.Workflow.Controllers.Workflow.Dtos.NodeInfo;
 
 namespace Gksyb.Workflow.Services.Workflow
 {

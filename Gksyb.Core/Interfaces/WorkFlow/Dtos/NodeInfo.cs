@@ -1,4 +1,4 @@
-﻿namespace Gksyb.Core.Interfaces.WorkFlow.Dtos
+﻿namespace Gksyb.Core.Interfaces.WorkFlow
 {
     public class NodeInfo
     {
@@ -53,14 +53,19 @@
         public string NodeReason { get; set; }
 
         /// <summary>
+        /// 启动时间
+        /// </summary>
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
         /// 查看日期
         /// </summary>
-        public DateTime? Viewdate { get; set; }
+        public DateTime? ViewDate { get; set; }
 
         /// <summary>
         /// 完成日期
         /// </summary>
-        public DateTime? Finishdate { get; set; }
+        public DateTime? FinishDate { get; set; }
 
         /// <summary>
         /// 标记是否处理，用于对接第三方平台时进行标记

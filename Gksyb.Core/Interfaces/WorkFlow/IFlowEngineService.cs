@@ -15,7 +15,7 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         /// <summary>
         /// 获取任务详情
         /// </summary>
-        public Task<TaskInfo> TaskInfoAsync(Expression<Func<TaskInfo, bool>> filter = null);
+        public Task<TaskInfo> TaskInfoAsync(Expression<Func<TaskInfo, bool>> filter = null, bool hasNode = false);
 
         /// <summary>
         /// 获取任务流转意见
@@ -28,7 +28,7 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public Task StartAsync(FlowExecuteInfo info);
 
         /// <summary>
-        /// 执行任务 {"Id":"2NSIfcMqWy4","NodeStatus":<see cref="NodeStatus"/>,"NodeReason":"同意"}
+        /// 执行任务 {"Id":"2NSIfcMqWy4","NodeStatus":<see cref="NodeStatus"/>,"NodeReason":"同意"} {"TaskId":"2NSIfcMqWy4","NodeStatus":<see cref="NodeStatus"/>,"NodeReason":"同意"}
         /// </summary>
         public Task ExcuteAsync(FlowExecuteInfo info);
 
