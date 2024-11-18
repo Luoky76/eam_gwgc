@@ -608,6 +608,10 @@
                 } else {
                     OldPassword = encrypt(OldPassword);
                     LoginPassword = encrypt(LoginPassword);
+                    business._doChangePassword = true;
+                    setTimeout(function () {
+                        delete business._doChangePassword;
+                    }, 3000);
                     LG.ajax({
                         type: 'post',
                         dataType: 'json',
@@ -664,7 +668,7 @@
             readMessage: function (id) {
                 var me = this;
                 LG.ajax({
-                    loading:false,
+                    loading: false,
                     url: 'message/read',
                     data: { id: id },
                     success: function () {
@@ -674,7 +678,7 @@
                     }
                 });
             },
-            toDetail: function (dom,id, title, href, target) {
+            toDetail: function (dom, id, title, href, target) {
                 var me = this;
                 liger.get($(dom).parents(".l-dialog")).close();
                 me.readMessage(id);
@@ -716,6 +720,11 @@
                 channel.onMessageCenter = function (info) {
                     me.showMessage(info);
                     me.refershUnReadCount();
+                };
+                channel.onChangePassword = function (info) {
+                    if (business._doChangePassword)
+                        return;
+                    f_exit();
                 };
             },
             refershUnReadCount: function () {

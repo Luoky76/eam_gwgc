@@ -1,9 +1,12 @@
 ﻿using Chloe.Extensions;
+using Gksyb.Common.Static;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
 
@@ -62,15 +65,6 @@ namespace Gksyb.Server.Services.Auth
             }
             return await query.Select(c => new { ID = c.CORPID, TEXT = c.CORP_SNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
                 .GetGridData(request);
-        }
-
-        /// <summary>
-        /// 获取初始化密码
-        /// </summary>
-        /// <returns></returns>
-        public string GetInitPassword()
-        {
-            return _options.InitPassWord;
         }
 
         /// <summary>
@@ -164,6 +158,12 @@ namespace Gksyb.Server.Services.Auth
             user.LOGINPASSWORD = UserSession.Encrypt(initPassWord);
             _dbContext.Update(user);
             await _dbContext.UserLogAsync("密码修改", $"{user.LOGINNAME}密码修改", $"{_user.UserName}初始化{user.LOGINNAME}的密码");
+            var messageCenter = HttpContext.RequestServices.GetService<IMessageCenterService>();
+            await messageCenter.SendAsync(new MessageInfo
+            {
+                Action = "ChangePassword",
+                Receives = new List<string>() { user.LOGINNAME }
+            });
             return initPassWord;
         }
 
