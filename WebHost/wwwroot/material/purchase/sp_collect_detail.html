@@ -70,16 +70,7 @@
                             { display: "说明", name: "MEMO", minWidth: 120, maxWidth: 500, type: "text" },
                             { display: "申请人", name: "REQUEST_USER", width: 150, type: "text", },
                             { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
-                            {
-                                display: "申请单号", name: "REQUEST_CODE", width: 150, type: "text",
-                                totalSummary:
-                                {
-                                    render: function (suminf, column, cell) {
-                                        return '<div>合计</div>';
-                                    },
-                                    align: 'center'
-                                }
-                            },
+                            { display: "申请单号", name: "REQUEST_CODE", width: 150, type: "text", },
                             { display: "申请日期", name: "REQUEST_DATE", width: 150, type: "date", },
                             { display: "物料ID", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
                             { display: "COLLECT_ID", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
@@ -162,6 +153,7 @@
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
+                me.bindGridEvent();
             },
             loadToolbar: function () {
                 var me = this;
@@ -178,6 +170,18 @@
                             break;
                         case "save":
                             me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Word":
+                            $.ligerDialog.open({
+                                url: "../../System/Export.html?exporttype=doc",
+                                modal: true
+                            });
                             break;
                     }
                 }
@@ -384,6 +388,52 @@
                         if (me.dialog) me.dialog.close();
                         if (me.callback) me.callback(false);
                     }
+                });
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Word',
+                        text: '导出Word',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
                 });
             },
             setFormDefaultBtn: function (cancleCallback, savedCallback) {
