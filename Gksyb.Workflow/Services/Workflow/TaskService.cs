@@ -1,4 +1,5 @@
 ﻿using Gksyb.Core.Auth;
+using Gksyb.Core.Filter;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
@@ -172,6 +173,22 @@ namespace Gksyb.Workflow.Services.Workflow
                     OPERDATE = DateTime.Now
                 });
             });
+        }
+
+        /// <summary>
+        /// 设置任务的表单数据
+        /// </summary>
+        public async Task SetFormDataAsync(FlowExecuteInfo info)
+        {
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).FirstOrDefaultAsync();
+            MessageException.ThrowIf(task == null, $"找不到{info.TaskId}的任务");
+            var formData = info.FormData.ToJson();
+            var title = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == task.FLOW_ID).Select(c => c.FLOW_TITLE).FirstOrDefaultAsync();
+            title = title.Replace(null, info.FormData, FilterParmMatch.CurrentParmMatch);
+            _dbContext.TrackEntity(task);
+            task.FLOW_FORM_DATA = formData;
+            task.FLOW_TITLE = title;
+            await _dbContext.UpdateAsync(task);
         }
 
         /// <summary>

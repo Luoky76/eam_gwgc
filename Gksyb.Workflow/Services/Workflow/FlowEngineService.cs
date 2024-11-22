@@ -65,6 +65,9 @@ namespace Gksyb.Workflow.Services.Workflow
         public Task RestoreAsync(FlowExecuteInfo info) => _taskService.RestoreAsync(info);
 
         /// <inheritdoc/>
+        public Task SetFormDataAsync(FlowExecuteInfo info) => _taskService.SetFormDataAsync(info);
+
+        /// <inheritdoc/>
         public Task ShareAsync(FlowExecuteInfo info) => _taskService.ShareAsync(info);
 
         /// <summary>

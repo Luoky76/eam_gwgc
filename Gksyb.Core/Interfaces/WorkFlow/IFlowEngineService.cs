@@ -51,5 +51,10 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         /// 还原流程 {"TaskId":"2NSLakT4t9B"}
         /// </summary>
         public Task RestoreAsync(FlowExecuteInfo info);
+
+        /// <summary>
+        /// 设置任务的表单数据{"TaskId":"2NSLakT4t9B",FormData:{}}
+        /// </summary>
+        public Task SetFormDataAsync(FlowExecuteInfo info);
     }
 }
