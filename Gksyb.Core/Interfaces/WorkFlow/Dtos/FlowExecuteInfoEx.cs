@@ -42,6 +42,12 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public long? NodeUserId { get; set; }
 
         /// <summary>
+        /// 当前所处节点
+        /// </summary>
+        [JsonIgnore]
+        public BpmnNodeInfo CurrentNode { get; set; }
+
+        /// <summary>
         /// 临时目标节点信息，自动流转用
         /// </summary>
         [JsonIgnore]

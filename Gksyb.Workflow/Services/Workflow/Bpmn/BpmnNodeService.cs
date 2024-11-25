@@ -50,6 +50,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
 
         public override async Task Execute()
         {
+            SetBpmnNodeInfo();
             await Intercept(PreInterceptors);
             await Exec();
             await DoPostInterceptors();
@@ -355,6 +356,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         private async Task Intercept(List<IFlowInterceptor> interceptorList)
         {
             if (interceptorList.Count < 1) return;
+            SetBpmnNodeInfo();
             await SetFormData();
             await interceptorList.ForEachAsync(async c =>
             {

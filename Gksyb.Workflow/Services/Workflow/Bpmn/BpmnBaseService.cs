@@ -131,6 +131,22 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         }
 
         /// <summary>
+        /// 设置Bpmn节点信息让拦截器调用
+        /// </summary>
+        protected void SetBpmnNodeInfo()
+        {
+            if (_info == null || _info.CurrentNode.Id == Id) return;
+            _info.CurrentNode = new()
+            {
+                Id = Id,
+                Name = Name,
+                Title = Title,
+                BpmnType = BpmnType,
+                Properties = Properties
+            };
+        }
+
+        /// <summary>
         /// 执行当前模型
         /// </summary>
         public abstract Task Execute();

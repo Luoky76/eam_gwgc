@@ -46,6 +46,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         public override async Task Execute()
         {
             if (Target == null) return;
+            SetBpmnNodeInfo();
             var expression = Expression;
             if (!string.IsNullOrWhiteSpace(expression))
             {
