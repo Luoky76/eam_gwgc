@@ -135,7 +135,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// </summary>
         protected void SetBpmnNodeInfo()
         {
-            if (_info == null || _info.CurrentNode == null || _info.CurrentNode.Id == Id) 
+            if (_info == null || _info.CurrentNode?.Id == Id)
                 return;
             _info.CurrentNode = new()
             {
