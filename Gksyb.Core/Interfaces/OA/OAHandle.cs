@@ -45,7 +45,6 @@ namespace Gksyb.Core.Interfaces.OA
             }
         }
 
-
         public async Task<string> CreateFlow(string url, string billId, string billTitle, string phone, string loginid, Object mainData, Object detData)
         {
             string json = await GetFlowJsonAsync(url, billId, billTitle, phone, loginid, mainData, detData);
