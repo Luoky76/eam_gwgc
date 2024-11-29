@@ -251,22 +251,20 @@ namespace Gksyb.Common
             try
             {
                 source.EnableBuffering();
-                if (!source.Body.CanSeek) return json;
+                if (!source.Body.CanSeek)
+                    return json;
                 source.Body.Position = 0;
                 using var ms = new MemoryStream();
                 await source.Body.CopyToAsync(ms);
                 ms.Position = 0;
                 using var reader = new StreamReader(ms, source.GetEncoding());
                 json = await reader.ReadToEndAsync();
+                source.Body.Position = 0;
             }
             catch (BadHttpRequestException ex)
             {
                 var logger = source.HttpContext.RequestServices.GetRequiredService<ILogger<HttpRequest>>();
                 logger.LogError(new LogPath("Exception"), ex.ToString());
-            }
-            finally
-            {
-                if (source.Body.CanSeek) source.Body.Position = 0;
             }
             return json;
         }

@@ -173,7 +173,17 @@ namespace Gksyb.Common.TCP
             if (_closed) return;
             if (_reConnect) return;
             _reConnect = true;
-            Task.Delay(ReConnectTime.Value).ContinueWith(t => Connect(_server));
+            Task.Delay(ReConnectTime.Value).ContinueWith(t =>
+            {
+                try
+                {
+                    Connect(_server);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(_logPath, ex.ToString());
+                }
+            });
         }
 
         /// <summary>

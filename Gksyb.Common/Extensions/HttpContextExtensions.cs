@@ -137,7 +137,17 @@ namespace Gksyb.Common
             source.Items.Add(RequestBodyName, value is string ? value : value.ToMiniJson());
         }
 
-        public static string GetRequestBodyItem(this HttpContext source) => source.Request.GetContent().Result();
+        public static string GetRequestBodyItem(this HttpContext source)
+        {
+            try
+            {
+                return source.Request.GetContent().Result();
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
 
         /// <summary>
         /// 获取request内容

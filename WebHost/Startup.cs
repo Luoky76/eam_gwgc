@@ -111,12 +111,16 @@ namespace WebHost
                 options.MessageTemplate = $"{{RequestMethod}} {{RequestPath}} responded {{StatusCode}} in {{Elapsed:0.0}} ms{Environment.NewLine}{{User}} {{IP}} {{UA}}{Environment.NewLine}Request:{{RequestBody}}{Environment.NewLine}Response:{{ResponseBody}}{Environment.NewLine}";
                 options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
                 {
-                    diagnosticContext.Set(nameof(LogPath), nameof(HttpContext));
-                    diagnosticContext.Set("User", $"{httpContext.User?.Identity?.Name}");
-                    diagnosticContext.Set("IP", $"{httpContext.Request.GetRealIP(true)}");
-                    diagnosticContext.Set("UA", $"{httpContext.Request.GetUserAgent()}");
-                    diagnosticContext.Set("RequestBody", httpContext.GetRequestBodyItem().SubStr(0, 1000));
-                    diagnosticContext.Set("ResponseBody", httpContext.GetResponseBodyItem().SubStr(0, 200));
+                    try
+                    {
+                        diagnosticContext.Set(nameof(LogPath), nameof(HttpContext));
+                        diagnosticContext.Set("User", $"{httpContext.User?.Identity?.Name}");
+                        diagnosticContext.Set("IP", $"{httpContext.Request.GetRealIP(true)}");
+                        diagnosticContext.Set("UA", $"{httpContext.Request.GetUserAgent()}");
+                        diagnosticContext.Set("RequestBody", httpContext.GetRequestBodyItem().SubStr(0, 1000));
+                        diagnosticContext.Set("ResponseBody", httpContext.GetResponseBodyItem().SubStr(0, 200));
+                    }
+                    catch { }
                 };
             });
             app.UseRouting();

@@ -12,6 +12,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 using Org.BouncyCastle.X509;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Gksyb.Common
 {
@@ -21,6 +22,8 @@ namespace Gksyb.Common
     public sealed class CryptographyHelper
     {
         #region ========加密========
+
+        private static readonly Regex _frontReg = new(@"^pqz(?<f1>.*)zpq$");
 
         /// <summary>
         /// 前端加密
@@ -35,7 +38,7 @@ namespace Gksyb.Common
             var value = text.Substring(random.Next(0, length - 1), 1);
             var index = (text.Length + 1) / 2;
             text = $"{text[index..]}{value}{text[..index]}";
-            return text;
+            return $"pqz{new string(text.Reverse().ToArray())}zpq$";
         }
 
         /// <summary>
@@ -47,6 +50,10 @@ namespace Gksyb.Common
             try
             {
                 if (string.IsNullOrWhiteSpace(text)) return text;
+                if (_frontReg.IsMatch(text))
+                {
+                    text = new string(_frontReg.Replace(text, "${f1}").Reverse().ToArray());
+                }
                 var index = (text.Length + 1) / 2;
                 if (index > 0) text = $"{text[index..]}{text[..(index - 1)]}";
                 return FromBase64(text);
@@ -686,6 +693,7 @@ namespace Gksyb.Common
                 case CipherMode.ECB:
                     cipher.Init(true, sm4KeyParams);
                     break;
+
                 default:
                     cipher.Init(true, sm4keyParamsWithIv);
                     break;
@@ -721,6 +729,7 @@ namespace Gksyb.Common
                 case CipherMode.ECB:
                     cipher.Init(false, sm4KeyParams);
                     break;
+
                 default:
                     cipher.Init(false, sm4keyParamsWithIv);
                     break;
