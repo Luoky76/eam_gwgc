@@ -88,11 +88,11 @@ namespace Gksyb.Common.Office.Excel
             {
                 var sheet = excelPackage.Workbook.Worksheets[sheetName];
 
-                //渲染表格
-                await RenderTable(sheet);
-
                 //处理普通单元格模板
                 await RenderCells(sheet);
+
+                //渲染表格
+                await RenderTable(sheet);
 
                 //重新设置行宽（适应图片）
                 RenderRowsHeight(sheet);
@@ -189,16 +189,6 @@ namespace Gksyb.Common.Office.Excel
 
                 var maxCloumn = sheet.Dimension.End.Column;
                 RowCopy(sheet, refRow, refRow, table.RowCount, maxCloumn);
-
-                #region 更新单元格
-
-                var updateCellWriters = SheetWriters[sheet.Name].Where(p => p.WriterType == WriterTypes.Cell).Where(p => p.RowIndex > table.RawRowStart);
-                foreach (var writer in updateCellWriters)
-                {
-                    writer.RowIndex += table.RowCount - 1;
-                }
-
-                #endregion 更新单元格
 
                 //表格渲染完成后更新插入的行数
                 insertRows += table.RowCount - 1;
