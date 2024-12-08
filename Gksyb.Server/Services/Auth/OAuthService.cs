@@ -1,4 +1,5 @@
-﻿using Gksyb.Common.Mvc.Interface;
+﻿using Flurl.Http;
+using Gksyb.Common.Mvc.Interface;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
@@ -129,6 +130,56 @@ namespace Gksyb.Server.Services.Auth
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ShortExpiration)
             });
             return token;
+        }
+
+        /// <summary>
+        /// 根据类型获取存储的key
+        /// </summary>
+        public async Task<string> GetStoreKeyAsync(string userType) => userType switch
+        {
+            "1" => _user.UserName,
+            "2" => (await GetUserAsync()).Phone,
+            "3" => (await GetUserAsync()).ToMiniJson(),
+            "4" => (await GetUserAsync(_user.UserName, true)).ToMiniJson(),
+            _ => string.IsNullOrWhiteSpace(_user.WorkerCode) ? _user.UserName : _user.WorkerCode
+        };
+
+        /// <summary>
+        /// 获取单点跳转地址
+        /// </summary>
+        public async Task<string> GetSSOUrlAsync(string appid)
+        {
+            var url = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "SSO" && c.CODE_EN == appid)
+                .Select(c => c.CODE_CN).FirstOrDefaultAsync();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(url), $"请先配置{appid}");
+            return url;
+        }
+
+        /// <summary>
+        /// 获取外系统单点对接的信息
+        /// </summary>
+        public async Task<string> GetSSONameAsync(TokenRequest token)
+        {
+            var codes = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "SSO").ToListAsync();
+            var url = codes.Where(c => c.CODE_EN == "Url").Select(c => c.CODE_CN).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(url), "请先配置SSO的Url");
+            var appid = codes.Where(c => c.CODE_EN == "AppId").Select(c => c.CODE_CN).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(appid), "请先配置SSO的AppId");
+            var secret = codes.Where(c => c.CODE_EN == "Secret").Select(c => c.CODE_CN).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(appid), "请先配置SSO的Secret");
+            url = url.TrimEnd('/');
+            var result = await $"{url}/oauth/now".GetJsonAsync<AjaxResult<DateTime>>();
+            MessageException.ThrowIf(result.IsError, result.Message);
+            var request = new OAuthRequest<TokenRequest>()
+            {
+                AppId = appid,
+                Body = token.ToMiniJson(),
+                TimeStamp = result.Data
+            };
+            request.Sign = request.CalcuSign(secret);
+            var info = await $"{url}/oauth/userinfo".PostJsonAsync(request).ReceiveJson<AjaxResult<string>>();
+            MessageException.ThrowIf(info.IsError, info.Message);
+            return info.Data;
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿#pragma warning disable CA1822 // 将成员标记为 static 会使路由不可访问
-using Azure;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
@@ -49,6 +48,9 @@ namespace Gksyb.Server.Controllers.Auth
         [AllowAnonymous, HttpGet, HttpPost]
         public AjaxResult<DateTime> Now() => AjaxResult<DateTime>.Success(DateTime.Now);
 
+        /// <summary>
+        /// 获取调用各接口的access_token
+        /// </summary>
         [AllowAnonymous]
         public async Task<AjaxResult> AccessTokenAsync(string json)
         {
@@ -74,32 +76,74 @@ namespace Gksyb.Server.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// 本系统单点登录外系统用到的token
+        /// </summary>
         [JsToken]
-        public async Task<AjaxResult> GenerateTokenAsync([FromServices] UserSession user, string userType)
+        public async Task<AjaxResult> GenerateTokenAsync(string userType)
         {
-            var key = userType switch
-            {
-                "1" => user.UserName,
-                "2" => (await _service.GetUserAsync()).Phone,
-                "3" => (await _service.GetUserAsync()).ToMiniJson(),
-                "4" => (await _service.GetUserAsync(user.UserName, true)).ToMiniJson(),
-                _ => string.IsNullOrWhiteSpace(user.WorkerCode) ? user.UserName : user.WorkerCode,
-            };
             var token = await _service.TokenAsync(new TokenRequest()
             {
-                Key = key,
+                Key = await _service.GetStoreKeyAsync(userType),
                 IP = Request.GetRealIP(),
                 UA = Request.GetUserAgent()
             });
             return AjaxResult.Success(token, default);
         }
 
+        /// <summary>
+        /// 本系统单点登录外系统用到url，url后面带token
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SSOUrlAsync([FromServices] UserSession user, string appid, string userType)
+        {
+            var url = await _service.GetSSOUrlAsync(appid);
+            var token = await _service.TokenAsync(new TokenRequest()
+            {
+                Key = await _service.GetStoreKeyAsync(userType),
+                IP = Request.GetRealIP(),
+                UA = Request.GetUserAgent()
+            });
+            url = $"{url}{(url.Contains('?') ? "&" : "?")}token={token}";
+            return AjaxResult.Success(url, default);
+        }
+
         [AllowAnonymous]
         public async Task<string> JsTokenAsync()
         {
-            return await HttpContext.GenerateTokenAsync($"oauth/validTicket");
+            return await HttpContext.GenerateTokenAsync("oauth/validTicket");
         }
 
+        /// <summary>
+        /// 外系统单点本系统，先获取外系统token然后跳转本系统的地址
+        /// </summary>
+        [JsToken("oauth/validTicket"), AllowAnonymous]
+        public async Task<AjaxResult> SSOAsync([FromServices] IAuthService service, [FromHeader, Required] string token, [FromHeader] string menuAppname)
+        {
+            var ip = Request.GetRealIP();
+            var ua = Request.GetUserAgent();
+            var name = await _service.GetSSONameAsync(new TokenRequest()
+            {
+                Key = token,
+                IP = ip,
+                UA = ua
+            });
+            var user = name.Contains('{') ? name.ToObject<UserInfoResponse>() : await _service.GetUserAsync(name);
+            var request = new LoginRequest()
+            {
+                Username = user.Account,
+                IP = ip,
+                UserAgent = ua
+            };
+            request.Password = await service.GetPasswordAsync(request.Username);
+            request.Source = "SSO";
+            request.MenuAppname = menuAppname;
+            return await service.LoginAsync(request, checkPassword: false);
+        }
+
+        /// <summary>
+        /// 外系统单点本系统，先获取本系统token然后跳转本系统的地址
+        /// </summary>
         [JsToken, AllowAnonymous]
         public async Task<AjaxResult> ValidTicketAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, [FromHeader, Required] string ticket, [FromHeader] string menuAppname)
         {
@@ -131,6 +175,9 @@ namespace Gksyb.Server.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// 外系统单点本系统，获取token
+        /// </summary>
         [AllowAnonymous]
         public async Task<AjaxResult> TokenAsync(string json)
         {
@@ -160,6 +207,9 @@ namespace Gksyb.Server.Controllers.Auth
             }
         }
 
+        /// <summary>
+        /// 本系统单点跳转外系统，外系统调用本接口获取用户信息
+        /// </summary>
         [AllowAnonymous]
         public async Task<AjaxResult> UserInfoAsync(string json)
         {
