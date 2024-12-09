@@ -74,7 +74,8 @@ namespace EAM.Material.Services
                     COLLECT_SPTYPE = c.COLLECT_SPTYPE,
                     COLLECT_METHOD = c.COLLECT_METHOD,
                     CONSULT_PROVIDER = c.CONSULT_PROVIDER,
-                    MEMO = c.MEMO
+                    MEMO = c.MEMO,
+                    EXCEL_URL = c.EXCEL_URL,
                 })
                 .OrderBy(c => c.AUDITING)
                 .ThenByDesc(c => c.COLLECT_CODE)

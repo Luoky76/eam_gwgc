@@ -69,6 +69,13 @@
                             { display: "采购部门", name: "DEPT_NAME", width: 100, type: "text", },
                             { display: "申请日期", name: "COLLECT_DATE", width: 120, type: "date", format: "yyyy-MM-dd", },
                             { display: "备注", name: "MEMO", minWidth: 120, maxWidth: 200, type: "text", editor: { type: 'text' }, },
+                            {
+                                display: "明细附件", name: "EXCEL_URL", minWidth: 120, maxWidth: 200, type: "text",
+                                editor: { type: 'text' },
+                                render: function (rowdata, rowindex, value, column) {
+                                    return `<a href="${value}">下载明细表附件</a>`;
+                                }
+                            },
                             { display: "主键", name: "COLLECT_ID", dbname: "COLLECT_ID", width: 100, type: "text", hide: true },
                         ]
                     }
