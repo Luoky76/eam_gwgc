@@ -143,6 +143,7 @@
                                     旧密码
                                 </label>
                                 <div class="col-sm-8">
+                                    <span class="toggle-password">👁️</span>
                                     <input type="password" class="form-control" id="OldPassword" autocomplete="off" placeholder="请输入旧密码" />
                                 </div>
                             </div>
@@ -151,6 +152,7 @@
                                     新密码
                                 </label>
                                 <div class="col-sm-8">
+                                    <span class="toggle-password">👁️</span>
                                     <input type="password" class="form-control" id="NewPassword" autocomplete="off" placeholder="请输入新密码" />
                                 </div>
                             </div>
@@ -159,6 +161,7 @@
                                     确认密码
                                 </label>
                                 <div class="col-sm-8">
+                                    <span class="toggle-password">👁️</span>
                                     <input type="password" class="form-control" id="equalPassword" autocomplete="off" placeholder="再次输入新密码" />
                                 </div>
                             </div>
@@ -663,6 +666,12 @@
                 var me = this;
                 $("#user-message").click(function () {
                     me.showMessageCenter();
+                });
+                $(".toggle-password").click(function () {
+                    var dom = $(this), pwd = dom.nextAll("input");
+                    var isPassword = pwd.attr("type") === "password";
+                    pwd.attr("type", isPassword ? "text" : "password");
+                    dom.text(isPassword ? "🙈" : "👁️");
                 });
             },
             readMessage: function (id) {

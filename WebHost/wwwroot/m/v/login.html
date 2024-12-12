@@ -99,6 +99,15 @@
         .text-dec {
             border-bottom: 1px solid #2196f3;
         }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            z-index: 999;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -120,6 +129,7 @@
                                     <input type="text" id="username" name="username" placeholder="请输入账号" autocomplete="off" required validate trim />
                                 </li>
                                 <li class="item-content item-input input-content">
+                                    <span class="toggle-password">👁️</span>
                                     <i class="material-icons text-color-gray opacity-5">lock</i>
                                     <input type="password" id="password" name="password" placeholder="请输入密码" autocomplete="new-password" required validate trim />
                                 </li>
@@ -345,6 +355,12 @@
                         if (!me._noInner) me.submit();
                     }
                 });
+                $$(".toggle-password").click(function () {
+                    var dom = $(this), pwd = dom.nextAll("input");
+                    var isPassword = pwd.attr("type") === "password";
+                    pwd.attr("type", isPassword ? "text" : "password");
+                    dom.text(isPassword ? "🙈" : "👁️");
+                });
             },
             //初始化存储
             initStorage: function () {
@@ -355,7 +371,7 @@
                     var username = localStorage.getItem("GksybUn");
                     var password = localStorage.getItem("GksybPw");
                     var remember = localStorage.getItem("GksybRm");
-                    me.remember.prop("checked", remember === "1")
+                    $$(me.remember).prop("checked", remember === "1")
                     if (username) formData.username = decryptFront(username);
                     if (username) formData.password = decryptFront(password);
                     app.form.fillFromData("#my-form", formData);
