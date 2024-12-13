@@ -349,7 +349,7 @@
                             };
                             closeQuery(function () {
                                 win._skipClose = true;
-                                pwin.closeCurrentTab();
+                                pwin.closeTabByPageId(pageId);
                             });
                             return false;
                         }
