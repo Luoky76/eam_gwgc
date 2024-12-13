@@ -75,7 +75,6 @@
     <script id="scriptBlock" type="text/javascript">
         'use strict';
         var business = {
-            openid: "",
             submit: function () {
                 var me = this;
                 var form = me.form;
@@ -85,7 +84,6 @@
                 var formData = app.form.convertToData(form);
                 formData.username = encrypt(formData.username);
                 formData.password = encrypt(formData.password);
-                formData.verifycode = me.openid;
                 app.ajax({
                     noGlobal: true,
                     url: 'weixin/bind',
@@ -115,7 +113,6 @@
                 app.ajax({
                     noGlobal: true,
                     url: 'weixin/unbind',
-                    data: { openid: me.openid },
                     success: function () {
                         app.dialog.alert("解绑成功", function () {
                             me.exit();
@@ -128,7 +125,6 @@
                 app.ajax({
                     noGlobal: true,
                     url: 'weixin/bindingStaus',
-                    data: { openid: me.openid },
                     success: function (data, message) {
                         if (data === "1") {
                             app.dialog.confirm('您已经绑定账号' + message + ',是否解绑?', function () {
@@ -148,9 +144,6 @@
                 var me = this;
                 me.eventBind();
                 me.form = $$(".page-current #my-form");
-                app.methods.getOpenID(function (openid) {
-                    me.openid = openid;
-                });
                 app.form.fillFromData(me.form, {});
                 me.bindingStaus();
             }
