@@ -289,7 +289,8 @@ namespace Microsoft.AspNetCore.Http
             if (stream.CanSeek) stream.Position = 0;
             using var reader = new StreamReader(stream, Encoding.UTF8);
             var content = reader.ReadToEnd();
-            content.XssFilter();
+            if (Regex.IsMatch(content, @"\bjavascript\b|\balert\b", RegexOptions.IgnoreCase))
+                throw new MessageException("防注入:1003");
         }
 
         /// <summary>
