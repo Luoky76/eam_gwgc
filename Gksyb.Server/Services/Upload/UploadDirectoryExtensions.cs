@@ -68,9 +68,13 @@ namespace Microsoft.AspNetCore.Builder
             return dbContext.Query<SYS_FILE>().Where(c => c.FILE_PATH == directory && c.CREATEUSERID == user.UserID).Any();
         }
 
+        private const string TokenKey = "token";
+
         private static UserSession GetUserFromFileToken(HttpContext context)
         {
-            var token = context.Request.GetParm("token");
+            if (!context.Request.Query.ContainsKey(TokenKey))
+                return null;
+            var token = context.Request.Query[TokenKey].ToString();
             if (string.IsNullOrWhiteSpace(token))
                 return null;
             var distributedCache = context.RequestServices.GetService<IDistributedCache>();

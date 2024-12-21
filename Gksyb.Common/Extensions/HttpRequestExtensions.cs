@@ -301,7 +301,7 @@ namespace Gksyb.Common
         public static string GetParm(this HttpRequest source, string parm)
         {
             if (source.Query.ContainsKey(parm)) return source.Query[parm];
-            if (source.Form.ContainsKey(parm)) return source.Form[parm];
+            if (source.HasFormContentType && source.Form.ContainsKey(parm)) return source.Form[parm];
             if (source.Headers.ContainsKey(parm)) return source.Headers[parm];
             return null;
         }
