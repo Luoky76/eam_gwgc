@@ -107,7 +107,7 @@
                                 var iconHtml = '<div class="access-icon access-permit l-checkbox';
                                 if (rowdata.Permit) {
                                     iconHtml += " access-icon-selected l-checkbox-checked";
-                                    if (!f_select(rowdata)) iconHtml += " access-icon-incomplete l-checkbox-incomplete";
+                                    //if (!f_select(rowdata)) iconHtml += " access-icon-incomplete l-checkbox-incomplete";
                                 }
                                 iconHtml += '"';
                                 iconHtml += ' rowid = "' + rowdata['__id'] + '"';
@@ -165,18 +165,18 @@
                     }
                 }
                 else {
-                    while (parent) {
-                        var childselected = false;
-                        var parentchild = gridRight.getChildren(parent);
-                        for (var i = 0, l = parentchild.length; i < l; i++) {
-                            childselected = childselected || parentchild[i].Permit;
-                        }
-                        if (!childselected) {
-                            parent.Permit = selected;
-                            gridRight.reRender({ rowdata: parent });
-                        }
-                        parent = gridRight.getParent(parent);
-                    }
+                    //while (parent) {
+                    //    var childselected = false;
+                    //    var parentchild = gridRight.getChildren(parent);
+                    //    for (var i = 0, l = parentchild.length; i < l; i++) {
+                    //        childselected = childselected || parentchild[i].Permit;
+                    //    }
+                    //    if (!childselected) {
+                    //        parent.Permit = selected;
+                    //        gridRight.reRender({ rowdata: parent });
+                    //    }
+                    //    parent = gridRight.getParent(parent);
+                    //}
                 }
                 var children = gridRight.getChildren(rowdata);
                 if (children) {
