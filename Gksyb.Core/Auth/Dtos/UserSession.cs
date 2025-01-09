@@ -277,7 +277,10 @@ namespace Gksyb.Core.Auth
                 logger.LogError(_logPath, $"{Token}验证失败，{Environment.NewLine}当前：{ip}{Environment.NewLine}原始：{IP}{Environment.NewLine}当前：{userAgent}{Environment.NewLine}原始：{UserAgent}");
             }
             distributedCache ??= request.HttpContext.RequestServices.GetService<IDistributedCache>();
-            distributedCache.Remove(Token);
+            if (!string.IsNullOrWhiteSpace(Token))
+            {
+                distributedCache.Remove(Token);
+            }
             return false;
         }
 
