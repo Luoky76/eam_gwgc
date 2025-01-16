@@ -38,7 +38,7 @@ namespace Gksyb.Common
             var value = text.Substring(random.Next(0, length - 1), 1);
             var index = (text.Length + 1) / 2;
             text = $"{text[index..]}{value}{text[..index]}";
-            return $"pqz{new string(text.Reverse().ToArray())}zpq$";
+            return $"pqz{new string(text.Reverse().ToArray())}zpq";
         }
 
         /// <summary>
