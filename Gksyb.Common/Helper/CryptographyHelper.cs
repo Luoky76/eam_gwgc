@@ -571,7 +571,7 @@ namespace Gksyb.Common
         /// </summary>
         public static byte[] SM2Encrypt(ICipherParameters sm2PublicKeyParams, byte[] plainBytes)
         {
-            var engine = new SM2Engine(Mode.C1C3C2);
+            var engine = new SM2Engine(SM2Engine.Mode.C1C3C2);
             engine.Init(true, new ParametersWithRandom(sm2PublicKeyParams));
             return engine.ProcessBlock(plainBytes, 0, plainBytes.Length);
         }
