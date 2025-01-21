@@ -212,7 +212,8 @@
                     url: 'myinfo/exportlog',
                     data: { url: (item.pathname || "") + "?" + exporttype, menuNo: getQueryStringByName("menuno", item.url) }
                 });
-                ((parent && parent.liger) ? parent.liger : liger).saveAs(dataURI, (new Date()).format("yyyyMMddhhmmss.") + exporttype);
+                var filename = getQueryStringByName("filename") || me.dialogData.filename || (new Date()).format("yyyyMMddhhmmss");
+                ((parent && parent.liger) ? parent.liger : liger).saveAs(dataURI, filename + "." + exporttype);
                 me.dialog.close();
             },
             init: function () {
