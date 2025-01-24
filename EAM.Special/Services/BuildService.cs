@@ -204,30 +204,29 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeAdd(BUILD_COUNT entity)
         {
-            //若实体无船舶信息，则根据登录用户部门查找船舶
-            if (entity.DEVICE_ID.IsNullOrEmpty())
+            //获取船舶设备卡片，若实体无船舶信息，则根据登录用户部门查找船舶
+            var card = await _dbContext.Query<DEVICE_CARD>(x => x.TYPE_NAME == "船舶")
+                .Select(x => new { x.DEVICE_ID, x.DEVICE_NAME, x.DEVICE_NO, x.DEPT_ID })
+                .WhereIf(entity.DEVICE_ID.IsNullOrWhiteSpace(), x => _userSession.Corp.CorpID == x.DEPT_ID)
+                .WhereIfNotNullOrEmpty(entity.DEVICE_ID, x => x.DEVICE_ID == entity.DEVICE_ID)
+                .FirstOrDefaultAsync();
+            if (card == null)
             {
-                var card = _dbContext.Query<DEVICE_CARD>()
-                .Select(b => new { b.DEVICE_ID, b.DEVICE_NAME, b.DEVICE_NO, b.DEPT_ID })
-                .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
-                if (card == null)
-                {
-                    throw new MessageException("未找到船舶信息！");
-                }
-                entity.DEVICE_ID = card.DEVICE_ID;
-                entity.DEVICE_NAME = card.DEVICE_NAME;
-                entity.DEVICE_NO = card.DEVICE_NO;
+                throw new MessageException("未找到船舶信息！");
             }
+            entity.DEVICE_ID = card.DEVICE_ID;
+            entity.DEVICE_NAME = card.DEVICE_NAME;
+            entity.DEVICE_NO = card.DEVICE_NO;
 
-            entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.BUILD_ID.IsNullOrWhiteSpace())
+            {
+                entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
 
             await Calc(entity);
 
-            var isex = await _dbContext.Query<BUILD_COUNT>()
-                .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
-                .Select((a, b) => new { b.DEPT_ID, a.STARTDATE })
-                .Where(x => x.STARTDATE == entity.STARTDATE && _userSession.Corp.CorpID == x.DEPT_ID).ToListAsync();
-            if (isex.Count() > 0)
+            var isex = await _dbContext.Query<BUILD_COUNT>(x => x.DEVICE_ID == entity.DEVICE_ID && x.STARTDATE == entity.STARTDATE).FirstOrDefaultAsync();
+            if (isex != null)
             {
                 throw new MessageException("已存在此日期数据，无法重复添加！");
             }
