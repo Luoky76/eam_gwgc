@@ -225,6 +225,13 @@ namespace Gksyb.Model
         public string DEVICE_NAME { get; set; }
 
         /// <summary>
+        /// 设备编号
+        /// </summary>
+        [Description("设备编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEVICE_NO { get; set; }
+
+        /// <summary>
         /// 待工时间
         /// </summary>
         [Description("待工时间")]

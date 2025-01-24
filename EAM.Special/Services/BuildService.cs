@@ -208,7 +208,7 @@ namespace EAM.Special.Services
             if (entity.DEVICE_ID.IsNullOrEmpty())
             {
                 var card = _dbContext.Query<DEVICE_CARD>()
-                .Select(b => new { b.DEVICE_NAME, b.DEVICE_ID, b.DEPT_ID })
+                .Select(b => new { b.DEVICE_ID, b.DEVICE_NAME, b.DEVICE_NO, b.DEPT_ID })
                 .Where(x => _userSession.Corp.CorpID == x.DEPT_ID).FirstOrDefault();
                 if (card == null)
                 {
@@ -216,6 +216,7 @@ namespace EAM.Special.Services
                 }
                 entity.DEVICE_ID = card.DEVICE_ID;
                 entity.DEVICE_NAME = card.DEVICE_NAME;
+                entity.DEVICE_NO = card.DEVICE_NO;
             }
 
             entity.BUILD_ID = GuidHelper.NewSnowflakeId().ToString();
