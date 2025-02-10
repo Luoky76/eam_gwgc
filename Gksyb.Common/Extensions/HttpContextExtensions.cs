@@ -72,9 +72,9 @@ namespace Gksyb.Common
         {
             var seed = GuidHelper.NewShortId().GetHashCode();
             var random = new Random(seed);
-            var value = Guid.NewGuid().ToString("N")[..random.Next(3, 20)];
             var uid = source.GetClientID();
             key = (key ?? "").TrimStart('/').TrimEnd('/').ToLower();
+            var value = $"{key.Last()}{Guid.NewGuid().ToString("N")[..random.Next(3, 20)]}";
             key = $"{uid}-{key}";
             var distributedCache = source.RequestServices.GetService<IDistributedCache>();
             await distributedCache.SetStringAsync(key, value, new DistributedCacheEntryOptions()
