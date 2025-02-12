@@ -264,8 +264,15 @@
                             success: function (data) {
                                 var rows = gridRight.rows;
                                 for (var i = 0, l = rows.length; i < l; i++) {
-                                    rows[i].Permit = checkPermit(rows[i], data);
+                                    var item = rows[i];
+                                    item.Permit = checkPermit(item, data);
                                 }
+                                $.ligerui.treeMap(rows, "children", function (item, parent) {
+                                    if (item.Permit && parent) {
+                                        parent.Permit = true;
+                                        parent.Forbid = false;
+                                    }
+                                });
                                 gridRight.reRender();
                             }
                         });
@@ -301,9 +308,16 @@
                             success: function (data) {
                                 var rows = gridRight.rows;
                                 for (var i = 0, l = rows.length; i < l; i++) {
-                                    rows[i].Permit = checkPermitUser(rows[i], data);
-                                    rows[i].Forbid = !rows[i].Permit;
+                                    var item = rows[i];
+                                    item.Permit = checkPermitUser(item, data);
+                                    item.Forbid = !item.Permit;
                                 }
+                                $.ligerui.treeMap(rows, "children", function (item, parent) {
+                                    if (item.Permit && parent) {
+                                        parent.Permit = true;
+                                        parent.Forbid = false;
+                                    }
+                                });
                                 gridRight.reRender();
                             }
                         });
@@ -318,12 +332,13 @@
                 if (!data || !data.length) return false;
                 var isButton = rowdata.BTNID != null && rowdata.BTNID != 0;
                 for (var i = 0, l = data.length; i < l; i++) {
-                    if (isButton && data[i].BTNNO == rowdata.ACCESSNO) {
-                        Permit = data[i].Permit;
+                    var item = data[i];
+                    if (isButton && item.BTNNO == rowdata.ACCESSNO) {
+                        Permit = item.Permit;
                         return Permit;
                     }
-                    if (!isButton && data[i].MENUNO == rowdata.ACCESSNO) {
-                        Permit = data[i].Permit;
+                    if (!isButton && item.MENUNO == rowdata.ACCESSNO) {
+                        Permit = item.Permit;
                         return Permit;
                     }
                 }
