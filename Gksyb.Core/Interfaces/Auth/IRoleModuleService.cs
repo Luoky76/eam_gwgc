@@ -17,6 +17,12 @@ namespace Gksyb.Core.Interfaces.Auth
         Task<List<ButtonModule>> GetButtonModule(string roleName, string menuAppname, string menuNo, GksybAuthorizeMode mode);
 
         /// <summary>
+        /// 添加缺失父菜单
+        /// </summary>
+        /// <param name="menus">菜单</param>
+        Task AddMissingParent(List<MenuModule> menus);
+
+        /// <summary>
         /// 验证菜单权限
         /// </summary>
         /// <returns></returns>

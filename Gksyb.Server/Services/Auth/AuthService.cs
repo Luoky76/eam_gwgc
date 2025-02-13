@@ -243,6 +243,7 @@ namespace Gksyb.Server.Services.Auth
             if (userSession.ForbinMenus?.Count > 0)
             {
                 menus.RemoveAll(c => userSession.ForbinMenus.Exists(m => c.MENUNO == m.MENUNO && c.APPNAME == m.APPNAME));
+                await _roleModuleService.AddMissingParent(menus);
             }
             return menus.DistinctBy(c => new { c.MENUNO, c.APPNAME }).OrderBy(c => c.MENUORDER).ToList();
         }
