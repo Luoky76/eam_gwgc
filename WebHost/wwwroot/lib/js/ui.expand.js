@@ -179,3 +179,9 @@ $.ligerDefaults.Grid.formatters['duration'] = function (value, column) {
     }
     return text;
 };
+
+//表单附件的非涉密附件声明
+$.extend($.ligerDefaults.Upload, {
+    title: "<p>支持拖拽上传</p><p>格式：{extensions}</p >" //上传文字描述
+        + "<p style='color:red; font-size:13px;'>严禁在本互联网非涉密平台处理、传输国家机密，请确认扫描、传输的文件资料不涉及国家机密。</p>" //非涉密附件声明
+});
