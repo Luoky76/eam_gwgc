@@ -2,6 +2,7 @@
 using Gksyb.Model.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -53,14 +54,35 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns></returns>
         private static bool Valid(HttpContext context, IFileInfo fileInfo)
         {
-            var token = context.GetUID(false);
-            if (string.IsNullOrWhiteSpace(token)) return false;
-            var user = context.GetCurrentUserAsync(token).Result();
+            var user = GetUserFromFileToken(context);
+            if (user == null)
+            {
+                var token = context.GetUID(false);
+                if (string.IsNullOrWhiteSpace(token)) return false;
+                user = context.GetCurrentUserAsync(token).Result();
+            }
             if (user == null) return false;
             var directory = Path.GetDirectoryName(fileInfo.PhysicalPath.Replace(MapPath, "")).Trim(Path.DirectorySeparatorChar);
             if (!$"{directory}{Path.DirectorySeparatorChar}".Contains($"{IFormFileExtensions.Auth}{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)) return true;
             var dbContext = context.RequestServices.GetService<IDbContext>();
             return dbContext.Query<SYS_FILE>().Where(c => c.FILE_PATH == directory && c.CREATEUSERID == user.UserID).Any();
+        }
+
+        private const string TokenKey = "token";
+
+        private static UserSession GetUserFromFileToken(HttpContext context)
+        {
+            if (!context.Request.Query.ContainsKey(TokenKey))
+                return null;
+            var token = context.Request.Query[TokenKey].ToString();
+            if (string.IsNullOrWhiteSpace(token))
+                return null;
+            var distributedCache = context.RequestServices.GetService<IDistributedCache>();
+            var userId = distributedCache.Get<long?>(token);
+            distributedCache.Remove(token);
+            if (!userId.HasValue)
+                return null;
+            return new UserSession() { UserID = userId.Value };
         }
     }
 }

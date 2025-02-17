@@ -31,9 +31,10 @@ namespace Gksyb.Server.Services.System
             try
             {
                 List<QuartzTask> list = null;
+                var appname = _options.TaskAppName ?? _options.AppName;
                 await _dbContext.NotSqlLog(async () =>
                 {
-                    list = await _dbContext.Query<SYS_TASK>().Where(c => (c.APPNAME ?? _options.AppName) == _options.AppName && c.TASK_STATUS == "正常").Select(c => new QuartzTask()
+                    list = await _dbContext.Query<SYS_TASK>().Where(c => (c.APPNAME ?? _options.AppName) == appname && c.TASK_STATUS == "正常").Select(c => new QuartzTask()
                     {
                         TaskID = c.ID.Value,
                         TaskMethod = c.TASK_INVOKE,
@@ -64,7 +65,7 @@ namespace Gksyb.Server.Services.System
         public async Task SetTaskInfo(QuartzTask task)
         {
             var status = task.LastRunResult.SubStr(0, 4000, true);
-            var lastRunIp = HttpContext.AddressList.ToStr(",").SubStr(0, 500, true);
+            var lastRunIp = HttpContext.Address;
             await _dbContext.NotSqlLog(async () =>
             {
                 var row = await _dbContext.UpdateAsync<SYS_TASK>(c => c.ID == task.TaskID, c => new SYS_TASK

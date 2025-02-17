@@ -5,6 +5,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Controllers.Workflow.Dtos;
 using System.Linq.Expressions;
+using NodeInfo = Gksyb.Workflow.Controllers.Workflow.Dtos.NodeInfo;
 
 namespace Gksyb.Workflow.Services.Workflow
 {
@@ -154,11 +155,11 @@ namespace Gksyb.Workflow.Services.Workflow
             if (string.IsNullOrWhiteSpace(request.Id))
             {
                 info = await GetTaskInfoInnerAsync(request);
-                MessageException.ThrowIf(info == null, $"找不到编号为{request.FlowCode ?? request.FlowId}的流程");
+                MessageException.ThrowIf(info == null, $"无权操作编号为{request.FlowCode ?? request.FlowId}的流程");
                 return info;
             }
             info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(request.Id) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(request.Id);
-            MessageException.ThrowIf(info == null, $"找不到ID为{request.Id}的节点");
+            MessageException.ThrowIf(info == null, $"无权操作ID为{request.Id}的节点");
             return info;
         }
 

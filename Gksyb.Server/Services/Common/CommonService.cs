@@ -131,6 +131,7 @@ namespace Gksyb.Server.Services.Common
             var entity = await GetViewAsync(dbContext, view)
                 ?? throw new MessageException($"视图{view}不存在");
             var dbContextLind = await dbContext.GetDbContext(entity.DataSource);
+            var doTransation = false;
             try
             {
                 var paramPrefix = dbContextLind.GetParamPrefix();
@@ -146,7 +147,8 @@ namespace Gksyb.Server.Services.Common
                     {
                         var keyname = mactch.Value;
                         paramname = Regex.Replace(keyname, @"[{}]", "");
-                        if (!dicParm.ContainsKey(paramname)) dicParm.TryAdd(paramname, keyname);
+                        if (!dicParm.ContainsKey(paramname))
+                            dicParm.Add(paramname, keyname);
                     }
                     view = Regex.Replace(view, @"{(\w+)}", $"{paramPrefix}$1");
                 }
@@ -162,7 +164,8 @@ namespace Gksyb.Server.Services.Common
                     }
                     foreach (var key in parmMatch.Keys)
                     {
-                        if (!dicParm.ContainsKey(key)) dicParm.TryAdd(key, parmMatch[key]);
+                        if (!dicParm.ContainsKey(key))
+                            dicParm.Add(key, parmMatch[key]);
                     }
                 }
                 foreach (var key in dicParm.Keys)
@@ -191,12 +194,15 @@ namespace Gksyb.Server.Services.Common
                     {
                         c.Type = typeof(string);
                     }
+                    c.Direction = ParamDirection.InputOutput;
                     if (c.Name.EndsWith("_in"))
                     {
+                        c.Name = Regex.Replace(c.Name, @"_d_in$", "");
                         c.Direction = ParamDirection.Input;
                     }
                     else if (c.Name.EndsWith("_out"))
                     {
+                        c.Name = Regex.Replace(c.Name, @"_d_out$", "");
                         c.Direction = ParamDirection.Output;
                     }
                     else if (c.Name.EndsWith("_cursor"))
@@ -204,56 +210,56 @@ namespace Gksyb.Server.Services.Common
                         c.ExplicitParameter = new OracleParameter(c.Name, OracleDbType.RefCursor, ParameterDirection.Output);
                     }
                 });
+                var directions = listPara.ToDictionary(c => c.Name, c => c.Direction);
                 var arraySql = view.Split(';').Where(c => !string.IsNullOrWhiteSpace(c)).ToArray();
-                await dbContextLind.UseTransactionAsync(async () =>
+                doTransation = (!dbContextLind.Session.IsInTransaction) && (arraySql.Length > 1);
+                if (doTransation) dbContextLind.Session.BeginTransaction();
+                for (int i = 0, j = (arraySql.Length - 1); i <= j; i++)
                 {
-                    for (int i = 0, j = (arraySql.Length - 1); i <= j; i++)
+                    var sql = arraySql[i];
+                    var commandType = sql.StartsWith("StoredProcedure") ? CommandType.StoredProcedure : CommandType.Text;
+                    var parameters = listPara.Where(c => sql.Contains(c.Name)).Select(c =>
                     {
-                        var commandType = CommandType.Text;
-                        var sql = arraySql[i];
-                        var parameters = listPara.FindAll(c => sql.Contains(c.Name));
-                        if (sql.StartsWith("StoredProcedure"))
-                        {
-                            sql = sql.Replace("StoredProcedure", "");
-                            sql = sql[..sql.IndexOf("(")].Trim();
-                            commandType = CommandType.StoredProcedure;
-                        }
-                        parameters.ForEach(c =>
-                        {
-                            if (c.Direction == ParamDirection.InputOutput) c.Direction = ParamDirection.Input;
-                            if (commandType == CommandType.StoredProcedure && c.Direction == ParamDirection.Input && !c.Name.EndsWith("_in"))
-                            {
-                                c.Direction = ParamDirection.InputOutput;
-                            }
-                        });
-                        if (i < j)
-                        {
-                            await dbContextLind.Session.ExecuteNonQueryAsync(sql, commandType, parameters.ToArray());
-                            continue;
-                        }
-                        try
-                        {
-                            string sortExp = (request.Sort ?? "").SqlFilter(5);
-                            if (sortExp.HasValue())
-                            {
-                                var upperText = sql.ToUpper();
-                                var lastIndex = upperText.LastIndexOf("ORDER BY ");
-                                if (lastIndex >= 0 && upperText.IndexOf(" WHERE ", lastIndex) < 0)
-                                {
-                                    sql = sql[..lastIndex];
-                                }
-                                sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
-                            }
-                        }
-                        catch (Exception) { }
-                        list = await dbContextLind.SqlQueryAsync<T>(sql, commandType, parameters.ToArray());
+                        c.Direction = commandType == CommandType.Text ? ParamDirection.Input : directions[c.Name];
+                        return c;
+                    }).ToArray();
+                    if (commandType == CommandType.StoredProcedure)
+                    {
+                        sql = sql.Replace("StoredProcedure", "");
+                        sql = sql[..sql.IndexOf("(")].Trim();
                     }
-                });
+                    if (i < j)
+                    {
+                        await dbContextLind.Session.ExecuteNonQueryAsync(sql, commandType, parameters);
+                        continue;
+                    }
+                    try
+                    {
+                        string sortExp = (request.Sort ?? "").SqlFilter(5);
+                        if (sortExp.HasValue())
+                        {
+                            var upperText = sql.ToUpper();
+                            var lastIndex = upperText.LastIndexOf("ORDER BY ");
+                            if (lastIndex >= 0 && upperText.IndexOf(" WHERE ", lastIndex) < 0)
+                            {
+                                sql = sql[..lastIndex];
+                            }
+                            sql = $"SELECT * FROM ({sql}) tmptableinner ORDER BY {sortExp}";
+                        }
+                    }
+                    catch (Exception) { }
+                    list = await dbContextLind.SqlQueryAsync<T>(sql, commandType, parameters);
+                }
+                if (doTransation) dbContextLind.Session.CommitTransaction();
                 list ??= new List<T>();
                 return list;
             }
             finally
             {
+                if (doTransation && dbContextLind.Session.IsInTransaction)
+                {
+                    dbContextLind.Session.RollbackTransaction();
+                }
                 if (dbContextLind != _dbContext) dbContextLind.Dispose();
                 if (isClone) dbContext.Dispose();
             }

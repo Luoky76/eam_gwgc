@@ -15,7 +15,7 @@ namespace Gksyb.Common.Weixin
         /// <summary>
         /// 结果明细
         /// </summary>
-        [XmlElement("retmsg")]
+        [XmlElement("return_msg")]
         public string ReturnMsg { get; set; }
 
         /// <summary>
@@ -45,14 +45,26 @@ namespace Gksyb.Common.Weixin
         /// <summary>
         ///签名
         /// </summary>
-        [XmlElement("Sign")]
+        [XmlElement("sign")]
         public string Sign { get; set; }
 
         /// <summary>
-        ///状态
+        ///业务结果
         /// </summary>
-        [XmlElement("retcode")]
+        [XmlElement("result_code")]
         public string ResultCode { get; set; }
+
+        /// <summary>
+        ///错误代码
+        /// </summary>
+        [XmlElement("err_code")]
+        public string ErrCode { get; set; }
+
+        /// <summary>
+        ///错误代码描述
+        /// </summary>
+        [XmlElement("err_code_des")]
+        public string ErrMsg { get; set; }
 
         /// <summary>
         ///状态
@@ -69,6 +81,11 @@ namespace Gksyb.Common.Weixin
             {
                 return string.IsNullOrWhiteSpace(PrepayId);
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{ErrCode}:{ErrMsg}{(ReturnCode == "SUCCESS" ? "" : ReturnMsg)}";
         }
     }
 }

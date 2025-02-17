@@ -116,8 +116,17 @@
             width: 230px;
         }
 
+        .toggle-password {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            z-index: 999;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
         #btnLogin {
-            margin-left:20px;
+            margin-left: 20px;
             width: 240px;
             height: 41px;
             line-height: 41px;
@@ -252,18 +261,21 @@
                         </span>
                     </div>
                     <div class="login-input">
+                        <span class="toggle-password">👁️</span>
                         <input type="password" name="txtOld" id="txtOld" value="" class="login-text" />
                         <span class="login-text login-null">
                             请输入旧密码
                         </span>
                     </div>
                     <div class="login-input">
+                        <span class="toggle-password">👁️</span>
                         <input type="password" name="txtNew" id="txtNew" value="" class="login-text" />
                         <span class="login-text login-null">
                             请输入新密码
                         </span>
                     </div>
                     <div class="login-input">
+                        <span class="toggle-password">👁️</span>
                         <input type="password" name="txtAgain" id="txtAgain" value="" class="login-text" />
                         <span class="login-text login-null">
                             请再次输入新密码
@@ -454,12 +466,17 @@
                         $("#txtAgain").focus().select();
                     }
                 });
-
                 $("#txtAgain").keydown(function (e) {
                     if (e.keyCode == 13) {
                         e.preventDefault();
                         me.submit();
                     }
+                });
+                $(".toggle-password").click(function () {
+                    var dom = $(this), pwd = dom.nextAll("input");
+                    var isPassword = pwd.attr("type") === "password";
+                    pwd.attr("type", isPassword ? "text" : "password");
+                    dom.text(isPassword ? "🙈" : "👁️");
                 });
             },
             init: function () { //初始化

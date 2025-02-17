@@ -6,6 +6,7 @@ using Gksyb.Server.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using System.ComponentModel.DataAnnotations;
 
 namespace Gksyb.Server.Controllers.Auth
@@ -25,6 +26,17 @@ namespace Gksyb.Server.Controllers.Auth
         {
             var url = await formFile.SaveAs((folder ?? "").Replace("Public", "", StringComparison.OrdinalIgnoreCase), isCreateDayDirectory: true);
             return AjaxResult.Success(url, formFile.Name);
+        }
+
+        [JsToken]
+        public async Task<AjaxResult> FileToken([FromServices] IDistributedCache distributedCache)
+        {
+            var token = Guid.NewGuid().ToString("N").ToLower();
+            await distributedCache.SetAsync(token, CurrentUser.UserID, new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(3)
+            });
+            return AjaxResult.Success(token, default);
         }
 
         /// <summary>

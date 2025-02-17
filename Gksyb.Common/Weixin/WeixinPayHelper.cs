@@ -1,4 +1,5 @@
 ﻿using Flurl.Http;
+using Flurl.Http.Content;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -15,18 +16,19 @@ namespace Gksyb.Common.Weixin
         /// 统一支付接口，可接受JSAPI/NATIVE/APP 下预支付订单，返回预支付订单号。NATIVE 支付返回二维码code_url。
         /// </summary>
         /// <returns></returns>
-        public static async Task<WeixinTransactionsResponse> UnifiedOrder(WeixinTransactionsRequest transactionsRequest)
+        public static async Task<WeixinTransactionsResponse> UnifiedOrder(WeixinTransactionsRequest transactionsRequest, Action<UnifiedOrderRequest> action = null)
         {
             var request = new UnifiedOrderRequest(WeixinSetting.AppId, WeixinSetting.Mchid, transactionsRequest)
             {
                 NonceStr = Guid.NewGuid().ToString("N").ToLower()
             };
+            action?.Invoke(request);
             request.ComputeSign(WeixinSetting.PayKey);
             var xml = XMLHelper.Serialize(request);
             var url = $"{ApiHost}/pay/unifiedorder";
             xml = await ApiRequest(url).PostStringAsync(xml).ReceiveString();
             var response = XMLHelper.Deserialize<UnifiedOrderResponse>(xml);
-            if (response.IsError) throw new MessageException(response.ReturnMsg);
+            if (response.IsError) throw new MessageException(response.ToString());
             var result = WeixinTransactionsResponse.GetInstance(response.PrepayId, request.NonceStr, request.SignType);
             return result;
         }
@@ -42,14 +44,15 @@ namespace Gksyb.Common.Weixin
         }
 
         /// <summary>
-        /// JSAPI下单
+        /// JSAPI下单 微信不认null，所以序列化用 ToMiniJson
         /// </summary>
         /// <returns></returns>
-        public static async Task<WeixinTransactionsResponse> Transactions(WeixinTransactionsRequest transactionsRequest)
+        public static async Task<WeixinTransactionsResponse> Transactions(WeixinTransactionsRequest transactionsRequest, Action<JsApiTransactionsRequest> action = null)
         {
             var request = new JsApiTransactionsRequest(WeixinSetting.AppId, WeixinSetting.Mchid, transactionsRequest);
+            action?.Invoke(request);
             var url = $"{ApiHost}/v3/pay/transactions/jsapi";
-            var response = await ApiRequest(url).PostJsonAsync(request).ReceiveJson<JsApiTransactionsResponse>();
+            var response = await ApiRequest(url).PostAsync(new CapturedJsonContent(request.ToMiniJson())).ReceiveJson<JsApiTransactionsResponse>();
             if (response.IsError) throw new MessageException(response.ToString());
             var nonceStr = Guid.NewGuid().ToString("N").ToLower();
             return WeixinTransactionsResponse.GetInstance(response.PrepayId, nonceStr, "RSA");

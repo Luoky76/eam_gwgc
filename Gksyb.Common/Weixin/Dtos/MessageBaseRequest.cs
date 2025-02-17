@@ -57,7 +57,6 @@ namespace Gksyb.Common.Weixin
             if (eventHandlers.Count < 1) return Task.CompletedTask;
             return Task.Factory.StartNew(() =>
             {
-                using var scope = HttpContext.RequestServices.CreateAsyncScope();
                 Parallel.ForEach(eventHandlers, eventHandler =>
                 {
                     try
@@ -65,6 +64,7 @@ namespace Gksyb.Common.Weixin
                         object obj = null;
                         if (!eventHandler.Handler.IsStatic)
                         {
+                            using var scope = HttpContext.RequestServices.CreateAsyncScope();
                             obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
                         }
                         var invokeResult = eventHandler.Handler!.Invoke(obj, new object[] { this });

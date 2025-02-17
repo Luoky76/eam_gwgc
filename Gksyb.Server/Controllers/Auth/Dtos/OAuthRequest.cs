@@ -63,6 +63,8 @@ namespace Gksyb.Model.Core
         [JsonIgnore]
         public string UA { get; set; }
 
+        public string CalcuSign(string secret) => CryptographyHelper.GetSM3($"{AppId}{Body}{TimeStamp.Value:yyyy-MM-dd HH:mm:ss}{secret}");
+
         /// <summary>
         /// 模型检查
         /// </summary>
@@ -100,7 +102,7 @@ namespace Gksyb.Model.Core
             var isFail = Math.Abs((TimeStamp.Value - DateTime.Now).TotalSeconds) > Expiry;
             if (isThrow && isFail) throw new MessageException($"{TimeStamp:yyyy-MM-dd HH:mm:ss}已过期");
             if (isFail) return false;
-            var sign = CryptographyHelper.GetSM3($"{AppId}{Body}{TimeStamp.Value:yyyy-MM-dd HH:mm:ss}{secret}");
+            var sign = CalcuSign(secret);
             isFail = Sign != sign;
             if (isThrow && isFail) throw new MessageException("参数检查失败");
             return !isFail;

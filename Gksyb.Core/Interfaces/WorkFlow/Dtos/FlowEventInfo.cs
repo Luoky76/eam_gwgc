@@ -1,6 +1,4 @@
-﻿using Gksyb.Core.Interfaces.WorkFlow.Dtos;
-
-namespace Gksyb.Core.Interfaces.WorkFlow
+﻿namespace Gksyb.Core.Interfaces.WorkFlow
 {
     public class FlowEventInfo
     {

@@ -12,7 +12,7 @@
         initTrigger: false, //初始化触发onChangeValue
         value: null,
         onChangeValue: null,//值变化事件
-        type: null // l-checkbox-rect
+        type: "orgin" //checkbox样式 rect switch orgin
     };
 
     $.ligerMethos.CheckBox = $.ligerMethos.CheckBox || {};

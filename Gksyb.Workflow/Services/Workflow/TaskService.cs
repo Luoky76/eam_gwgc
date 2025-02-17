@@ -1,4 +1,5 @@
 ﻿using Gksyb.Core.Auth;
+using Gksyb.Core.Filter;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.WorkFlow;
@@ -125,6 +126,72 @@ namespace Gksyb.Workflow.Services.Workflow
         }
 
         /// <summary>
+        /// 还原流程
+        /// </summary>
+        public async Task RestoreAsync(FlowExecuteInfo info)
+        {
+            var taskId = info.TaskId;
+            var task = await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == taskId).MapTo<WF_TASK>().FirstOrDefaultAsync();
+            MessageException.ThrowIf(task == null, $"找不到{taskId}的任务");
+            var nodes = await _dbContext.Query<WF_HISTORY_NODE>().Where(c => c.TASK_ID == taskId).ToListAsync<WF_NODE>();
+            var nodeId = nodes.OrderBy(c => c.NODE_STATUS == NodeStatus.Archived ? 2 : 1)
+                .ThenByDescending(c => c.FINISHDATE)
+                .ThenByDescending(c => c.CREATEDATE).Select(c => c.NODE_ID).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(nodeId), $"找不到{taskId}的节点");
+            task.FINISHDATE = null;
+            var lastNodes = nodes.Where(c => c.NODE_ID == nodeId).ToList();
+            lastNodes.ForEach(c =>
+            {
+                c.FINISHDATE = null;
+                c.NODE_STATUS = NodeStatus.Active;
+            });
+            var logs = await _dbContext.Query<WF_HISTORY_TASK_LOG>().Where(c => c.TASK_ID == taskId).ToListAsync<WF_TASK_LOG>();
+            var nodeIds = nodes.Select(c => c.ID).DistinctAndOrderBy().ToList();
+            var logIds = logs.Select(c => c.ID).DistinctAndOrderBy().ToList();
+            var id = GuidHelper.NewSnowflakeId();
+            var wfNodeId = lastNodes.Where(c => c.NODE_STATUS != NodeStatus.Archived).Select(c => c.ID).FirstOrDefault();
+            var detail = string.IsNullOrWhiteSpace(info.NodeReason) ? "还原流程" : info.NodeReason;
+            var name = string.IsNullOrWhiteSpace(info.Operators) ? _user.RealName : info.Operators;
+            await _dbContext.UseTransactionAsync(async () =>
+            {
+                await _dbContext.InsertAsync(task);
+                await _dbContext.InsertRangeAsync(nodes);
+                await _dbContext.InsertRangeAsync(logs);
+                await _dbContext.DeleteAsync<WF_HISTORY_TASK>(c => c.ID == taskId);
+                await _dbContext.DeleteAsync<WF_HISTORY_NODE>(c => nodeIds.Contains(c.ID));
+                await _dbContext.DeleteAsync<WF_HISTORY_TASK_LOG>(c => logIds.Contains(c.ID));
+                await _dbContext.InsertAsync(() => new WF_TASK_LOG()
+                {
+                    ID = id,
+                    TASK_ID = taskId,
+                    WF_NODE_ID = wfNodeId,
+                    NODE_ID = nodeId,
+                    OPERATOR = name,
+                    OPERTITLE = "还原流程",
+                    OPERTYPE = "还原",
+                    OPERDETAIL = detail,
+                    OPERDATE = DateTime.Now
+                });
+            });
+        }
+
+        /// <summary>
+        /// 设置任务的表单数据
+        /// </summary>
+        public async Task SetFormDataAsync(FlowExecuteInfo info)
+        {
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).FirstOrDefaultAsync();
+            MessageException.ThrowIf(task == null, $"找不到{info.TaskId}的任务");
+            var formData = info.FormData.ToJson();
+            var title = await _dbContext.Query<WF_FLOW>().Where(c => c.ID == task.FLOW_ID).Select(c => c.FLOW_TITLE).FirstOrDefaultAsync();
+            title = title.Replace(null, info.FormData, FilterParmMatch.CurrentParmMatch);
+            _dbContext.TrackEntity(task);
+            task.FLOW_FORM_DATA = formData;
+            task.FLOW_TITLE = title;
+            await _dbContext.UpdateAsync(task);
+        }
+
+        /// <summary>
         /// 标记成已阅
         /// </summary>
         public async Task ReadAsync(List<string> ids)
@@ -237,9 +304,21 @@ namespace Gksyb.Workflow.Services.Workflow
         /// </summary>
         private async Task<BpmnNodeService> FindNodeService(FlowExecuteInfo info, Action<WF_NODE> action = null)
         {
-            var node = await _dbContext.Query<WF_NODE>().Where(c => c.ID == info.Id).FirstOrDefaultAsync()
-               ?? throw new MessageException($"找不到{info.Id}的任务节点");
-            MessageException.ThrowIf(!_user.IsSuper && node.NODE_USERID != _user.UserID, "您无权进行此操作");
+            var query = _dbContext.Query<WF_NODE>();
+            var id = info.Id;
+            var userId = info.NodeUserId ?? _user.UserID;
+            if (string.IsNullOrWhiteSpace(info.Id))
+            {
+                id = info.TaskId;
+                query = query.Where(c => c.TASK_ID == id && c.NODE_STATUS == NodeStatus.Active && c.NODE_USERID == userId);
+            }
+            else
+            {
+                query = query.Where(c => c.ID == id);
+            }
+            var node = await query.FirstOrDefaultAsync()
+                ?? throw new MessageException($"找不到{(string.IsNullOrWhiteSpace(info.Id) ? info.TaskId : info.Id)}的任务节点");
+            MessageException.ThrowIf(!_user.IsSuper && node.NODE_USERID != userId, "您无权进行此操作");
             MessageException.ThrowIf(node.NODE_STATUS != NodeStatus.Active, "节点已完成");
             info.FlowId = node.FLOW_ID;
             info.TaskId = node.TASK_ID;

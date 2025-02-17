@@ -16,7 +16,8 @@ namespace Gksyb.Workflow.Data
             {
                 if (string.IsNullOrWhiteSpace(_appanme))
                 {
-                    _appanme = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>()?.Value.AppName;
+                    var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>()?.Value;
+                    _appanme = options.WorkflowAppName ?? options.AppName;
                 }
                 return _appanme;
             }

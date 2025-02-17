@@ -46,5 +46,10 @@
         /// 流转节点信息
         /// </summary>
         public List<TaskLog> Logs { get; set; }
+
+        /// <summary>
+        /// 流转节点信息
+        /// </summary>
+        public List<NodeInfo> Nodes { get; set; }
     }
 }

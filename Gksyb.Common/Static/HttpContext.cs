@@ -16,8 +16,7 @@ namespace Gksyb.Common.Static
         static HttpContext()
         {
             AddressList = new ReadOnlyCollection<string>(NetworkInterface.GetAllNetworkInterfaces()
-                .Where(c => c.NetworkInterfaceType == NetworkInterfaceType.Ethernet && c.OperationalStatus == OperationalStatus.Up
-                && !c.Description.ToLower().Contains("virtual") && !c.Description.ToLower().Contains("pseudo"))
+                .Where(c => c.OperationalStatus == OperationalStatus.Up && !c.Description.ToLower().Contains("virtual") && !c.Description.ToLower().Contains("pseudo"))
                 .SelectMany(p => p.GetIPProperties().UnicastAddresses)
                 .Where(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))
                 .Select(c => c.Address.ToString()).Distinct().OrderBy(i => i).ToList());
@@ -57,6 +56,28 @@ namespace Gksyb.Common.Static
         /// 地址列表
         /// </summary>
         public static ReadOnlyCollection<string> AddressList { get; private set; }
+
+        /// <summary>
+        /// 端口号
+        /// </summary>
+        public static ushort Port { get; internal set; }
+
+        private static string _address;
+
+        /// <summary>
+        /// Ip加端口
+        /// </summary>
+        public static string Address
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(_address))
+                {
+                    _address = $"{AddressList.ToStr(",").SubStr(0, 495, true)}:{Port}";
+                }
+                return _address;
+            }
+        }
 
         /// <summary>
         /// 服务描述

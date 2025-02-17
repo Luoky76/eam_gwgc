@@ -12,6 +12,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 using Org.BouncyCastle.X509;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Gksyb.Common
 {
@@ -21,6 +22,8 @@ namespace Gksyb.Common
     public sealed class CryptographyHelper
     {
         #region ========加密========
+
+        private static readonly Regex _frontReg = new(@"^pqz(?<f1>.*)zpq$");
 
         /// <summary>
         /// 前端加密
@@ -35,7 +38,7 @@ namespace Gksyb.Common
             var value = text.Substring(random.Next(0, length - 1), 1);
             var index = (text.Length + 1) / 2;
             text = $"{text[index..]}{value}{text[..index]}";
-            return text;
+            return $"pqz{new string(text.Reverse().ToArray())}zpq";
         }
 
         /// <summary>
@@ -47,6 +50,10 @@ namespace Gksyb.Common
             try
             {
                 if (string.IsNullOrWhiteSpace(text)) return text;
+                if (_frontReg.IsMatch(text))
+                {
+                    text = new string(_frontReg.Replace(text, "${f1}").Reverse().ToArray());
+                }
                 var index = (text.Length + 1) / 2;
                 if (index > 0) text = $"{text[index..]}{text[..(index - 1)]}";
                 return FromBase64(text);
@@ -564,8 +571,8 @@ namespace Gksyb.Common
         /// </summary>
         public static byte[] SM2Encrypt(ICipherParameters sm2PublicKeyParams, byte[] plainBytes)
         {
-            var engine = new SM2Engine();
-            engine.Init(true, new ParametersWithRandom(sm2PublicKeyParams, new SecureRandom()));
+            var engine = new SM2Engine(SM2Engine.Mode.C1C3C2);
+            engine.Init(true, new ParametersWithRandom(sm2PublicKeyParams));
             return engine.ProcessBlock(plainBytes, 0, plainBytes.Length);
         }
 
@@ -604,7 +611,7 @@ namespace Gksyb.Common
         /// </summary>
         public static byte[] SM2Decrypt(ICipherParameters sm2PublicKeyParams, byte[] cipherBytes)
         {
-            var engine = new SM2Engine();
+            var engine = new SM2Engine(SM2Engine.Mode.C1C3C2);
             engine.Init(false, sm2PublicKeyParams);
             return engine.ProcessBlock(cipherBytes, 0, cipherBytes.Length);
         }
@@ -686,6 +693,7 @@ namespace Gksyb.Common
                 case CipherMode.ECB:
                     cipher.Init(true, sm4KeyParams);
                     break;
+
                 default:
                     cipher.Init(true, sm4keyParamsWithIv);
                     break;
@@ -721,6 +729,7 @@ namespace Gksyb.Common
                 case CipherMode.ECB:
                     cipher.Init(false, sm4KeyParams);
                     break;
+
                 default:
                     cipher.Init(false, sm4keyParamsWithIv);
                     break;

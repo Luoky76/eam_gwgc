@@ -48,7 +48,7 @@ namespace Quartz
                 _isDistributedLock = (_quartzTask.TaskIP ?? "").Split(",").DistinctAndOrderBy().Count() != 1;
                 if (_isDistributedLock)//不是单IP，分布式锁处理
                 {
-                    var address = HttpContext.AddressList.ToStr(",").SubStr(0, 500, true); ;
+                    var address = HttpContext.Address;
                     var value = await DistributedLockHelper.LockQueryAsync(key);
                     if (!string.IsNullOrWhiteSpace(value) && value != address)
                     {
@@ -120,7 +120,7 @@ namespace Quartz
             if (ex is MessageException) return;
             if (_quartzTask == null) return;
             var key = _quartzTask.TaskID.ToString();
-            var address = HttpContext.AddressList.ToStr(",");
+            var address = HttpContext.Address;
             await DistributedLockHelper.LockReleaseAsync(key, address);
         }
     }

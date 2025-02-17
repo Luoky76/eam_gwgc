@@ -35,18 +35,18 @@ namespace Gksyb.Workflow.Services.Workflow
         }
 
         /// <inheritdoc/>
-        public async Task<TaskInfo> TaskInfoAsync(Expression<Func<TaskInfo, bool>> filter = null)
+        public async Task<TaskInfo> TaskInfoAsync(Expression<Func<TaskInfo, bool>> filter = null, bool hasNode = false)
         {
-            var info = await TaskInfoInnerAsync<WF_TASK, WF_TASK_LOG>(filter);
+            var info = await TaskInfoInnerAsync<WF_TASK, WF_TASK_LOG, WF_NODE>(filter);
             if (info != null) return info;
-            return await TaskInfoInnerAsync<WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(filter);
+            return await TaskInfoInnerAsync<WF_HISTORY_TASK, WF_HISTORY_TASK_LOG, WF_HISTORY_NODE>(filter);
         }
 
         /// <inheritdoc/>
         public async Task<List<TaskLog>> TaskLogAsync(string taskId)
         {
             var info = await TaskInfoAsync(c => c.TaskId == taskId);
-            return info.Logs;
+            return info?.Logs;
         }
 
         /// <inheritdoc/>
@@ -62,12 +62,18 @@ namespace Gksyb.Workflow.Services.Workflow
         public Task CancelAsync(FlowExecuteInfo info) => _taskService.CancelAsync(info);
 
         /// <inheritdoc/>
+        public Task RestoreAsync(FlowExecuteInfo info) => _taskService.RestoreAsync(info);
+
+        /// <inheritdoc/>
+        public Task SetFormDataAsync(FlowExecuteInfo info) => _taskService.SetFormDataAsync(info);
+
+        /// <inheritdoc/>
         public Task ShareAsync(FlowExecuteInfo info) => _taskService.ShareAsync(info);
 
         /// <summary>
         /// 获取任务信息
         /// </summary>
-        private async Task<TaskInfo> TaskInfoInnerAsync<T1, T2>(Expression<Func<TaskInfo, bool>> filter = null) where T1 : WF_TASK where T2 : WF_TASK_LOG
+        private async Task<TaskInfo> TaskInfoInnerAsync<T1, T2, T3>(Expression<Func<TaskInfo, bool>> filter = null, bool hasNode = false) where T1 : WF_TASK where T2 : WF_TASK_LOG where T3 : WF_NODE
         {
             var info = await _dbContext.Query<T1>().InnerJoin<WF_FLOW>((task, flow) => task.FLOW_ID == flow.ID)
                 .Select((task, flow) => new TaskInfo()
@@ -82,8 +88,21 @@ namespace Gksyb.Workflow.Services.Workflow
                     CreateDate = task.CREATEDATE
                 }).WhereIfNotNull(filter, filter).FirstOrDefaultAsync();
             if (info == null) return info;
+            if (hasNode)
+            {
+                info.Nodes = await TaskNodesInnerAsync<T3>(info.TaskId);
+            }
             info.Logs = await TaskLogsInnerAsync<T2>(info.TaskId);
             return info;
+        }
+
+        /// <summary>
+        /// 获取节点信息
+        /// </summary>
+        private async Task<List<NodeInfo>> TaskNodesInnerAsync<T>(string taskId) where T : WF_NODE
+        {
+            var list = await _dbContext.Query<T>().Where(a => a.TASK_ID == taskId).ToListAsync();
+            return list.Select(c => c.ToNodeInfo()).ToList();
         }
 
         /// <summary>

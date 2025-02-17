@@ -75,7 +75,7 @@
             bottom: 30px;
             text-align: center;
             color: #2B2B2B;
-            font-size: 12px;
+            font-size: 14px;
             z-index: -1;
         }
 
@@ -117,6 +117,15 @@
             cursor: text;
             white-space: nowrap;
             z-index: 10;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            z-index: 999;
+            transform: translateY(-50%);
+            cursor: pointer;
         }
 
         #verifyCode.login-input {
@@ -284,6 +293,7 @@
                         </span>
                     </div>
                     <div class="login-input">
+                        <span class="toggle-password">👁️</span>
                         <input type="password" name="txtPassword" id="txtPassword" value="" class="login-text" />
                         <span class="login-text login-null">
                             请输入密码
@@ -626,6 +636,12 @@
                         e.preventDefault();
                         me.submit();
                     }
+                });
+                $(".toggle-password").click(function () {
+                    var dom = $(this), pwd = dom.nextAll("input");
+                    var isPassword = pwd.attr("type") === "password";
+                    pwd.attr("type", isPassword ? "text" : "password");
+                    dom.text(isPassword ? "🙈" : "👁️");
                 });
             },
             init: function () { //初始化

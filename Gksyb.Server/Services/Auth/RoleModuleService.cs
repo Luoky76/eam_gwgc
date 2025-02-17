@@ -66,9 +66,7 @@ namespace Gksyb.Server.Services.Auth
             var list = await GetMenuAsync(key);
             if (list == null)
             {
-                var query = _dbContext.Query<SYS_MENU>().Where(s => s.APPNAME == menuAppname)
-                    .WhereIf(roleName != UserSession.SuperRoleName, c => c.ISVISIBLE == 1);
-                list = await query.ToListAsync<MenuModule>();
+                list = await GetAllMenus(menuAppname, roleName == UserSession.SuperRoleName);
                 var isCommonRole = await IsCommonRole(roleName);
                 if (isCommonRole)
                 {
@@ -78,29 +76,34 @@ namespace Gksyb.Server.Services.Auth
                                              && c.PRIVILEGEMASTERKEY == roleName
                                              && Sql.IsEqual(c.APPNAME, menuAppname)).Select(c => c.PRIVILEGEACCESSKEY).ToListAsync();
                     var menus = list.Where(c => menunos.Any(a => a == c.MENUNO)).ToList();
-                    var parents = menus.Where(c => !string.IsNullOrWhiteSpace(c.MENUPARENTNO) && !menus.Any(a => a.MENUNO == c.MENUPARENTNO)).ToList();
-                    if (parents.Count > 0)
-                    {
-                        void recursion(string menuno)
-                        {
-                            var menu = list.Find(c => c.MENUNO == menuno);
-                            if (menu == null) return;
-                            menus.Add(menu);
-                            if (string.IsNullOrWhiteSpace(menu.MENUPARENTNO)) return;
-                            recursion(menu.MENUPARENTNO);
-                        }
-                        parents.ForEach(c =>
-                        {
-                            recursion(c.MENUPARENTNO);
-                        });
-                        menus = menus.DistinctBy(c => new { c.MENUNO, c.APPNAME }).ToList();
-                    }
+                    await AddMissingParent(menus);
                     list = menus.Where(c => menus.Any(a => a.MENUPARENTNO == c.MENUNO) || !list.Any(a => a.MENUPARENTNO == c.MENUNO)).ToList();
-                    list ??= new List<MenuModule>();
                 }
                 await SetMenuAsync(key, list);
             }
             return list;
+        }
+
+        /// <inheritdoc/>
+        public async Task AddMissingParent(List<MenuModule> menus)
+        {
+            var parents = menus.Where(c => !string.IsNullOrWhiteSpace(c.MENUPARENTNO) && !menus.Any(a => a.MENUNO == c.MENUPARENTNO)).ToList();
+            if (parents.Count < 1)
+                return;
+            var all = await GetAllMenus(parents.FirstOrDefault().APPNAME);
+            void recursion(string menuno)
+            {
+                var menu = all.Find(c => c.MENUNO == menuno);
+                if (menu == null) return;
+                menus.Add(menu);
+                if (string.IsNullOrWhiteSpace(menu.MENUPARENTNO)) return;
+                recursion(menu.MENUPARENTNO);
+            }
+            parents.ForEach(c =>
+            {
+                recursion(c.MENUPARENTNO);
+            });
+            menus = menus.DistinctBy(c => new { c.MENUNO, c.APPNAME }).ToList();
         }
 
         /// <inheritdoc/>
@@ -209,6 +212,21 @@ namespace Gksyb.Server.Services.Auth
             {
                 SlidingExpiration = TimeSpan.FromHours(12)
             });
+        }
+
+        private readonly Dictionary<string, List<MenuModule>> _allMenus = new();
+
+        /// <summary>
+        /// 获取当前应用所有菜单
+        /// </summary>
+        private async Task<List<MenuModule>> GetAllMenus(string menuAppname, bool hasInvisible = false)
+        {
+            if (!_allMenus.ContainsKey(menuAppname))
+            {
+                var list = await _dbContext.Query<SYS_MENU>().Where(s => s.APPNAME == menuAppname).ToListAsync<MenuModule>();
+                _allMenus.Add(menuAppname, list);
+            }
+            return hasInvisible ? _allMenus[menuAppname] : _allMenus[menuAppname].Where(c => c.ISVISIBLE == 1).ToList();
         }
 
         /// <summary>

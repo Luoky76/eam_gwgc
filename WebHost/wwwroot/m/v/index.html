@@ -225,8 +225,8 @@
             },
             initMessageCenter: function () {//消息中心
                 var me = this;
-                var channel = Broadcast.getInstance();//创建广播通道
-                channel.onMessageCenter = function (info) {
+                me.channel = Broadcast.getInstance();//创建广播通道
+                me.channel.onMessageCenter = function (info) {
                     me.showMessage(info);
                 };
             },
@@ -243,6 +243,7 @@
                     browserHistory: true
                 });
                 me.initMessageCenter();
+                app.mainBusiness = me;//暴露给子组件调用
             }
         };
         business.init();

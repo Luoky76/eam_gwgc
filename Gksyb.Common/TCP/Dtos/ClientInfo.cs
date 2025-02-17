@@ -28,6 +28,11 @@ namespace Gksyb.Common.TCP
         public object Extra { get; set; }
 
         /// <summary>
+        /// 第一次连接时间
+        /// </summary>
+        public DateTime? AcceptTime { get; set; } = DateTime.Now;
+
+        /// <summary>
         /// 上次活动时间
         /// </summary>
         public DateTime? ActieveTime { get; set; } = DateTime.Now;

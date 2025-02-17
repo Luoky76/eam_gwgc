@@ -14,7 +14,7 @@ namespace Gksyb.Common.Weixin
             Description = request.Description;
             OutTradeNo = request.OutTradeNo;
             NotifyUrl = request.NotifyUrl;
-            Amount = new TransactionsAmount()
+            Amount = new TransactionsAmountV3()
             {
                 Total = request.Amount
             };
@@ -62,7 +62,7 @@ namespace Gksyb.Common.Weixin
         ///订单金额信息
         /// </summary>
         [JsonProperty("amount")]
-        public TransactionsAmount Amount { get; set; }
+        public TransactionsAmountV3 Amount { get; set; }
 
         /// <summary>
         ///支付者信息
@@ -89,6 +89,12 @@ namespace Gksyb.Common.Weixin
         public string GoodsTag { get; set; }
 
         /// <summary>
+        ///电子发票入口开放标识
+        /// </summary>
+        [JsonProperty("support_fapiao")]
+        public bool SupportFapiao { get; set; }
+
+        /// <summary>
         ///优惠功能 具体查看https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_1.shtml
         /// </summary>
         [JsonProperty("detail")]
@@ -110,7 +116,7 @@ namespace Gksyb.Common.Weixin
     /// <summary>
     /// 金额
     /// </summary>
-    public class TransactionsAmount
+    public class TransactionsAmountV3
     {
         /// <summary>
         /// 订单总金额，单位为分。
@@ -119,16 +125,22 @@ namespace Gksyb.Common.Weixin
         public int Total { get; set; }
 
         /// <summary>
-        /// 订单总金额，单位为分。
-        /// </summary>
-        [JsonProperty("payer_total")]
-        public int PayerTotal { get; set; }
-
-        /// <summary>
         ///CNY：人民币，境内商户号仅支持人民币。
         /// </summary>
         [JsonProperty("currency")]
         public string Currency { get; set; } = "CNY";
+    }
+
+    /// <summary>
+    /// 金额
+    /// </summary>
+    public class TransactionsAmount: TransactionsAmountV3
+    {
+        /// <summary>
+        /// 订单总金额，单位为分。
+        /// </summary>
+        [JsonProperty("payer_total")]
+        public int PayerTotal { get; set; }
     }
 
     /// <summary>

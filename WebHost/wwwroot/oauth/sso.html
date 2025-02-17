@@ -73,9 +73,9 @@
                 me.baseUrl = me.getBaseUrl("../");
                 var toUrl = me.getQueryStringByName("redirect_uri") || (me.baseUrl + "index.html");
                 me.httpRequest({
-                    url: 'oauth/validTicket',
+                    url: 'oauth/sso',
                     headers: {
-                        ticket: me.getQueryStringByName("ticket") || me.getQueryStringByName("token"),
+                        token: me.getQueryStringByName("token"),
                         menuAppname: me.getQueryStringByName("menuAppname")
                     },
                     success: function (data) {

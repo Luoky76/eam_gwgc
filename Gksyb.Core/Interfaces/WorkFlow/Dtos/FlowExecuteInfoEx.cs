@@ -1,7 +1,6 @@
 ﻿using Gksyb.Common.EventBus;
 using Gksyb.Common.Static;
 using Gksyb.Core.Interfaces.Auth;
-using Gksyb.Core.Interfaces.WorkFlow.Dtos;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
@@ -19,7 +18,7 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public string FlowName { get; set; }
 
         /// <summary>
-        /// 所属组 
+        /// 所属组
         /// </summary>
         [JsonIgnore]
         public string FlowGroup { get; set; }
@@ -41,6 +40,12 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         /// </summary>
         [JsonIgnore]
         public long? NodeUserId { get; set; }
+
+        /// <summary>
+        /// 当前所处节点
+        /// </summary>
+        [JsonIgnore]
+        public BpmnNodeInfo CurrentNode { get; set; }
 
         /// <summary>
         /// 临时目标节点信息，自动流转用

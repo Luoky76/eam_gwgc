@@ -249,10 +249,7 @@ namespace Gksyb.Common.TCP
                 RemoveClient(client);
                 return;
             }
-            _clients.Keys.Where(c => c.ID == client.ID).ForEach(c =>
-            {
-                RemoveClient(c);
-            });
+            RemoveSameId(client);
             _clients[client] = client.Socket;
             var eventArgs = new SocketAsyncEventArgs()
             {
@@ -305,6 +302,7 @@ namespace Gksyb.Common.TCP
                             break;
                     }
                     doNext = false;
+                    RemoveClient(client);
                     return;
                 }
                 if (e.LastOperation != SocketAsyncOperation.Receive) return;
@@ -340,6 +338,7 @@ namespace Gksyb.Common.TCP
             Array.Copy(e.Buffer, 0, buffer, 0, e.BytesTransferred);
             _logger?.LogInformation(_logPath, $"接收来自{client.ID}的数据：{BitConverter.ToString(buffer)}");
             var result = SocketError.Success;
+            var id = client.ID;
             if (client.Packet != null)
             {
                 result = client.Packet.PackHandle(buffer, bytes =>
@@ -356,8 +355,17 @@ namespace Gksyb.Common.TCP
                 RemoveClient(client);
                 return false;
             }
+            if (client.ID != id)//ID有发生变化
+            {
+                RemoveSameId(client);
+            }
             return true;
         }
+
+        /// <summary>
+        /// 根据条件获取客户端
+        /// </summary>
+        private ClientInfo GetClient(Func<ClientInfo, bool> predicate) => _clients.Keys.OrderBy(c => c.AcceptTime).Last(predicate);
 
         /// <summary>
         /// 移除客户端
@@ -378,6 +386,17 @@ namespace Gksyb.Common.TCP
             {
                 _logger?.LogError(_logPath, $"{client.ID}：{ex}");
             }
+        }
+
+        /// <summary>
+        /// 移开除相同ID的客户端
+        /// </summary>
+        private void RemoveSameId(ClientInfo client)
+        {
+            _clients.Keys.Where(c => c.ID == client.ID && c != client).ForEach(c =>
+            {
+                RemoveClient(c);
+            });
         }
 
         /// <summary>
@@ -403,7 +422,7 @@ namespace Gksyb.Common.TCP
         {
             try
             {
-                var client = _clients.Keys.Last(c => c.ID == id);
+                var client = GetClient(c => c.ID == id);
                 var result = OnSend?.Invoke(client, buffer, _listener) ?? SocketError.Success;
                 if (result != SocketError.Success) return false;
                 _logger?.LogInformation(_logPath, $"准备向{id}发送：{BitConverter.ToString(buffer)}");
@@ -414,7 +433,7 @@ namespace Gksyb.Common.TCP
                     times++;
                     try
                     {
-                        client = _clients.Keys.Last(c => c.ID == id);
+                        client = GetClient(c => c.ID == id);
                         if (client == null)
                         {
                             await Task.Delay(delay);

@@ -7,6 +7,16 @@
     <meta name="theme-color" content="#2196f3">
     <title>微平台</title>
     <link rel="stylesheet" href="../dist/Framework7/mobile.css?v=1" />
+    <style type="text/css">
+        .toggle-password {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            z-index: 999;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -50,6 +60,7 @@
                                 <div class="item-inner">
                                     <div class="item-title item-floating-label">新密码</div>
                                     <div class="item-input-wrap">
+                                        <span class="toggle-password">👁️</span>
                                         <input type="password" id="newpassword" name="newpassword" placeholder="请输入新密码" required validate trim />
                                         <span class="input-clear-button"></span>
                                     </div>
@@ -62,6 +73,7 @@
                                 <div class="item-inner">
                                     <div class="item-title item-floating-label">新密码</div>
                                     <div class="item-input-wrap">
+                                        <span class="toggle-password">👁️</span>
                                         <input type="password" id="againpassword" name="againpassword" placeholder="请再次输入新密码" required validate trim />
                                     </div>
                                 </div>
@@ -176,6 +188,12 @@
                         e.preventDefault();
                         $$("#againpassword").focus();
                     }
+                });
+                $$(".toggle-password").click(function () {
+                    var dom = $(this), pwd = dom.nextAll("input");
+                    var isPassword = pwd.attr("type") === "password";
+                    pwd.attr("type", isPassword ? "text" : "password");
+                    dom.text(isPassword ? "🙈" : "👁️");
                 });
                 me.$sms = $("#sms-code");
                 me.$sms.click(function (e) {

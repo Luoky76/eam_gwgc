@@ -41,11 +41,12 @@ namespace Gksyb.Server.Services.Auth
             }
             if (string.IsNullOrEmpty(appName)) appName = _options.AppName;
             var menus = await _dbContext.Query<SYS_MENU>().Where(c => c.APPNAME == appName && c.ISVISIBLE == 1).OrderBy(c => c.MENUPARENTNO).ThenBy(c => c.MENUORDER)
-                .Select(c => new { ID = c.MENUNO, PID = c.MENUPARENTNO ?? "", ACCESSNAME = c.MENUNAME, ACCESSICON = c.MENUICON, ACCESSNO = c.MENUNO, c.MENUID, BTNID = (long?)0 }).ToListAsync();
+                .Select(c => new { ID = c.MENUNO, PID = c.MENUPARENTNO ?? "", ACCESSNAME = c.MENUNAME, ACCESSICON = c.MENUICON, ACCESSNO = c.MENUNO, c.MENUID, BTNID = (long?)0, c.MENUORDER }).ToListAsync();
             var buttons = await _dbContext.Query<SYS_BUTTON>().Where(c => c.APPNAME == appName).OrderBy(c => c.MENUNO).ThenBy(c => c.SEQNO)
-                .Select(c => new { ID = c.MENUNO + "*" + c.BTNNO, PID = c.MENUNO, ACCESSNAME = c.BTNNAME, ACCESSICON = c.BTNICON, ACCESSNO = c.MENUNO + "*" + c.BTNNO, MENUID = (long?)0, c.BTNID }).ToListAsync();
+                .Select(c => new { ID = c.MENUNO + "*" + c.BTNNO, PID = c.MENUNO, ACCESSNAME = c.BTNNAME, ACCESSICON = c.BTNICON, ACCESSNO = c.MENUNO + "*" + c.BTNNO, MENUID = (long?)0, c.BTNID, MENUORDER = c.SEQNO }).ToListAsync();
             buttons.RemoveAll(c => !menus.Contains(a => a.ID == c.PID));
             menus.AddRange(buttons);
+            menus = menus.OrderBy(c => c.PID).ThenBy(c => c.MENUORDER).ToList();
             return AjaxResult.Success(menus);
         }
 
@@ -60,7 +61,7 @@ namespace Gksyb.Server.Services.Auth
             if (string.IsNullOrEmpty(appName)) appName = _options.AppName;
 
             var list = await _dbContext.Query<SYS_MENU>().Where(c => c.APPNAME == appName && c.ISVISIBLE == 1)
-                .Select(c => new { ID = c.MENUNO, PID = c.MENUPARENTNO ?? "", ACCESSNAME = c.MENUNAME, ACCESSICON = c.MENUICON, ACCESSNO = c.MENUNO, c.MENUID, BTNID = (long?)0 }).ToListAsync();
+                .Select(c => new { ID = c.MENUNO, PID = c.MENUPARENTNO ?? "", ACCESSNAME = c.MENUNAME, ACCESSICON = c.MENUICON, ACCESSNO = c.MENUNO, c.MENUID, BTNID = (long?)0, c.MENUORDER }).ToListAsync();
             var menunos = await _dbContext.Query<CF_PRIVILEGE>().Where(a => a.PRIVILEGEACCESS == "SYS_MENU"
             && a.PRIVILEGEOPERATION == "Permit" && a.PRIVILEGEMASTER == "CF_ROLE" && a.APPNAME == appName
             && _dbContext.Query<CF_ROLE>().Where(d => d.ROLENAME == a.PRIVILEGEMASTERKEY).InnerJoin<CF_USERROLE>((d, e) => d.ROLEID == e.ROLEID
@@ -94,9 +95,10 @@ namespace Gksyb.Server.Services.Auth
                                                                             && d.APPNAME == _options.RoleAppName).Select((d, e) => d.ROLEID).Any()).Any());
 
             var buttons = await queryButtons.OrderBy(c => c.MENUNO).ThenBy(c => c.SEQNO)
-                .Select(c => new { ID = c.BTNNO, PID = c.MENUNO, ACCESSNAME = c.BTNNAME, ACCESSICON = c.BTNICON, ACCESSNO = c.MENUNO + "*" + c.BTNNO, MENUID = (long?)0, c.BTNID }).ToListAsync();
+                .Select(c => new { ID = c.BTNNO, PID = c.MENUNO, ACCESSNAME = c.BTNNAME, ACCESSICON = c.BTNICON, ACCESSNO = c.MENUNO + "*" + c.BTNNO, MENUID = (long?)0, c.BTNID, MENUORDER = c.SEQNO }).ToListAsync();
             buttons.RemoveAll(c => !menus.Contains(a => a.ID == c.PID));
             menus.AddRange(buttons);
+            menus = menus.OrderBy(c => c.PID).ThenBy(c => c.MENUORDER).ToList();
             return AjaxResult.Success(menus);
         }
 

@@ -1,5 +1,4 @@
 ﻿using Gksyb.Core.Interfaces.WorkFlow;
-using Gksyb.Core.Interfaces.WorkFlow.Dtos;
 using System.Linq.Expressions;
 
 namespace Gksyb.Model.WorkFlow
@@ -33,8 +32,9 @@ namespace Gksyb.Model.WorkFlow
                 NodeUserName = source.NODE_USERNAME,
                 NodeUser = source.NODE_USER,
                 NodeReason = source.NODE_REASON,
-                Viewdate = source.VIEWDATE,
-                Finishdate = source.FINISHDATE
+                StartDate = source.CREATEDATE,
+                ViewDate = source.VIEWDATE,
+                FinishDate = source.FINISHDATE
             };
         }
     }

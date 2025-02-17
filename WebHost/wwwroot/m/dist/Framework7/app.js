@@ -181,7 +181,7 @@
                 }
             });
         },
-        refreshGksybToken: function (callback, _toLogin) {
+        refreshGksybToken: function (callback, _toLogin, error) {
             var me = this;
             if (me.isInWeixin()) {//微信浏览器
                 me.weixinOauth();
@@ -201,7 +201,11 @@
                     window.session = data;
                     callback();
                 },
-                error: function () {
+                error: function (message) {
+                    if (error) {
+                        error(message);
+                        return;
+                    }
                     innerTip("登录信息已失效，请重新登录。", _toLogin);
                 }
             });
@@ -308,14 +312,24 @@
             if (opt.noGlobalError) return;
             if (jqXHR.status === 999) {
                 if ((jqXHR.orginOpt || jqXHR.requestParameters).redo === true) {
+                    if (opt.errorOther) {
+                        opt.errorOther(jqXHR, status);
+                        return;
+                    }
                     app.dialog.error("登录信息已失效，请重新登录。");
                     return;
                 }
                 (jqXHR.orginOpt || jqXHR.requestParameters).redo = true;
                 window.refreshGksybToken(function () {
                     Framework7.request(jqXHR.orginOpt || jqXHR.requestParameters); //登录后重发请求
-                }, opt._toLogin);
+                }, opt._toLogin, (opt.errorOther ? function () {
+                    opt.errorOther(jqXHR, status);
+                } : undefined));
             } else {
+                if (opt.errorOther) {
+                    opt.errorOther(jqXHR, status);
+                    return;
+                }
                 app.dialog.error('请求数据出错,页面即将跳转!<br/>原因为：' + (jqXHR.responseText.substring(0, 20) || "") + "<br/>错误码:" + (jqXHR.status || ""), "错误", function () {
                     //location.reload();
                 });
@@ -331,6 +345,8 @@
         var successInner = options.success;
         var errorInner = options.error;
         delete options.error;
+        options.error = options.errorGlobal;
+        delete options.errorGlobal;
         options.success = successInner ? function (result) {
             if (!result) return;
             if (result.IsError) {
@@ -360,7 +376,7 @@
         },
         calendar: {
             dateFormat: "yyyy-mm-dd",
-            timePickerLabel:"时间",
+            timePickerLabel: "时间",
             timePickerPlaceholder: "时间选择",
             toolbarCloseText: "确定",
             headerPlaceholder: "请选择日期"
@@ -399,7 +415,7 @@
         },
         view: {
             stackPages: true,
-            componentCache:false
+            componentCache: false
         },
         on: {
             calendarOpen: function (calendar) {
@@ -772,6 +788,48 @@
             } else {
                 inner(app.WXJSSDK);
             }
+        },
+        success: function (textContent) {
+            var toastSuccess = app.toast.create({
+                icon: '<i class="material-icons">checked</i>',
+                text: textContent,
+                position: 'center',
+                closeTimeout: 2000,
+                on: {
+                    closed: function () {
+                        toastSuccess.destroy();
+                    }
+                }
+            });
+            toastSuccess.open();
+        },
+        fail: function (textContent) {
+            var toastFail = app.toast.create({
+                icon: '<i class="material-icons">close</i>',
+                text: textContent,
+                position: 'center',
+                closeTimeout: 2000,
+                on: {
+                    closed: function () {
+                        toastFail.destroy();
+                    }
+                }
+            });
+            toastFail.open();
+        },
+        message: function (textContent) {
+            var toastFail = app.toast.create({
+                icon: '<i class="material-icons">error_outline</i>',
+                text: textContent,
+                position: 'center',
+                closeTimeout: 2000,
+                on: {
+                    closed: function () {
+                        toastFail.destroy();
+                    }
+                }
+            });
+            toastFail.open();
         },
         //初始化主页
         initMainView: function (options) {

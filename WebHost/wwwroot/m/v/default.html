@@ -37,6 +37,7 @@
     <!--<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>-->
     <script type="text/javascript" src="../dist/Framework7/mobile.js?v=1"></script>
     <script type="text/javascript" src="../dist/Framework7/app.js?cache=1&v=1"></script>
+    <script type="text/javascript" src="../dist/Framework7/broadcast.js?cache=1&v=1"></script>
     <script type="text/javascript" defer src="../../lib/echarts/echarts.js?ver=1"></script>
     <script type="text/javascript" defer src="../../lib/echarts/echarts.expand.js?cache=1&ver=1"></script>
     <script type="text/javascript">
@@ -251,6 +252,35 @@
                 url = "/iframe/" + encodeURIComponent(url) + "/" + encodeURIComponent(title || "") + "/" + (backType || "0");
                 mainView.router.navigate(url);
             },
+            showMessage: function (info) {
+                var dialogMode = info.DialogMode || "提示";
+                var content = info.Content;
+                switch (dialogMode) {
+                    case '通知':
+                        app.notification.create({
+                            title: info.Title,
+                            text: content,
+                            closeTimeout: 3000,
+                        }).open();
+                        break;
+                    case '对话框':
+                        app.dialog.alert(content, info.Title);
+                        break;
+                    default:
+                        app.toast.create({
+                            text: content,
+                            position: 'center',
+                            closeTimeout: 2000,
+                        }).open();
+                }
+            },
+            initMessageCenter: function () {//消息中心
+                var me = this;
+                var channel = Broadcast.getInstance();//创建广播通道
+                channel.onMessageCenter = function (info) {
+                    me.showMessage(info);
+                };
+            },
             //初始化
             init: function () {
                 var me = this;
@@ -264,6 +294,7 @@
                     browserHistoryRoot: gksybConfigs.urlBase + me.basePageName,
                     browserHistory: true
                 });
+                me.initMessageCenter();
             }
         };
         business.init();

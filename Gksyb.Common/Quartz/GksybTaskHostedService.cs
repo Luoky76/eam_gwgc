@@ -34,7 +34,7 @@ namespace Gksyb.Common.Quartz
                 var tasks = await quartzStore.GetTasks();
                 tasks ??= new List<QuartzTask>();
                 var addressList = HttpContext.AddressList;
-                _logger.LogInformation(_logPath, $"本机IP：{addressList.ToStr(",")},任务数{tasks.Count}");
+                _logger.LogInformation(_logPath, $"本机IP：{addressList.ToStr(",")}:{HttpContext.Port},任务数{tasks.Count}");
                 scheduler = await _schedulerFactory.GetScheduler(stoppingToken);
                 foreach (var task in tasks)
                 {

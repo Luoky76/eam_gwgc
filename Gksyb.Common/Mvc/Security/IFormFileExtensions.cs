@@ -212,6 +212,10 @@ namespace Microsoft.AspNetCore.Http
                 using var stream = source.OpenReadStream();
                 CheckImage(stream);
             }
+            if (fileExtension == ".pdf")//pdf由于浏览器可以直接打开，需要处理xss
+            {
+                CheckPdf(source);
+            }
         }
 
         /// <summary>
@@ -273,6 +277,20 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new MessageException("不支持的类型");
             }
+        }
+
+        /// <summary>
+        /// 判断PDF是否安全
+        /// </summary>
+        public static void CheckPdf(IFormFile file)
+        {
+            using var stream = new MemoryStream();
+            file.CopyTo(stream);
+            if (stream.CanSeek) stream.Position = 0;
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            var content = reader.ReadToEnd();
+            if (Regex.IsMatch(content, @"\bjavascript\b|\balert\b", RegexOptions.IgnoreCase))
+                throw new MessageException("防注入:1003");
         }
 
         /// <summary>

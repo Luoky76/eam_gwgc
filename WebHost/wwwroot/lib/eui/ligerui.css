@@ -3647,6 +3647,16 @@ l-grid {
         border-left: 2px solid #dddee1;
     }
 
+.l-grid-hd-cell.l-grid-hd-cell-place {
+    border: none !important;
+    visibility: hidden !important;
+}
+
+.l-grid-row-cell.l-grid-row-cell-place {
+    border: none !important;
+    visibility: hidden !important;
+}
+
 /* --------------
    *   layout  *
 * ------------ */

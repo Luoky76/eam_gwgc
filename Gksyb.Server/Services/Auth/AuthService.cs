@@ -1,8 +1,11 @@
-﻿using Gksyb.Core.Auth;
+﻿using Gksyb.Common.Static;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Auth;
+using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Gksyb.Model.Dtos;
 using Gksyb.Model.UI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
 
@@ -204,6 +207,12 @@ namespace Gksyb.Server.Services.Auth
                 LOGINPASSWORD = request.NewPassword
             });
             await _dbContext.UserLogAsync($"密码{op}", $"{user.LOGINNAME}密码{op}", $"{user.LOGINNAME}{op}自己的密码");
+            var messageCenter = HttpContext.RequestServices.GetService<IMessageCenterService>();
+            await messageCenter.SendAsync(new MessageInfo
+            {
+                Action = "ChangePassword",
+                Receives = new List<string>() { user.LOGINNAME }
+            });
             return AjaxResult.Success();
         }
 
@@ -234,6 +243,7 @@ namespace Gksyb.Server.Services.Auth
             if (userSession.ForbinMenus?.Count > 0)
             {
                 menus.RemoveAll(c => userSession.ForbinMenus.Exists(m => c.MENUNO == m.MENUNO && c.APPNAME == m.APPNAME));
+                await _roleModuleService.AddMissingParent(menus);
             }
             return menus.DistinctBy(c => new { c.MENUNO, c.APPNAME }).OrderBy(c => c.MENUORDER).ToList();
         }
@@ -365,8 +375,6 @@ namespace Gksyb.Server.Services.Auth
         private async Task<string> CheckPassword(string username, string password, DateTime? lastChangeTime = null)
         {
             if (string.IsNullOrWhiteSpace(password)) return string.Empty;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
-            var isInit = password == _options.InitPassWord;
-            if (isInit) return "密码为初始密码，请先修改";
             if (!PasswordHelper.IsStrong(password ?? "", username))
             {
                 return PasswordHelper.DirectionMsg;

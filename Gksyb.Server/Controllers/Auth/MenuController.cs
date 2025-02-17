@@ -47,7 +47,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [JsToken]
+        [JsToken, SkipXssFilter]
         public async Task<AjaxResult> SaveAsync(SaveRequest<SYS_MENU> request)
         {
             return await _service.Save(request);
