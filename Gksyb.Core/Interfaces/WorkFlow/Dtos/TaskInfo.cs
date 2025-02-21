@@ -33,6 +33,11 @@
         public string FormData { get; set; }
 
         /// <summary>
+        /// 发起人主键
+        /// </summary>
+        public long? CreatorId { get; set; }
+
+        /// <summary>
         /// 发起人
         /// </summary>
         public string Creator { get; set; }

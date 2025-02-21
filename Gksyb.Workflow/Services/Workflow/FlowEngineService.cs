@@ -84,6 +84,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     FlowCode = flow.FLOW_CODE,
                     Title = task.FLOW_TITLE,
                     FormData = task.FLOW_FORM_DATA,
+                    CreatorId = task.CREATEUSERID,
                     Creator = task.CREATEUSER,
                     CreateDate = task.CREATEDATE
                 }).WhereIfNotNull(filter, filter).FirstOrDefaultAsync();

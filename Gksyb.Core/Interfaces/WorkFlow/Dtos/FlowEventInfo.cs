@@ -43,6 +43,11 @@
         public Dictionary<string, object> FormData { get; set; }
 
         /// <summary>
+        /// 发起人主键
+        /// </summary>
+        public long? CreatorId { get; set; }
+
+        /// <summary>
         /// 发起人
         /// </summary>
         public string Creator { get; set; }
@@ -75,6 +80,7 @@
             FlowId = info.FlowId,
             Title = info.RealTitle,
             FormData = info.FormData,
+            CreatorId = info.CreatorId,
             Creator = info.Creator,
             CreateDate = info.CreateDate,
             AppName = info.AppName

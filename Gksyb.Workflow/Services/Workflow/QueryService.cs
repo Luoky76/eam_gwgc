@@ -210,6 +210,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     FormUrl = flow.FLOW_FORM_URL,
                     FormMobileUrl = flow.FLOW_FORM_MOBILE_URL,
                     FormData = task.FLOW_FORM_DATA,
+                    CreatorId = task.CREATEUSERID,
                     Creator = task.CREATEUSER,
                     CreateDate = task.CREATEDATE,
                     FinishDate = task.FINISHDATE
