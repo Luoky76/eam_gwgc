@@ -108,7 +108,7 @@
                     validate: true
                 });
                 if (chartOpt.data) {
-                    var formData = {};
+                    var formData = chartOpt.data;
                     if (chartOpt.data.x !== undefined) formData.category = chartOpt.data.x;
                     if (chartOpt.data.y !== undefined) formData.values = chartOpt.data.y;
                     me.chartForm.setOrginData(formData, false);

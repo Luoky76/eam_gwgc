@@ -95,7 +95,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// 本系统单点登录外系统用到url，url后面带token
         /// </summary>
         [JsToken]
-        public async Task<AjaxResult> SSOUrlAsync([FromServices] UserSession user, string appid, string userType)
+        public async Task<AjaxResult> SSOUrlAsync(string appid, string userType)
         {
             var url = await _service.GetSSOUrlAsync(appid);
             var token = await _service.TokenAsync(new TokenRequest()

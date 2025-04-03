@@ -166,7 +166,7 @@ namespace Gksyb.Server.Services.Auth
             var appid = codes.Where(c => c.CODE_EN == "AppId").Select(c => c.CODE_CN).FirstOrDefault();
             MessageException.ThrowIf(string.IsNullOrWhiteSpace(appid), "请先配置SSO的AppId");
             var secret = codes.Where(c => c.CODE_EN == "Secret").Select(c => c.CODE_CN).FirstOrDefault();
-            MessageException.ThrowIf(string.IsNullOrWhiteSpace(appid), "请先配置SSO的Secret");
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(secret), "请先配置SSO的Secret");
             url = url.TrimEnd('/');
             var result = await $"{url}/oauth/now".GetJsonAsync<AjaxResult<DateTime>>();
             MessageException.ThrowIf(result.IsError, result.Message);

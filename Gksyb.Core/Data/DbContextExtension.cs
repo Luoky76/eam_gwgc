@@ -341,6 +341,7 @@ namespace Chloe
             {
                 var parent = childs.FirstOrDefault(c => c.ID.Equals(child.PARENTID)) ?? (new T() { TREENODE = entity.TREENODE });
                 var corpPath = await source.GetTreeNode<T, T1>(parent.TREENODE, predicate, length);
+                child.TREENODE = corpPath;
                 await source.UpdateAsync<T>(c => c.ID.Equals(child.ID), c => new T()
                 {
                     TREENODE = corpPath
