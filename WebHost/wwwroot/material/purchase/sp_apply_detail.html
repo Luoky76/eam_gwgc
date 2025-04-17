@@ -51,7 +51,6 @@
                                     type: 'select',
                                     data: me.typeData,
                                     onChange: function (rowdata, rowIndex, g) {
-                                        debugger
                                         if (g.selected != undefined) {
                                             $('#TYPE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#TYPE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
@@ -60,20 +59,19 @@
                                 }
                             },
                             { display: "紧急程度", name: "EXIG_DEV", type: "select", editor: { type: 'select', data: me.exigData }, validate: { required: true }, },
-
-
                             { display: "申请部门", name: "DEPT_NAME", validate: { required: true }, newline: false, type: "text", options: { type: 'text', disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, type: "text", options: { disabled: true } },
                             { display: "用途", name: "USE_MEMO", newline: true, type: "textarea", editor: { type: 'textarea' }, validate: { required: true }, width: 786, },
                             { display: "备注", name: "MEMO", newline: true, validate: { required: true }, width: 786, type: "textarea", options: {} },
 
                             //隐藏
-                            { display: "主键", name: "APPLY_ID", newline: false, type: "hidden", options: {} },
-                            { display: "AUDITING", name: "AUDITING", newline: false, type: "hidden", options: {} },
-                            { display: "采购分类名", name: "TYPE_NAME", width: 100, type: "text", type: "hidden", },
-                            { display: "采购分类编码", name: "TYPE_CODE", width: 100, type: "text", type: "hidden", },
+                            { display: "主键", name: "APPLY_ID", type: "hidden" },
+                            { display: "AUDITING", name: "AUDITING", type: "hidden" },
+                            { display: "采购分类名", name: "TYPE_NAME", type: "hidden" },
+                            { display: "采购分类编码", name: "TYPE_CODE", type: "hidden" },
+                            { display: "申请人id", name: "APPLY_USERID", type: "hidden" },
+                            { display: "申请部门id", name: "DEPT_ID", type: "hidden" },
                         ]
-
                     },
                     grid: {
                         columns: [

@@ -149,21 +149,11 @@
                                 display: "收货库位", name: "STOCK_ID", type: "select", minWidth: 150, editor: {
                                     type: 'select',
                                     data: me.spHouse,
-                                    onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.spHouse.length; i++) {
-                                                if (rowdata.value == me.spHouse[i].ID) {
-                                                    liger.get("maingrid").updateCell("STOCK_NAME", me.spHouse[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
-                                        } else {
-                                            liger.get("maingrid").updateCell("STOCK_NAME", "", rowdata.record);
-                                        }
-                                    },
+                                    onChange: function (rowdata) {
+                                        rowdata.grid.updateCell("STOCK_NAME", rowdata.selected?.TEXT ?? "", rowdata.record);
+                                    }
                                 }, validate: { required: true }
                             },
-
                             {
                                 display: "成交单价", name: "PRICE", width: 120, type: "text", totalSummary:
                                 {

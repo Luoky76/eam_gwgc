@@ -632,7 +632,7 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<SP_HOUSE>(c => c.AUDITING =="1").Where(predicate)
-                .Select(c => new ComboxData() { ID = c.HOUSE_CODE, TEXT = c.HOUSE_NAME, VALUE = c.HOUSE_ID })
+                .Select(c => new ComboxData() { ID = c.HOUSE_ID, TEXT = c.HOUSE_NAME, VALUE = c.HOUSE_CODE })
                 .Distinct()
                .ToListAsync();
         }

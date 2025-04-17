@@ -645,6 +645,7 @@ namespace EAM.Material.Services
             entity.REQUEST_USER = appledet.APPLY_USER;
             entity.REQUEST_USERID = appledet.APPLY_USERID;
             entity.DEPT_ID = appledet.DEPT_ID;
+            entity.DEPT_NAME = appledet.DEPT_NAME;
             entity.SEC_DEPT = appledet.SEC_DEPT;
             entity.SEC_DEPTID = appledet.SEC_DEPTID;
             entity.TYPE_ID = appledet.TYPE_ID;
