@@ -385,7 +385,6 @@ namespace EAM.Material.Services
                         BUY_USER = item.COLLECT_USER,
                         PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
-                        CREATE_USERID = "", //原为_userSession.UserID.ToString()，因OA回调时并无登录用户，故取消
                         CREATEDATE = dt,
                         MODIFY_USERID = "",
                         MODIFYDATE = dt,

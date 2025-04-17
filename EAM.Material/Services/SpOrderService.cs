@@ -286,9 +286,8 @@ namespace EAM.Material.Services
                         PUR_USERID = s.BUY_USERID,
                         ORDER_ID = s.ORDER_ID,
                         ORDER_CODE = s.ORDER_CODE,
-
-                        DEPT_NAME = dept.DEPT_ID,
-                        DEPT_ID = dept.DEPT_NAME,
+                        DEPT_NAME = dept.DEPT_NAME,
+                        DEPT_ID = dept.DEPT_ID,
                         CHK_USER = apply?.APPLY_USER,
                         CHK_USERID = apply?.APPLY_USERID
                     };
