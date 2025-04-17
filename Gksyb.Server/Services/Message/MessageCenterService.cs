@@ -162,7 +162,7 @@ namespace Gksyb.Server.Services.Message
                 Receiver = info.Receives.ToStr(","),
                 Template = string.IsNullOrWhiteSpace(info.Template) ? info.Code : info.Template,
                 Url = info.Href,
-                TData = info.Data == null ? info.Data.ToJson() : info.Content,
+                TData = info.Data == null ? info.Content : info.Data.ToJson(),
                 Creater = _user.UserName,
                 SendTime = info.SendTime
             });

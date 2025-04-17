@@ -84,6 +84,12 @@ namespace Gksyb.Core.Interfaces.WorkFlow
         public string RealTitle { get; set; }
 
         /// <summary>
+        /// 发起人主键
+        /// </summary>
+        [JsonIgnore]
+        public long? CreatorId { get; set; }
+
+        /// <summary>
         /// 发起人
         /// </summary>
         [JsonIgnore]

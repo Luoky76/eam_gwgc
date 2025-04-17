@@ -124,6 +124,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             };
             await _dbContext.InsertAsync(entity);
             _info.TaskId = entity.ID;
+            _info.CreatorId = entity.CREATEUSERID;
             _info.Creator = entity.CREATEUSER;
             _info.CreateDate = entity.CREATEDATE;
             _info.Users = new List<UserInfo>(){

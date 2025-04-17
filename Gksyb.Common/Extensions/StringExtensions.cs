@@ -196,7 +196,7 @@ namespace Gksyb.Common
         public static string XssFilter(this string value)
         {
             if (string.IsNullOrWhiteSpace(value)) return value;
-            if (Regex.IsMatch(value, @"<[^>]+>|\bjavascript\b|\balert\b", RegexOptions.IgnoreCase))
+            if (Regex.IsMatch(value, @"<([a-zA-Z][a-zA-Z0-9-_:]*)\b(?:\s+[^>]*?)*\s*/?>|\bjavascript\b|\balert\b"))
                 throw new MessageException("防注入:1003");
             return value;
         }

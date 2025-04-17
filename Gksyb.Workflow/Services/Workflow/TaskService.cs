@@ -115,6 +115,7 @@ namespace Gksyb.Workflow.Services.Workflow
             info.FlowName = task.FLOW_NAME;
             info.RealTitle = task.FLOW_TITLE;
             info.AppName = task.APPNAME;
+            info.CreatorId = task.CREATEUSERID;
             info.Creator = task.CREATEUSER;
             info.CreateDate = task.CREATEDATE;
             await _dbContext.UseTransactionAsync(async () =>
@@ -338,6 +339,7 @@ namespace Gksyb.Workflow.Services.Workflow
             info.FlowName = task.FLOW_NAME;
             info.RealTitle = task.FLOW_TITLE;
             info.AppName = task.APPNAME;
+            info.CreatorId = task.CREATEUSERID;
             info.Creator = task.CREATEUSER;
             info.CreateDate = task.CREATEDATE;
 

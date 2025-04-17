@@ -88,6 +88,7 @@ namespace Gksyb.Server.Services.Auth
                     }
                     break;
 
+                case "CorpStation":
                 case "CoprStation":
                     if (string.IsNullOrWhiteSpace(info.Corp)) return users;
                     foreach (var station in operators)

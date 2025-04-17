@@ -49,7 +49,7 @@ namespace Gksyb.Model.Core
         /// 链接
         /// </summary>
         [Description("链接")]
-        [Column(DbType = DbType.AnsiString, Size = 100)]
+        [Column(DbType = DbType.AnsiString, Size = 500)]
         public string URL { get; set; }
 
         /// <summary>
