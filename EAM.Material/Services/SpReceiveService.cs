@@ -468,6 +468,7 @@ namespace EAM.Material.Services
                 a.APPLY_NO,
                 a.DELIVERY_CODE,
                 a.STOCK_NAME,
+                a.CHK_COUNT,
                 a.RECDET_ID,
                 a.STOCK_ID,
                 a.APPLY_USER,
