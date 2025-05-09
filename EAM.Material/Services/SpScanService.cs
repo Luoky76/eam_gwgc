@@ -1,56 +1,30 @@
-﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpScanService : BaseService, ISpScanService
+    public class SpScanService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
+        private readonly ICorpService _corpService;
 
-        public SpScanService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpScanService(IDbContext dbContext, IComboxDataService comboxDataService, ICodeCreatorService codeCreatorService, UserSession userSession, ICorpService corpService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
+            _corpService = corpService;
         }
-
-        class SpScanRes : SP_SCAN
-        {
-            /// <summary>
-            /// 填写的明细数量
-            /// </summary>
-            public int DETAILCOUNT;
-        }
-        /// <summary>
-        /// 获取列表
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<GridData> ListAsync(GridRequest request)
-        {
-            var res = await _dbContext.Query<SP_SCAN>().GetGridData(request);
-            var datas = new List<SpScanRes>();
-            foreach (var item in (List<SP_SCAN>)res.Rows)
-            {
-                var data = item.MapTo<SpScanRes>();
-                data.DETAILCOUNT = _dbContext.Query<SP_SCAN_DET>().Where(t => t.SCAN_ID == item.SCAN_ID).Count();
-                datas.Add(data);
-            }
-            return new GridData()
-            {
-                Rows = datas,
-                Total = res.Total
-            };
-        }
-
 
         /// <summary>
         /// 获取下拉框信息
@@ -60,19 +34,17 @@ namespace EAM.Material.Services
         {
             try
             {
-                var dic = await _comboxDataService.Get(new Dictionary<string, object>()
+                var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-                    { "BCCode", "scanstatus" },//盘点状态
-                    { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)null},//仓位
-                    { "BaseSpType",(Expression<Func<BASE_SPTYPE, bool>>)null},//物资分类
+                    { "BCCode@#Auditing", "auditing" },
+                    { "BCCode@#ScanStatus", "scan_status" },
+                    { "BCCode@#ScanType", "scan_type" },
+                    { "BCCode@#StoreSrc", "store_src" },
+                    { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)( x => true ) },
+                    { "SpTypeName", (Expression<Func<BASE_SPTYPE, bool>>)( x => true ) }
                 });
-
-                var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
-                {
-                    { "BCCode", "scantype" }//盘点类型
-                });
-                dic.TryAdd("ScanType", dic1["BCCode"]);
-                return AjaxResult.Success(dic);
+                data.TryAdd("Corp", await _corpService.ComboxDataAsync());
+                return AjaxResult.Success(data);
             }
             catch (Exception e)
             {
@@ -80,13 +52,28 @@ namespace EAM.Material.Services
             }
         }
 
+        /// <summary>
+        /// 根据ID获取数据
+        /// </summary>
+        public async Task<SP_SCAN> GetAsync(string scanId)
+        {
+            return await _dbContext.Query<SP_SCAN>().FirstOrDefaultAsync(c => c.SCAN_ID == scanId);
+        }
+
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<GridData> ListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_SCAN>().GetGridData(request);
+        }
 
         /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_SCAN> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_SCAN> request)
         {
             await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -140,34 +127,49 @@ namespace EAM.Material.Services
             return AjaxResult.Success(id);
         }
 
+        /// <summary>
+        /// 新增前
+        /// </summary>
         private async Task BeforeAdd(SP_SCAN entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
-            //单号
-            string type = $"BP{dt.Value.ToString("yyyyMM")}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_SCAN>(x => x.SCAN_CODE.Contains(type)).Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-
-            entity.SCAN_CODE = type + index.ToString("D4");
-            entity.SCAN_DATE = dt;
+            var sysdate = await _dbContext.GetSysdate();
+            //生成主键
+            if (entity.SCAN_ID.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            //生成单号
+            if (entity.SCAN_CODE.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_CODE = await _codeCreatorService.CreateCodeAsync<SP_SCAN>("BP", a => a.SCAN_CODE);
+            }
+            //盘点日期
+            if (!entity.SCAN_DATE.HasValue)
+            {
+                entity.SCAN_DATE = sysdate;
+            }
+            //盘点人
+            if (entity.SCAN_USERID.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_USERID = _userSession.UserID.ToString();
+                entity.SCAN_USER = _userSession.RealName;
+            }
+            //盘点部门
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
 
             entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
+            entity.CREATEDATE = sysdate;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
-
-            entity.SCAN_USERID = _userSession.UserID.ToString();
-            entity.SCAN_USER = _userSession.RealName;
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.AUDITING = "0";
+            entity.MODIFYDATE = sysdate;
         }
 
+        /// <summary>
+        /// 更新前
+        /// </summary>
         private async Task BeforeUpdate(SP_SCAN entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -176,28 +178,50 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 删除前
+        /// </summary>
         private async Task BeforeDelete(SP_SCAN entity)
         {
             await _dbContext.DeleteAsync<SP_SCAN_DET>(x => x.SCAN_ID == entity.SCAN_ID);
         }
 
-        public async Task<int> Submit(List<string> sids)
+        /// <summary>
+        /// 提交
+        /// </summary>
+        public async Task SubmitAsync(string scanId)
         {
-            var updatedevice = await _dbContext.UpdateAsync<SP_SCAN>(x => sids.Contains(x.SCAN_ID),
-                    x => new SP_SCAN
-                    {
-                        AUDITING = "1",
-                        SCAN_STATUS = "2"
-                    });
-            return updatedevice;
+            //更新记录状态
+            await _dbContext.UpdateAsync<SP_SCAN>(x => x.SCAN_ID == scanId, x => new SP_SCAN
+            {
+                AUDITING = "1"
+            });
         }
 
-        public async Task<GridData> DetailListAsync(GridRequest request)
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        public async Task RevokeAsync(string scanId)
+        {
+            //更新记录状态
+            await _dbContext.UpdateAsync<SP_SCAN>(x => x.SCAN_ID == scanId, x => new SP_SCAN
+            {
+                AUDITING = "0"
+            });
+        }
+
+        /// <summary>
+        /// 获取盘点明细列表
+        /// </summary>
+        public async Task<GridData> DetListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_SCAN_DET>().GetGridData(request);
         }
 
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_SCAN_DET> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_SCAN_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -248,10 +272,14 @@ namespace EAM.Material.Services
                     c.PDNOTAX_MONEY,
                     c.CY_MONEY
                 },
-                c => a => a.SCAN_DET_ID == c.SCAN_DET_ID, DetBeforeAdd, DetBeforeUpdate);
+                c => a => a.SCAN_DET_ID == c.SCAN_DET_ID,
+                BeforeAddDet, BeforeUpdateDet, null, orgin: true);
         }
 
-        private async Task DetBeforeAdd(SP_SCAN_DET entity)
+        /// <summary>
+        /// 新增明细前
+        /// </summary>
+        private async Task BeforeAddDet(SP_SCAN_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
@@ -263,7 +291,10 @@ namespace EAM.Material.Services
             entity.AUDITING = "0";
         }
 
-        private async Task DetBeforeUpdate(SP_SCAN_DET entity)
+        /// <summary>
+        /// 更新明细前
+        /// </summary>
+        private async Task BeforeUpdateDet(SP_SCAN_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
@@ -271,45 +302,90 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
-        public async Task<AjaxResult> GenerateDet(string SCAN_ID)
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        /// <param name="request">物资盘点</param>
+        /// <param name="requestDet">物资盘点明细</param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SaveAllAsync
+            (SaveRequest<SP_SCAN> request, SaveRequest<SP_SCAN_DET> requestDet)
         {
-            var scan = _dbContext.QueryByKey<SP_SCAN>(SCAN_ID);
-            if (scan == null)
+            string scan_id;
+            //填写主子表关联键值
+            if (request.Updated.Any() && !request.Updated.First().SCAN_ID.IsNullOrWhiteSpace())
             {
-                return AjaxResult.Error("没有对应申请单");
+                scan_id = request.Updated.First().SCAN_ID;
             }
-            var dets = _dbContext.Query<SP_STORE>()
-                .Where(a => a.TYPE_ID == scan.TYPE_ID && scan.STOCK_ID == a.STOCK_ID).ToList();
-
-            if (dets.Count == 0)
+            else if (request.Added.Any() && !request.Added.First().SCAN_ID.IsNullOrWhiteSpace())
             {
-                return AjaxResult.Error("没有对应库存清单");
+                scan_id = request.Added.First().SCAN_ID;
+            }
+            else scan_id = GuidHelper.NewSnowflakeId().ToString();
+            if (request.Added.Any() && request.Added.First().SCAN_ID.IsNullOrWhiteSpace())
+            {
+                request.Added[0].SCAN_ID = scan_id;
             }
 
-            var scandets = _dbContext.Query<SP_SCAN_DET>().Where(a => a.SCAN_ID == SCAN_ID).ToList();
-            DateTime? dt = await _dbContext.GetSysdate();
-            var importDetail = new List<SP_SCAN_DET>();
-            foreach (var det in dets)
+            foreach (var entity in requestDet.Added ??= new List<SP_SCAN_DET>())
             {
-                if (!scandets.Any(t => t.STORE_ID == det.STORE_ID))
+                if (entity.SCAN_ID.IsNullOrWhiteSpace()) entity.SCAN_ID = scan_id;
+            }
+
+            //启用事务保存所有表
+            try
+            {
+                await _dbContext.UseTransactionAsync(async () =>
                 {
-                    var req = det.MapTo<SP_SCAN_DET>();
-
-                    req.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-                    req.CREATE_USERID = _userSession.UserID.ToString();
-                    req.CREATEDATE = dt;
-                    req.MODIFY_USERID = _userSession.UserID.ToString();
-                    req.MODIFYDATE = dt;
-                    req.SCAN_ID = SCAN_ID;
-                    req.STORE_NUM = det.NUM;
-                    req.AUDITING = "0";
-                    importDetail.Add(req);
-                    await Task.CompletedTask;
-                }
+                    if ((await SaveAsync(request)).IsError)
+                    {
+                        throw new MessageException("物资盘点保存失败");
+                    }
+                    if ((await DetSaveAsync(requestDet)).IsError)
+                    {
+                        throw new MessageException("物资盘点明细保存失败");
+                    }
+                });
             }
-            await _dbContext.InsertRangeAsync<SP_SCAN_DET>(importDetail);
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
+            }
 
-            return AjaxResult.Success("生成成功");
+            return AjaxResult.Success("保存成功");
+        }
+
+        /// <summary>
+        /// 生成盘点明细
+        /// </summary>
+        public async Task GenerateDet(string scanId)
+        {
+            var scan = _dbContext.QueryByKey<SP_SCAN>(scanId);
+            MessageException.ThrowIf(scan == null, "没有对应申请单");
+            var store_data = await _dbContext.Query<SP_STORE>()
+                .WhereIf(!scan.TYPE_ID.IsNullOrWhiteSpace(), x => x.TYPE_ID == scan.TYPE_ID)
+                .WhereIf(!scan.STOCK_ID.IsNullOrWhiteSpace(), x => x.STOCK_ID == scan.STOCK_ID)
+                .ToListAsync();
+            MessageException.ThrowIf(!store_data.Any(), "没有对应库存清单");
+
+            //删除已有明细
+            await _dbContext.DeleteAsync<SP_SCAN_DET>(x => x.SCAN_ID == scanId);
+            var sysdate = await _dbContext.GetSysdate();
+            var importList = new List<SP_SCAN_DET>();
+            foreach (var store in store_data)
+            {
+                var scan_det = store.MapTo<SP_SCAN_DET>();
+                scan_det.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+                scan_det.CREATE_USERID = _userSession.UserID.ToString();
+                scan_det.CREATEDATE = sysdate;
+                scan_det.MODIFY_USERID = _userSession.UserID.ToString();
+                scan_det.MODIFYDATE = sysdate;
+                scan_det.SCAN_ID = scanId;
+                scan_det.STORE_NUM = store.NUM;
+                scan_det.AUDITING = "0";
+                importList.Add(scan_det);
+            }
+            await _dbContext.InsertRangeAsync(importList);
         }
 
         class SpScanDetRes : SP_SCAN_DET

@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -6,14 +6,32 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controllers
 {
-    [GksybAuthorize(true)]
+    [GksybAuthorize(MenuNo = "SpScan")]
     public class SpScanController : AreaController
     {
-        private readonly ISpScanService _service;
+        private readonly SpScanService _service;
 
-        public SpScanController(ISpScanService service)
+        public SpScanController(SpScanService service)
         {
             _service = service;
+        }
+
+        /// <summary>
+		/// 获取下拉框数据
+		/// </summary>
+		/// <returns></returns>
+		[HttpPost]
+        public async Task<AjaxResult> ComboxData()
+        {
+            return await _service.ComboxData();
+        }
+
+        /// <summary>
+        /// 根据ID获取记录
+        /// </summary>
+        public async Task<AjaxResult> GetAsync(string scanId)
+        {
+            return AjaxResult.Success(await _service.GetAsync(scanId));
         }
 
         /// <summary>
@@ -28,61 +46,88 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-		/// 获取下拉框数据
-		/// </summary>
-		/// <returns></returns>
-		[HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        /// 保存
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_SCAN> request)
         {
-            return await _service.ComboxData();
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.SaveAsync(request);
         }
 
         /// <summary>
-        /// 保存
+        /// 提交
         /// </summary>
-        /// <param name="request"></param>
+        [JsToken]
+        public async Task<AjaxResult> SubmitAsync(string scanId)
+        {
+            await _service.SubmitAsync(scanId);
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> RevokeAsync(string scanId)
+        {
+            await _service.RevokeAsync(scanId);
+            return AjaxResult.Success("撤销提交成功");
+        }
+
+        /// <summary>
+        /// 获取子表列表
+        /// </summary>
+        public async Task<AjaxResult> DetListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.DetListAsync(request));
+        }
+
+        /// <summary>
+        /// 子表保存
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_SCAN_DET> request)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.DetSaveAsync(request);
+        }
+
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
         /// <returns></returns>
         [HttpPost]
-        [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_SCAN> request)
+        public async Task<AjaxResult> SaveAllAsync
+            (SaveRequest<SP_SCAN> request, SaveRequest<SP_SCAN_DET> requestDet)
         {
-            var result = await ValidSaveAsync(request);
-            if (result.IsError) return result;
-            return await _service.Save(request);
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult> SubmitAsync(List<string> sids)
-        {
-            return AjaxResult.Success(await _service.Submit(sids), "成功");
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult<GridData>> DetailListAsync(GridRequest request)
-        {
-            return AjaxResult<GridData>.Success(await _service.DetailListAsync(request), "成功");
-        }
-
-        [HttpPost]
-        [JsToken]
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_SCAN_DET> request)
-        {
-            var result = await ValidSaveAsync(request);
-            if (result.IsError) return result;
-            return await _service.DetailSave(request);
+            request.Added ??= new List<SP_SCAN>();
+            request.Updated ??= new List<SP_SCAN>();
+            request.Deleted ??= new List<SP_SCAN>();
+            if (request.Added.Count + request.Updated.Count != 1)
+            {
+                return AjaxResult.Error("主表修改记录有且只能有一条");
+            }
+            if (request.Deleted.Any())
+            {
+                return AjaxResult.Error("同时保存方法不能删除主表");
+            }
+            return await _service.SaveAllAsync(request, requestDet);
         }
 
         /// <summary>
         /// 生成盘点清单
         /// </summary>
-        /// <param name="SCAN_ID"></param>
+        /// <param name="scanId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> GenerateDet(string SCAN_ID)
+        public async Task<AjaxResult> GenerateDet(string scanId)
         {
-            return AjaxResult.Success(await _service.GenerateDet(SCAN_ID), "成功");
+            await _service.GenerateDet(scanId);
+            return AjaxResult.Success("生成成功");
         }
-
 
         [HttpPost]
         public async Task<AjaxResult<GridData>> DetailAnsListAsync(GridRequest request)

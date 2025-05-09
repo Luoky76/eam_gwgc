@@ -8,176 +8,495 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title></title>
+    <title>物资盘点明细</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 5px; height: 100%;">
-    <div id="mainsearch" style="width: 98%">
-        <form action="" id="formsearch" class="l-form">
-        </form>
-    </div>
-
-    <form action="" id="mainform">
-        <div style="float: left; width: 100%; height: 90%; ">
-            <div id="maingrid" position="center" title="盘点清单">
-            </div>
-        </div>
-    </form>
+<body style="padding: 5px; height: 100%; overflow: auto;">
+    <form id="mainform"></form>
+    <div id="det-grid"></div>
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath: 'Material/SpScan/',
-            MenuNo: getQueryStringByName("MenuNo"),
-            dialog: null,
-            dialogData: null,
-            Cid: null,
-            storeSou: [],
+            filepath: "",
+            //textarea宽度
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor($("#mainform").width() / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             setConfig: function () {
                 var me = this;
                 me.config = {
-                    search: {
+                    form: {
                         fields: [
-                            { display: "关联外键", name: "_search_SCAN_ID", dbname: "SCAN_ID", newline: false, type: "hidden" },
+                            {
+                                display: "记录状态", name: "AUDITING", type: "select", options: {
+                                    type: "select",
+                                    data: me.Auditing,
+                                    disabled: true
+                                }
+                            },
+                            { display: "盘点单号", name: "SCAN_CODE", type: "string", options: { disabled: true } },
+                            {
+                                display: "盘点状态", name: "SCAN_STATUS", type: "select", options: {
+                                    type: "select",
+                                    data: me.ScanStatus,
+                                    disabled: true
+                                }
+                            },
+                            {
+                                display: "盘点类型", name: "SCAN_TYPE", type: "select", options: {
+                                    type: "select",
+                                    data: me.ScanType,
+                                    disabled: true
+                                }
+                            },
+                            {
+                                display: "盘点库位", name: "STOCK_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.SpHouseName,
+                                    onSelected: function (selectedValue, selectedText, selectedValues) {
+                                        liger.get("STOCK_NAME").setValue(selectedText);
+                                    }
+                                }
+                            },
+                            {
+                                display: "物资分类", name: "TYPE_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.SpTypeName,
+                                    onChangeValue: function (input, value, g) {
+                                        $('#TYPE_NAME').val(g.selected?.TEXT ?? '');
+                                        $('#TYPE_CODE').val(g.selected?.VALUE ?? '');
+                                    }
+                                }
+                            },
+                            { display: "盘点日期", name: "SCAN_DATE", type: "date", validate: { required: true }, options: { initValue: new Date() } },
+                            { display: "盘点人", name: "SCAN_USER", type: "string", options: { disabled: true } },
+                            {
+                                display: "盘点部门", name: "DEPT_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.Corp,
+                                    onSelected: function (selectedValue, selectedText, selectedValues) {
+                                        liger.get("DEPT_NAME").setValue(selectedText);
+                                    }
+                                }
+                            },
+                            { display: "备注", name: "MEMO", type: "textarea", newline: true, width: me.getTextareaWidth() },
+                            //隐藏
+                            { display: "主键", name: "SCAN_ID", type: "hidden" },
+                            { display: "盘点库位", name: "STOCK_NAME", type: "hidden" },
+                            { display: "物资分类", name: "TYPE_NAME", type: "hidden" },
+                            { display: "物资分类编码", name: "TYPE_CODE", type: "hidden" },
+                            { display: "盘点部门", name: "DEPT_NAME", type: "hidden" }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "来源类型", name: "SRC_TYPE", dbname: "HOUSE_CODE", width: 100, type: "select", format: { data: me.storeSou } },
-                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", },
-                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", },
-                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", },
-                            { display: "计量单位", name: "UNIT", width: 150, type: "text", },
-                            { display: "库位名称", name: "STOCK_NAME", width: 150, type: "text", },
-                            { display: "库存数量", name: "STORE_NUM", width: 100, type: "decimal", },
-                            { display: "盘点数量", name: "SCAN_NUM", type: "decimal", width: 100, },
-                            { display: "库存批次号", name: "STORE_CODE", type: "text", width: 100, },
-                            { display: "物料ID", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
-                            { display: "SCAN_ID", name: "SCAN_ID", dbname: "SCAN_ID", width: 100, type: "text", hide: true },
-                            { display: "主键", name: "SCAN_DET_ID", dbname: "SCAN_DET_ID", width: 100, type: "text", hide: true },
+                            { display: "来源类型", name: "SRC_TYPE", type: "select", editor: { data: me.StoreSrc } },
+                            { display: "物料编码", name: "SP_CODE", type: "string" },
+                            { display: "物料名称", name: "SP_NAME", type: "string" },
+                            { display: "型号规格", name: "SP_SIZE", type: "string" },
+                            { display: "品牌、厂家", name: "PRODUCE", type: "string" },
+                            { display: "计量单位", name: "UNIT", type: "string" },
+                            { display: "库位名称", name: "STOCK_NAME", type: "string" },
+                            { display: "库存数量", name: "STORE_NUM", type: "float", },
+                            { display: "盘点数量", name: "SCAN_NUM", type: "float" },
+                            { display: "库存批次号", name: "STORE_CODE", type: "string" },
+                            //隐藏
+                            { display: "主键", name: "SCAN_DET_ID", type: "string", hide: true },
+                            { display: "物资盘点单id", name: "SCAN_ID", type: "string", hide: true },
+                            { display: "物料ID", name: "SP_ID", type: "string", hide: true }
                         ]
                     }
                 };
             },
-            grid: null,
-            searchForm: null,
+            menuNo: getQueryStringByName("MenuNo"),
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
+            mainform: null,
             buttons: null,
+            //主表主键
+            sid: null,
+            isNew: false,
+            isView: true,
+            //下拉数据
+            Auditing: [],
+            SpHouse: [],
+            //成功提示框，当已有提示框未关闭时不会重复弹出
+            showSuccessMessage: function (message = '成功') {
+                var me = this;
+                if (me.showSuccessMessage.isShown) return;
+                me.showSuccessMessage.isShown = true;
+                LG.showSuccess(message, function () {
+                    me.showSuccessMessage.isShown = false;
+                });
+            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Material/SpStore/ComboxData',
+                    url: 'Material/SpScan/ComboxData',
                     loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.storeSou = data.BCCode;
+                    success: function (data) {
+                        me.Auditing = data.Auditing;
+                        me.ScanStatus = data.ScanStatus;
+                        me.ScanType = data.ScanType;
+                        me.StoreSrc = data.StoreSrc;
+                        me.SpHouseName = data.SpHouseName;
+                        me.SpTypeName = data.SpTypeName;
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
             },
+            loadData: function () {
+                var me = this;
+                if (me.isNew) {
+                    me.mainform.setOrginData({ AUDITING: "0", SCAN_ID: me.sid });
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Material/SpScan/Get',
+                        loading: '正在获取中...',
+                        data: { scanId: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                me.mainform.focus();
+            },
+            closeQuery: function (callback) {
+                var me = this;
+                if (me._skipConfirm === true || ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged)) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                me.closeQuery(function () {
+                    if (me.dialog) {
+                        me.dialog.close();
+                        return;
+                    }
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                //表单底部按钮
+                var buttons = [];
+                if (me.dialog) buttons.push({
+                    text: '关闭',
+                    onclick: function () {
+                        var me = this;
+                        me.close(false);
+                    }.bind(me)
+                });
+                if (!me.isView) buttons.push({
+                    text: '保存',
+                    icon: 'fa fa-save',
+                    onclick: function () {
+                        me.saveAll();
+                    }.bind(me)
+                });
+
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform");
+                //搜索表单应用ligerui样式
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
+                    readonly: me.isView,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            grid: null,
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
-                me.grid = $("#maingrid").ligerGrid({
-                    autoWidth: false,
+                me.grid = $("#det-grid").ligerGrid({
+                    export: { protection: false },
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
                     delayLoad: true,
+                    usePager: true,
                     columns: me.config.grid.columns,
-                    usePager: false,
-                    toolbar: { group: "detail" },
-                    url: me.rootPath + 'DetailList',
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/SpScan/DetList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
-                            rules: []
+                            rules: [{ field: 'SCAN_ID', op: 'equal', value: me.sid }]
                         })
                     },
-                    sortName: 'CREATEDATE',
-                    sortOrder: 'DESC',
-                    width: '98%',
+                    sortName: 'STOCK_NAME, SP_CODE',
+                    sortOrder: 'asc',
+                    width: '99%',
                     height: '100%',
+                    heightDiff: -50,
                     checkbox: true,
-                    enabledEdit: false,
-                    clickToEdit: false
+                    enabledEdit: !me.isView,
+                    clickToEdit: true,
+                    onSuccess: function (data, g) { }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
+                me.bindGridEvent();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Pdf',
+                        text: '导出Pdf',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-pdf-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
                         case "refresh":
-                            me.reload();
+                            me.reloadGrid();
                             break;
-                        case "add":
-                            me.add();
+                        case "generate-det":
+                            me.generateDet();
+                            break;
+                        case "delete":
+                            if (me.isSelectRow) {
+                                me.deleteGrid();
+                            }
+                            break;
+                        case "save":
+                            me.saveAll();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true, data: { gridid: "det-grid" } });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true, data: { gridid: "det-grid" } });
+                            break;
+                        default:
                             break;
                     }
-                }
-                if (!me.isView)
+                };
+                //加载detail按钮
+                me.grid.toolbarManager.options.group = 'detail';
+                if (!me.isView) {
                     LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+                }
             },
-            add: function () { //生成盘点清单
+            //刷新
+            reloadGrid: function () {
                 var me = this;
+                me.grid.loadData();
+            },
+            generateDet: function () {
+                var me = this;
+                //生成明细前先保存
+                me.saveAll({ async: false, showMessage: false });
                 LG.ajax({
                     jsToken: true,
-                    url: me.rootPath + 'GenerateDet',
-                    loading: '正在生成中...',
-                    data: { SCAN_ID: me.Cid },
-                    success: function () {
-                        LG.showSuccess('生成成功');
-                        me.reload();
+                    url: 'Material/SpScan/GenerateDet',
+                    data: { scanId: me.sid },
+                    success: function (data, message) {
+                        me.showSuccessMessage(message);
+                        me.loadData();
+                        me.reloadGrid();
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
             },
-            reload: function () { //刷新
+            //删除
+            deleteGrid: function () {
                 var me = this;
-                me.buttons[0].click();
-            },
-            setForm: function () {
-                var me = this;
-                me.config.search.fields.removeNull();
-                var $formsearch = $("#formsearch")
-                //搜索表单应用ligerui样式
-                me.searchForm = $formsearch.ligerForm({
-                    fields: me.config.search ? me.config.search.fields : [],
-                    validate: true,
-                    buttons: [{
-                        text: '查询',
-                        width: 60,
-                        click: function () {
-                            LG.commonSearch($formsearch, me.grid);
+                if (me.grid.endEdit() != false) {
+                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (confirm) {
+                            me.grid.deleteSelectedRow();
+                            me.saveAll();
                         }
-                    }],
-                    onAfterSetFields: function (g) {
-                        me.searchForm = g;
-                        me.buttons = g.options.buttons;
-                        me.searchForm.setData({ "_search_SCAN_ID": me.Cid });
+                    });
+                }
+            },
+            //保存前验证
+            vertifyBeforeSave: function () {
+                var me = this;
+                return true;
+            },
+            //同时主子表
+            saveAll: function ({ async = true, showMessage = true } = {}) {
+                var me = this;
+                //保存前验证
+                if (!me.vertifyBeforeSave() || !me.grid.endEdit()) return;
+                if ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged) {
+                    if (showMessage) {
+                        me.showSuccessMessage('无修改');
+                    }
+                    return;
+                }
+                //主表必填项判断
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                //子表必填项判断
+                if (!me.grid.validChangeRows()) return;
+
+                //构造保存请求
+                var data = me.mainform.getData();
+                var original = me.mainform.getOrginData();
+
+                var changeRow = new Object();
+                if (me.isNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+
+                var changeRowDet = me.grid.getChangedRows();
+
+                //统一保存请求
+                LG.ajax({
+                    jsToken: true,
+                    async: async,
+                    url: 'Material/SpScan/SaveAll',
+                    loading: '正在保存中...',
+                    data: { request: changeRow, requestDet: changeRowDet },
+                    success: function (id) {
+                        if (showMessage) {
+                            me.showSuccessMessage('保存成功');
+                        }
+                        //保存过一次后自动变为修改模式
+                        me.isNew = false;
+                        me.loadData();
+                        me.grid.isDataChanged = false;
+                        me.reloadGrid();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            //获取新主键
+            getPrimaryKey: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/General/CreatePrimaryKey',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.sid = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
                     }
                 });
             },
             init: function () {
                 var me = this;
 
+                //判断为弹窗或审批流程中嵌入页面
                 me.dialog = frameElement.dialog;
-                me.dialogData = me.dialog.get('data');
-                me.Cid = me.dialogData.Cid;
-                me.isView = me.dialogData.view === "1";
+                if (me.dialog) {
+                    me.dialogData = me.dialog.get('data');
+                }
+                else {
+                    me.dialogData = JSON.parse(parent.window.business.data.FormData);
+                }
+                me.callback = me.dialogData.callback;
+                me.sid = me.dialogData.sid;
+                me.isView = Boolean(me.dialogData.isView);
+                me.isNew = Boolean(me.dialogData.isNew);
+                if (me.isNew) {
+                    me.getPrimaryKey();
+                }
 
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
+                me.loadData();
+
+                //加载明细表
                 me.setGrid();
-                me.reload();
+                me.reloadGrid();
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
+
 </html>
