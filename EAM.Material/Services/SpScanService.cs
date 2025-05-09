@@ -362,9 +362,11 @@ namespace EAM.Material.Services
         {
             var scan = _dbContext.QueryByKey<SP_SCAN>(scanId);
             MessageException.ThrowIf(scan == null, "没有对应申请单");
+            var type_code = (await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_ID == scan.TYPE_ID).FirstOrDefaultAsync()).TYPE_CODE;
+            var house_code = (await _dbContext.Query<SP_HOUSE>(x => x.HOUSE_ID == scan.STOCK_ID).FirstOrDefaultAsync()).HOUSE_CODE;
             var store_data = await _dbContext.Query<SP_STORE>()
-                .WhereIf(!scan.TYPE_ID.IsNullOrWhiteSpace(), x => x.TYPE_ID == scan.TYPE_ID)
-                .WhereIf(!scan.STOCK_ID.IsNullOrWhiteSpace(), x => x.STOCK_ID == scan.STOCK_ID)
+                .WhereIf(!scan.TYPE_ID.IsNullOrWhiteSpace(), x => _dbContext.Query<BASE_SPTYPE>(type => type.TYPE_ID == x.TYPE_ID && type.TYPE_CODE.StartsWith(type_code)).Any())
+                .WhereIf(!scan.STOCK_ID.IsNullOrWhiteSpace(), x => _dbContext.Query<SP_HOUSE>(house => house.HOUSE_ID == x.HOUSE_ID && house.HOUSE_CODE.StartsWith(house_code)).Any())
                 .ToListAsync();
             MessageException.ThrowIf(!store_data.Any(), "没有对应库存清单");
 
