@@ -289,6 +289,7 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
             entity.AUDITING = "0";
+            await HandleDet(entity);
         }
 
         /// <summary>
@@ -300,6 +301,28 @@ namespace EAM.Material.Services
 
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
+            await HandleDet(entity);
+        }
+
+        /// <summary>
+        /// 检查和预处理
+        /// </summary>
+        private async Task HandleDet(SP_SCAN_DET entity)
+        {
+            //判断盘盈盘亏情况
+            if (entity.SCAN_NUM == entity.STORE_NUM)
+            {
+                entity.SCAN_RESULT = "正常";
+            }
+            else if (entity.SCAN_NUM > entity.STORE_NUM)
+            {
+                entity.SCAN_RESULT = "盘盈";
+            }
+            else if (entity.SCAN_NUM < entity.STORE_NUM)
+            {
+                entity.SCAN_RESULT = "盘亏";
+            }
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -362,12 +385,18 @@ namespace EAM.Material.Services
         {
             var scan = _dbContext.QueryByKey<SP_SCAN>(scanId);
             MessageException.ThrowIf(scan == null, "没有对应申请单");
-            var type_code = (await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_ID == scan.TYPE_ID).FirstOrDefaultAsync()).TYPE_CODE;
-            var house_code = (await _dbContext.Query<SP_HOUSE>(x => x.HOUSE_ID == scan.STOCK_ID).FirstOrDefaultAsync()).HOUSE_CODE;
-            var store_data = await _dbContext.Query<SP_STORE>()
-                .WhereIf(!scan.TYPE_ID.IsNullOrWhiteSpace(), x => _dbContext.Query<BASE_SPTYPE>(type => type.TYPE_ID == x.TYPE_ID && type.TYPE_CODE.StartsWith(type_code)).Any())
-                .WhereIf(!scan.STOCK_ID.IsNullOrWhiteSpace(), x => _dbContext.Query<SP_HOUSE>(house => house.HOUSE_ID == x.HOUSE_ID && house.HOUSE_CODE.StartsWith(house_code)).Any())
-                .ToListAsync();
+            var store_query = _dbContext.Query<SP_STORE>();
+            if (!scan.TYPE_ID.IsNullOrWhiteSpace())
+            {
+                var type_code = (await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_ID == scan.TYPE_ID).FirstOrDefaultAsync()).TYPE_CODE;
+                store_query = store_query.Where(x => _dbContext.Query<BASE_SPTYPE>(type => type.TYPE_ID == x.TYPE_ID && type.TYPE_CODE.StartsWith(type_code)).Any());
+            }
+            if (!scan.STOCK_ID.IsNullOrWhiteSpace())
+            {
+                var house_code = (await _dbContext.Query<SP_HOUSE>(x => x.HOUSE_ID == scan.STOCK_ID).FirstOrDefaultAsync()).HOUSE_CODE;
+                store_query = store_query.Where(x => _dbContext.Query<SP_HOUSE>(house => house.HOUSE_ID == x.STOCK_ID && house.HOUSE_CODE.StartsWith(house_code)).Any());
+            }
+            var store_data = await store_query.ToListAsync();
             MessageException.ThrowIf(!store_data.Any(), "没有对应库存清单");
 
             //删除已有明细
