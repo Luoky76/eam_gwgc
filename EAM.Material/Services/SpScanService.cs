@@ -431,67 +431,71 @@ namespace EAM.Material.Services
             public string SEC_DEPT;
             public DateTime? SCAN_DATE;
         }
+
+        /// <summary>
+        /// 待盘点项目
+        /// </summary>
         public async Task<GridData> DetailAnsListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_SCAN_DET>()
-                .LeftJoin<SP_SCAN>((a, b) => a.SCAN_ID == b.SCAN_ID)
-                .Where((a, b) => b.AUDITING == "1")
+            return await _dbContext.Query<SP_SCAN>(a => a.AUDITING == "1")
+                .LeftJoin<SP_SCAN_DET>((a, b) => a.SCAN_ID == b.SCAN_ID)
+                .Where((a, b) => b.AUDITING == "0")
                 .Select((a, b) => new SpScanDetRes
                 {
-                    AUDITING = a.AUDITING,
-                    SRC_TYPE = a.SRC_TYPE,
-                    SP_CODE = a.SP_CODE,
-                    SP_NAME = a.SP_NAME,
-                    SP_SIZE = a.SP_SIZE,
-                    PRODUCE = a.PRODUCE,
-                    UNIT = a.UNIT,
-                    STORE_NUM = a.STORE_NUM,
-                    SCAN_NUM = a.SCAN_NUM,
-                    STOCK_NAME = a.STOCK_NAME,
-                    TYPE_NAME = a.TYPE_NAME,
-                    SCAN_RESULT = a.SCAN_RESULT,
-                    SCAN_DET_ID = a.SCAN_DET_ID,
-                    SCAN_ID = a.SCAN_ID,
-                    CREATEDATE = a.CREATEDATE,
-                    STORE_CODE = a.STORE_CODE,
-                    SCAN_CODE = b.SCAN_CODE,
-                    SCAN_TYPE = b.SCAN_TYPE,
-                    SCAN_USER = b.SCAN_USER,
-                    DEPT_NAME = b.DEPT_NAME,
-                    SEC_DEPT = b.SEC_DEPT,
-                    SCAN_DATE = b.SCAN_DATE
+                    AUDITING = b.AUDITING,
+                    SRC_TYPE = b.SRC_TYPE,
+                    SP_CODE = b.SP_CODE,
+                    SP_NAME = b.SP_NAME,
+                    SP_SIZE = b.SP_SIZE,
+                    PRODUCE = b.PRODUCE,
+                    UNIT = b.UNIT,
+                    STORE_NUM = b.STORE_NUM,
+                    SCAN_NUM = b.SCAN_NUM,
+                    STOCK_NAME = b.STOCK_NAME,
+                    TYPE_NAME = b.TYPE_NAME,
+                    SCAN_RESULT = b.SCAN_RESULT,
+                    SCAN_DET_ID = b.SCAN_DET_ID,
+                    SCAN_ID = b.SCAN_ID,
+                    CREATEDATE = b.CREATEDATE,
+                    STORE_CODE = b.STORE_CODE,
+                    SCAN_CODE = a.SCAN_CODE,
+                    SCAN_TYPE = a.SCAN_TYPE,
+                    SCAN_USER = a.SCAN_USER,
+                    DEPT_NAME = a.DEPT_NAME,
+                    SEC_DEPT = a.SEC_DEPT,
+                    SCAN_DATE = a.SCAN_DATE
                 })
                 .GetGridData(request);
         }
 
-        public async Task<int> DetSubmit(List<string> sids)
+        /// <summary>
+        /// 盘点项目提交
+        /// </summary>
+        public async Task DetSubmit(List<string> sids)
         {
             var list = _dbContext.Query<SP_SCAN_DET>().Where(x => sids.Contains(x.SCAN_DET_ID)).ToList();
-
             foreach (var item in list)
             {
+                _dbContext.TrackEntity(item);
                 item.AUDITING = "1";
                 item.MORE_NUM = item.SCAN_NUM - item.STORE_NUM;
                 item.IS_DISPOSE = "1";
-                _dbContext.Update<SP_SCAN_DET>(item);
+                _dbContext.Update(item);
             }
 
             var scanids = list.Select(t => t.SCAN_ID).Distinct().ToList();
             foreach (var id in scanids)
             {
-                var count = _dbContext.Query<SP_SCAN_DET>().Where(x => x.SCAN_ID == id && x.AUDITING == "0").Count();
-                if (count == 0)
+                var isIncomplete = await _dbContext.Query<SP_SCAN_DET>().Where(x => x.SCAN_ID == id && x.AUDITING == "0").AnyAsync();
+                //所有盘点项目均提交后，更新盘点任务状态
+                if (!isIncomplete)
                 {
-                    await _dbContext.UpdateAsync<SP_SCAN>(x => x.SCAN_ID == id,
-                          x => new SP_SCAN
-                          {
-                              AUDITING = "1",
-                              SCAN_STATUS = "3" //盘点完成
-                          });
+                    await _dbContext.UpdateAsync<SP_SCAN>(x => x.SCAN_ID == id, x => new SP_SCAN
+                    {
+                        SCAN_STATUS = "3" //盘点完成
+                    });
                 }
             }
-
-            return list.Count;
         }
     }
 }

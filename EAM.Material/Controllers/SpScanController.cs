@@ -129,6 +129,9 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success("生成成功");
         }
 
+        /// <summary>
+        /// 待盘点项目
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult<GridData>> DetailAnsListAsync(GridRequest request)
         {
@@ -136,14 +139,15 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 盘点提交
+        /// 盘点项目提交
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
         [HttpPost]
         public async Task<AjaxResult> DetSubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.DetSubmit(sids), "成功");
+            await _service.DetSubmit(sids);
+            return AjaxResult.Success("成功");
         }
     }
 }
