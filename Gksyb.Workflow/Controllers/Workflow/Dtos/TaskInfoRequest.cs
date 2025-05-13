@@ -8,6 +8,11 @@
         public string Id { get; set; }
 
         /// <summary>
+        /// 任务节点ID
+        /// </summary>
+        public string TaskId { get; set; }
+
+        /// <summary>
         /// 流程ID
         /// </summary>
         public string FlowId { get; set; }
@@ -16,5 +21,10 @@
         /// 流程编码
         /// </summary>
         public string FlowCode { get; set; }
+
+        /// <summary>
+        /// 启用新流程
+        /// </summary>
+        public bool DoStartFlow => string.IsNullOrWhiteSpace(Id) && string.IsNullOrWhiteSpace(TaskId);
     }
 }

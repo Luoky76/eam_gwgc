@@ -152,13 +152,13 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<TaskInfoEx> TaskInfoAsync(TaskInfoRequest request)
         {
             TaskInfoEx info;
-            if (string.IsNullOrWhiteSpace(request.Id))
+            if (request.DoStartFlow)
             {
                 info = await GetTaskInfoInnerAsync(request);
                 MessageException.ThrowIf(info == null, $"无权操作编号为{request.FlowCode ?? request.FlowId}的流程");
                 return info;
             }
-            info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(request.Id) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(request.Id);
+            info = await GetTaskInfoInnerAsync<WF_NODE, WF_TASK, WF_TASK_LOG>(request) ?? await GetTaskInfoInnerAsync<WF_HISTORY_NODE, WF_HISTORY_TASK, WF_HISTORY_TASK_LOG>(request);
             MessageException.ThrowIf(info == null, $"无权操作ID为{request.Id}的节点");
             return info;
         }
@@ -186,9 +186,11 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <summary>
         /// 从历史表中获取任务详情
         /// </summary>
-        private async Task<TaskInfoEx> GetTaskInfoInnerAsync<T1, T2, T3>(string id) where T1 : WF_NODE, new() where T2 : WF_TASK where T3 : WF_TASK_LOG
+        private async Task<TaskInfoEx> GetTaskInfoInnerAsync<T1, T2, T3>(TaskInfoRequest request) where T1 : WF_NODE, new() where T2 : WF_TASK where T3 : WF_TASK_LOG
         {
-            var info = await _dbContext.Query<T1>().Where(node => node.ID == id)
+            var info = await _dbContext.Query<T1>()
+                .WhereIfNotNullOrEmpty(request.Id, c => c.ID == request.Id)
+                .WhereIfNotNullOrEmpty(request.TaskId, c => c.TASK_ID == request.TaskId)
                 .InnerJoin<T2>((node, task) => node.TASK_ID == task.ID)
                 .CorpFilter(_user, true)
                 .InnerJoin<WF_FLOW>((node, task, flow) => task.FLOW_ID == flow.ID)
@@ -214,7 +216,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     Creator = task.CREATEUSER,
                     CreateDate = task.CREATEDATE,
                     FinishDate = task.FINISHDATE
-                }).FirstOrDefaultAsync();
+                }).OrderBy(c => c.CreateDate).FirstOrDefaultAsync();
             if (info == null) return info;
             info.WorkNodeId = info.NodeId;
             if (typeof(T1) == typeof(WF_NODE) && info.NodeStatus != NodeStatus.Active)
