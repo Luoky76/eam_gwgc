@@ -216,7 +216,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     Creator = task.CREATEUSER,
                     CreateDate = task.CREATEDATE,
                     FinishDate = task.FINISHDATE
-                }).OrderBy(c => c.CreateDate).FirstOrDefaultAsync();
+                }).OrderBy(c => c.Id).FirstOrDefaultAsync();
             if (info == null) return info;
             info.WorkNodeId = info.NodeId;
             if (typeof(T1) == typeof(WF_NODE) && info.NodeStatus != NodeStatus.Active)

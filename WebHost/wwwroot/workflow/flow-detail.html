@@ -187,11 +187,11 @@
                     }, window._displayOptions);
                 }
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
-                if (me.nid) {
-                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
+                if (me.isNew) {
+                    if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
                 else {
-                    if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
+                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
                 }
                 if (!me.isOper) me.mainForm._setDisabled(true);
             },
@@ -244,7 +244,7 @@
             },
             initTimeline: function () {
                 var me = this;
-                if (!me.nid) return;
+                if (me.isNew) return;
                 $("#flow-node-panel").show();
                 var logs = me.data.Logs;
                 var data = [];
@@ -278,7 +278,7 @@
                         if (data.NodeStatus && data.NodeStatus !== 1) {
                             me.isView = true;
                         }
-                        me.isOper = me.isStart && !me.isView;
+                        me.isOper = me.isStart && !me.isView && !me.taskId;
                         me.setTitle();
                     },
                     error: function (message) {
@@ -536,6 +536,7 @@
                     LG.showError("参数不完整");
                     return;
                 }
+                me.isNew = !me.nid && !me.taskId;
                 me.loadData();
                 me.initLayout();
                 me.initAuditForm();
