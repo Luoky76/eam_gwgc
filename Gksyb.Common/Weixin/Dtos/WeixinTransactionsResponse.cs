@@ -68,5 +68,28 @@ namespace Gksyb.Common.Weixin
             response.PaySign = CryptographyHelper.GetMd5(content).ToUpper();
             return response;
         }
+
+        /// <summary>
+        /// 获取JSSDK
+        /// </summary>
+        /// <returns></returns>
+        public static WeixinTransactionsResponse GetInstanceV3(string prepayId, string nonceStr)
+        {
+            var response = new WeixinTransactionsResponse
+            {
+                AppId = WeixinSetting.AppId,
+                Timestamp = (DateTimeOffset.Now - DateTimeOffset.UnixEpoch).TotalSeconds.CastTo<long>().ToString(),
+                NonceStr = nonceStr,
+                Package = HttpUtility.UrlEncode($"prepay_id={prepayId}"),
+                SignType = "RSA"
+            };
+            var content = new[] {
+                response.AppId,
+                response.Timestamp,
+                response.NonceStr,
+                response.Package}.ToStr("\n");
+            response.PaySign = CryptographyHelper.RSASign(content, WeixinSetting.PayPrivateKey);
+            return response;
+        }
     }
 }

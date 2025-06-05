@@ -97,23 +97,23 @@ namespace Gksyb.Model.Core
         public string CORP_LINK_MAN { get; set; }
 
         /// <summary>
-        /// 主要联系人
+        /// 联系人电话
         /// </summary>
-        [Description("主要联系人")]
+        [Description("联系人电话")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
         public string LINK_MAN_TELE { get; set; }
 
         /// <summary>
-        /// 主要联系人
+        /// 联系人邮箱
         /// </summary>
-        [Description("主要联系人")]
+        [Description("联系人邮箱")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
         public string LINK_MAN_EMAIL { get; set; }
 
         /// <summary>
-        /// 付款人纳税人识别号
+        /// 纳税人识别号
         /// </summary>
-        [Description("付款人纳税人识别号")]
+        [Description("纳税人识别号")]
         [Column(DbType = DbType.AnsiString, Size = 20)]
         public string FEECLIENT_ID { get; set; }
 
