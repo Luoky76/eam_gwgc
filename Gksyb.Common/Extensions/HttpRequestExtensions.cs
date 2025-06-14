@@ -264,7 +264,7 @@ namespace Gksyb.Common
             catch (BadHttpRequestException ex)
             {
                 var logger = source.HttpContext.RequestServices.GetRequiredService<ILogger<HttpRequest>>();
-                logger.LogError(new LogPath("Exception"), ex.ToString());
+                logger.LogError(new LogPath("Exception"),$"{source.ContentType} {source.ContentType} {ex}");
             }
             return json;
         }

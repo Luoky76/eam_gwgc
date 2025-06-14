@@ -9,6 +9,8 @@ using Gksyb.Core.Grid;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.Tree;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -29,37 +31,46 @@ namespace Chloe
         /// <returns></returns>
         public static async Task<IDbContext> GetDbContext(this IDbContext source, string linkName, bool isCache = true)
         {
-            if (string.IsNullOrWhiteSpace(linkName)) return source;
-            IDbContext dbContext = null;
-            if (isCache)
+            try
             {
-                dbContext = source.GetItem<IDbContext>(linkName);
-                if (dbContext != null && !dbContext.IsDispose) return dbContext;
-            }
-            TDBLINK tDBLinkEntity = null;
-            await source.NotSqlLog(async () =>
+                if (string.IsNullOrWhiteSpace(linkName)) return source;
+                IDbContext dbContext = null;
+                if (isCache)
+                {
+                    dbContext = source.GetItem<IDbContext>(linkName);
+                    if (dbContext != null && !dbContext.IsDispose) return dbContext;
+                }
+                TDBLINK tDBLinkEntity = null;
+                await source.NotSqlLog(async () =>
             {
                 tDBLinkEntity = await source.Query<TDBLINK>().Where(c => c.LINKNAME == linkName).FirstAsync();
             });
             var dbType = (tDBLinkEntity.LINKTYPE ?? "oracle").ToLower();
             switch (dbType)//历史遗留
-            {
-                case "odp":
-                    dbType = "oracle";
-                    break;
+                {
+                    case "odp":
+                        dbType = "oracle";
+                        break;
 
-                case "sqlserver9":
-                    dbType = "sqlserver";
-                    break;
+                    case "sqlserver9":
+                        dbType = "sqlserver";
+                        break;
+                }
+                dbContext = DbContextFactory.CreateContext(dbType, tDBLinkEntity.CONNSTR);
+                if (!isCache) linkName = GuidHelper.NewShortId();
+                source.SetItem(linkName, dbContext);
+                if (tDBLinkEntity.VALIDFLAG == "2")
+                {
+                    dbContext.DisableDbLog();
+                }
+                return dbContext;
             }
-            dbContext = DbContextFactory.CreateContext(dbType, tDBLinkEntity.CONNSTR);
-            if (!isCache) linkName = GuidHelper.NewShortId();
-            source.SetItem(linkName, dbContext);
-            if (tDBLinkEntity.VALIDFLAG == "2")
+            catch (Exception ex)
             {
-                dbContext.DisableDbLog();
+                var logger = HttpContext.RequestServices.GetRequiredService<ILogger<IDbContext>>();
+                logger.LogError(new LogPath("Exception"), $"{linkName} {ex}");
+                return null;
             }
-            return dbContext;
         }
 
         /// <summary>
