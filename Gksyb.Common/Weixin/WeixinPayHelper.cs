@@ -55,7 +55,7 @@ namespace Gksyb.Common.Weixin
             var response = await ApiRequest(url).PostAsync(new CapturedJsonContent(request.ToMiniJson())).ReceiveJson<JsApiTransactionsResponse>();
             if (response.IsError) throw new MessageException(response.ToString());
             var nonceStr = Guid.NewGuid().ToString("N").ToLower();
-            return WeixinTransactionsResponse.GetInstance(response.PrepayId, nonceStr, "RSA");
+            return WeixinTransactionsResponse.GetInstanceV3(response.PrepayId, nonceStr);
         }
 
         /// <summary>

@@ -118,7 +118,7 @@ $.ligerDialog.open = function (p, wid) {
     var dialog = $.ligerDialog._open(p);
     dialog.winalone = $('<i class="l-dialog-winbtn l-dialog-alone fa fa-desktop"></i>').prependTo(dialog.dialog.winbtns);//独立窗口
     dialog.winalone.click(function () {//独立弹出
-        _alone(dialog.options, dialog.id);
+        _alone(dialog.options);
         dialog.doClose();
     });
     return dialog;

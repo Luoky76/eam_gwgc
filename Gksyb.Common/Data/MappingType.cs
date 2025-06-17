@@ -11,13 +11,13 @@ namespace Chloe.Infrastructure
         }
     }
 
-    public class DateTimeMappingType : DbParameterAssembler, IDbParameterAssembler
+    public class DateTimeMappingType : DbParameterAssembler
     {
         public override void SetupParameter(IDbDataParameter parameter, DbParam param)
         {
-            if (parameter is OracleParameter)
+            if (!param.DbType.HasValue || param.DbType == DbType.Object)
             {
-                param.DbType ??= DbType.Date;
+                param.DbType = (parameter is OracleParameter) ? DbType.Date : DbType.DateTime;
             }
             base.SetupParameter(parameter, param);
         }

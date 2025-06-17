@@ -24,6 +24,7 @@ namespace Gksyb.Common.Data
             mappingTypeBuilder = DbConfiguration.ConfigureMappingType<string>();
             mappingTypeBuilder.HasDbType(DbType.AnsiString);
             mappingTypeBuilder = DbConfiguration.ConfigureMappingType<DateTime>();
+            mappingTypeBuilder.HasDbType(DbType.Object);
             mappingTypeBuilder.HasDbParameterAssembler<DateTimeMappingType>();
             mappingTypeBuilder = DbConfiguration.ConfigureMappingType<Guid>();
             mappingTypeBuilder.HasDbParameterAssembler<Guid_MappingType>();

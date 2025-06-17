@@ -37,9 +37,9 @@ namespace Gksyb.Workflow.Services.Workflow
         /// <inheritdoc/>
         public async Task<TaskInfo> TaskInfoAsync(Expression<Func<TaskInfo, bool>> filter = null, bool hasNode = false)
         {
-            var info = await TaskInfoInnerAsync<WF_TASK, WF_TASK_LOG, WF_NODE>(filter);
+            var info = await TaskInfoInnerAsync<WF_TASK, WF_TASK_LOG, WF_NODE>(filter, hasNode);
             if (info != null) return info;
-            return await TaskInfoInnerAsync<WF_HISTORY_TASK, WF_HISTORY_TASK_LOG, WF_HISTORY_NODE>(filter);
+            return await TaskInfoInnerAsync<WF_HISTORY_TASK, WF_HISTORY_TASK_LOG, WF_HISTORY_NODE>(filter, hasNode);
         }
 
         /// <inheritdoc/>

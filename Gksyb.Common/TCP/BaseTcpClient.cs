@@ -21,7 +21,6 @@ namespace Gksyb.Common.TCP
         private bool _reConnect = false;
 
         private readonly SocketAsyncEventArgs _connectEventArgs;
-        private readonly SocketAsyncEventArgs _receiveEventArgs;
         private readonly int _interval;
         private readonly Timer _timer;
 
@@ -49,8 +48,6 @@ namespace Gksyb.Common.TCP
             _connectEventArgs = new SocketAsyncEventArgs { };
             _connectEventArgs.Completed += OnConnectCompleted;
 
-            _receiveEventArgs = new SocketAsyncEventArgs();
-            _receiveEventArgs.Completed += OnReceiveCompleted;
             if (interval.HasValue)
             {
                 _interval = interval.Value;
@@ -143,21 +140,23 @@ namespace Gksyb.Common.TCP
                 return;
             }
             var buffer = new byte[_client.BufferLength];
-            _receiveEventArgs.SetBuffer(buffer, 0, buffer.Length);
+            var receiveEventArgs = new SocketAsyncEventArgs();
+            receiveEventArgs.SetBuffer(buffer, 0, buffer.Length);
+            receiveEventArgs.Completed += OnReceiveCompleted;
             _connected = true;
-            StartReceive();
+            StartReceive(receiveEventArgs);
         }
 
         /// <summary>
         /// 监听下一次数据接收
         /// </summary>
-        private void StartReceive()
+        private void StartReceive(SocketAsyncEventArgs receiveEventArgs)
         {
             try
             {
-                if (_client.Socket?.ReceiveAsync(_receiveEventArgs) == false)
+                if (_client.Socket?.ReceiveAsync(receiveEventArgs) == false)
                 {
-                    OnReceiveCompleted(_client.Socket, _receiveEventArgs);
+                    OnReceiveCompleted(_client.Socket, receiveEventArgs);
                 }
             }
             catch (Exception ex)
@@ -227,7 +226,7 @@ namespace Gksyb.Common.TCP
             finally
             {
                 if (doNext)
-                    StartReceive();
+                    StartReceive(e);
             }
         }
 

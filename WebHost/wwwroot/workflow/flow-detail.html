@@ -76,6 +76,7 @@
             code: getQueryStringByName("code"),
             sid: getQueryStringByName("sid"),
             nid: getQueryStringByName("nid"),
+            taskId: getQueryStringByName("taskId"),
             isView: getQueryStringByName("isView"),
             split: "@#",
             isStart: false,
@@ -186,11 +187,11 @@
                     }, window._displayOptions);
                 }
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
-                if (me.nid) {
-                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
+                if (me.isNew) {
+                    if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
                 else {
-                    if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
+                    me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
                 }
                 if (!me.isOper) me.mainForm._setDisabled(true);
             },
@@ -243,7 +244,7 @@
             },
             initTimeline: function () {
                 var me = this;
-                if (!me.nid) return;
+                if (me.isNew) return;
                 $("#flow-node-panel").show();
                 var logs = me.data.Logs;
                 var data = [];
@@ -270,14 +271,14 @@
                     jsToken: true,
                     url: 'workflow/query/taskInfo',
                     loading: '正在获取中...',
-                    data: { Id: me.nid, FlowId: me.sid, FlowCode: me.code },
+                    data: { Id: me.nid, TaskId: me.taskId, FlowId: me.sid, FlowCode: me.code },
                     success: function (data) {
                         me.data = data || {};
                         me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
                         if (data.NodeStatus && data.NodeStatus !== 1) {
                             me.isView = true;
                         }
-                        me.isOper = me.isStart && !me.isView;
+                        me.isOper = me.isStart && !me.isView && !me.taskId;
                         me.setTitle();
                     },
                     error: function (message) {
@@ -528,12 +529,14 @@
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
                     if (me.dialogData.code) me.code = me.dialogData.code;
+                    if (me.dialogData.taskId) me.taskId = me.dialogData.taskId;
                     if (me.dialogData.nid) me.nid = me.dialogData.nid;
                 }
-                if (!me.sid && !me.code && !me.nid) {
+                if (!me.sid && !me.code && !me.nid && !me.taskId) {
                     LG.showError("参数不完整");
                     return;
                 }
+                me.isNew = !me.nid && !me.taskId;
                 me.loadData();
                 me.initLayout();
                 me.initAuditForm();

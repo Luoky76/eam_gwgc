@@ -189,7 +189,7 @@ namespace Gksyb.Server.Services.System
         }
 
         /// <summary>
-        /// 任务类型装欢
+        /// 任务类型转换
         /// </summary>
         /// <returns></returns>
         private static QuartzTask ToQuartzTask(SYS_TASK task)
