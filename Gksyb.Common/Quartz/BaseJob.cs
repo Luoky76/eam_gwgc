@@ -39,12 +39,6 @@ namespace Quartz
                 };
                 _quartzTask.IsExcuted = false;
                 var key = _quartzTask.TaskID.ToString();
-                var isExcute = await distributedCache.GetStringAsync($"{key}{nameof(Expiry)}");
-                if (isExcute == "1")
-                {
-                    _logger.LogInformation(_logPath, $"上次任务未完成，跳过本次调度");
-                    return;
-                }
                 _isDistributedLock = (_quartzTask.TaskIP ?? "").Split(",").DistinctAndOrderBy().Count() != 1;
                 if (_isDistributedLock)//不是单IP，分布式锁处理
                 {
@@ -74,6 +68,12 @@ namespace Quartz
                     }
                 }
                 taskKey = $"{key}{nameof(Expiry)}";
+                var isExcute = await distributedCache.GetStringAsync(taskKey);
+                if (isExcute == "1")
+                {
+                    _logger.LogInformation(_logPath, $"上次任务未完成，跳过本次调度");
+                    return;
+                }
                 await distributedCache.SetStringAsync(taskKey, "1", new DistributedCacheEntryOptions()
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(Expiry)
