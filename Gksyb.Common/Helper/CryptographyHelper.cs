@@ -561,9 +561,17 @@ namespace Gksyb.Common
         public static string SM2EncryptWithPKCS8(string text, string publicKey, Encoding encoding = null)
         {
             encoding ??= Encoding.UTF8;
-            var publicKeyParameters = PublicKeyFactory.CreateKey(Convert.FromBase64String(publicKey));
-            var cipherBytes = SM2Encrypt(publicKeyParameters, encoding.GetBytes(text));
+            var cipherBytes = SM2Encrypt(publicKey, encoding.GetBytes(text));
             return Convert.ToBase64String(cipherBytes);
+        }
+
+        /// <summary>
+        /// 公钥加密数据
+        /// </summary>
+        public static byte[] SM2Encrypt(string publicKey, byte[] plainBytes)
+        {
+            var publicKeyParameters = ParseSM2PublicKey(publicKey);
+            return SM2Encrypt(publicKeyParameters, plainBytes);
         }
 
         /// <summary>
@@ -586,8 +594,7 @@ namespace Gksyb.Common
         public static string SM2Decrypt(string text, string privateKey, Encoding encoding = null)
         {
             encoding ??= Encoding.UTF8;
-            var privateKeyParameters = new ECPrivateKeyParameters(new BigInteger(privateKey, 16), SM2_DOMAIN_PARAMS);
-            var plainBytes = SM2Decrypt(privateKeyParameters, Convert.FromBase64String(text));
+            var plainBytes = SM2Decrypt(privateKey, Convert.FromBase64String(text));
             return encoding.GetString(plainBytes);
         }
 
@@ -604,6 +611,15 @@ namespace Gksyb.Common
             var privateKeyParameters = PrivateKeyFactory.CreateKey(Convert.FromBase64String(privateKey));
             var plainBytes = SM2Decrypt(privateKeyParameters, Convert.FromBase64String(text));
             return encoding.GetString(plainBytes);
+        }
+
+        /// <summary>
+        /// 私钥解密数据
+        /// </summary>
+        public static byte[] SM2Decrypt(string privateKey, byte[] cipherBytes)
+        {
+            var privateKeyParameters = new ECPrivateKeyParameters(new BigInteger(privateKey, 16), SM2_DOMAIN_PARAMS);
+            return SM2Decrypt(privateKeyParameters, cipherBytes);
         }
 
         /// <summary>

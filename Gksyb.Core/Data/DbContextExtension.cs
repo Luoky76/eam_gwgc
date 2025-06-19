@@ -42,11 +42,12 @@ namespace Chloe
                 }
                 TDBLINK tDBLinkEntity = null;
                 await source.NotSqlLog(async () =>
-            {
-                tDBLinkEntity = await source.Query<TDBLINK>().Where(c => c.LINKNAME == linkName).FirstAsync();
-            });
-            var dbType = (tDBLinkEntity.LINKTYPE ?? "oracle").ToLower();
-            switch (dbType)//历史遗留
+                {
+                    tDBLinkEntity = await source.Query<TDBLINK>().Where(c => c.LINKNAME == linkName).FirstAsync();
+                    tDBLinkEntity.Decrypt();
+                });
+                var dbType = (tDBLinkEntity.LINKTYPE ?? "oracle").ToLower();
+                switch (dbType)//历史遗留
                 {
                     case "odp":
                         dbType = "oracle";
