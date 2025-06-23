@@ -81,6 +81,7 @@ namespace Gksyb.Server.Services.Auth
                 .ToListAsync();
 
             var isSuper = user.USERID == _options.AdminUserID;
+            var isDeveloper = isSuper || (user.USERID == _options.DeveloperID);
             var isAdmin = isSuper || roles.Contains(c => c.ROLEID == _options.AdminRole);
             var isOurCompany = isAdmin || ((user.CLASS ?? "0").CastTo(0) > 0);
             var ports = await GetUserPortsAsync(user.LOGINNAME, c => c.OPTYPE == _roletype);
@@ -97,6 +98,7 @@ namespace Gksyb.Server.Services.Auth
                 IsSuper = isSuper,
                 IsAdmin = isAdmin,
                 IsOurCompany = isOurCompany,
+                IsDeveloper = isDeveloper,
                 IP = request.IP,
                 UserAgent = request.UserAgent,
                 UserAppName = _options.UserAppName,
@@ -234,6 +236,14 @@ namespace Gksyb.Server.Services.Auth
                 var list = await query.ToListAsync<MenuModule>();
                 return list.OrderBy(c => c.MENUORDER).ToList();
             }
+            else if (userSession.IsDeveloper)
+            {
+                var list = await _dbContext.Query<SYS_MENU>()
+                    .Where(c => c.APPNAME == appname && c.ISVISIBLE == 0)
+                    .ToListAsync<MenuModule>();
+                await _roleModuleService.AddMissingParent(list);
+                return list.OrderBy(c => c.MENUORDER).ToList();
+            }
             var menus = new List<MenuModule>();
             foreach (var roleName in userSession.Roles)
             {
@@ -257,7 +267,7 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<List<ButtonModule>> MyButtonsAsync(UserSession userSession, string menuNo, string appname)
         {
-            if (userSession.IsAdmin)
+            if (userSession.IsAdmin || userSession.IsDeveloper)
             {
                 var query = _dbContext.Query<SYS_BUTTON>().Where(c => c.MENUNO == menuNo && c.APPNAME == appname);
                 var list = await query.ToListAsync<ButtonModule>();

@@ -30,7 +30,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 获取列表
         /// </summary>
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
             return AjaxResult<GridData>.Success(await _service.ListAsync(request));
@@ -39,7 +39,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 保存
         /// </summary>
-        [JsToken, GksybAuthorize(IsSuper = true)]
+        [JsToken, GksybAuthorize(IsDeveloper = true)]
         public async Task<AjaxResult> SaveAsync(SaveRequest<SYS_OAUTH> request)
         {
             return await _service.SaveAsync(request);

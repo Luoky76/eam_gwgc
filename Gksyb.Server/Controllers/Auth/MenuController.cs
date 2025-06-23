@@ -9,7 +9,7 @@ namespace Gksyb.Server.Controllers.Auth
     /// <summary>
     /// 菜单管理
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class MenuController : BaseController
     {
         private readonly MenuService _service;

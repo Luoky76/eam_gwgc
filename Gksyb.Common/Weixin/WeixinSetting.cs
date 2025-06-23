@@ -52,7 +52,7 @@ namespace Gksyb.Common.Weixin
         /// <summary>
         /// 微信支付证书序列号
         /// </summary>
-        public static string PaySerialNumber { get; set; }
+        public static string PaySerialNumber { get; private set; }
 
         /// <summary>
         /// 微信配置初始化

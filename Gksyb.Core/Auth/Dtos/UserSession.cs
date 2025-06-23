@@ -169,6 +169,12 @@ namespace Gksyb.Core.Auth
         public bool IsApi { get; set; }
 
         /// <summary>
+        /// 是否开发者
+        /// </summary>
+        [JsonProperty("IDEV")]
+        public bool IsDeveloper { get; set; }
+
+        /// <summary>
         /// IP地址
         /// </summary>
         public string IP { get; set; }

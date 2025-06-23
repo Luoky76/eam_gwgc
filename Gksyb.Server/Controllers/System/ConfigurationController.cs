@@ -9,7 +9,7 @@ namespace Gksyb.Server.Controllers.System
     /// <summary>
     /// 配置管理
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class ConfigurationController : BaseController
     {
         private readonly ConfigurationService _service;

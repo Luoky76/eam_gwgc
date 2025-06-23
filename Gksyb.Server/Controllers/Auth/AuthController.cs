@@ -342,7 +342,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public AjaxResult Logs(string logPath)
         {
             var logs = Serilog.Sinks.MemoryQueue.MemoryQueueSink.Logs.ToList();
@@ -354,7 +354,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public AjaxResult Services(string search)
         {
             var services = Gksyb.Common.Static.HttpContext.ServiceCollection
@@ -363,7 +363,7 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(services);
         }
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public AjaxResult Connections([FromServices] IHubContext<BroadcastChannelHub, IBroadcastChannelClient> hubContext)
         {
             var connections = hubContext.Clients.All.GetConnections();
@@ -376,7 +376,7 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(msgs);
         }
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public async Task<AjaxResult> UpdateCacheAsync([FromServices] ConfigurationService configurationService, [FromServices] IRoleModuleService roleModuleService, [FromServices] IOptions<SysContextOptions> options)
         {
             await configurationService.UpdateCacheAsync();

@@ -53,6 +53,11 @@ namespace Gksyb.Core.Auth
         public bool IsApi { get; set; }
 
         /// <summary>
+        /// 验证是否开发者
+        /// </summary>
+        public bool IsDeveloper { get; set; }
+
+        /// <summary>
         /// 验证模式
         /// </summary>
         public GksybAuthorizeMode Mode { get; set; } = GksybAuthorizeMode.Equal;
@@ -131,6 +136,7 @@ namespace Gksyb.Core.Auth
             if (IsAdmin) return user.IsAdmin;
             if (IsOurCompany) return user.IsOurCompany;
             if (IsApi) return user.IsApi;
+            if (IsDeveloper) return user.IsDeveloper;
             SetAppname(httpContext);
             if (!CheckGroup()) return false;
             if (!CheckButton()) return false;

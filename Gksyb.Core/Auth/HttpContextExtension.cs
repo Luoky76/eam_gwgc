@@ -81,7 +81,7 @@ namespace Gksyb.Core.Auth
             {
                 menuNo = menuNo.TrimEnd('@');
                 var user = await source.GetCurrentUserAsync();
-                if (user?.IsSuper == true) return menuNo;
+                if (user?.IsDeveloper == true) return menuNo;
             }
             bool isValid = await new GksybAuthorizeAttribute()
             {
