@@ -108,7 +108,7 @@ namespace Gksyb.Workflow.Services.Workflow
         {
             var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == info.TaskId).Exclude(c => new { c.FLOW_FORM_DATA }).FirstOrDefaultAsync();
             MessageException.ThrowIf(task == null, "任务已结束");
-            MessageException.ThrowIf(!_user.IsSuper && task.CREATEUSERID != _user.UserID, "您无权进行此操作");
+            MessageException.ThrowIf(!_user.IsDeveloper && task.CREATEUSERID != _user.UserID, "您无权进行此操作");
             info.FlowId = task.FLOW_ID;
             info.NodeStatus = NodeStatus.Cancel;
             await Init(info);
@@ -198,7 +198,7 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task ReadAsync(List<string> ids)
         {
             if (ids == null || ids.Count < 1) return;
-            await _dbContext.UpdateAsync<WF_NODE_SHARE>(c => ids.Contains(c.TASK_ID) && (c.USERID == _user.UserID || _user.IsSuper), c => new WF_NODE_SHARE()
+            await _dbContext.UpdateAsync<WF_NODE_SHARE>(c => ids.Contains(c.TASK_ID) && (c.USERID == _user.UserID || _user.IsDeveloper), c => new WF_NODE_SHARE()
             {
                 FINISHDATE = DateTime.Now
             });
@@ -319,7 +319,7 @@ namespace Gksyb.Workflow.Services.Workflow
             }
             var node = await query.FirstOrDefaultAsync()
                 ?? throw new MessageException($"找不到{(string.IsNullOrWhiteSpace(info.Id) ? info.TaskId : info.Id)}的任务节点");
-            MessageException.ThrowIf(!_user.IsSuper && node.NODE_USERID != userId, "您无权进行此操作");
+            MessageException.ThrowIf(!_user.IsDeveloper && node.NODE_USERID != userId, "您无权进行此操作");
             MessageException.ThrowIf(node.NODE_STATUS != NodeStatus.Active, "节点已完成");
             info.FlowId = node.FLOW_ID;
             info.TaskId = node.TASK_ID;

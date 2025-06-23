@@ -13,7 +13,7 @@ namespace Gksyb.Workflow.Controllers.Workflow
     /// <summary>
     /// 流程定义
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class DefinitionController : AreaController
     {
         private readonly DefinitionService _service;

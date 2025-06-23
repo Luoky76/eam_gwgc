@@ -27,7 +27,7 @@ namespace Gksyb.Workflow.Services.Workflow
         {
             return await _dbContext.Query<WF_FLOW>()
                 .Where(FilterCorp)
-                .Where(_user.IsSuper ? c => true : c => (c.PASSIVE ?? "0") == "0")
+                .Where(_user.IsDeveloper ? c => true : c => (c.PASSIVE ?? "0") == "0")
                 .Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM }).GetGridData(request);
         }
 
@@ -99,7 +99,7 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<GridData> ToReadAsync(GridRequest request)
         {
             var query = _dbContext.Query<WF_NODE_SHARE>().Where(c => c.TASK_FINISH_FLAG == "0")
-               .Where(_user.IsSuper ? c => true : c => c.USERID == _user.UserID)
+               .Where(_user.IsDeveloper ? c => true : c => c.USERID == _user.UserID)
                .InnerJoin<WF_TASK>((share, task) => share.TASK_ID == task.ID).Select((share, task) => new NodeInfo
                {
                    Id = share.NODE_ID,
@@ -118,7 +118,7 @@ namespace Gksyb.Workflow.Services.Workflow
                });
             var data = await query.GetGridDataList(request);
             var history = _dbContext.Query<WF_NODE_SHARE>().Where(c => c.TASK_FINISH_FLAG == "1")
-               .Where(_user.IsSuper ? c => true : c => c.USERID == _user.UserID)
+               .Where(_user.IsDeveloper ? c => true : c => c.USERID == _user.UserID)
                .InnerJoin<WF_HISTORY_TASK>((share, task) => share.TASK_ID == task.ID).Select((share, task) => new NodeInfo
                {
                    Id = share.NODE_ID,
