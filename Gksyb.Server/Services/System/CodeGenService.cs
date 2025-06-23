@@ -38,7 +38,13 @@ namespace Gksyb.Server.Services.System
         /// <summary>
         /// 列表
         /// </summary>
-        public async Task<GridData> LinkListAsync(GridRequest request) => await _dbContext.Query<TDBLINK>().GetGridData(request);
+        public async Task<GridData> LinkListAsync(GridRequest request)
+        {
+            var data = await _dbContext.Query<TDBLINK>().GetGridData(request);
+            var rows = data.Rows as IList<TDBLINK>;
+            rows.ForEach(c => TDBLINKExtensions.Decrypt(c));
+            return data;
+        }
 
         /// <summary>
         /// 保存
@@ -47,7 +53,26 @@ namespace Gksyb.Server.Services.System
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new { c.LINKNAME, c.CORPID, c.LINKTYPE, c.CONNSTR },
-                c => a => a.LINKNAME == c.LINKNAME, orgin: true);
+                c => a => a.LINKNAME == c.LINKNAME,
+                BeforeAdd, BeforeUpdate, orgin: true);
+        }
+
+        /// <summary>
+        /// 新增前
+        /// </summary>
+        private async Task BeforeAdd(TDBLINK entity)
+        {
+            entity.Encrypt();
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 更新前
+        /// </summary>
+        private async Task BeforeUpdate(TDBLINK entity)
+        {
+            entity.Encrypt();
+            await Task.CompletedTask;
         }
 
         /// <summary>
