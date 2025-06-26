@@ -255,10 +255,17 @@
                 me.excute(me.nodeStatus.Back);
             }, undefined, "");
         },
+        setCallback: function (callback) {
+            var me = this;
+            me._callback = callback;
+        },
         excute: function (nodeStatus, data, skipAssign) {
             var me = this;
             data = Framework7.utils.extend({ Id: me.data.Id }, data);
             var inner = function () {
+                if (me._callback) {
+                    me._callback(nodeStatus, data);
+                }
                 app.ajax({
                     jsToken: true,
                     url: 'workflow/task/' + nodeStatus,
