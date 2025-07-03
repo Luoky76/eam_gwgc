@@ -43,9 +43,14 @@ namespace Gksyb.Core.Auth
         public bool IsOurCompany { get; set; }
 
         /// <summary>
-        /// 基础验证 只验证是否登陆
+        /// 基础验证 只验证是否登陆（访客用户除外）
         /// </summary>
         public bool IsBaseAuth { get; set; }
+
+        /// <summary>
+        /// 验证是否访客以上权限（防止基础验证部分也被访客调用）
+        /// </summary>
+        public bool IsGuest { get; set; }
 
         /// <summary>
         /// 验证是否API用户
@@ -131,7 +136,8 @@ namespace Gksyb.Core.Auth
                 }
                 return false;
             }
-            if (IsBaseAuth) return true;
+            if (IsGuest) return true;
+            if (IsBaseAuth && !user.IsGuest) return true;
             if (IsSuper) return user.IsSuper;
             if (IsAdmin) return user.IsAdmin;
             if (IsOurCompany) return user.IsOurCompany;

@@ -38,6 +38,7 @@ namespace Gksyb.Server.Services.Auth
             var result = await _authService.LoginAsync(request, userSession =>
             {
                 userSession.Openid = openid;
+                userSession.IsGuest = userSession.UserName == _guest;
                 action?.Invoke(userSession);
             }, false);
             if (result.IsError) return result;

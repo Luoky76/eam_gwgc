@@ -20,7 +20,7 @@ namespace Gksyb.Server.Controllers.Auth
     /// <summary>
     /// 验证服务
     /// </summary>
-    [GksybAuthorize(true)]
+    [GksybAuthorize(IsGuest = true)]
     public partial class AuthController : BaseController
     {
         /// <summary>
@@ -245,7 +245,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 userSession.ExtendData = user.ExtendData;
             }, false);
-            if(user.ExpirationType == "1" && response.Data is UserResponse userResponse)//绝对过期处理
+            if (user.ExpirationType == "1" && response.Data is UserResponse userResponse)//绝对过期处理
             {
                 userResponse.Ticket = ticket;
                 return response;
@@ -329,7 +329,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>();
                 var user = UserSession.ParseTicket(ticket, options.Value.TicketVersion);
-                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent 
+                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent
                     && Request.GetRealIP() != user.IP, "无效票据");
                 var distributedCache = HttpContext.RequestServices.GetService<IDistributedCache>();
                 MessageException.ThrowIf(await distributedCache.GetStringAsync(ticket) == "1", "无效票据");

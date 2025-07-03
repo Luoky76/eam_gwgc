@@ -169,6 +169,26 @@ namespace Gksyb.Core.Auth
         public bool IsApi { get; set; }
 
         /// <summary>
+        /// 是否访客
+        /// </summary>
+        [JsonIgnore]
+        public bool IsGuest
+        {
+            get
+            {
+                if (ExtendData.TryGetValue(nameof(IsGuest), out object value))
+                {
+                    return true.Equals(value);
+                }
+                return false;
+            }
+            set
+            {
+                ExtendData[nameof(IsGuest)] = value;
+            }
+        }
+
+        /// <summary>
         /// 是否开发者
         /// </summary>
         [JsonProperty("IDEV")]
