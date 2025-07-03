@@ -41,7 +41,7 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 粘拆包处理
         /// </summary>
-        public SocketError PackHandle(byte[] data, Func<byte[], SocketError> handling)
+        public SocketError PackHandle(byte[] data, Func<byte[], int, SocketError> handling)
         {
             var result = SocketError.Success;
             lock (PackBuffer)
@@ -58,7 +58,8 @@ namespace Gksyb.Common.TCP
                         var l = GetPackLength(PackBuffer.Skip(i + size));//包长度
                         var len = l + i;
                         if (len > length) break;
-                        var handleResult = handling(PackBuffer.GetRange(i, l).ToArray());
+                        var content = PackBuffer.GetRange(i, l).ToArray();
+                        var handleResult = handling(content, length - len);
                         result = handleResult != SocketError.Success ? handleResult : result;
                         index = len;
                         i = index - 1;

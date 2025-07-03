@@ -63,7 +63,7 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 接到数据
         /// </summary>
-        public event Func<ClientInfo, byte[], SocketError> OnReceive;
+        public event Func<ClientInfo, byte[], int, SocketError> OnReceive;
 
         /// <summary>
         /// 发送数据
@@ -242,14 +242,14 @@ namespace Gksyb.Common.TCP
             var result = SocketError.Success;
             if (_client.Packet != null)
             {
-                result = _client.Packet.PackHandle(buffer, bytes =>
+                result = _client.Packet.PackHandle(buffer, (bytes, remaining) =>
                 {
-                    return OnReceive?.Invoke(_client, bytes) ?? SocketError.Success;
+                    return OnReceive?.Invoke(_client, bytes, remaining) ?? SocketError.Success;
                 });
             }
             else
             {
-                result = OnReceive?.Invoke(_client, buffer) ?? SocketError.Success;
+                result = OnReceive?.Invoke(_client, buffer, 0) ?? SocketError.Success;
             }
             if (result == SocketError.Success)
                 return true;
