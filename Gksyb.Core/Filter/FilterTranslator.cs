@@ -85,6 +85,7 @@ namespace Gksyb.Core.Filter
         {
             var bulider = new StringBuilder();
             if (rule == null) return " 1=1 ";
+            rule.Op ??= "equal";
             if ("NULLPARAM".Equals(rule.Op))
             {
                 CreateFilterParam(null, rule.Type, rule.ParamName);

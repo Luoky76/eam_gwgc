@@ -31,6 +31,7 @@ namespace Gksyb.Core.Filter
         public override string TranslateRule(FilterRule rule)
         {
             if (rule == null) return " 1=1 ";
+            rule.Op ??= "equal";
             if ("NULLPARAM".Equals(rule.Op))
             {
                 CreateFilterParam(null, rule.Type, rule);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Gksyb.Core.Interfaces.Auth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -36,6 +37,11 @@ namespace Gksyb.Core.Auth
             var token = source.GetAuthToken();
             userSession = await source.GetCurrentUserAsync(token);
             if (userSession == null) return userSession;
+            if (userSession.IsApi)
+            {
+                var service = source.RequestServices.GetRequiredService<IApiUserInfoService>();
+                await service.FromRequestAsync(source.Request, userSession);
+            }
             lock (source)//source.Items不是多线程安全
             {
                 source.Items.Remove(nameof(UserSession));

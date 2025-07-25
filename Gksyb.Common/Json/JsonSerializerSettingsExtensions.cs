@@ -19,7 +19,7 @@ namespace Newtonsoft.Json
         /// <summary>
         /// 定制化json
         /// </summary>
-        public static JsonSerializerSettings Custom(this JsonSerializerSettings source, string dateFormatString = null, bool igronNull = false)
+        public static JsonSerializerSettings Custom(this JsonSerializerSettings source, string dateFormatString = null, bool? ignoreNull = null)
         {
             if (string.IsNullOrWhiteSpace(dateFormatString))
             {
@@ -30,7 +30,8 @@ namespace Newtonsoft.Json
             source.ContractResolver = new DefaultContractResolver();
             source.Converters.Add(new MinifiedNumArrayConverter());
             source.Converters.Add(new JsLongConverter());
-            if (igronNull || IgnoreNull) source.NullValueHandling = NullValueHandling.Ignore;
+            ignoreNull ??= IgnoreNull;
+            if (ignoreNull.Value) source.NullValueHandling = NullValueHandling.Ignore;
             return source;
         }
 

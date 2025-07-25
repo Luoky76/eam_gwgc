@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -11,9 +12,14 @@ namespace Gksyb.Common
     public static class HttpContextExtensions
     {
         private const string UIDName = "GKSYBID";
-        private const string TokenName = "GKSYBTOKEN";
+        public readonly static string TokenName;
         private const string RequestBodyName = "Request.Body";
         private const string ResponseBodyName = "Response.Body";
+
+        static HttpContextExtensions()
+        {
+            TokenName = Static.HttpContext.Configuration.GetValue($"{OptionName.SysContext}:TokenKey", "GKSYBTOKEN");
+        }
 
         /// <summary>
         /// 获取客户端唯一ID

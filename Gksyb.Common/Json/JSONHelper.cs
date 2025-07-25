@@ -7,7 +7,8 @@ namespace Gksyb.Common
     /// </summary>
     public static class JsonExtensions
     {
-        private static readonly JsonSerializerSettings _miniSettings = new JsonSerializerSettings().Custom(igronNull: true);
+        private static readonly JsonSerializerSettings _miniSettings = new JsonSerializerSettings().Custom(ignoreNull: true);
+        private static readonly JsonSerializerSettings _fullSettings = new JsonSerializerSettings().Custom(ignoreNull: false);
 
         /// <summary>
         /// 对象转最小化json（忽略空对象）
@@ -15,6 +16,14 @@ namespace Gksyb.Common
         public static string ToMiniJson(this object source)
         {
             return JSONHelper.ToJson(source, _miniSettings);
+        }
+
+        /// <summary>
+        /// 对象转json（包含空对象）
+        /// </summary>
+        public static string ToFullJson(this object source)
+        {
+            return JSONHelper.ToJson(source, _fullSettings);
         }
 
         /// <summary>

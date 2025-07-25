@@ -144,7 +144,7 @@ namespace Gksyb.Core.Auth
             if (IsApi) return user.IsApi;
             if (IsDeveloper) return user.IsDeveloper;
             SetAppname(httpContext);
-            if (!CheckGroup()) return false;
+            if (CheckGroup()) return true;
             if (!CheckButton()) return false;
             var roleModuleService = httpContext.RequestServices.GetService<IRoleModuleService>();
             foreach (var roleName in user.Roles)
@@ -196,7 +196,7 @@ namespace Gksyb.Core.Auth
         }
 
         /// <summary>
-        /// 验证用户
+        /// 验证用户所属组
         /// </summary>
         private bool CheckGroup()
         {
