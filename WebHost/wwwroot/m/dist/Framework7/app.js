@@ -137,6 +137,7 @@
                 data: data,
                 dataType: "text",
                 type: 'post',
+                _toLogin: opt._toLogin,
                 success: function (result) {
                     eval(result);
                 },
