@@ -23,18 +23,9 @@ namespace Gksyb.Server.Services.Message
             _user = user ?? new UserSession()
             {
                 UserID = 0,
-                UserName = "Auto"
+                UserName = "Auto",
+                MenuAppname = serviceProvider.GetService<IOptions<SysContextOptions>>().Value.AppName
             };
-            if (_user == null)
-            {
-                var options = serviceProvider.GetService<IOptions<SysContextOptions>>().Value;
-                _user = new UserSession()
-                {
-                    UserID = 0,
-                    UserName = "Auto",
-                    MenuAppname = options.AppName
-                };
-            }
             _serviceProvider = serviceProvider;
         }
 
