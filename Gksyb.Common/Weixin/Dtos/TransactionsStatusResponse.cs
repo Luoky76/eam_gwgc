@@ -150,38 +150,7 @@ namespace Gksyb.Common.Weixin
         /// <returns></returns>
         public static TransactionsStatusResponse FromPayV3(string content)
         {
-            var xmlDoc = new XmlDocument()
-            {
-                XmlResolver = null
-            };
-            xmlDoc.LoadXml(content);
-            var response = new TransactionsStatusResponse();
-            var xmlNode = xmlDoc["xml"];
-            response.Appid = xmlNode["appid"]?.InnerText;
-            response.Mchid = xmlNode["mch_id"]?.InnerText;
-            response.OutTradeNo = xmlNode["out_trade_no"]?.InnerText;
-            response.TransactionId = xmlNode["transaction_id"]?.InnerText;
-            response.TradeType = xmlNode["trade_type"]?.InnerText;
-            var returnCode = xmlNode["return_code"]?.InnerText;
-            var resultCode = xmlNode["result_code"]?.InnerText;
-            var errCode = xmlNode["err_code"]?.InnerText;
-            response.TradeState = (returnCode == "SUCCESS" && resultCode == "SUCCESS") ? "SUCCESS" : $"{returnCode}-{resultCode}-{errCode}";
-            response.TradeStateDesc = xmlNode["err_code_des"]?.InnerText;
-            response.BankType = xmlNode["bank_type"]?.InnerText;
-            response.Attach = xmlNode["attach"]?.InnerText;
-            var timeEnd = xmlNode["time_end"]?.InnerText;
-            if (!string.IsNullOrWhiteSpace(timeEnd)) response.SuccessTime = DateTime.ParseExact(timeEnd, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
-            response.Amount = new TransactionsAmount()
-            {
-                Total = (xmlNode["total_fee"]?.InnerText ?? "0").CastTo(0),
-                PayerTotal = (xmlNode["cash_fee"]?.InnerText ?? "0").CastTo(0),
-                Currency = xmlNode["fee_type"]?.InnerText
-            };
-            response.Payer = new TransactionsPayer()
-            {
-                Openid = xmlNode["openid"]?.InnerText
-            };
-            return response;
+            return FromXml(content);
         }
 
         /// <summary>

@@ -777,7 +777,7 @@
             }
             if (app.WXSignUrl !== signUrl) {
                 Framework7.ajax({
-                    noGlobal: true,
+                    noGlobalBeforeSend: true,
                     url: 'Weixin/JsSDK',
                     data: { url: signUrl },
                     success: function (data) {

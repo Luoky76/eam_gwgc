@@ -24,7 +24,6 @@ namespace Gksyb.Common.Weixin
         {
             OutTradeNo = outTradeNo;
             Description = description;
-            OutTradeNo = outTradeNo;
             NotifyUrl = notifyUrl;
             Amount = amount;
             Openid = openid;

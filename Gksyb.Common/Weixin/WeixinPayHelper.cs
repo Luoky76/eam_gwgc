@@ -129,7 +129,7 @@ namespace Gksyb.Common.Weixin
                 var timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
                 string nonce = Path.GetRandomFileName();
                 string content = $"{call.HttpRequestMessage.Method.Method}\n{call.HttpRequestMessage.RequestUri.PathAndQuery}\n{timestamp}\n{nonce}\n{call.RequestBody ?? ""}\n";
-                string signature = CryptographyHelper.RSASign(content, WeixinSetting.PayPrivateKey);
+                string signature = string.IsNullOrWhiteSpace(WeixinSetting.PayPrivateKey) ? WeixinSetting.PayPrivateKey : CryptographyHelper.RSASign(content, WeixinSetting.PayPrivateKey);
                 var authorization = $"WECHATPAY2-SHA256-RSA2048 mchid=\"{WeixinSetting.Mchid}\",nonce_str=\"{nonce}\",timestamp=\"{timestamp}\",serial_no=\"{WeixinSetting.PaySerialNumber}\",signature=\"{signature}\"";
                 request.Headers.Add(HeaderNames.Authorization, authorization);
             };
