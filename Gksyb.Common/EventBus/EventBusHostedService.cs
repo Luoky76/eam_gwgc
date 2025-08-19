@@ -87,15 +87,20 @@ namespace Gksyb.Common.EventBus
                 if (stoppingToken.IsCancellationRequested)
                     return;
 
-                object obj = null;
-                if (!eventHandler.Handler.IsStatic)
-                {
-                    using var scope = _serviceScopeFactory.CreateAsyncScope();
-                    obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
-                }
-
                 var values = eventHandler.Handler.GetParametersValue(model.Data);
-                var invokeResult = eventHandler.Handler!.Invoke(obj, values);
+                object obj = null, invokeResult = null;
+                if (eventHandler.Handler.IsStatic)
+                {
+                    invokeResult = eventHandler.Handler!.Invoke(obj, values);
+                    if (invokeResult is Task task2)
+                    {
+                        await task2.WaitAsync(stoppingToken).ConfigureAwait(false);
+                    }
+                    return;
+                }
+                using var scope = _serviceScopeFactory.CreateAsyncScope();
+                obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
+                invokeResult = eventHandler.Handler!.Invoke(obj, values);
                 if (invokeResult is Task task)
                 {
                     await task.WaitAsync(stoppingToken).ConfigureAwait(false);
