@@ -46,6 +46,7 @@ namespace EAM.Device.Services
                 throw new Exception("获取下拉数据失败！原因：" + e.Message);
             }
         }
+
         /// <summary>
         /// 获取树形结构
         /// </summary>
@@ -90,6 +91,7 @@ namespace EAM.Device.Services
             });
             return AjaxResult.Success(deviceList, "成功");
         }
+
         /// <summary>
         /// 获取列表
         /// </summary>
@@ -101,8 +103,9 @@ namespace EAM.Device.Services
             return list;
         }
 
-
-
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
