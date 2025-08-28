@@ -1,6 +1,4 @@
-﻿#pragma warning disable IDE0051,IDE0052 // 删除未使用的私有成员
-
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Core;

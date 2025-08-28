@@ -1,9 +1,6 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Model;
-using Gksyb.Model.Core;
-using Gksyb.Model.Grid;
 using Gksyb.Server.Interfaces.Welcome;
 using Gksyb.Server.Services.Services.Dto;
 

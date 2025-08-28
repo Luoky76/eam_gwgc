@@ -137,34 +137,6 @@ namespace EAM.Device.services
             entity.DEPT_NAME = _userSession.Corp.CName;
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }
-        // 递归获取分类及其子分类的ID集合
-        private List<string> GetChildTypeIds(string pretypeid)
-        {
-            var childTypeIds = new List<string>
-            {
-                // 添加当前分类的ID到childTypeIds
-                pretypeid
-            };
-            // 查询所有子分类的ID并将它们添加到 childTypeIds
-            void GetChildren(string parentId)
-            {
-                var children = _dbContext.Query<BASE_DEVICETYPE>()
-                    .Where(c => c.PRE_TYPEID == parentId)
-                    .Select(c => c.TYPE_ID)
-                    .ToList();
-
-                childTypeIds.AddRange(children);
-
-                foreach (var child in children)
-                {
-                    GetChildren(child);
-                }
-            }
-
-            GetChildren(pretypeid);
-
-            return childTypeIds;
-        }
 
         /// <summary>
         /// 生成盘点清单
