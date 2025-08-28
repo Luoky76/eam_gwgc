@@ -56,7 +56,6 @@ namespace EAM.Special.Services
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .Select((a, b) => new
                 {
-                    b.SEC_DEPTID,
                     a.BUILD_ID,
                     b.DEPT_ID,
                     a.DEVICE_ID,

@@ -69,7 +69,6 @@ namespace EAM.Repair.services
                 .OrderBy(c => c.DEVICE_ID)
                 .Select(c => new DEVICE_CARD
                 {
-                    AUDITING = c.AUDITING,
                     DEVICE_ID = c.DEVICE_ID,
                     DEVICE_NAME = c.DEVICE_NAME,
                     DEVICE_NO = c.DEVICE_NO,

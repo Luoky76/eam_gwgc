@@ -17,13 +17,19 @@ namespace Gksyb.Model
     [Table("DEVICE_CARD")]
     public class DEVICE_CARD
     {
+        /// <summary>
+        /// 主键
+        /// </summary>
+        [Description("主键")]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        public string DEVICE_ID { get; set; }
 
         /// <summary>
-        /// 记录状态
+        /// 上级设备ID
         /// </summary>
-        [Description("记录状态")]
+        [Description("上级设备ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string AUDITING { get; set; }
+        public string PRE_DEVICE_ID { get; set; }
 
         /// <summary>
         /// 设备编号
@@ -40,6 +46,13 @@ namespace Gksyb.Model
         public string DEVICE_NAME { get; set; }
 
         /// <summary>
+        /// 设备机型ID
+        /// </summary>
+        [Description("设备机型ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string BOM_ID { get; set; }
+
+        /// <summary>
         /// 设备机型
         /// </summary>
         [Description("设备机型")]
@@ -47,11 +60,32 @@ namespace Gksyb.Model
         public string BOM_NAME { get; set; }
 
         /// <summary>
+        /// 设备机型编码
+        /// </summary>
+        [Description("设备机型编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string BOM_CODE { get; set; }
+
+        /// <summary>
+        /// 类别ID
+        /// </summary>
+        [Description("类别ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_ID { get; set; }
+
+        /// <summary>
         /// 设备类别
         /// </summary>
         [Description("设备类别")]
         [Column(DbType = DbType.AnsiString)]
         public string TYPE_NAME { get; set; }
+
+        /// <summary>
+        /// 设备类别编码
+        /// </summary>
+        [Description("设备类别编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_CODE { get; set; }
 
         /// <summary>
         /// 设备型号
@@ -74,39 +108,18 @@ namespace Gksyb.Model
         public DateTime? CARD_DATE { get; set; }
 
         /// <summary>
+        /// 部门ID
+        /// </summary>
+        [Description("部门ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_ID { get; set; }
+
+        /// <summary>
         /// 使用部门
         /// </summary>
         [Description("使用部门")]
         [Column(DbType = DbType.AnsiString)]
         public string DEPT_NAME { get; set; }
-
-        /// <summary>
-        /// 使用二级单位
-        /// </summary>
-        [Description("使用二级单位")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SEC_DEPT { get; set; }
-
-        /// <summary>
-        /// 维保部门
-        /// </summary>
-        [Description("维保部门")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WDEPT_NAME { get; set; }
-
-        /// <summary>
-        /// 维保二级单位
-        /// </summary>
-        [Description("维保二级单位")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WSEC_DEPT { get; set; }
-
-        /// <summary>
-        /// 地理区域
-        /// </summary>
-        [Description("地理区域")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SITE_NAME { get; set; }
 
         /// <summary>
         /// 安装地点
@@ -245,6 +258,13 @@ namespace Gksyb.Model
         public string ASSET_SOURCE { get; set; }
 
         /// <summary>
+        /// 供应商ID
+        /// </summary>
+        [Description("供应商ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string PROVIDER_ID { get; set; }
+
+        /// <summary>
         /// 供应商
         /// </summary>
         [Description("供应商")]
@@ -300,48 +320,6 @@ namespace Gksyb.Model
         public string MEMO { get; set; }
 
         /// <summary>
-        /// 维保二级单位ID
-        /// </summary>
-        [Description("维保二级单位ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WSEC_DEPTID { get; set; }
-
-        /// <summary>
-        /// 维保部门ID
-        /// </summary>
-        [Description("维保部门ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WDEPT_ID { get; set; }
-
-        /// <summary>
-        /// 二级单位ID
-        /// </summary>
-        [Description("二级单位ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SEC_DEPTID { get; set; }
-
-        /// <summary>
-        /// 供应商ID
-        /// </summary>
-        [Description("供应商ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PROVIDER_ID { get; set; }
-
-        /// <summary>
-        /// 部门ID
-        /// </summary>
-        [Description("部门ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_ID { get; set; }
-
-        /// <summary>
-        /// 类别ID
-        /// </summary>
-        [Description("类别ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string TYPE_ID { get; set; }
-
-        /// <summary>
         /// 使用人
         /// </summary>
         [Description("使用人")]
@@ -356,34 +334,6 @@ namespace Gksyb.Model
         public string CARD_USERID { get; set; }
 
         /// <summary>
-        /// 地理区域ID
-        /// </summary>
-        [Description("地理区域ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SITE_ID { get; set; }
-
-        /// <summary>
-        /// 设备类别编码
-        /// </summary>
-        [Description("设备类别编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string TYPE_CODE { get; set; }
-
-        /// <summary>
-        /// 主键
-        /// </summary>
-        [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string DEVICE_ID { get; set; }
-
-        /// <summary>
-        /// 设备机型ID
-        /// </summary>
-        [Description("设备机型ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string BOM_ID { get; set; }
-
-        /// <summary>
         /// 安装验收ID
         /// </summary>
         [Description("安装验收ID")]
@@ -396,67 +346,6 @@ namespace Gksyb.Model
         [Description("开箱验收明细ID")]
         [Column(DbType = DbType.AnsiString)]
         public string BOX_DET_ID { get; set; }
-
-        /// <summary>
-        /// 添加人ID
-        /// </summary>
-        [Description("添加人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
-
-        /// <summary>
-        /// 添加时间
-        /// </summary>
-        [Description("添加时间")]
-        public DateTime? CREATEDATE { get; set; }
-
-        /// <summary>
-        /// 修改人ID
-        /// </summary>
-        [Description("修改人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
-
-        /// <summary>
-        /// 修改时间
-        /// </summary>
-        [Description("修改时间")]
-        public DateTime? MODIFYDATE { get; set; }
-
-        /// <summary>
-        /// 盘盈记录ID
-        /// </summary>
-        [Description("盘盈记录ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string MORE_ID { get; set; }
-
-        /// <summary>
-        /// 地理区域编码
-        /// </summary>
-        [Description("地理区域编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SITE_CODE { get; set; }
-
-        /// <summary>
-        /// 设备机型编码
-        /// </summary>
-        [Description("设备机型编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string BOM_CODE { get; set; }
-
-        /// <summary>
-        /// 维保部门编码
-        /// </summary>
-        [Description("维保部门编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WDEPT_CODE { get; set; }
-
-        /// <summary>
-        /// 部门编码
-        /// </summary>
-        [Description("部门编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_CODE { get; set; }
 
         /// <summary>
         /// 常用系数
@@ -573,5 +462,42 @@ namespace Gksyb.Model
         [Description("坞修日期(五年)")]
         public DateTime? REP_DATE5 { get; set; }
 
+        /// <summary>
+        /// 添加人id
+        /// </summary>
+        [Description("添加人id")]
+        public long? CREATE_USERID { get; set; }
+
+        /// <summary>
+        /// 添加人
+        /// </summary>
+        [Description("添加人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CREATEUSER { get; set; }
+
+        /// <summary>
+        /// 添加时间
+        /// </summary>
+        [Description("添加时间")]
+        public DateTime? CREATEDATE { get; set; }
+
+        /// <summary>
+        /// 修改人id
+        /// </summary>
+        [Description("修改人id")]
+        public long? MODIFY_USERID { get; set; }
+
+        /// <summary>
+        /// 修改人
+        /// </summary>
+        [Description("修改人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string MODIFYUSER { get; set; }
+
+        /// <summary>
+        /// 修改时间
+        /// </summary>
+        [Description("修改时间")]
+        public DateTime? MODIFYDATE { get; set; }
     }
 }

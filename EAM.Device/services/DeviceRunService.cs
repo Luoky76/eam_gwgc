@@ -78,7 +78,7 @@ namespace EAM.Device.services
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID)
                 .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING == "1")
-                .Where((a, b, c) => a.AUDITING == "1" && a.STATUS == "1" && a.TYPE_ID == "2");
+                .Where((a, b, c) => a.STATUS == "1" && a.TYPE_ID == "2");
             return await qry
                 .Select((a, b, c) => new ComboxData()
                 {
@@ -195,14 +195,13 @@ namespace EAM.Device.services
                  .LeftJoin(detail, (a, b) => a.DEVICE_ID == b.DEVICE_ID)
                  .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING == "1")
                  .LeftJoin<BC_CODE>((a, b, c, d) => d.CODE_EN == c.NEW_RUN_STATUS)
-                 .Where((a, b, c, d) => a.AUDITING == "1" && a.STATUS == "1" && a.TYPE_ID == "2")
+                 .Where((a, b, c, d) => a.STATUS == "1" && a.TYPE_ID == "2")
                  .Select((a, b, c, d) => new
                  {
                      NEW_RUN_STATUS = c.NEW_RUN_STATUS ?? "正常",
                      a.DEVICE_NO,
                      a.DEVICE_NAME,
                      a.TYPE_NAME,
-                     a.SEC_DEPT,
                      a.DEPT_NAME,
                      b.SUBMITDATE,
                      c.TRANS_MEMO,

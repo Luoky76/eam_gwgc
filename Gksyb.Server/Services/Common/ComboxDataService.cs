@@ -442,7 +442,7 @@ namespace Gksyb.Server.Services.Common
             //除超管和船机部外，按部门过滤数据
             var qry = dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID);
-            return await qry.Where(predicate).Where(c => c.AUDITING=="1")
+            return await qry.Where(predicate)
                 .Select(c => new ComboxData()
                 {
                     ID = c.DEVICE_ID,
@@ -454,7 +454,6 @@ namespace Gksyb.Server.Services.Common
                     EXTEND3 =c.DEPT_NAME,
                     EXTEND4 =c.ASSET_CODE,
                     EXTEND5 =c.INSTALL_SITE,
-                    EXTEND6 =c.WDEPT_NAME,
                 })
                .ToListAsync();
         }
@@ -474,14 +473,13 @@ namespace Gksyb.Server.Services.Common
             //除超管和船机部外，按部门过滤数据
             var qry = dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID);
-            return await qry.Where(predicate).Where(c => c.AUDITING=="1"&&c.TYPE_ID=="1")
+            return await qry.Where(predicate).Where(c => c.TYPE_ID=="1")
                 .Select(c => new ComboxData()
                 {
                     ID = c.DEVICE_ID,
                     TEXT = c.DEVICE_NAME,
                     VALUE = c.DEVICE_NO,
                     EXTEND =c.DEPT_NAME,
-                    EXTEND1 =c.WDEPT_NAME,
                 })
                .ToListAsync();
         }

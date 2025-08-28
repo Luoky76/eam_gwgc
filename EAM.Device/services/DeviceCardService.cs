@@ -119,7 +119,6 @@ namespace EAM.Device.Services
                     c.BOM_NAME,
                     c.DEVICE_TYPE,
                     c.DEPT_ID,
-                    c.WDEPT_ID,
                     c.CARD_USERID,
                     c.SHIP_ID,
                     c.INSTALL_SITE,
@@ -135,9 +134,7 @@ namespace EAM.Device.Services
                     c.TOTAL_TON,
                     c.PURE_TON,
                     c.REV_DATE,
-                    c.AUDITING,
                     c.DEPT_NAME,
-                    c.WDEPT_NAME,
                     c.CARD_DATE,
                     c.STATUS,
                     c.PROVIDER_NAME,
@@ -436,7 +433,6 @@ namespace EAM.Device.Services
                 .LeftJoin<DEVICE_DOC>((a, b) => a.DEVICE_ID == b.DEVICE_ID)
                 .LeftJoin<DEVICE_PARAM>((a, b, c) => a.DEVICE_ID == c.DEVICE_ID)
                 .LeftJoin<DEVICE_REMOULD>((a, b, c, d) => a.DEVICE_ID == d.DEVICE_ID)
-                .Where((a, b, c, d) => a.AUDITING == "1" || a.AUDITING == "3")
                 .Select((a, b, c, d) => new
                 {
                     a.MEMO
