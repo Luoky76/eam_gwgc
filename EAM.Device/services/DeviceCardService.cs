@@ -28,23 +28,12 @@ namespace EAM.Device.Services
 
         public async Task<AjaxResult> ComboxData()
         {
-            try
+            var data = await _comboxDataService.Get(new Dictionary<string, object>()
             {
-                var data = await _comboxDataService.Get(new Dictionary<string, object>()
-                {
-                    { "Auditing", null },
-                    { "User", null },
-                    { "BCCode", "deviceType" },
-                });
-                //data.TryAdd("User", await _userService.ComboxDataAsync());
-                data.TryAdd("Corp", await _corpService.ComboxDataAsync());
-
-                return AjaxResult.Success(data);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("获取下拉数据失败！原因：" + e.Message);
-            }
+                { "BCCode@#DeviceType", "deviceType" },
+            });
+            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
+            return AjaxResult.Success(data);
         }
 
         /// <summary>
@@ -53,43 +42,39 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task<AjaxResult> TreeAsync()
         {
-            var composeData = await _dbContext.Query<DEVICE_CARD>(c => c.TYPE_ID == "1").ToListAsync();
-            var deviceList = composeData.Select(c => new
-            {
-                c.DEVICE_NAME,
-                c.DEVICE_ID,
-                c.DEPT_ID,
-                c.DEPT_NAME,
-                TYPE = "1",
-                PARENTID = "ROOT",
-                ICON = "fa fa-group"
-            }).OrderBy(c => c.DEVICE_ID).ToList();
-
-            var typeData = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "2").ToListAsync();
-            var typeList = typeData.Select(c => new
-            {
-                c.DEVICE_NAME,
-                c.DEVICE_ID,
-                DEPT_ID = c.DEPT_ID + c.DEVICE_ID,
-                c.DEPT_NAME,
-                TYPE = "0",
-                PARENTID = c.DEPT_ID,
-                ICON = "fa fa-cog"
-            }).ToList();
-
-            deviceList = deviceList.Concat(typeList).ToList();
-
+            var deviceList = await _dbContext.Query<DEVICE_CARD>()
+                .Select(c => new
+                {
+                    c.DEVICE_ID,
+                    c.DEVICE_NAME,
+                    c.DEVICE_NO,
+                    c.TREE_NODE,
+                    PARENTID = string.IsNullOrWhiteSpace(c.PRE_DEVICE_ID) ? "ROOT" : c.PRE_DEVICE_ID,
+                    ICON = "fa fa-cog"
+                })
+                .ToListAsync();
             deviceList.Add(new
             {
-                DEVICE_NAME = "船舶",
                 DEVICE_ID = "ROOT",
-                DEPT_ID = "ROOT",
-                DEPT_NAME = "船舶",
-                TYPE = "-1",
+                DEVICE_NAME = "船舶",
+                DEVICE_NO = "",
+                TREE_NODE = "",
                 PARENTID = "",
                 ICON = "fa fa-sitemap"
             });
             return AjaxResult.Success(deviceList, "成功");
+        }
+
+        /// <summary>
+        /// 获取单行数据
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> GetAsync(string id)
+        {
+            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.DEVICE_ID == id).ToListAsync();
+
+            return AjaxResult.Success(query);
         }
 
         /// <summary>
@@ -109,74 +94,9 @@ namespace EAM.Device.Services
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new
-                {
-                    c.DEVICE_ID,
-                    c.DEVICE_NO,
-                    c.DEVICE_NAME,
-                    c.TYPE_NAME,
-                    c.TYPE_ID,
-                    c.BOM_NAME,
-                    c.DEVICE_TYPE,
-                    c.DEPT_ID,
-                    c.CARD_USERID,
-                    c.SHIP_ID,
-                    c.INSTALL_SITE,
-                    c.SHIP_LENGTH,
-                    c.SHIP_WIDTH,
-                    c.SHIP_DEPTH,
-                    c.SHIP_DRAFT,
-                    c.SHIP_TYPE,
-                    c.MAIN_POWER,
-                    c.SECOND_POWER,
-                    c.SPEED,
-                    c.DRAG_FORCE,
-                    c.TOTAL_TON,
-                    c.PURE_TON,
-                    c.REV_DATE,
-                    c.DEPT_NAME,
-                    c.CARD_DATE,
-                    c.STATUS,
-                    c.PROVIDER_NAME,
-                    c.OUT_CODE,
-                    c.OUT_DATE,
-                    c.GRAPH_NO,
-                    c.PURPOSE,
-                    c.FACTORY,
-                    c.STATUS_DATE,
-                    c.REP_DATE,
-                    c.IS_GREEN,
-                    c.ASSET_CODE,
-                    c.DEP_MONTH,
-                    c.DEP_VALUE,
-                    c.PRICE,
-                    c.ORG_VALUE,
-                    c.NET_VALUE,
-                    c.USE_YEAR,
-                    c.NET_RATE,
-                    c.DEP_RATE,
-                    c.ASSET_SOURCE,
-                    c.INSTALL_FEE,
-                    c.PARAMS,
-                    c.MEMO,
-                    c.FINAN_TYPE,
-                    c.REP_DATE5,
-                    c.CARD_USER
-                },
-                c => a => a.DEVICE_ID == c.DEVICE_ID
-                , BeforeAdd, BeforeUpdate, BeforeDelete);
-        }
-
-        /// <summary>
-        /// 获取单行数据
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> GetAsync(string id)
-        {
-            var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.DEVICE_ID == id).ToListAsync();
-
-            return AjaxResult.Success(query);
+                c => new { c.PRE_DEVICE_ID, c.TREE_NODE, c.DEVICE_NO, c.DEVICE_NAME, c.BOM_ID, c.BOM_NAME, c.BOM_CODE, c.TYPE_ID, c.TYPE_NAME, c.TYPE_CODE, c.DEVICE_TYPE, c.DEVICE_SIZE, c.CARD_DATE, c.DEPT_ID, c.DEPT_NAME, c.INSTALL_SITE, c.REV_DATE, c.FDEVICE_ID, c.FDEVICE_CODE, c.SPECIAL_TYPE, c.ABC_TYPE, c.LABEL_CODE, c.STATUS, c.STATUS_DATE, c.ASSET_CODE, c.FINAN_TYPE, c.DEP_MONTH, c.DEP_VALUE, c.INSTALL_FEE, c.PRICE, c.ORG_VALUE, c.NET_VALUE, c.USE_YEAR, c.NET_RATE, c.DEP_RATE, c.ASSET_SOURCE, c.PROVIDER_ID, c.PROVIDER_NAME, c.FACTORY, c.OUT_CODE, c.OUT_DATE, c.PURPOSE, c.GRAPH_NO, c.PARAMS, c.MEMO, c.CARD_USERID, c.CARD_USER, c.INSTALL_ID, c.BOX_DET_ID, c.USED_COUNT, c.SHIP_LENGTH, c.SHIP_WIDTH, c.SHIP_DEPTH, c.SHIP_DRAFT, c.SHIP_TYPE, c.MAIN_POWER, c.SECOND_POWER, c.REP_DATE, c.SHIP_ID, c.SPEED, c.DRAG_FORCE, c.TOTAL_TON, c.PURE_TON, c.ORDINAL, c.IS_GREEN, c.REP_DATE5 },
+                c => a => a.DEVICE_ID == c.DEVICE_ID,
+                BeforeAdd, BeforeUpdate, BeforeDelete, orgin: true);
         }
 
         /// <summary>
@@ -186,12 +106,15 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeAdd(DEVICE_CARD entity)
         {
-            entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.DEVICE_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEVICE_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             if (entity.TYPE_ID == "2")
             {
                 entity.STATUS = "1";
             }
-            await Task.CompletedTask;
+            await Handle(entity);
         }
 
         /// <summary>
@@ -201,7 +124,7 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeUpdate(DEVICE_CARD entity)
         {
-            await Task.CompletedTask;
+            await Handle(entity);
         }
 
         /// <summary>
@@ -212,6 +135,73 @@ namespace EAM.Device.Services
         private async Task BeforeDelete(DEVICE_CARD entity)
         {
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 检查和预处理
+        /// </summary>
+        private async Task Handle(DEVICE_CARD entity)
+        {
+            await UpdateCodeCascade(entity);
+        }
+
+        /// <summary>
+        /// 逐级更新编码
+        /// </summary>
+        private async Task UpdateCodeCascade(DEVICE_CARD entity)
+        {
+            //确定当前节点的编码
+            if (!entity.PRE_DEVICE_ID.IsNullOrWhiteSpace())
+            {
+                var preDevice = await _dbContext.QueryByKeyAsync<DEVICE_CARD>(entity.PRE_DEVICE_ID);
+                //编码正确，无需重编
+                if (!entity.TREE_NODE.IsNullOrWhiteSpace() && entity.TREE_NODE.Length >= 3 && entity.TREE_NODE[..^3] == preDevice.TREE_NODE) return;
+                //为当前节点生成编码
+                var cur_code = await _dbContext.Query<DEVICE_CARD>(x => x.TREE_NODE.StartsWith(preDevice.TREE_NODE) && x.TREE_NODE.Length == preDevice.TREE_NODE.Length + 3)
+                    .MaxAsync(x => x.TREE_NODE);
+                entity.TREE_NODE = cur_code.IsNullOrWhiteSpace()
+                   ? $"{preDevice.TREE_NODE}001"
+                   : $"{cur_code[..^3]}{long.Parse(cur_code[^3..]) + 1:D3}";
+            }
+            else
+            {
+                //根节点
+                if (entity.TREE_NODE.IsNullOrWhiteSpace())
+                {
+                    //为根节点生成编码
+                    var cur_code = await _dbContext.Query<DEVICE_CARD>(x => string.IsNullOrWhiteSpace(x.PRE_DEVICE_ID))
+                        .MaxAsync(x => x.TREE_NODE);
+                    entity.TREE_NODE = cur_code.IsNullOrWhiteSpace() ? "001" : $"{long.Parse(cur_code) + 1:D3}";
+                }
+                else
+                {
+                    var curDevice = await _dbContext.QueryByKeyAsync<DEVICE_CARD>(entity.DEVICE_ID);
+                    //编码未发生修改则直接返回
+                    if (curDevice != null && entity.TREE_NODE == curDevice.TREE_NODE) return;
+                }
+            }
+
+            //使用广搜逐级更新子节点编码，同时判环
+            var keySet = new HashSet<string>() { entity.DEVICE_ID };
+            var list = new Queue<DEVICE_CARD>();
+            list.Enqueue(entity);
+            while (list.Any())
+            {
+                var parent = list.Dequeue();
+                var childList = await _dbContext.Query<DEVICE_CARD>(x => x.PRE_DEVICE_ID == parent.DEVICE_ID)
+                    .OrderBy(x => x.DEVICE_ID)
+                    .ToListAsync();
+                for (var i = 0; i < childList.Count; ++i)
+                {
+                    var child = childList[i];
+                    MessageException.ThrowIf(keySet.Contains(child.DEVICE_ID), "出现上级链路循环");
+                    keySet.Add(child.DEVICE_ID);
+                    _dbContext.TrackEntity(child);
+                    child.TREE_NODE = $"{parent.TREE_NODE}{i + 1:D3}";
+                    await _dbContext.UpdateAsync(child);
+                    list.Enqueue(child);
+                }
+            }
         }
 
         #endregion

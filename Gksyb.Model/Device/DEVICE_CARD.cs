@@ -5,10 +5,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
-
 namespace Gksyb.Model
 {
     /// <summary>
@@ -30,6 +28,13 @@ namespace Gksyb.Model
         [Description("上级设备ID")]
         [Column(DbType = DbType.AnsiString)]
         public string PRE_DEVICE_ID { get; set; }
+
+        /// <summary>
+        /// 树形编号
+        /// </summary>
+        [Description("树形编号")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TREE_NODE { get; set; }
 
         /// <summary>
         /// 设备编号
@@ -320,18 +325,18 @@ namespace Gksyb.Model
         public string MEMO { get; set; }
 
         /// <summary>
-        /// 使用人
-        /// </summary>
-        [Description("使用人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CARD_USER { get; set; }
-
-        /// <summary>
         /// 使用人ID
         /// </summary>
         [Description("使用人ID")]
         [Column(DbType = DbType.AnsiString)]
         public string CARD_USERID { get; set; }
+
+        /// <summary>
+        /// 使用人
+        /// </summary>
+        [Description("使用人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CARD_USER { get; set; }
 
         /// <summary>
         /// 安装验收ID
@@ -354,32 +359,28 @@ namespace Gksyb.Model
         public decimal? USED_COUNT { get; set; }
 
         /// <summary>
-        /// 船长
+        /// 船长（米）
         /// </summary>
-        [Description("船长")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SHIP_LENGTH { get; set; }
+        [Description("船长（米）")]
+        public decimal? SHIP_LENGTH { get; set; }
 
         /// <summary>
-        /// 型宽
+        /// 型宽（米）
         /// </summary>
-        [Description("型宽")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SHIP_WIDTH { get; set; }
+        [Description("型宽（米）")]
+        public decimal? SHIP_WIDTH { get; set; }
 
         /// <summary>
-        /// 型深
+        /// 型深（米）
         /// </summary>
-        [Description("型深")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SHIP_DEPTH { get; set; }
+        [Description("型深（米）")]
+        public decimal? SHIP_DEPTH { get; set; }
 
         /// <summary>
-        /// 吃水
+        /// 吃水（米）
         /// </summary>
-        [Description("吃水")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SHIP_DRAFT { get; set; }
+        [Description("吃水（米）")]
+        public decimal? SHIP_DRAFT { get; set; }
 
         /// <summary>
         /// 船舶类型
@@ -433,15 +434,13 @@ namespace Gksyb.Model
         /// 总吨
         /// </summary>
         [Description("总吨")]
-        [Column(DbType = DbType.AnsiString)]
-        public string TOTAL_TON { get; set; }
+        public decimal? TOTAL_TON { get; set; }
 
         /// <summary>
         /// 净吨
         /// </summary>
         [Description("净吨")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PURE_TON { get; set; }
+        public decimal? PURE_TON { get; set; }
 
         /// <summary>
         /// 排序序号
@@ -499,5 +498,6 @@ namespace Gksyb.Model
         /// </summary>
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
+
     }
 }
