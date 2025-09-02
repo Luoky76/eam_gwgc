@@ -1,0 +1,62 @@
+﻿@using System;
+@using System.Text;
+@using RazorEngineCore
+@using Gksyb.Common;
+@using Gksyb.Common.Data
+@inherits RazorEngineTemplateBase<DbTableInfo>
+
+@{
+    var module = string.IsNullOrWhiteSpace(Model.Module) ? "com.xmeport.common.entity.system" : $"{Model.Module}.entity";
+    var tableName = Model.Name.ToPascal();
+}
+package @module;
+
+import com.easy.query.core.annotation.Column;
+import com.easy.query.core.annotation.EntityProxy;
+import com.easy.query.core.annotation.Table;
+import com.easy.query.core.proxy.ProxyEntityAvailable;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.xmeport.common.database.annotation.Description;
+
+import @(module).proxy.@(tableName)Proxy;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+/**
+* @(Model.Comment ?? tableName)
+*
+*/
+@("@SuppressWarnings(\"SpellCheckingInspection\")")
+@("@JsonNaming(PropertyNamingStrategies.UpperSnakeCaseStrategy.class)")
+@("@Getter")
+@("@Setter")
+@("@EntityProxy")
+@($"@Table(value = \"{Model.Name}\", comment = \"{Model.Comment ?? Model.Name}\")")
+public class @tableName implements ProxyEntityAvailable<@tableName, @($"{tableName}Proxy")>{
+
+    @foreach (var item in Model.Columns)
+    {
+        var cType = item.CsType.ToTitleCase();
+        cType = cType == "DateTime" ? "LocalDateTime" : cType;
+        var colName = item.Name.ToPascal().ToVariableCase();
+        var comment = item.Comment ?? item.Name;
+        var jsonAttribute = "";
+        if (System.Text.RegularExpressions.Regex.IsMatch(item.Name, @"(?:^|[^a-zA-Z0-9])([a-zA-Z0-9])_"))
+        {
+            jsonAttribute = $"{@Environment.NewLine}      @JsonProperty(\"{@item.Name}\")";
+        }
+        var attributes = new List<string>();
+        if (item.IsPrimary == true) attributes.Add("primaryKey = true");
+        attributes.Add("comment = \"" + comment + "\"");
+        var columnAttribute = attributes.Count < 1 ? "" : $"{@Environment.NewLine}      @Column({attributes.ToStr(", ")})";
+        /**
+         * 标题
+         */
+        @:/**
+        @:* @(comment)
+        @:*/@jsonAttribute@columnAttribute
+        @:private @cType @colName;@Environment.NewLine
+    }
+    }

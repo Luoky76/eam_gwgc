@@ -94,7 +94,7 @@
                 window._toLogin();
             }
         },
-        refreshGksybToken: function (callback, _toLogin) {
+        refreshGksybToken: function (callback, _toLogin, error) {
             var innerTip = window.innerDialogTip;
             $.ajax({
                 async: false,
@@ -111,6 +111,17 @@
                         delete result.Data.Ticket;
                         window.session = result.Data;
                         callback();
+                        return;
+                    }
+                    if (error) {
+                        error(result);
+                        return;
+                    }
+                    innerTip("登录信息已失效，请重新登录。", _toLogin);
+                },
+                error: function (jqXHR, opt, thrownError) {
+                    if (error) {
+                        error(thrownError);
                         return;
                     }
                     innerTip("登录信息已失效，请重新登录。", _toLogin);
@@ -315,15 +326,25 @@
                 $.ligerDialog.close();
             }
             if (option.redo === true) {
+                if (opt.errorOther) {
+                    opt.errorOther(jqXHR, thrownError);
+                    return;
+                }
                 innerTip("登录信息已失效，请重新登录。", option._toLogin);
                 return;
             }
             option.redo = true;
             window.refreshGksybToken(function () {
                 $.ajax(option); //登陆后重发请求
-            }, option._toLogin);
+            }, option._toLogin, (opt.errorOther ? function () {
+                opt.errorOther(jqXHR, thrownError);
+            } : undefined));
         } else {
             if (!opt.error) {
+                if (opt.errorOther) {
+                    opt.errorOther(jqXHR, thrownError);
+                    return;
+                }
                 var errorMsg = '请求数据出错,页面即将跳转!<br/>原因为：' + (jqXHR.responseText.substring(0, 50) || "") + "<br/>错误码:" + (jqXHR.status || "") + (thrownError || "");
                 if ($.ligerDialog) {
                     $.ligerDialog.hide();

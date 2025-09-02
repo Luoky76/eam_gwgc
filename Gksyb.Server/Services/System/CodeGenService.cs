@@ -186,6 +186,7 @@ namespace Gksyb.Server.Services.System
             {
                 builder.AddAssemblyReferenceByName("System.Linq");
                 builder.AddAssemblyReferenceByName("System.Collections");
+                builder.AddAssemblyReferenceByName("System.Text.RegularExpressions");
                 builder.AddAssemblyReferenceByName("Gksyb.Common");
             });
             _templates.Add(new KeyValueItem<IRazorEngineCompiledTemplate<RazorEngineTemplateBase<DbTableInfo>>>() { Key = name, Value = template });
