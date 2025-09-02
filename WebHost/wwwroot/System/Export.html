@@ -226,7 +226,7 @@
                 var skipStyle = getQueryStringByName("skipStyle") || me.dialogData.skipStyle;
                 var gridId = me.dialogData.gridid || getQueryStringByName("gridid") || "maingrid";
                 me.grid = parent.liger.get(gridId);
-                var options = { protection: false, watermark: true } || me.grid.options.export;
+                var options = $.extend({ protection: false, watermark: true }, me.grid.options.export);
                 var tableHtml = me.getTableHtml();
                 if (exporttype === "xls") exporttype = "xlsx";
                 if (exporttype.indexOf("doc") > -1) exportHtml = true;
