@@ -92,7 +92,7 @@
                                                     完成时间
                                                 </div>
                                                 <div class="content">
-                                                   ${item.CreateDate}
+                                                   ${item.TaskFinishDate ||""}
                                                 </div>
                                             </li>
                                         </ul>
@@ -123,9 +123,12 @@
                         item._index = i;
                         item._info = (castString(item.Title) + "@#" + castString(item.CreateDate)).toLowerCase();
                         item.isFinish = item.TaskFinishFlag === "1";
-                        var minute = (time - item.StartDate.toDate().getTime()) / (1000 * 60);
-                        var hour = parseInt(minute / 60);
-                        item.Elapsed = (hour > 0 ? hour + "时" : "") + parseInt(minute % 60) + "分";
+                        item.Elapsed = "";
+                        if (item.TaskFinishDate) {
+                            var minute = (item.TaskFinishDate.toDate().getTime() - item.CreateDate.toDate().getTime()) / (1000 * 60);
+                            var hour = parseInt(minute / 60);
+                            item.Elapsed = (hour > 0 ? hour + "时" : "") + parseInt(minute % 60) + "分";
+                        }
                         item.StatusHtml = me.getStatusHtml(item.NodeStatus);
                         item.TaskStatusHtml = me.getTaskStatusHtml(item);
                     }
