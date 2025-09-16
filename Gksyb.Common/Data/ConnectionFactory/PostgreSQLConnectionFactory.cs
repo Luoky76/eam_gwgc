@@ -10,6 +10,9 @@ namespace Gksyb.Common.Data
     {
         static PostgreSQLConnectionFactory()//初始化
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+
             var methodHandlerDic = new Dictionary<string, IMethodHandler>()
             {
                 {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
