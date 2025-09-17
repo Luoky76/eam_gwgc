@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="renderer" content="webkit" />
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=0" />
+  <!-- 由 vite 注入 VITE_APP_TITLE 变量，在 .env 文件内配置 -->
+  <title>
+    <%= VITE_APP_TITLE %>
+  </title>
+  <link rel="icon" href="/favicon.ico" />
+  <script>
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+  <script type="text/javascript">
+    window.localStorage.setItem("_jsVersion", "1.0");
+  </script>
+  <script src="<%= VITE_GLOB_API_URL %>lib/LGboot.js" type="text/javascript"></script>
+  <script src="<%= VITE_GLOB_API_URL %>lib/third-party/broadcast/broadcast.js" type="text/javascript"></script>
+  <script>
+    'use strict';
+    var APP = {
+      getPageId: function (id) {
+        var pageId = "iframe-tab-" + id;
+        return pageId;
+      },
+      getFrameById: function (id) {
+        var allFrames = window.frames;
+        for (var i = 0; i < allFrames.length; i++) {
+          var frame = allFrames[i];
+          try {
+            if (frame.frameElement.id == id) {
+              return frame;
+            }
+          } catch (e) { }
+        }
+        return undefined;
+      },
+      onClose: function (tab) {
+        try {
+          var me = this;
+          var title = tab.meta.title;
+          var pageId = me.getPageId(tab.meta.pageId || tab.name);
+          var frame = me.getFrameById(pageId);
+          if (!frame) {
+            return;
+          }
+          if (frame.onClose && frame.onClose(pageId, title) == false) return false;
+          if (frame.closeQuery && frame._skipClose !== true) {
+            var pwin = window;
+            var closeQuery = typeof frame.closeQuery === 'function'
+              ? frame.closeQuery
+              : function (callback) {
+                $.ligerDialog.confirm(frame.closeQuery, function (confirm) {
+                  if (!confirm) return;
+                  callback();
+                });
+              };
+            closeQuery(function () {
+              frame._skipClose = true;
+              pwin.closeTabByPageId(pageId);
+            });
+            return false;
+          }
+          delete win._skipClose;
+        }
+        catch (e) {
+        }
+      },
+      onSelectChange: function (route) { //关闭
+        try {
+          var me = this;
+          var title = route.meta.title;
+          var pageId = me.getPageId(route.meta.pageId || route.name);
+          var frame = me.getFrameById(pageId);
+          if (!frame) {
+            return;
+          }
+          if (frame && frame.onSelectChange) {
+            if (frame.onSelectChange(pageId, title) === false) return false;
+          }
+        }
+        catch (e) {
+        }
+      },
+      onActive: function (route) { //激活
+        try {
+          var me = this;
+          var title = route.meta.title;
+          var pageId = me.getPageId(route.meta.pageId || route.name);
+          var frame = me.getFrameById(pageId);
+          if (!frame) {
+            return;
+          }
+          frame.onActive && frame.onActive(pageId, title);
+          frame.f_getfocus && frame.f_getfocus(pageId, title);
+        }
+        catch (e) {
+        }
+      }
+    };
+    var business = {
+      toDetail: function (dom, id, title, href, target) {
+        var me = this;
+        liger.get($(dom).parents(".l-dialog")).close();
+        me.readMessage(id);
+        LG.toDetail(title, href, target);
+      },
+      showMessage: function (info) {
+        var dialogMode = info.DialogMode || "提示";
+        var dialogType = info.DialogType || "info";
+        var content = info.Content;
+        var time = undefined;
+        if (info.Href) {
+          content = '<a href="javascript:void(0);" onclick="business.toDetail(this,\'' + info.Id + '\',\'' + info.Title + '\',\'' + info.Href + '\', \'' + (info.Target || "") + '\');">' + content + '</a>';
+          time = 0;
+        }
+        switch (dialogMode) {
+          case '通知':
+            $.ligerDialog.notification({
+              title: info.Title,
+              content: content,
+              type: dialogType,
+              time: time
+            });
+            break;
+          case '对话框':
+            $.ligerDialog.alert(content, info.Title, dialogType);
+            break;
+          default:
+            $.ligerDialog.tip({
+              title: info.Title,
+              content: content,
+              type: dialogType
+            });
+        }
+      },
+      init: function () {
+        var me = this;
+        var channel = Broadcast.getInstance();//创建广播通道
+        channel.onMessageCenter = function (info) {
+          me.showMessage(info);
+          if(window._refreshNotification){
+            window._refreshNotification();
+          }
+        };
+        channel.onChangePassword = function (info) {
+        };
+      }
+    };
+    $(function () {
+      business.init();
+    });
+  </script>
+</body>
+
+</html>
