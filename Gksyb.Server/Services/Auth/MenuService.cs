@@ -69,7 +69,7 @@ namespace Gksyb.Server.Services.Auth
             {
                 return;
             }
-            var basePath = Path.Combine(_environment.WebRootPath, "iconify-icon");
+            var basePath = Path.Combine(_environment.WebRootPath, "vben", "iconify");
             if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
             foreach (var icon in icons)
             {
