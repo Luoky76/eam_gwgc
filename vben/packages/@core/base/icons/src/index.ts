@@ -8,4 +8,5 @@ export {
   addIcon,
   Icon as IconifyIcon,
   listIcons,
+  addAPIProvider,
 } from '@iconify/vue';
