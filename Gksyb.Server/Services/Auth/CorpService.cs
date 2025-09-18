@@ -48,7 +48,7 @@ namespace Gksyb.Server.Services.Auth
         public async Task<List<ComboxData>> CorpData()
         {
             return await _dbContext.Query<CF_CORP>()
-                .Select(a => new ComboxData { ID = a.CORPID, TEXT = a.CORP_SNAME, VALUE = a.CORPID })
+                .Select(a => new ComboxData { ID = a.CORPID, TEXT = a.CNAME, VALUE = a.CORPID })
                 .OrderBy(c => c.TEXT).ToListAsync();
         }
 
@@ -105,9 +105,9 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         private async Task Handle(CF_CORP entity)
         {
-            var isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CORP_SNAME == entity.CORP_SNAME)
+            var isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CNAME == entity.CNAME)
                 .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID != entity.CORPID).AnyAsync();
-            if (isExists) throw new MessageException($"已经存在组织简称{entity.CORP_SNAME}");
+            if (isExists) throw new MessageException($"已经存在组织全称{entity.CNAME}");
             isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CNO == entity.CNO)
                 .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID != entity.CORPID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在组织代码{entity.CNO}");

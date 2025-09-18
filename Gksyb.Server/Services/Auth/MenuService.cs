@@ -1,8 +1,11 @@
-﻿using Gksyb.Core.Grid;
+﻿using Flurl.Http;
+using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
+using System.Text.RegularExpressions;
 
 namespace Gksyb.Server.Services.Auth
 {
@@ -14,15 +17,17 @@ namespace Gksyb.Server.Services.Auth
         private readonly IDbContext _dbContext;
         private readonly SysContextOptions _options;
         private readonly IRoleModuleService _roleModuleService;
+        private readonly IWebHostEnvironment _environment;
 
         /// <summary>
         /// 菜单服务
         /// </summary>
-        public MenuService(IDbContext dbContext, IOptions<SysContextOptions> options, IRoleModuleService roleModuleService)
+        public MenuService(IDbContext dbContext, IOptions<SysContextOptions> options, IRoleModuleService roleModuleService, IWebHostEnvironment environment)
         {
             _dbContext = dbContext;
             _options = options.Value;
             _roleModuleService = roleModuleService;
+            _environment = environment;
         }
 
         /// <summary>
@@ -48,6 +53,37 @@ namespace Gksyb.Server.Services.Auth
         public async Task<GridData> ListAsync(GridRequest request)
         {
             return await _dbContext.Query<SYS_MENU>().GetGridData(request);
+        }
+
+        private static readonly Regex ICONIFY_REGEX = new (@"[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        /// <summary>
+        /// 生成图标
+        /// </summary>
+        public async Task GenerateAsync(string appname)
+        {
+            appname = string.IsNullOrWhiteSpace(appname) ? _options.AppName : appname;
+            var list = await _dbContext.Query<SYS_MENU>().Where(c => c.APPNAME == appname).Select(c=>c.MENUICON).ToListAsync();
+            var icons = list.Select(c=> ICONIFY_REGEX.Matches(c).Cast<Match>().Select(m => m.Value).FirstOrDefault()).DistinctAndOrderBy().ToList();
+            if (icons.Count < 1)
+            {
+                return;
+            }
+            var basePath = Path.Combine(_environment.WebRootPath, "iconify-icon");
+            if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
+            foreach (var icon in icons)
+            {
+                var infos = icon.Split(':');
+                var prefix = infos[0];
+                var name = infos[1];
+                var filePath = Path.Combine(basePath, $"{prefix}-{name}.json");
+                if (File.Exists(filePath))
+                {
+                    continue;
+                }
+                var content = await $"https://api.iconify.design/{prefix}.json?icons={name}".GetBytesAsync();
+                await File.WriteAllBytesAsync(filePath, content);
+            }
         }
 
         /// <summary>

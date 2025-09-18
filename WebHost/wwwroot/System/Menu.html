@@ -6,6 +6,7 @@
     <meta name="renderer" content="webkit" />
     <title>菜单管理</title>
     <script src="../lib/LGboot.js" type="text/javascript"></script>
+    <script src="iconify-icon.js" type="text/javascript"></script>
     <style type="text/css">
         @font-face {
             font-family: "Material Icons";
@@ -88,6 +89,7 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            iconifyReg: /[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*/i,
             menuNo: getQueryStringByName("MenuNo"),
             appname: getQueryStringByName("AppName"),
             iframeloading: $("#iframeloading"),
@@ -109,17 +111,18 @@
                                 display: '图标', name: 'MENUICON', width: 150, minWidth: 150, editor: { type: 'text' },
                                 render: function (rowdata, rowindex, value, column) {
                                     if (!value) return "";
+                                    var array = value.split(" ");
+                                    if (me.iconifyReg.test(value)) {
+                                        var color = array.length > 1 ? ' style="color: ' + array[array.length - 1] + '"' : "";
+                                        return '<iconify-icon icon="' + array[0] + '"' + color + '></iconify-icon>';
+                                    }
                                     if (value.indexOf("fa") >= 0) {
                                         return '<i class="fa ' + value + '"aria-hidden="true"></i>';
                                     }
-                                    else if (value.indexOf(".") >= 0) {
+                                    if (value.indexOf(".") >= 0) {
                                         return "<div style='width:100%;height:100%;'><img src='../" + value + "' /></div>";
                                     }
-                                    else {
-                                        var array = value.split(" ");
-                                        return '<i class="' + value + '">' + array[array.length - 1] + '</i>';
-
-                                    }
+                                    return '<i class="' + value + '">' + array[array.length - 1] + '</i>';
                                 }
                             },
                             { display: '菜单顺序', name: 'MENUORDER', width: 80, validate: { required: true }, editor: { type: 'int' } },
@@ -192,6 +195,9 @@
                         case "order":
                             me.order();
                             break;
+                        case "generate":
+                            me.generate();
+                            break;
                         case "Excel":
                             $.ligerDialog.open({ url: "../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo, modal: true });
                             break;
@@ -203,17 +209,19 @@
                 me.grid.set({
                     toolbar: {
                         "items": [
-                            { id: "refresh", text: '刷新', click: me.toolbarBtnItemClick, img: "../lib/icons/silkicons/page_refresh.png" },
+                            { id: "refresh", text: '刷新', click: me.toolbarBtnItemClick},
                             { line: true },
-                            { id: "add", text: '增加', click: me.toolbarBtnItemClick, img: "../lib/icons/silkicons/add.png" },
+                            { id: "add", text: '增加', click: me.toolbarBtnItemClick },
                             { line: true },
-                            { id: "save", text: '保存', click: me.toolbarBtnItemClick, img: "../lib/icons/silkicons/page_save.png" },
+                            { id: "save", text: '保存', click: me.toolbarBtnItemClick},
                             { line: true },
-                            { id: "delete", text: '删除', click: me.toolbarBtnItemClick, img: "../lib/icons/silkicons/page_delete.png" },
+                            { id: "delete", text: '删除', click: me.toolbarBtnItemClick },
                             { line: true },
-                            { id: "buttons", text: '操作按钮', click: me.toolbarBtnItemClick, img: "../lib/icons/32X32/document_library.gif" },
+                            { id: "buttons", text: '操作按钮', click: me.toolbarBtnItemClick},
                             { line: true },
-                            { id: "order", text: '自动序号', click: me.toolbarBtnItemClick, img: "../lib/icons/32X32/document_library.gif" }
+                            { id: "order", text: '自动序号', click: me.toolbarBtnItemClick},
+                            { line: true },
+                            { id: "generate", text: '生成图标', click: me.toolbarBtnItemClick}
                         ]
                     }
                 });
@@ -247,6 +255,21 @@
             add: function () { //新增
                 var me = this;
                 me.grid.addEditRow({ "APPNAME": me.appname, "MENUPARENTNO": me.currentMenuParentNo, "ISVISIBLE": 1 }, true);
+            },
+            generate: function () { //保存
+                var me = this;
+                LG.ajax({
+                    jsToken: true,
+                    url: 'menu/generate',
+                    data: { appname: me.appname },
+                    loading: '正在生成中...',
+                    success: function () {
+                        LG.showSuccess('生成成功');
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             order: function () {
                 var me = this;

@@ -63,7 +63,7 @@ namespace Gksyb.Server.Services.Auth
                 var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
                 query = query.Where(c => corpids.Contains(c.CORPID));
             }
-            return await query.Select(c => new { ID = c.CORPID, TEXT = c.CORP_SNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
+            return await query.Select(c => new { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
                 .GetGridData(request);
         }
 
