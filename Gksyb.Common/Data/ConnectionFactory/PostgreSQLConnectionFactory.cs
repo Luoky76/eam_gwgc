@@ -19,7 +19,10 @@ namespace Gksyb.Common.Data
                 {Compare_Handler.MethodName, new Compare_Handler()},
                 {Contains_Handler.MethodName, new Contains_Handler()},
                 {SumString_Handler.MethodName, new SumString_Handler()},
-                {MathAbs_Handler.MethodName, new MathAbs_Handler()}
+                {MathAbs_Handler.MethodName, new MathAbs_Handler()},
+                {MathRound_Handler.MethodName, new MathRound_Handler()},
+                {MathFloor_Handler.MethodName, new MathFloor_Handler()},
+                {MathCeiling_Handler.MethodName, new MathCeiling_Handler()}
             };
             foreach (var item in methodHandlerDic)
             {
