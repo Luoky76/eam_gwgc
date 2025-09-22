@@ -14,7 +14,6 @@ import App from './app.vue';
 import { router } from './router';
 
 async function bootstrap(namespace: string) {
-
   // // 设置弹窗的默认配置
   // setDefaultModalProps({
   //   fullscreenButton: false,

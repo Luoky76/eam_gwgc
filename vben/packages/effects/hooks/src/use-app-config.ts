@@ -17,22 +17,20 @@ export function useAppConfig(
 
   const {
     VITE_GLOB_API_URL,
-    VITE_GLOB_AUTH_DINGDING_CORP_ID,
-    VITE_GLOB_AUTH_DINGDING_CLIENT_ID,
-    VITE_GLOB_LOGIN_URL
+    VITE_GLOB_LOGIN_URL,
+    VITE_GLOB_TOKEN_KEY,
+    VITE_GLOB_SESSION_KEY,
+    VITE_GLOB_TICKET_KEY,
   } = config;
 
   const applicationConfig: ApplicationConfig = {
     apiURL: VITE_GLOB_API_URL,
     loginUrl: VITE_GLOB_LOGIN_URL,
+    tokenKey: VITE_GLOB_TOKEN_KEY,
+    sessionKey: VITE_GLOB_SESSION_KEY,
+    ticketKey: VITE_GLOB_TICKET_KEY,
     auth: {},
   };
-  if (VITE_GLOB_AUTH_DINGDING_CORP_ID && VITE_GLOB_AUTH_DINGDING_CLIENT_ID) {
-    applicationConfig.auth.dingding = {
-      clientId: VITE_GLOB_AUTH_DINGDING_CLIENT_ID,
-      corpId: VITE_GLOB_AUTH_DINGDING_CORP_ID,
-    };
-  }
 
   return applicationConfig;
 }

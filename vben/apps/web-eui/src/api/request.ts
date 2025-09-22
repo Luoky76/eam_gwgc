@@ -3,6 +3,7 @@
  */
 import type { RequestClientOptions } from '@vben/request';
 
+import { alert } from '@vben/common-ui';
 import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
 import {
@@ -13,12 +14,14 @@ import {
 } from '@vben/request';
 import { useAccessStore } from '@vben/stores';
 
-import { alert } from '@vben/common-ui';
 import { useAuthStore } from '#/store';
 
-import { refreshTokenApi,generateJsToken,getTokenApi } from './core';
+import { generateJsToken, getTokenApi, refreshTokenApi } from './core';
 
-const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
+const { apiURL, tokenKey } = useAppConfig(
+  import.meta.env,
+  import.meta.env.PROD,
+);
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
@@ -54,7 +57,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     return newToken;
   }
 
-  function formatToken(token: null | string) {
+  function formatToken(_token: null | string) {
     return null;
   }
 
@@ -63,7 +66,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     fulfilled: async (config) => {
       await generateJsToken(config);
       const token = getTokenApi();
-      config.headers["GKSYBTOKEN"] = token.Token;
+      config.headers[tokenKey] = token.Token;
       return config;
     },
   });
@@ -108,7 +111,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
 
 function createBaseRequestClient() {
   const client = new RequestClient({ baseURL: apiURL });
-    client.addResponseInterceptor(
+  client.addResponseInterceptor(
     defaultResponseInterceptor({
       codeField: 'IsError',
       dataField: 'Data',

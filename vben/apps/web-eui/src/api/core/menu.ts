@@ -1,8 +1,9 @@
-import { requestClient } from '#/api/request';
 import { useAppConfig } from '@vben/hooks';
 
+import { requestClient } from '#/api/request';
+
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
-const TARGET_TYPE = new RegExp('[\?\&]targetType=([^\&]+)', 'i');
+const TARGET_TYPE = /[?&]targetType=([^&]+)/i;
 
 /**
  * 获取用户所有菜单
@@ -16,7 +17,7 @@ export async function getAllMenusApi() {
 function toRoutes(list: any[]) {
   const routes: any[] = [];
   treeMap(list, null, (item, parent) => {
-    let route = toRoute(item, parent ? parent.path : '');
+    const route = toRoute(item, parent ? parent.path : '');
     if (!parent) {
       routes.push(route);
       return route;
@@ -29,7 +30,7 @@ function toRoutes(list: any[]) {
 }
 
 function toRoute(item: any, path: string) {
-  let routePath = `${path}/${item.MENUNO}`;
+  const routePath = `${path}/${item.MENUNO}`;
   const url = processMenuUrl(item);
   if (!url) {
     return {
@@ -75,14 +76,12 @@ function buildMenuTree(
   const result: any[] = [];
 
   // 遍历菜单列表，构建映射表
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
+  for (const item of data) {
     const key = getKey(item[id]);
     if (key === null || key === undefined) continue;
     records[key] = item;
   }
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
+  for (const item of data) {
     const key = getKey(item[pid]);
     const parentItem = records[key];
     if (!parentItem) {
@@ -108,8 +107,7 @@ function treeMap(
   parent: any,
   f: (item: any, parent: any) => any,
 ): void {
-  for (let i = 0; i < list.length; i++) {
-    const column = list[i];
+  for (const column of list) {
     const route = f(column, parent);
     if (column.children?.length) {
       treeMap(column.children, route, f);
@@ -126,24 +124,22 @@ function processMenuUrl(item: any): string {
     return '';
   }
   url = url.replace(/.aspx/i, '.html');
-  var result = url.match(TARGET_TYPE);
-  if (result != null && result.length > 0) {
+  const result = url.match(TARGET_TYPE);
+  if (result !== null && result.length > 0) {
     item.targetType = result[1];
   }
   url = url.replace(TARGET_TYPE, '');
-  if (url.indexOf('javascript:') >= 0 || url.indexOf('http') === 0) {
+  if (url.includes('javascript:') || url.indexOf('http') === 0) {
     item.targetType = item.targetType || 'blank';
     return url;
   }
   if (item.MENUNO) {
-    if (url.indexOf('?') > -1) url += '&';
-    else url += '?';
+    url += url.includes('?') ? '&' : '?';
 
-    if (url.indexOf('?MenuNo=') > -1 || url.indexOf('&MenuNo=') > -1) {
-      url += 'MenuNo2=' + item.MENUNO;
-    } else {
-      url += 'MenuNo=' + item.MENUNO;
-    }
+    url +=
+      url.includes('?MenuNo=') || url.includes('&MenuNo=')
+        ? `MenuNo2=${item.MENUNO}`
+        : `MenuNo=${item.MENUNO}`;
   }
 
   return `${location.origin}${apiURL}${url}`;

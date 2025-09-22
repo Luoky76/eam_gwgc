@@ -1,9 +1,12 @@
 <script lang="ts" setup>
-import { computed,onMounted, ref, watch } from 'vue';
+import type { NotificationItem } from '@vben/layouts';
 
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useWatermark,useAppConfig } from '@vben/hooks';
-import { MdiPasswordReset,MdiFamilyTree,addAPIProvider } from '@vben/icons';
+
+import { useVbenModal } from '@vben/common-ui';
+import { useAppConfig, useWatermark } from '@vben/hooks';
+import { addAPIProvider, MdiFamilyTree, MdiPasswordReset } from '@vben/icons';
 import {
   BasicLayout,
   LockScreen,
@@ -11,16 +14,23 @@ import {
   UserDropdown,
 } from '@vben/layouts';
 import { preferences } from '@vben/preferences';
-import { useAuthStore } from '#/store';
-import { useTabbarStore,getTabKey } from '@vben/stores';
+import { getTabKey, useTabbarStore } from '@vben/stores';
 
-import type { NotificationItem } from '@vben/layouts';
-import { fetchUnReadCount,fetchUnReadList,readMessage,readAllMessage } from '#/api/core/message';
+import {
+  fetchUnReadCount,
+  fetchUnReadList,
+  readAllMessage,
+  readMessage,
+} from '#/api/core/message';
+import { useAuthStore } from '#/store';
+
+import _changeCorpModal from '../views/_core/authentication/change-corp.vue';
+import _changePasswordModal from '../views/_core/authentication/change-password.vue';
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
 addAPIProvider('', {
-   resources: [`${apiURL}iconify`],
+  resources: [`${apiURL}iconify`],
 });
 
 const notifications = ref<NotificationItem[]>([]);
@@ -28,9 +38,13 @@ const unreadCount = ref<number>(0);
 const authStore = useAuthStore();
 const userInfo = authStore.fetchUserInfo();
 const { destroyWatermark, updateWatermark } = useWatermark();
-const showDot = computed(() =>
-  unreadCount.value > 0,
-);
+const showDot = computed(() => unreadCount.value > 0);
+const [ChangePasswordModal, changePasswordModalApi] = useVbenModal({
+  connectedComponent: _changePasswordModal,
+});
+const [ChangeCorpModal, changeCorpModalApi] = useVbenModal({
+  connectedComponent: _changeCorpModal,
+});
 
 const router = useRouter();
 const route = useRoute();
@@ -40,7 +54,7 @@ const tabbarStore = useTabbarStore();
  * @param title 页面标题
  * @param url iframe地址
  */
-function navigateToIframe(title: string,url: string) {
+function navigateToIframe(title: string, url: string) {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
   const iframePath = `/iframe?url=${encodedUrl}&title=${encodedTitle}`;
@@ -48,17 +62,19 @@ function navigateToIframe(title: string,url: string) {
 }
 
 const menus = computed(() => [
-   {
+  {
     handler: () => {
+      changeCorpModalApi.open();
     },
     icon: MdiFamilyTree,
     text: '切换组织',
   },
   {
     handler: () => {
+      changePasswordModalApi.open();
     },
     icon: MdiPasswordReset,
-    text: "修改密码",
+    text: '修改密码',
   },
 ]);
 
@@ -70,28 +86,28 @@ async function handleLogout() {
   await authStore.logout(false);
 }
 
-async function refreshNotification(){
+async function refreshNotification() {
   notifications.value = await fetchUnReadList();
   unreadCount.value = notifications.value.filter((item) => !item.isRead).length;
 }
 
-async function handleOpen(callback:() => void){
+async function handleOpen(callback: () => void) {
   await refreshNotification();
   callback();
-} 
+}
 
-async function handleRead(item:NotificationItem) {
-  if(item.url){
-    navigateToIframe(item.message,`${apiURL}${item.url}`);
+async function handleRead(item: NotificationItem) {
+  if (item.url) {
+    navigateToIframe(item.message, `${apiURL}${item.url}`);
     return;
   }
-   await readMessage(item.id);
-   item.isRead = true;
-   unreadCount.value = notifications.value.filter((item) => !item.isRead).length;
+  await readMessage(item.id);
+  item.isRead = true;
+  unreadCount.value = notifications.value.filter((item) => !item.isRead).length;
 }
 
 async function handleViewAll() {
-  navigateToIframe("消息中心",`${apiURL}message/message-center.html`);
+  navigateToIframe('消息中心', `${apiURL}message/message-center.html`);
 }
 
 async function handleMakeAll() {
@@ -99,23 +115,23 @@ async function handleMakeAll() {
   await refreshNotification();
 }
 
-function initWindow(){
+function initWindow() {
   const win = window as any;
-  win.f_addTab = function(_tabid:string, title: string,url: string){
+  win.f_addTab = function (_tabid: string, title: string, url: string) {
     if (win.gksybConfigs && win.gksybConfigs.getUrl) {
       url = win.gksybConfigs.getUrl(url, win.gksybConfigs.urlBase);
     }
-    navigateToIframe(title,url);
+    navigateToIframe(title, url);
   };
-  win.closeCurrentTab = async function(){
+  win.closeCurrentTab = async function () {
     await tabbarStore.closeTab(route, router);
   };
-  win.getActivePageId = function(){
+  win.getActivePageId = function () {
     return getTabKey(route);
   };
-  win.editTabTitle = async function(pageId:string, title:string){
+  win.editTabTitle = async function (pageId: string, title: string) {
     const tab = tabbarStore.getTabByKey(pageId);
-    if(!tab){
+    if (!tab) {
       return;
     }
     tabbarStore.setUpdateTime();
@@ -147,6 +163,8 @@ watch(
 </script>
 
 <template>
+  <ChangePasswordModal />
+  <ChangeCorpModal />
   <BasicLayout @clear-preferences-and-logout="handleLogout">
     <template #user-dropdown>
       <UserDropdown
@@ -164,7 +182,7 @@ watch(
         @open="handleOpen"
         @read="handleRead"
         @make-all="handleMakeAll"
-        @viewAll="handleViewAll"
+        @view-all="handleViewAll"
       />
     </template>
     <template #lock-screen>

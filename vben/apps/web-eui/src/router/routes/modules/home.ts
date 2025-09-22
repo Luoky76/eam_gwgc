@@ -1,6 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router';
-import { IFrameView } from '#/layouts';
+
 import { useAppConfig } from '@vben/hooks';
+
+import { IFrameView } from '#/layouts';
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 const routes: RouteRecordRaw[] = [

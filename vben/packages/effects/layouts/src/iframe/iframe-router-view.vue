@@ -31,7 +31,7 @@ const tabNames = computed(
 const showIframe = computed(() => iframeRoutes.value.length > 0);
 
 function routeShow(tabItem: RouteLocationNormalized) {
-  if(route.name === "IFrame"){
+  if (route.name === 'IFrame') {
     return tabItem.fullPath === route.fullPath;
   }
   return tabItem.name === route.name;
@@ -79,7 +79,7 @@ function showSpinning(index: number) {
       >
         <VbenSpinner :spinning="showSpinning(index)" />
         <iframe
-          :id="`iframe-tab-${ item.meta.pageId || item.name}`"
+          :id="`iframe-tab-${item.meta.pageId || item.name}`"
           :src="item.meta.iframeSrc as string"
           class="size-full"
           @load="hideLoading(index)"

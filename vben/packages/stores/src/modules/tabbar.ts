@@ -12,6 +12,7 @@ import { toRaw } from 'vue';
 import { preferences } from '@vben-core/preferences';
 import {
   openRouteInNewWindow,
+  openWindow,
   startProgress,
   stopProgress,
 } from '@vben-core/shared/utils';
@@ -250,10 +251,8 @@ export const useTabbarStore = defineStore('core-tabbar', {
     async closeTab(tab: TabDefinition, router: Router) {
       const { currentRoute } = router;
       const win = window as any;
-      if(win?.APP?.onClose){
-        if(win.APP.onClose(tab,router) === false){
-          return;
-        }
+      if (win?.APP?.onClose && win.APP.onClose(tab, router) === false) {
+        return;
       }
       // 关闭不是激活选项卡
       if (getTabKey(currentRoute.value) !== getTabKeyFromTab(tab)) {
@@ -315,6 +314,10 @@ export const useTabbarStore = defineStore('core-tabbar', {
      * @param tab
      */
     async openTabInNewWindow(tab: TabDefinition) {
+      if (tab.meta.iframeSrc) {
+        openWindow(tab.meta.iframeSrc as string);
+        return;
+      }
       openRouteInNewWindow(tab.fullPath || tab.path);
     },
 
@@ -568,7 +571,7 @@ if (hot) {
  * @zh_CN 克隆路由,防止路由被修改
  * @param route
  */
-let TAB_COUNT:number = 0;
+let TAB_COUNT: number = 0;
 function cloneTab(route: TabDefinition): TabDefinition {
   if (!route) {
     return route;

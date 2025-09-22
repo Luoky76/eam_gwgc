@@ -1,7 +1,7 @@
-import { requestClient } from '#/api/request';
-import encryptFront from '#/api/encrypt';
-
 import type { NotificationItem } from '@vben/layouts';
+
+import encryptFront from '#/api/encrypt';
+import { requestClient } from '#/api/request';
 
 /**
  * 获取未读消息数量
@@ -15,7 +15,7 @@ async function fetchUnReadCount() {
  */
 async function readMessage(id: string) {
   return requestClient.post<string>('message/read', {
-    id: id,
+    id,
   });
 }
 
@@ -57,4 +57,4 @@ async function fetchUnReadList(): Promise<NotificationItem[]> {
   return notificationList;
 }
 
-export { fetchUnReadCount, fetchUnReadList, readMessage, readAllMessage };
+export { fetchUnReadCount, fetchUnReadList, readAllMessage, readMessage };

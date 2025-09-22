@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { LOGIN_PATH } from '@vben/constants';
+import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
 import { resetAllStores, useAccessStore } from '@vben/stores';
 
@@ -11,8 +12,10 @@ import { defineStore } from 'pinia';
 
 import { getUserInfoApi, loginApi, logoutApi } from '#/api';
 
-import { useAppConfig } from '@vben/hooks';
-const { apiURL,loginUrl } = useAppConfig(import.meta.env, import.meta.env.PROD);
+const { apiURL, loginUrl } = useAppConfig(
+  import.meta.env,
+  import.meta.env.PROD,
+);
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -47,9 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
         } else {
           onSuccess
             ? await onSuccess?.()
-            : await router.push(
-                userInfo.homePath || preferences.app.defaultHomePath,
-              );
+            : await router.push(preferences.app.defaultHomePath);
         }
       }
     } finally {
@@ -69,7 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     resetAllStores();
     accessStore.setLoginExpired(false);
-    if(loginUrl){
+    if (loginUrl) {
       location.href = `${location.origin}${apiURL}${loginUrl}`;
       return;
     }

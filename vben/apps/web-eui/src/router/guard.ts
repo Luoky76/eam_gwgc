@@ -18,10 +18,11 @@ function setupCommonGuard(router: Router) {
   const loadedPaths = new Set<string>();
 
   router.beforeEach((to, from) => {
-    if (from.meta.iframeSrc) {
-      if((window as any)?.APP?.onSelectChange(from) === false){
-        return false;
-      }
+    if (
+      from.meta.iframeSrc &&
+      (window as any)?.APP?.onSelectChange(from) === false
+    ) {
+      return false;
     }
     to.meta.loaded = loadedPaths.has(to.path);
     // 页面加载进度条

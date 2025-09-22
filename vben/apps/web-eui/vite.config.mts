@@ -3,7 +3,7 @@ import { defineConfig } from '@vben/vite-config';
 export default defineConfig(async () => {
   return {
     application: {
-      license:false,
+      license: false,
     },
     vite: {
       server: {
@@ -25,8 +25,11 @@ export default defineConfig(async () => {
             manualChunks: undefined,
             // 强制所有代码合并到一个文件
             inlineDynamicImports: true,
-          }
-        }
+            assetFileNames: '[ext]/[name].[ext]',
+            chunkFileNames: 'js/[name].js',
+            entryFileNames: 'jse/[name].js',
+          },
+        },
       },
     },
   };

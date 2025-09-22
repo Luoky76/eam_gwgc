@@ -32,9 +32,9 @@ withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  open:[() => void];
   clear: [];
   makeAll: [];
+  open: [() => void];
   read: [NotificationItem];
   viewAll: [];
 }>();
@@ -45,12 +45,12 @@ function close() {
   open.value = false;
 }
 
-function handleToggle(){
-  if(open.value){
+function handleToggle() {
+  if (open.value) {
     toggle();
     return;
   }
-  emit('open',toggle);
+  emit('open', toggle);
 }
 
 function handleViewAll() {

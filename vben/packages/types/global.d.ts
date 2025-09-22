@@ -9,9 +9,10 @@ declare module 'vue-router' {
 
 export interface VbenAdminProAppConfigRaw {
   VITE_GLOB_API_URL: string;
-  VITE_GLOB_AUTH_DINGDING_CLIENT_ID: string;
-  VITE_GLOB_AUTH_DINGDING_CORP_ID: string;
-  VITE_GLOB_LOGIN_URL: string
+  VITE_GLOB_LOGIN_URL: string;
+  VITE_GLOB_TOKEN_KEY: string;
+  VITE_GLOB_SESSION_KEY: string;
+  VITE_GLOB_TICKET_KEY: string;
 }
 
 interface AuthConfig {
@@ -23,7 +24,10 @@ interface AuthConfig {
 
 export interface ApplicationConfig {
   apiURL: string;
-  loginUrl:string;
+  loginUrl: string;
+  tokenKey: string;
+  sessionKey: string;
+  ticketKey: string;
   auth: AuthConfig;
 }
 

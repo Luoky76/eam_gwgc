@@ -1,12 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router';
 
-import { LOGIN_PATH } from '@vben/constants';
 import { preferences } from '@vben/preferences';
 
-import { $t } from '#/locales';
-
 const BasicLayout = () => import('#/layouts/basic.vue');
-const AuthPageLayout = () => import('#/layouts/auth.vue');
 /** 全局404页面 */
 const fallbackNotFoundRoute: RouteRecordRaw = {
   component: () => import('#/views/_core/fallback/not-found.vue'),
@@ -37,35 +33,6 @@ const coreRoutes: RouteRecordRaw[] = [
     path: '/',
     redirect: preferences.app.defaultHomePath,
     children: [],
-  },
-  {
-    component: AuthPageLayout,
-    meta: {
-      hideInTab: true,
-      title: 'Authentication',
-    },
-    name: 'Authentication',
-    path: '/auth',
-    redirect: LOGIN_PATH,
-    children: [
-      {
-        name: 'Login',
-        path: 'login',
-        component: () => import('#/views/_core/authentication/login.vue'),
-        meta: {
-          title: $t('page.auth.login'),
-        },
-      },
-      {
-        name: 'ForgetPassword',
-        path: 'forget-password',
-        component: () =>
-          import('#/views/_core/authentication/forget-password.vue'),
-        meta: {
-          title: $t('page.auth.forgetPassword'),
-        },
-      },
-    ],
   },
 ];
 

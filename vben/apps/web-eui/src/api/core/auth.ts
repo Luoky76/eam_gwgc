@@ -1,6 +1,14 @@
 import type { RequestClientOptions } from '@vben/request';
-import { baseRequestClient, requestClient } from '#/api/request';
+
+import { useAppConfig } from '@vben/hooks';
+
 import encryptFront from '#/api/encrypt';
+import { baseRequestClient, requestClient } from '#/api/request';
+
+const { sessionKey, ticketKey } = useAppConfig(
+  import.meta.env,
+  import.meta.env.PROD,
+);
 
 export namespace AuthApi {
   /** 登录接口参数 */
@@ -21,6 +29,19 @@ export namespace AuthApi {
     UserName?: string;
   }
 
+  /** 修改密码参数 */
+  export interface ChangePasswordParams {
+    oldPassword: string;
+    newPassword: string;
+  }
+
+  /** 公司信息 */
+  export interface CorpInfo {
+    CorpID: string;
+    CName: string;
+  }
+
+  /** 刷新token返回值 */
   export interface RefreshTokenResult {
     data: string;
     status: number;
@@ -28,20 +49,18 @@ export namespace AuthApi {
 }
 
 const IMEI_KEY = 'GksybIMEI';
-const TOKEN_KEY = 'GksybData';
-const TICKET_KEY = 'GksybTicket';
 /**
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  let imei = await getIMEIApi();
-  let request = {
+  const imei = await getIMEIApi();
+  const request = {
     username: encryptFront(data.username || ''),
     password: encryptFront(data.password || ''),
     jsToken: { url: 'auth/loginToken' },
-    imei: imei,
+    imei,
   };
-  let response = await requestClient.post<AuthApi.LoginResult>(
+  const response = await requestClient.post<AuthApi.LoginResult>(
     'auth/login',
     request,
   );
@@ -51,6 +70,39 @@ export async function loginApi(data: AuthApi.LoginParams) {
     accessToken: response.Token,
     token: response.Ticket,
   };
+}
+
+/**
+ * 修改密码
+ */
+export async function changePasswordApi(data: AuthApi.ChangePasswordParams) {
+  const request = {
+    oldPassword: encryptFront(data.oldPassword || ''),
+    newPassword: encryptFront(data.newPassword || ''),
+    jsToken: 'auth/login',
+  };
+  return requestClient.post<string>('auth/changepassword', request);
+}
+
+/**
+ * 获取用户所属公司
+ */
+export async function getUserCorpsApi() {
+  return requestClient.post<AuthApi.CorpInfo[]>('auth/usercorps');
+}
+
+/**
+ * 切换公司
+ */
+export async function changeCorpApi(data: string) {
+  const request = {
+    corpid: data,
+  };
+  const response = await requestClient.post<AuthApi.LoginResult>(
+    'auth/changeCorp',
+    request,
+  );
+  setTokenApi(response);
 }
 
 export async function getIMEIApi() {
@@ -63,29 +115,29 @@ export async function getIMEIApi() {
 }
 
 export function getTokenApi() {
-  let json = window.localStorage.getItem(TOKEN_KEY);
+  const json = window.localStorage.getItem(sessionKey);
   return json ? JSON.parse(json) : {};
 }
 
 export function setTokenApi(token: AuthApi.LoginResult | undefined) {
   if (!token) {
-    window.localStorage.removeItem(TOKEN_KEY);
+    window.localStorage.removeItem(sessionKey);
     return;
   }
   delete token.Ticket;
-  window.localStorage.setItem(TOKEN_KEY, JSON.stringify(token));
+  window.localStorage.setItem(sessionKey, JSON.stringify(token));
 }
 
 export function getTicketApi() {
-  return window.localStorage.getItem(TICKET_KEY);
+  return window.localStorage.getItem(ticketKey);
 }
 
 export function setTicketApi(ticket: string | undefined) {
   if (!ticket) {
-    window.localStorage.removeItem(TICKET_KEY);
+    window.localStorage.removeItem(ticketKey);
     return;
   }
-  window.localStorage.setItem(TICKET_KEY, ticket);
+  window.localStorage.setItem(ticketKey, ticket);
 }
 
 /**
@@ -102,7 +154,9 @@ export async function generateJsToken(config: RequestClientOptions) {
   delete config.data.jsToken;
   let url = 'auth/jsToken';
   if (token === true) {
-    token = (config.url || '').replace(/^\/|(\?.*)$/g, '').replace(/\/$/, '');
+    token = (config.url || '')
+      .replaceAll(/^\/|(\?.*)$/g, '')
+      .replace(/\/$/, '');
   }
   if (typeof token === 'string') {
     token = { key: token };
@@ -110,13 +164,13 @@ export async function generateJsToken(config: RequestClientOptions) {
     url = token?.url;
     token = token?.data;
   }
-  let body = await requestClient.post<string>(url, token, {
+  const body = await requestClient.post<string>(url, token, {
     responseType: 'text',
     responseReturn: 'body',
   });
-  let jqXHR = {
-    setRequestHeader: function (name: string, value: string) {
-      let headers: any = config.headers;
+  const jqXHR = {
+    setRequestHeader(name: string, value: string) {
+      const headers: any = config.headers;
       headers[name] = value;
     },
   };
@@ -128,11 +182,11 @@ export async function generateJsToken(config: RequestClientOptions) {
  */
 export async function refreshTokenApi() {
   let ticket = getTicketApi();
-  let response = await baseRequestClient.post<AuthApi.LoginResult>(
+  const response = await baseRequestClient.post<AuthApi.LoginResult>(
     'auth/refreshToken',
     undefined,
     {
-      headers: { ticket: ticket },
+      headers: { ticket },
       responseReturn: 'data',
     },
   );
@@ -146,9 +200,9 @@ export async function refreshTokenApi() {
  * 退出登录
  */
 export async function logoutApi() {
-  let ticket = getTicketApi();
+  const ticket = getTicketApi();
   await baseRequestClient.post('auth/exit', undefined, {
-    headers: { ticket: ticket },
+    headers: { ticket },
     responseReturn: 'data',
   });
   setTokenApi(undefined);

@@ -14,6 +14,6 @@ export const MdiQqchat = createIconifyIcon('mdi:qqchat');
 
 export const RiDingding = createIconifyIcon('ri:dingding-fill');
 
-export const MdiPasswordReset  = createIconifyIcon('mdi:password-reset');
+export const MdiPasswordReset = createIconifyIcon('mdi:password-reset');
 
 export const MdiFamilyTree = createIconifyIcon('mdi:family-tree');

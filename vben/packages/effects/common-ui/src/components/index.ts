@@ -1,5 +1,4 @@
 export * from './api-component';
-export * from './captcha';
 export * from './col-page';
 export * from './count-to';
 export * from './ellipsis-text';
@@ -22,9 +21,12 @@ export {
   VbenCountToAnimator,
   VbenFullScreen,
   VbenInputPassword,
+  Label as VbenLabel,
   VbenLoading,
   VbenLogo,
   VbenPinInput,
+  RadioGroup as VbenRadioGroup,
+  RadioGroupItem as VbenRadioGroupItem,
   VbenSelect,
   VbenSpinner,
   VbenTree,
