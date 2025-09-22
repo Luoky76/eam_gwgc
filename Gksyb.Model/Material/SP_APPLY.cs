@@ -81,6 +81,13 @@ namespace Gksyb.Model
         public string DEPT_NAME { get; set; }
 
         /// <summary>
+        /// 船舶部门
+        /// </summary>
+        [Description("船舶部门")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SHIP_DEPT { get; set; }
+
+        /// <summary>
         /// 是否补库
         /// </summary>
         [Description("是否补库")]

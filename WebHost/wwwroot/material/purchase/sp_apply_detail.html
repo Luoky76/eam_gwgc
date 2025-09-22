@@ -42,26 +42,32 @@
                         labelwidth: 200,
                         fields: [
                             //基础信息
-                            { display: "申请单号", name: "APPLY_NO", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "申请日期", name: "APPLY_DATE", validate: { required: true }, newline: false, type: "date", format: "yyyy-MM-dd", options: { type: 'date', disabled: true, format: "yyyy-MM-dd" } },
-                            { display: "申请人", name: "APPLY_USER", validate: { required: true }, newline: false, type: "text", options: { type: 'text', disabled: true } },
+                            { display: "申请单号", name: "APPLY_NO", type: "text", options: { disabled: true } },
+                            { display: "申请日期", name: "APPLY_DATE", type: "date", options: { format: "yyyy-MM-dd hh:mm", initValue: new Date() }, validate: { required: true } },
+                            { display: "申请人", name: "APPLY_USER", type: "text", options: { type: 'text', disabled: true } },
                             {
                                 display: "采购分类", name: "TYPE_ID", type: "select", validate: { required: true },
-                                editor: {
+                                options: {
                                     type: 'select',
                                     data: me.typeData,
-                                    onChange: function (rowdata, rowIndex, g) {
-                                        if (g.selected != undefined) {
-                                            $('#TYPE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
-                                            $('#TYPE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        var data = {};
+                                        var selected = obj.selected;
+                                        if ($.isEmptyObject(selected)) {
+                                            data = { TYPE_NAME: "", TYPE_CODE: "" };
                                         }
-                                    },
+                                        else {
+                                            data = { TYPE_NAME: selected.TEXT, TYPE_CODE: selected.VALUE };
+                                        }
+                                        mainform.setData(data);
+                                    }
                                 }
                             },
-                            { display: "紧急程度", name: "EXIG_DEV", type: "select", editor: { type: 'select', data: me.exigData }, validate: { required: true }, },
-                            { display: "申请部门", name: "DEPT_NAME", validate: { required: true }, newline: false, type: "text", options: { type: 'text', disabled: true } },
-                            { display: "二级单位", name: "SEC_DEPT", newline: false, type: "text", options: { disabled: true } },
-                            { display: "用途", name: "USE_MEMO", newline: true, type: "textarea", editor: { type: 'textarea' }, validate: { required: true }, width: 786, },
+                            { display: "紧急程度", name: "EXIG_DEV", type: "select", options: { type: 'select', data: me.exigData }, validate: { required: true }, },
+                            { display: "申请部门", name: "DEPT_NAME", validate: { required: true }, type: "text", options: { type: 'text', disabled: true } },
+                            { display: "船舶部门", name: "SHIP_DEPT", type: "select", options: { type: "select", data: me.ShipDept } },
+                            { display: "用途", name: "USE_MEMO", newline: true, type: "textarea", validate: { required: true }, width: 786, },
                             { display: "备注", name: "MEMO", newline: true, validate: { required: true }, width: 786, type: "textarea", options: {} },
 
                             //隐藏
@@ -149,8 +155,6 @@
                     }
                 };
             },
-            //物资本身信息的字段
-            spColumns: ["SP_ID", "SP_CODE", "UNIT", "SP_NAME", "SP_SIZE", "PRODUCE", "TYPE_NAME", "WARRANTY", "LAST_PROVIDER", "LAST_PROVIDERID", "IS_XY", "NO_PRODUCE"],
             grid: null,
             mainform: null,
             buttons: null,
@@ -161,8 +165,9 @@
                     url: me.rootPath + 'ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.typeData = data.BasePurtype
+                        me.typeData = data.BasePurtype;
                         me.exigData = data.exigData;
+                        me.ShipDept = data.ShipDept;
                         me.unitData = data.SpUnit;
                         me.spType = data.SpTypeName;
                     },
@@ -230,19 +235,7 @@
                     enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        /*
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.SP_ID != "" && me.spColumns.includes(editParm.column.name))
-                                return false;
-                            else return true;
-                        }
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
-                        */
+                        
                     },
                     onBeforeSubmitEdit: function (e) {
                         if (e.column.name == "COUNT" || e.column.name == "YG_PRICE" || e.column.name == "STORE_MONTH") {
@@ -319,7 +312,7 @@
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
-                }
+                };
                 if (!me.isView)
                     LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
@@ -430,10 +423,10 @@
                     }
                     var changeRowDet = me.grid.getChangedRows();
 
-                    var isSave = true
+                    var isSave = true;
                     for (var i = 0; i < changeRowDet.updated.length; i++) {
                         if (changeRowDet.updated[i].COUNT < 0) {
-                            LG.showSuccess('申请数量不可小于0！')
+                            LG.showSuccess('申请数量不可小于0！');
                             isSave = false;
                         }
                     }
@@ -558,7 +551,7 @@
             setForm: function () {
                 var me = this;
                 me.config.form.fields.removeNull();
-                var $formsearch = $("#formsearch")
+                var $formsearch = $("#formsearch");
                 //搜索表单应用ligerui样式
                 me.mainform = $formsearch.ligerForm({
                     fields: me.config.form ? me.config.form.fields : [],
@@ -576,7 +569,7 @@
             },
             init: function () {
                 var me = this;
-                debugger
+                debugger;
 
                 me.dialog = frameElement.dialog;
                 if (me.dialog) {

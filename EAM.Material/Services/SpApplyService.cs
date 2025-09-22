@@ -64,6 +64,7 @@ namespace EAM.Material.Services
                     DEPT_NAME = c.DEPT_NAME,
                     SEC_DEPTID = c.SEC_DEPTID,
                     SEC_DEPT = c.SEC_DEPT,
+                    SHIP_DEPT = c.SHIP_DEPT,
                     APPLY_DATE = c.APPLY_DATE,
                     CREATE_USERID = c.CREATE_USERID,
                     CREATEDATE = c.CREATEDATE,
@@ -71,16 +72,10 @@ namespace EAM.Material.Services
                     CGFS = c.CGFS,
                     TYPE_CODE = c.TYPE_CODE,
                     TYPE_NAME = c.TYPE_NAME,
-                    MEMO = c.MEMO
+                    MEMO = c.MEMO,
+                    DETAILCOUNT = _dbContext.Query<SP_APPLY_DETAIL>().Where(det => det.APPLY_ID == c.APPLY_ID).Count()
                 })
-                .OrderBy(c => c.AUDITING)
-                .ThenBy(c => c.AUDITING_CHECK)
-                .ThenByDesc(c => c.APPLY_NO)
                 .GetGridData(request);
-            foreach (var item in (List<SpApplyRes>)res.Rows)
-            {
-                item.DETAILCOUNT = _dbContext.Query<SP_APPLY_DETAIL>().Where(t => t.APPLY_ID == item.APPLY_ID).Count();
-            }
             return res;
         }
 
@@ -97,6 +92,7 @@ namespace EAM.Material.Services
                 {
                     { "BCCode@#exigData", "exig_dev" },
                     { "BCCode@#CGFS", "CGtype"},
+                    { "BCCode@#ShipDept", "ship_dept"},
                     { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)(x => true)},
                     { "SpUnit", (Expression<Func<SP_UNIT, bool>>)(x => true)},
                     { "Auditing", null },
@@ -157,6 +153,7 @@ namespace EAM.Material.Services
                              c.DEPT_ID,
                              c.DEPT_CODE,
                              c.DEPT_NAME,
+                             c.SHIP_DEPT,
                              c.IS_REC,
                              c.TIME_REQ,
                              c.SOURCE_ID,
