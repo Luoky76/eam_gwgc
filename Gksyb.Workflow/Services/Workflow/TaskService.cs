@@ -226,7 +226,6 @@ namespace Gksyb.Workflow.Services.Workflow
                 node = c;
             });
             if (info.Users.Count < 1) return;
-            var finishFlag = await _dbContext.Query<WF_TASK>().Where(c => c.ID == node.TASK_ID).Select(c => c.FINISHDATE.HasValue ? "1" : "0").FirstOrDefaultAsync();
             var nodes = new List<WF_NODE>();
             await _dbContext.UseTransactionAsync(async () =>
             {
@@ -238,6 +237,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     var shareNode = node.MapTo<WF_NODE>();
                     shareNode.ID = GuidHelper.NewShortId();
                     shareNode.NODE_USERID = user.Id;
+                    shareNode.NODE_USERNAME = user.Account;
                     shareNode.NODE_USER = user.Name;
                     shareNode.NODE_STATUS = NodeStatus.Share;
                     shareNode.CREATEUSER = _user.RealName;
@@ -254,7 +254,7 @@ namespace Gksyb.Workflow.Services.Workflow
                         USER = user.Name,
                         CREATEUSER = _user.RealName,
                         CREATEDATE = DateTime.Now,
-                        TASK_FINISH_FLAG = finishFlag
+                        TASK_FINISH_FLAG = "0"
                     };
                     await _dbContext.InsertAsync(share);
                     nodes.Add(shareNode);

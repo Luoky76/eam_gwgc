@@ -32,7 +32,7 @@ namespace Gksyb.Workflow.EventSubscriber
             }
         }
 
-        [EventSubscribe(WorkflowEventAction.ComplateTask)]
+        [EventSubscribe(WorkflowEventAction.CompleteTask)]
         public async Task ComplateTaskAsync(FlowEventInfo info)
         {
             if (info.NodeInfos == null || info.NodeInfos.Count < 1) return;

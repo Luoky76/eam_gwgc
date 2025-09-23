@@ -10,7 +10,7 @@
         /// <summary>
         /// 完成流程任务
         /// </summary>
-        public const string ComplateTask = "WorkflowComplateTask";
+        public const string CompleteTask = "WorkflowCompleteTask";
 
         /// <summary>
         /// 待办事件
