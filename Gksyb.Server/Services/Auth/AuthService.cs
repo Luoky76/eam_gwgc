@@ -419,6 +419,14 @@ namespace Gksyb.Server.Services.Auth
                 var corps = (c.REMARK ?? "").Split(",").DistinctAndOrderBy().ToList();
                 return corps.Select(a => new KeyValueItem(name, a)).ToList();
             }).ToList();
+            roles.Where(c => !string.IsNullOrWhiteSpace(c.CORPID)).ForEach(a =>
+            {
+                if (ports.Any(c => a.ROLEID.Value.ToString() == c.CORPID))
+                {
+                    return;
+                }
+                roleCorps.Add(new KeyValueItem(a.ROLENAME, a.CORPID));
+            });
             return roleCorps.Count < 1 ? null : roleCorps;
         }
 
