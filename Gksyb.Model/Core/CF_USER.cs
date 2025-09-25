@@ -173,7 +173,7 @@ namespace Gksyb.Model.Core
         /// 所属组
         /// </summary>
         [Description("所属组")]
-        [Column(DbType = DbType.AnsiString, Size = 20)]
+        [Column(DbType = DbType.AnsiString, Size = 200)]
         public string STATION { get; set; }
 
         /// <summary>

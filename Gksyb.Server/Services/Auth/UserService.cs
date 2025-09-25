@@ -263,8 +263,8 @@ namespace Gksyb.Server.Services.Auth
             Expression<Func<CF_USERROLE, bool>> condition = c => c.USERID == entity.USERID && c.APPNAME == _options.RoleAppName;
             if (!_user.IsAdmin)//非管理员去除非所属公司
             {
-                roleCondition = (Expression<Func<CF_ROLE, bool>>)roleCondition.And((Expression<Func<CF_ROLE, bool>>)(c => c.CORPID == null || corpids.Contains(c.CORPID)));
-                Expression<Func<CF_USERROLE, bool>> conditionAppend = c => _dbContext.Query<CF_ROLE>(a => a.ROLEID == c.ROLEID && (a.CORPID == null || corpids.Contains(a.CORPID))).Any();
+                roleCondition = (Expression<Func<CF_ROLE, bool>>)roleCondition.And((Expression<Func<CF_ROLE, bool>>)(c => c.ROLEID != _options.AdminRole && c.CORPID == null || corpids.Contains(c.CORPID)));
+                Expression<Func<CF_USERROLE, bool>> conditionAppend = c => _dbContext.Query<CF_ROLE>(a => c.ROLEID != _options.AdminRole && a.ROLEID == c.ROLEID && (a.CORPID == null || corpids.Contains(a.CORPID))).Any();
                 condition = (Expression<Func<CF_USERROLE, bool>>)condition.And(conditionAppend);
             }
             var roles = await _dbContext.Query<CF_ROLE>().Where(roleCondition).Select(c => c.ROLEID).ToListAsync();
