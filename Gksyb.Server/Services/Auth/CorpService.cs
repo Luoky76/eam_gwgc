@@ -28,7 +28,7 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         public async Task<AjaxResult> TreeAsync()
         {
-            var list = await _dbContext.Query<CF_CORP>().OrderBy(c => c.CORPID).ToListAsync();
+            var list = await _dbContext.Query<CF_CORP>().OrderBy(c => c.CORP_SORT).ThenBy(c => c.CORPID).ToListAsync();
             var data = list.Select(c => new
             {
                 ID = c.CORPID,
@@ -58,7 +58,7 @@ namespace Gksyb.Server.Services.Auth
         public override async Task<AjaxResult> SaveAsync(SaveRequest<CF_CORP> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.CNO, c.CORP_SNAME, c.CORP_ENAME, c.CNAME, c.CORPPARENTID, c.CORP_ADDRESS, c.CORP_TELE, c.CORP_FAX, c.CORP_EMAIL, c.CORP_LINK_MAN, c.LINK_MAN_TELE, c.LINK_MAN_EMAIL, c.FEECLIENT_ID, c.BANK, c.ACCONTNO, c.CWTELE, c.VALIDFLAG, c.CORP_PATH, c.CLASSFLAG, c.REMARK },
+                c => new { c.CNO, c.CORP_SNAME, c.CORP_ENAME, c.CNAME, c.CORPPARENTID, c.CORP_ADDRESS, c.CORP_TELE, c.CORP_FAX, c.CORP_EMAIL, c.CORP_LINK_MAN, c.LINK_MAN_TELE, c.LINK_MAN_EMAIL, c.FEECLIENT_ID, c.BANK, c.ACCONTNO, c.CWTELE, c.VALIDFLAG, c.CORP_PATH, c.CLASSFLAG, c.CORP_SORT, c.REMARK },
                 c => a => a.CORPID == c.CORPID
                 , BeforeAdd, BeforeUpdate, BeforeDelete);
         }
