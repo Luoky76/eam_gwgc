@@ -1,0 +1,602 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>员工管理</title>
+    <script src="../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 2px; height: 100%;">
+    <div id="layout">
+        <div position="left" title="组织" id="mainmenu">
+            <ul id="maintree"></ul>
+        </div>
+        <div position="center" title="人员（右击列头可以筛选）">
+            <div id="iframeloading" class='l-loading'>
+            </div>
+            <div id="mainsearch">
+                <form action="" id="formsearch" class="l-form">
+                </form>
+            </div>
+            <form id="mainform">
+                <div id="maingrid"></div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            rootValue: "ROOT",
+            iframeloading: $("#iframeloading"),
+            tree: null,
+            dataRole: [],
+            dataCorp: [],
+            setConfig: function () {
+                var me = this;
+                var charLength = 7;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "账号", name: "_search_LOGINNAME", width: 100, upper: true, type: "text" },
+                            { display: "名称", name: "_search_REALNAME", width: 100, upper: true, type: "text" },
+                            { display: "角色", name: "_search_ROLE", width: 180, userSearch: false, type: "select", options: { data: me.dataRole, isMultiSelect: true, autocomplete: true, split: "," } }
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "账号", name: "LOGINNAME", width: 100, type: "text", validate: { required: true, maxlength: 50 }, editor: { upper: true, type: 'text' } },
+                            {
+                                display: "隶属角色", name: "ROLE", isSort: false, width: 100, minWidth: 130, type: "text", align: "center", formatType: "select", format: {
+                                    data: function () { return me.dataRole; }, split: ",", formatRender: function (value, rowdata, column, ids) {
+                                        var strHref = "javascript:business.roleSelect('" + column.name + "','employee/roleData')";
+                                        var strUrl = "<a style=\"color:Red\" href=" + strHref + ">设置</a>";
+                                        if (value.length < 1) return strUrl;
+                                        value.sort(function (val1, val2) { return $.ligerDefaults.Grid.sorters['string'](val1, val2); });
+                                        var txts = [];
+                                        for (var i = 0, l = value.length; i < l; i++) {
+                                            var port = rowdata.RoleCorp[ids[i]] || "";
+                                            var ports = port.split(",");
+                                            var corps = [];
+                                            for (var j = 0, l2 = ports.length; j < l2; j++) {
+                                                var corpId = ports[j];
+                                                for (var k = 0, l3 = me.dataCorp.length; k < l3; k++) {
+                                                    var item = me.dataCorp[k];
+                                                    if (item.ID === corpId) {
+                                                        corps.push(item.TEXT);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            txts.push(corps.length > 0 ? (value[i] + '(' + corps.join(',') + ')') : value[i]);
+                                        }
+                                        var texts = txts.join(",");
+                                        rowdata.__RoleFormatText = texts;
+                                        return "<a href=" + strHref + ">" + "<acronym title=\"" + texts + "\">" + (texts.length > charLength ? texts.substring(0, charLength) + "..." : texts) + "</acronym></a>";
+                                    }
+                                }, export: function (value, rowdata, column) {//导出处理
+                                    if (rowdata.__RoleFormatText) return rowdata.__RoleFormatText;
+                                    return this.options.formatters['select'](value, column, rowdata, function (value) {
+                                        return value.join(",");
+                                    });
+                                }
+                            },
+                            { display: "名称", name: "REALNAME", width: 100, type: "text", validate: { required: true, maxlength: 100 }, editor: { type: 'text' } },
+                            { display: "本司否", name: "CLASS", width: 60, type: "chk", editor: { type: 'chkStr' } },
+                            {
+                                display: "组织岗位", name: "CORP", isSort: false, width: 120, type: "text", align: "center", formatType: "select", format: {
+                                    data: function () { return me.dataCorp; }, split: ",", formatRender: function (value, rowdata, column, ids) {
+                                        var strHref = "javascript:business.corpSelect('" + column.name + "','employee/corpData')";
+                                        var strUrl = "<a style=\"color:Red\" href=" + strHref + ">设置</a>";
+                                        if (value.length < 1) return strUrl;
+                                        value.sort(function (val1, val2) { return $.ligerDefaults.Grid.sorters['string'](val1, val2); });
+                                        var txts = [];
+                                        for (var i = 0, l = value.length; i < l; i++) {
+                                            var port = rowdata.CorpStation[ids[i]];
+                                            txts.push(port ? (value[i] + '(' + port + ')') : value[i]);
+                                        }
+                                        var texts = txts.join(",");
+                                        rowdata.__CorpFormatText = texts;
+                                        return "<a href=" + strHref + ">" + "<acronym title=\"" + texts + "\">" + (texts.length > charLength ? texts.substring(0, charLength) + "..." : texts) + "</acronym></a>";
+                                    }
+                                }, export: function (value, rowdata, column) {//导出处理
+                                    if (rowdata.__CorpFormatText) return rowdata.__CorpFormatText;
+                                    return this.options.formatters['select'](value, column, rowdata, function (value) {
+                                        return value.join(",");
+                                    });
+                                }
+                            },
+                            { display: "所属组", name: "STATION", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "工号", name: "DEPARTCODE", width: 100, type: "text", editor: { type: 'text' } },
+                            { display: "手机", name: "PHONE", width: 100, type: "text", editor: { type: 'long' } },
+                            { display: "微信", name: "QQ", dbname: "QQ", width: 80, type: "chk", align: "center" },
+                            { display: "最后登录时间", name: "LASTLOGINTIME", width: 140, type: "date", format: "yyyy-MM-dd hh:mm", align: "left" },
+                            { display: "有效否", name: "FLAG", width: 80, type: "chk", editor: { type: 'chkStr' } }
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'employee/comboxData',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.dataRole = data.role;
+                        me.dataCorp = data.corp;
+                        me.dataStation = data.station;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    title: '<input id="showAll" />',
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'local',
+                    toolbar: {},
+                    url: 'employee/list',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'LOGINNAME',
+                    sortOrder: 'asc',
+                    width: '100%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "LOGINNAME":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDUSERID = row.USERID;
+                            }
+                        }
+                        me.iframeloading.hide();
+                    },
+                    rowAttrRender: function (rowdata) {
+                        if (rowdata && rowdata.FLAG && rowdata.FLAG == "0") {
+                            return "style='color:red;'";
+                        }
+                        return "";
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            roleSelect: function (name, url) {
+                var me = this;
+                me.transferSelect("角色", name, url);
+            },
+            corpSelect: function (name, url) {
+                var me = this;
+                var options = {
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    columns: [
+                        { display: "组织", name: "TEXT", type: "text" },
+                        {
+                            display: "岗位", name: "Port", type: "select", minWidth: 180, editor: {
+                                isMultiSelect: true, split: ",",
+                                type: 'select', data: me.dataStation
+                            }
+                        }
+                    ]
+                };
+                me.treeGridSelect("组织", name, url, {
+                    leftWidth: '38%',
+                    options: options
+                }, "CorpStation");
+            },
+            selectCallBack: function (row, values, rows, name, portName) {
+                var me = this;
+                var newRowData = {};
+                if (portName) {
+                    var ports = {};
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var item = rows[i];
+                        ports[item.ID] = item.Port;
+                    }
+                    newRowData[portName] = ports;
+                }
+                newRowData[name] = values.join(",");
+                me.grid.updateRow(row, newRowData);
+            },
+            transferGridSelect: function (detailType, name, url, options, portName, width, leftWidth, height) {
+                var me = this;
+                options = options || {};
+                var row = me.grid.getSelectedRow();
+                options = $.extend(true, {
+                    url: url,
+                    display: detailType,
+                    values: row[name],
+                    callback: function (values, rows) {
+                        me.selectCallBack(row, values, rows, name, portName);
+                    },
+                    options: {
+                        grid2: {
+                            ports: (portName ? row[portName] : null),
+                            onLoadData: function (data) {
+                                var g = this, p = g.options;
+                                if (!p.ports) return;
+                                var rows = data[p.root];
+                                for (var i = 0, l = rows.length; i < l; i++) {
+                                    var row = rows[i];
+                                    row.Port = p.ports[row.ID];
+                                }
+                            }
+                        }
+                    }
+                }, options);
+                $.ligerDialog.open({
+                    width: width || 600,
+                    height: height || 500,
+                    title: '挑选' + detailType,
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
+                    isResize: true,
+                    slide: false,
+                    data: options
+                });
+            },
+            transferSelect: function (detailType, name, url, width, height, options) {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                options = $.extend(true, {
+                    url: url,
+                    display: detailType,
+                    values: row[name],
+                    callback: function (values, rows) {
+                        me.selectCallBack(row, values, rows, name);
+                    },
+                }, options);
+                $.ligerDialog.open({
+                    width: width || 350,
+                    height: height || 400,
+                    title: null,
+                    allowClose: false,
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer.html",
+                    isResize: false,
+                    slide: false,
+                    data: options
+                });
+            },
+            treeGridSelect: function (detailType, name, url, options, portName, width, height) {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                options = options || {};
+                options = $.extend(true, {
+                    url: url,
+                    display: detailType,
+                    values: row[name],
+                    options: {
+                        ports: (portName ? row[portName] : null),
+                        onSuccess: function (data) {
+                            var g = this, p = g.options;
+                            if (!p.ports) return;
+                            var rows = data[p.root];
+                            for (var i = 0, l = rows.length; i < l; i++) {
+                                var row = rows[i];
+                                row.Port = p.ports[row.ID];
+                            }
+                        }
+                    },
+                    callback: function (values, rows) {
+                        me.selectCallBack(row, values, rows, name, portName);
+                    }
+                }, options);
+                $.ligerDialog.open({
+                    width: width || 600,
+                    height: height || 500,
+                    title: '挑选' + detailType,
+                    url: window.gksybConfigs.urlBase + "popup-select/tree-grid.html",
+                    isResize: true,
+                    slide: false,
+                    data: options
+                });
+            },
+            doInitPassword: function () {
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                if (rows.length != 1) {
+                    LG.tip('只能选择一行做密码初始化服务!');
+                    return;
+                }
+                $.ligerDialog.confirm('确定初始化密码吗?', function (confirm) {
+                    if (!confirm) return;
+                    for (var i = 0, len = rows.length; i < len; i++) {
+                        var row = rows[i];
+                        if (!row.USERID) {
+                            LG.tip('此记录还未保存,无法进行密码初始化!');
+                            return;
+                        }
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'employee/doInitPassword',
+                            loading: '正在保存中...',
+                            data: { id: row.USERID },
+                            success: function (data) {
+                                LG.showSuccess('密码被初始化为' + data);
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                });
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "delete":
+                            me.delete();
+                            break;
+                        case "save":
+                            me.save();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=xls",
+                                modal: true
+                            });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({
+                                url: "../System/Export.html?exporttype=pdf",
+                                modal: true
+                            });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            add: function () { //新增
+                var me = this;
+                me.grid.addEditRow({ "CLASS": "1", "FLAG": "1", CORP: me.currentMenuParentNo, CorpStation: [] }, true);
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    if (!me.grid.isDataChanged) {
+                        LG.showSuccess('无修改');
+                        return;
+                    }
+                    if (!me.grid.validChangeRows()) return false;
+                    var changeRow = me.grid.getChangedRows();
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'employee/save',
+                        loading: '正在保存中...',
+                        data: changeRow,
+                        success: function (data, message) {
+                            if (data && data.length > 0) {
+                                message = data.join('<br/>');
+                            }
+                            LG.showSuccess(message);
+                            me.grid.isDataChanged = false;
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+
+            },
+            reloadTree: function () {
+                var me = this;
+                me.selectNode = me.tree.getSelected();
+                me.tree.reload();
+            },
+            reload: function () { //刷新
+                var me = this;
+                var node = me.tree.getSelected();
+                if (node && node.data) {
+                    var parms = me.grid.options.parms;
+                    delete parms.CORP;
+                    var nodeData = node.data;
+                    var showAll = liger.get("showAll").getValue();
+                    var parentNo = nodeData.ID;
+                    var andRules = [], orRules = [];
+                    if (parentNo === me.rootValue) {
+                        parentNo = "0";
+                        if (!showAll) {
+                            parms.CORP = parentNo;
+                        }
+                    }
+                    else {
+                        if (showAll) {
+                            var corps = [];
+                            $.ligerui.treeMap([nodeData], "children", function (item, parent) {
+                                corps.push(item.ID);
+                            });
+                            parms.CORP = corps.join(",");
+                        }
+                        else {
+                            parms.CORP = parentNo;
+                        }
+                    }
+                    me.currentMenuParentNo = parentNo;
+                    me.corpType = nodeData.CLASSFLAG;
+                }
+                me.grid.loadData();
+            },
+            delete: function () { //删除
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    var selected = me.grid.getSelectedRows();
+                    if (selected.length > 0) {
+                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                            if (confirm) {
+                                for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                    me.grid.deleteRow(selected[i]);
+                                }
+                                me.save();
+                            }
+                        });
+                    } else {
+                        LG.tip('请选择行!');
+                    }
+                }
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Pdf',
+                        text: '导出Pdf',
+                        click: function (item) {
+                            me.toolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-word-o"
+                    }
+                    ]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), {
+                    debug: true
+                });
+            },
+            setTree: function () {
+                var me = this;
+                $("#showAll").ligerCheckBox({
+                    type: "switch",
+                    label: "全部下级人员",
+                    value: true,
+                    onChangeValue: function (input, value, g) {
+                        me.reload();
+                    }
+                });
+                me.tree = $("#maintree").ligerTree({
+                    url: "employee/tree",
+                    parms: {},
+                    slide: false,
+                    checkbox: false,
+                    single: true,
+                    needCancel: false,
+                    parentIDFieldName: 'PARENTID',
+                    iconClsFieldName: "ICON",
+                    isExpand: 3,
+                    filter: true,
+                    onSuccess: function (data) {
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.ID);
+                        else me.tree.selectNode(me.rootValue);
+                    },
+                    onSelect: function (node) {
+                        me.iframeloading.show();
+                        me.reload();
+                    }
+                });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch")
+                //搜索表单应用ligerui样式
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid, function (form) {
+                                var parms = me.grid.options.parms;
+                                var data = form.getData();
+                                delete parms.ROLE;
+                                if (data._search_ROLE) parms.ROLE = data._search_ROLE;
+                                return true;
+                            });
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                $("#layout").ligerLayout({ leftWidth: 240 });
+                me.iframeloading.show();
+                me.setConfig();
+                me.setGrid();
+                me.setForm();
+                me.setTree();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+</html>
