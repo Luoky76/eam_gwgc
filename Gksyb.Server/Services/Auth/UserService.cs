@@ -63,7 +63,7 @@ namespace Gksyb.Server.Services.Auth
                 var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
                 query = query.Where(c => corpids.Contains(c.CORPID));
             }
-            return await query.Select(c => new { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
+            return await query.Select(c => new { ID = c.CORPID, PID = c.CORPPARENTID, TEXT = c.CNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
                 .GetGridData(request);
         }
 
@@ -79,8 +79,8 @@ namespace Gksyb.Server.Services.Auth
                 .WhereIf(!_user.IsOurCompany, c => (c.CLASS ?? "0") == "0");
             if (user.ROLE != null)
             {
-                var roleid = user.ROLE.CastTo<long>();
-                query = query.Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && a.ROLEID == roleid).Any());
+                var roleid = user.ROLE.Split(",").DistinctAndOrderBy().Select(c => c.CastTo<long?>()).ToList(); ;
+                query = query.Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && roleid.Contains(a.ROLEID)).Any());
             }
             query = FilterCorp(query, user.CORP);
             var data = await query.MapTo<UserRequest>().Exclude(a => new { a.LOGINPASSWORD, a.RECORDSTATUS }).GetGridData(request);
@@ -364,18 +364,19 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         private IQuery<CF_USER> FilterCorp(IQuery<CF_USER> query, string corp = null)
         {
+            var corps = (corp ?? "").Split(",").DistinctAndOrderBy().ToList();
             if (_user.IsAdmin)
             {
-                if (string.IsNullOrWhiteSpace(corp)) return query;
+                if (corps.Count < 1) return query;
                 query = query.Where(c => _dbContext.Query<CF_USER_PORT>().Where(a => a.LOGINNAME == c.LOGINNAME
-                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && a.CORPID == corp).Any());
+                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && corps.Contains(a.CORPID)).Any());
                 return query;
             }
             var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
-            if (!string.IsNullOrWhiteSpace(corp))
+            if (corps.Count > 0)
             {
                 query = query.Where(c => _dbContext.Query<CF_USER_PORT>().Where(a => a.LOGINNAME == c.LOGINNAME
-                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && corpids.Contains(a.CORPID) && a.CORPID == corp).Any());
+                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && corpids.Contains(a.CORPID) && corps.Contains(a.CORPID)).Any());
             }
             else
             {
