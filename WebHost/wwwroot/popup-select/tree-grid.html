@@ -23,6 +23,7 @@
             grid: null,
             searchForm: null,
             buttons: null,
+            firstLoad: true,
             setGrid: function () {
                 var me = this;
                 var options = $.extend({
@@ -58,28 +59,13 @@
                     },
                     enabledEdit: false,
                     clickToEdit: false,
-                    isChecked: function (item) {
-                        if (me._storageSelect) {
-                            var key = item[this.rowKey];
-                            var isSelect = me._storageSelect[key] === true;
-                            delete me._storageSelect[key];
-                            if (isSelect) return true;
+                    onLoadSuccess: function (data) {
+                        if (me.firstLoad && $.isEmptyObject(this.__storageSelect)) {
+                            this.__storageSelect = me._storageSelect;
                         }
-                        return false;
                     },
                     onComplete: function () {
                         var row = this.getSelectedRow();
-                        if (!row && me._storageSelect) {
-                            var rows = this.rows || [];
-                            for (var i = 0, l = rows.length; i < l; i++) {
-                                var item = rows[i];
-                                var key = item[this.options.rowKey];
-                                if (me._storageSelect[key] === true) {
-                                    row = item;
-                                    break;
-                                }
-                            }
-                        }
                         if (row) {
                             this.scrollToRow(row["__index"]);
                         }
