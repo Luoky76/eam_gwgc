@@ -7,6 +7,7 @@ namespace Gksyb.Server.Services.Auth
 {
     public class EmployeeService : IBaseService
     {
+        private const string ROOT_KEY = "ROOT";
         private readonly IDbContext _dbContext;
         private readonly UserSession _user;
         private readonly SysContextOptions _options;
@@ -30,12 +31,12 @@ namespace Gksyb.Server.Services.Auth
             {
                 ID = c.CORPID,
                 TEXT = c.CORP_SNAME,
-                PARENTID = (string.IsNullOrWhiteSpace(c.CORPPARENTID) || c.CORPPARENTID == "0") ? "ROOT" : c.CORPPARENTID,
+                PARENTID = (string.IsNullOrWhiteSpace(c.CORPPARENTID) || c.CORPPARENTID == "0") ? ROOT_KEY : c.CORPPARENTID,
                 c.CORP_PATH,
                 c.CLASSFLAG,
                 ICON = "fa fa-group"
             }).ToList();
-            if (_user.IsAdmin)
+            if (data.Where(c => c.PARENTID == ROOT_KEY).Take(2).Count() == 2)
             {
                 data.Add(new { ID = "ROOT", TEXT = "组织结构", PARENTID = "", CORP_PATH = "", CLASSFLAG = "", ICON = "fa fa-sitemap" });
             }
