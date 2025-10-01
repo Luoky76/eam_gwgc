@@ -23,7 +23,7 @@
             grid: null,
             searchForm: null,
             buttons: null,
-            firstLoad:true,
+            firstLoad: true,
             setGrid: function () {
                 var me = this;
                 var options = $.extend({
@@ -110,7 +110,8 @@
             },
             save: function () {
                 var me = this;
-                var rows = me.grid.getSelectedRows() || [];
+                var removeStatus = me.data.removeStatus === undefined ? true : me.data.removeStatus;
+                var rows = me.grid.getSelectedRows(removeStatus) || [];
                 var values = [];
                 for (var i = 0, l = rows.length; i < l; i++) {
                     var row = rows[i];

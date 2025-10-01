@@ -310,11 +310,11 @@ namespace Gksyb.Server.Services.Auth
         {
             await UserPortHandle(entity.LOGINNAME, entity.CORP, null, (condition, newIds) =>
             {
-                if (_user.IsAdmin) return;
+                if (_user.IsAdmin) return condition;
                 var userIds = _user.AllCorps.Select(c => c.CorpID).ToList();
                 newIds.RemoveAll(c => !userIds.Exists(a => a == c));
                 Expression<Func<CF_USER_PORT, bool>> conditionAppend = c => userIds.Contains(c.CORPID);
-                condition = (Expression<Func<CF_USER_PORT, bool>>)condition.And(conditionAppend);
+                return (Expression<Func<CF_USER_PORT, bool>>)condition.And(conditionAppend);
             }, corpid =>
             {
                 return entity.CorpStation?.ContainsKey(corpid) == true ? entity.CorpStation[corpid] : null;
@@ -325,12 +325,15 @@ namespace Gksyb.Server.Services.Auth
         /// 用户对应表处理
         /// </summary>
         /// <returns></returns>
-        private async Task UserPortHandle(string loginName, string ports, string optype = null, Action<Expression<Func<CF_USER_PORT, bool>>, List<string>> action = null, Func<string, string> remarkHandle = null)
+        private async Task UserPortHandle(string loginName, string ports, string optype = null, Func<Expression<Func<CF_USER_PORT, bool>>, List<string>, Expression<Func<CF_USER_PORT, bool>>> action = null, Func<string, string> remarkHandle = null)
         {
             if (string.IsNullOrWhiteSpace(optype)) optype = _opertype;
             var newIds = (ports ?? "").Split(',').DistinctAndOrderBy().ToList();
             Expression<Func<CF_USER_PORT, bool>> condition = c => c.LOGINNAME == loginName && c.OPTYPE == optype && c.APPNAME == _options.UserAppName;
-            action?.Invoke(condition, newIds);
+            if (action != null)
+            {
+                condition = action.Invoke(condition, newIds);
+            }
             var oldIds = (await _dbContext.Query<CF_USER_PORT>().Where(condition).ToListAsync()).Select(c => $"{c.CORPID}{c.REMARK}").Join();
             var userPorts = new List<CF_USER_PORT>();
             foreach (var data in newIds)
