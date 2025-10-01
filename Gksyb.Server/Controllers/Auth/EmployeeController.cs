@@ -1,4 +1,5 @@
 ﻿#pragma warning disable CA1822 // 将成员标记为 static
+
 using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
@@ -13,6 +14,7 @@ namespace Gksyb.Server.Controllers.Auth
     {
         private readonly EmployeeService _employeeService;
         private readonly UserService _service;
+
         public EmployeeController(EmployeeService employeeService, UserService userService)
         {
             _employeeService = employeeService;
@@ -26,7 +28,8 @@ namespace Gksyb.Server.Controllers.Auth
 
         public async Task<AjaxResult> TreeAsync()
         {
-            return await _employeeService.TreeAsync();
+            var data = await _employeeService.TreeAsync();
+            return AjaxResult.Success(data);
         }
 
         /// <summary>
@@ -83,17 +86,33 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         /// <summary>
+        /// 获取同名用户信息
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> GetSameEmployeeAsync(UserRequest request)
+        {
+            var gridData = await _employeeService.GetSameEmployeeAsync(request);
+            var ids = gridData.Rows.Select(c => c.CORP).Join(",").Split(',').DistinctAndOrderBy().ToList();
+            var corps = await _employeeService.CorpsAsync(ids);
+            var data = new Dictionary<string, object>()
+            {
+                { "Employees",gridData},
+                { "Corps",corps}
+            };
+            return AjaxResult.Success(data);
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         [JsToken]
-        public async Task<AjaxResult> SaveAsync(SaveRequest<UserRequest> request)
+        public async Task<AjaxResult> SaveAsync([FromBody] SaveRequest<UserRequest> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
             return await _service.Save(request);
         }
-
     }
 }
