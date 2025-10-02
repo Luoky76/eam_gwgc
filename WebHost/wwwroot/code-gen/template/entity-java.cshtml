@@ -39,7 +39,13 @@ public class @tableName implements ProxyEntityAvailable<@tableName, @($"{tableNa
     @foreach (var item in Model.Columns)
     {
         var cType = item.CsType.ToTitleCase();
-        cType = cType == "DateTime" ? "LocalDateTime" : cType;
+        cType = cType switch
+        {
+            "DateTime" => "LocalDateTime",
+            "Int" => "Integer",
+            "Decimal" => "Double",
+            _ => cType,
+        };
         var colName = item.Name.ToPascal().ToVariableCase();
         var comment = item.Comment ?? item.Name;
         var jsonAttribute = "";
