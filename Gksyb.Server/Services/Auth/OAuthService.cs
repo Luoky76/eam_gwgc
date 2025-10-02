@@ -156,18 +156,31 @@ namespace Gksyb.Server.Services.Auth
         }
 
         /// <summary>
+        /// 寄存信息到外系统，返回token
+        /// </summary>
+        public async Task<string> GetSSOTokenAsync(TokenRequest token)
+        {
+            var (url, appid, secret) = await GetSSOInfoAsync();
+            var result = await $"{url}/oauth/now".GetJsonAsync<AjaxResult<DateTime>>();
+            MessageException.ThrowIf(result.IsError, result.Message);
+            var request = new OAuthRequest<TokenRequest>()
+            {
+                AppId = appid,
+                Body = token.ToMiniJson(),
+                TimeStamp = result.Data
+            };
+            request.Sign = request.CalcuSign(secret);
+            var info = await $"{url}/oauth/token".PostJsonAsync(request).ReceiveJson<AjaxResult<string>>();
+            MessageException.ThrowIf(info.IsError, info.Message);
+            return info.Data;
+        }
+
+        /// <summary>
         /// 获取外系统单点对接的信息
         /// </summary>
         public async Task<string> GetSSONameAsync(TokenRequest token)
         {
-            var codes = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "SSO").ToListAsync();
-            var url = codes.Where(c => c.CODE_EN == "Url").Select(c => c.CODE_CN).FirstOrDefault();
-            MessageException.ThrowIf(string.IsNullOrWhiteSpace(url), "请先配置SSO的Url");
-            var appid = codes.Where(c => c.CODE_EN == "AppId").Select(c => c.CODE_CN).FirstOrDefault();
-            MessageException.ThrowIf(string.IsNullOrWhiteSpace(appid), "请先配置SSO的AppId");
-            var secret = codes.Where(c => c.CODE_EN == "Secret").Select(c => c.CODE_CN).FirstOrDefault();
-            MessageException.ThrowIf(string.IsNullOrWhiteSpace(secret), "请先配置SSO的Secret");
-            url = url.TrimEnd('/');
+            var (url, appid, secret) = await GetSSOInfoAsync();
             var result = await $"{url}/oauth/now".GetJsonAsync<AjaxResult<DateTime>>();
             MessageException.ThrowIf(result.IsError, result.Message);
             var request = new OAuthRequest<TokenRequest>()
@@ -269,6 +282,23 @@ namespace Gksyb.Server.Services.Auth
         public async Task<string> GetAsync(string appid)
         {
             return await _dbContext.Query<SYS_OAUTH>().Where(c => c.APPID == appid).Select(c => c.IP).FirstOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// 获取单点用到的信息
+        /// </summary>
+        /// <returns></returns>
+        private async Task<(string, string, string)> GetSSOInfoAsync()
+        {
+            var codes = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_TYPE == "SSO").ToListAsync();
+            var url = codes.Where(c => c.CODE_EN == "Url").Select(c => c.CODE_CN).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(url), "请先配置SSO的Url");
+            var appid = codes.Where(c => c.CODE_EN == "AppId").Select(c => c.CODE_CN).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(appid), "请先配置SSO的AppId");
+            var secret = codes.Where(c => c.CODE_EN == "Secret").Select(c => c.CODE_CN).FirstOrDefault();
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(secret), "请先配置SSO的Secret");
+            url = url.TrimEnd('/');
+            return (url, appid, secret);
         }
     }
 }

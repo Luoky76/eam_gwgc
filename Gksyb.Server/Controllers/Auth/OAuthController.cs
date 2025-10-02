@@ -142,6 +142,23 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         /// <summary>
+        /// 本系统通过单点认证中心，登录外系统用到的token
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SSOTokenAsync(string userType)
+        {
+            var ip = Request.GetRealIP();
+            var ua = Request.GetUserAgent();
+            var token = await _service.GetSSOTokenAsync(new TokenRequest()
+            {
+                Key = await _service.GetStoreKeyAsync(userType),
+                IP = ip,
+                UA = ua
+            });
+            return AjaxResult.Success(token, default);
+        }
+
+        /// <summary>
         /// 外系统单点本系统，先获取本系统token然后跳转本系统的地址
         /// </summary>
         [JsToken, AllowAnonymous]
