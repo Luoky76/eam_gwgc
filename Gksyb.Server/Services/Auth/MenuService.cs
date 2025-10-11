@@ -1,8 +1,10 @@
-﻿using Flurl.Http;
+﻿using Flurl;
+using Flurl.Http;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
+using Gksyb.Model.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
@@ -55,7 +57,7 @@ namespace Gksyb.Server.Services.Auth
             return await _dbContext.Query<SYS_MENU>().GetGridData(request);
         }
 
-        private static readonly Regex ICONIFY_REGEX = new (@"[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex ICONIFY_REGEX = new(@"[a-z0-9]+(?:-[a-z0-9]+)*:[a-z0-9]+(?:-[a-z0-9]+)*", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>
         /// 生成图标
@@ -63,25 +65,24 @@ namespace Gksyb.Server.Services.Auth
         public async Task GenerateAsync(string appname)
         {
             appname = string.IsNullOrWhiteSpace(appname) ? _options.AppName : appname;
-            var list = await _dbContext.Query<SYS_MENU>().Where(c => c.APPNAME == appname).Select(c=>c.MENUICON).ToListAsync();
-            var icons = list.Select(c=> ICONIFY_REGEX.Matches(c).Cast<Match>().Select(m => m.Value).FirstOrDefault()).DistinctAndOrderBy().ToList();
+            var list = await _dbContext.Query<SYS_MENU>().Where(c => c.APPNAME == appname).Select(c => c.MENUICON).ToListAsync();
+            var icons = list.Select(c => ICONIFY_REGEX.Matches(c).Cast<Match>().Select(m => m.Value).FirstOrDefault()).DistinctAndOrderBy()
+                .Select(c =>
+                {
+                    var infos = c.Split(':');
+                    return new KeyValueItem(infos[0], infos[1]);
+                }).ToList();
             if (icons.Count < 1)
             {
                 return;
             }
             var basePath = Path.Combine(_environment.WebRootPath, "vben", "iconify");
             if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
-            foreach (var icon in icons)
+            foreach (var group in icons.GroupBy(c => c.Key))
             {
-                var infos = icon.Split(':');
-                var prefix = infos[0];
-                var name = infos[1];
-                var filePath = Path.Combine(basePath, $"{prefix}-{name}.json");
-                if (File.Exists(filePath))
-                {
-                    continue;
-                }
-                var content = await $"https://api.iconify.design/{prefix}.json?icons={name}".GetBytesAsync();
+                var filePath = Path.Combine(basePath, $"{group.Key}.json");
+                var names = group.Select(c => c.Value).ToStr(",");
+                var content = await $"https://api.iconify.design/{group.Key}.json".SetQueryParam("icons", names).GetBytesAsync();
                 await File.WriteAllBytesAsync(filePath, content);
             }
         }
