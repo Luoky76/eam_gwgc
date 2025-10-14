@@ -27,8 +27,7 @@
                             return;
                         }
                         toUrl += (toUrl.indexOf("?") < 0 ? "?" : "&") + "token=" + result.Data;
-                        location.href = toUrl;
-                        return;
+                        window.open(toUrl, "_self", "noreferrer noopener");
                     }
                 });
             }

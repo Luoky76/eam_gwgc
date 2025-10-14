@@ -82,7 +82,7 @@
                         window.localStorage.setItem("GksybTicket", data.Ticket);
                         delete data.Ticket;
                         window.localStorage.setItem("GksybData", JSON.stringify(data));
-                        location.href = toUrl;
+                        window.open(toUrl, "_self", "noreferrer noopener");
                     },
                     beforeSend: function (jqXHR, options) {
                         me.httpRequest({
