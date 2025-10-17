@@ -216,6 +216,9 @@
                 ((parent && parent.liger) ? parent.liger : liger).saveAs(dataURI, filename + "." + exporttype);
                 me.dialog.close();
             },
+            toBase64: function (html) {
+                return btoa(unescape(encodeURIComponent(html)));
+            },
             init: function () {
                 if (!frameElement || !frameElement.dialog) return;
                 var me = this;
@@ -235,7 +238,7 @@
                     htmls.push('<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body>');
                     htmls.push(tableHtml);
                     htmls.push("</body></html>");
-                    me.saveAs("data:text/html;base64," + Base64.toBase64(htmls.join('')), exporttype);
+                    me.saveAs("data:text/html;base64," + me.toBase64(htmls.join('')), exporttype);
                     return;
                 }
                 $("#export-div").html(tableHtml);

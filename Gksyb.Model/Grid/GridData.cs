@@ -1,13 +1,11 @@
-﻿using Gksyb.Common;
-using Gksyb.Common.Json;
+﻿using Gksyb.Common.Json;
 using Gksyb.Common.Static;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System.Collections;
 
 namespace Gksyb.Model.Grid
 {
-    /// <summary>
+    /// <summary> 
     /// 表格数据
     /// </summary>
     /// <typeparam name="T"></typeparam>

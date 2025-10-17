@@ -70,7 +70,9 @@ namespace Gksyb.Server.Controllers.Auth
         [HttpGet("[action]/{prefix}.json")]
         public IActionResult IConify([FromServices] IWebHostEnvironment environment, string prefix)
         {
-            var filePath = Path.Combine(environment.WebRootPath, "vben", "iconify", $"{prefix}.json");
+            var rootPath = Path.GetFullPath(Path.Combine(environment.WebRootPath, "vben", "iconify")) + Path.DirectorySeparatorChar;
+            var filePath = Path.GetFullPath(Path.Combine(rootPath, $"{prefix}.json"));
+            MessageException.ThrowIf(!filePath.StartsWith(rootPath), "路径错误");
             if (!IOFile.Exists(filePath))
             {
                 return NotFound($"找不到 {prefix}.json 文件");

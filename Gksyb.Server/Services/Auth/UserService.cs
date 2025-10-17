@@ -79,7 +79,7 @@ namespace Gksyb.Server.Services.Auth
                 .WhereIf(!_user.IsOurCompany, c => (c.CLASS ?? "0") == "0");
             if (user.ROLE != null)
             {
-                var roleid = user.ROLE.Split(",").DistinctAndOrderBy().Select(c => c.CastTo<long?>()).ToList(); ;
+                var roleid = user.ROLE.Split(",").DistinctAndOrderBy().Select(c => c.CastTo<long?>()).ToList();
                 query = query.Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && roleid.Contains(a.ROLEID)).Any());
             }
             query = FilterCorp(query, user.CORP);

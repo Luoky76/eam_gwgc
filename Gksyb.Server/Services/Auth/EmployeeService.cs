@@ -46,7 +46,7 @@ namespace Gksyb.Server.Services.Auth
             }).ToList();
             if (data.Where(c => c.PARENTID == ROOT_KEY).Take(2).Count() == 2)
             {
-                data.Add(new { ID = "ROOT", TEXT = "组织结构", PARENTID = "", CORP_PATH = "", CLASSFLAG = "", ICON = "fa fa-sitemap" });
+                data.Add(new { ID = ROOT_KEY, TEXT = "组织结构", PARENTID = "", CORP_PATH = "", CLASSFLAG = "", ICON = "fa fa-sitemap" });
             }
             return data;
         }
