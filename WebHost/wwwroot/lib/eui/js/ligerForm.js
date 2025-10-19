@@ -100,6 +100,7 @@
     $.ligerDefaults.Form_toConditions = function () {
         var g = this, p = g.options;
         var conditions = [];
+        var groups = [];
         $(p.fields).each(function (fieldIndex, field) {
             if (field.userSearch === false) return;
             var name = field.name, editor = g.editors[fieldIndex];
@@ -111,9 +112,45 @@
                 if (field.prefixValue) value = field.prefixValue + value;
                 if (field.suffixValue) value = value + field.suffixValue;
                 if (field.handleValue) value = field.handleValue(value);
+                var defaultOp = (field.type === "text" || field.type === "string") ? "like" : "equal";
+                var dbname = field.dbname || name.replace("_search_", "");
+                var fieldOp = field.operator || field.op || defaultOp;
+                var type = Object.prototype.toString.apply(value);
+                var filter = field.filter;
+                if (type === '[object Array]' && !filter) {
+                    var isBetween = (fieldOp === "between");
+                    var rules = [], ops = (isBetween ? ["greaterorequal", "lessorequal"] : ["equal"]);
+                    for (var i = 0, l = value.length; i < l; i++) {
+                        var item = value[i];
+                        var itemOp = ops[(i > ops.length ? (ops.length - 1) : i)];
+                        type = Object.prototype.toString.apply(item);
+                        if (type === '[object Date]' && itemOp === "lessorequal") {
+                            itemOp = "less";
+                            item = $.ligerui.getDateEnd(item, editor.control.options.format);
+                        }
+                        rules.push({ op: itemOp, field: dbname, type: field.vt, value: item, paramName: (field.paramName ? (field.paramName + "_" + i) : field.paramName) });
+                    }
+                    filter = { op: (isBetween ? "and" : "or"), rules: rules };
+                }
+                if (filter) {
+                    var rules = filter.rules ? filter.rules : filter;
+                    var group = { op: filter.op || "or", rules: [] };
+                    for (var i = 0, l = rules.length; i < l; i++) {
+                        var item = rules[i];
+                        group.rules.push({
+                            op: item.op || item.operator || defaultOp,
+                            field: item.field || field.dbname,
+                            value: item.value || value,
+                            type: item.type || item.vt,
+                            paramName: item.paramName
+                        });
+                    }
+                    if (group.rules.length > 0) groups.push(group);
+                    return;
+                }
                 conditions.push({
-                    op: field.operator || field.op || ((field.type === "text" || field.type === "string") ? "like" : "equal"),
-                    field: field.dbname || name.replace("_search_", ""), //加入Search的定义规则
+                    op: fieldOp,
+                    field: dbname, //加入Search的定义规则
                     value: value,
                     type: field.vt,
                     paramName: field.paramName
@@ -129,6 +166,10 @@
                 });
             }
         });
-        return conditions;
+        return {
+            op: "and",
+            rules: conditions,
+            groups: groups
+        };
     }
 })(jQuery);

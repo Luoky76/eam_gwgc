@@ -35,9 +35,14 @@
         onSelect: function () { }, //选择事件
         onBeforeCancelSelect: function () { }, //取消选择前事件
         onCancelSelect: function () { }, //取消选择事件
+        onBeforeCheck: function () { }, //选择前事件
         onCheck: function () { }, //选择事件
         onSuccess: function () { }, //加载成功事件
-        onError: function () { }, //加载错误事件
+        onError: function (XMLHttpRequest, _textStatus, errorThrown) { //错误事件
+            $.ligerDialog.error('请求数据出错,页面即将跳转!<br/>原因为：' + (XMLHttpRequest.responseText || "") + "<br/>错误码:" + (XMLHttpRequest.status || "") + (errorThrown || ""), "操作失败", function () {
+                location.reload();
+            });
+        },
         onClick: function () { }, //点击事件
         idFieldName: 'ID', //id字段
         parentIDFieldName: null, //父节点字段
