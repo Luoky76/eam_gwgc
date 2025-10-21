@@ -51,7 +51,7 @@ namespace Gksyb.Server.Services.Common
             try
             {
                 content = func(request);
-                var flurlResponse = await request.SendAsync(verb,content);
+                var flurlResponse = await request.SendAsync(verb, content);
                 if (flurlResponse.StatusCode == Unauthorized)
                 {
                     await RefreshAccessTokenAsync(appId);

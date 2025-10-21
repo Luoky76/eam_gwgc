@@ -1,5 +1,4 @@
 ﻿using Flurl.Http;
-using Flurl.Http.Content;
 
 namespace Gksyb.Core.Interfaces.Common
 {
@@ -26,8 +25,8 @@ namespace Gksyb.Core.Interfaces.Common
         /// </summary>
         /// <typeparam name="T">返回对象</typeparam>
         /// <param name="appId">应用编码</param>
-        /// <param name="verb">请求类型</param>
+        /// <param name="method">请求类型</param>
         /// <param name="func">请求逻辑</param>
-        Task<T> ApiInvoke<T>(string appId, HttpMethod verb, Func<FlurlRequest, HttpContent> func);
+        Task<T> ApiInvoke<T>(string appId, HttpMethod method, Func<FlurlRequest, HttpContent> func);
     }
 }

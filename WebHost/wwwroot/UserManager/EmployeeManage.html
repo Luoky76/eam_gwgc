@@ -275,7 +275,7 @@
             },
             roleSelect: function (name, url) {
                 var me = this;
-                me.transferSelect("角色", name, url);
+                me.transferSelect("角色", name, url, {}, "RoleCorp");
             },
             corpSelect: function (name, url) {
                 var me = this;
@@ -347,7 +347,7 @@
                     data: options
                 });
             },
-            transferSelect: function (detailType, name, url, width, height, options) {
+            transferSelect: function (detailType, name, url, options, portName, width, height) {
                 var me = this;
                 var row = me.grid.getSelectedRow();
                 options = $.extend(true, {
@@ -355,7 +355,7 @@
                     display: detailType,
                     values: row[name],
                     callback: function (values, rows) {
-                        me.selectCallBack(row, values, rows, name);
+                        me.selectCallBack(row, values, rows, name, portName);
                     },
                 }, options);
                 $.ligerDialog.open({
