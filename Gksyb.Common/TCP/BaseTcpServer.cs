@@ -256,6 +256,10 @@ namespace Gksyb.Common.TCP
                 UserToken = client
             };
             eventArgs.Completed += IO_Completed;
+            if (client.Socket != null)
+            {
+                client.Socket.NoDelay = true;
+            }
             ListenReceive(client, eventArgs);
         }
 

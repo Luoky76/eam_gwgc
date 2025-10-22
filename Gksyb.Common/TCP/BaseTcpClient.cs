@@ -110,7 +110,10 @@ namespace Gksyb.Common.TCP
             _connected = false;
             _server = endPoint;
             _connectEventArgs.RemoteEndPoint = _server;
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp)
+            {
+                NoDelay = true,
+            };
             _logger?.LogError(_logPath, $"准备连接：{_server}");
             if (!socket.ConnectAsync(_connectEventArgs))
             {
