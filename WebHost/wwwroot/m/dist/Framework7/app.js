@@ -63,8 +63,8 @@
             }
         });
     }
+    var imeiKey = "GksybIMEI";
     if (window[imeiKey] === undefined) {
-        var imeiKey = "GksybIMEI";
         Object.defineProperty(window, imeiKey, {
             get: function () {
                 var val = window.localStorage.getItem(imeiKey);

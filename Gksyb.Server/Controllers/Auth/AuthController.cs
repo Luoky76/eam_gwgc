@@ -81,6 +81,7 @@ namespace Gksyb.Server.Controllers.Auth
         {
             if ("0".Equals(IsInnerIP().Data) && !await ValidVerifyCodeAsync(request.Verifycode))
                 return AjaxResult.Error("请输入正确的验证码");
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(request.IMEI), "设备号");
             request.Username = (request.Username ?? "").ToUpper();
             request.IP = Request.GetRealIP();
             request.UserAgent = Request.GetUserAgent();

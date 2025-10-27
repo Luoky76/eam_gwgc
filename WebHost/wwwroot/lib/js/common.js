@@ -474,8 +474,8 @@
     if (window.session === undefined) initStorage("session", "GksybData");
     if (window.tempStorage === undefined) initStorage("tempStorage", "GksybTemp");
     if (window.ticket === undefined) initStorageString("ticket", "GksybTicket");
+    var imeiKey = "GksybIMEI";
     if (window[imeiKey] === undefined) {
-        var imeiKey = "GksybIMEI";
         Object.defineProperty(window, imeiKey, {
             get: function () {
                 var val = window.localStorage.getItem(imeiKey);
