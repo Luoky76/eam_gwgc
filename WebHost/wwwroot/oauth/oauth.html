@@ -18,7 +18,8 @@
                 return decodeURIComponent(result[1]);
             },
             getBaseUrl: function (root) {
-                return location.href.substring(0, location.href.lastIndexOf("/") + 1) + root;
+                var url = (location.origin + location.pathname);
+                return url.substring(0, url.lastIndexOf("/") + 1) + root;
             },
             error: function (xhr, msg) {
                 msg = (xhr.status || "") + " " + (xhr.statusText || "") + " " + msg;
