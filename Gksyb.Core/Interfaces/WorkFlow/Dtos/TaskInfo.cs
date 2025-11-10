@@ -56,5 +56,10 @@
         /// 流转节点信息
         /// </summary>
         public List<NodeInfo> Nodes { get; set; }
+
+        /// <summary>
+        /// 当前处理节点
+        /// </summary>
+        public List<NodeInfo> CurrentNodes { get; set; }
     }
 }

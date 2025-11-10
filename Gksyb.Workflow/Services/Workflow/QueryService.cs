@@ -4,7 +4,9 @@ using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.Grid;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Controllers.Workflow.Dtos;
+using System.Collections.Generic;
 using System.Linq.Expressions;
+using FlowNodeInfo = Gksyb.Core.Interfaces.WorkFlow.NodeInfo;
 using NodeInfo = Gksyb.Workflow.Controllers.Workflow.Dtos.NodeInfo;
 
 namespace Gksyb.Workflow.Services.Workflow
@@ -218,6 +220,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     FinishDate = task.FINISHDATE
                 }).OrderBy(c => c.Id).FirstOrDefaultAsync();
             if (info == null) return info;
+            info.CurrentNodes = await GetCurrentNodesAsync(info.TaskId);
             info.WorkNodeId = info.NodeId;
             if (typeof(T1) == typeof(WF_NODE) && info.NodeStatus != NodeStatus.Active)
             {
@@ -259,6 +262,36 @@ namespace Gksyb.Workflow.Services.Workflow
             {
                 FINISHDATE = DateTime.Now
             });
+        }
+
+        /// <summary>
+        /// 获取当前处理节点
+        /// </summary>
+        private async Task<List<FlowNodeInfo>> GetCurrentNodesAsync(string taskId)
+        {
+            if (string.IsNullOrWhiteSpace(taskId))
+            {
+                return new List<FlowNodeInfo>();
+            }
+            return await _dbContext.Query<WF_NODE>()
+                .Where(node => node.TASK_ID == taskId && node.NODE_STATUS == NodeStatus.Active)
+                .OrderBy(node => node.CREATEDATE)
+                .Select(node => new FlowNodeInfo
+                {
+                    Id = node.ID,
+                    NodeId = node.NODE_ID,
+                    NodeName = node.NODE_NAME,
+                    NodeTitle = node.NODE_TITLE,
+                    NodeType = node.NODE_TYPE,
+                    NodeStatus = node.NODE_STATUS,
+                    NodeUserId = node.NODE_USERID,
+                    NodeUserName = node.NODE_USERNAME,
+                    NodeUser = node.NODE_USER,
+                    NodeReason = node.NODE_REASON,
+                    StartDate = node.CREATEDATE,
+                    ViewDate = node.VIEWDATE,
+                    FinishDate = node.FINISHDATE
+                }).ToListAsync();
         }
 
         /// <summary>
