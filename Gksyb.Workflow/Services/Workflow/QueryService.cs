@@ -4,7 +4,6 @@ using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model.Grid;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Controllers.Workflow.Dtos;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using FlowNodeInfo = Gksyb.Core.Interfaces.WorkFlow.NodeInfo;
 using NodeInfo = Gksyb.Workflow.Controllers.Workflow.Dtos.NodeInfo;
