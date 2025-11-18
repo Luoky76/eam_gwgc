@@ -200,7 +200,7 @@ namespace Gksyb.Core.Auth
         /// </summary>
         private bool CheckGroup()
         {
-            if (string.IsNullOrWhiteSpace(Group)) return true;
+            if (string.IsNullOrWhiteSpace(Group)) return false;
             var match = Mode.GetFunc();
             return match(Group, user.Group);
         }
