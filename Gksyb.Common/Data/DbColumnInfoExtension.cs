@@ -24,7 +24,7 @@ namespace Gksyb.Common.Data
                 var columns = await (_methodInfos[method].Invoke(null, new object[] { source, table, schema }) as Task<List<DbColumnInfo>>);
                 return await HandleColumns(source, columns, table, schema);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return await HandleColumns(source, null, table, schema);
             }
@@ -234,55 +234,48 @@ namespace Gksyb.Common.Data
         /// </summary>
         private static async Task<List<DbColumnInfo>> GetPgsqlColumn(IDbContext source, string table, string schema)
         {
-            var defaultSchema = "public";
+            var defaultSchema = await source.Session.ExecuteScalarAsync("select current_schema()") as string;
             if (string.IsNullOrWhiteSpace(schema)) schema = defaultSchema;
             var paramPrefix = source.GetParamPrefix();
-            var sql = $@"SELECT ns.nspname ""Schema"",
-                           a.table_name ""Table"",
-                           a.attname ""Name"",
-                           t.typname DbType,
-                           (CASE
-                             WHEN a.atttypmod > 0 AND a.atttypmod < 32767 THEN
-                              a.atttypmod - 4
-                             ELSE
-                              a.attlen
-                           END) MaxLength,
-                           (CASE
-                             WHEN t.typelem = 0 THEN
-                              t.typname
-                             ELSE
-                              t2.typname
-                           END, CASE
-                              WHEN a.attnotnull THEN
-                               0
-                              ELSE
-                               1
-                            END) IsNullable,
-                           (SELECT pg_get_expr(adbin, adrelid)
-                              FROM pg_attrdef
-                             WHERE adrelid = e.adrelid
-                               AND adnum = e.adnum LIMIT 1) IsIdentity,
-                           d.description ""Comment""
-                      FROM pg_class c
-                     INNER JOIN pg_attribute a
-                        ON a.attnum > 0
-                       AND a.attrelid = c.oid
-                     INNER JOIN pg_type t
-                        ON t.oid = a.atttypid
-                      LEFT JOIN pg_type t2
-                        ON t2.oid = t.typelem
-                      LEFT JOIN pg_description d
-                        ON d.objoid = a.attrelid
-                       AND d.objsubid = a.attnum
-                      LEFT JOIN pg_attrdef e
-                        ON e.adrelid = a.attrelid
-                       AND e.adnum = a.attnum
-                     INNER JOIN pg_namespace ns
-                        ON ns.oid = c.relnamespace
-                     INNER JOIN pg_namespace ns2
-                        ON ns2.oid = t.typnamespace
-                     WHERE a.table_name = {paramPrefix}tableName
-                       AND ns.nspname = {paramPrefix}owner";
+            var sql = $@"SELECT 
+                            a.table_schema AS ""Schema"",
+                            a.table_name AS ""Table"", 
+                            a.column_name AS ""Name"",
+                            a.data_type AS ""DbType"",
+                            a.character_maximum_length AS ""MaxLength"",
+                            a.numeric_precision AS ""Precision"", 
+                            a.numeric_scale AS ""Scale"",
+                            CASE WHEN kcu.column_name IS NOT NULL THEN 1 ELSE 0 END AS ""IsPrimary"",
+                            CASE WHEN a.column_default LIKE 'nextval%' THEN 1 ELSE 0 END AS ""IsIdentity"",
+                            CASE WHEN a.is_nullable = 'YES' THEN 1 ELSE 0 END AS ""IsNullable"",
+                            COALESCE(pd.description, '') AS ""Comment"",
+                            a.column_default AS ""DefaultValue"",
+                            a.ordinal_position AS ""Position""
+                        FROM 
+                            information_schema.columns a
+                        LEFT JOIN 
+                            information_schema.key_column_usage kcu 
+                            ON a.table_schema = kcu.table_schema 
+                            AND a.table_name = kcu.table_name 
+                            AND a.column_name = kcu.column_name
+                        LEFT JOIN 
+                            information_schema.table_constraints tc 
+                            ON kcu.constraint_schema = tc.constraint_schema 
+                            AND kcu.constraint_name = tc.constraint_name 
+                            AND tc.constraint_type = 'PRIMARY KEY'
+                        LEFT JOIN 
+                            pg_catalog.pg_statio_all_tables st 
+                            ON a.table_schema = st.schemaname 
+                            AND a.table_name = st.relname
+                        LEFT JOIN 
+                            pg_catalog.pg_description pd 
+                            ON pd.objoid = st.relid 
+                            AND pd.objsubid = a.ordinal_position
+                        WHERE 
+                            a.table_name = {paramPrefix}tableName
+                            AND a.table_schema = {paramPrefix}owner
+                        ORDER BY 
+                            a.ordinal_position ASC";
             var columns = await source.SqlQueryAsync<DbColumnInfo>(sql, new DbParam("tableName", table), new DbParam("owner", schema));
             foreach (var column in columns)
             {

@@ -110,7 +110,8 @@ namespace Gksyb.Common.Data
         /// </summary>
         private static async Task<List<DbTableInfo>> GetPgsqlTables(IDbContext source, string type)
         {
-            if (type == ViewType) return await GetPgsqlViews(source);
+            var owner = await source.Session.ExecuteScalarAsync("select current_schema()") as string;
+            if (type == ViewType) return await GetPgsqlViews(source, owner);
             var sql = $@"SELECT CAST(relname AS VARCHAR) Name,
                            CAST(obj_description(c.oid, 'pg_class') AS VARCHAR) Comment,'{TableType}' Type
                       FROM pg_class c
@@ -122,11 +123,11 @@ namespace Gksyb.Common.Data
                      WHERE relkind IN ('p', 'r')
                        AND relname NOT LIKE 'pg_%'
                        AND relname NOT LIKE 'sql_%'
-                       AND schemaname = 'public'";
+                       AND schemaname = '{owner}'";
             var tables = await source.SqlQueryAsync<DbTableInfo>(sql);
             if (string.IsNullOrWhiteSpace(type))
             {
-                tables.AddRange(await GetPgsqlViews(source));
+                tables.AddRange(await GetPgsqlViews(source, owner));
             }
             return tables;
         }
@@ -134,7 +135,7 @@ namespace Gksyb.Common.Data
         /// <summary>
         /// 获取mysql表信息
         /// </summary>
-        private static async Task<List<DbTableInfo>> GetPgsqlViews(IDbContext source)
+        private static async Task<List<DbTableInfo>> GetPgsqlViews(IDbContext source, string owner)
         {
             var sql = $@"SELECT CAST(relname AS VARCHAR) Name,
                                CAST(Description AS VARCHAR) Comment,'{ViewType}' Type
@@ -142,7 +143,7 @@ namespace Gksyb.Common.Data
                           JOIN pg_class
                             ON pg_description.objoid = pg_class.oid
                          WHERE objsubid = 0
-                           AND exists(select 1 from pg_views t where relname = t.viewname and t.schemaname = 'public')";
+                           AND exists(select 1 from pg_views t where relname = t.viewname and t.schemaname = '{owner}')";
             return await source.SqlQueryAsync<DbTableInfo>(sql);
         }
 
