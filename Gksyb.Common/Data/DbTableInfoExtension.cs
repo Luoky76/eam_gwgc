@@ -112,18 +112,16 @@ namespace Gksyb.Common.Data
         {
             var owner = await source.Session.ExecuteScalarAsync("select current_schema()") as string;
             if (type == ViewType) return await GetPgsqlViews(source, owner);
-            var sql = $@"SELECT CAST(relname AS VARCHAR) Name,
-                           CAST(obj_description(c.oid, 'pg_class') AS VARCHAR) Comment,'{TableType}' Type
-                      FROM pg_class c
-                     INNER JOIN pg_namespace n
-                        ON n.oid = c.relnamespace
-                       AND nspname = 'public'
-                     INNER JOIN pg_tables z
-                        ON z.tablename = c.relname
-                     WHERE relkind IN ('p', 'r')
-                       AND relname NOT LIKE 'pg_%'
-                       AND relname NOT LIKE 'sql_%'
-                       AND schemaname = '{owner}'";
+            var sql = $@"select
+	                        table_name ""Name"",
+	                        table_schema ""Schema"",
+	                        '{TableType}' ""Type""
+                        from
+	                        information_schema.tables
+                        where
+	                        table_schema not in ('information_schema', 'pg_catalog')
+	                        and table_type = 'BASE TABLE'
+	                        and table_schema = (select current_schema())";
             var tables = await source.SqlQueryAsync<DbTableInfo>(sql);
             if (string.IsNullOrWhiteSpace(type))
             {
@@ -137,13 +135,16 @@ namespace Gksyb.Common.Data
         /// </summary>
         private static async Task<List<DbTableInfo>> GetPgsqlViews(IDbContext source, string owner)
         {
-            var sql = $@"SELECT CAST(relname AS VARCHAR) Name,
-                               CAST(Description AS VARCHAR) Comment,'{ViewType}' Type
-                          FROM pg_description
-                          JOIN pg_class
-                            ON pg_description.objoid = pg_class.oid
-                         WHERE objsubid = 0
-                           AND exists(select 1 from pg_views t where relname = t.viewname and t.schemaname = '{owner}')";
+            var sql = $@"select
+	                        table_name ""Name"",
+	                        table_schema ""Schema"",
+	                        '{ViewType}' ""Type""
+                        from
+	                        information_schema.tables
+                        where
+	                        table_schema not in ('information_schema', 'pg_catalog')
+	                        and table_type = 'VIEW'
+	                        and table_schema = (select current_schema())";
             return await source.SqlQueryAsync<DbTableInfo>(sql);
         }
 
