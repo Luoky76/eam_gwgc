@@ -103,7 +103,7 @@ namespace Gksyb.Model.Core
             if (isThrow && isFail) throw new MessageException($"{TimeStamp:yyyy-MM-dd HH:mm:ss}已过期");
             if (isFail) return false;
             var sign = CalcuSign(secret);
-            isFail = Sign != sign;
+            isFail = Sign.ToLower() != sign.ToLower();
             if (isThrow && isFail) throw new MessageException("参数检查失败");
             return !isFail;
         }

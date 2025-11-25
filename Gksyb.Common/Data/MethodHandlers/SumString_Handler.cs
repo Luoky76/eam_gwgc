@@ -33,4 +33,22 @@ namespace Gksyb.Common.Data
             generator.SqlBuilder.Append(")");
         }
     }
+
+    public class OracleSumString_Handler : IMethodHandler
+    {
+        public const string MethodName = "Sum";
+
+        public OracleSumString_Handler()
+        {
+        }
+
+        public bool CanProcess(DbMethodCallExpression exp) => exp.Method.DeclaringType == PublicConstants.TypeOfSql && (exp.Method.ReturnType == typeof(string));
+
+        public void Process(DbMethodCallExpression exp, SqlGeneratorBase generator)
+        {
+            generator.SqlBuilder.Append($"TO_CHAR(WM_CONCAT(DISTINCT TO_CHAR(");
+            exp.Arguments.First().Accept(generator);
+            generator.SqlBuilder.Append(")))");
+        }
+    }
 }
