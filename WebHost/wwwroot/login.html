@@ -560,15 +560,6 @@
                             me.success(result.Data);
                             return;
                         }
-                        if (result.Data === "1") {
-                            myAlert({
-                                message: result ? result.Message : "账号密码错误",
-                                callback: function () {
-                                    location.href = "change-pwd.html?FromUrl=" + encodeURIComponent(location.href);
-                                }
-                            });
-                            return;
-                        }
                         $("#txtVerifyCode").val("");
                         myAlert({
                             message: result.Message,

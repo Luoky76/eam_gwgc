@@ -153,18 +153,16 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 修改密码
         /// </summary>
-        [AllowAnonymous, JsToken("Auth/Login")]
+        [JsToken("Auth/Login")]
         public async Task<AjaxResult> ChangePasswordAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, ChangePasswordRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Username))
-            {
-                request.Username = CurrentUser?.UserName;
-            }
-            if (string.IsNullOrWhiteSpace(request.Username)) return AjaxResult.Error("请输入账号");
-            request.Username = request.Username.ToUpper();
+            request.Username = CurrentUser.UserName;
             return await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
             {
-                return await service.ChangePasswordAsync(request);
+                var reulst = await service.ChangePasswordAsync(request);
+                CurrentUser.PasswordInfo = null;
+                await CurrentUser.SaveAsync();
+                return reulst;
             });
         }
 
@@ -256,6 +254,14 @@ namespace Gksyb.Server.Controllers.Auth
                 AbsoluteExpiration = user.Expiration
             });
             return response;
+        }
+
+        /// <summary>
+        /// 获取密码校验信息
+        /// </summary>
+        public AjaxResult GetPasswordInfo([FromServices] UserSession user)
+        {
+            return AjaxResult.Success(user.PasswordInfo ?? "", default);
         }
 
         /// <summary>

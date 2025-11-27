@@ -255,12 +255,6 @@
                 <div class="login-title">密码修改</div>
                 <div class="login-panel">
                     <div class="login-input">
-                        <input type="text" name="txtUsername" id="txtUsername" value="" class="login-text" />
-                        <span class="login-text login-null">
-                            请输入账号
-                        </span>
-                    </div>
-                    <div class="login-input">
                         <span class="toggle-password">👁️</span>
                         <input type="password" name="txtOld" id="txtOld" value="" class="login-text" />
                         <span class="login-text login-null">
@@ -337,19 +331,9 @@
                 FromUrl = FromUrl || "login.html";
                 var passwordagain = $.trim($("#txtAgain").val() || "")
                 var formData = {
-                    username: $.trim($("#txtUsername").val() || ""),
                     oldpassword: $.trim($("#txtOld").val() || ""),
                     newpassword: $.trim($("#txtNew").val() || "")
                 };
-                if (!formData.username) {
-                    myAlert({
-                        "message": '请输入账户!',
-                        callback: function () {
-                            $("#txtUsername").focus();
-                        }
-                    });
-                    return;
-                }
                 if (!formData.oldpassword) {
                     myAlert({
                         "message": '请输入旧密码!',
@@ -382,15 +366,12 @@
                     myAlert("两次密码输入不一致");
                     return;
                 }
-                formData.username = encrypt(formData.username.toUpperCase());
                 formData.oldpassword = encrypt(formData.oldpassword);
                 formData.newpassword = encrypt(formData.newpassword);
                 $.ajax({
-                    noGlobal: true,
                     type: 'post',
-                    cache: false,
                     dataType: 'json',
-                    url: 'Auth/ChangePassword',
+                    url: 'auth/ChangePassword',
                     jsToken: {
                         url: "auth/logintoken"
                     },
@@ -426,6 +407,21 @@
                     }
                 });
             },
+            checkPassword: function () {
+                var me = this;
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: 'auth/getPasswordInfo',
+                    success: function (result) {
+                        if (result && !result.IsError) {
+                            myAlert({ "message": result.Data || "请修改密码" });
+                        } else {
+                            myAlert({ "message": result.Message });
+                        }
+                    }
+                });
+            },
             eventBind: function () {
                 var me = this;
                 $(".login-null").bind('click', function () {
@@ -447,12 +443,6 @@
 
                 $("#btnLogin").off("click").click(function () {
                     me.submit();
-                });
-                $("#txtUsername").keydown(function (e) {
-                    if (e.keyCode == 13) {
-                        e.preventDefault();
-                        $("#txtOld").focus().select();
-                    }
                 });
                 $("#txtOld").keydown(function (e) {
                     if (e.keyCode == 13) {
@@ -482,6 +472,7 @@
             init: function () { //初始化
                 var me = this;
                 me.eventBind();
+                me.checkPassword();
             }
         };
         $(function () {

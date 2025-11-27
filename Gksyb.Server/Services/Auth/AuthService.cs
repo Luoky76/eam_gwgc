@@ -72,7 +72,6 @@ namespace Gksyb.Server.Services.Auth
 
             var lastChangeTime = user.SUPPLIERID == null ? (await _dbContext.GetSysdate()) : DateTime.UnixEpoch.AddSeconds(user.SUPPLIERID.CastTo<double>());
             var errorMsg = await CheckPassword(request.Username, request.InputPassword, lastChangeTime);
-            if (checkPassword && !string.IsNullOrWhiteSpace(errorMsg)) return AjaxResult.Error(errorMsg, "1");
 
             var roles = await _dbContext.Query<CF_ROLE>()
                 .InnerJoin<CF_USERROLE>((role, userrole) => role.ROLEID == userrole.ROLEID && userrole.USERID == user.USERID)
@@ -90,6 +89,7 @@ namespace Gksyb.Server.Services.Auth
                 UserID = user.USERID.Value,
                 UserName = user.LOGINNAME,
                 RealName = user.REALNAME,
+                PasswordInfo = checkPassword ? errorMsg : null,
                 Class = user.CLASS,
                 WorkerCode = user.DEPARTCODE,
                 Group = user.STATION ?? "",
@@ -384,18 +384,18 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task<string> CheckPassword(string username, string password, DateTime? lastChangeTime = null)
         {
-            if (string.IsNullOrWhiteSpace(password)) return string.Empty;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
+            if (string.IsNullOrWhiteSpace(password)) return null;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
             if (!PasswordHelper.IsStrong(password ?? "", username))
             {
                 return PasswordHelper.DirectionMsg;
             }
-            if (lastChangeTime == null) return string.Empty;
+            if (lastChangeTime == null) return null;
             var sysdate = await _dbContext.GetSysdate();
             if (lastChangeTime.Value.AddDays(_options.GetPasswordExpiresIn) < sysdate)
             {
                 return "密码已过期，请先修改";
             }
-            return string.Empty;
+            return null;
         }
 
         /// <summary>

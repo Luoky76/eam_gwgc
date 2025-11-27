@@ -74,6 +74,12 @@ namespace Gksyb.Core.Auth
         public string WorkerCode { get; set; }
 
         /// <summary>
+        /// 密码修改提示信息
+        /// </summary>
+        [JsonProperty("PWDI")]
+        public string PasswordInfo { get; set; }
+
+        /// <summary>
         /// 所属组织
         /// </summary>
         public CorpInfo Corp { get; set; }
