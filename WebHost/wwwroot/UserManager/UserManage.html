@@ -274,6 +274,7 @@
                         grid2: {
                             ports: (portName ? row[portName] : null),
                             onLoadData: function (data) {
+                                if (!data) return;
                                 var g = this, p = g.options;
                                 if (!p.ports) return;
                                 var rows = data[p.root];
