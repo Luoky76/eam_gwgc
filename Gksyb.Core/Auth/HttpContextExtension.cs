@@ -35,7 +35,7 @@ namespace Gksyb.Core.Auth
             }
             if (userSession != null) return userSession;
             var token = source.GetAuthToken();
-            userSession = await source.GetCurrentUserAsync(token);
+            userSession = source.GetCurrentUserAsync(token).Result();
             if (userSession == null) return userSession;
             if (userSession.IsApi)
             {
