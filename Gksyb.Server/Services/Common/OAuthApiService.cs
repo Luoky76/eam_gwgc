@@ -7,6 +7,7 @@ using Gksyb.Core.Interfaces.Auth.Dtos;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 
 namespace Gksyb.Server.Services.Common
 {
@@ -196,12 +197,12 @@ namespace Gksyb.Server.Services.Common
         /// <summary>
         /// 缓存的access_token
         /// </summary>
-        private readonly static Dictionary<string, AccessTokenResponse> Tokens = new();
+        private readonly static ConcurrentDictionary<string, AccessTokenResponse> Tokens = new();
 
         /// <summary>
         /// 缓存的应用信息
         /// </summary>
-        private readonly static Dictionary<string, AppInfo> Apps = new();
+        private readonly static ConcurrentDictionary<string, AppInfo> Apps = new();
 
         class AccessTokenResponse
         {
