@@ -71,6 +71,10 @@ namespace Gksyb.Server.Controllers.Auth
         [HttpPost, HttpGet]
         public async Task<AjaxResult> JsonValueMulAsync(IDictionary<string, IDictionary<string, object>> param)
         {
+            if (param == null || param.Count < 1)
+            {
+                throw new MessageException("请传递参数，请求体应为json");
+            }
             var dic = new Dictionary<string, IDictionary<string, object>>();
             if (param != null)
             {

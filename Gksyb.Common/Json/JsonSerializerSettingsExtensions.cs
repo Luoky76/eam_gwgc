@@ -52,14 +52,28 @@ namespace Newtonsoft.Json
 
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
-                return reader.Value.CastTo(objectType);
+                try
+                {
+                    return reader.Value.CastTo(objectType);
+                }
+                catch (Exception ex)
+                {
+                    throw new MessageException($"在{reader.Path}反序列失败，原因:{ex}");
+                }
             }
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                var rawValue = value.ToString();
-                if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
-                writer.WriteRawValue(rawValue);
+                try
+                {
+                    var rawValue = value.ToString();
+                    if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
+                    writer.WriteRawValue(rawValue);
+                }
+                catch (Exception ex)
+                {
+                    throw new MessageException($"在{writer.Path}反序列失败，原因:{ex}");
+                }
             }
         }
 
@@ -78,14 +92,28 @@ namespace Newtonsoft.Json
 
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
-                return reader.Value.CastTo(objectType);
+                try
+                {
+                    return reader.Value.CastTo(objectType);
+                }
+                catch (Exception ex)
+                {
+                    throw new MessageException($"在{reader.Path}反序列失败，原因:{ex}");
+                }
             }
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
-                var rawValue = value.ToString();
-                if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
-                writer.WriteRawValue(rawValue);
+                try
+                {
+                    var rawValue = value.ToString();
+                    if (rawValue.Length > 16) rawValue = $"\"{rawValue}\"";
+                    writer.WriteRawValue(rawValue);
+                }
+                catch (Exception ex)
+                {
+                    throw new MessageException($"在{writer.Path}序列化失败，原因:{ex}");
+                }
             }
         }
     }
