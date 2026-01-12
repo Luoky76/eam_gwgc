@@ -65,7 +65,8 @@ namespace Gksyb.Core.Common
             var view = SEARCH;
             int index1 = view.IndexOf(":", view.IndexOf("DataSource"));
             int index2 = view.IndexOf(",", view.IndexOf("DataSource"));
-            DataSource = view.Substring(index1 + 1, index2 - index1 - 1);
+            var dataSource = view.Substring(index1 + 1, index2 - index1 - 1);
+            DataSource = dataSource == null ? dataSource : dataSource.Trim();
             SEARCH = view[(index2 + 1)..];
         }
 
