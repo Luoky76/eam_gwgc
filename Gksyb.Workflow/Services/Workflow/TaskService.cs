@@ -333,6 +333,7 @@ namespace Gksyb.Workflow.Services.Workflow
                 FLOW_NAME = c.FLOW_NAME,
                 FLOW_TITLE = c.FLOW_TITLE,
                 APPNAME = c.APPNAME,
+                CREATEUSERID = c.CREATEUSERID,
                 CREATEUSER = c.CREATEUSER,
                 CREATEDATE = c.CREATEDATE
             }).FirstOrDefaultAsync();
