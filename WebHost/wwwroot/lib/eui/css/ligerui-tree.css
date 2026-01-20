@@ -141,6 +141,7 @@
 
 .l-tree .l-tree-icon-text {
     display: inline-block;
+    user-select: none;
 }
 
     .l-tree .l-tree-icon-text:hover {
