@@ -93,6 +93,18 @@
                             var p = me.grid.options;
                             LG.commonSearch($formsearch, me.grid, undefined, (p.usePager && p.pageCount > 1));
                         }
+                    }, {
+                        text: '展开',
+                        width: 60,
+                        click: function () {
+                            me.grid.expandAll();
+                        }
+                    }, {
+                        text: '收缩',
+                        width: 60,
+                        click: function () {
+                            me.grid.collapseAll();
+                        }
                     }],
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
