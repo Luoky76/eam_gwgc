@@ -1552,7 +1552,7 @@ table.l-filter-group-alt table.l-filter-group {
     line-height: 28px;
     height: 28px;
     border: 1px solid #dddee1;
-    border-radius: 5px;
+    border-radius: 2px;
 }
 
     .l-checkbox-rect > span {
@@ -1737,6 +1737,7 @@ table.l-filter-group-alt table.l-filter-group {
     height: 98%;
     margin: 0;
     color: #555;
+    background-color: inherit;
     border: 0;
     outline: none;
 }
@@ -2036,8 +2037,8 @@ table.l-filter-group-alt table.l-filter-group {
             height: 20px;
             padding: 2px 0;
             text-align: center;
-            border-top: 1px solid white;
-            border-bottom: 1px solid white;
+            border-top: 1px solid transparent;
+            border-bottom: 1px solid transparent;
             border-left: 1px solid transparent;
             border-right: 1px solid transparent;
             position: relative;
@@ -2544,6 +2545,7 @@ table.l-filter-group-alt table.l-filter-group {
     display: inline-block;
     overflow: hidden;
     margin: 7px;
+    color: #495060;
 }
 
     .l-form .l-group {
@@ -2647,7 +2649,6 @@ table.l-filter-group-alt table.l-filter-group {
     padding-top: 2px;
     padding-bottom: 2px;
     text-align: left;
-    color: #495060;
     user-select: none;
 }
 
@@ -2874,6 +2875,59 @@ table.l-filter-group-alt table.l-filter-group {
         z-index: 10;
     }
 
+.l-upload-progress {
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 10%;
+    width: 80%;
+    height: 24px;
+    z-index: 10;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+    .l-upload-progress::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        z-index: 1;
+        border-radius: 12px;
+    }
+
+.l-upload-progress-bar {
+    position: relative;
+    height: 100%;
+    background: linear-gradient(to right, #1890ff, #36cfc9);
+    border-radius: 12px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 12px rgba(24, 144, 255, 0.9);
+    z-index: 2;
+}
+
+    .l-upload-progress-bar::after {
+        content: attr(data-percent) '%';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        z-index: 3;
+    }
+
 .l-upload-item-actions {
     display: none;
     position: absolute;
@@ -2922,6 +2976,7 @@ table.l-filter-group-alt table.l-filter-group {
 .l-text-invalid .l-upload-text {
     border-color: red !important;
 }
+
 /* -----------------------
    * 表格 *
 * ----------------------- */
