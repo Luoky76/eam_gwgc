@@ -43,8 +43,11 @@ namespace Gksyb.Common
             key ??= TokenName;
             if (source.Request.Headers.TryGetValue(key, out StringValues value))
             {
-                if (value == "undefined") return null;
-                return value;
+                if (value != "undefined") return value;
+            }
+            if (HttpMethods.IsGet(source.Request.Method))
+            {
+                return source.GetUID(false);
             }
             return null;
         }

@@ -50,7 +50,7 @@ namespace Gksyb.Core.Interfaces.Auth
                 return Corps.Select(c =>
                 {
                     if (c.Station == null || c.Station.Count < 1) return $"{c.CName}";
-                    return c.Station.Select(a => $"{c.CName}-{a}").ToStr(",");
+                    return $"{c.CName}({c.Station.ToStr(",")})";
                 }).ToStr(",");
             }
         }
