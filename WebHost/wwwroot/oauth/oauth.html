@@ -73,11 +73,12 @@
                 var me = this;
                 me.baseUrl = me.getBaseUrl("../");
                 var toUrl = me.getQueryStringByName("redirect_uri") || (me.baseUrl + "index.html");
+                var token = me.getQueryStringByName("ticket") || me.getQueryStringByName("token");
                 me.httpRequest({
                     url: 'oauth/validTicket',
                     headers: {
                         "GKSYBTOKEN": token,
-                        ticket: me.getQueryStringByName("ticket") || me.getQueryStringByName("token"),
+                        ticket: token,
                         menuAppname: me.getQueryStringByName("menuAppname")
                     },
                     success: function (data) {
