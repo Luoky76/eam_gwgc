@@ -73,10 +73,12 @@
                 var me = this;
                 me.baseUrl = me.getBaseUrl("../");
                 var toUrl = me.getQueryStringByName("redirect_uri") || (me.baseUrl + "index.html");
+                var token = me.getQueryStringByName("token");
                 me.httpRequest({
                     url: 'oauth/sso',
                     headers: {
-                        token: me.getQueryStringByName("token"),
+                        "GKSYBTOKEN": token,
+                        token: token,
                         menuAppname: me.getQueryStringByName("menuAppname")
                     },
                     success: function (data) {
@@ -89,6 +91,9 @@
                         me.httpRequest({
                             url: "oauth/jstoken",
                             dataType: "text",
+                            headers: {
+                                "GKSYBTOKEN": token
+                            },
                             success: function (result) {
                                 eval(result);
                             }
