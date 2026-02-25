@@ -672,11 +672,6 @@ table.l-filter-group-alt,
     background-color: #333;
 }
 
-.l-custom-table tr.l-selected .l-checkboxrow .l-checkbox {
-    color: #fff;
-    background-color: #5c9df5;
-}
-
 .l-box-select-inner {
     color: #ddd;
     background-color: #222;
@@ -734,11 +729,6 @@ table.l-filter-group-alt,
 
 .l-listbox-inner {
     border-top-color: #444;
-}
-
-.l-listbox-reverse .l-checkboxrow .l-checkbox {
-    color: #fff;
-    background-color: #5c9df5;
 }
 
 .l-disabled .l-checkboxrow .l-checkbox {
