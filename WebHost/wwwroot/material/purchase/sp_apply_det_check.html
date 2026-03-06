@@ -241,7 +241,8 @@
                             me.add();
                             break;
                         case "submit":
-                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                            //if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                            if (me.isAllUnaudited()) {
                                 me.submit();
                             }
                             break;
