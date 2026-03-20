@@ -31,7 +31,8 @@ namespace Chloe
             var row = await task;
             if (row < 1)
             {
-                source.TryGetTrackedEntityState(entity).Fakes.Clear();
+                IEntityState entityState = source.TryGetTrackedEntityState(entity);
+                entityState?.Fakes.Clear();
                 return await source.InsertAsync(entity);
             }
             return entity;

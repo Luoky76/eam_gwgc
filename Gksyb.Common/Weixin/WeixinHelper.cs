@@ -66,6 +66,29 @@ namespace Gksyb.Common.Weixin
         }
 
         /// <summary>
+        /// 清空接口的每日调用接口次数  45009报错
+        /// </summary>
+        public static async Task<AjaxResult> ClearQuota()
+        {
+            try
+            {
+                TemplateMessageResponse response = null;
+                await ApiInvoke(async accessToken =>
+                {
+                    var url = $"{ApiHost}/cgi-bin/clear_quota?access_token={accessToken}";
+                    var request = new { appid = WeixinSetting.AppId };
+                    response = await url.PostAsync(new CapturedJsonContent(request.ToMiniJson())).ReceiveJson<TemplateMessageResponse>();
+                    return response;
+                });
+                return AjaxResult.Success();
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.ToString());
+            }
+        }
+
+        /// <summary>
         /// 获取用户基本面信息
         /// </summary>
         /// <param name="openid">用户openid</param>
