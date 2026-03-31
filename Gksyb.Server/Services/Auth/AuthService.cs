@@ -385,6 +385,10 @@ namespace Gksyb.Server.Services.Auth
         private async Task<string> CheckPassword(string username, string password, DateTime? lastChangeTime = null)
         {
             if (string.IsNullOrWhiteSpace(password)) return null;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
+            if (password == _options.InitPassWord)
+            {
+                return "密码为初始密码，请先修改";
+            }
             if (!PasswordHelper.IsStrong(password ?? "", username))
             {
                 return PasswordHelper.DirectionMsg;
