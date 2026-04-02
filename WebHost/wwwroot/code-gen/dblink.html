@@ -144,7 +144,18 @@
                             loading: '正在处理中...',
                             data: { data: val },
                             success: function (data) {
-                                LG.showSuccess('密文为：' + data);
+                                $.ligerDialog.open({
+                                    type: "success",
+                                    content: '密文为' + data,
+                                    buttons: [{
+                                        text: "复制并关闭",
+                                        onclick: function () {
+                                            var g = this, p = g.options;
+                                            p.parent.close();
+                                            navigator.clipboard.writeText(data);
+                                        }
+                                    }]
+                                });
                             },
                             error: function (message) {
                                 LG.showError(message);

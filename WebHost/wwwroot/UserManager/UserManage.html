@@ -6,93 +6,6 @@
     <meta name="renderer" content="webkit">
     <title>用户管理</title>
     <script src="../lib/LGboot.js" type="text/javascript"></script>
-    <style>
-        /* 初始化密码弹窗样式 */
-        .pwd-dialog {
-            padding: 16px;
-        }
-
-        .pwd-title {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #111827;
-            font-weight: 600;
-        }
-
-        .pwd-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px 12px;
-        }
-
-        .pwd-text {
-            font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
-            font-size: 16px;
-            letter-spacing: 0.5px;
-            color: #111827;
-            user-select: text;
-            -webkit-user-select: text;
-            white-space: nowrap;
-            max-width: 260px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .copy-btn {
-            position: relative;
-            outline: none;
-            border: none;
-            background: #2563eb;
-            color: #fff;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: transform .08s ease, background-color .2s ease, box-shadow .2s ease;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, .3);
-            font-size: 14px;
-            line-height: 1;
-        }
-
-            .copy-btn:hover {
-                background: #1d4ed8;
-            }
-
-            .copy-btn:active {
-                transform: translateY(1px);
-            }
-
-            .copy-btn.copied {
-                animation: pwdCopyPulse .65s ease forwards;
-            }
-
-        @keyframes pwdCopyPulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(34, 197, 94, .5);
-                background: #22c55e;
-            }
-
-            50% {
-                transform: scale(1.06);
-                box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-            }
-
-            100% {
-                transform: scale(1);
-                background: #16a34a;
-            }
-        }
-
-        .pwd-tip {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #6b7280;
-        }
-    </style>
 </head>
 
 <body style="padding: 5px; height: 100%;">
@@ -468,83 +381,8 @@
                             $.ligerDialog.open({ url: "../System/Export.html?exporttype=pdf", modal: true });
                             break;
                     }
-                };
+                }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            // 密码展示与复制弹窗
-            showPasswordDialog: function (password) {
-                var me = this;
-
-                // 构建 DOM
-                var $wrap = $('<div class="pwd-dialog"></div>');
-                var $title = $('<div class="pwd-title"></div>').text('已为该用户初始化密码');
-                var $box = $('<div class="pwd-box"></div>');
-                var $pwd = $('<span class="pwd-text" title="点击复制按钮可复制"></span>').text(password || '');
-                var $btn = $('<button type="button" class="copy-btn" aria-label="复制密码">复制</button>');
-                var $tip = $('<div class="pwd-tip"></div>').text('点击“复制”后将自动关闭。');
-
-                $box.append($pwd).append($btn);
-                $wrap.append($title).append($box).append($tip);
-
-                // 先加入文档，便于作为 target 使用
-                $('body').append($wrap);
-
-                var dialog = $.ligerDialog.open({
-                    title: '初始化密码',
-                    target: $wrap,
-                    width: 420,
-                    height: 170,
-                    allowClose: true,
-                    isResize: false,
-                    modal: true,
-                    buttons: [],
-                    onClose: function () {
-                        // 清理 DOM
-                        $wrap.remove();
-                    }
-                });
-
-                var closeAfterAnim = function () {
-                    try { dialog && dialog.close(); } catch (e) { }
-                };
-
-                var triggerAnimatedClose = function () {
-                    var closed = false;
-
-                    $btn.addClass('copied').text('已复制');
-                    $btn.one('animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd', function () {
-                        if (closed) return;
-                        closed = true;
-                        setTimeout(closeAfterAnim, 120);
-                    });
-
-                    // 兜底：部分旧环境不触发 animationend
-                    setTimeout(function () {
-                        if (!closed) closeAfterAnim();
-                    }, 900);
-                };
-
-                var copyText = function (text) {
-                    // 优先使用 Clipboard API，一般只在安全上下文可用（localhost、https）
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(text).then(function () {
-                            triggerAnimatedClose();
-                        });
-                    } else {
-                        // 回退方案
-                        try {
-                            var $ta = $('<textarea style="position:absolute;left:-10000px;top:-10000px;"></textarea>').val(text).appendTo('body');
-                            $ta[0].select();
-                            document.execCommand('copy');
-                            $ta.remove();
-                        } catch (e) { }
-                        triggerAnimatedClose();
-                    }
-                };
-
-                $btn.on('click', function () {
-                    copyText($pwd.text());
-                });
             },
             doInitPassword: function () {
                 var me = this;
@@ -572,7 +410,18 @@
                             loading: '正在保存中...',
                             data: { id: row.USERID },
                             success: function (data) {
-                                me.showPasswordDialog(data);
+                                $.ligerDialog.open({
+                                    type: "success",
+                                    content: '密码被初始化为' + data,
+                                    buttons: [{
+                                        text: "复制并关闭",
+                                        onclick: function () {
+                                            var g = this, p = g.options;
+                                            p.parent.close();
+                                            navigator.clipboard.writeText(data);
+                                        }
+                                    }]
+                                });
                             },
                             error: function (message) {
                                 LG.showError(message);
@@ -716,7 +565,7 @@
             setForm: function () {
                 var me = this;
                 me.config.search.fields.removeNull();
-                var $formsearch = $("#formsearch");
+                var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
                     fields: me.config.search ? me.config.search.fields : [],
