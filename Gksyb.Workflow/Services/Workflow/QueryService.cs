@@ -153,6 +153,10 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<TaskInfoEx> TaskInfoAsync(TaskInfoRequest request)
         {
             TaskInfoEx info;
+            if (!string.IsNullOrWhiteSpace(request.CopyTaskId))
+            {
+                return await GetCopyTaskInfoInnerAsync(request);
+            }
             if (request.DoStartFlow)
             {
                 info = await GetTaskInfoInnerAsync(request);
@@ -164,11 +168,31 @@ namespace Gksyb.Workflow.Services.Workflow
             return info;
         }
 
+        private async Task<TaskInfoEx> GetCopyTaskInfoInnerAsync(TaskInfoRequest request)
+        {
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == request.CopyTaskId).Select(c => new WF_TASK()
+            {
+                FLOW_ID = c.FLOW_ID,
+                FLOW_FORM_DATA = c.FLOW_FORM_DATA
+            }).FirstOrDefaultAsync() ?? await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == request.CopyTaskId).Select(c => new WF_TASK()
+            {
+                FLOW_ID = c.FLOW_ID,
+                FLOW_FORM_DATA = c.FLOW_FORM_DATA
+            }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(task == null, $"找不到{request.CopyTaskId}的任务");
+            request.FlowId = task.FLOW_ID;
+            var info = await GetTaskInfoInnerAsync(request);
+            MessageException.ThrowIf(info == null, $"无权操作编号为{request.FlowCode ?? request.FlowId}的流程");
+            info.FormData = task.FLOW_FORM_DATA;
+            return info;
+        }
+
         /// <summary>
         /// 初始任务详情
         /// </summary>
         private async Task<TaskInfoEx> GetTaskInfoInnerAsync(TaskInfoRequest request)
         {
+
             return await _dbContext.Query<WF_FLOW>().Where(FilterCorp)
                 .WhereIfNotNullOrEmpty(request.FlowId, c => c.ID == request.FlowId)
                 .WhereIfNotNullOrEmpty(request.FlowCode, c => c.FLOW_CODE == request.FlowCode || c.ID == request.FlowCode)

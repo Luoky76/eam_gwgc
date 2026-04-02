@@ -98,6 +98,7 @@
             code: getQueryStringByName("code"),
             sid: getQueryStringByName("sid"),
             nid: getQueryStringByName("nid"),
+            cid: getQueryStringByName("cid"),
             taskId: getQueryStringByName("taskId"),
             isView: getQueryStringByName("isView"),
             split: "@#",
@@ -209,7 +210,7 @@
                     }, window._displayOptions);
                 }
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
-                if (me.isNew) {
+                if (me.isNew && !me.data.FormData) {
                     if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
                 else {
@@ -341,7 +342,7 @@
                     jsToken: true,
                     url: 'workflow/query/taskInfo',
                     loading: '正在获取中...',
-                    data: { Id: me.nid, TaskId: me.taskId, FlowId: me.sid, FlowCode: me.code },
+                    data: { Id: me.nid, TaskId: me.taskId, FlowId: me.sid, FlowCode: me.code, CopyTaskId:me.cid },
                     success: function (data) {
                         me.data = data || {};
                         me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
@@ -608,8 +609,9 @@
                     if (me.dialogData.code) me.code = me.dialogData.code;
                     if (me.dialogData.taskId) me.taskId = me.dialogData.taskId;
                     if (me.dialogData.nid) me.nid = me.dialogData.nid;
+                    if (me.dialogData.cid) me.cid = me.dialogData.cid;
                 }
-                if (!me.sid && !me.code && !me.nid && !me.taskId) {
+                if (!me.sid && !me.code && !me.nid && !me.taskId && !me.cid) {
                     LG.showError("参数不完整");
                     return;
                 }

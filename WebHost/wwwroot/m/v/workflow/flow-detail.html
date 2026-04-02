@@ -129,7 +129,7 @@
             }
             me.mainForm = app.mform.create(window._displayOptions);
             delete window._displayOptions;
-            if (me.nid) {
+            if (me.nid || me.data.FormData) {
                 me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
             }
             else {
@@ -227,7 +227,7 @@
                 jsToken: true,
                 async: false,
                 url: 'workflow/query/taskInfo',
-                data: { Id: param.id, FlowId: param.flowId, FlowCode: param.flowCode },
+                data: { Id: param.id, FlowId: param.flowId, FlowCode: param.flowCode, CopyTaskId: param.copyTaskId },
                 success: function (data) {
                     me.data = data || {};
                     var startType = "bpmn:startEvent";
