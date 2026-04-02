@@ -32,7 +32,7 @@
                             <div class="actions-button">
                                 <a href="${menu.Path}" class="${menu.Extend}">
                                     <div class="actions-button-media">
-                                        <i class="icon ${menu.MENUCSS}">${menu.MENUICON}</i>
+                                        ${menu.iconUrl ? $h`<img src="${menu.iconUrl}" alt="" />` : $h`<i class="icon ${menu.MENUCSS}">${menu.MENUICON}</i>`}
                                     </div>
                                     <div class="actions-button-text">${menu.MENUNAME}</div>
                                 </a>
@@ -52,7 +52,7 @@
                             <div class="actions-button">
                                 <a href="${menu.Path}" class="${menu.Extend}">
                                     <div class="actions-button-media">
-                                        <i class="icon ${menu.MENUCSS}">${menu.MENUICON}</i>
+                                        ${menu.iconUrl ? $h`<img src="${menu.iconUrl}" alt="" />` : $h`<i class="icon ${menu.MENUCSS}">${menu.MENUICON}</i>`}
                                     </div>
                                     <div class="actions-button-text">${menu.MENUNAME}</div>
                                 </a>

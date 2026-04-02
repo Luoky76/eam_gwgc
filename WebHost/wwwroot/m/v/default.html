@@ -70,8 +70,13 @@
                     componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html"
                 }, {
                     name: "flow-create",
-                    title: "单据详情",
+                    title: "发起流程",
                     path: "/flow-create/:flowCode",
+                    componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html",
+                }, {
+                    name: "flow-restart",
+                    title: "重新发起",
+                    path: "/flow-restart/:copyTaskId",
                     componentUrl: gksybConfigs.urlBase + "workflow/flow-detail.html",
                 });
             },
