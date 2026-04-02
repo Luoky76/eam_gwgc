@@ -108,8 +108,9 @@
                     menu.MENUURL = menu.MENUURL || "";
                     menu.MENUCSS = menu.MENUICON || "";
                     var array = menu.MENUCSS.split(" ");
-                    if (array.length > 1) {
-                        menu.MENUICON = array[array.length - 1];
+                    menu.MENUICON = array.length > 1 ? array[array.length - 1] : menu.MENUCSS;
+                    if (menu.MENUICON.includes('.')) {
+                        menu.iconUrl = window.gksybConfigs.apiBase + menu.MENUICON;
                     }
                     menu.Extend = "";
                     menu.Path = "/" + menu.MENUNO + "/";

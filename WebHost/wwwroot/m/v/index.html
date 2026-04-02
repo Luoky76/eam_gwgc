@@ -98,7 +98,7 @@
                     menu.MENUURL = menu.MENUURL || "";
                     menu.MENUCSS = menu.MENUICON || "";
                     var array = menu.MENUCSS.split(" ");
-                    menu.MENUICON = array.length > 1 ? array[array.length - 1] : menu.menuMENUCSS;
+                    menu.MENUICON = array.length > 1 ? array[array.length - 1] : menu.MENUCSS;
                     if (menu.MENUICON.includes('.')) {
                         menu.iconUrl = window.gksybConfigs.apiBase + menu.MENUICON;
                     }
