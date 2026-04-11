@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫码确认</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .app-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+
+        .qr-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .qr-info p {
+            color: #666666;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .btn-confirm {
+            background-color: #07c160;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            min-height: 48px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-confirm:hover {
+            background-color: #06ad56;
+        }
+
+        .btn-confirm:active {
+            background-color: #059a4b;
+        }
+
+        .btn-confirm:disabled {
+            background-color: #95d4a8;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background-color: #f5f5f5;
+            color: #666666;
+            border: none;
+            border-radius: 5px;
+            padding: 14px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            min-height: 48px;
+            margin-top: 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-cancel:hover {
+            background-color: #e8e8e8;
+        }
+
+        .btn-cancel:active {
+            background-color: #dcdcdc;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 25px 15px;
+            }
+
+            .app-name {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            .qr-info {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+
+            .qr-info p {
+                font-size: 13px;
+                margin-bottom: 6px;
+            }
+
+            .btn-confirm {
+                padding: 12px 30px;
+                font-size: 15px;
+                min-height: 44px;
+            }
+
+            .btn-cancel {
+                padding: 12px 30px;
+                font-size: 15px;
+                min-height: 44px;
+            }
+
+            .message {
+                margin-top: 12px;
+                font-size: 13px;
+            }
+        }
+    </style>
+    <script src="../lib/jquery/jquery.js" type="text/javascript"></script>
+    <script src="../lib/js/common.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="app-name"></div>
+        <div class="qr-info">
+            <p>您正在使用扫码登录</p>
+            <p>请确认是否允许登录操作</p>
+        </div>
+        <button class="btn-confirm">确认登录</button>
+        <button class="btn-cancel">取消登录</button>
+        <div class="message" id="message"></div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            init: function () {
+                var me = this;
+                var appName = getQueryStringByName("appname") || "应用授权";
+                $('.app-name').text(appName);
+                me.checkLogin();
+                me.$btn = $('.btn-confirm');
+                me.$btnCancel = $('.btn-cancel');
+                me.$message = $('#message');
+                me.$btn.on('click', function () {
+                    me.confirm();
+                });
+                me.$btnCancel.on('click', function () {
+                    me.cancel();
+                });
+            },
+            confirm: function () {
+                var me = this;
+                me.$btn.prop('disabled', true);
+                me.$btnCancel.prop('disabled', true);
+                me.$message.removeClass('success error').text('');
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    jsToken: true,
+                    _toLogin: true,
+                    url: 'qrcode/confirm',
+                    data: { token: getQueryStringByName("token"), userType: getQueryStringByName("userType") },
+                    success: function (result) {
+                        if (result.IsError) {
+                            me.showError(result.Message || '登录失败，请重试');
+                            me.$btn.prop('disabled', false);
+                            me.$btnCancel.prop('disabled', false);
+                            return;
+                        }
+                        me.showSuccess('登录成功');
+                        setTimeout(function () {
+                            me.closePage();
+                        }, 200);
+                    },
+                    error: function () {
+                        me.showError('网络错误，请重试');
+                        me.$btn.prop('disabled', false);
+                        me.$btnCancel.prop('disabled', false);
+                    }
+                });
+            },
+            isInWeixin: function () {//判断微信浏览器 如不是微信应用直接返回false
+                return (window.navigator.userAgent || "").indexOf("MicroMessenger") >= 0;
+            },
+            weixinOauth: function () {
+                var redirectUrl = location.origin + gksybConfigs.urlBase + "m/v/weixin/oauth.html";
+                redirectUrl += "?FromUrl=" + encodeURIComponent(topWindow.location.href);
+                redirectUrl = encodeURIComponent(redirectUrl);
+                $.ajax({
+                    type: 'post',
+                    async: false,
+                    noGlobal: true,
+                    url: 'weixin/authorizeurl',
+                    headers: {
+                        redirectUrl: redirectUrl
+                    },
+                    success: function (result) {
+                        if (result.IsError) {
+                            me.showError(result.Message || '登录失败，请重试');
+                            me.$btn.prop('disabled', false);
+                            me.$btnCancel.prop('disabled', false);
+                            return;
+                        }
+                        topWindow.location.href = result.Data;
+                    }
+                });
+            },
+            checkLogin: function () {
+                var me = this;
+                $.ajax({
+                    type: 'get',
+                    async: false,
+                    dataType: 'json',
+                    _toLogin: true,
+                    url: 'auth/isLogin',
+                    errorOther: function () {
+                        if (me.isInWeixin()) {
+                            return me.weixinOauth();
+                        }
+                        alert('请先登录');
+                        window._toLogin();
+                    }
+                });
+            },
+            cancel: function () {
+                this.closePage();
+            },
+            closePage: function () {
+                var me = this;
+                if (me.isInWeixin() && window.WeixinJSBridge) {
+                    WeixinJSBridge.call('closeWindow');
+                    return;
+                }
+                if (window.opener) {
+                    window.opener = null;
+                    window.open('', '_self');
+                    window.close();
+                } else {
+                    window.open('', '_self');
+                    window.close();
+                }
+            },
+            showSuccess: function (message) {
+                var me = this;
+                me.$message.removeClass('error').addClass('success').text(message);
+            },
+            showError: function (message) {
+                var me = this;
+                me.$message.removeClass('success').addClass('error').text(message);
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,455 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫码登录</title>
+    <!-- 兼容 IE10+ -->
+    <script src="qrcode.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background: #f5f5f5;
+            /* IE10+ 兼容，清除默认滚动条干扰 */
+            overflow: hidden;
+            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* 容器 */
+        .login-container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-align: center;
+            align-items: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        /* 二维码卡片 */
+        .qrcode-card {
+            width: 100%;
+            max-width: 360px;
+            max-height: 100%;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* 二维码容器 */
+        .qrcode-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+            padding-bottom: 100%;
+            margin: 0 auto;
+        }
+
+        #qrcode {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 刷新按钮 - 覆盖在二维码中间 */
+        .refresh-btn {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e5e5e5;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn.show {
+            display: -ms-flexbox;
+            display: flex;
+        }
+
+        .refresh-btn:hover {
+            background: #fff;
+            border-color: #1890ff;
+            box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+        }
+
+        .refresh-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        /* 刷新图标 */
+        .refresh-icon {
+            width: 24px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231890ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='23 4 23 10 17 10'%3E%3C/polyline%3E%3Cpolyline points='1 20 1 14 7 14'%3E%3C/polyline%3E%3Cpath d='M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15'%3E%3C/path%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .refresh-btn:hover .refresh-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+
+            to {
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 状态提示 */
+        .status-tip {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .status-tip .status-icon {
+            width: 24px;
+            height: 24px;
+            margin: 0 auto 8px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .status-tip .status-icon.normal {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352c41a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'%3E%3C/path%3E%3Cpolyline points='22 4 12 14.01 9 11.01'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        .status-tip .status-icon.expired {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff4d4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='15' y1='9' x2='9' y2='15'%3E%3C/line%3E%3Cline x1='9' y1='9' x2='15' y2='15'%3E%3C/line%3E%3C/svg%3E");
+        }
+
+        .status-tip .status-icon.scanning {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231890ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'%3E%3C/path%3E%3Cpolyline points='22 4 12 14.01 9 11.01'%3E%3C/polyline%3E%3C/svg%3E");
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .status-tip p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .status-tip p span {
+            color: #1890ff;
+        }
+
+        /* IE10+ 兼容样式 */
+        @media screen and (-ms-high-contrast: active),
+        screen and (-ms-high-contrast: none) {
+            .qrcode-card {
+                border-radius: 0;
+            }
+
+            .refresh-btn {
+                border-radius: 50%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="qrcode-card">
+            <div class="qrcode-wrapper">
+                <canvas id="qrcode"></canvas>
+                <button class="refresh-btn" id="refreshBtn" onclick="business.generate()">
+                    <div class="refresh-icon"></div>
+                </button>
+            </div>
+
+            <div class="status-tip" id="statusTip">
+                <div class="status-icon normal"></div>
+                <p></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            token: "",
+            init: function () {
+                var me = this;
+                me.baseUrl = me.getBaseUrl("../");
+                me.appid = me.getQueryStringByName("appid");
+                me.platform = me.getQueryStringByName("platform") || "微信";
+                me.$refreshBtn = document.getElementById('refreshBtn');
+                me.$statusTip = document.getElementById('statusTip');
+                me.$qrcode = document.getElementById('qrcode');
+                me.generate();
+            },
+            generate: function () {
+                var me = this;
+                me.$refreshBtn.className = 'refresh-btn';
+                me.setStatus('normal');
+                me.httpRequest({
+                    url: 'qrcode/generate',
+                    headers: {
+                        appid: me.appid
+                    },
+                    success: function (data, url) {
+                        me.token = data;
+                        if (url.indexOf("http") !== 0) {
+                            url = me.baseUrl + url;
+                        }
+                        me.platform = me.getQueryStringByName("platform", url) || me.platform;
+                        me.setCode(url);
+                        me.checkPolling();
+                    },
+                    beforeSend: function (jqXHR, options) {
+                        me.httpRequest({
+                            async: false,
+                            url: "qrcode/jstoken",
+                            dataType: "text",
+                            success: function (result) {
+                                eval(result);
+                            }
+                        });
+                    }
+                });
+            },
+            setCode: function (url) {
+                var me = this;
+                var wrapper = me.$qrcode.parentElement;
+                var size = wrapper ? wrapper.offsetWidth : (me.$qrcode.offsetWidth || 260);
+                QRCode.toCanvas(me.$qrcode, url, {
+                    width: size,
+                    margin: 1
+                }, function (error) {
+                    if (error) {
+                        me.error("二维码生成失败：" + error);
+                    }
+                });
+            },
+            checkPolling: function () {
+                var me = this;
+                if (me.pollingTimer) {
+                    clearInterval(me.pollingTimer);
+                }
+                me.pollingTimes = 0;
+                me.pollingTimer = setInterval(function () {
+                    try {
+                        if (me.pollingTimes > 0) {
+                            me.pollingTimes = me.pollingTimes - 1;
+                            return;
+                        }
+                        me.pollingTimes = 7;
+                        me.check();
+                    } catch (e) {
+                        me.error("二维码检查失败：" + e);
+                        me.pollingTimes = 1;
+                    }
+                }, 2000);
+            },
+            check: function () {
+                var me = this;
+                me.httpRequest({
+                    url: 'qrcode/check',
+                    headers: {
+                        token: me.token,
+                        appid: me.appid
+                    },
+                    success: function (data) {
+                        if (data === 0) {
+                            me.pollingTimes = 0;
+                            return;
+                        }
+                        if (data === 1) {
+                            me.setStatus('scanning');
+                            me.success();
+                            return;
+                        }
+                        me.expired();
+                    },
+                    error: function (msg, xhr) {
+                        me.error(msg, xhr);
+                        me.expired();
+                    }
+                });
+            },
+            success: function () {
+                var me = this;
+                me.stopPolling();
+                me.httpRequest({
+                    url: 'qrcode/sso',
+                    headers: {
+                        token: me.token,
+                        appid: me.appid,
+                        menuAppname: me.getQueryStringByName("menuAppname")
+                    },
+                    success: function (data) {
+                        window.localStorage.setItem("GksybTicket", data.Ticket);
+                        delete data.Ticket;
+                        window.localStorage.setItem("GksybData", JSON.stringify(data));
+                        var toUrl = me.getQueryStringByName("redirect_uri") || (me.baseUrl + "index.html");
+                        if (toUrl.indexOf("http") === 0 && toUrl.indexOf(me.baseUrl) !== 0) {
+                            toUrl = me.baseUrl + "index.html";
+                        }
+                        window.open(toUrl, "_top", "noreferrer noopener");
+                    },
+                    beforeSend: function (jqXHR, options) {
+                        me.httpRequest({
+                            async: false,
+                            url: "qrcode/jstoken",
+                            dataType: "text",
+                            success: function (result) {
+                                eval(result);
+                            }
+                        });
+                    }
+                });
+            },
+            stopPolling: function () {
+                var me = this;
+                if (me.pollingTimer) {
+                    clearInterval(me.pollingTimer);
+                    me.pollingTimer = null;
+                }
+            },
+            expired: function () {
+                var me = this;
+                me.stopPolling();
+                me.setStatus('expired');
+                if (me.$refreshBtn) {
+                    me.$refreshBtn.className = 'refresh-btn show';
+                }
+            },
+            setStatus: function (status) {
+                var me = this;
+                var icon = me.$statusTip ? me.$statusTip.querySelector('.status-icon') : null;
+                var p = me.$statusTip ? me.$statusTip.querySelector('p') : null;
+
+                if (icon) {
+                    icon.className = 'status-icon ' + status;
+                }
+
+                if (p) {
+                    if (status === 'normal') {
+                        p.innerHTML = '使用 <span>' + me.platform + '</span> 扫码登录';
+                    } else if (status === 'scanning') {
+                        p.innerHTML = '正在登录...';
+                    } else if (status === 'expired') {
+                        p.innerHTML = '二维码已过期，请点击刷新';
+                    }
+                }
+            },
+            getQueryStringByName: function (name, url) {
+                url = url || location.search;
+                var result = url.match(new RegExp("[\\?\\&]" + name + "=([^\\&]+)", "i"));
+                if (result == null || result.length < 1) {
+                    return "";
+                }
+                return decodeURIComponent(result[1]);
+            },
+            getBaseUrl: function (root) {
+                var url = (location.origin + location.pathname);
+                return url.substring(0, url.lastIndexOf("/") + 1) + root;
+            },
+            error: function (msg, xhr) {
+                msg = xhr ? (xhr.status || "") + " " + (xhr.statusText || "") + " " + msg : msg;
+                if (console && console.error) {
+                    console.error(msg);
+                }
+            },
+            httpRequest: function (p) {
+                var me = this;
+                p.async = p.async !== false;
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", me.baseUrl + p.url, p.async);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                if (p.async) {
+                    xhr.timeout = p.timeout || 10 * 1000;
+                }
+                if (p.headers) {
+                    for (var key in p.headers) {
+                        xhr.setRequestHeader(key, p.headers[key]);
+                    }
+                }
+                p.error = p.error || me.error;
+                xhr.onload = function onload() {
+                    var errorMsg;
+                    if (xhr.status === 200) {
+                        if (p.dataType === "text") {
+                            if (p.dataType) p.success(xhr.responseText);
+                            return;
+                        }
+                        try {
+                            var res = JSON.parse(xhr.responseText);
+                            if (!res.IsError) {
+                                p.success && p.success(res.Data, res.Message);
+                                return;
+                            }
+                            errorMsg = res.Message;
+                        } catch (err) {
+                            errorMsg = err;
+                        }
+                    }
+                    p.error(errorMsg, xhr);
+                };
+                xhr.onerror = function onerror() {
+                    p.error("error", xhr);
+                };
+                xhr.ontimeout = function () {
+                    p.error("timeout", xhr);
+                };
+                if (p.beforeSend) p.beforeSend(xhr, p);
+                xhr.send(p.data ? JSON.stringify(p.data) : null);
+            }
+        };
+        business.init();
+    </script>
+</body>
+
+</html>
