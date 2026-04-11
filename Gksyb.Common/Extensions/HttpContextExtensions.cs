@@ -45,7 +45,7 @@ namespace Gksyb.Common
             {
                 if (value != "undefined") return value;
             }
-            if (HttpMethods.IsGet(source.Request.Method))
+            if (HttpMethods.IsGet(source.Request.Method) && !source.Request.IsAjax())
             {
                 return source.GetUID(false);
             }
