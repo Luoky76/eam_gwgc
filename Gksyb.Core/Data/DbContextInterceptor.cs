@@ -11,11 +11,14 @@ namespace Chloe.Infrastructure.Interception
     /// </summary>
     public class DbContextInterceptor : IDbContextInterceptor
     {
+        private static readonly Type LOG_TYPE = typeof(SYS_LOG);
+
         /// <summary>
         /// 插入写入日志
         /// </summary>
         public void Insert(IDbContext dbContext, TypeDescriptor typeDescriptor, DbInsertExpression dbExpression)
         {
+            if (typeDescriptor.EntityType == LOG_TYPE) return;
             if (dbContext.IsDisableDbLog()) return;
             if (typeDescriptor.Definition.NotDbLog()) return;
             var keys = new List<object>();
@@ -47,6 +50,7 @@ namespace Chloe.Infrastructure.Interception
         /// </summary>
         public void Update(IDbContext dbContext, TypeDescriptor typeDescriptor, DbUpdateExpression dbExpression, IEntityState entityState)
         {
+            if (typeDescriptor.EntityType == LOG_TYPE) return;
             if (dbContext.IsDisableDbLog()) return;
             if (typeDescriptor.Definition.NotDbLog()) return;
             var keys = new List<object>();
@@ -81,6 +85,7 @@ namespace Chloe.Infrastructure.Interception
         /// </summary>
         public void Delete(IDbContext dbContext, TypeDescriptor typeDescriptor, DbDeleteExpression dbExpression, object entity)
         {
+            if (typeDescriptor.EntityType == LOG_TYPE) return;
             if (dbContext.IsDisableDbLog()) return;
             if (typeDescriptor.Definition.NotDbLog()) return;
             var keys = new List<object>();

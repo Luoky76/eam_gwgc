@@ -65,10 +65,6 @@ l-grid {
     height: 1px;
 }
 
-.l-grid-hashorizontal .l-grid-body .l-jplace {
-    height: 19px;
-}
-
 .l-grid-dragging-line {
     position: absolute;
     z-index: 9999;
@@ -145,6 +141,11 @@ l-grid {
     width: 100%;
     border-bottom: 1px solid #e9eaec;
     background: #f8f8f9;
+}
+
+.l-grid-header-inner, .l-grid2 table, .l-grid2 tbody, .l-grid2 tr,
+.l-panel-bwarp, .l-panel-body, .l-grid, .l-grid2, .l-grid-body, .l-grid-body-inner {
+    background-color: inherit;
 }
 
 .l-grid-hd-cell {
@@ -267,7 +268,7 @@ l-grid {
 }
 
 .l-grid-row-alt {
-    background: #f8f8f9;
+    background: #f8f8f9 !important;
 }
 
 .l-panel-bar {
@@ -389,7 +390,7 @@ l-grid {
 }
 
 .l-selected .l-grid-row-cell {
-    background: #fff6e5;
+    background: #fff6e5 !important;
 }
 
 .l-selected .l-grid-row-cell-checkbox .l-checkbox,
@@ -669,11 +670,6 @@ l-grid {
         padding: 0;
     }
 
-    .l-grid-header-columns .l-checkbox-wrapper {
-        display: block;
-        padding: 3px 10px;
-    }
-
 .l-grid-header-customFilter {
     position: absolute;
     top: 100px;
@@ -696,3 +692,43 @@ l-grid {
         text-align: center;
         margin-top: 10px;
     }
+
+.l-grid-cell-fix-right {
+    position: static; /*不支持sticky兼容处理*/
+    position: sticky !important;
+    z-index: 2;
+    right: 0px
+}
+
+.l-gridview-hashorizontal .l-grid-cell-fix-right {
+    background: inherit;
+    border-right: none !important;
+}
+
+    .l-gridview-hashorizontal .l-grid-cell-fix-right::after {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        bottom: 0px;
+        content: "";
+        border-right: 1px solid #e9eaec;
+    }
+
+    .l-gridview-hashorizontal .l-grid-cell-fix-right.l-grid-cell-fix-right-first::before {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        bottom: 0px;
+        content: "";
+        border-left: 2px solid #dddee1;
+    }
+
+.l-grid-hd-cell.l-grid-hd-cell-place {
+    border: none !important;
+    visibility: hidden !important;
+}
+
+.l-grid-row-cell.l-grid-row-cell-place {
+    border: none !important;
+    visibility: hidden !important;
+}

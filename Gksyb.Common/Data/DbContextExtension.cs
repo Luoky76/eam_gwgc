@@ -5,8 +5,6 @@ using Chloe.Entity;
 using Chloe.Extension;
 using Chloe.Infrastructure;
 using Gksyb.Common;
-using Gksyb.Common.Data;
-using System.Data;
 using System.Linq.Expressions;
 
 namespace Chloe
@@ -33,7 +31,8 @@ namespace Chloe
             var row = await task;
             if (row < 1)
             {
-                source.TryGetTrackedEntityState(entity).Fakes.Clear();
+                IEntityState entityState = source.TryGetTrackedEntityState(entity);
+                entityState?.Fakes.Clear();
                 return await source.InsertAsync(entity);
             }
             return entity;
@@ -146,6 +145,7 @@ namespace Chloe
         }
 
         private static double _diff = 0;
+
         /// <summary>
         /// 获取数据库时间 默认会进行缓存 超过1秒会重新获取
         /// </summary>

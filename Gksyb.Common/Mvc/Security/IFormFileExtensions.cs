@@ -26,6 +26,11 @@ namespace Microsoft.AspNetCore.Http
         public const string Auth = "auth";
 
         /// <summary>
+        /// 安全文件名过滤
+        /// </summary>
+        private static readonly Regex SAFE_NAME = new(@"[\\\/\:\*\?\042\<\>\|]");
+
+        /// <summary>
         /// 文件压缩
         /// </summary>
         /// <param name="source">上传文件</param>
@@ -90,11 +95,12 @@ namespace Microsoft.AspNetCore.Http
         public static async Task<string> SaveAs(this IFormFile source, string folder = null, string fileName = null, bool isCreateDayDirectory = false)
         {
             folder ??= "";
-            folder = new Regex(@"[\\\/\:\*\?\042\<\>\|]").Replace(folder, "");
+            folder = SAFE_NAME.Replace(folder, "");
             var now = DateTime.Now;
             var path = Path.Combine(folder, now.ToString("yyyyMM"), isCreateDayDirectory ? now.ToString("dd") : "");
             var emptyName = string.IsNullOrWhiteSpace(fileName);
             if (emptyName) fileName = $"{GuidHelper.NewShortId()}_{source.FileName[Math.Max(0, source.FileName.Length - 120)..]}";
+            fileName = SAFE_NAME.Replace(fileName, "");
             return await Save(source, Path.Combine(path, fileName), !emptyName);
         }
 

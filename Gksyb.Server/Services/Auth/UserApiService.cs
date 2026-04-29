@@ -195,6 +195,7 @@ namespace Gksyb.Server.Services.Auth
                 {
                     var corp = corps.Find(c => c.CorpID == a.CORPID);
                     if (corp == null) return;
+                    corp = corp.MapTo<CorpInfo>();
                     corp.Station = (a.REMARK ?? "").Split(",").DistinctAndOrderBy().ToList();
                     user.Corps.Add(corp);
                 });

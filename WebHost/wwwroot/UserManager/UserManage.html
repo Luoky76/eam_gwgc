@@ -204,19 +204,115 @@
                 me.loadToolbar();
                 me.bindGridEvent();
             },
-            transferSelect: function (detailType, name, url, width, height, options) {
+            roleSelect: function (name, url) {
                 var me = this;
+                //me.transferSelect("角色", name, url);
+                me.transferGridSelect("角色", name, url, {
+                    leftWidth: '38%',
+                    options: {
+                        grid2: {
+                            enabledEdit: true,
+                            clickToEdit: true,
+                            columns: [
+                                { display: "角色", name: "TEXT", type: "text" },
+                                {
+                                    display: "组织", name: "Port", type: "select", minWidth: 180, editor: {
+                                        isMultiSelect: true, split: ",",
+                                        type: 'select', data: me.dataCorp
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }, "RoleCorp");
+            },
+            corpSelect: function (name, url) {
+                var me = this;
+                var options = {
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    columns: [
+                        { display: "组织", name: "TEXT", type: "text" },
+                        {
+                            display: "岗位", name: "Port", type: "select", minWidth: 180, editor: {
+                                isMultiSelect: true, split: ",",
+                                type: 'select', data: me.dataStation
+                            }
+                        }
+                    ]
+                };
+                //me.treeGridSelect("组织", name, url, {
+                //    leftWidth: '38%',
+                //    options: options
+                //}, "CorpStation");
+                me.transferGridSelect("组织", name, url, {
+                    leftWidth: '38%',
+                    options: {
+                        grid2: options
+                    }
+                }, "CorpStation");
+            },
+            selectCallBack: function (row, values, rows, name, portName) {
+                var me = this;
+                var newRowData = {};
+                if (portName) {
+                    var ports = {};
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var item = rows[i];
+                        ports[item.ID] = item.Port;
+                    }
+                    newRowData[portName] = ports;
+                }
+                newRowData[name] = values.join(",");
+                me.grid.updateRow(row, newRowData);
+            },
+            transferGridSelect: function (detailType, name, url, options, portName, width, leftWidth, height) {
+                var me = this;
+                options = options || {};
                 var row = me.grid.getSelectedRow();
-                options = $.extend({
+                options = $.extend(true, {
                     url: url,
                     display: detailType,
                     values: row[name],
-                    options: options,
-                    callback: function (values) {
-                        var newRowData = {};
-                        newRowData[name] = values.join(",");
-                        me.grid.updateRow(row, newRowData);
+                    callback: function (values, rows) {
+                        me.selectCallBack(row, values, rows, name, portName);
+                    },
+                    options: {
+                        grid2: {
+                            ports: (portName ? row[portName] : null),
+                            onLoadData: function (data) {
+                                if (!data) return;
+                                var g = this, p = g.options;
+                                if (!p.ports) return;
+                                var rows = data[p.root];
+                                for (var i = 0, l = rows.length; i < l; i++) {
+                                    var row = rows[i];
+                                    row.Port = p.ports[row.ID];
+                                }
+                            }
+                        }
                     }
+                }, options);
+                $.ligerDialog.open({
+                    width: width || 600,
+                    height: height || 500,
+                    title: '挑选' + detailType,
+                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
+                    isResize: true,
+                    slide: false,
+                    data: options
+                });
+            },
+            transferSelect: function (detailType, name, url, width, height, options) {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                options = $.extend(true, {
+                    url: url,
+                    display: detailType,
+                    values: row[name],
+                    callback: function (values, rows) {
+                        me.selectCallBack(row, values, rows, name);
+                    },
                 }, options);
                 $.ligerDialog.open({
                     width: width || 350,
@@ -229,51 +325,17 @@
                     data: options
                 });
             },
-            roleSelect: function (name, url) {
-                var me = this;
-                me.userPortSelect("角色", name, url, "RoleCorp", [
-                    { display: "角色", name: "TEXT", type: "text" },
-                    {
-                        display: "组织", name: "Port", type: "select", minWidth: 180, editor: {
-                            isMultiSelect: true, split: ",",
-                            type: 'select', data: me.dataCorp
-                        }
-                    }
-                ]);
-            },
-            corpSelect: function (name, url) {
-                var me = this;
-                me.userPortSelect("组织", name, url, "CorpStation", [
-                    { display: "组织", name: "TEXT", type: "text" },
-                    {
-                        display: "岗位", name: "Port", type: "select", minWidth: 180, editor: {
-                            isMultiSelect: true, split: ",",
-                            type: 'select', data: me.dataStation
-                        }
-                    }
-                ]);
-            },
-            userPortSelect: function (detailType, name, url, portName, columns) {
+            treeGridSelect: function (detailType, name, url, options, portName, width, height) {
                 var me = this;
                 var row = me.grid.getSelectedRow();
-                me.transferGridSelect(detailType, name, url, 600, 500, {
-                    leftWidth: '38%',
-                    callback: function (values, rows) {
-                        var ports = {};
-                        for (var i = 0, l = rows.length; i < l; i++) {
-                            var item = rows[i];
-                            ports[item.ID] = item.Port;
-                        }
-                        var newRowData = {};
-                        if (portName) newRowData[portName] = ports;
-                        newRowData[name] = values.join(",");
-                        me.grid.updateRow(row, newRowData);
-                    },
-                    grid2: {
+                options = options || {};
+                options = $.extend(true, {
+                    url: url,
+                    display: detailType,
+                    values: row[name],
+                    options: {
                         ports: (portName ? row[portName] : null),
-                        enabledEdit: true,
-                        clickToEdit: true,
-                        onLoadData: function (data) {
+                        onSuccess: function (data) {
                             var g = this, p = g.options;
                             if (!p.ports) return;
                             var rows = data[p.root];
@@ -281,31 +343,17 @@
                                 var row = rows[i];
                                 row.Port = p.ports[row.ID];
                             }
-                        },
-                        columns: columns
-                    }
-                });
-            },
-            transferGridSelect: function (detailType, name, url, width, height, options) {
-                var me = this;
-                options = options || {};
-                var row = me.grid.getSelectedRow();
-                options = $.extend({
-                    url: url,
-                    display: detailType,
-                    values: row[name],
-                    options: options,
-                    callback: function (values) {
-                        var newRowData = {};
-                        newRowData[name] = values.join(",");
-                        me.grid.updateRow(row, newRowData);
+                        }
+                    },
+                    callback: function (values, rows) {
+                        me.selectCallBack(row, values, rows, name, portName);
                     }
                 }, options);
                 $.ligerDialog.open({
-                    width: width || 500,
+                    width: width || 600,
                     height: height || 500,
                     title: '挑选' + detailType,
-                    url: window.gksybConfigs.urlBase + "popup-select/transfer-grid.html",
+                    url: window.gksybConfigs.urlBase + "popup-select/tree-grid.html",
                     isResize: true,
                     slide: false,
                     data: options
@@ -369,7 +417,18 @@
                             loading: '正在保存中...',
                             data: { id: row.USERID },
                             success: function (data) {
-                                LG.showSuccess('密码被初始化为' + data);
+                                $.ligerDialog.open({
+                                    type: "success",
+                                    content: '密码被初始化为' + data,
+                                    buttons: [{
+                                        text: "复制并关闭",
+                                        onclick: function () {
+                                            var g = this, p = g.options;
+                                            p.parent.close();
+                                            navigator.clipboard.writeText(data);
+                                        }
+                                    }]
+                                });
                             },
                             error: function (message) {
                                 LG.showError(message);

@@ -10,13 +10,19 @@ namespace Gksyb.Common.Data
     {
         static PostgreSQLConnectionFactory()//初始化
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+
             var methodHandlerDic = new Dictionary<string, IMethodHandler>()
             {
                 {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
                 {Compare_Handler.MethodName, new Compare_Handler()},
                 {Contains_Handler.MethodName, new Contains_Handler()},
                 {SumString_Handler.MethodName, new SumString_Handler()},
-                {MathAbs_Handler.MethodName, new MathAbs_Handler()}
+                {MathAbs_Handler.MethodName, new MathAbs_Handler()},
+                {MathRound_Handler.MethodName, new MathRound_Handler()},
+                {MathFloor_Handler.MethodName, new MathFloor_Handler()},
+                {MathCeiling_Handler.MethodName, new MathCeiling_Handler()}
             };
             foreach (var item in methodHandlerDic)
             {

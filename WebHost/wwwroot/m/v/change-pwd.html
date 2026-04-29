@@ -32,18 +32,6 @@
                                     <i class="f7-icons">person</i>
                                 </div>
                                 <div class="item-inner">
-                                    <div class="item-title item-floating-label">账号</div>
-                                    <div class="item-input-wrap">
-                                        <input type="text" id="username" name="username" placeholder="请输入账号" required validate trim />
-                                        <span class="input-clear-button"></span>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="item-content item-input">
-                                <div class="item-media">
-                                    <i class="f7-icons">person</i>
-                                </div>
-                                <div class="item-inner">
                                     <div class="item-title item-floating-label">旧密码</div>
                                     <div class="item-input-wrap">
                                         <span class="toggle-password">👁️</span>
@@ -109,12 +97,11 @@
                     app.dialog.error('两次密码输入不一致。');
                     return;
                 }
-                formData.username = encrypt(formData.username);
                 formData.oldpassword = encrypt(formData.oldpassword);
                 formData.newpassword = encrypt(formData.newpassword);
                 app.ajax({
                     noGlobal: true,
-                    url: 'Auth/ChangePassword',
+                    url: 'auth/changePassword',
                     jsToken: true,
                     tokenOptions: {
                         url: "auth/logintoken"
@@ -130,17 +117,23 @@
                     }
                 });
             },
+            checkPassword: function () {
+                app.ajax({
+                    url: 'auth/getPasswordInfo',
+                    success: function (result) {
+                        if (result && !result.IsError) {
+                            app.dialog.alert(result.Data || "请修改密码");
+                        } else {
+                            app.dialog.alert(result.Message);
+                        }
+                    }
+                });
+            },
             //事件绑定
             eventBind: function () {
                 var me = this;
                 $$("#btnLogin").off("click").click(function () {
                     me.submit();
-                });
-                $$("#username").keydown(function (e) {
-                    if (e.keyCode == 13) {
-                        e.preventDefault();
-                        $$("#oldpassword").focus();
-                    }
                 });
                 $$("#oldpassword").keydown(function (e) {
                     if (e.keyCode == 13) {
@@ -165,6 +158,7 @@
             init: function () {
                 var me = this;
                 me.eventBind();
+                me.checkPassword();
             }
         };
         business.init();

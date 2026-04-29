@@ -63,7 +63,7 @@ namespace Gksyb.Common.TCP
         /// <summary>
         /// 接到数据
         /// </summary>
-        public event Func<ClientInfo, byte[], SocketError> OnReceive;
+        public event Func<ClientInfo, byte[], int, int, SocketError> OnReceive;
 
         /// <summary>
         /// 发送数据
@@ -110,7 +110,10 @@ namespace Gksyb.Common.TCP
             _connected = false;
             _server = endPoint;
             _connectEventArgs.RemoteEndPoint = _server;
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp)
+            {
+                NoDelay = true,
+            };
             _logger?.LogError(_logPath, $"准备连接：{_server}");
             if (!socket.ConnectAsync(_connectEventArgs))
             {
@@ -242,14 +245,14 @@ namespace Gksyb.Common.TCP
             var result = SocketError.Success;
             if (_client.Packet != null)
             {
-                result = _client.Packet.PackHandle(buffer, bytes =>
+                result = _client.Packet.PackHandle(buffer, (bytes, packIndex, remaining) =>
                 {
-                    return OnReceive?.Invoke(_client, bytes) ?? SocketError.Success;
+                    return OnReceive?.Invoke(_client, bytes, packIndex, remaining) ?? SocketError.Success;
                 });
             }
             else
             {
-                result = OnReceive?.Invoke(_client, buffer) ?? SocketError.Success;
+                result = OnReceive?.Invoke(_client, buffer, 1, 0) ?? SocketError.Success;
             }
             if (result == SocketError.Success)
                 return true;

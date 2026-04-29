@@ -199,6 +199,7 @@ namespace Gksyb.Common.Data
             sql = Regex.Replace(sql, @":(\w+)", "@$1");
             sql = Regex.Replace(sql, @"{Sysdate}", "now()", RegexOptions.IgnoreCase);
             sql = Regex.Replace(sql, @"\b(sysdate)\b", "now()", RegexOptions.IgnoreCase);
+            sql = Regex.Replace(sql, @"\b(from)\b\s*\b(dual)\b[\s\S]*", "", RegexOptions.IgnoreCase);
             return sql;
         }
 

@@ -2,14 +2,17 @@
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Server.Services.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using IOFile = System.IO.File;
 
 namespace Gksyb.Server.Controllers.Auth
 {
     /// <summary>
     /// 菜单管理
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class MenuController : BaseController
     {
         private readonly MenuService _service;
@@ -51,6 +54,30 @@ namespace Gksyb.Server.Controllers.Auth
         public async Task<AjaxResult> SaveAsync(SaveRequest<SYS_MENU> request)
         {
             return await _service.Save(request);
+        }
+
+        /// <summary>
+        /// 生成图标
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> GenerateAsync(string appname)
+        {
+            await _service.GenerateAsync(appname);
+            return AjaxResult.Success();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("[action]/{prefix}.json")]
+        public IActionResult IConify([FromServices] IWebHostEnvironment environment, string prefix)
+        {
+            var rootPath = Path.GetFullPath(Path.Combine(environment.WebRootPath, "vben", "iconify")) + Path.DirectorySeparatorChar;
+            var filePath = Path.GetFullPath(Path.Combine(rootPath, $"{prefix}.json"));
+            MessageException.ThrowIf(!filePath.StartsWith(rootPath), "路径错误");
+            if (!IOFile.Exists(filePath))
+            {
+                return NotFound($"找不到 {prefix}.json 文件");
+            }
+            return PhysicalFile(filePath, "application/json");
         }
     }
 }

@@ -41,6 +41,7 @@
                             { display: "组织类型", name: "CLASSFLAG", type: "select", format: { data: me.dataCorpType } },
                             { display: "上级组织", name: "CORPPARENTID", type: "select", format: { data: me.dataCorp } },
                             { display: "客户组织英文全称", name: "CORP_ENAME", width: 100, type: "text", align: "center" },
+                            { display: "排序", name: "CORP_SORT", width: 100, type: "int" },
                             { display: "通讯地址", name: "CORP_ADDRESS", width: 100, type: "text", align: "center" },
                             { display: "公司联系电话", name: "CORP_TELE", width: 100, type: "text", align: "center" },
                             { display: "公司传真", name: "CORP_FAX", width: 100, type: "text", align: "center" },
@@ -93,7 +94,7 @@
                             rules: []
                         })
                     },
-                    sortName: 'CORPPARENTID,CORP_SNAME',
+                    sortName: 'CORP_SORT,CORPPARENTID,CORP_SNAME',
                     sortOrder: 'asc',
                     width: '100%',
                     height: '100%',

@@ -43,7 +43,7 @@ namespace Gksyb.Model.Core
         /// 连接字符串
         /// </summary>
         [Description("连接字符串")]
-        [Column(DbType = DbType.AnsiString, Size = 500)]
+        [Column(DbType = DbType.AnsiString, Size = 2000)]
         public string CONNSTR { get; set; }
 
         /// <summary>

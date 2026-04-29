@@ -63,7 +63,7 @@ namespace Gksyb.Server.Services.Auth
                 var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
                 query = query.Where(c => corpids.Contains(c.CORPID));
             }
-            return await query.Select(c => new { ID = c.CORPID, TEXT = c.CORP_SNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
+            return await query.Select(c => new { ID = c.CORPID, PID = c.CORPPARENTID, TEXT = c.CNAME, VALUE = c.VALIDFLAG, c.CLASSFLAG })
                 .GetGridData(request);
         }
 
@@ -79,8 +79,8 @@ namespace Gksyb.Server.Services.Auth
                 .WhereIf(!_user.IsOurCompany, c => (c.CLASS ?? "0") == "0");
             if (user.ROLE != null)
             {
-                var roleid = user.ROLE.CastTo<long>();
-                query = query.Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && a.ROLEID == roleid).Any());
+                var roleid = user.ROLE.Split(",").DistinctAndOrderBy().Select(c => c.CastTo<long?>()).ToList();
+                query = query.Where(c => _dbContext.Query<CF_USERROLE>().Where(a => a.USERID == c.USERID && roleid.Contains(a.ROLEID)).Any());
             }
             query = FilterCorp(query, user.CORP);
             var data = await query.MapTo<UserRequest>().Exclude(a => new { a.LOGINPASSWORD, a.RECORDSTATUS }).GetGridData(request);
@@ -263,8 +263,8 @@ namespace Gksyb.Server.Services.Auth
             Expression<Func<CF_USERROLE, bool>> condition = c => c.USERID == entity.USERID && c.APPNAME == _options.RoleAppName;
             if (!_user.IsAdmin)//非管理员去除非所属公司
             {
-                roleCondition = (Expression<Func<CF_ROLE, bool>>)roleCondition.And((Expression<Func<CF_ROLE, bool>>)(c => c.CORPID == null || corpids.Contains(c.CORPID)));
-                Expression<Func<CF_USERROLE, bool>> conditionAppend = c => _dbContext.Query<CF_ROLE>(a => a.ROLEID == c.ROLEID && (a.CORPID == null || corpids.Contains(a.CORPID))).Any();
+                roleCondition = (Expression<Func<CF_ROLE, bool>>)roleCondition.And((Expression<Func<CF_ROLE, bool>>)(c => c.ROLEID != _options.AdminRole && c.CORPID == null || corpids.Contains(c.CORPID)));
+                Expression<Func<CF_USERROLE, bool>> conditionAppend = c => _dbContext.Query<CF_ROLE>(a => c.ROLEID != _options.AdminRole && a.ROLEID == c.ROLEID && (a.CORPID == null || corpids.Contains(a.CORPID))).Any();
                 condition = (Expression<Func<CF_USERROLE, bool>>)condition.And(conditionAppend);
             }
             var roles = await _dbContext.Query<CF_ROLE>().Where(roleCondition).Select(c => c.ROLEID).ToListAsync();
@@ -310,11 +310,11 @@ namespace Gksyb.Server.Services.Auth
         {
             await UserPortHandle(entity.LOGINNAME, entity.CORP, null, (condition, newIds) =>
             {
-                if (_user.IsAdmin) return;
+                if (_user.IsAdmin) return condition;
                 var userIds = _user.AllCorps.Select(c => c.CorpID).ToList();
                 newIds.RemoveAll(c => !userIds.Exists(a => a == c));
                 Expression<Func<CF_USER_PORT, bool>> conditionAppend = c => userIds.Contains(c.CORPID);
-                condition = (Expression<Func<CF_USER_PORT, bool>>)condition.And(conditionAppend);
+                return (Expression<Func<CF_USER_PORT, bool>>)condition.And(conditionAppend);
             }, corpid =>
             {
                 return entity.CorpStation?.ContainsKey(corpid) == true ? entity.CorpStation[corpid] : null;
@@ -325,12 +325,15 @@ namespace Gksyb.Server.Services.Auth
         /// 用户对应表处理
         /// </summary>
         /// <returns></returns>
-        private async Task UserPortHandle(string loginName, string ports, string optype = null, Action<Expression<Func<CF_USER_PORT, bool>>, List<string>> action = null, Func<string, string> remarkHandle = null)
+        private async Task UserPortHandle(string loginName, string ports, string optype = null, Func<Expression<Func<CF_USER_PORT, bool>>, List<string>, Expression<Func<CF_USER_PORT, bool>>> action = null, Func<string, string> remarkHandle = null)
         {
             if (string.IsNullOrWhiteSpace(optype)) optype = _opertype;
             var newIds = (ports ?? "").Split(',').DistinctAndOrderBy().ToList();
             Expression<Func<CF_USER_PORT, bool>> condition = c => c.LOGINNAME == loginName && c.OPTYPE == optype && c.APPNAME == _options.UserAppName;
-            action?.Invoke(condition, newIds);
+            if (action != null)
+            {
+                condition = action.Invoke(condition, newIds);
+            }
             var oldIds = (await _dbContext.Query<CF_USER_PORT>().Where(condition).ToListAsync()).Select(c => $"{c.CORPID}{c.REMARK}").Join();
             var userPorts = new List<CF_USER_PORT>();
             foreach (var data in newIds)
@@ -364,18 +367,19 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         private IQuery<CF_USER> FilterCorp(IQuery<CF_USER> query, string corp = null)
         {
+            var corps = (corp ?? "").Split(",").DistinctAndOrderBy().ToList();
             if (_user.IsAdmin)
             {
-                if (string.IsNullOrWhiteSpace(corp)) return query;
+                if (corps.Count < 1) return query;
                 query = query.Where(c => _dbContext.Query<CF_USER_PORT>().Where(a => a.LOGINNAME == c.LOGINNAME
-                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && a.CORPID == corp).Any());
+                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && corps.Contains(a.CORPID)).Any());
                 return query;
             }
             var corpids = _user.AllCorps.Select(c => c.CorpID).ToList();
-            if (!string.IsNullOrWhiteSpace(corp))
+            if (corps.Count > 0)
             {
                 query = query.Where(c => _dbContext.Query<CF_USER_PORT>().Where(a => a.LOGINNAME == c.LOGINNAME
-                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && corpids.Contains(a.CORPID) && a.CORPID == corp).Any());
+                && a.APPNAME == c.APPNAME && a.OPTYPE == _opertype && corpids.Contains(a.CORPID) && corps.Contains(a.CORPID)).Any());
             }
             else
             {

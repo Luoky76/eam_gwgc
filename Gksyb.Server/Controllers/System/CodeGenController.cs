@@ -13,7 +13,7 @@ namespace Gksyb.Server.Controllers.System
     /// <summary>
     /// 代码生成
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class CodeGenController : BaseController
     {
         private readonly CodeGenService _service;
@@ -48,6 +48,15 @@ namespace Gksyb.Server.Controllers.System
         public async Task<AjaxResult> LinkSaveAsync(SaveRequest<TDBLINK> request)
         {
             return await _service.LinkSaveAsync(request);
+        }
+
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        public AjaxResult DoEncrypt(string data)
+        {
+            string encrypt = TDBLINKExtensions.Encrypt(data);
+            return AjaxResult.Success(encrypt, default);
         }
 
         /// <summary>

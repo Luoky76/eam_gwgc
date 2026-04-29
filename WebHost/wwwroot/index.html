@@ -759,8 +759,21 @@
                 }
                 if (window.tempStorage) window.tempStorage = null;
             },
+            checkPassword: function () {
+                var me = this;
+                LG.ajax({
+                    async:false,
+                    url: 'auth/getPasswordInfo',
+                    success: function (data) {
+                        if (data) {
+                            location.href = "change-pwd.html?FromUrl=" + encodeURIComponent(location.href);
+                        }
+                    }
+                });
+            },
             init: function () {
                 var me = this;
+                me.checkPassword();
                 $("#realname").text(window.session.RealName);
                 $("#user-realname").text(window.session.RealName);
                 $("#user-corp").text(window.session.CorpName);

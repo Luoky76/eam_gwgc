@@ -28,7 +28,7 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         public async Task<AjaxResult> TreeAsync()
         {
-            var list = await _dbContext.Query<CF_CORP>().OrderBy(c => c.CORPID).ToListAsync();
+            var list = await _dbContext.Query<CF_CORP>().OrderBy(c => c.CORP_SORT).ThenBy(c => c.CORPID).ToListAsync();
             var data = list.Select(c => new
             {
                 ID = c.CORPID,
@@ -48,7 +48,7 @@ namespace Gksyb.Server.Services.Auth
         public async Task<List<ComboxData>> CorpData()
         {
             return await _dbContext.Query<CF_CORP>()
-                .Select(a => new ComboxData { ID = a.CORPID, TEXT = a.CORP_SNAME, VALUE = a.CORPID })
+                .Select(a => new ComboxData { ID = a.CORPID, TEXT = a.CNAME, VALUE = a.CORPID })
                 .OrderBy(c => c.TEXT).ToListAsync();
         }
 
@@ -58,7 +58,7 @@ namespace Gksyb.Server.Services.Auth
         public override async Task<AjaxResult> SaveAsync(SaveRequest<CF_CORP> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
-                c => new { c.CNO, c.CORP_SNAME, c.CORP_ENAME, c.CNAME, c.CORPPARENTID, c.CORP_ADDRESS, c.CORP_TELE, c.CORP_FAX, c.CORP_EMAIL, c.CORP_LINK_MAN, c.LINK_MAN_TELE, c.LINK_MAN_EMAIL, c.FEECLIENT_ID, c.BANK, c.ACCONTNO, c.CWTELE, c.VALIDFLAG, c.CORP_PATH, c.CLASSFLAG, c.REMARK },
+                c => new { c.CNO, c.CORP_SNAME, c.CORP_ENAME, c.CNAME, c.CORPPARENTID, c.CORP_ADDRESS, c.CORP_TELE, c.CORP_FAX, c.CORP_EMAIL, c.CORP_LINK_MAN, c.LINK_MAN_TELE, c.LINK_MAN_EMAIL, c.FEECLIENT_ID, c.BANK, c.ACCONTNO, c.CWTELE, c.VALIDFLAG, c.CORP_PATH, c.CLASSFLAG, c.CORP_SORT, c.REMARK },
                 c => a => a.CORPID == c.CORPID
                 , BeforeAdd, BeforeUpdate, BeforeDelete);
         }
@@ -105,9 +105,9 @@ namespace Gksyb.Server.Services.Auth
         /// </summary>
         private async Task Handle(CF_CORP entity)
         {
-            var isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CORP_SNAME == entity.CORP_SNAME)
+            var isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CNAME == entity.CNAME)
                 .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID != entity.CORPID).AnyAsync();
-            if (isExists) throw new MessageException($"已经存在组织简称{entity.CORP_SNAME}");
+            if (isExists) throw new MessageException($"已经存在组织全称{entity.CNAME}");
             isExists = await _dbContext.Query<CF_CORP>().Where(c => c.CNO == entity.CNO)
                 .WhereIfNotNullOrEmpty(entity.CORPID, c => c.CORPID != entity.CORPID).AnyAsync();
             if (isExists) throw new MessageException($"已经存在组织代码{entity.CNO}");

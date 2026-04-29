@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                     AllRoles = new List<string>(),
                     IsAdmin = true,
                     IsOurCompany = true,
+                    IsApi = true,
                     IP = source.Request.GetRealIP(),
                     UserAgent = source.Request.GetUserAgent(),
                     UserAppName = _options?.UserAppName,

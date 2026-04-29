@@ -83,7 +83,11 @@
         onEndResize: null,//调整大小之后
         onBeforeSetData: null,//ajax展示数据之前
         onSuccess: null,//ajax获取数据完成后
-        onError: null,//url数据展示出错后
+        onError: function (XMLHttpRequest, _textStatus, errorThrown) { //错误事件
+            $.ligerDialog.error('请求数据出错,页面即将跳转!<br/>原因为：' + (XMLHttpRequest.responseText || "") + "<br/>错误码:" + (XMLHttpRequest.status || "") + (errorThrown || ""), "操作失败", function () {
+                location.reload();
+            });
+        },
         onBeforeOpen: null,//打开下拉框前事件，可以通过return false来阻止继续操作，利用这个参数可以用来调用其他函数，比如打开一个新窗口来选择值
         onButtonClick: null//右侧图标按钮事件，可以通过return false来阻止继续操作，利用这个参数可以用来调用其他函数，比如打开一个新窗口来选择值
     });

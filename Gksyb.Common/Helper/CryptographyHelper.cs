@@ -498,6 +498,21 @@ namespace Gksyb.Common
         /// <param name="privateKey">私钥</param>
         /// <param name="encoding">编码</param>
         /// <returns></returns>
+        public static string SM2SignHex(string text, string privateKey, Encoding encoding = null)
+        {
+            encoding ??= Encoding.UTF8;
+            var privateKeyParameters = new ECPrivateKeyParameters(new BigInteger(privateKey, 16), SM2_DOMAIN_PARAMS);
+            var cipherBytes = SM2Sign(privateKeyParameters, encoding.GetBytes(text));
+            return Hex.ToHexString(cipherBytes);
+        }
+
+        /// <summary>
+        /// 私钥签名
+        /// </summary>
+        /// <param name="text">内容</param>
+        /// <param name="privateKey">私钥</param>
+        /// <param name="encoding">编码</param>
+        /// <returns></returns>
         public static string SM2SignWithPKCS8(string text, string privateKey, Encoding encoding = null)
         {
             encoding ??= Encoding.UTF8;
@@ -519,6 +534,21 @@ namespace Gksyb.Common
             encoding ??= Encoding.UTF8;
             var publicKeyParameters = ParseSM2PublicKey(publicKey);
             return SM2Verify(publicKeyParameters, encoding.GetBytes(text), Convert.FromBase64String(signedString));
+        }
+
+        /// <summary>
+        /// 公钥验签
+        /// </summary>
+        /// <param name="text">内容</param>
+        /// <param name="signedString">签名</param>
+        /// <param name="publicKey">公钥</param>
+        /// <param name="encoding">编码</param>
+        /// <returns></returns>
+        public static bool SM2VerifyHex(string text, string signedString, string publicKey, Encoding encoding = null)
+        {
+            encoding ??= Encoding.UTF8;
+            var publicKeyParameters = ParseSM2PublicKey(publicKey);
+            return SM2Verify(publicKeyParameters, encoding.GetBytes(text), Hex.Decode(signedString));
         }
 
         /// <summary>
@@ -561,9 +591,17 @@ namespace Gksyb.Common
         public static string SM2EncryptWithPKCS8(string text, string publicKey, Encoding encoding = null)
         {
             encoding ??= Encoding.UTF8;
-            var publicKeyParameters = PublicKeyFactory.CreateKey(Convert.FromBase64String(publicKey));
-            var cipherBytes = SM2Encrypt(publicKeyParameters, encoding.GetBytes(text));
+            var cipherBytes = SM2Encrypt(publicKey, encoding.GetBytes(text));
             return Convert.ToBase64String(cipherBytes);
+        }
+
+        /// <summary>
+        /// 公钥加密数据
+        /// </summary>
+        public static byte[] SM2Encrypt(string publicKey, byte[] plainBytes)
+        {
+            var publicKeyParameters = ParseSM2PublicKey(publicKey);
+            return SM2Encrypt(publicKeyParameters, plainBytes);
         }
 
         /// <summary>
@@ -586,8 +624,7 @@ namespace Gksyb.Common
         public static string SM2Decrypt(string text, string privateKey, Encoding encoding = null)
         {
             encoding ??= Encoding.UTF8;
-            var privateKeyParameters = new ECPrivateKeyParameters(new BigInteger(privateKey, 16), SM2_DOMAIN_PARAMS);
-            var plainBytes = SM2Decrypt(privateKeyParameters, Convert.FromBase64String(text));
+            var plainBytes = SM2Decrypt(privateKey, Convert.FromBase64String(text));
             return encoding.GetString(plainBytes);
         }
 
@@ -604,6 +641,15 @@ namespace Gksyb.Common
             var privateKeyParameters = PrivateKeyFactory.CreateKey(Convert.FromBase64String(privateKey));
             var plainBytes = SM2Decrypt(privateKeyParameters, Convert.FromBase64String(text));
             return encoding.GetString(plainBytes);
+        }
+
+        /// <summary>
+        /// 私钥解密数据
+        /// </summary>
+        public static byte[] SM2Decrypt(string privateKey, byte[] cipherBytes)
+        {
+            var privateKeyParameters = new ECPrivateKeyParameters(new BigInteger(privateKey, 16), SM2_DOMAIN_PARAMS);
+            return SM2Decrypt(privateKeyParameters, cipherBytes);
         }
 
         /// <summary>
@@ -630,7 +676,7 @@ namespace Gksyb.Common
         /// <summary>
         /// 公钥验签
         /// </summary>
-        private static bool SM2Verify(ICipherParameters sm2PublicKeyParams, byte[] msgBytes, byte[] signBytes)
+        public static bool SM2Verify(ICipherParameters sm2PublicKeyParams, byte[] msgBytes, byte[] signBytes)
         {
             var signer = SignerUtilities.GetSigner("SM3withSM2");
             signer.Init(false, new ParametersWithID(sm2PublicKeyParams, SM2_DEFAULT_UID));
@@ -643,7 +689,7 @@ namespace Gksyb.Common
         /// </summary>
         /// <param name="hexKey"></param>
         /// <returns></returns>
-        private static ECPublicKeyParameters ParseSM2PublicKey(string hexKey)
+        public static ECPublicKeyParameters ParseSM2PublicKey(string hexKey)
         {
             var ecPublicKeyBytes = Hex.Decode(hexKey);
             var keyLength = 64;

@@ -52,7 +52,11 @@
                                 type: "select", options: { autocomplete: true, data: me.dataCorp }
                             },
                             {
-                                display: "通讯地址", name: "CORP_ADDRESS", newline: false, labelWidth: 110, width: 180,
+                                display: "排序", name: "CORP_SORT", newline: false, labelWidth: 110, width: 180,
+                                type: "int", options: {}
+                            },
+                            {
+                                display: "通讯地址", name: "CORP_ADDRESS", newline: false, labelWidth: 110, width: 473,
                                 validate: { maxlength: 180 }, type: "text", options: {}
                             },
                             {
@@ -71,12 +75,10 @@
                                 display: "主要联系人", name: "CORP_LINK_MAN", newline: false, labelWidth: 110, width: 180,
                                 validate: { maxlength: 20 }, type: "text", options: {}
                             },
-
                             {
                                 display: "联系人电话", name: "LINK_MAN_TELE", newline: false, labelWidth: 110, width: 180,
                                 validate: { maxlength: 20 }, type: "text", options: {}
                             },
-
                             {
                                 display: "联系人Email", name: "LINK_MAN_EMAIL", newline: false, labelWidth: 110, width: 180,
                                 validate: { maxlength: 20 }, type: "text", options: {}

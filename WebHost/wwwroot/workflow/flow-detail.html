@@ -43,6 +43,24 @@
             margin-top: -3px;
             padding: 3px 7px;
         }
+
+        #current-node-container {
+            padding: 10px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+            display: none;
+        }
+
+            #current-node-container .current-node-label {
+                font-weight: 700;
+                color: #333;
+                margin-right: 5px;
+            }
+
+            #current-node-container .current-node-text {
+                display: inline;
+                line-height: 20px;
+            }
     </style>
 </head>
 
@@ -56,6 +74,10 @@
         </form>
     </div>
     <div id="flow-node-panel" style="display:none;">
+        <div id="current-node-container">
+            <span class="current-node-label">当前处理人：</span>
+            <span class="current-node-text"></span>
+        </div>
         <ul id="node-timeline">
         </ul>
     </div>
@@ -76,6 +98,7 @@
             code: getQueryStringByName("code"),
             sid: getQueryStringByName("sid"),
             nid: getQueryStringByName("nid"),
+            cid: getQueryStringByName("cid"),
             taskId: getQueryStringByName("taskId"),
             isView: getQueryStringByName("isView"),
             split: "@#",
@@ -187,7 +210,7 @@
                     }, window._displayOptions);
                 }
                 me.mainForm = $("#flow-form").ligerForm(window._displayOptions);
-                if (me.isNew) {
+                if (me.isNew && !me.data.FormData) {
                     if (!me.mainForm.orginData) me.mainForm.orginData = me.mainForm.getData();
                 }
                 else {
@@ -215,6 +238,44 @@
                     nodes.push(nodeInfos[i].NodeId);
                 }
                 return nodes;
+            },
+            formatCurrentNodes: function () {
+                var me = this, nodes = me.data.CurrentNodes || [];
+                var groups = {};
+                for (var i = 0, l = nodes.length; i < l; i++) {
+                    var node = nodes[i] || {};
+                    var key = node.NodeTitle || node.NodeName || "";
+                    if (!Object.prototype.hasOwnProperty.call(groups, key)) {
+                        groups[key] = { names: [], hasEmpty: false };
+                    }
+                    var current = groups[key];
+                    var user = node.NodeUser || node.NodeUserName || "";
+                    var values = user ? user.split(me.split) : [];
+                    if (values.length < 1) {
+                        current.hasEmpty = true;
+                    }
+                    for (var j = 0, jl = values.length; j < jl; j++) {
+                        var name = values[j];
+                        if (!name) continue;
+                        name = name.trim();
+                        if (!name) continue;
+                        if ($.inArray(name, current.names) < 0) {
+                            current.names.push(name);
+                        }
+                    }
+                }
+                var results = [];
+                for (var key in groups) {
+                    if (!Object.prototype.hasOwnProperty.call(groups, key)) continue;
+                    var item = groups[key];
+                    var text = item.names.join('、');
+                    if (!text && item.hasEmpty) {
+                        text = '待处理';
+                    }
+                    if (!text) continue;
+                    results.push((key ? key + '：' : '') + text);
+                }
+                return results;
             },
             initFlow: function () {
                 var me = this;
@@ -246,6 +307,16 @@
                 var me = this;
                 if (me.isNew) return;
                 $("#flow-node-panel").show();
+                var container = $("#current-node-container");
+                container.hide();
+                container.find('.current-node-text').empty();
+                if (!me.data.FinishDate) {
+                    var summaries = me.formatCurrentNodes();
+                    if (summaries.length > 0) {
+                        container.find('.current-node-text').html(summaries.join('；'));
+                        container.show();
+                    }
+                }
                 var logs = me.data.Logs;
                 var data = [];
                 for (var i = 0, l = logs.length; i < l; i++) {
@@ -271,7 +342,7 @@
                     jsToken: true,
                     url: 'workflow/query/taskInfo',
                     loading: '正在获取中...',
-                    data: { Id: me.nid, TaskId: me.taskId, FlowId: me.sid, FlowCode: me.code },
+                    data: { Id: me.nid, TaskId: me.taskId, FlowId: me.sid, FlowCode: me.code, CopyTaskId:me.cid },
                     success: function (data) {
                         me.data = data || {};
                         me.isStart = !data.NodeType || ("bpmn:startEvent" === data.NodeType);
@@ -315,6 +386,10 @@
                 var me = this;
                 me.excute(me.nodeStatus.Back);
             },
+            setCallback: function (callback) {
+                var me = this;
+                me._callback = callback;
+            },
             excute: function (nodeStatus, data, skipAssign) {
                 var me = this;
                 if (me.auditForm) {
@@ -329,6 +404,9 @@
                 }
                 data = $.extend({ Id: me.data.Id }, data);
                 var inner = function () {
+                    if (me._callback) {
+                        me._callback(nodeStatus, data);
+                    }
                     LG.ajax({
                         jsToken: true,
                         url: 'workflow/task/' + nodeStatus,
@@ -531,8 +609,9 @@
                     if (me.dialogData.code) me.code = me.dialogData.code;
                     if (me.dialogData.taskId) me.taskId = me.dialogData.taskId;
                     if (me.dialogData.nid) me.nid = me.dialogData.nid;
+                    if (me.dialogData.cid) me.cid = me.dialogData.cid;
                 }
-                if (!me.sid && !me.code && !me.nid && !me.taskId) {
+                if (!me.sid && !me.code && !me.nid && !me.taskId && !me.cid) {
                     LG.showError("参数不完整");
                     return;
                 }

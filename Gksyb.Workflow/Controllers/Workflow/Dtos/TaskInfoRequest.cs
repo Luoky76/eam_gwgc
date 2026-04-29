@@ -3,12 +3,12 @@
     public class TaskInfoRequest
     {
         /// <summary>
-        /// 任务节点ID
+        /// 节点ID
         /// </summary>
         public string Id { get; set; }
 
         /// <summary>
-        /// 任务节点ID
+        /// 任务ID
         /// </summary>
         public string TaskId { get; set; }
 
@@ -21,6 +21,11 @@
         /// 流程编码
         /// </summary>
         public string FlowCode { get; set; }
+
+        /// <summary>
+        /// 重新发起的任务ID
+        /// </summary>
+        public string CopyTaskId { get; set; }
 
         /// <summary>
         /// 启用新流程

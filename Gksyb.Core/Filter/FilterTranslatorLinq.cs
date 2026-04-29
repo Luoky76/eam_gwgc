@@ -12,6 +12,7 @@ namespace Gksyb.Core.Filter
     public class FilterTranslatorLinq : FilterTranslator
     {
         private readonly TypeDescriptor _typeDescriptor;
+        private readonly Dictionary<string, Type> _types;
         private readonly Regex _start;
 
         public FilterTranslatorLinq(TypeDescriptor typeDescriptor)
@@ -23,6 +24,7 @@ namespace Gksyb.Core.Filter
         {
             _typeDescriptor = typeDescriptor;
             _start = new Regex($@"^{_typeDescriptor.EntityType?.Name ?? _typeDescriptor.Table?.Name}\.", RegexOptions.IgnoreCase);
+            _types = GetEntityTypes(typeDescriptor);
             leftToken = "";
             rightToken = "";
             paramPrefix = "";
@@ -31,6 +33,7 @@ namespace Gksyb.Core.Filter
         public override string TranslateRule(FilterRule rule)
         {
             if (rule == null) return " 1=1 ";
+            rule.Op ??= "equal";
             if ("NULLPARAM".Equals(rule.Op))
             {
                 CreateFilterParam(null, rule.Type, rule);
@@ -136,10 +139,14 @@ namespace Gksyb.Core.Filter
 
         private string CreateFilterParam(object value, string type, FilterRule rule)
         {
-            var property = _typeDescriptor.PrimitivePropertyDescriptors.FirstOrDefault(c => c.Property.Name.EqualsTo(rule.Field, true));
-            if (property != null && (string.IsNullOrWhiteSpace(type) || property.PropertyType.GetUnNullableType().IsNumeric()))
+            if (!_types.TryGetValue(rule.Field, out var propertyType) || propertyType == null)
             {
-                type = property.PropertyType.GetUnNullableType().Name;
+                return CreateFilterParam(value, type, string.Empty);
+            }
+            var underlyingType = propertyType.GetUnNullableType();
+            if (string.IsNullOrWhiteSpace(type) || underlyingType.IsNumeric())
+            {
+                type = underlyingType.Name;
             }
             return CreateFilterParam(value, type, string.Empty);
         }
@@ -173,6 +180,16 @@ namespace Gksyb.Core.Filter
                 "notin" => " in ",
                 _ => " = ",
             };
+        }
+
+        private static Dictionary<string, Type> GetEntityTypes(TypeDescriptor typeDescriptor)
+        {
+            var types = typeDescriptor.PrimitivePropertyDescriptors.ToDictionary(c => c.Property.Name, c => c.PropertyType, comparer: StringComparer.OrdinalIgnoreCase);
+            if (types.Count > 0)
+            {
+                return types;
+            }
+            return typeDescriptor.EntityType.GetProperties().ToDictionary(u => u.Name, c => c.PropertyType, comparer: StringComparer.OrdinalIgnoreCase);
         }
     }
 }

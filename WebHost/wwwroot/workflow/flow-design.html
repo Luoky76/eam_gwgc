@@ -148,8 +148,8 @@
                         }
                     },
                     { display: "处理类", name: "handle", newline: true, bpmn: "bpmn:exclusiveGateway", type: "text", options: {} },
-                    { display: "前置拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
-                    { display: "后置拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
+                    { display: "任务生成前拦截器", name: "preInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
+                    { display: "任务生成后拦截器", name: "postInterceptors", newline: true, bpmnHide: "bpmn:sequenceFlow", type: "text", options: {} },
                     { display: "指定处理人", name: "assign", newline: true, bpmn: "bpmn:startEvent,bpmn:userTask", type: "chk", options: { onChangeValue: me.changeAssign } },
                     { display: "处理人URL", name: "assignUrl", newline: true, bpmn: "no", type: "text", options: {} },
                     { display: "自动流转", name: "autoNext", newline: true, bpmn: "bpmn:userTask", type: "chk", options: {} },
@@ -175,7 +175,7 @@
                 }
                 me.fields = fields;
                 me.flowForm = $("#flow-form").ligerForm({
-                    labelWidth: 100,
+                    labelWidth: 130,
                     inputWidth: 180,
                     fields: fields,
                     space: 3,
@@ -454,7 +454,7 @@
             },
             initLayout: function () {
                 $("#layout-panel").ligerLayout({
-                    rightWidth: 320,
+                    rightWidth: 330,
                     onResize: function () {
 
                     }

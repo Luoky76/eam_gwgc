@@ -9,7 +9,7 @@ namespace Gksyb.Server.Controllers.Auth
     /// <summary>
     /// 按钮管理
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class ButtonController : BaseController
     {
         private readonly ButtonService _service;

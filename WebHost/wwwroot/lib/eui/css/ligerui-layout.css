@@ -27,38 +27,49 @@
     border: none !important;
 }
 
-.l-layout-header {
-    font-size: 16px;
-    line-height: 32px;
+.l-layout-header, .l-panel-header {
     position: relative;
+    font-size: 16px;
+    min-height: 32px;
+    line-height: 32px;
     overflow: hidden;
-    height: 32px;
     padding: 0 15px;
     color: #1c2438;
-    border-top: 2px solid #2d8cf0;
     border-bottom: 1px solid #dddee1;
 }
 
-.l-layout-header-inner {
+.l-layout-header {
+    border-top: 2px solid #2d8cf0;
+}
+
+.l-layout-header-inner, .l-panel-title {
+    display: inline-block;
+    vertical-align: top; /*inline-block的bug 要加vertical-align 不然会有高度问题*/
     padding-right: 22px;
     user-select: none;
 }
 
-.l-layout-header-toggle {
-    font: normal normal normal 14px/1 FontAwesome;
-    font-size: inherit;
-    line-height: inherit;
+.l-layout-header-winbtns, .l-panel-winbtns {
+    font-size: 0;
+    line-height: initial;
     position: absolute;
-    display: inline-block;
-    vertical-align: top;
-    overflow: hidden;
-    cursor: pointer;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    top: 5px;
+    right: 5px;
 }
 
-    .l-layout-header-toggle:hover {
+.l-layout-header-winbtn, .l-panel-winbtn {
+    font-size: 16px;
+    position: relative;
+    width: 16px;
+    height: 16px;
+    margin-left: 3px;
+    padding: 3px 0;
+    cursor: pointer;
+    text-align: center;
+    _overflow: hidden;
+}
+
+    .l-layout-header-winbtn:hover, .l-panel-winbtn:hover {
         font-weight: bold;
     }
 
@@ -66,29 +77,31 @@
     width: 100%;
 }
 
-.l-layout-header .l-layout-header-toggle {
-    right: 5px;
-}
+    .l-layout-top .l-layout-header-toggle:before, .l-layout-center .l-layout-header-toggle:before {
+        content: '\f102';
+    }
 
-.l-layout-top .l-layout-header-toggle:before, .l-layout-center .l-layout-header-toggle:before {
-    content: '\f102';
-}
-
-.l-layout-bottom .l-layout-header-toggle:before, .l-layout-centerbottom .l-layout-header-toggle:before {
-    content: '\f103';
-}
+    .l-layout-bottom .l-layout-header-toggle:before, .l-layout-centerbottom .l-layout-header-toggle:before {
+        content: '\f103';
+    }
 
 .l-layout-left .l-layout-header-toggle:before {
     content: '\f100';
 }
 
 .l-layout-right .l-layout-header-toggle {
-    left: 5px;
+    position: absolute;
+    top: 5px;
+    left: 0px;
 }
 
     .l-layout-right .l-layout-header-toggle:before {
         content: '\f101';
     }
+
+.l-panel-max .l-layout-header-toggle {
+    display: none;
+}
 
 .l-layout .l-layout-header {
     cursor: default;
@@ -368,46 +381,13 @@
     z-index: 999;
 }
 
-.l-panel-header {
-    position: relative;
-    font-size: 16px;
-    min-height: 32px;
-    line-height: 32px;
-    overflow: hidden;
-    padding: 0 15px;
-    color: #1c2438;
-    border-bottom: 1px solid #dddee1;
-}
-
 .l-panel-title {
-    display: inline-block;
-    vertical-align: top; /*inline-block的bug 要加vertical-align 不然会有高度问题*/
     padding-right: 100px;
 }
 
-.l-panel-winbtns {
-    font-size: 0;
-    line-height: initial;
-    position: absolute;
-    top: 5px;
-    right: 10px;
-}
-
 .l-panel-winbtn {
-    font-size: 16px;
-    position: relative;
-    width: 16px;
-    height: 16px;
-    margin-left: 10px;
-    padding: 3px 0;
-    cursor: pointer;
-    text-align: center;
-    _overflow: hidden;
+    margin-left: 5px;
 }
-
-    .l-panel-winbtn:hover {
-        font-weight: bold;
-    }
 
 .l-panel-content {
     font-size: 14px;

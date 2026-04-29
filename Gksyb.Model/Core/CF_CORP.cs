@@ -167,6 +167,12 @@ namespace Gksyb.Model.Core
         public string REMARK { get; set; }
 
         /// <summary>
+        /// 排序
+        /// </summary>
+        [Description("排序")]
+        public int? CORP_SORT { get; set; }
+
+        /// <summary>
         /// 登记人员@#Create User
         /// </summary>
         [Description("登记人员@#Create User")]

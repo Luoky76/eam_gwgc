@@ -20,7 +20,7 @@ namespace Gksyb.Server.Controllers.Auth
     /// <summary>
     /// 验证服务
     /// </summary>
-    [GksybAuthorize(true)]
+    [GksybAuthorize(IsGuest = true)]
     public partial class AuthController : BaseController
     {
         /// <summary>
@@ -81,6 +81,7 @@ namespace Gksyb.Server.Controllers.Auth
         {
             if ("0".Equals(IsInnerIP().Data) && !await ValidVerifyCodeAsync(request.Verifycode))
                 return AjaxResult.Error("请输入正确的验证码");
+            MessageException.ThrowIf(string.IsNullOrWhiteSpace(request.IMEI), "设备号");
             request.Username = (request.Username ?? "").ToUpper();
             request.IP = Request.GetRealIP();
             request.UserAgent = Request.GetUserAgent();
@@ -152,18 +153,16 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 修改密码
         /// </summary>
-        [AllowAnonymous, JsToken("Auth/Login")]
+        [JsToken("Auth/Login")]
         public async Task<AjaxResult> ChangePasswordAsync([FromServices] IDistributedCache distributedCache, [FromServices] IAuthService service, ChangePasswordRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Username))
-            {
-                request.Username = CurrentUser?.UserName;
-            }
-            if (string.IsNullOrWhiteSpace(request.Username)) return AjaxResult.Error("请输入账号");
-            request.Username = request.Username.ToUpper();
+            request.Username = CurrentUser.UserName;
             return await distributedCache.LimitRetry($"{request.Username}_RC", "密码输错多次，请三分钟后重试", async () =>
             {
-                return await service.ChangePasswordAsync(request);
+                var reulst = await service.ChangePasswordAsync(request);
+                CurrentUser.PasswordInfo = null;
+                await CurrentUser.SaveAsync();
+                return reulst;
             });
         }
 
@@ -245,7 +244,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 userSession.ExtendData = user.ExtendData;
             }, false);
-            if(user.ExpirationType == "1" && response.Data is UserResponse userResponse)//绝对过期处理
+            if (user.ExpirationType == "1" && response.Data is UserResponse userResponse)//绝对过期处理
             {
                 userResponse.Ticket = ticket;
                 return response;
@@ -255,6 +254,14 @@ namespace Gksyb.Server.Controllers.Auth
                 AbsoluteExpiration = user.Expiration
             });
             return response;
+        }
+
+        /// <summary>
+        /// 获取密码校验信息
+        /// </summary>
+        public AjaxResult GetPasswordInfo([FromServices] UserSession user)
+        {
+            return AjaxResult.Success(user.PasswordInfo ?? "", default);
         }
 
         /// <summary>
@@ -329,7 +336,7 @@ namespace Gksyb.Server.Controllers.Auth
             {
                 var options = HttpContext.RequestServices.GetService<IOptions<SysContextOptions>>();
                 var user = UserSession.ParseTicket(ticket, options.Value.TicketVersion);
-                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent 
+                MessageException.ThrowIf(UserSession.Hash(Request.GetUserAgent()) != user.UserAgent
                     && Request.GetRealIP() != user.IP, "无效票据");
                 var distributedCache = HttpContext.RequestServices.GetService<IDistributedCache>();
                 MessageException.ThrowIf(await distributedCache.GetStringAsync(ticket) == "1", "无效票据");
@@ -342,7 +349,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public AjaxResult Logs(string logPath)
         {
             var logs = Serilog.Sinks.MemoryQueue.MemoryQueueSink.Logs.ToList();
@@ -354,7 +361,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public AjaxResult Services(string search)
         {
             var services = Gksyb.Common.Static.HttpContext.ServiceCollection
@@ -363,7 +370,7 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(services);
         }
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public AjaxResult Connections([FromServices] IHubContext<BroadcastChannelHub, IBroadcastChannelClient> hubContext)
         {
             var connections = hubContext.Clients.All.GetConnections();
@@ -376,7 +383,7 @@ namespace Gksyb.Server.Controllers.Auth
             return AjaxResult.Success(msgs);
         }
 
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public async Task<AjaxResult> UpdateCacheAsync([FromServices] ConfigurationService configurationService, [FromServices] IRoleModuleService roleModuleService, [FromServices] IOptions<SysContextOptions> options)
         {
             await configurationService.UpdateCacheAsync();

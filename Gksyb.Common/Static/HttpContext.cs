@@ -1,6 +1,7 @@
 ﻿using Chloe.Reflection;
 using Chloe.Reflection.Emit;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Collections.ObjectModel;
@@ -42,6 +43,7 @@ namespace Gksyb.Common.Static
             ResolvedServicesGetter = DelegateGenerator.CreateGetter(source.GetType().GetProperty("ResolvedServices",
                 BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public));
             RequestServices = source;
+            Configuration = source.GetRequiredService<IConfiguration>();
             _accessor = source.GetService<IHttpContextAccessor>();
         }
 
@@ -51,6 +53,11 @@ namespace Gksyb.Common.Static
         /// 服务提供者
         /// </summary>
         public static IServiceProvider RequestServices { get; private set; }
+
+        /// <summary>
+        /// 配置项
+        /// </summary>
+        public static IConfiguration Configuration { get; private set; }
 
         /// <summary>
         /// 地址列表

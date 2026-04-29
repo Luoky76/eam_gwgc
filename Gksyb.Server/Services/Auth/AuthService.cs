@@ -72,7 +72,6 @@ namespace Gksyb.Server.Services.Auth
 
             var lastChangeTime = user.SUPPLIERID == null ? (await _dbContext.GetSysdate()) : DateTime.UnixEpoch.AddSeconds(user.SUPPLIERID.CastTo<double>());
             var errorMsg = await CheckPassword(request.Username, request.InputPassword, lastChangeTime);
-            if (checkPassword && !string.IsNullOrWhiteSpace(errorMsg)) return AjaxResult.Error(errorMsg, "1");
 
             var roles = await _dbContext.Query<CF_ROLE>()
                 .InnerJoin<CF_USERROLE>((role, userrole) => role.ROLEID == userrole.ROLEID && userrole.USERID == user.USERID)
@@ -81,6 +80,7 @@ namespace Gksyb.Server.Services.Auth
                 .ToListAsync();
 
             var isSuper = user.USERID == _options.AdminUserID;
+            var isDeveloper = isSuper || (user.USERID == _options.DeveloperID);
             var isAdmin = isSuper || roles.Contains(c => c.ROLEID == _options.AdminRole);
             var isOurCompany = isAdmin || ((user.CLASS ?? "0").CastTo(0) > 0);
             var ports = await GetUserPortsAsync(user.LOGINNAME, c => c.OPTYPE == _roletype);
@@ -89,6 +89,7 @@ namespace Gksyb.Server.Services.Auth
                 UserID = user.USERID.Value,
                 UserName = user.LOGINNAME,
                 RealName = user.REALNAME,
+                PasswordInfo = checkPassword ? errorMsg : null,
                 Class = user.CLASS,
                 WorkerCode = user.DEPARTCODE,
                 Group = user.STATION ?? "",
@@ -97,6 +98,7 @@ namespace Gksyb.Server.Services.Auth
                 IsSuper = isSuper,
                 IsAdmin = isAdmin,
                 IsOurCompany = isOurCompany,
+                IsDeveloper = isDeveloper,
                 IP = request.IP,
                 UserAgent = request.UserAgent,
                 UserAppName = _options.UserAppName,
@@ -234,6 +236,14 @@ namespace Gksyb.Server.Services.Auth
                 var list = await query.ToListAsync<MenuModule>();
                 return list.OrderBy(c => c.MENUORDER).ToList();
             }
+            else if (userSession.IsDeveloper)
+            {
+                var list = await _dbContext.Query<SYS_MENU>()
+                    .Where(c => c.APPNAME == appname && c.ISVISIBLE == 0)
+                    .ToListAsync<MenuModule>();
+                await _roleModuleService.AddMissingParent(list);
+                return list.OrderBy(c => c.MENUORDER).ToList();
+            }
             var menus = new List<MenuModule>();
             foreach (var roleName in userSession.Roles)
             {
@@ -257,7 +267,7 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         public async Task<List<ButtonModule>> MyButtonsAsync(UserSession userSession, string menuNo, string appname)
         {
-            if (userSession.IsAdmin)
+            if (userSession.IsAdmin || userSession.IsDeveloper)
             {
                 var query = _dbContext.Query<SYS_BUTTON>().Where(c => c.MENUNO == menuNo && c.APPNAME == appname);
                 var list = await query.ToListAsync<ButtonModule>();
@@ -374,18 +384,22 @@ namespace Gksyb.Server.Services.Auth
         /// <returns></returns>
         private async Task<string> CheckPassword(string username, string password, DateTime? lastChangeTime = null)
         {
-            if (string.IsNullOrWhiteSpace(password)) return string.Empty;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
+            if (string.IsNullOrWhiteSpace(password)) return null;//不可删除，换token由于获取不到解密前的密码，忽略密码处理。
+            if (password == _options.InitPassWord)
+            {
+                return "密码为初始密码，请先修改";
+            }
             if (!PasswordHelper.IsStrong(password ?? "", username))
             {
                 return PasswordHelper.DirectionMsg;
             }
-            if (lastChangeTime == null) return string.Empty;
+            if (lastChangeTime == null) return null;
             var sysdate = await _dbContext.GetSysdate();
             if (lastChangeTime.Value.AddDays(_options.GetPasswordExpiresIn) < sysdate)
             {
                 return "密码已过期，请先修改";
             }
-            return string.Empty;
+            return null;
         }
 
         /// <summary>
@@ -409,6 +423,14 @@ namespace Gksyb.Server.Services.Auth
                 var corps = (c.REMARK ?? "").Split(",").DistinctAndOrderBy().ToList();
                 return corps.Select(a => new KeyValueItem(name, a)).ToList();
             }).ToList();
+            roles.Where(c => !string.IsNullOrWhiteSpace(c.CORPID)).ForEach(a =>
+            {
+                if (ports.Any(c => a.ROLEID.Value.ToString() == c.CORPID))
+                {
+                    return;
+                }
+                roleCorps.Add(new KeyValueItem(a.ROLENAME, a.CORPID));
+            });
             return roleCorps.Count < 1 ? null : roleCorps;
         }
 

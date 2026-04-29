@@ -10,7 +10,7 @@ namespace Gksyb.Server.Controllers.System
     /// <summary>
     /// 配置管理
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class TaskController : BaseController
     {
         private readonly TaskService _service;

@@ -81,9 +81,10 @@
                 if (!data || !data.length) return false;
                 var isButton = rowdata.BTNID != null && rowdata.BTNID != 0;
                 for (var i = 0, l = data.length; i < l; i++) {
-                    if (isButton && data[i].BTNNO == rowdata.ACCESSNO)
+                    var item = data[i];
+                    if (isButton && item.BTNNO == rowdata.ACCESSNO)
                         return true;
-                    if (!isButton && data[i].MENUNO == rowdata.ACCESSNO)
+                    if (!isButton && item.MENUNO == rowdata.ACCESSNO)
                         return true;
                 }
                 return false;

@@ -11,7 +11,7 @@ namespace Gksyb.Server.Controllers.Message
     /// <summary>
     /// 消息类型管理
     /// </summary>
-    [GksybAuthorize(IsSuper = true)]
+    [GksybAuthorize(IsDeveloper = true)]
     public class MessageTemplateController : BaseController
     {
         private readonly MessageTemplateService _service;

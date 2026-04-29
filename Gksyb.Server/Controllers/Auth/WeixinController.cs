@@ -67,7 +67,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取微信id
         /// </summary>
         /// <returns></returns>
-        [GksybAuthorize(true)]
+        [GksybAuthorize(IsGuest = true)]
         public async Task<AjaxResult> Openid()
         {
             var user = await HttpContext.GetCurrentUserAsync();
@@ -79,7 +79,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取JSSDK
         /// </summary>
         /// <returns></returns>
-        [GksybAuthorize(true)]
+        [GksybAuthorize(IsGuest = true)]
         public async Task<AjaxResult> JsSDK(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
@@ -123,7 +123,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// 获取微信绑定状态
         /// </summary>
         /// <returns></returns>
-        [GksybAuthorize(true)]
+        [GksybAuthorize(IsGuest = true)]
         public async Task<AjaxResult> BindingStaus([FromServices] UserSession user)
         {
             if (string.IsNullOrWhiteSpace(user.Openid)) return AjaxResult.Error("无法获取微信号,请退出后重试");
@@ -135,6 +135,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// 微信绑定
         /// </summary>
         /// <returns></returns>
+        [JsToken]
         public async Task<AjaxResult> Bind([FromServices] IDistributedCache distributedCache, LoginRequest request)
         {
             var user = await HttpContext.GetCurrentUserAsync();
@@ -150,6 +151,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// 微信解绑
         /// </summary>
         /// <returns></returns>
+        [JsToken]
         public async Task<AjaxResult> UnBind([FromServices] UserSession user)
         {
             if (string.IsNullOrWhiteSpace(user.Openid)) return AjaxResult.Error("无法获取微信号,请退出后重试");

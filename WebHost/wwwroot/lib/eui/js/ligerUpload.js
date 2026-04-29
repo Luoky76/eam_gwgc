@@ -1,4 +1,18 @@
 ﻿(function ($) {
+    $.fn.ligerUpload = function () {
+        if (arguments && arguments.length > 0) {
+            p = arguments[0];
+            if (p.type === "text") {
+                p.width = p.width || 200;
+                p.height = p.height || 28;
+            }
+        }
+        return $.ligerui.run.call(this, "ligerUpload", arguments);
+    };
+
+    $.fn.ligerGetUploadManager = function () {
+        return $.ligerui.run.call(this, "ligerGetUploadManager", arguments);
+    };
     $.ligerDefaults.Upload = {
         type: 'card' //类型 text,card
         , itemWidth: null //单项宽度 不设置默认取宽度
@@ -23,7 +37,9 @@
         , fileSizeLimit: 3 * 1024 * 1024 //文件限制大小，单位字节，默认3M
         , fileNumLimit: 0 //最大上传的文件数，默认不限制
         , multiple: false //是否允许多文件上传
+        , onView: null //查看
         , onSuccess: null //上传后回调
+        , onRemove: null //删除前回调 function(fn,event)
     };
     $.ligerDefaults.UploadString = {
         typeDeniedText: '只能上传文件类型为{extensions}的文件'

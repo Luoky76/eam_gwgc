@@ -69,7 +69,8 @@ namespace Gksyb.Server.Services.System
         /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var gridData = await _dbContext.Query<TaskResponse>().Where(c => (c.APPNAME ?? _options.AppName) == _options.AppName).GetGridData(request);
+            var appname = _options.TaskAppName ?? _options.AppName;
+            var gridData = await _dbContext.Query<TaskResponse>().Where(c => (c.APPNAME ?? appname) == appname).GetGridData(request);
             var rows = gridData.Rows as IList<TaskResponse>;
             foreach (var row in rows)
             {
@@ -152,7 +153,8 @@ namespace Gksyb.Server.Services.System
             entity.TASK_ERROR_REGEX = CryptographyHelper.DecryptFront(entity.TASK_ERROR_REGEX);
             entity.ID = GuidHelper.NewSnowflakeId();
             entity.MODIFYUSER = _user.IP;
-            entity.APPNAME = _options.AppName;
+            var appname = _options.TaskAppName ?? _options.AppName;
+            entity.APPNAME = appname;
         }
 
         /// <summary>

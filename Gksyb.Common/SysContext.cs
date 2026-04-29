@@ -8,6 +8,11 @@
         public int AdminUserID { get; set; }
 
         /// <summary>
+        /// 开发者ID
+        /// </summary>
+        public int DeveloperID { get; set; }
+
+        /// <summary>
         /// 管理员用户组
         /// </summary>
         public int AdminRole { get; set; }

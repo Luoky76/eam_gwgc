@@ -86,6 +86,7 @@
                 formData.password = encrypt(formData.password);
                 app.ajax({
                     noGlobal: true,
+                    jsToken: true,
                     url: 'weixin/bind',
                     data: formData,
                     success: function () {
@@ -112,6 +113,7 @@
                 var me = this;
                 app.ajax({
                     noGlobal: true,
+                    jsToken: true,
                     url: 'weixin/unbind',
                     success: function () {
                         app.dialog.alert("解绑成功", function () {

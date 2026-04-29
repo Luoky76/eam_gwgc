@@ -28,7 +28,11 @@
         ajaxContentType: null,
         ajaxType: 'post',
         onSuccess: null,
-        onError: null,
+        onError: function (XMLHttpRequest, _textStatus, errorThrown) { //错误事件
+            $.ligerDialog.error('请求数据出错,页面即将跳转!<br/>原因为：' + (XMLHttpRequest.responseText || "") + "<br/>错误码:" + (XMLHttpRequest.status || "") + (errorThrown || ""), "操作失败", function () {
+                location.reload();
+            });
+        },
         render: null,            //显示html自定义函数
         css: null,               //附加css
         value: null,            //值

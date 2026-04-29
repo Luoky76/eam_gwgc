@@ -43,14 +43,24 @@ namespace Gksyb.Core.Auth
         public bool IsOurCompany { get; set; }
 
         /// <summary>
-        /// 基础验证 只验证是否登陆
+        /// 基础验证 只验证是否登陆（访客用户除外）
         /// </summary>
         public bool IsBaseAuth { get; set; }
+
+        /// <summary>
+        /// 验证是否访客以上权限（防止基础验证部分也被访客调用）
+        /// </summary>
+        public bool IsGuest { get; set; }
 
         /// <summary>
         /// 验证是否API用户
         /// </summary>
         public bool IsApi { get; set; }
+
+        /// <summary>
+        /// 验证是否开发者
+        /// </summary>
+        public bool IsDeveloper { get; set; }
 
         /// <summary>
         /// 验证模式
@@ -126,13 +136,15 @@ namespace Gksyb.Core.Auth
                 }
                 return false;
             }
-            if (IsBaseAuth) return true;
+            if (IsGuest) return true;
+            if (IsBaseAuth && !user.IsGuest) return true;
             if (IsSuper) return user.IsSuper;
             if (IsAdmin) return user.IsAdmin;
             if (IsOurCompany) return user.IsOurCompany;
             if (IsApi) return user.IsApi;
+            if (IsDeveloper) return user.IsDeveloper;
             SetAppname(httpContext);
-            if (!CheckGroup()) return false;
+            if (CheckGroup()) return true;
             if (!CheckButton()) return false;
             var roleModuleService = httpContext.RequestServices.GetService<IRoleModuleService>();
             foreach (var roleName in user.Roles)
@@ -184,11 +196,11 @@ namespace Gksyb.Core.Auth
         }
 
         /// <summary>
-        /// 验证用户
+        /// 验证用户所属组
         /// </summary>
         private bool CheckGroup()
         {
-            if (string.IsNullOrWhiteSpace(Group)) return true;
+            if (string.IsNullOrWhiteSpace(Group)) return false;
             var match = Mode.GetFunc();
             return match(Group, user.Group);
         }

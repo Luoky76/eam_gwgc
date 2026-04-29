@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc
                 ips = $"{(await service.GetAsync(_appid))},{ips}";
             }
             var ip = context.HttpContext.Request.GetRealIP();
-            var list = (_ip ?? "").Split(",").DistinctAndOrderBy().ToList();
+            var list = (ips ?? "").Split(",").DistinctAndOrderBy().ToList();
             if (list.Any(pattern => Regex.IsMatch(ip, pattern))) return;
             context.Result = new OkObjectResult(AjaxResult.Error($"{ip}不在白名单"));
         }

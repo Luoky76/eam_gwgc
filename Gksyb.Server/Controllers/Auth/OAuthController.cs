@@ -30,7 +30,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 获取列表
         /// </summary>
-        [GksybAuthorize(IsSuper = true)]
+        [GksybAuthorize(IsDeveloper = true)]
         public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
         {
             return AjaxResult<GridData>.Success(await _service.ListAsync(request));
@@ -39,7 +39,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <summary>
         /// 保存
         /// </summary>
-        [JsToken, GksybAuthorize(IsSuper = true)]
+        [JsToken, GksybAuthorize(IsDeveloper = true)]
         public async Task<AjaxResult> SaveAsync(SaveRequest<SYS_OAUTH> request)
         {
             return await _service.SaveAsync(request);
@@ -139,6 +139,23 @@ namespace Gksyb.Server.Controllers.Auth
             request.Source = "SSO";
             request.MenuAppname = menuAppname;
             return await service.LoginAsync(request, checkPassword: false);
+        }
+
+        /// <summary>
+        /// 本系统通过单点认证中心，登录外系统用到的token
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> SSOTokenAsync(string userType)
+        {
+            var ip = Request.GetRealIP();
+            var ua = Request.GetUserAgent();
+            var token = await _service.GetSSOTokenAsync(new TokenRequest()
+            {
+                Key = await _service.GetStoreKeyAsync(userType),
+                IP = ip,
+                UA = ua
+            });
+            return AjaxResult.Success(token, default);
         }
 
         /// <summary>

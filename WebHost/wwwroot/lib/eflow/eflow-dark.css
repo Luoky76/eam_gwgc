@@ -1,0 +1,178 @@
+﻿/* Dark theme for eflow.css based on vben5 dark mode colors with l-dark-mode parent selector */
+.l-dark-mode .lf-graph {
+    background-color: #151515;
+}
+
+.l-dark-mode .lf-text-input {
+    border-color: #2a2a2a;
+    background-color: #1e1e1e;
+    color: #e6e6e6;
+}
+
+.l-dark-mode .lf-node-select-decorate {
+    border-color: #a0a0a0;
+}
+
+.l-dark-mode .lf-multiple-select {
+    border-color: rgba(66, 158, 246, 0.8);
+    box-shadow: 0px 0px 3px 0px rgba(66, 158, 246, 0.5);
+}
+
+.l-dark-mode .lf-control {
+    background-color: rgba(30, 30, 30, 0.8);
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.l-dark-mode .lf-control-item:hover {
+    background-color: #2a2a2a;
+}
+
+.l-dark-mode .lf-control-item.disabled:hover {
+    background-color: #1e1e1e;
+}
+
+.l-dark-mode .lf-menu {
+    background-color: #1e1e1e;
+    border-color: #2a2a2a;
+}
+
+.l-dark-mode .lf-menu-item__disabled {
+    color: #666666;
+}
+
+.l-dark-mode .lf-menu-item:hover {
+    background-color: #2a2a2a;
+}
+
+.l-dark-mode .lf-dndpanel {
+    background-color: rgba(30, 30, 30, 0.8);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.l-dark-mode .lf-selection-select {
+    border-color: #ff8c00;
+}
+
+.l-dark-mode .lf-mini-map {
+    border-color: #4a4a4a;
+    background-color: rgba(30, 30, 30, 1);
+}
+
+.l-dark-mode .lf-minimap-viewport {
+    border-color: rgb(66, 158, 246);
+}
+
+.l-dark-mode .lf-mini-map-header {
+    border-top-color: #404040;
+    border-bottom-color: #555555;
+    background-color: #2a2a2a;
+    background-image: linear-gradient(to bottom, #333333, #242424);
+}
+
+.l-dark-mode .lf-mini-map-close {
+    filter: brightness(0.8); /* Adjust icon brightness for dark mode */
+}
+
+.l-dark-mode .lf-context-item:hover {
+    background-color: rgba(60, 70, 80, 0.5);
+}
+
+/* Additional dark mode adjustments for text and other elements */
+.l-dark-mode .lf-node-text-auto-wrap-content {
+    color: #e6e6e6;
+}
+
+.l-dark-mode .lf-node-text-ellipsis-content {
+    color: #e6e6e6;
+}
+
+.l-dark-mode .lf-get-text-height {
+    color: #e6e6e6;
+}
+
+/* Adjust edge colors for better visibility in dark mode */
+.l-dark-mode .lf-edge {
+    stroke: #8c8c8c;
+}
+
+.l-dark-mode .lf-edge-append {
+    fill: #8c8c8c;
+    stroke: #8c8c8c;
+}
+
+/* Node anchor points */
+.l-dark-mode .lf-node-anchor {
+    fill: #66ccff;
+    stroke: #187dff;
+}
+
+.l-dark-mode .lf-node-anchor-hover {
+    fill: #66ccff;
+    stroke: #187dff;
+}
+
+/* Grid background */
+.l-dark-mode .lf-background,
+.l-dark-mode .lf-grid {
+    background-color: #0f0f0f;
+}
+
+/* Text elements */
+.l-dark-mode text.lf-element-text {
+    fill: #e6e6e6;
+    color: #e6e6e6;
+}
+
+/* Outline and snapline */
+.l-dark-mode .lf-outline,
+.l-dark-mode .lf-snapline {
+    stroke: #4a90e2;
+    color: #4a90e2;
+}
+
+/* Adjust selection highlights */
+.l-dark-mode .lf-node-select-decorate {
+    border-color: #4a90e2;
+}
+
+/* Control icons adjustment for dark mode */
+.l-dark-mode .lf-control-zoomOut, .lf-control-zoomIn, .lf-control-fit, .lf-control-undo, .lf-control-redo, .lf-control-see, .lf-control-clear, .lf-control-form, .lf-control-save {
+    filter: invert(1);
+}
+
+.l-dark-mode .lf-grid rect {
+    fill: transparent;
+}
+
+.l-dark-mode .lf-node-content path {
+    fill: #187dff;
+}
+
+.l-dark-mode .lf-node-content rect {
+    fill: #222222;
+}
+
+.l-dark-mode .lf-node-content circle {
+    fill: #222222;
+}
+
+.l-dark-mode .lf-node-content polygon {
+    fill: #222222;
+}
+
+.l-dark-mode .lf-edge rect {
+    fill: #151515;
+}
+
+.l-dark-mode .lf-node-content .lf-resize-control rect {
+    fill: transparent;
+}
+
+.l-dark-mode .lf-node-content .lf-resize-control circle {
+    fill: transparent;
+}
+
+.l-dark-mode .lf-node-content .lf-resize-control polygon {
+    fill: transparent;
+}

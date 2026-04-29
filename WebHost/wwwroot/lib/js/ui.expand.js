@@ -15,6 +15,9 @@ $.extend($.ligerui.controls.Grid.prototype, {
         return location.pathname + "?" + getQueryStringByName("MenuNo") + "#" + this.id;
     },
     _loadCustomColumn: function () {
+        if (!window.session.Token) {
+            return;
+        }
         var g = this;
         var id = g._getCustomColumnId();
         var column = (topDomainWindow.__CustomColumn || {})[id];
@@ -38,7 +41,9 @@ $.extend($.ligerui.controls.Grid.prototype, {
         g._setCustomColumn(column);
     },
     _setCustomColumn: function (columns) {
-        if (!columns) return;
+        if (!columns || !window.session.Token) {
+            return;
+        }
         var g = this;
         var cols = (columns || "").split(',') || [];
         $(g.columns).each(function () {

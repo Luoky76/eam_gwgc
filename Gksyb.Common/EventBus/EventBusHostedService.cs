@@ -68,32 +68,43 @@ namespace Gksyb.Common.EventBus
                 _logger.LogInformation(_logPath, $"接到广播{model.Action}：{model.Data}，{model.ActionTime:yyyy-MM-dd HH:mm:ss}");
                 var eventHandlers = EventBusStore.EventHandlers.Where(c => c.EventId == model.Action).ToList();
                 if (eventHandlers.Count < 1) return;
-                Parallel.ForEach(eventHandlers, eventHandler =>
+                foreach (var eventHandler in eventHandlers)
                 {
-                    Task.Factory.StartNew(async () =>//开启多线程，加大吞吐量
+                    _ = ProcessEventHandlerAsync(eventHandler, model, stoppingToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(_logPath, ex.ToString());
+            }
+        }
+
+        private async Task ProcessEventHandlerAsync(EventHandler eventHandler, ActionData<string> model, CancellationToken stoppingToken)
+        {
+            try
+            {
+                _logger.LogInformation(_logPath, $"触发事件:{eventHandler.Handler.DeclaringType}:{eventHandler.Handler.Name}");
+                if (stoppingToken.IsCancellationRequested)
+                    return;
+
+                var values = eventHandler.Handler.GetParametersValue(model.Data);
+                object obj = null, invokeResult = null;
+                if (eventHandler.Handler.IsStatic)
+                {
+                    invokeResult = eventHandler.Handler!.Invoke(obj, values);
+                    if (invokeResult is Task task2)
                     {
-                        try
-                        {
-                            _logger.LogInformation(_logPath, $"触发事件:{eventHandler.Handler.DeclaringType}:{eventHandler.Handler.Name}");
-                            var values = eventHandler.Handler.GetParametersValue(model.Data);
-                            object obj = null, invokeResult = null;
-                            if (eventHandler.Handler.IsStatic)
-                            {
-                                invokeResult = eventHandler.Handler!.Invoke(obj, values);
-                                if (invokeResult is Task task2) await task2;
-                                return;
-                            }
-                            using var scope = _serviceScopeFactory.CreateAsyncScope();
-                            obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
-                            invokeResult = eventHandler.Handler!.Invoke(obj, values);
-                            if (invokeResult is Task task) await task;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(_logPath, ex.ToString());
-                        }
-                    }, stoppingToken);
-                });
+                        await task2.WaitAsync(stoppingToken).ConfigureAwait(false);
+                    }
+                    return;
+                }
+                using var scope = _serviceScopeFactory.CreateAsyncScope();
+                obj = scope.ServiceProvider.GetService(eventHandler.Handler.DeclaringType);
+                invokeResult = eventHandler.Handler!.Invoke(obj, values);
+                if (invokeResult is Task task)
+                {
+                    await task.WaitAsync(stoppingToken).ConfigureAwait(false);
+                }
             }
             catch (Exception ex)
             {

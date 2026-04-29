@@ -56,6 +56,7 @@
                     </div>
                 </div>
                 <div id="tab-flow-timeline" class="page-content tab">
+                    <div id="current-node-summary" class="block block-strong display-none current-node-summary"></div>
                     <div id="flow-timeline" class="timeline margin-top">
                     </div>
                 </div>
@@ -128,7 +129,7 @@
             }
             me.mainForm = app.mform.create(window._displayOptions);
             delete window._displayOptions;
-            if (me.nid) {
+            if (me.nid || me.data.FormData) {
                 me.mainForm.setOrginData(JSON.parse((me.data.FormData || "{}")), false);
             }
             else {
@@ -145,6 +146,15 @@
                 return;
             }
             timelineTab.show();
+            var container = page.find("#current-node-summary");
+            container.addClass("display-none").html('');
+            if (!me.data.FinishDate) {
+                var summaries = me.formatCurrentNodes();
+                if (summaries.length > 0) {
+                    container.html('<div class="current-node-text">当前处理人：' + summaries.join('；') + '</div>');
+                    container.removeClass("display-none");
+                }
+            }
             var logs = me.data.Logs;
             var htmls = [];
             for (var i = 0, l = logs.length; i < l; i++) {
@@ -173,13 +183,51 @@
                 if (fn(item)) return item;
             }
         },
+        formatCurrentNodes: function () {
+            var me = this, nodes = me.data.CurrentNodes || [];
+            var groups = {};
+            for (var i = 0, l = nodes.length; i < l; i++) {
+                var node = nodes[i] || {};
+                var key = node.NodeTitle || node.NodeName || "";
+                if (!Object.prototype.hasOwnProperty.call(groups, key)) {
+                    groups[key] = { names: [], hasEmpty: false };
+                }
+                var current = groups[key];
+                var user = node.NodeUser || node.NodeUserName || "";
+                var values = user ? user.split(me.split) : [];
+                if (values.length < 1) {
+                    current.hasEmpty = true;
+                }
+                for (var j = 0, jl = values.length; j < jl; j++) {
+                    var name = values[j];
+                    if (!name) continue;
+                    name = name.trim();
+                    if (!name) continue;
+                    if (current.names.indexOf(name) < 0) {
+                        current.names.push(name);
+                    }
+                }
+            }
+            var results = [];
+            for (var key in groups) {
+                if (!Object.prototype.hasOwnProperty.call(groups, key)) continue;
+                var item = groups[key];
+                var text = item.names.join('、');
+                if (!text && item.hasEmpty) {
+                    text = '待处理';
+                }
+                if (!text) continue;
+                results.push((key ? key + '：' : '') + text);
+            }
+            return results;
+        },
         loadData: function (param) {
             var me = this, param = param || me.param;
             app.ajax({
                 jsToken: true,
                 async: false,
                 url: 'workflow/query/taskInfo',
-                data: { Id: param.id, FlowId: param.flowId, FlowCode: param.flowCode },
+                data: { Id: param.id, FlowId: param.flowId, FlowCode: param.flowCode, CopyTaskId: param.copyTaskId },
                 success: function (data) {
                     me.data = data || {};
                     var startType = "bpmn:startEvent";
@@ -255,10 +303,17 @@
                 me.excute(me.nodeStatus.Back);
             }, undefined, "");
         },
+        setCallback: function (callback) {
+            var me = this;
+            me._callback = callback;
+        },
         excute: function (nodeStatus, data, skipAssign) {
             var me = this;
             data = Framework7.utils.extend({ Id: me.data.Id }, data);
             var inner = function () {
+                if (me._callback) {
+                    me._callback(nodeStatus, data);
+                }
                 app.ajax({
                     jsToken: true,
                     url: 'workflow/task/' + nodeStatus,

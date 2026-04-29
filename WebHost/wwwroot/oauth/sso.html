@@ -18,7 +18,8 @@
                 return decodeURIComponent(result[1]);
             },
             getBaseUrl: function (root) {
-                return location.href.substring(0, location.href.lastIndexOf("/") + 1) + root;
+                var url = (location.origin + location.pathname);
+                return url.substring(0, url.lastIndexOf("/") + 1) + root;
             },
             error: function (xhr, msg) {
                 msg = (xhr.status || "") + " " + (xhr.statusText || "") + " " + msg;
@@ -72,22 +73,27 @@
                 var me = this;
                 me.baseUrl = me.getBaseUrl("../");
                 var toUrl = me.getQueryStringByName("redirect_uri") || (me.baseUrl + "index.html");
+                var token = me.getQueryStringByName("token");
                 me.httpRequest({
                     url: 'oauth/sso',
                     headers: {
-                        token: me.getQueryStringByName("token"),
+                        "GKSYBTOKEN": token,
+                        token: token,
                         menuAppname: me.getQueryStringByName("menuAppname")
                     },
                     success: function (data) {
                         window.localStorage.setItem("GksybTicket", data.Ticket);
                         delete data.Ticket;
                         window.localStorage.setItem("GksybData", JSON.stringify(data));
-                        location.href = toUrl;
+                        window.open(toUrl, "_self", "noreferrer noopener");
                     },
                     beforeSend: function (jqXHR, options) {
                         me.httpRequest({
                             url: "oauth/jstoken",
                             dataType: "text",
+                            headers: {
+                                "GKSYBTOKEN": token
+                            },
                             success: function (result) {
                                 eval(result);
                             }

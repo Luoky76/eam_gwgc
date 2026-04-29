@@ -19,8 +19,11 @@ namespace Gksyb.Common.Data
                 {IsNullOrWhiteSpace_Handler.MethodName, new IsNullOrWhiteSpace_Handler() },
                 {Compare_Handler.MethodName, new Compare_Handler()},
                 {Contains_Handler.MethodName, new Contains_Handler()},
-                {SumString_Handler.MethodName, new SumString_Handler("WM_CONCAT",null)},
-                {MathAbs_Handler.MethodName, new MathAbs_Handler()}
+                {SumString_Handler.MethodName, new OracleSumString_Handler()},
+                {MathAbs_Handler.MethodName, new MathAbs_Handler()},
+                {MathRound_Handler.MethodName, new MathRound_Handler()},
+                {MathFloor_Handler.MethodName, new MathFloor_Handler()},
+                {MathCeiling_Handler.MethodName, new MathCeiling_Handler()}
             };
             foreach (var item in methodHandlerDic)
             {

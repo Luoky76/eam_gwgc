@@ -74,6 +74,12 @@ namespace Gksyb.Core.Auth
         public string WorkerCode { get; set; }
 
         /// <summary>
+        /// 密码修改提示信息
+        /// </summary>
+        [JsonProperty("PWDI")]
+        public string PasswordInfo { get; set; }
+
+        /// <summary>
         /// 所属组织
         /// </summary>
         public CorpInfo Corp { get; set; }
@@ -167,6 +173,32 @@ namespace Gksyb.Core.Auth
         /// </summary>
         [JsonProperty("API")]
         public bool IsApi { get; set; }
+
+        /// <summary>
+        /// 是否访客
+        /// </summary>
+        [JsonIgnore]
+        public bool IsGuest
+        {
+            get
+            {
+                if (ExtendData.TryGetValue(nameof(IsGuest), out object value))
+                {
+                    return true.Equals(value);
+                }
+                return false;
+            }
+            set
+            {
+                ExtendData[nameof(IsGuest)] = value;
+            }
+        }
+
+        /// <summary>
+        /// 是否开发者
+        /// </summary>
+        [JsonProperty("IDEV")]
+        public bool IsDeveloper { get; set; }
 
         /// <summary>
         /// IP地址

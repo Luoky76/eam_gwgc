@@ -1,6 +1,11 @@
-﻿namespace Gksyb.Model.Grid
+﻿using Gksyb.Common.Json;
+using Gksyb.Common.Static;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+
+namespace Gksyb.Model.Grid
 {
-    /// <summary>
+    /// <summary> 
     /// 表格数据
     /// </summary>
     /// <typeparam name="T"></typeparam>
@@ -9,6 +14,7 @@
         /// <summary>
         /// 数据行
         /// </summary>
+        [JsonConverter(typeof(GridRowJsonConverter))]
         public T Rows { get; set; }
 
         /// <summary>
@@ -22,5 +28,17 @@
     /// </summary>
     public class GridData : GridData<object>
     {
+    }
+
+    class GridRowJsonConverter : LargeCollectionJsonConverter
+    {
+        private static readonly int NullValueIgnoreThreshold;
+        static GridRowJsonConverter()
+        {
+            NullValueIgnoreThreshold = HttpContext.Configuration.GetValue($"{OptionName.SysContext}:GridNullValueIgnoreThreshold", defaultValue: 21);
+        }
+        public GridRowJsonConverter() : base(NullValueIgnoreThreshold)
+        {
+        }
     }
 }

@@ -82,6 +82,9 @@
                         case "save":
                             me.save();
                             break;
+                        case "encrypt":
+                            me.encrypt();
+                            break;
                     }
                 }
                 me.grid.set({
@@ -93,7 +96,9 @@
                             { line: true },
                             { id: "save", text: '保存', click: me.toolbarBtnItemClick, icon: "fa fa-save" },
                             { line: true },
-                            { id: "delete", text: '删除', click: me.toolbarBtnItemClick, icon: "fa fa-times" }
+                            { id: "delete", text: '删除', click: me.toolbarBtnItemClick, icon: "fa fa-times" },
+                            { line: true },
+                            { id: "encrypt", text: '密文', click: me.toolbarBtnItemClick, icon: "fa fa-eye" }
                         ]
                     }
                 });
@@ -128,6 +133,36 @@
                     });
                 }
 
+            },
+            encrypt: function () { //保存
+                var me = this;
+                $.ligerDialog.prompt("请输入", "", function (isOk, val) {
+                    if (isOk) {
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'codeGen/doEncrypt',
+                            loading: '正在处理中...',
+                            data: { data: val },
+                            success: function (data) {
+                                $.ligerDialog.open({
+                                    type: "success",
+                                    content: '密文为' + data,
+                                    buttons: [{
+                                        text: "复制并关闭",
+                                        onclick: function () {
+                                            var g = this, p = g.options;
+                                            p.parent.close();
+                                            navigator.clipboard.writeText(data);
+                                        }
+                                    }]
+                                });
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;

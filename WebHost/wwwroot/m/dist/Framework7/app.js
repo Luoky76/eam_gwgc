@@ -63,8 +63,8 @@
             }
         });
     }
+    var imeiKey = "GksybIMEI";
     if (window[imeiKey] === undefined) {
-        var imeiKey = "GksybIMEI";
         Object.defineProperty(window, imeiKey, {
             get: function () {
                 var val = window.localStorage.getItem(imeiKey);
@@ -137,6 +137,7 @@
                 data: data,
                 dataType: "text",
                 type: 'post',
+                _toLogin: opt._toLogin,
                 success: function (result) {
                     eval(result);
                 },
@@ -776,7 +777,7 @@
             }
             if (app.WXSignUrl !== signUrl) {
                 Framework7.ajax({
-                    noGlobal: true,
+                    noGlobalBeforeSend: true,
                     url: 'Weixin/JsSDK',
                     data: { url: signUrl },
                     success: function (data) {

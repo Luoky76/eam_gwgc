@@ -5,6 +5,7 @@ using Gksyb.Model.Grid;
 using Gksyb.Model.WorkFlow;
 using Gksyb.Workflow.Controllers.Workflow.Dtos;
 using System.Linq.Expressions;
+using FlowNodeInfo = Gksyb.Core.Interfaces.WorkFlow.NodeInfo;
 using NodeInfo = Gksyb.Workflow.Controllers.Workflow.Dtos.NodeInfo;
 
 namespace Gksyb.Workflow.Services.Workflow
@@ -27,7 +28,7 @@ namespace Gksyb.Workflow.Services.Workflow
         {
             return await _dbContext.Query<WF_FLOW>()
                 .Where(FilterCorp)
-                .Where(_user.IsSuper ? c => true : c => (c.PASSIVE ?? "0") == "0")
+                .Where(_user.IsDeveloper ? c => true : c => (c.PASSIVE ?? "0") == "0")
                 .Exclude(c => new { c.FLOW_CONTENT, c.FLOW_FORM }).GetGridData(request);
         }
 
@@ -99,7 +100,7 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<GridData> ToReadAsync(GridRequest request)
         {
             var query = _dbContext.Query<WF_NODE_SHARE>().Where(c => c.TASK_FINISH_FLAG == "0")
-               .Where(_user.IsSuper ? c => true : c => c.USERID == _user.UserID)
+               .Where(_user.IsDeveloper ? c => true : c => c.USERID == _user.UserID)
                .InnerJoin<WF_TASK>((share, task) => share.TASK_ID == task.ID).Select((share, task) => new NodeInfo
                {
                    Id = share.NODE_ID,
@@ -118,7 +119,7 @@ namespace Gksyb.Workflow.Services.Workflow
                });
             var data = await query.GetGridDataList(request);
             var history = _dbContext.Query<WF_NODE_SHARE>().Where(c => c.TASK_FINISH_FLAG == "1")
-               .Where(_user.IsSuper ? c => true : c => c.USERID == _user.UserID)
+               .Where(_user.IsDeveloper ? c => true : c => c.USERID == _user.UserID)
                .InnerJoin<WF_HISTORY_TASK>((share, task) => share.TASK_ID == task.ID).Select((share, task) => new NodeInfo
                {
                    Id = share.NODE_ID,
@@ -152,6 +153,10 @@ namespace Gksyb.Workflow.Services.Workflow
         public async Task<TaskInfoEx> TaskInfoAsync(TaskInfoRequest request)
         {
             TaskInfoEx info;
+            if (!string.IsNullOrWhiteSpace(request.CopyTaskId))
+            {
+                return await GetCopyTaskInfoInnerAsync(request);
+            }
             if (request.DoStartFlow)
             {
                 info = await GetTaskInfoInnerAsync(request);
@@ -163,11 +168,31 @@ namespace Gksyb.Workflow.Services.Workflow
             return info;
         }
 
+        private async Task<TaskInfoEx> GetCopyTaskInfoInnerAsync(TaskInfoRequest request)
+        {
+            var task = await _dbContext.Query<WF_TASK>().Where(c => c.ID == request.CopyTaskId).Select(c => new WF_TASK()
+            {
+                FLOW_ID = c.FLOW_ID,
+                FLOW_FORM_DATA = c.FLOW_FORM_DATA
+            }).FirstOrDefaultAsync() ?? await _dbContext.Query<WF_HISTORY_TASK>().Where(c => c.ID == request.CopyTaskId).Select(c => new WF_TASK()
+            {
+                FLOW_ID = c.FLOW_ID,
+                FLOW_FORM_DATA = c.FLOW_FORM_DATA
+            }).FirstOrDefaultAsync();
+            MessageException.ThrowIf(task == null, $"找不到{request.CopyTaskId}的任务");
+            request.FlowId = task.FLOW_ID;
+            var info = await GetTaskInfoInnerAsync(request);
+            MessageException.ThrowIf(info == null, $"无权操作编号为{request.FlowCode ?? request.FlowId}的流程");
+            info.FormData = task.FLOW_FORM_DATA;
+            return info;
+        }
+
         /// <summary>
         /// 初始任务详情
         /// </summary>
         private async Task<TaskInfoEx> GetTaskInfoInnerAsync(TaskInfoRequest request)
         {
+
             return await _dbContext.Query<WF_FLOW>().Where(FilterCorp)
                 .WhereIfNotNullOrEmpty(request.FlowId, c => c.ID == request.FlowId)
                 .WhereIfNotNullOrEmpty(request.FlowCode, c => c.FLOW_CODE == request.FlowCode || c.ID == request.FlowCode)
@@ -218,6 +243,7 @@ namespace Gksyb.Workflow.Services.Workflow
                     FinishDate = task.FINISHDATE
                 }).OrderBy(c => c.Id).FirstOrDefaultAsync();
             if (info == null) return info;
+            info.CurrentNodes = await GetCurrentNodesAsync(info.TaskId);
             info.WorkNodeId = info.NodeId;
             if (typeof(T1) == typeof(WF_NODE) && info.NodeStatus != NodeStatus.Active)
             {
@@ -259,6 +285,36 @@ namespace Gksyb.Workflow.Services.Workflow
             {
                 FINISHDATE = DateTime.Now
             });
+        }
+
+        /// <summary>
+        /// 获取当前处理节点
+        /// </summary>
+        private async Task<List<FlowNodeInfo>> GetCurrentNodesAsync(string taskId)
+        {
+            if (string.IsNullOrWhiteSpace(taskId))
+            {
+                return new List<FlowNodeInfo>();
+            }
+            return await _dbContext.Query<WF_NODE>()
+                .Where(node => node.TASK_ID == taskId && node.NODE_STATUS == NodeStatus.Active)
+                .OrderBy(node => node.CREATEDATE)
+                .Select(node => new FlowNodeInfo
+                {
+                    Id = node.ID,
+                    NodeId = node.NODE_ID,
+                    NodeName = node.NODE_NAME,
+                    NodeTitle = node.NODE_TITLE,
+                    NodeType = node.NODE_TYPE,
+                    NodeStatus = node.NODE_STATUS,
+                    NodeUserId = node.NODE_USERID,
+                    NodeUserName = node.NODE_USERNAME,
+                    NodeUser = node.NODE_USER,
+                    NodeReason = node.NODE_REASON,
+                    StartDate = node.CREATEDATE,
+                    ViewDate = node.VIEWDATE,
+                    FinishDate = node.FINISHDATE
+                }).ToListAsync();
         }
 
         /// <summary>

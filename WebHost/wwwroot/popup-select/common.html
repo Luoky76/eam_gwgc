@@ -8,7 +8,7 @@
     <script src="../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 5px; height: 100%;">
+<body style="padding: 5px; height: 100%;overflow:hidden;">
     <div id="mainsearch" style="display:none;">
         <form action="" id="formsearch" class="l-form">
         </form>
@@ -23,6 +23,7 @@
             grid: null,
             searchForm: null,
             buttons: null,
+            firstLoad: true,
             setGrid: function () {
                 var me = this;
                 var options = $.extend({
@@ -38,14 +39,16 @@
                     checkbox: true,
                     enabledEdit: false,
                     clickToEdit: false,
-                    isChecked: function (item) {
-                        if (me._storageSelect) {
-                            var key = item[me.data.options.rowKey];
-                            var isSelect = me._storageSelect[key] === true;
-                            delete me._storageSelect[key];
-                            if (isSelect) return true;
+                    onLoadSuccess: function (data) {
+                        if (me.firstLoad && $.isEmptyObject(this.__storageSelect)) {
+                            this.__storageSelect = me._storageSelect;
                         }
-                        return false;
+                    },
+                    onComplete: function () {
+                        var row = this.getSelectedRow();
+                        if (row) {
+                            this.scrollToRow(row["__index"]);
+                        }
                     }
                 }, me.data.options);
                 options.columns.removeNull();
@@ -107,11 +110,12 @@
             },
             save: function () {
                 var me = this;
-                var rows = me.grid.getSelectedRows() || [];
+                var removeStatus = me.data.removeStatus === undefined ? true : me.data.removeStatus;
+                var rows = me.grid.getSelectedRows(removeStatus) || [];
                 var values = [];
                 for (var i = 0, l = rows.length; i < l; i++) {
                     var row = rows[i];
-                    values.push(row[me.data.options.rowKey]);
+                    values.push(row[me.grid.options.rowKey]);
                 }
                 if (me.data.callback) {
                     me.data.callback(values, rows);
@@ -137,7 +141,7 @@
                     //    values: "123,456,789,",//[123,456,789]
                     //    //split:",",
                     //    options: {
-                    //        url: 'popup/users', sortName: 'Name', rowKey: "",
+                    //        url: 'popup/users', sortName: 'Name', rowKey: "ID",
                     //        columns: [
                     //            { display: "表格列", name: "column", type: "text" }
                     //        ]

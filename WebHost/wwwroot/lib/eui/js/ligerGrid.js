@@ -1,4 +1,6 @@
 ﻿(function ($) {
+    var l = $.ligerui;
+
     $.fn.ligerGrid = function (p) {
         p = p || {};
         //命名纠正
@@ -16,6 +18,7 @@
         var size = $.ligerui.getScrollbarSize();
         if (p.scrollWidth === undefined) p.scrollWidth = size.width;
         if (p.scrollHeight === undefined) p.scrollHeight = size.height;
+        if (p.isMultiSelect && p.allowUnSelectRow === undefined) p.allowUnSelectRow = true;
         return $.ligerui.run.call(this, "ligerGrid", arguments);
     };
 
@@ -254,7 +257,23 @@
 
     $.ligerDefaults.Grid.sorters['date'];
     $.ligerDefaults.Grid.sorters['int'];
-    $.ligerDefaults.Grid.sorters['float'] = $.ligerDefaults.Grid.sorters['number'] ;
+    $.ligerDefaults.Grid.sorters['float'] = $.ligerDefaults.Grid.sorters['number'];
+    $.ligerDefaults.Grid.sorters['ascii'] = function (val1, val2) {
+        if (typeof val1 !== "string") val1 = (val1 || "").toString();
+        if (typeof val2 !== "string") val2 = (val2 || "").toString();
+        var minLength = Math.min(val1.length, val2.length);
+        for (var i = 0; i < minLength; i++) {
+            var codeA = val1.charCodeAt(i);
+            var codeB = val2.charCodeAt(i);
+            if (codeA !== codeB) {
+                return codeA < codeB ? -1 : 1;
+            }
+        }
+        if (val1.length === val2.length) {
+            return 0;
+        }
+        return val1.length < val2.length ? -1 : 1;
+    };
     $.ligerDefaults.Grid.sorters['string'] = $.ligerDefaults.Grid.sorters['text'];
 
     $.ligerDefaults.Grid.formatters['date'];
@@ -266,7 +285,18 @@
     $.ligerDefaults.Grid.formatters['select'] = $.ligerDefaults.Grid.formatters['combobox'];
 
     //checkbox
-    $.ligerDefaults.Grid.formatters['chk'] = $.ligerDefaults.Grid.formatters['checkbox'];
+    $.ligerDefaults.Grid.formatters['chk'] = $.ligerDefaults.Grid.formatters['checkbox'] = function (value, column) {
+        var data;
+        if (column.editor) data = column.editor.data || (column.editor.options ? (column.editor.options.data || undefined) : undefined);
+        data = data || [{ ID: true, TEXT: '1' }, { ID: false, TEXT: '0' }];
+        for (var i = 0, l = data.length; i < l; i++) {
+            var item = data[i];
+            if (value === item.TEXT) {
+                return item.ID ? '<i class="l-checkbox l-checkbox-checked"></i>' : '<i class="l-checkbox "></i>';
+            }
+        }
+        return value;
+    };
 
     //扩展 percent 百分比 类型的格式化函数(0到1之间)
     $.ligerDefaults.Grid.formatters['percent'];

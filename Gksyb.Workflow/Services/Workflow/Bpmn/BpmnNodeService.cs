@@ -142,8 +142,8 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
             if (users.Count < 1 && !string.IsNullOrWhiteSpace(OperatorType))
             {
                 users = OperatorType == "FromService" ?
-                    await FindeOperatorsFromService() :
-                    await FindeOperators();
+                    await FindOperatorsFromService() :
+                    await FindOperators();
             }
             if (users.Count < 1)
             {
@@ -368,7 +368,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// 从自定义的服务里面找处理人
         /// </summary>
         /// <returns></returns>
-        private async Task<List<UserInfo>> FindeOperatorsFromService()
+        private async Task<List<UserInfo>> FindOperatorsFromService()
         {
             var serviceName = Operators;
             if (string.IsNullOrWhiteSpace(serviceName)) return new List<UserInfo>();
@@ -381,7 +381,7 @@ namespace Gksyb.Workflow.Services.Workflow.Bpmn
         /// 从预制的服务里面找处理人
         /// </summary>
         /// <returns></returns>
-        private async Task<List<UserInfo>> FindeOperators()
+        private async Task<List<UserInfo>> FindOperators()
         {
             var service = _serviceProvider.GetService<IUserService>();
             var corpid = await _dbContext.Query<WF_TASK>().Where(c => c.ID == _info.TaskId).Select(c => c.CORPID).FirstOrDefaultAsync();

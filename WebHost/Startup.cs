@@ -156,7 +156,7 @@ namespace WebHost
             //SignalR
             services.AddSignalR().AddRedis(_configuration).AddNewtonsoftJsonProtocol(configure =>//配置使用NewtonsoftJson
             {
-                configure.PayloadSerializerSettings.Custom(igronNull: true);
+                configure.PayloadSerializerSettings.Custom(ignoreNull: true);
             });
             _plugins.ForEach(plugin =>
             {

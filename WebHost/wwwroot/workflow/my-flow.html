@@ -73,6 +73,7 @@
                                     var htmls = [];
                                     if (rowdata.TaskFinishFlag !== "1") htmls.push('<a class="l-grid-row-button" href="javascript:business.cancel()"><i class="fa fa-trash" aria-hidden="true" /></i>取回流程</a>');
                                     htmls.push('<a class="l-grid-row-button" href="javascript:business.handle()"><i class="fa fa-search" aria-hidden="true" /></i>详情</a>');
+                                    htmls.push('<a class="l-grid-row-button" href="javascript:business.restart()"><i class="fa fa-repeat" aria-hidden="true" /></i>重新发起</a>');
                                     return htmls.join('');
                                 }
                             }
@@ -221,6 +222,15 @@
                     return;
                 }
                 me.addTab(selected.Title, 'flow-detail.html?nid=' + selected.Id + '&isView=1');
+            },
+            restart: function () { //重新发起
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                if (!row) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                me.addTab(row.Title, 'flow-detail.html?cid=' + row.TaskId);
             },
             reload: function () { //刷新
                 var me = this;

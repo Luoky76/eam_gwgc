@@ -3,7 +3,10 @@ using Gksyb.Common.Office;
 using Gksyb.Common.Office.Core;
 using Gksyb.Common.Weixin;
 using Gksyb.Core.Auth;
+using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
+using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +21,32 @@ namespace Gksyb.Server.Controllers.Auth
     {
         public DemoController()
         {
+        }
+
+        public async Task<AjaxResult> OAuthApiTestAsync([FromServices] IOAuthApiService oAuthApi)
+        {
+            var request = new ListRequest
+            {
+                Page = 1,
+                PageSize = 10,
+                Rules = new List<Model.Filter.FilterRule>
+                {
+                    new("CODE_TYPE","岗位")
+                },
+                Orders = new List<OrderRequest>
+                {
+                    new("CODE_EN","asc")
+                }
+            };
+            return await oAuthApi.PostJsonAsync<AjaxResult>("DZKA", "demo/roleApi", request);
+        }
+
+        [GksybAuthorize(Group = "内部API")]
+        public async Task<AjaxResult> RoleApiAsync([FromServices] IDbContext db,[FromBody] ListRequest listRequest)
+        {
+            var gridRequest = listRequest.ToGridRequest();
+            var list = await db.Query<BC_CODE>().GetGridData(gridRequest);
+            return AjaxResult.Success(list);
         }
 
         public AjaxResult ParameterHandle(DemoDto request)

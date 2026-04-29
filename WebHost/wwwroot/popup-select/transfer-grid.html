@@ -18,7 +18,7 @@
     </style>
 </head>
 
-<body style="padding: 5px; height: 100%;">
+<body style="padding: 5px; height: 100%; overflow: hidden;">
     <div id="mainsearch">
         <form action="" id="formsearch" class="l-form">
         </form>
@@ -220,14 +220,16 @@
             save: function () {
                 var me = this;
                 if (me.grid2.endEdit() === false) return;
+                var removeStatus = me.data.removeStatus === undefined ? true : me.data.removeStatus;
                 var rows = me.grid2.data[me.grid2.options.root] || [];
-                var values = [];
+                var values = [], selects = [];
                 for (var i = 0, l = rows.length; i < l; i++) {
-                    var row = rows[i];
+                    var row = removeStatus ? me.grid2.formatRecord($.extend(true, {}, rows[i]), true) : rows[i];
                     values.push(row[me.grid2.options.rowKey]);
+                    selects.push(row);
                 }
                 if (me.data.callback) {
-                    me.data.callback(values, rows);
+                    me.data.callback(values, selects);
                 }
                 me.close();
             },
@@ -293,7 +295,12 @@
                     //        sortName: 'Name', rowKey: "",
                     //        columns: [
                     //            { display: "表格列", name: "column", type: "text" }//默认TEXT
-                    //        ]
+                    //        ],
+                    //        grid2: {
+                    //            columns: [
+                    //                { display: "表格列", name: "TEXT", type: "text" }
+                    //            ]
+                    //        }
                     //    },
                     //    //fields: [
                     //    //    { display: "查询条件", name: "name", type: "text" }//默认TEXT
