@@ -71,6 +71,7 @@ namespace Quartz
                 var isExcute = await distributedCache.GetStringAsync(taskKey);
                 if (isExcute == "1")
                 {
+                    taskKey = null;
                     _logger.LogInformation(_logPath, $"上次任务未完成，跳过本次调度");
                     return;
                 }
