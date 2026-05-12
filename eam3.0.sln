@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32112.339
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11723.231 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00 dll", "00 dll", "{2A8EBADF-8E08-4D21-9EB1-80C325F21C79}"
 	ProjectSection(SolutionItems) = preProject
@@ -55,6 +55,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0505 第三方对接", "050
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EAM.Third", "EAM.Third\EAM.Third.csproj", "{F0C41261-E65B-4871-8D9F-23257F7A01D1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0506 通用", "0506 通用", "{6FC9239E-8A69-4005-AE6B-CAB89D29BBE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EAM.Common", "EAM.Common\EAM.Common.csproj", "{B787538C-B8A0-4DBD-9BB3-639E379F50ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +108,10 @@ Global
 		{F0C41261-E65B-4871-8D9F-23257F7A01D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0C41261-E65B-4871-8D9F-23257F7A01D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0C41261-E65B-4871-8D9F-23257F7A01D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B787538C-B8A0-4DBD-9BB3-639E379F50ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B787538C-B8A0-4DBD-9BB3-639E379F50ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B787538C-B8A0-4DBD-9BB3-639E379F50ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B787538C-B8A0-4DBD-9BB3-639E379F50ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -126,9 +134,11 @@ Global
 		{C5160B15-E204-49CC-910F-3D96A2697C50} = {712AA5E4-4CBA-4D4E-A085-F6EB4CB06C1D}
 		{81F8C86B-1270-41AE-BD9B-51946D106379} = {AC6A1C58-1DC9-4D01-B3F0-C578EE004951}
 		{F0C41261-E65B-4871-8D9F-23257F7A01D1} = {81F8C86B-1270-41AE-BD9B-51946D106379}
+		{6FC9239E-8A69-4005-AE6B-CAB89D29BBE4} = {AC6A1C58-1DC9-4D01-B3F0-C578EE004951}
+		{B787538C-B8A0-4DBD-9BB3-639E379F50ED} = {6FC9239E-8A69-4005-AE6B-CAB89D29BBE4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {4E80B17E-A7B7-4F35-B424-56F6333E0DCF}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal
