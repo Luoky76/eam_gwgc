@@ -391,6 +391,17 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            clipboard: function (txt) {
+                const textarea = document.createElement('textarea');
+                textarea.value = txt;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                textarea.setSelectionRange(0, textarea.value.length);
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            },
             doInitPassword: function () {
                 var me = this;
                 if (me.grid.endEdit() === false) return;
@@ -425,7 +436,7 @@
                                         onclick: function () {
                                             var g = this, p = g.options;
                                             p.parent.close();
-                                            navigator.clipboard.writeText(data);
+                                            me.clipboard(data);
                                         }
                                     }]
                                 });
@@ -493,8 +504,22 @@
                         success: function (data, message) {
                             if (data && data.length > 0) {
                                 message = data.join('<br/>');
+                                $.ligerDialog.open({
+                                    type: "success",
+                                    content: message,
+                                    buttons: [{
+                                        text: "复制并关闭",
+                                        onclick: function () {
+                                            var g = this, p = g.options;
+                                            p.parent.close();
+                                            me.clipboard((message.match(/为([^<]+)/g) || []).join('\n').replace(/为/g, '') || '');
+                                        }
+                                    }]
+                                });
                             }
-                            LG.showSuccess(message);
+                            else {
+                                LG.showSuccess(message);
+                            }
                             me.grid.isDataChanged = false;
                             me.reload();
                         },
