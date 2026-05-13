@@ -61,6 +61,9 @@ namespace EAM.Material.Services
             return await _dbContext.Query<BASE_SPCATALOG>().GetGridData(request);
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> ListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_CATALOG_SCAN>()
@@ -173,6 +176,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("保存成功");
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_CATALOG_SCAN entity)
         {
             if (entity.SCAN_ID.IsNullOrWhiteSpace())
@@ -191,6 +197,9 @@ namespace EAM.Material.Services
             entity.SCAN_CODE = aa + index.ToString("D4");
             entity.AUDITING = "0";
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddDet(SP_CATALOG_SCAN_DET entity)
         {
             if (entity.SCAN_ID.IsNullOrWhiteSpace())
@@ -205,6 +214,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforUpdate(SP_CATALOG_SCAN entity)
         {
             var sysDate = await _dbContext.GetSysdate();
@@ -290,6 +302,9 @@ namespace EAM.Material.Services
                 }
             }
         }
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforDelete(SP_CATALOG_SCAN entity)
         {
             if (entity.AUDITING.Equals("0"))
@@ -301,6 +316,9 @@ namespace EAM.Material.Services
             }
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
@@ -328,6 +346,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_CATALOG_SCAN_DET>().GetGridData(request);

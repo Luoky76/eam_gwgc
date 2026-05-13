@@ -6,7 +6,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class SpOrderStopService : BaseService
+    public class SpOrderStopService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -94,6 +94,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success(id);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_ORDER_STOP entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -121,6 +124,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_ORDER_STOP entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -129,6 +135,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDelete(SP_ORDER_STOP entity)
         {
             await _dbContext.DeleteAsync<SP_STOP_DET>(x => x.STOP_ID == entity.STOP_ID);
@@ -330,6 +339,9 @@ namespace EAM.Material.Services
                 c => a => a.STOP_DET_ID == c.STOP_DET_ID, DetBeforeAdd, DetBeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task DetBeforeAdd(SP_STOP_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -341,6 +353,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task DetBeforeUpdate(SP_STOP_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -349,6 +364,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> SpOrderListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_ORDER_DETAIL>()

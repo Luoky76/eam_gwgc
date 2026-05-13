@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace EAM.Third.Services
 {
-    public class OAService : BaseService
+    public class OAService : BaseService, Gksyb.Common.IBaseService
     {
         private IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -47,6 +47,9 @@ namespace EAM.Third.Services
             }
         }
 
+        /// <summary>
+        /// 写入接口日志
+        /// </summary>
         public async Task<bool> LogAsync(string type, string paras, string detail)
         {
             await _dbContext.DBLog(type, "", paras + "\n" + detail, "");
@@ -174,6 +177,9 @@ namespace EAM.Third.Services
             return returnParam.ToJson();
         }
 
+        /// <summary>
+        /// 移除HTML内容
+        /// </summary>
         public string RemoveHtml(string html)
         {
             if (string.IsNullOrEmpty(html))

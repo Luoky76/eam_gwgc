@@ -27,9 +27,9 @@ namespace EAM.Device.controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                faultSrc = comboxData["FaultSrc"],
-                shipInfo = comboxData["ShipInfo"],
-                frdbLevel = comboxData["FrdbLevel"],
+                FaultSrc = comboxData["FaultSrc"],
+                ShipInfo = comboxData["ShipInfo"],
+                FrdbLevel = comboxData["FrdbLevel"],
             }, "成功");
         }
 

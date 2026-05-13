@@ -17,6 +17,9 @@ namespace EAM.Device.Controller
             _service = service;
         }
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             var comboxData = await _service.ComboxDataAsync();
@@ -27,6 +30,9 @@ namespace EAM.Device.Controller
             }, "成功");
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<AjaxResult> ListAsync(GridRequest request)
         {
             var result = await _service.ListAsync(request);
@@ -44,6 +50,9 @@ namespace EAM.Device.Controller
             return await _service.SaveAsync(request);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {

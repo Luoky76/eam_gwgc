@@ -173,7 +173,7 @@
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.typeData = data.BasePurtype;
-                        me.exigData = data.exigData;
+                        me.exigData = data.ExigData;
                         me.ShipDept = data.ShipDept;
                         me.unitData = data.SpUnit;
                         me.spType = data.SpTypeName;
@@ -242,7 +242,7 @@
                     enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        
+
                     },
                     onBeforeSubmitEdit: function (e) {
                         if (e.column.name == "COUNT" || e.column.name == "YG_PRICE" || e.column.name == "STORE_MONTH") {
@@ -561,6 +561,8 @@
                 var $formsearch = $("#formsearch");
                 //搜索表单应用ligerui样式
                 me.mainform = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.form ? me.config.form.fields : [],
                     validate: true,
                     EnterMoveNextControl: true,

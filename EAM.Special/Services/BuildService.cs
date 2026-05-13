@@ -15,7 +15,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Special.Services
 {
-    public class BuildService
+    public class BuildService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -97,6 +97,9 @@ namespace EAM.Special.Services
             return list;
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> GetAsync(string ID)
         {
             var list = await _dbContext.Query<BUILD_COUNT>(x => x.BUILD_ID == ID).ToListAsync();
@@ -434,6 +437,9 @@ namespace EAM.Special.Services
             return res;
         }
 
+        /// <summary>
+        /// 导出
+        /// </summary>
         public async Task<List<BuildMonthExportData>> ExportMonthListAsync(string year)
         {
             var monthlyData = await _dbContext.Query<BUILD_COUNT>()

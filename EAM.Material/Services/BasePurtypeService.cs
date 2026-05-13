@@ -6,7 +6,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class BasePurtypeService : BaseService
+    public class BasePurtypeService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -51,6 +51,9 @@ namespace EAM.Material.Services
                 c => a => a.PURTYPE_ID == c.PURTYPE_ID, BeforeAdd, BeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(BASE_PURTYPE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -62,6 +65,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(BASE_PURTYPE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();

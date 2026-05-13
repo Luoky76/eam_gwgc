@@ -125,8 +125,8 @@
                     url: 'Material/SpOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing1 = data.auditing;
-                        me.spapplyType = data.spapplyType;
+                        me.auditing1 = data.Auditing;
+                        me.spapplyType = data.SpapplyType;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -267,13 +267,13 @@
                 var $formsearch = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

@@ -5,10 +5,11 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
+using Gksyb.Core.Auth;
 
 namespace EAM.Device.Services
 {
-    public class DeviceTypeService
+    public class DeviceTypeService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -19,6 +20,9 @@ namespace EAM.Device.Services
             _comboxService = comboxService;
         }
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
@@ -187,6 +191,9 @@ namespace EAM.Device.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSave(List<BASE_DEVICETYPE> added, List<BASE_DEVICETYPE> updated, List<BASE_DEVICETYPE> deleted)
         {
             await Task.CompletedTask;

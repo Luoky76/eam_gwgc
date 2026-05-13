@@ -1,6 +1,7 @@
 ﻿using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -11,22 +12,40 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
         private string masterID = string.Empty, errMsg = string.Empty;
 
-        public SpInBackService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpInBackService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _corpService = corpService;
             _userSession = userSession;
         }
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
+        public async Task<AjaxResult> ComboxDataAsync()
+        {
+            var data = await _comboxDataService.Get(new Dictionary<string, object>());
+            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
+            return AjaxResult.Success(data);
+        }
+
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> ListAsync(GridRequest request)
         {
             var query = await _dbContext.Query<SP_IN_BACK>().GetGridData(request);
             return query;
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> GetAsync(string ID)
         {
             var query = await _dbContext.Query<SP_IN_BACK>().Where(x => x.IN_BACK_ID == ID).ToListAsync();
@@ -34,6 +53,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success(query);
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<AjaxResult> InListAsync()
         {
             var result = await _dbContext.JoinQuery<SP_INSTORE, SP_INSTORE_DET>((a, b) => new object[]
@@ -74,12 +96,18 @@ namespace EAM.Material.Services
             return AjaxResult.Success(result, "成功");
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> DetListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<SP_INBACK_DET>().GetGridData(request);
             return list;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
             var result = await _dbContext.JoinQuery<SP_IN_BACK, SP_INBACK_DET>((a, b) => new object[]
@@ -237,6 +265,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");

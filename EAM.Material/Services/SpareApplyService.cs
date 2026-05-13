@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpareApplyService : BaseService
+    public class SpareApplyService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -26,6 +26,9 @@ namespace EAM.Material.Services
         }
 
         #region 物资编码申请
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             try
@@ -84,6 +87,9 @@ namespace EAM.Material.Services
             return res;
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<string> ApplySave(string memo)
         {
             var entity = new SPARE_APPLY
@@ -124,6 +130,9 @@ namespace EAM.Material.Services
                 c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SPARE_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -150,6 +159,9 @@ namespace EAM.Material.Services
             entity.MODIFY_DATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SPARE_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -159,11 +171,17 @@ namespace EAM.Material.Services
 
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDelete(SPARE_APPLY entity)
         {
             await _dbContext.DeleteAsync<SPARE_APPLY_DET>(x => x.APPLY_ID == entity.APPLY_ID);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<int> Submit(List<string> sids)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -349,6 +367,9 @@ namespace EAM.Material.Services
                 c => a => a.SP_ID == c.SP_ID, BeforeAddDet, BeforeUpdateDet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddDet(SPARE_APPLY_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -370,6 +391,9 @@ namespace EAM.Material.Services
             entity.MODIFY_DATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdateDet(SPARE_APPLY_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -454,6 +478,9 @@ namespace EAM.Material.Services
             return res;
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SpDisableSave(SaveRequest<SP_DISABLE> request)
         {
             await _dbContext.SaveEntityAnsyc(request,
@@ -482,6 +509,9 @@ namespace EAM.Material.Services
 
             return AjaxResult.Success(id);
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task SpDisableBeforeAdd(SP_DISABLE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -507,6 +537,9 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task SpDisableBeforeUpdate(SP_DISABLE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -515,6 +548,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<int> SpDisableSubmit(List<string> sids)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -536,6 +572,9 @@ namespace EAM.Material.Services
             return updateCount;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> SpDisableDetailListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_DISABLE_DET>()
@@ -580,6 +619,9 @@ namespace EAM.Material.Services
                 c => a => a.DISABLE_DET_ID == c.DISABLE_DET_ID, SpDisableBeforeAddDet, SpDisableBeforeUpdateDet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task SpDisableBeforeAddDet(SP_DISABLE_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -591,6 +633,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task SpDisableBeforeUpdateDet(SP_DISABLE_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -641,6 +686,9 @@ namespace EAM.Material.Services
             }
             return res;
         }
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SpEnableSave(SaveRequest<SP_ENABLE> request)
         {
             await _dbContext.SaveEntityAnsyc(request,
@@ -669,6 +717,9 @@ namespace EAM.Material.Services
 
             return AjaxResult.Success(id);
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task SpEnableBeforeAdd(SP_ENABLE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -694,6 +745,9 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task SpEnableBeforeUpdate(SP_ENABLE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -702,6 +756,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<int> SpEnableSubmit(List<string> sids)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -723,6 +780,9 @@ namespace EAM.Material.Services
             return updateCount;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> SpEnableDetailListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_ENABLE_DET>()
@@ -767,6 +827,9 @@ namespace EAM.Material.Services
                 c => a => a.ENABLE_DET_ID == c.ENABLE_DET_ID, SpEnableBeforeAddDet, SpEnableBeforeUpdateDet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task SpEnableBeforeAddDet(SP_ENABLE_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -778,6 +841,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task SpEnableBeforeUpdateDet(SP_ENABLE_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();

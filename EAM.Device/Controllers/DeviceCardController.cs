@@ -18,6 +18,9 @@ namespace EAM.Device.Controller
         }
 
         #region 设备卡片
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
@@ -44,6 +47,9 @@ namespace EAM.Device.Controller
             return AjaxResult.Success(result);
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> GetAsync(string id)
         {
@@ -153,6 +159,9 @@ namespace EAM.Device.Controller
 
         #region 维保设备
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> PmListAsync(GridRequest request)
         {

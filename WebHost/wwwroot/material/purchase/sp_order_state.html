@@ -32,7 +32,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath: 'Material/SpOrder/',
+
+            formLabelWidth: 100,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath: 'Material/SpOrder/',
             MenuNo: getQueryStringByName("MenuNo"),
             typeData: [],
             statusData: [],
@@ -47,7 +55,7 @@
                     },
                     grid: {
                         columns: [
-                            { display: "订单状态", name: "STATUS", labelWidth: 100, width: 100, newline: true, type: "select", format: { data: me.statusData } },
+                            { display: "订单状态", name: "STATUS", labelWidth: me.formLabelWidth, width: 100, newline: true, type: "select", format: { data: me.statusData } },
                             { display: "订单号", name: "ORDER_CODE", width: 180, type: "text" },
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
 
@@ -190,6 +198,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

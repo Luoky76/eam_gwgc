@@ -34,7 +34,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             tree: null,
             currentNode: null,
@@ -168,16 +176,18 @@
                 var nodeId = me.currentNode == null || me.currentNode == undefined ? "ROOT" : me.currentNode.data.HOUSE_ID;
 
                 me.viewForm = $("#view-form").ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: [
-                        { display: "批次号", name: "STORE_CODE", labelWidth: 120, width: 180, newline: true, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                        { display: "物料编码", name: "SP_CODE", labelWidth: 120, width: 180, type: "text", readonly: "readonly", validate: { required: true } },
-                        { display: "物料名称", name: "SP_NAME", labelWidth: 120, width: 180, newline: true, type: "text", readonly: "readonly", validate: { required: true } },
-                        { display: "型号规格", name: "SP_SIZE", labelWidth: 120, width: 180, type: "text", readonly: "readonly" },
-                        { display: "品牌、厂家", name: "PRODUCE", labelWidth: 120, width: 180, newline: true, type: "text", readonly: "readonly", },
-                        { display: "计量单位", name: "UNIT", labelWidth: 120, width: 180, type: "text", readonly: "readonly" },
-                        { display: "物料分类", name: "TYPE_NAME", labelWidth: 120, width: 180, newline: true, type: "text", readonly: "readonly", },
+                        { display: "批次号", name: "STORE_CODE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", editor: { type: 'text' }, validate: { required: true } },
+                        { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: 180, type: "text", readonly: "readonly", validate: { required: true } },
+                        { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", readonly: "readonly", validate: { required: true } },
+                        { display: "型号规格", name: "SP_SIZE", labelWidth: me.formLabelWidth, width: 180, type: "text", readonly: "readonly" },
+                        { display: "品牌、厂家", name: "PRODUCE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", readonly: "readonly", },
+                        { display: "计量单位", name: "UNIT", labelWidth: me.formLabelWidth, width: 180, type: "text", readonly: "readonly" },
+                        { display: "物料分类", name: "TYPE_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", readonly: "readonly", },
                         {
-                            display: "库位名称", name: "STOCK_ID", labelWidth: 120, width: 180, type: "select", editor: {
+                            display: "库位名称", name: "STOCK_ID", labelWidth: me.formLabelWidth, width: 180, type: "select", editor: {
                                 type: 'select', options: { data: me.stockData },
                                 onChangeValue: function (input, value, g) {
                                     var da = me.stockData.find((va) => va.ID == value);
@@ -189,9 +199,9 @@
                             }, validate: { required: true }
                         },
 
-                        { display: "来源类型", name: "SRC_TYPE", labelWidth: 120, width: 180, newline: true, type: "select", editor: { type: 'select', options: { data: me.storeSou } }, validate: { required: true } },
+                        { display: "来源类型", name: "SRC_TYPE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select", editor: { type: 'select', options: { data: me.storeSou } }, validate: { required: true } },
                         {
-                            display: "库存数量", name: "NUM", labelWidth: 120, width: 180, type: "float",
+                            display: "库存数量", name: "NUM", labelWidth: me.formLabelWidth, width: 180, type: "float",
                             editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
@@ -210,7 +220,7 @@
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存单价(元)", name: "PRICE", labelWidth: 120, width: 180, newline: true, type: "float", editor: {
+                            display: "库存单价(元)", name: "PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", editor: {
                                 type: 'float', onChangeValue: function (input, value, g) {
                                     if (value < 0) {
                                         $('#PRICE').val("");
@@ -225,7 +235,7 @@
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存金额(元)", name: "MONEY", labelWidth: 120, width: 180, type: "float", editor: {
+                            display: "库存金额(元)", name: "MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -240,7 +250,7 @@
                         },
 
                         {
-                            display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: 120, width: 180, newline: true, type: "float", editor: {
+                            display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -255,7 +265,7 @@
                             }
                         },
                         {
-                            display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: 120, width: 180, type: "float", editor: {
+                            display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -269,9 +279,9 @@
                             }
                         },
 
-                        { display: "入库日期", name: "IN_DATE", labelWidth: 120, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
+                        { display: "入库日期", name: "IN_DATE", labelWidth: me.formLabelWidth, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
                         {
-                            display: "税率", name: "TAX_RATE", labelWidth: 120, width: 180, type: "float", editor: {
+                            display: "税率", name: "TAX_RATE", labelWidth: me.formLabelWidth, width: 180, type: "float", editor: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -282,7 +292,7 @@
                             }
                         },
                         {
-                            display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: 120, width: 180, newline: true, type: "select", editor: {
+                            display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select", editor: {
                                 type: 'select',
                                 options: {
                                     autocomplete: true,
@@ -297,9 +307,9 @@
                                 }
                             }
                         },
-                        { display: "申请单号", name: "APPLY_NO", labelWidth: 120, width: 180, type: "text", editor: { type: 'text' } },
+                        { display: "申请单号", name: "APPLY_NO", labelWidth: me.formLabelWidth, width: 180, type: "text", editor: { type: 'text' } },
                         {
-                            display: "部门", name: "DEPT_ID", labelWidth: 120, newline: true, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                            display: "部门", name: "DEPT_ID", labelWidth: me.formLabelWidth, newline: true, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
                                 onChangeValue: function (input, value, g) {
                                     if (value) {
                                         for (var i = 0; i < me.dataCorp.length; i++) {
@@ -540,6 +550,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

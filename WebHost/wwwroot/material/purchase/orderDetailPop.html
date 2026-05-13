@@ -11,7 +11,7 @@
     <title>挑选采购</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
- 
+
 <body style="padding: 5px; height: 100%;">
     <div id="mainsearch">
         <form action="" id="formsearch" class="l-form">
@@ -26,7 +26,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            dialog: (frameElement && frameElement.dialog) ? frameElement.dialog : null,
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+dialog: (frameElement && frameElement.dialog) ? frameElement.dialog : null,
             detailType: null,
             dataValue: null,
             isFirst: true,
@@ -103,7 +111,7 @@
                     height: '100%',
                     checkbox: false,
                     onDblClickRow: function (data, id, row) {
-                       
+
                         var g = this;
                         var p = this.options;
 
@@ -251,6 +259,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
@@ -277,7 +287,7 @@
 
                         if (me.callback) me.callback(gridData2.Rows)
                         if (me.dialog) me.dialog.close();
-              
+
                     }
                 });
                 LG.addFormButtons(buttons);

@@ -35,6 +35,9 @@
 
         public decimal? SumNum { get; set; }
 
+        /// <summary>
+        /// 计算合计
+        /// </summary>
         public void getTotal()
         {
             this.SumNum = this.January + this.February + this.March + this.April + this.May + this.June + this.July

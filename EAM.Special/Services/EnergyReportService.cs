@@ -12,7 +12,7 @@ using Gksyb.Model.UI;
 
 namespace EAM.Special.Services
 {
-    public class EnergyReportService : BaseService
+    public class EnergyReportService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -40,10 +40,13 @@ namespace EAM.Special.Services
             }
         }
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = new ConcurrentDictionary<string, List<ComboxData>>();
-            data.TryAdd("corpData", await _corpService.ComboxDataAsync());
+            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
 
             return AjaxResult.Success(data);
         }
@@ -190,6 +193,9 @@ namespace EAM.Special.Services
         {
             await Task.CompletedTask;
         }
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSave(List<REPORT_ENERGY> added, List<REPORT_ENERGY> updated, List<REPORT_ENERGY> deleted)
         {
 

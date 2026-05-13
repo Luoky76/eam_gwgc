@@ -351,13 +351,13 @@
                 var $mainform = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -400,7 +400,7 @@
                         }
                     },
                     onSuccess: function (data, g) {
-                        
+
                     }
                 });
                 me.grid.isValid = true;

@@ -20,7 +20,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            deviceId: null,
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+deviceId: null,
             deptId: null,
             grid: null,
             searchForm: null,

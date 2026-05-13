@@ -125,15 +125,6 @@
             //下拉数据
             Auditing: [],
             SpHouse: [],
-            //成功提示框，当已有提示框未关闭时不会重复弹出
-            showSuccessMessage: function (message = '成功') {
-                var me = this;
-                if (me.showSuccessMessage.isShown) return;
-                me.showSuccessMessage.isShown = true;
-                LG.showSuccess(message, function () {
-                    me.showSuccessMessage.isShown = false;
-                });
-            },
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -228,13 +219,13 @@
                 var $mainform = $("#mainform");
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -329,7 +320,7 @@
                             me.generateDet();
                             break;
                         case "delete":
-                            if (me.isSelectRow) {
+                            if (me.isSelectRow()) {
                                 me.deleteGrid();
                             }
                             break;
@@ -366,7 +357,7 @@
                     url: 'Material/SpScan/GenerateDet',
                     data: { scanId: me.sid },
                     success: function (data, message) {
-                        me.showSuccessMessage(message);
+                        LG.showSuccess(message);
                         me.loadData();
                         me.reloadGrid();
                     },
@@ -399,7 +390,7 @@
                 if (!me.vertifyBeforeSave() || !me.grid.endEdit()) return;
                 if ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged) {
                     if (showMessage) {
-                        me.showSuccessMessage('无修改');
+                        LG.showSuccess('无修改');
                     }
                     return;
                 }
@@ -435,7 +426,7 @@
                     data: { request: changeRow, requestDet: changeRowDet },
                     success: function (id) {
                         if (showMessage) {
-                            me.showSuccessMessage('保存成功');
+                            LG.showSuccess('保存成功');
                         }
                         //保存过一次后自动变为修改模式
                         me.isNew = false;

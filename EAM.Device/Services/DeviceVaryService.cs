@@ -7,10 +7,11 @@ using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
+using Gksyb.Core.Auth;
 
 namespace EAM.Device.Services
 {
-    public class DeviceVaryService
+    public class DeviceVaryService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -36,12 +37,18 @@ namespace EAM.Device.Services
             return result;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> ListAsync(GridRequest request)
         {
             var query = await _dbContext.Query<DEVICE_VARY>().GetGridData(request);
             return query;
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_VARY> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -69,6 +76,9 @@ namespace EAM.Device.Services
                 , BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");

@@ -16,6 +16,9 @@ namespace EAM.Repair.Controller
             _service = service;
         }
 
+        /// <summary>
+        /// 获取下拉数据
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
@@ -34,6 +37,9 @@ namespace EAM.Repair.Controller
             }, "成功");
         }
 
+        /// <summary>
+        /// 获取设备列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> GetDeviceAsync(GridRequest request)
         {
@@ -41,12 +47,18 @@ namespace EAM.Repair.Controller
             return AjaxResult.Success(result);
         }
 
+        /// <summary>
+        /// 获取船舶列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ShipList()
         {
             return await _service.ShipList();
         }
 
+        /// <summary>
+        /// 获取维修计划列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ExeListAsync(GridRequest request)
         {
@@ -54,12 +66,18 @@ namespace EAM.Repair.Controller
             return AjaxResult.Success(result);
         }
 
+        /// <summary>
+        /// 获取维修计划明细
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> GetExeDetailAsync(string ID)
         {
             return await _service.GetExeDetailAsync(ID);
         }
 
+        /// <summary>
+        /// 获取维修项目明细列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ExeItemListAsync(GridRequest request)
         {
@@ -67,12 +85,18 @@ namespace EAM.Repair.Controller
             return AjaxResult.Success(result);
         }
 
+        /// <summary>
+        /// 保存维修计划和明细
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
         {
             return await _service.SaveExe(request, requestdet);
         }
 
+        /// <summary>
+        /// 保存维修项目明细
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
         {

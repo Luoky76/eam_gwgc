@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class RepFaultService
+    public class RepFaultService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -173,6 +173,9 @@ namespace EAM.Device.services
             return AjaxResult.Success(ID);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(REP_FAULT entity)
         {
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
@@ -270,6 +273,9 @@ namespace EAM.Device.services
                 c => a => a.FAULT_LABOR_ID == c.FAULT_LABOR_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(REP_FAULT_LABOR entity)
         {
             entity.FAULT_LABOR_ID = GuidHelper.NewSnowflakeId().ToString();
@@ -290,6 +296,9 @@ namespace EAM.Device.services
                 },
                 c => a => a.FAULT_SP_ID == c.FAULT_SP_ID, BeforeAdd);
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(REP_FAULT_SP entity)
         {
             entity.FAULT_SP_ID = GuidHelper.NewSnowflakeId().ToString();
@@ -395,6 +404,9 @@ namespace EAM.Device.services
                 c => a => a.FAULT_ID == c.FAULT_ID, BeforeAddCheck);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAddCheck(REP_FAULT entity)
         {
             entity.CHECK_USER = _userSession.UserName;

@@ -6,10 +6,11 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.IdentityModel.Tokens;
+using Gksyb.Core.Auth;
 
 namespace EAM.Special.Services
 {
-    public class AssetCardService
+    public class AssetCardService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

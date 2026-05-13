@@ -28,7 +28,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath: 'Material/SpStore/',
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath: 'Material/SpStore/',
             MenuNo: getQueryStringByName("MenuNo"),
             setConfig: function () {
                 var me = this;
@@ -162,7 +170,7 @@
                 me.grid.getData().forEach((a) => {
                     data.push({ SP_ID: a.SP_ID, STOCK_ID: a.STOCK_ID });
                 });
-                
+
                 $.ligerDialog.open({
                     width: 1080,
                     height: 600,
@@ -238,6 +246,8 @@
 
                 if (!me.viewForm) {
                     me.viewForm = $("#view-form").ligerForm({
+                        labelWidth: me.formLabelWidth,
+                        inputWidth: me.formInputWidth,
                         fields: [
                             { display: "上限", name: "STORE_TOP", newline: true, width: 150, type: "float", },
                             { display: "下限", name: "STORE_LOWER", newline: true, width: 150, type: "float", }
@@ -359,6 +369,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

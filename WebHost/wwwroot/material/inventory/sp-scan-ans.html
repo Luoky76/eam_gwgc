@@ -24,7 +24,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath: 'Material/SpScan/',
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath: 'Material/SpScan/',
             MenuNo: getQueryStringByName("MenuNo"),
             scanType: [],
             StoreSrc: [],
@@ -77,10 +85,10 @@
                             { display: "计量单位", name: "UNIT", type: "text" },
                             { display: "分类", name: "TYPE_NAME", type: "text" },
                             { display: "品牌、厂家", name: "PRODUCE", type: "text" },
-                          
+
                             { display: "库位名称", name: "STOCK_NAME", type: "text" },
                             { display: "批次号", name: "STORE_CODE", type: "text" },
-                           
+
                             { display: "盘点人", name: "SCAN_USER", type: "text" },
                             { display: "盘点部门", name: "DEPT_NAME", type: "text" },
                             { display: "盘点日期", name: "SCAN_DATE", type: "date", format: "yyyy-MM-dd", },
@@ -327,6 +335,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

@@ -13,7 +13,7 @@
 </head>
 
 <body style="padding-left: 25px; height: 100%;">
-    
+
     <form action="" id="mainform" class="liger-form" style="padding-bottom:40px">
         <div id="maingrid">
         </div>
@@ -47,45 +47,45 @@
                         fields: [
                             { display: "主键", name: "SPDET_ID", readonly: "readonly" },
 
-                            { display: "采购状态", name: "SP_STATUS", labelWidth: 100, width: me.formInputWidth, newline: true, type: "select", options: { data: me.statusData }, readonly: "readonly" },
-                            { display: "物料编码", name: "SP_CODE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "采购状态", name: "SP_STATUS", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "select", options: { data: me.statusData }, readonly: "readonly" },
+                            { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
 
-                            { display: "物料名称", name: "SP_NAME", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "型号规格", name: "SP_SIZE", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "品牌、厂家", name: "PRODUCE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                            { display: "申请数量", name: "APPLY_COUNT", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                            { display: "审核数量", name: "COUNT", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                            { display: "入库数量", name: "INSTORE_COUNT", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "中止数量", name: "STOP_NUM", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                            { display: "计量单位", name: "UNIT", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "物料分类", name: "TYPE_NAME", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "型号规格", name: "SP_SIZE", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "品牌、厂家", name: "PRODUCE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "申请数量", name: "APPLY_COUNT", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "审核数量", name: "COUNT", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "入库数量", name: "INSTORE_COUNT", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "中止数量", name: "STOP_NUM", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "计量单位", name: "UNIT", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "物料分类", name: "TYPE_NAME", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
 
-                            { display: "申请单号", name: "APPLY_NO", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "请购单号", name: "COLLECT_CODE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                            { display: "询价单号", name: "PLAN_NO", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "订单编号", name: "ORDER_CODE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "申请单号", name: "APPLY_NO", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "请购单号", name: "COLLECT_CODE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "询价单号", name: "PLAN_NO", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "订单编号", name: "ORDER_CODE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
 
-                            { display: "申请人", name: "APPLY_USER", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                           
+                            { display: "申请人", name: "APPLY_USER", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
 
-                            { display: "供应商", name: "PROVIDER_NAME", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "申购公司", name: "DEPT_NAME", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly", },
 
-                            { display: "询价下达人", name: "XJDOWN_USER", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "采购员", name: "BUY_USER", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "供应商", name: "PROVIDER_NAME", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "申购公司", name: "DEPT_NAME", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly", },
 
-                            { display: "供应周期(天)", name: "PERIOD", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "询价下达人", name: "XJDOWN_USER", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "采购员", name: "BUY_USER", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
 
-                            { display: "预估单价(元)", name: "YG_PRICE", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "成交单价(元)", name: "PRICE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                          
-                            { display: "申请时间", name: "APPLY_DATE", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "请购时间", name: "COLLECT_DATE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
-                            { display: "询价时间", name: "PLAN_DATE", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "下单时间", name: "ORDER_DATE", labelWidth: 100, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "供应周期(天)", name: "PERIOD", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
 
-                            { display: "终止时间", name: "STOP_DATE", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
-                            { display: "终止原因", name: "T_MEMO", labelWidth: 100, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "预估单价(元)", name: "YG_PRICE", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "成交单价(元)", name: "PRICE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+
+                            { display: "申请时间", name: "APPLY_DATE", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "请购时间", name: "COLLECT_DATE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+                            { display: "询价时间", name: "PLAN_DATE", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "下单时间", name: "ORDER_DATE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
+
+                            { display: "终止时间", name: "STOP_DATE", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
+                            { display: "终止原因", name: "T_MEMO", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
                         ]
                     },
                 };

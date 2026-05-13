@@ -1,22 +1,26 @@
 ﻿using Chloe;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
+using Gksyb.Core.Auth;
 
 namespace EAM.Special.Services
 {
-    public class DrugLimitService
+    public class DrugLimitService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICorpService _corpService;
 
-        public DrugLimitService(IDbContext dbContext, IComboxDataService comboxDataService)
+        public DrugLimitService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _corpService = corpService;
         }
 
         /// <summary>
@@ -294,6 +298,7 @@ namespace EAM.Special.Services
                 {
 
                 });
+                data.TryAdd("Corp", await _corpService.ComboxDataAsync());
 
                 return AjaxResult.Success(data);
             }

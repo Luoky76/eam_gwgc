@@ -26,7 +26,15 @@
         var rootPath = "../";
         window["encryptUrl"] = ["/Apis/"];
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             detailWidth: 920,
             detailHeight: 450,
@@ -39,7 +47,7 @@
                             { display: "停机分类名称", name: "_search_STOP_NAME", dbname: "STOP_NAME", newline: false, upper: true, type: "text", options: {} },
                             { display: "是否故障停机", name: "_search_IS_STOP", dbname: "IS_STOP", newline: false, upper: true, type: "select", options: { type: 'select', data: me.dataFlag } },
                             { display: "是否计划内停机", name: "_search_IS_PLAN", dbname: "IS_PLAN", newline: false, upper: true, type: "select", options: { type: 'select', data: me.dataFlag } },
-                            
+
                         ]
                     },
                     grid: {
@@ -256,6 +264,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

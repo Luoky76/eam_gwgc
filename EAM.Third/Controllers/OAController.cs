@@ -15,6 +15,9 @@ namespace EAM.Third.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// OA回调入口
+        /// </summary>
         [AllowAnonymous]
         [HttpPost]
         [SkipXssFilter]

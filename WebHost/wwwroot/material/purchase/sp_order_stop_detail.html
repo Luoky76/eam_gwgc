@@ -24,7 +24,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath:'Material/SpOrderStop/',
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath:'Material/SpOrderStop/',
             MenuNo: getQueryStringByName("MenuNo"),
             dialog: null,
             dialogData: null,
@@ -180,7 +188,7 @@
                     }
                     if (!me.grid.validChangeRows()) return false;
 
-                   
+
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
@@ -227,6 +235,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
@@ -250,7 +260,7 @@
                 me.dialogData = me.dialog.get('data');
                 me.Sid = me.dialogData.sid;
                 me.isView = Boolean(me.dialogData.isView);
-                
+
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

@@ -99,7 +99,7 @@
             searchForm: null,
             buttons: null,
             yesOrNo: [{ ID: "0", TEXT: "否" }, { ID: "1", TEXT: "是" }],
-            
+
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -367,6 +367,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     EnterMoveNextControl: true,

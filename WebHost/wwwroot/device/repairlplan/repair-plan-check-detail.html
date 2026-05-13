@@ -114,10 +114,10 @@
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 } },
                             { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80 },
                             {
-                                display: "实际开工时间", name: "BEGIN_TIME", width: 120, type: "date" 
+                                display: "实际开工时间", name: "BEGIN_TIME", width: 120, type: "date"
                             },
                             {
-                                display: "实际完工时间", name: "END_TIME", width: 100, type: "date" 
+                                display: "实际完工时间", name: "END_TIME", width: 100, type: "date"
                             },
                             { display: "花费时间", name: "TAKE_TIME", width: 100, type: "text" },
                             { display: "备注", name: "MEMO", width: 100, type: "text" },
@@ -159,7 +159,7 @@
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-                    
+
                 }
                 else {
                     LG.ajax({
@@ -277,13 +277,13 @@
                 var $mainform = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;

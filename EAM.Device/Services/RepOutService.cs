@@ -10,7 +10,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
-    public class RepOutService
+    public class RepOutService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;

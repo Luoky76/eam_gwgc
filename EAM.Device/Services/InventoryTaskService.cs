@@ -13,7 +13,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class InventoryTaskService
+    public class InventoryTaskService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -121,6 +121,9 @@ namespace EAM.Device.services
                 c => a => a.SCAN_ID == c.SCAN_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(DEVICE_SCAN entity)
         {
             string aa = "PD" + DateTime.Now.ToString("yyyyMM");

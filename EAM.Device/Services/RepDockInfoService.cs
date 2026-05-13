@@ -2,6 +2,7 @@
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -10,10 +11,11 @@ using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
-    public class RepDockInfoService
+    public class RepDockInfoService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
 
@@ -31,10 +33,11 @@ namespace EAM.Device.services
                 return _Sysdate;
             }
         }
-        public RepDockInfoService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public RepDockInfoService(IDbContext dbContext, IComboxDataService comboxService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _corpService = corpService;
             _userSession = userSession;
         }
 
@@ -44,9 +47,11 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
-            return await _comboxService.Get(new Dictionary<string, object>(){
+            var data = await _comboxService.Get(new Dictionary<string, object>(){
                 { "DockInfo",null},
             });
+            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
+            return data;
         }
 
         /// <summary>
@@ -98,6 +103,9 @@ namespace EAM.Device.services
                 c => a => a.DOCK_ID == c.DOCK_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(BASE_DOCK entity)
         {
             entity.EDIT_USER = _userSession.RealName;
@@ -194,6 +202,9 @@ namespace EAM.Device.services
                 c => a => a.PLAN_ID == c.PLAN_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(REP_DOCK_PLAN entity)
         {
             entity.DEPT_ID = _userSession.Corp.CorpID;
@@ -299,6 +310,9 @@ namespace EAM.Device.services
                 c => a => a.PLAN_ITEM_ID == c.PLAN_ITEM_ID, BeforeAddPlandet, UpdateAddPlandet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAddPlandet(REP_DOCK_PLAN_ITEM entity)
         {
             if (entity.LABOR_NUM < 0 || entity.TAKE_TIME < 0)
@@ -309,6 +323,9 @@ namespace EAM.Device.services
             entity.IS_COMPLETE = "0";
             await Task.CompletedTask;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         public async Task UpdateAddPlandet(REP_DOCK_PLAN_ITEM entity)
         {
             if (entity.LABOR_NUM < 0 || entity.TAKE_TIME < 0)
@@ -446,6 +463,9 @@ namespace EAM.Device.services
                 c => a => a.PLAN_ID == c.PLAN_ID, null, BeforeUpdateExe);
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         public async Task BeforeUpdateExe(REP_DOCK_PLAN entity)
         {
             entity.EXE_DATE = Sysdate;

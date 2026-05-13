@@ -140,7 +140,7 @@
                             },
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 }, validate: { required: true } },
                             { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, },
-                            
+
                             {
                                 display: "实际开工时间", name: "BEGIN_TIME", minWidth: 100, validate: { required: true }, type: "date",
                                 editor: {
@@ -413,13 +413,13 @@
                 var $mainform = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -452,10 +452,10 @@
                     enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        
+
                     },
                     onSuccess: function (data, g) {
-                        
+
                     }
                 });
                 me.grid.isValid = true;

@@ -5,10 +5,11 @@ using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
+using Gksyb.Core.Auth;
 
 namespace EAM.Device.Services
 {
-    public class DeviceCardService
+    public class DeviceCardService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -25,6 +26,9 @@ namespace EAM.Device.Services
 
         #region 设备卡片
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxDataService.Get(new Dictionary<string, object>()
@@ -416,6 +420,9 @@ namespace EAM.Device.Services
 
         #region 设备台账
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> DeviceListAllAsync(GridRequest request)
         {
             var list = await _dbContext.Query<DEVICE_CARD>()

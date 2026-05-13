@@ -130,7 +130,7 @@
 
                             { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", group: "委外维修验收" },
                             {
-                                display: "实际开工时间", name: "REAL_BEGINTIME", newline: false, upper: true, type: "date", 
+                                display: "实际开工时间", name: "REAL_BEGINTIME", newline: false, upper: true, type: "date",
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
@@ -139,7 +139,7 @@
                                 },
                             },
                             {
-                                display: "实际完工时间", name: "REAL_ENDTIME", newline: false, upper: true, type: "date", 
+                                display: "实际完工时间", name: "REAL_ENDTIME", newline: false, upper: true, type: "date",
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
@@ -209,10 +209,10 @@
                     url: 'Device/RepOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        //me.providerData = data.providerData;
-                        me.maintDept = data.maintDept;
-                        me.repSourceType = data.repSourceType;
-                        me.repOutType = data.repOutType;
+                        //me.providerData = data.ProviderData;
+                        me.maintDept = data.MaintDept;
+                        me.repSourceType = data.RepSourceType;
+                        me.repOutType = data.RepOutType;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -381,6 +381,8 @@
                 var $mainform = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,

@@ -94,10 +94,10 @@
                             { display: "维修工时(h)", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
                             { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
                             {
-                                display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date", 
+                                display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date",
                                 options: {
                                     format: "yyyy-MM-dd"
-                                }    
+                                }
                             },
                             {
                                 display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' },
@@ -181,7 +181,7 @@
                     url: 'Device/RepDockInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.dockInfo = data.dockInfo;
+                        me.dockInfo = data.DockInfo;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -307,13 +307,13 @@
                 var $formsearch = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

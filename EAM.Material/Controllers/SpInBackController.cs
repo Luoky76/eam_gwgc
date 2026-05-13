@@ -17,6 +17,15 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> ComboxDataAsync()
+        {
+            return await _service.ComboxDataAsync();
+        }
+
+        /// <summary>
         /// 获取列表
         /// </summary>
         public async Task<AjaxResult> ListAsync(GridRequest request)

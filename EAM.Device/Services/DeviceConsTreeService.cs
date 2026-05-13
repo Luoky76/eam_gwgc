@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class DeviceConsTreeService
+    public class DeviceConsTreeService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -24,6 +24,9 @@ namespace EAM.Device.services
             _comboxService = comboxService;
         }
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
@@ -217,6 +220,9 @@ namespace EAM.Device.services
 
             await Task.CompletedTask;
         }
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSave(List<BASE_DEVICE_COMPOSE> added, List<BASE_DEVICE_COMPOSE> updated, List<BASE_DEVICE_COMPOSE> deleted)
         {
 

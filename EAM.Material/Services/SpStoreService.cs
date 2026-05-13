@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpStoreService : BaseService
+    public class SpStoreService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -138,6 +138,9 @@ namespace EAM.Material.Services
                 c => a => a.STORE_ID == c.STORE_ID, BeforeAdd, BeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_STORE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -161,6 +164,9 @@ namespace EAM.Material.Services
             await _dbContext.InsertAsync<STORE_WATER>(temp);
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_STORE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -397,6 +403,9 @@ namespace EAM.Material.Services
                 c => a => a.LIMIT_ID == c.LIMIT_ID, LimitBeforeAdd, LimitBeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task LimitBeforeAdd(SP_LIMIT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -408,6 +417,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task LimitBeforeUpdate(SP_LIMIT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -440,6 +452,9 @@ namespace EAM.Material.Services
         #endregion
 
         #region 库存报表
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ReportComboxDataAsync()
         {
             try
@@ -458,7 +473,7 @@ namespace EAM.Material.Services
             }
         }
         /// <summary>
-        ///库存定期查询 
+        ///库存定期查询
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>

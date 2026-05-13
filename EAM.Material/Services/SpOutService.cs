@@ -219,6 +219,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("保存成功");
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_OUT_APP entity)
         {
             if (entity.OUT_ID.IsNullOrWhiteSpace())
@@ -237,6 +240,9 @@ namespace EAM.Material.Services
             entity.APPLY_CODE = aa + index.ToString("D4");
             entity.AUDITING_A = "0";
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddSpOutAppdet(SP_OUTAPP_DET entity)
         {
             if (entity.OUT_ID.IsNullOrWhiteSpace())
@@ -250,6 +256,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task SpOutAppBeforUpdate(SP_OUT_APP entity)
         {
             if (entity.AUDITING_A.Equals("0"))
@@ -264,6 +273,9 @@ namespace EAM.Material.Services
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task SpOutAppBeforDelete(SP_OUT_APP entity)
         {
             if (entity.AUDITING_A.Equals("0"))
@@ -526,6 +538,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("保存成功");
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddSpOutStoredet(SP_OUTSTORE_DET entity)
         {
             entity.OUT_ID = _outID;
@@ -533,6 +548,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task SpOutStoreBeforUpdate(SP_OUTSTORE entity)
         {
             if (entity.AUDITING_A.Equals("0"))

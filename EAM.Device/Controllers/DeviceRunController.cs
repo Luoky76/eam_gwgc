@@ -28,7 +28,7 @@ namespace EAM.Device.controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                runStatus = comboxData["RunStatus"],
+                RunStatus = comboxData["RunStatus"],
             }, "成功");
         }
         /// <summary>
@@ -40,7 +40,7 @@ namespace EAM.Device.controller
         {
             return AjaxResult.Success(new
             {
-                deviceData = await _service.DeviceData()
+                DeviceData = await _service.DeviceData()
             }, "成功");
         }
         /// <summary>

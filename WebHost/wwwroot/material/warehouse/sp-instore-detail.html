@@ -67,7 +67,7 @@
                             },
                             { display: "入库单号", name: "IN_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "入库日期", name: "IN_DATE", newline: false, upper: true, type: "date", options: {}, validate: { required: true } },
-                            
+
                             { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             {
                                 display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }
@@ -272,13 +272,13 @@
                 var $formsearch = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

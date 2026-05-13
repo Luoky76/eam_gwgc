@@ -21,7 +21,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpCollectService : BaseService, ISpCollectService
+    public class SpCollectService : BaseService, ISpCollectService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -301,6 +301,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("保存成功");
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_COLLECT entity)
         {
             if (entity.COLLECT_ID.IsNullOrWhiteSpace())
@@ -308,7 +311,7 @@ namespace EAM.Material.Services
                 entity.COLLECT_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             DateTime? dt = await _dbContext.GetSysdate();
-            
+
             //单号
             string type = $"QG{dt.Value:yyyyMM}";
             string def = type + "0000";
@@ -333,6 +336,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_COLLECT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -340,6 +346,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDelete(SP_COLLECT entity)
         {
             await _dbContext.DeleteAsync<SP_COLLECT_DET>(x => x.COLLECT_ID == entity.COLLECT_ID);
@@ -567,6 +576,9 @@ namespace EAM.Material.Services
                 c => a => a.COLLECT_DET_ID == c.COLLECT_DET_ID, BeforeAddDet, BeforeUpdateDet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddDet(SP_COLLECT_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -578,6 +590,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdateDet(SP_COLLECT_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -646,6 +661,9 @@ namespace EAM.Material.Services
                 c => a => a.COLLECT_REQUEST_ID == c.COLLECT_REQUEST_ID, BeforeAddRequest, BeforeUpdateRequest, BeforeDeleteRequest);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddRequest(SP_COLLECT_REQUEST entity)
         {
             if (entity.COLLECT_ID.IsNullOrWhiteSpace())
@@ -695,6 +713,9 @@ namespace EAM.Material.Services
             entity.TYPE_CODE = appledet.TYPE_CODE;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdateRequest(SP_COLLECT_REQUEST entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -702,6 +723,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDeleteRequest(SP_COLLECT_REQUEST entity)
         {
             await Task.CompletedTask;
@@ -996,14 +1020,41 @@ namespace EAM.Material.Services
         }
 
         #region 旧接口兼容方法
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public Task<SP_COLLECT> GetCollectDetail(string ID) => GetAsync(ID);
+        /// <summary>
+        /// 保存
+        /// </summary>
         public Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet) => SaveAllAsync(request, requestdet);
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public Task<AjaxResult> ComboxData() => ComboxDataAsync();
+        /// <summary>
+        /// 提交
+        /// </summary>
         public Task<int> Submit(List<string> sids) => SubmitAsync(sids);
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
         public Task<AjaxResult> Revoke(List<string> sids) => RevokeAsync(sids);
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public Task<GridData> DetailListAsync(GridRequest request) => DetListAsync(request);
+        /// <summary>
+        /// 保存
+        /// </summary>
         public Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request) => DetSaveAsync(request);
+        /// <summary>
+        /// 保存
+        /// </summary>
         public Task<AjaxResult> RequestSave(SaveRequest<SP_COLLECT_REQUEST> request) => RequestSaveAsync(request);
+        /// <summary>
+        /// 保存
+        /// </summary>
         public Task<int> SelectApply(List<string> SpdetID, string Cid) => SelectApplyAsync(SpdetID, Cid);
         #endregion
     }

@@ -24,7 +24,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath:'Material/SpApply/',
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath:'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
             //明细页面大小
             detailWidth: null,
@@ -206,7 +214,7 @@
                             break;
                     }
                 }
-            
+
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             view: function (rowid) { //查看
@@ -291,7 +299,7 @@
                 var me = this;
                 var selected = me.grid.getSelectedRows();
                 if (selected.length > 0) {
-                    
+
                     if (selected[0].AUDITING_CHECK != null && selected[0].AUDITING_CHECK != "0" ) {
                         LG.tip('已提交，无法再次提交!');
                     }
@@ -426,6 +434,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

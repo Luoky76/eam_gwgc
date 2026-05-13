@@ -42,12 +42,18 @@ namespace EAM.Material.Services
             }
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> ListAsync(GridRequest request)
         {
             var query = await _dbContext.Query<SP_RECEIVE>().GetGridData(request);
             return query;
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> GetAsync(string ID)
         {
             var query = await _dbContext.Query<SP_RECEIVE>().Where(x => x.RECEIVE_ID == ID).ToListAsync();
@@ -150,6 +156,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task DetBeforAdd(SP_RECEIVE_DET entity)
         {
             if (string.IsNullOrWhiteSpace(entity.COUNT.ToString()) || string.IsNullOrWhiteSpace(entity.STOCK_ID) || string.IsNullOrWhiteSpace(entity.DELIVERY_CODE))
@@ -356,6 +365,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
@@ -381,6 +393,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
         public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
@@ -411,6 +426,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("撤销成功");
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<AjaxResult> SubmitCheckAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
@@ -436,6 +454,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
         public async Task<AjaxResult> RevokeCheckAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
@@ -461,6 +482,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("撤销成功");
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task DetBeforUpdate(SP_RECEIVE_DET entity)
         {
             await Task.CompletedTask;
@@ -554,6 +578,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success(result, "成功");
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> DetListAsync(GridRequest request)
         {
             return await _dbContext.JoinQuery<SP_RECEIVE_DET, SP_ORDER_DETAIL>((a, b) => new object[] {
@@ -636,7 +663,7 @@ namespace EAM.Material.Services
         /// 删除
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns> 
+        /// <returns></returns>
         private async Task BeforeDeleteItem(SP_RECEIVE_DET request)
         {
             await Task.CompletedTask;

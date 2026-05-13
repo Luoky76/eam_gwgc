@@ -91,9 +91,9 @@
                     url: 'Device/RepInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.faultsrc = data.faultSrc;
-                        me.frdbLevel = data.frdbLevel;
-                        me.shipInfo = data.shipInfo;
+                        me.faultsrc = data.FaultSrc;
+                        me.frdbLevel = data.FrdbLevel;
+                        me.shipInfo = data.ShipInfo;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -216,6 +216,8 @@
                 var $mainform = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,

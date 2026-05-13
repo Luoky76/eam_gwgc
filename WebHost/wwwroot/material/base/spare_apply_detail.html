@@ -24,7 +24,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath:'Material/SpareApply/',
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath:'Material/SpareApply/',
             MenuNo: getQueryStringByName("MenuNo"),
             dialog: null,
             dialogData: null,
@@ -179,12 +187,12 @@
                     var code = dataRow.map((a) => {
                         return a.SP_CODE;
                     });
-                    
+
                     if (new Set(code).size !== code.length) {
                         LG.showSuccess('物料编码不能重复');
                         return;
                     }
-                   
+
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
@@ -254,6 +262,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
@@ -277,7 +287,7 @@
                 me.dialogData = me.dialog.get('data');
                 me.applyId = me.dialogData.sid;
                 me.isView = Boolean(me.dialogData.isView);
-                
+
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

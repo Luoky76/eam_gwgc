@@ -26,7 +26,15 @@
         var rootPath = "../";
         window["encryptUrl"] = ["/Apis/"];
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             peopleData: [],
@@ -143,8 +151,8 @@
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.deviceType = data.BCCode;
-                        me.scanStatus = data.scanStatus;
-                        me.deptData = data.deptData;
+                        me.scanStatus = data.ScanStatus;
+                        me.deptData = data.DeptData;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -501,6 +509,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

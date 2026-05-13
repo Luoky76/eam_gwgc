@@ -6,10 +6,11 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
+using Gksyb.Core.Auth;
 
 namespace EAM.Special.Services
 {
-    public class DrugRequestService
+    public class DrugRequestService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

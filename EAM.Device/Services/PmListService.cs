@@ -15,7 +15,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.Services
 {
-    public class PmListService
+    public class PmListService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -60,6 +60,9 @@ namespace EAM.Device.Services
         }
 
 
+        /// <summary>
+        /// 导入
+        /// </summary>
         public async Task<AjaxResult> ImportPmAsync([FileOptions("xlsx,xls", 1)] IFormFile formFile)
         {
             //获取导入数据
@@ -127,6 +130,9 @@ namespace EAM.Device.Services
             return list;
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<PM_STD_LIST> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,

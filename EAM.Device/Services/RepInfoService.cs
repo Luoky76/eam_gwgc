@@ -10,7 +10,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
-    public class RepInfoService
+    public class RepInfoService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -93,6 +93,9 @@ namespace EAM.Device.services
                 c => a => a.FRDB_ID == c.FRDB_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(REP_FRDB entity)
         {
             entity.EDIT_USER = _userSession.RealName;
@@ -150,6 +153,9 @@ namespace EAM.Device.services
                 c => a => a.REP_TYPE_ID == c.REP_TYPE_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(REP_TYPE entity)
         {
             entity.EDIT_USER = _userSession.RealName;

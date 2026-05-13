@@ -1,6 +1,7 @@
 ﻿using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -11,18 +12,30 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
         private string errMsg = string.Empty;
 
-        public SpInstoreService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpInstoreService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _corpService = corpService;
             _userSession = userSession;
         }
 
         /// <summary>
-        /// 获取列表    
+        /// 获取下拉框数据
+        /// </summary>
+        public async Task<AjaxResult> ComboxDataAsync()
+        {
+            var data = await _comboxDataService.Get(new Dictionary<string, object>());
+            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
+            return AjaxResult.Success(data);
+        }
+
+        /// <summary>
+        /// 获取列表
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -47,6 +60,9 @@ namespace EAM.Material.Services
             return list;
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> GetAsync(string ID)
         {
             var query = await _dbContext.Query<SP_INSTORE>().LeftJoin<SP_RECEIVE>((a, b) => a.RECEIVE_ID == b.RECEIVE_ID).Select((a, b) => new
@@ -82,7 +98,7 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 获取明细列表    
+        /// 获取明细列表
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -92,6 +108,9 @@ namespace EAM.Material.Services
             return list;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<SP_INSTORE_DET>()
@@ -330,6 +349,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
@@ -365,6 +387,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 处理业务
+        /// </summary>
         public async Task<AjaxResult> BackAsync(List<string> sids)
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");

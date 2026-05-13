@@ -26,7 +26,7 @@ namespace EAM.Material.Controllers
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                auditing = comboxData["Auditing"]
+                Auditing = comboxData["Auditing"]
             }, "成功");
         }
 
@@ -51,18 +51,27 @@ namespace EAM.Material.Controllers
             return AjaxResult.Success(await _service.ListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SaveAsync(SaveRequest<SP_CATALOG_SCAN> request, SaveRequest<SP_CATALOG_SCAN_DET> requestdet)
         {
             return await _service.SaveAsync(request, requestdet);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             return await _service.SubmitAsync(sids);
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> DetailListAsync(GridRequest request)
         {

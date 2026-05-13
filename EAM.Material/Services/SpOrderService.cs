@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpOrderService : BaseService
+    public class SpOrderService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -47,6 +47,9 @@ namespace EAM.Material.Services
             /// </summary>
             public string STATUS;
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> OrderListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_ORDER_DETAIL>()
@@ -219,6 +222,9 @@ namespace EAM.Material.Services
                 c => a => a.ORDER_ID == c.ORDER_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_ORDER entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -232,6 +238,9 @@ namespace EAM.Material.Services
             entity.AUDITING = "0";
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_ORDER entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -241,11 +250,17 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDelete(SP_ORDER entity)
         {
             await _dbContext.DeleteAsync<SP_ORDER_DETAIL>(x => x.ORDER_ID == entity.ORDER_ID);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<int> SubmitAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_ORDER>(x => sids.Contains(x.ORDER_ID),
@@ -462,6 +477,9 @@ namespace EAM.Material.Services
                 c => a => a.ORDERDET_ID == c.ORDERDET_ID, DetBeforeAdd, DetBeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task DetBeforeAdd(SP_ORDER_DETAIL entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -474,6 +492,9 @@ namespace EAM.Material.Services
             entity.IS_STOP = "0";
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task DetBeforeUpdate(SP_ORDER_DETAIL entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -482,6 +503,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> OrderOverListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_ORDER_DETAIL>()

@@ -29,7 +29,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 98,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
             //明细页面大小
@@ -48,7 +56,7 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", labelWidth: 98, width: 200, type: "text", options: {} },
+                            { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", labelWidth: me.formLabelWidth, width: 200, type: "text", options: {} },
                             { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 200, type: "text", options: {} },
                             {
                                 display: "评估年度", name: "_search_ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 200, type: "select", op: 'equal', options: {
@@ -63,7 +71,7 @@
                                 }
                             },
                             {
-                                display: "至", name: "_search_BEGIN_TIME_TO", dbname: "BEGIN_TIME", labelWidth: 56, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "至", name: "_search_BEGIN_TIME_TO", dbname: "BEGIN_TIME", labelWidth: me.formLabelWidth, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
@@ -75,7 +83,7 @@
                                 }
                             },
                             {
-                                display: "至", name: "_search_END_TIME_TO", dbname: "END_TIME", labelWidth: 56, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                display: "至", name: "_search_END_TIME_TO", dbname: "END_TIME", labelWidth: me.formLabelWidth, width: 200, newline: false, type: "date", op: 'lessorequal', vt: 'date',
                                 options: {
                                     format: "yyyy-MM-dd"
                                 }
@@ -468,6 +476,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

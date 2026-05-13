@@ -19,7 +19,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Repair.services
 {
-    public class RepairPlanService : IRepairPlanService
+    public class RepairPlanService : IRepairPlanService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -81,6 +81,9 @@ namespace EAM.Repair.services
             return AjaxResult.Success(result, "成功");
         }
 
+        /// <summary>
+        /// 获取设备列表
+        /// </summary>
         public async Task<GridData> GetDeviceAsync(GridRequest request)
         {
             var query = await _dbContext.Query<DEVICE_CARD>().Where(c => c.TYPE_ID == "2").GetGridData(request);
@@ -233,6 +236,9 @@ namespace EAM.Repair.services
 
         #region 维修计划实施
 
+        /// <summary>
+        /// 获取维修计划列表
+        /// </summary>
         public async Task<GridData> ExeListAsync(GridRequest request)
         {
             var query = await _dbContext.JoinQuery<REP_PLAN_EXE, DEVICE_CARD>((a, b) => new object[]
@@ -288,6 +294,9 @@ namespace EAM.Repair.services
             return query;
         }
 
+        /// <summary>
+        /// 获取维修计划明细
+        /// </summary>
         public async Task<AjaxResult> GetExeDetailAsync(string ID)
         {
             var query = await _dbContext.JoinQuery<REP_PLAN_EXE, DEVICE_CARD>((a, b) => new object[]
@@ -359,6 +368,9 @@ namespace EAM.Repair.services
             return query;
         }
 
+        /// <summary>
+        /// 保存维修计划和明细
+        /// </summary>
         public async Task<AjaxResult> SaveExe(SaveRequest<REP_PLAN_EXE> request, SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
         {
             if (!request.Added.IsNullOrEmpty() && request.Added.Any())
@@ -522,6 +534,9 @@ namespace EAM.Repair.services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 保存维修项目明细
+        /// </summary>
         public async Task<AjaxResult> SaveExeItem(SaveRequest<REP_PLAN_EXE_ITEM> requestdet)
         {
             return await _dbContext.SaveEntityAnsyc(requestdet,

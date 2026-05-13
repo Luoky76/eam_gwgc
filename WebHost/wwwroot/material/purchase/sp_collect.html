@@ -24,7 +24,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath:'Material/SpCollect/',
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath:'Material/SpCollect/',
             MenuNo: getQueryStringByName("MenuNo"),
             //明细页面大小
             detailWidth: null,
@@ -257,7 +265,7 @@
                             break;
                     }
                 }
-            
+
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
             openDetail: function ({ sid = null, isNew = false, isView = false, title = null, ver = null } = {}) {
@@ -453,6 +461,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class DeviceStopService
+    public class DeviceStopService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -113,6 +113,9 @@ namespace EAM.Device.services
                 c => a => a.RUN_STOP_ID == c.RUN_STOP_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(RUN_STOP entity)
         {
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
@@ -178,6 +181,9 @@ namespace EAM.Device.services
                 c => a => a.STOP_TYPE_ID == c.STOP_TYPE_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(RUN_STOP_TYPE entity)
         {
             entity.STOP_TYPE_ID = GuidHelper.NewSnowflakeId().ToString();

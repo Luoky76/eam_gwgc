@@ -26,7 +26,7 @@
             },
             dialogData: {},
             isView: true,
-           
+
             sid: getQueryStringByName("sid"),
             menuNo: getQueryStringByName("MenuNo"),
             dataCorp: [],
@@ -42,7 +42,7 @@
                                     return me.sid;
                                 } },
                             { display: "尺码", name: "SIZE_NAME", width: 60, minWidth: 60, type: "text", editor: { type: "text" } },
-                            
+
                         ]
                     },
                 };
@@ -71,7 +71,7 @@
             },
             loadData: function () {
                 var me = this;
-               
+
                     LG.ajax({
                         async: false,
                         url: 'special/labor/LaborSizeList',
@@ -84,7 +84,7 @@
                             LG.showError(message);
                         }
                     });
-                  
+
             },
             save: function () { //保存
                 var me = this;
@@ -101,7 +101,7 @@
                 }
 
                 if ( gridEdit) {
-                 
+
                     var changeRowDet = me.grid.getChangedRows();
                     for (let key in changeRowDet) {
                         if (changeRowDet[key]) {
@@ -109,8 +109,8 @@
                                 changeRowDet[key][i].USER_ID = me.sid;
                             }
                         }
-                       
-                     
+
+
 
                     }
 
@@ -136,7 +136,7 @@
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
-                  
+
                     if (selected.length > 0) {
                         $.ligerDialog.confirm('确定删除吗?', function (confirm) {
                             if (confirm) {
@@ -259,6 +259,8 @@
             //    var $mainform = $("#mainform")
             //    //搜索表单应用ligerui样式
             //    me.mainform = $mainform.ligerForm({
+            labelWidth: me.formLabelWidth,
+            inputWidth: me.formInputWidth,
             //        EnterMoveNextControl: true,
             //        labelAlign: 'right',
             //        space: 3,

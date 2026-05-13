@@ -27,7 +27,7 @@ namespace EAM.Special.Controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                shipInfo = comboxData["ShipInfo"],
+                ShipInfo = comboxData["ShipInfo"],
             }, "成功");
         }
         public BuildController(BuildService service)
@@ -35,12 +35,18 @@ namespace EAM.Special.Controller
             _service = service;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<AjaxResult> ListAsync(GridRequest request)
         {
             var result = await _service.ListAsync(request);
             return AjaxResult.Success(result);
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> GetAsync(string ID)
         {
             return await _service.GetAsync(ID);

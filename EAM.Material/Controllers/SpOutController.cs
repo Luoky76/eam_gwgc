@@ -26,9 +26,9 @@ namespace EAM.Material.Controllers
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                spapplyType = comboxData["SpapplyType"],
-                auditing = comboxData["Auditing"],
-                purtypeName = comboxData["BCCode"],
+                SpapplyType = comboxData["SpapplyType"],
+                Auditing = comboxData["Auditing"],
+                PurtypeName = comboxData["BCCode"],
             }, "成功");
         }
 

@@ -29,10 +29,10 @@ namespace EAM.Device.Controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                maintDept = comboxData["MaintDept"],
-                pmcycleUnit = comboxData["PmcycleUnit"],
-                deviceInfo = comboxData["DeviceInfo"],
-                pmShippost = comboxData["PmShippost"],
+                MaintDept = comboxData["MaintDept"],
+                PmcycleUnit = comboxData["PmcycleUnit"],
+                DeviceInfo = comboxData["DeviceInfo"],
+                PmShippost = comboxData["PmShippost"],
             }, "成功");
         }
 
@@ -58,6 +58,9 @@ namespace EAM.Device.Controller
             return await _service.ListAsync(request);
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> GetAsync(string id)
         {

@@ -24,14 +24,22 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            MenuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 90,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+MenuNo: getQueryStringByName("MenuNo"),
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "放行日期", name: "_search_BDATE", userSearch: false, newline: false, showTime: false, labelWidth: 90, width: 130, op: 'greaterorequal', type: "date" },
-                            { display: "至", name: "_search_EDATE", userSearch: false, newline: false, showTime: false, labelWidth: 20, width: 130, op: 'lessorequal', type: "date" },
+                            { display: "放行日期", name: "_search_BDATE", userSearch: false, newline: false, showTime: false, labelWidth: me.formLabelWidth, width: 130, op: 'greaterorequal', type: "date" },
+                            { display: "至", name: "_search_EDATE", userSearch: false, newline: false, showTime: false, labelWidth: me.formLabelWidth, width: 130, op: 'lessorequal', type: "date" },
                          ]
                     },
                     grid: {
@@ -160,6 +168,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

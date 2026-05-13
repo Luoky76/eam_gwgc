@@ -21,7 +21,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            maintDept: [],
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+maintDept: [],
             pmcycleUnit: [],
             pmShippost: [],
             isAttach: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
@@ -68,9 +76,9 @@
                     url: 'Device/PmList/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.maintDept = data.maintDept;
-                        me.pmcycleUnit = data.pmcycleUnit;
-                        me.pmShippost = data.pmShippost;
+                        me.maintDept = data.MaintDept;
+                        me.pmcycleUnit = data.PmcycleUnit;
+                        me.pmShippost = data.PmShippost;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -410,6 +418,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

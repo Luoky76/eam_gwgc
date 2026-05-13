@@ -7,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class BaseSptypeService : BaseService
+    public class BaseSptypeService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -21,6 +21,9 @@ namespace EAM.Material.Services
         }
 
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
@@ -160,6 +163,9 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSave(List<BASE_SPTYPE> added, List<BASE_SPTYPE> updated, List<BASE_SPTYPE> deleted)
         {
             await Task.CompletedTask;

@@ -32,7 +32,7 @@
             sid: getQueryStringByName("sid"),
             pid: "",
             orginData: {},
-            dataType: [{ ID: "集装箱", TEXT: "集装箱" }, { ID: "散杂货", TEXT: "散杂货" }, { ID: "其它", TEXT: "其它" }], 
+            dataType: [{ ID: "集装箱", TEXT: "集装箱" }, { ID: "散杂货", TEXT: "散杂货" }, { ID: "其它", TEXT: "其它" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -400,6 +400,8 @@
                 var $formsearch = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,

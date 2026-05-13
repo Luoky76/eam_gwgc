@@ -337,6 +337,8 @@
                 var $mainform = $("#mainform")
                 //搜索表单应用ligerui样式
                 me.mainform = $mainform.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     EnterMoveNextControl: true,
                     labelAlign: 'right',
                     space: 3,
@@ -604,7 +606,7 @@
                     if (me.dialogData.hasOwnProperty('isView')) me.isView = me.dialogData.isView;
                     if (me.dialogData.hasOwnProperty('isNew')) me.isNew = me.dialogData.isNew;
                 }
-                
+
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();

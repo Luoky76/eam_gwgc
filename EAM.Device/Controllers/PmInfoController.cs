@@ -27,13 +27,13 @@ namespace EAM.Device.controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                pmType = comboxData["PmType"],
-                bySource = comboxData["BySource"],
-                maintDept = comboxData["MaintDept"],
-                workState = comboxData["WorkState"],
-                maintCycle = comboxData["MaintCycle"],
-                storeSou = comboxData["BCCode"],
-                deviceInfo = comboxData["DeviceInfo"],
+                PmType = comboxData["PmType"],
+                BySource = comboxData["BySource"],
+                MaintDept = comboxData["MaintDept"],
+                WorkState = comboxData["WorkState"],
+                MaintCycle = comboxData["MaintCycle"],
+                StoreSou = comboxData["BCCode"],
+                DeviceInfo = comboxData["DeviceInfo"],
             }, "成功");
         }
 

@@ -10,10 +10,16 @@ namespace EAM.Material
 {
     internal class WebPlugin : IPlugin
     {
+        /// <summary>
+        /// 配置应用
+        /// </summary>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
         }
 
+        /// <summary>
+        /// 配置服务
+        /// </summary>
         public void ConfigureServices(IServiceCollection services, IMvcBuilder builder, IConfiguration configuration)
         {
             var assembly = Assembly.GetExecutingAssembly();

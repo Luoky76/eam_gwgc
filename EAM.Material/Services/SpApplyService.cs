@@ -15,7 +15,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpApplyService : BaseService, IFlowInterceptor
+    public class SpApplyService : BaseService, IFlowInterceptor, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -89,7 +89,7 @@ namespace EAM.Material.Services
             {
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
-                    { "BCCode@#exigData", "exig_dev" },
+                    { "BCCode@#ExigData", "exig_dev" },
                     { "BCCode@#CGFS", "CGtype"},
                     { "BCCode@#ShipDept", "ship_dept"},
                     { "BasePurtype", (Expression<Func<BASE_PURTYPE, bool>>)(x => true)},
@@ -180,7 +180,7 @@ namespace EAM.Material.Services
                     }
                 }
             }
-            
+
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
                 bool mainSuccess = true, detSuccess = true;
@@ -247,6 +247,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success("保存成功");
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -276,12 +279,18 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_APPLY entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDelete(SP_APPLY entity)
         {
             await _dbContext.DeleteAsync<SP_APPLY_DETAIL>(x => x.APPLY_ID == entity.APPLY_ID);
@@ -466,7 +475,7 @@ namespace EAM.Material.Services
             switch (status)
             {
                 case NodeStatus.Agree:
-                    
+
                     await _dbContext.UpdateAsync<SP_APPLY>(x => x.APPLY_ID == apply_id,
                         x => new SP_APPLY
                         {
@@ -646,6 +655,9 @@ namespace EAM.Material.Services
                 , null, null, BeforeDeleteApplyDetail, true, null, null);
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private Task BeforeDeleteApplyDetail(SP_APPLY_DETAIL entity)
         {
             entity.IS_DELETED = "1";
@@ -848,6 +860,9 @@ namespace EAM.Material.Services
                 c => a => a.SPDET_ID == c.SPDET_ID, BeforeAddDet, BeforeUpdateDet, null, false, null, AfterSaveDet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAddDet(SP_APPLY_DETAIL entity)
         {
             if (entity.APPLY_ID.IsNullOrWhiteSpace())
@@ -867,6 +882,9 @@ namespace EAM.Material.Services
             entity.STORE_NUM = await GetStoreNumAsync(entity.SP_ID);
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdateDet(SP_APPLY_DETAIL entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -878,6 +896,9 @@ namespace EAM.Material.Services
             entity.STORE_NUM = await GetStoreNumAsync(entity.SP_ID);
         }
 
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSaveDet(List<SP_APPLY_DETAIL> added, List<SP_APPLY_DETAIL> updated, List<SP_APPLY_DETAIL> deleted)
         {
             var applyId = added.Count == 0 ? updated.Count == 0 ? deleted.Select(c => c.APPLY_ID).FirstOrDefault() : updated.Select(c => c.APPLY_ID).FirstOrDefault() : added.Select(c => c.APPLY_ID).FirstOrDefault();
@@ -915,6 +936,9 @@ namespace EAM.Material.Services
             public string SEC_DEPT { get; set; }
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> ApplyListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
@@ -945,6 +969,9 @@ namespace EAM.Material.Services
                 .GetGridData(request);
         }
 
+        /// <summary>
+        /// 获取下拉框数据
+        /// </summary>
         public async Task<AjaxResult> ApplyComboxDataAsync()
         {
             try
@@ -1002,6 +1029,9 @@ namespace EAM.Material.Services
             public DateTime? STOP_DATE;
             public string T_MEMO;
         }
+        /// <summary>
+        /// 处理业务
+        /// </summary>
         public async Task<AjaxResult> ApplyDetFlowAsync(string SPDET_ID)
         {
             var applydet = _dbContext.Query<SP_APPLY_DETAIL>()

@@ -24,7 +24,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            rootPath: 'Material/SpStore/',
+
+            formLabelWidth: 90,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+rootPath: 'Material/SpStore/',
             MenuNo: getQueryStringByName("MenuNo"),
             stockData: [],
             typeData: [],
@@ -34,7 +42,7 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "统计日期", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: 90, width: 130, op: 'lessorequal', type: "date" },
+                            { display: "统计日期", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: me.formLabelWidth, width: 130, op: 'lessorequal', type: "date" },
                             { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { data: me.stockData } },
                             { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.typeData } },
                             { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { data: me.purtypeData } },
@@ -209,6 +217,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

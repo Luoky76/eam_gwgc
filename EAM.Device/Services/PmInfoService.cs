@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class PmInfoService
+    public class PmInfoService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -219,6 +219,9 @@ namespace EAM.Device.services
                 c => a => a.EXE_ID == c.EXE_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAdd(PM_PLAN_EXE entity)
         {
             if (entity.EXE_ID.IsNullOrWhiteSpace())
@@ -428,6 +431,9 @@ namespace EAM.Device.services
                 c => a => a.DONEITEM_ID == c.DONEITEM_ID, BeforeAddPlandet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAddPlandet(PM_PLAN_DONEITEM entity)
         {
             if (entity.DONEITEM_ID.IsNullOrWhiteSpace())
@@ -509,6 +515,9 @@ namespace EAM.Device.services
                 c => a => a.WORK_ID == c.WORK_ID, BeforeAddWork);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAddWork(PM_SPECIAL_WORK entity)
         {
             if (entity.WORK_ID.IsNullOrWhiteSpace())
@@ -542,6 +551,9 @@ namespace EAM.Device.services
                 c => a => a.PLAN_LABOR_ID == c.PLAN_LABOR_ID, BeforeAddLabor);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAddLabor(PM_PLAN_LABOR entity)
         {
             if (entity.PLAN_LABOR_ID.IsNullOrWhiteSpace())
@@ -591,6 +603,9 @@ namespace EAM.Device.services
                 c => a => a.PLAN_SP_ID == c.PLAN_SP_ID, BeforeAddSp);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         public async Task BeforeAddSp(PM_PLAN_SP entity)
         {
             if (entity.PLAN_SP_ID.IsNullOrWhiteSpace())
@@ -662,6 +677,9 @@ namespace EAM.Device.services
 
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         public async Task BeforeUpdateExe(PM_PLAN_EXE entity)
         {
             //entity.CHECK_USER = _userSession.UserName;

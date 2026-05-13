@@ -7,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
-    public class DeviceDocService
+    public class DeviceDocService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -85,6 +85,9 @@ namespace EAM.Device.Services
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSave(List<DEVICE_DOC> added, List<DEVICE_DOC> updated, List<DEVICE_DOC> deleted)
         {
             await Task.CompletedTask;

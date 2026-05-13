@@ -6,7 +6,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class BaseSpUnitService : BaseService
+    public class BaseSpUnitService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
@@ -53,6 +53,9 @@ namespace EAM.Material.Services
                 c => a => a.UNIT_ID == c.UNIT_ID, BeforeAdd, BeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_UNIT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -68,6 +71,9 @@ namespace EAM.Material.Services
             entity.EDIT_DATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_UNIT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();

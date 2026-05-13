@@ -13,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace EAM.Special.Services
 {
 
-    public class LaborService
+    public class LaborService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -54,12 +54,18 @@ namespace EAM.Special.Services
             }
         }
         #region 劳保人员尺码
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> LaborSizeListAsync(string userID)
         {
             var list = await _dbContext.Query<LABOR_SIZE>(x => x.USER_ID == userID).ToListAsync();
             return new GridData { Rows = list, Total = list.Count() };
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveSizeAsync(SaveRequest<LABOR_SIZE> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -80,6 +86,9 @@ namespace EAM.Special.Services
                 c => a => a.SIZE_ID == c.SIZE_ID
                 , BeforeAdd, null, null, false, null, null);
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(LABOR_SIZE entity)
         {
             entity.SIZE_ID = GuidHelper.NewSnowflakeId().ToString();
@@ -91,6 +100,9 @@ namespace EAM.Special.Services
 
         #region 劳保人员清单
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> LaborUserCataLogList(string code)
         {
 
@@ -100,6 +112,9 @@ namespace EAM.Special.Services
         }
 
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> laborUserListAsync(GridRequest request)
         {
             //               //
@@ -141,6 +156,9 @@ namespace EAM.Special.Services
             return list;
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<LABOR_USER> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -203,18 +221,27 @@ namespace EAM.Special.Services
         #endregion
 
         #region 劳保需求申请
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> laborrequestListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_REQUEST>().GetGridData(request);
             return list;
         }
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> laborrequestdetListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_REQUEST_DET>().GetGridData(request);
             return list;
 
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> laborrequestListListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_REQUEST_LIST>().GetGridData(request);
@@ -222,6 +249,9 @@ namespace EAM.Special.Services
 
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<LABOR_REQUEST> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -289,6 +319,9 @@ namespace EAM.Special.Services
         }
 
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<LABOR_REQUEST_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -369,12 +402,18 @@ namespace EAM.Special.Services
         #endregion
 
         #region 劳保采购计划
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> laborcollectListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_COLLECT>().GetGridData(request);
             return list;
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> SaveAsync(SaveRequest<LABOR_COLLECT> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
@@ -446,11 +485,17 @@ namespace EAM.Special.Services
 
 
         #region 劳保用品退换
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> LaborExchangeListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<LABOR_EXCHANGE>().GetGridData(request);
             return list;
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> GetLaborExchangeAppDetList(string id)
         {
             var result = await _dbContext.Query<LABOR_EXCHANGE_APPDET>(x => x.EXCHANGE_ID.Equals(id)).ToListAsync();
@@ -461,6 +506,9 @@ namespace EAM.Special.Services
             };
             return data;
         }
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet)
         {
             //添加主子表新增记录的关联键值
@@ -559,6 +607,9 @@ namespace EAM.Special.Services
             }
             return AjaxResult.Success("保存成功");
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task LaborExchangeBeforAdd(LABOR_EXCHANGE entity)
         {
             if (entity.EXCHANGE_ID.IsNullOrWhiteSpace())
@@ -572,13 +623,16 @@ namespace EAM.Special.Services
             var lastCode = await _dbContext.Query<LABOR_EXCHANGE>(x => x.EXCHANGE_CODE.Contains(rentCode)).Select(x => Sql.Max(x.EXCHANGE_CODE)).FirstOrDefaultAsync();
             if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
             else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
-            
+
             entity.AUDITING = "0";
             entity.EXCHANGE_CODE = rentCode;
 
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task LaborExchangeBeforUpdate(LABOR_EXCHANGE entity)
         {
             var olddata = _dbContext.QueryByKey<LABOR_EXCHANGE>(entity.EXCHANGE_ID);
@@ -594,6 +648,9 @@ namespace EAM.Special.Services
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task LaborExchangeBeforDelete(LABOR_EXCHANGE entity)
         {
             if (entity.AUDITING.Equals("0"))
@@ -604,6 +661,9 @@ namespace EAM.Special.Services
                 throw new MessageException("未提交的状态下才能删除");
             }
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task LaborExchangeAppDetBeforAdd(LABOR_EXCHANGE_APPDET entity)
         {
             if (entity.EXCHANGE_ID.IsNullOrWhiteSpace())
@@ -618,6 +678,9 @@ namespace EAM.Special.Services
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task LaborExchangeAppDetBeforUpdate(LABOR_EXCHANGE_APPDET entity)
         {
             var sysDate = await _dbContext.GetSysdate();
@@ -625,14 +688,17 @@ namespace EAM.Special.Services
             entity.MODIFYDATE = sysDate;
         }
 
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> LaboExchangeGet(string id)
         {
             var mainData = await _dbContext.QueryByKeyAsync<LABOR_EXCHANGE>(id);
             var detData = await _dbContext.Query<LABOR_EXCHANGE_APPDET>(x => x.EXCHANGE_ID.Equals(id)).ToListAsync();
             var result = new
             {
-                maindata = mainData,
-                detdata = new GridData { Rows = detData, Total = detData.Count }
+                MainData = mainData,
+                DetData = new GridData { Rows = detData, Total = detData.Count }
             };
             return AjaxResult.Success(result);
         }
@@ -641,11 +707,17 @@ namespace EAM.Special.Services
 
         #region 劳保用品租借
 
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> LaborRentList(GridRequest request)
         {
 
             return await _dbContext.Query<LABOR_RENT>().GetGridData(request);
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> GetLaborRentDetList(string rentId)
         {
             var result = await _dbContext.Query<LABOR_RENT_DET>(x => x.RENT_ID.Equals(rentId)).ToListAsync();
@@ -656,22 +728,31 @@ namespace EAM.Special.Services
             };
             return data;
         }
+        /// <summary>
+        /// 获取记录
+        /// </summary>
         public async Task<AjaxResult> LaborRentGet(string rentId)
         {
             var mainData = await _dbContext.QueryByKeyAsync<LABOR_RENT>(rentId);
             var detData = await _dbContext.Query<LABOR_RENT_DET>(x => x.RENT_ID.Equals(rentId)).ToListAsync();
             var result = new
             {
-                maindata = mainData,
-                detdata = new GridData { Rows = detData, Total = detData.Count }
+                MainData = mainData,
+                DetData = new GridData { Rows = detData, Total = detData.Count }
             };
             return AjaxResult.Success(result);
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         public async Task<GridData> LaborStoreList(GridRequest request)
         {
             var result = await _dbContext.Query<SP_STORE>().GetGridData(request);
             return result;
         }
+        /// <summary>
+        /// 保存
+        /// </summary>
         public async Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet)
         {
             //添加主子表新增记录的关联键值
@@ -766,6 +847,9 @@ namespace EAM.Special.Services
             }
             return AjaxResult.Success("保存成功");
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task LaborRentBeforAdd(LABOR_RENT entity)
         {
             if (entity.RENT_ID.IsNullOrWhiteSpace())
@@ -779,7 +863,7 @@ namespace EAM.Special.Services
             var lastCode = await _dbContext.Query<LABOR_RENT>(x => x.RENT_CODE.Contains(rentCode)).Select(x => Sql.Max(x.RENT_CODE)).FirstOrDefaultAsync();
             if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
             else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
-            
+
             entity.AUDITING = "0";
             entity.RENT_CODE = rentCode;
             entity.USER_ID = _userSession.UserID.ToString();
@@ -790,6 +874,9 @@ namespace EAM.Special.Services
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task LaborRentBeforUpdate(LABOR_RENT entity)
         {
             var model = await _dbContext.QueryByKeyAsync<LABOR_RENT>(entity.RENT_ID);
@@ -805,6 +892,9 @@ namespace EAM.Special.Services
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task LaborRentBeforDelete(LABOR_RENT entity)
         {
             if (entity.AUDITING.Equals("0"))
@@ -815,6 +905,9 @@ namespace EAM.Special.Services
                 throw new MessageException("未提交的状态下才能删除");
             }
         }
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task LaborRentDetBeforAdd(LABOR_RENT_DET entity)
         {
             if (entity.RENT_ID.IsNullOrWhiteSpace())
@@ -826,10 +919,13 @@ namespace EAM.Special.Services
                 entity.RENT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             }
             var sysDate = await _dbContext.GetSysdate();
-            
+
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task LaborRentDetBeforUpdate(LABOR_RENT_DET entity)
         {
             var sysDate = await _dbContext.GetSysdate();

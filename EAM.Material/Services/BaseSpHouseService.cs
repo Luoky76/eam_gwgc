@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class BaseSpHouseService : BaseService
+    public class BaseSpHouseService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -115,6 +115,9 @@ namespace EAM.Material.Services
                 c => a => a.HOUSE_ID == c.HOUSE_ID, BeforeAdd, BeforeUpdate);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_HOUSE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -133,6 +136,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_HOUSE entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -165,6 +171,9 @@ namespace EAM.Material.Services
         }
 
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<int> SubmitAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_HOUSE>(x => sids.Contains(x.HOUSE_ID),

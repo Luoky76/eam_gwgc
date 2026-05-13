@@ -30,7 +30,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            MenuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+MenuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             tree: null,
             currentNode: null,
@@ -46,13 +54,13 @@
                     search: {
                         fields: [
                             {
-                                display: "仓库货位编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", newline: false, type: "text", 
+                                display: "仓库货位编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", newline: false, type: "text",
                             },
                             {
-                                display: "仓库货位名称", name: "_search_HOUSE_NAME", dbname: "HOUSE_NAME", newline: false, width: 200, type: "text", 
+                                display: "仓库货位名称", name: "_search_HOUSE_NAME", dbname: "HOUSE_NAME", newline: false, width: 200, type: "text",
                             },
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
-                           
+
                         ]
                     },
                     grid: {
@@ -379,7 +387,7 @@
                                     rules: [], op: "or"
                                 }], op: "and"
                             };
-                            
+
                             if (me.parentNo === rootValue) {
                                 me.parentNo = "";
                             } else {
@@ -400,6 +408,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
@@ -416,7 +426,7 @@
                                 me.grid.set('parms', { "where": JSON2.stringify(where) });
                                 me.grid.options.NoFirstSearch = false;
                             }
-                         
+
                             LG.commonSearch($formsearch, me.grid);
                         }
                     }],

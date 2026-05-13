@@ -32,7 +32,15 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
             tree: null,
@@ -95,11 +103,11 @@
                                     },
 
                                 }
-                                
+
                             },
-                            
+
                             {
-                                display: "设备类别编码", name: "TYPE_CODE", dbname: "TYPE_CODE", minWidth: 200, type: "text", editor: { type: 'text', } 
+                                display: "设备类别编码", name: "TYPE_CODE", dbname: "TYPE_CODE", minWidth: 200, type: "text", editor: { type: 'text', }
                             },
                             { display: "设备分类", name: "TYPE_ID", dbname: "TYPE_ID", width: 100, type: "text", editor: { type: 'text', }, hide: true },
                             {
@@ -109,7 +117,7 @@
                             },
                             { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text",  editor: { type: 'text' } },
 
-                           
+
                             { display: "主键", name: "COMPOSE_ID", dbname: "COMPOSE_ID", width: 100, type: "text",  hide: true },
 
                         ]
@@ -223,7 +231,7 @@
                     }
                 });
 
-            }, 
+            },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
@@ -453,6 +461,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

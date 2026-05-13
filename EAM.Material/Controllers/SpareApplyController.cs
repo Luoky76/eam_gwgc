@@ -55,18 +55,27 @@ namespace EAM.Material.Controllers
             return await _service.Save(request);
         }
 
+        /// <summary>
+        /// 保存
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ApplySaveAsync(string memo)
         {
             return AjaxResult.Success(await _service.ApplySave(memo), "成功");
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
             return AjaxResult.Success(await _service.Submit(sids), "成功");
         }
 
+        /// <summary>
+        /// 导出
+        /// </summary>
         [HttpGet, HttpPost]
         public async Task<FileResult> ExportExcelHeader(string filename)
         {
@@ -115,16 +124,25 @@ namespace EAM.Material.Controllers
         #endregion
 
         #region 物资编码禁用
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SpcatalogListAsync(GridRequest request)
         {
             return AjaxResult.Success(await _service.SpcatalogListAsync(request), "成功");
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SpDisableListAsync(GridRequest request)
         {
             return AjaxResult.Success(await _service.SpDisableListAsync(request), "成功");
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SpDisableDetailListAsync(GridRequest request)
         {
@@ -171,11 +189,17 @@ namespace EAM.Material.Controllers
         #endregion
 
         #region 物资编码启用
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SpEnableListAsync(GridRequest request)
         {
             return AjaxResult.Success(await _service.SpEnableListAsync(request), "成功");
         }
+        /// <summary>
+        /// 获取列表
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SpEnableDetailListAsync(GridRequest request)
         {

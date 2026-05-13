@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpPurplanService : BaseService
+    public class SpPurplanService : BaseService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -123,6 +123,9 @@ namespace EAM.Material.Services
                 c => a => a.PURPLAN_ID == c.PURPLAN_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(SP_PURPLAN entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -134,6 +137,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task BeforeUpdate(SP_PURPLAN entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -143,11 +149,17 @@ namespace EAM.Material.Services
 
         }
 
+        /// <summary>
+        /// 删除前处理
+        /// </summary>
         private async Task BeforeDelete(SP_PURPLAN entity)
         {
             await _dbContext.DeleteAsync<SP_PURPLAN_DET>(x => x.PURPLAN_ID == entity.PURPLAN_ID);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         public async Task<int> SubmitAsync(List<string> sids)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -359,6 +371,9 @@ namespace EAM.Material.Services
                 c => a => a.PLAN_ID == c.PLAN_ID, DetBeforeAdd, DetBeforeUpdate, null, false, null, AfterSaveDet);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task DetBeforeAdd(SP_PURPLAN_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -370,6 +385,9 @@ namespace EAM.Material.Services
             entity.MODIFYDATE = dt;
         }
 
+        /// <summary>
+        /// 更新前处理
+        /// </summary>
         private async Task DetBeforeUpdate(SP_PURPLAN_DET entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
@@ -377,6 +395,9 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
         }
+        /// <summary>
+        /// 保存后处理
+        /// </summary>
         private async Task AfterSaveDet(List<SP_PURPLAN_DET> added, List<SP_PURPLAN_DET> updated, List<SP_PURPLAN_DET> deleted)
         {
             var PurplanId = added.Count == 0 ? (updated.Count == 0 ? deleted.Select(c => c.PURPLAN_ID).FirstOrDefault() : updated.Select(c => c.PURPLAN_ID).FirstOrDefault()) : added.Select(c => c.PURPLAN_ID).FirstOrDefault();

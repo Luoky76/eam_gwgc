@@ -11,7 +11,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Device.services
 {
-    public class DeviceRunService
+    public class DeviceRunService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
@@ -142,6 +142,9 @@ namespace EAM.Device.services
                 c => a => a.TRANS_ID == c.TRANS_ID, BeforeAdd);
         }
 
+        /// <summary>
+        /// 新增前处理
+        /// </summary>
         private async Task BeforeAdd(RUN_TRANS entity)
         {
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;

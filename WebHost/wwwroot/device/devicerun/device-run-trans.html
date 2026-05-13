@@ -27,7 +27,15 @@
         'use strict';
 
         var business = {
-            menuNo: getQueryStringByName("MenuNo"),
+
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
             runStatus: [],
@@ -83,7 +91,7 @@
                     url: 'Device/DeviceRun/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.runStatus = data.runStatus;
+                        me.runStatus = data.RunStatus;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -310,6 +318,8 @@
                 var $formsearch1 = $("#formsearch1")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch1.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{

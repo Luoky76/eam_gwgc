@@ -27,9 +27,9 @@ namespace EAM.Device.controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                maintDept = comboxData["MaintDept"],
-                repSourceType = comboxData["RepSourceType"],
-                repOutType = comboxData["RepOutType"],
+                MaintDept = comboxData["MaintDept"],
+                RepSourceType = comboxData["RepSourceType"],
+                RepOutType = comboxData["RepOutType"],
                 //providerData = comboxData["ProviderData"],
             }, "成功");
         }

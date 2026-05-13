@@ -12,7 +12,7 @@ namespace EAM.Special.Services
     /// <summary>
     /// 低值品入账
     /// </summary>
-    public class LowspareInService
+    public class LowspareInService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

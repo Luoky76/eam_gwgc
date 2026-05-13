@@ -27,7 +27,8 @@ namespace EAM.Device.controller
             var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
-                dockInfo = comboxData["DockInfo"],
+                DockInfo = comboxData["DockInfo"],
+                Corp = comboxData["Corp"],
             }, "成功");
         }
 
