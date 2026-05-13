@@ -17,6 +17,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             isView: true,
             sid: getQueryStringByName("sid"),
@@ -37,8 +44,8 @@
                             { display: "经办人", name: "USER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "租借部门", name: "RENT_DEPT", newline: true, upper: true, type: "select", options: { data: me.dataCorp }, validate: { required: true } },
                             { display: "租借人", name: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.user }, validate: { required: true } },
-                            { display: "租借原因", name: "RENT_REASON", newline: true, upper: true, type: "textarea", width: 1100, options: {} },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, type: "textarea", width: 1100, options: {} }
+                            { display: "租借原因", name: "RENT_REASON", newline: true, upper: true, type: "textarea", width: me.getTextareaWidth(), options: {} },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, type: "textarea", width: me.getTextareaWidth(), options: {} }
                         ]
                     },
                     grid: {
@@ -298,7 +305,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

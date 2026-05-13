@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,13 +9,13 @@ namespace EAM.Material.Controller
     [GksybAuthorize(MenuNo = "ProviderAssessTask")]
     public class ProviderAssessTaskDetController : AreaController
     {
-        private readonly IProviderAssessTaskDetService _service;
+        private readonly ProviderAssessTaskDet _service;
 
         /// <summary>
         /// 供应商评估任务明细
         /// </summary>
         /// <param name="service"></param>
-        public ProviderAssessTaskDetController(IProviderAssessTaskDetService service)
+        public ProviderAssessTaskDetController(ProviderAssessTaskDet service)
         {
             _service = service;
         }

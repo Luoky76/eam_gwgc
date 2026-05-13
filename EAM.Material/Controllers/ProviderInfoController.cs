@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,13 +9,13 @@ namespace EAM.Material.Controller
     [GksybAuthorize(MenuNo = "ProviderInfo")]
     public class ProviderInfoController : AreaController
     {
-        private readonly IProviderInfoService _service;
+        private readonly ProviderInfoService _service;
 
         /// <summary>
         /// 供应商信息登记
         /// </summary>
         /// <param name="service"></param>
-        public ProviderInfoController(IProviderInfoService service)
+        public ProviderInfoController(ProviderInfoService service)
         {
             _service = service;
         }

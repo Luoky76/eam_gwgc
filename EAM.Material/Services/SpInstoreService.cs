@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -7,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class SpInstoreService : ISpInstoreService
+    public class SpInstoreService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

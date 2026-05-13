@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -31,10 +31,17 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }, { "ID": "7", "TEXT": "已注销" }],
@@ -71,7 +78,7 @@
                             { display: "验收人", name: "CHK_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "验收日期", name: "CHK_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "入库总金额", name: "INSTORE_MONEY", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, width: 880, upper: true, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: {} },
                             { display: "主键", name: "IN_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
                     },
@@ -127,7 +134,6 @@
             buttons: null,
             loadComboxData: function () {
                 var me = this;
-                console.log(me.menuNo);
                 LG.ajax({
                     async: false,
                     url: 'Material/SpReceive/OrderList',
@@ -214,7 +220,7 @@
                     data: { request: changeRow, requestdet: changeRowDet },
                     success: function (result) {
                         LG.showSuccess('保存成功', function () {
-                            me.isAddNew = false;
+                            me.isNew = false;
                             if (me.dialog) me.dialog.close();
                         });
                     },
@@ -271,7 +277,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -338,12 +345,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -366,16 +373,10 @@
                             me.save();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -415,7 +416,7 @@
                     data: { request: changeRow, requestdet: changeRowDet },
                     success: function (result) {
                         LG.showSuccess('保存成功', function () {
-                            me.isAddNew = false;
+                            me.isNew = false;
                             if (me.dialog) me.dialog.close();
                         });
                     },
@@ -431,7 +432,7 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isAddNew != undefined) me.isAddNew = me.dialogData.isAddNew;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
                     if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
 

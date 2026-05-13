@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class PmInfoController : AreaController
     {
-        private readonly IPmInfoService _service;
+        private readonly PmInfoService _service;
 
-        public PmInfoController(IPmInfoService service)
+        public PmInfoController(PmInfoService service)
         {
             _service = service;
         }

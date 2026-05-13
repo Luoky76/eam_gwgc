@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,8 +9,8 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpInBackController : AreaController
     {
-        private readonly ISpInBackService _service;
-        public SpInBackController(ISpInBackService service)
+        private readonly SpInBackService _service;
+        public SpInBackController(SpInBackService service)
         {
             _service = service;
         }

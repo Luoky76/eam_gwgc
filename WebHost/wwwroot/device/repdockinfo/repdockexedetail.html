@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -31,10 +31,17 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 140,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
@@ -46,7 +53,8 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
+                        inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
                             { display: "记录状态", name: "AUDITING_EXE", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
@@ -62,9 +70,9 @@
                             { display: "码头名称", name: "DOCK_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: 775, type: "textarea", editor: { disabled: true }, options: {} },
+                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", editor: { disabled: true }, options: {} },
 
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", editor: { disabled: true }, options: {} },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", editor: { disabled: true }, options: {} },
                             {
                                 display: "实际开工时间", name: "EXE_BDATE", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
@@ -103,8 +111,8 @@
                                 }
                             },
                             { display: "是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, editor: { type: 'select', data: me.isLose } },
-                            { display: "遗留问题描述", name: "LEAVE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
-                            { display: "实施情况描述", name: "EXE_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "遗留问题描述", name: "LEAVE_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
+                            { display: "实施情况描述", name: "EXE_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             //隐藏
                             { display: "主键", name: "PLAN_ID", newline: false, upper: true, type: "hidden", options: {} },]
@@ -188,7 +196,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({});
                     inner();
                 }
@@ -232,7 +240,7 @@
                 var original = handle(me.orginData);
 
                 var changeRow = new Object();
-                if (me.isAddNew) {
+                if (me.isNew) {
                     changeRow["added"] = [data];
                 }
                 else {
@@ -304,7 +312,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 140,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -376,12 +385,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -407,16 +416,10 @@
                             me.saveDet();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -427,7 +430,6 @@
             saveDet: function () { //保存
                 var me = this;
                 var flag = true;
-                debugger
                 if (me.grid.endEdit() != false) {
                     if (!me.grid.isDataChanged) {
                         LG.showSuccess('无修改');
@@ -477,9 +479,9 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
-                    if (me.dialogData.view != undefined) {
-                        me.isView = me.dialogData.view;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) {
+                        me.isView = me.dialogData.isView;
                     }
                 }
                 me.loadComboxData();
@@ -488,7 +490,7 @@
                 me.loadData();
                 me.setGrid();
                 me.reloadDet();
-                if (me.dialogData.view != undefined) {
+                if (me.dialogData.isView != undefined) {
                     const commonGridOptions = {
                         enabledEdit: false,
                     };

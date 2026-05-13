@@ -1,4 +1,4 @@
-﻿using EAM.Device.Interfaces;
+﻿using EAM.Device.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,8 +10,8 @@ namespace EAM.Device.Controller
     [GksybAuthorize(true)]
     public class DeviceParamController : AreaController
     {
-        private readonly IDeviceParamService _service;
-        public DeviceParamController(IDeviceParamService service)
+        private readonly DeviceParamService _service;
+        public DeviceParamController(DeviceParamService service)
         {
             _service = service;
         }

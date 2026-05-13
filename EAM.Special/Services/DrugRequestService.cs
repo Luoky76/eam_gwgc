@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
@@ -10,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Special.Services
 {
-    public class DrugRequestService : IDrugRequestService
+    public class DrugRequestService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -69,17 +68,6 @@ namespace EAM.Special.Services
             var query = await _dbContext.Query<DRUG_REQUEST>().Where(c => c.REQUEST_ID == id).FirstAsync();
             return query;
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        public string CreatePrimaryKey()
-        {
-            return GuidHelper.NewSnowflakeId().ToString();
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

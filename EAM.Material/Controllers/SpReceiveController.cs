@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,8 +9,8 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpReceiveController : AreaController
     {
-        private readonly ISpReceiveService _service;
-        public SpReceiveController(ISpReceiveService service)
+        private readonly SpReceiveService _service;
+        public SpReceiveController(SpReceiveService service)
         {
             _service = service;
         }

@@ -248,8 +248,8 @@
 
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
-                me.Sid = me.dialogData.Sid;
-                me.isView = me.dialogData.view === "1";
+                me.Sid = me.dialogData.sid;
+                me.isView = Boolean(me.dialogData.isView);
                 
                 me.loadComboxData();
                 me.setConfig();

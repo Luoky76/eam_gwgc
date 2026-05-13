@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Device.interfaces;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Core;
@@ -7,7 +6,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.services
 {
-    public class ReportService : IReportService
+    public class ReportService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

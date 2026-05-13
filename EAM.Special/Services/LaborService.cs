@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -14,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace EAM.Special.Services
 {
 
-    public class LaborService : ILaborService
+    public class LaborService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

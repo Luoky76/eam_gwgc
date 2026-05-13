@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpReceiveService : ISpReceiveService
+    public class SpReceiveService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

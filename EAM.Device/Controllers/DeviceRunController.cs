@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -11,9 +11,9 @@ namespace EAM.Device.controller
     public class DeviceRunController : AreaController
     {
 
-        private readonly IDeviceRunService _service;
+        private readonly DeviceRunService _service;
 
-        public DeviceRunController(IDeviceRunService service)
+        public DeviceRunController(DeviceRunService service)
         {
             _service = service;
         }

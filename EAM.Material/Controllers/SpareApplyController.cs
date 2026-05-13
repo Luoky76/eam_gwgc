@@ -1,5 +1,5 @@
 ﻿using EAM.Material.DTO;
-using EAM.Material.Interfaces;
+using EAM.Material.Services;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -12,9 +12,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpareApplyController : AreaController
     {
-        private readonly ISpareApplyService _service;
+        private readonly SpareApplyService _service;
 
-        public SpareApplyController(ISpareApplyService service)
+        public SpareApplyController(SpareApplyService service)
         {
             _service = service;
         }

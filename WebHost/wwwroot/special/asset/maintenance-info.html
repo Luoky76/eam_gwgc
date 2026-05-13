@@ -29,6 +29,8 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -162,8 +164,8 @@
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
                     },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.view(rowid);
+                    onDblClickRow: function (rowdata, rowid, row) {
+                        me.openDetail({ sid: rowdata.REPORT_ID, isNew: false, isView: true });
                     }
                 });
                 me.grid.isValid = true;
@@ -178,16 +180,10 @@
                             me.reload();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -195,18 +191,16 @@
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function () { //查看
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) { //打开明细
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
+                if (!isNew && !sid) {
+                    sid = me.grid.getSelectedRow().REPORT_ID;
                 }
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[查看]维修查询',
+                    title: (isNew ? '[新增]' : isView ? '[查看]' : '[修改]') + '维修查询',
                     url: "maintenance-info-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -215,7 +209,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": selected.REPORT_ID, "isNew": false, "isView": true }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
             },
             reload: function () { //刷新
@@ -237,12 +231,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -279,7 +273,7 @@
                     EnterMoveNextControl: true,
                     space: 3,
                     labelAlign: 'right',
-                    labelWidth: 100,
+                    labelWidth: me.formLabelWidth,
                     buttons: [{
                         text: '查询',
                         width: 60,
@@ -294,7 +288,6 @@
                 });
             },
             init: function () {
-                debugger
                 var me = this;
                 me.setDialogSize();
                 me.loadComboxData();

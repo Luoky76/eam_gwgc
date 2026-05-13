@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -12,12 +12,12 @@ namespace EAM.Special.Controller
     public class LowspareInController : AreaController
     {
 
-        private readonly ILowspareInService _service;
+        private readonly LowspareInService _service;
         /// <summary>
         /// 低值品入账
         /// </summary>
         /// <param name="service"></param>
-        public LowspareInController(ILowspareInService service)
+        public LowspareInController(LowspareInService service)
         {
             _service = service;
         }
@@ -68,7 +68,7 @@ namespace EAM.Special.Controller
         /// <summary>
         ///低值品
         /// </summary>
-        private ILowspareInService Service
+        private LowspareInService Service
         {
             get
             {

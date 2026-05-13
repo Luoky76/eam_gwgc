@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EAM.Special.Services
 {
-    public class DrugCollectService : IDrugCollectService
+    public class DrugCollectService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -79,17 +79,6 @@ namespace EAM.Special.Services
             var query = await _dbContext.Query<DRUG_COLLECT>().Where(c => c.COLLECT_ID == id).FirstAsync();
             return query;
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        public string CreatePrimaryKey()
-        {
-            return GuidHelper.NewSnowflakeId().ToString();
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

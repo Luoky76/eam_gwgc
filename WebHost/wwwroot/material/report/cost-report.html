@@ -111,7 +111,10 @@
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
                         case "Excel":
-                            $.ligerDialog.open({ url: "../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo, modal: true });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
 
                     }

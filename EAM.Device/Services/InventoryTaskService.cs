@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Device.interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -14,7 +13,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.services
 {
-    public class InventoryTaskService : IInventoryTaskService
+    public class InventoryTaskService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;

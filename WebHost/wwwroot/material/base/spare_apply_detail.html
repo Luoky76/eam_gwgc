@@ -240,7 +240,6 @@
                     showSuccess: false,
                     data: { folder: '../../Adv', "sid": me.applyId },
                     callback: function (status, data) {
-                        debugger
                         if (status) {
                             LG.showSuccess("导入成功");
                             me.reload();
@@ -276,8 +275,8 @@
 
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
-                me.applyId = me.dialogData.applyId;
-                me.isView = me.dialogData.view === "1";
+                me.applyId = me.dialogData.sid;
+                me.isView = Boolean(me.dialogData.isView);
                 
                 me.loadComboxData();
                 me.setConfig();

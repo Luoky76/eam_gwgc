@@ -15,6 +15,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             isView: true,
@@ -58,7 +65,7 @@
                             { display: "补充(吨)", name: "LUBRICATE_SUPPLEMENT", width: 200, type: "float", options: { precision: 3 } },
                             { display: "库存(吨)", name: "LUBRICATE_STOCK", width: 200, type: "float", options: { precision: 3, disabled: true } },
 
-                            { display: "简要说明", name: "MEMO", newline: true, width: 846, type: "textarea", options: {}, group: "其它信息" }
+                            { display: "简要说明", name: "MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {}, group: "其它信息" }
                         ]
                     }
                 };
@@ -206,7 +213,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

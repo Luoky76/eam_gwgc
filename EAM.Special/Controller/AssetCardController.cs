@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,13 +10,13 @@ namespace EAM.Special.Controller
     [GksybAuthorize(true)]
     public class AssetCardController : AreaController
     {
-        private readonly IAssetCardService _service;
+        private readonly AssetCardService _service;
 
         /// <summary>
         /// 药品采购登记主表
         /// </summary>
         /// <param name="service"></param>
-        public AssetCardController(IAssetCardService service)
+        public AssetCardController(AssetCardService service)
         {
             _service = service;
         }
@@ -66,18 +66,6 @@ namespace EAM.Special.Controller
             if (id.IsNullOrEmpty()) return AjaxResult<ASSET_CARD>.Error("请传递参数");
             return AjaxResult<ASSET_CARD>.Success(await _service.GetAsync(id), "成功");
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
-        {
-            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

@@ -1,6 +1,6 @@
-﻿using Gksyb.Common;
+﻿using EAM.Repair.services;
+using Gksyb.Common;
 using Gksyb.Core.Auth;
-using Gksyb.Core.Interfaces.Repair;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
@@ -10,21 +10,10 @@ namespace EAM.Repair.Controller
     [GksybAuthorize(true)]
     public class RepairPlanController : AreaController
     {
-        private readonly IRepairPlanService _service;
-        public RepairPlanController(IRepairPlanService service)
+        private readonly RepairPlanService _service;
+        public RepairPlanController(RepairPlanService service)
         {
             _service = service;
-        }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
-        {
-            return AjaxResult<string>.Success(GuidHelper.NewSnowflakeId().ToString(), "成功");
         }
 
         [HttpPost]

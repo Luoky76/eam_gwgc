@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -11,9 +11,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class InventoryTaskController : AreaController
     {
-        private readonly IInventoryTaskService _service;
+        private readonly InventoryTaskService _service;
 
-        public InventoryTaskController(IInventoryTaskService service)
+        public InventoryTaskController(InventoryTaskService service)
         {
             _service = service;
         }

@@ -18,9 +18,16 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
-            isAddNew: false,
+            isNew: false,
             isView: true,
             sid: getQueryStringByName("sid"),
             pid: "",
@@ -30,7 +37,7 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
                         fields: [
 
                             { display: "公司名称", name: "COMPANY_NAME", dbname: "COMPANY_NAME", width: 150, type: "text", align: "left", options: { readonly: true } },
@@ -262,7 +269,7 @@
                                 }
                             },
                             { display: "其它产值单耗", name: "OTHER_OUTPUT_VALUE", dbname: "OTHER_OUTPUT_VALUE", width: 150, type: 'float', align: "left", options: { readonly: true, precision: 4 } },
-                            { display: "分析说明", name: "REMARK", dbname: "REMARK", width: 1057, newline: true, type: "textarea", align: "left", options: { } },
+                            { display: "分析说明", name: "REMARK", dbname: "REMARK", width: me.getTextareaWidth(), newline: true, type: "textarea", align: "left", options: { } },
 
                             { display: "ADD_USERID", name: "ADD_USERID", dbname: "ADD_USERID", width: 150, type: "hidden", align: "left" },
                             { display: "添加日期", name: "ADD_DATE", dbname: "ADD_DATE", width: 150, type: "hidden", align: "left" },
@@ -286,7 +293,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({});
                     inner();
                 }
@@ -328,7 +335,7 @@
                 var data = handle(me.mainform.getData());
                 var original = handle(me.orginData);
                 var changeRow = new Object();
-                if (me.isAddNew) {
+                if (me.isNew) {
                     changeRow["added"] = [data];
                 }
                 else {
@@ -398,7 +405,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 150,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -500,11 +507,11 @@
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid
                     if (me.dialogData.pid) me.pid = me.dialogData.pid
-                    me.isView = me.dialogData.view === "1";
+                    me.isView = me.dialogData.isView === "1";
                 }
                 if ((me.sid || "0") === "0") me.sid = "";
-                me.isAddNew = (me.sid === "");
-                me.isView = (me.dialogData.view || "" === "1") === "1";
+                me.isNew = (me.sid === "");
+                me.isView = (me.dialogData.isView || "" === "1") === "1";
                 me.setConfig();
                 me.setForm();
                 me.loadData();

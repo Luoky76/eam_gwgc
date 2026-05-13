@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,13 +10,13 @@ namespace EAM.Special.Controller
     [GksybAuthorize(MenuNo = "DrugRequest")]
     public class DrugRequestController : AreaController
     {
-        private readonly IDrugRequestService _service;
+        private readonly DrugRequestService _service;
 
         /// <summary>
         /// 药品需求主表
         /// </summary>
         /// <param name="service"></param>
-        public DrugRequestController(IDrugRequestService service)
+        public DrugRequestController(DrugRequestService service)
         {
             _service = service;
         }
@@ -43,18 +43,6 @@ namespace EAM.Special.Controller
             if (id.IsNullOrEmpty()) return AjaxResult<DRUG_REQUEST>.Error("请传递参数");
             return AjaxResult<DRUG_REQUEST>.Success(await _service.GetAsync(id), "成功");
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
-        {
-            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

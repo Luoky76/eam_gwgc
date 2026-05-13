@@ -1,5 +1,5 @@
-﻿using EAM.Special.Interfaces;
 using Gksyb.Common;
+using EAM.Special.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -10,13 +10,13 @@ namespace EAM.Special.Controller
     [GksybAuthorize(MenuNo = "DrugCollect")]
     public class DrugCollectDetController : AreaController
     {
-        private readonly IDrugCollectDetService _service;
+        private readonly DrugCollectDetService _service;
 
         /// <summary>
         /// 药品采购明细
         /// </summary>
         /// <param name="service"></param>
-        public DrugCollectDetController(IDrugCollectDetService service)
+        public DrugCollectDetController(DrugCollectDetService service)
         {
             _service = service;
         }

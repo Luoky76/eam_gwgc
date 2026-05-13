@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -9,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.Services
 {
-    public class DeviceTypeService : IDeviceTypeService
+    public class DeviceTypeService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;

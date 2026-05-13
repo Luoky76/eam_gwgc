@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class RepOutController : AreaController
     {
-        private readonly IRepOutService _service;
+        private readonly RepOutService _service;
 
-        public RepOutController(IRepOutService service)
+        public RepOutController(RepOutService service)
         {
             _service = service;
         }

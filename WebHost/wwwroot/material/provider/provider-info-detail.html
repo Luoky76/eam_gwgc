@@ -18,10 +18,12 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: true,
             auditing: [],
             dataDevice: [],
@@ -30,7 +32,7 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
                         fields: [
                             //基础信息
                             {
@@ -137,7 +139,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     inner();
                 }
                 else {
@@ -176,7 +178,7 @@
                 var original = handle(me.orginData);
 
                 var changeRow = new Object();
-                if (me.isAddNew) {
+                if (me.isNew) {
                     changeRow["added"] = [data];
                 }
                 else {
@@ -258,7 +260,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -288,13 +290,12 @@
             },
             init: function () {
                 var me = this;
-                debugger
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
                     if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                     if (me.dialogData.typeid) me.typeid = me.dialogData.typeid;
                     if (me.dialogData.typename) me.typename = me.dialogData.typename;

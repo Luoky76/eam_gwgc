@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
@@ -11,7 +10,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Device.Services
 {
-    public class DeviceVaryService : IDeviceVaryService
+    public class DeviceVaryService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

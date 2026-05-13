@@ -14,6 +14,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             isView: false,
             sid: getQueryStringByName("sid"),
@@ -55,7 +62,6 @@
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
-                                            console.log("DEVICE_NO = " + $('#DEVICE_NO').val());
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
@@ -92,7 +98,7 @@
                             { display: "编制部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", options: {}, editor: { disabled: true } },
-                            { display: "停机过程描述", name: "STOP_DESC", newline: true, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
+                            { display: "停机过程描述", name: "STOP_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
 
                             { display: "分析人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: {}, group: "停机分析报告" },
                             { display: "分析人ID", name: "CHECK_USERID", newline: false, upper: true, type: "hidden", options: {} },
@@ -100,8 +106,8 @@
                             { display: "分析日期", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {} },
                             { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.repType } },
                             { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", options: {} },
-                            { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: 775, type: "textarea", options: {} },
-                            { display: "计划后续措施", name: "MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
+                            { display: "计划后续措施", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             { display: "使用部门ID", name: "DEPT_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "二级单位ID", name: "SEC_DEPTID", newline: false, upper: true, type: "hidden", options: {} },
@@ -257,7 +263,6 @@
                     changeRow["updated"] = [data];
                     changeRow["original"] = [original];
                 }
-                debugger
                 LG.ajax({
                     jsToken: true,
                     url: 'Device/DeviceStop/ManageStop',
@@ -332,7 +337,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -347,7 +352,7 @@
                     me.dialogData = me.dialog.get('data') || {};
                     if (me.dialogData.callback) me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
                 me.loadComboxData();
                 me.setConfig();

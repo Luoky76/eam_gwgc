@@ -1,5 +1,4 @@
-﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
+﻿using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Model;
@@ -7,7 +6,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class SpOrderStopService : BaseService, ISpOrderStopService
+    public class SpOrderStopService : BaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

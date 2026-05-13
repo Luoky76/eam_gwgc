@@ -1,5 +1,5 @@
-﻿using Gksyb.Core.Auth;
-using Gksyb.Core.Interfaces.Material;
+﻿using EAM.Material.Services;
+using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpCollectController : AreaController
     {
-        private readonly ISpCollectService _service;
+        private readonly SpCollectService _service;
 
-        public SpCollectController(ISpCollectService service)
+        public SpCollectController(SpCollectService service)
         {
             _service = service;
         }

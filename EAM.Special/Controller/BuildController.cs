@@ -1,5 +1,5 @@
 ﻿using EAM.Special.DTO;
-using EAM.Special.Interfaces;
+using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
@@ -14,7 +14,7 @@ namespace EAM.Special.Controller
     [GksybAuthorize(true)]
     public class BuildController : AreaController
     {
-        private readonly IBuildService _service;
+        private readonly BuildService _service;
 
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace EAM.Special.Controller
                 shipInfo = comboxData["ShipInfo"],
             }, "成功");
         }
-        public BuildController(IBuildService service)
+        public BuildController(BuildService service)
         {
             _service = service;
         }

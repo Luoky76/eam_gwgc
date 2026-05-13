@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Device.Interfaces;
 using EAM.Device.services.Dto;
 using Gksyb.Common;
 using Gksyb.Common.Office;
@@ -16,7 +15,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Device.Services
 {
-    public class PmListService : IPmListService
+    public class PmListService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;

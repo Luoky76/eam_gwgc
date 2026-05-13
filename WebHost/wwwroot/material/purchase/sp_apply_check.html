@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -199,16 +199,10 @@
                             me.detail();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -231,7 +225,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": selected.APPLY_ID, "view": true }
+                    data: { sid: selected.APPLY_ID, isNew: false, isView: true }
                 });
             },
             save: function () { //保存
@@ -290,7 +284,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING_CHECK != "0" }
+                    data: { sid: apply.APPLY_ID, isNew: false, isView: apply.AUDITING_CHECK !== "0" }
                 });
             },
             submit: function () {    //提交
@@ -395,12 +389,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

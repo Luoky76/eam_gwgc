@@ -14,6 +14,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             isView: false,
             sid: getQueryStringByName("sid"),
@@ -64,10 +71,10 @@
                             { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "添加日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "添加人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "故障现象", name: "FAULT_DESCRIBE", newline: false, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
-                            { display: "故障原因", name: "FAULT_REASON", newline: false, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
-                            { display: "解决方法", name: "MEASURES", newline: false, upper: true, width: 775, type: "textarea", validate: { required: true }, options: {} },
-                            { display: "备注", name: "MEMO", newline: false, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "故障现象", name: "FAULT_DESCRIBE", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
+                            { display: "故障原因", name: "FAULT_REASON", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
+                            { display: "解决方法", name: "MEASURES", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
+                            { display: "备注", name: "MEMO", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "外键", name: "FRDB_ID", width: 100, type: "hidden", },
 
 
@@ -214,7 +221,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

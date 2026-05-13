@@ -1,5 +1,5 @@
 ﻿using EAM.Material.DTO;
-using EAM.Material.Interfaces;
+using EAM.Material.Services;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -12,9 +12,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpOrderController : AreaController
     {
-        private readonly ISpOrderService _service;
+        private readonly SpOrderService _service;
 
-        public SpOrderController(ISpOrderService service)
+        public SpOrderController(SpOrderService service)
         {
             _service = service;
         }

@@ -1,5 +1,4 @@
 ﻿using EAM.Material.DTO;
-using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -16,7 +15,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpApplyService : BaseService, ISpApplyService, IFlowInterceptor
+    public class SpApplyService : BaseService, IFlowInterceptor
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -233,16 +233,10 @@
                             me.attach();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -265,7 +259,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": selected.COLLECT_ID, "view": true }
+                    data: { "sid": selected.COLLECT_ID, "isView": true }
                 });
             },
             add: function () { //新增
@@ -283,7 +277,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": null, "isNew": true, "view": false }
+                    data: { "sid": null, "isNew": true, "isView": false }
                 });
             },
             modify: function (rowdata) { //修改
@@ -306,7 +300,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": selected.COLLECT_ID, "view": false }
+                    data: { "sid": selected.COLLECT_ID, "isView": false }
                 });
             },
             save: function () { //保存
@@ -461,7 +455,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": apply.COLLECT_ID, "view": ["1", "2", "3"].includes(apply.AUDITING) }
+                    data: { "sid": apply.COLLECT_ID, "isView": ["1", "2", "3"].includes(apply.AUDITING) }
                 });
             },
             attach: function () {
@@ -498,12 +492,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

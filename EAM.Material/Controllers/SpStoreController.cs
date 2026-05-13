@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpStoreController : AreaController
     {
-        private readonly ISpStoreService _service;
+        private readonly SpStoreService _service;
 
-        public SpStoreController(ISpStoreService service)
+        public SpStoreController(SpStoreService service)
         {
             _service = service;
         }

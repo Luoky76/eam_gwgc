@@ -15,6 +15,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             isView: true,
             sid: getQueryStringByName("sid"),
@@ -64,8 +71,8 @@
                             { display: "检查人", name: "CHK_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },   
                             { display: "是否附件判断", name: "IS_ATTACH", newline: false, type: "select", options: { data: me.isAttach } },
                             { display: "维保项目", name: "PART_NAME", newline: true, width: 1146, type: "text", options: {} },
-                            { display: "维保内容", name: "CONTENT", newline: true, width: 1146, type: "textarea", options: {} },
-                            { display: "备注", name: "MEMO", newline: true, width: 1146, type: "textarea", options: {} },
+                            { display: "维保内容", name: "CONTENT", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "主键", name: "PM_STD_LIST_ID", newline: false, type: "text", type: "hidden" },
 
                         ]
@@ -214,7 +221,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

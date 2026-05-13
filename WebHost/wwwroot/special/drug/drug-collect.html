@@ -138,8 +138,8 @@
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
                     },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.view(rowid);
+                    onDblClickRow: function (rowdata, rowid, row) {
+                        me.openDetail({ sid: rowdata.COLLECT_ID, isNew: false, isView: true });
                     }
                 });
                 me.grid.isValid = true;
@@ -167,16 +167,27 @@
                 }
                 return true;
             },
-            isAudited: function () {
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (row.AUDITING == "1") {
-                        LG.tip("有数据已提交，无法变更！");
-                        return true;
+                    if (!["1", "2", "3"].includes(row.AUDITING)) {
+                        if (msg) { LG.tip(msg); }
+                        return false;
                     }
                 }
-                return false;
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (["1", "2", "3"].includes(row.AUDITING)) {
+                        if (msg) { LG.tip(msg); }
+                        return false;
+                    }
+                }
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -186,39 +197,37 @@
                             me.reload();
                             break;
                         case "add":
-                            me.add();
+                            me.openDetail({isNew: true, isView: false});
                             break;
                         case "modify":
-                            if (!me.isSelectSingleRow() || me.isAudited()) break;
-                            me.modify();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.openDetail({isNew: false, isView: false});
+                            }
                             break;
                         case "delete":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            me.delete();
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                me.delete();
+                            }
                             break;
                         case "submit":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.submit();
-                                }
-                            });
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                    if (confirm) {
+                                        me.submit();
+                                    }
+                                });
+                            }
                             break;
                         case "revoke":
-                            if (!me.isSelectSingleRow()) break;
-                            me.revoke();
+                            if (me.isSelectSingleRow() && me.isAllAudited()) {
+                                me.revoke();
+                            }
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -226,14 +235,25 @@
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function (rowid) { //查看
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) { //打开明细
                 var me = this;
-                if (!rowid) return;
+                if (!isNew && !sid) {
+                    var selected = me.grid.getSelectedRow();
+                    if (!selected) {
+                        LG.tip('请选择行!');
+                        return;
+                    }
+                    if (!isView && selected.CREATE_USERID != window.session.UserID) {
+                        LG.showError("您不是登记的采购人！");
+                        return;
+                    }
+                    sid = selected.COLLECT_ID;
+                }
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[查看]采购明细',
+                    title: (isNew ? '[新增]' : isView ? '[查看]' : '[修改]') + '采购明细',
                     url: "drug-collect-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -242,7 +262,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": me.grid.getRow(rowid).COLLECT_ID, "isNew": false, "isView": true }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
             },
             save: function () { //保存
@@ -273,47 +293,6 @@
             reload: function () { //刷新
                 var me = this;
                 me.grid.loadData();
-            },
-            add: function (row = {}) { //新增
-                var me = this;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[新增]采购明细',
-                    url: "drug-collect-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": null, "isNew": true, "isView": false }
-                });
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected.CREATE_USERID != window.session.UserID) {
-                    LG.showError("您不是登记的采购人！");
-                    return;
-                }
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改]采购明细',
-                    url: "drug-collect-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": selected.COLLECT_ID, "isNew": false, "isView": false }
-                });
             },
             delete: function () { //删除
                 var me = this;
@@ -420,12 +399,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(MenuNo = "BaseSptype")]
     public class BaseSptypeController : AreaController
     {
-        private readonly IBaseSptypeService _service;
+        private readonly BaseSptypeService _service;
 
-        public BaseSptypeController(IBaseSptypeService service)
+        public BaseSptypeController(BaseSptypeService service)
         {
             _service = service;
         }

@@ -14,6 +14,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             menuNo: getQueryStringByName("MenuNo"),
             isView: false,
@@ -157,7 +164,7 @@
                             { display: "净残值比例(%)", name: "NET_RATE", newline: false, width: 300, type: "float", options: {} },
                             { display: "年折旧率(%)", name: "DEP_RATE", newline: false, width: 300, type: "float", options: {} },
                             { display: "资产来源", name: "ASSET_SOURCE", newline: false, width: 300, type: "text", options: {} },
-                            { display: "备注", name: "MEMO", newline: false, width: 1146, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: false, width: me.getTextareaWidth(), type: "textarea", options: {} },
                         ]
                     }
                 };
@@ -303,7 +310,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

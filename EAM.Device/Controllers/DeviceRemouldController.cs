@@ -1,4 +1,4 @@
-﻿using EAM.Device.Interfaces;
+﻿using EAM.Device.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Device.Controller
     [GksybAuthorize(true)]
     public class DeviceRemouldController : AreaController
     {
-        private readonly IDeviceRemouldService _service;
+        private readonly DeviceRemouldService _service;
 
-        public DeviceRemouldController(IDeviceRemouldService service)
+        public DeviceRemouldController(DeviceRemouldService service)
         {
             _service = service;
         }

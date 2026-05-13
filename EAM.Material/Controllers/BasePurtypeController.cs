@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class BasePurtypeController : AreaController
     {
-        private readonly IBasePurtypeService _service;
+        private readonly BasePurtypeService _service;
 
-        public BasePurtypeController(IBasePurtypeService service)
+        public BasePurtypeController(BasePurtypeService service)
         {
             _service = service;
         }

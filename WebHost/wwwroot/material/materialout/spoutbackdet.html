@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -31,10 +31,17 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing1: [],
@@ -46,7 +53,8 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
+                        inputWidth: me.formInputWidth,
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing1, disabled: true }, group: "出库冲红" },
                             { display: "冲红日期", name: "BACK_DATE", newline: false, upper: true, type: "date", options: { } },
@@ -58,7 +66,7 @@
                             { display: "领用人", name: "OUT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "冲红金额", name: "SUM_MONEY", newline: false, upper: true, type: "float", options: { disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true,  upper: true, width: 775, type: "textarea", options: { } },
+                            { display: "备注", name: "MEMO", newline: true,  upper: true, width: me.getTextareaWidth(), type: "textarea", options: { } },
                             { display: "外键", name: "OUT_ID", newline: false, upper: true, type: "hidden", options: { disabled: true } },
                             { display: "主键", name: "OUT_BACK_ID", newline: false, upper: true, type: "hidden", options: { disabled: true } },]
                     },
@@ -133,7 +141,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({});
                     inner();
                 }
@@ -264,7 +272,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -332,12 +341,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -360,16 +369,10 @@
                             me.reloadDet();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true, data: { gridid: "detgird" } });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true, data: { gridid: "detgird" } });
                             break;
                     }
                 }
@@ -388,9 +391,9 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
                     if (me.dialogData.auditing) me.auditing = me.dialogData.auditing;
-                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
 
                 //加在基础信息
@@ -403,7 +406,7 @@
                 me.setGrid();
                 me.reloadDet();
 
-                if (me.dialogData.view != undefined) {
+                if (me.dialogData.isView != undefined) {
                     const commonGridOptions = {
                         enabledEdit: false,
                     };

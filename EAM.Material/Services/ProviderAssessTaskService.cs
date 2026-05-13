@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -8,7 +8,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class ProviderAssessTask : IProviderAssessTaskService
+    public class ProviderAssessTask : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
@@ -31,17 +31,6 @@ namespace EAM.Material.Services
             var query = await _dbContext.Query<PROVIDER_ASSESS_TASK>().Where(c => c.ASSESS_TASK_ID == id).FirstAsync();
             return query;
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        public string CreatePrimaryKey()
-        {
-            return GuidHelper.NewSnowflakeId().ToString();
-        }
-
         /// <summary>
         /// 获取列表
         /// </summary>

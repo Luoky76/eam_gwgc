@@ -23,6 +23,8 @@
 
 
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
             type: getQueryStringByName("type"),
             spId: getQueryStringByName("spId"),
 
@@ -95,7 +97,7 @@
                 var form = $("#mainform")
                 //表单应用ligerui样式
                 me.form = form.ligerForm({
-                    labelWidth: 110, space: 30,
+                    labelWidth: me.formLabelWidth, space: 30,
                     labelAlign: 'left' ,
                     fields: me.config.form ? me.config.form.fields : [],
                     validate: true,

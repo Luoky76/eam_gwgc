@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(MenuNo = "BaseSpCatalog")]
     public class BaseSpCatalogController : AreaController
     {
-        private readonly IBaseSpCatalogService _service;
+        private readonly BaseSpCatalogService _service;
 
-        public BaseSpCatalogController(IBaseSpCatalogService service)
+        public BaseSpCatalogController(BaseSpCatalogService service)
         {
             _service = service;
         }

@@ -15,6 +15,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             isView: true,
             sid: getQueryStringByName("sid"),
@@ -67,9 +74,9 @@
                             { display: "设备总原值", name: "SUM_ORG_VALUE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "设备总净值", name: "SUM_NET_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "总已提折旧", name: "SUM_DEP_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "变动原因", name: "REASONS", newline: true, upper: true, width: 980, type: "textarea", options: { rows: "2" }, validate: { required: true } },
-                            { display: "设备技术状态", name: "TECH_STATUS", newline: true, upper: true, width: 980, type: "textarea", options: { rows: "2" } },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 980, type: "textarea", options: { rows: "2" } },
+                            { display: "变动原因", name: "REASONS", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" }, validate: { required: true } },
+                            { display: "设备技术状态", name: "TECH_STATUS", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
                             { display: "主键", name: "VARY_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
                     }
@@ -217,7 +224,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

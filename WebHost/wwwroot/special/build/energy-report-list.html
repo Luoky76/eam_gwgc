@@ -605,7 +605,7 @@
                             me.reload();
                             break;
                         case "add":
-                            me.add();
+                            me.openDetail({isNew: true, isView: false});
                             break;
                         case "delete":
                             me.delete();
@@ -614,35 +614,36 @@
                             me.save();
                             break;
                         case "modify":
-                            me.modify();
+                            me.openDetail({isNew: false, isView: false});
                             break;
                         case "view":
-                            me.view();
+                            me.openDetail({isNew: false, isView: true});
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls&MenuNo=" + me.menuNo, window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf&MenuNo=" + me.menuNo, window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) { //打开明细
                 var me = this;
-
+                if (!isNew && !sid) {
+                    var row = me.grid.getSelectedRow();
+                    if (!row || row.length == 0) {
+                        LG.showError("请选择一行");
+                        return;
+                    }
+                    sid = row.MAINKEY;
+                }
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '填报数据',
+                    title: isNew ? '填报数据' : (isView ? '[查看]' : '[修改]') + '企业能耗月报',
                     url: "energy-report-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,
@@ -651,33 +652,8 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": null, "isView": false }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
-            },
-            modify: function () { //修改
-                var me = this;
-                var row = me.grid.getSelectedRow();
-                if (row.length != 0) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]企业能耗月报',
-                        url: "energy-report-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": row.MAINKEY, "companyId": row.COMPANY_ID }
-                    });
-                } else {
-                    LG.showError("请选择一行")
-                    return
-                }
-
             },
             reload: function () { //刷新
                 var me = this;
@@ -742,12 +718,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

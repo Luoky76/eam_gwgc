@@ -107,7 +107,6 @@
                        
                         var g = this;
                         var p = this.options;
-                        console.log(me.grid2.currentData);
 
                         var gridData2 = me.grid2.currentData.Rows;
 
@@ -293,7 +292,6 @@
                     text: '确定', onclick: function () {
                         var gridData2 = me.grid2.currentData;
 
-                        console.log(gridData2.Rows);
                         if (me.callback) me.callback(gridData2.Rows)
                         if (me.dialog) me.dialog.close();
               

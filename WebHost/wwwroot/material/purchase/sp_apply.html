@@ -255,7 +255,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": selected.APPLY_ID, "view": true }
+                    data: { sid: selected.APPLY_ID, isNew: false, isView: true }
                 });
             },
             add: function () { //新增
@@ -273,7 +273,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": null, "view": false }
+                    data: { sid: null, isNew: true, isView: false }
                 });
             },
             modify: function (rowdata) { //修改
@@ -305,7 +305,7 @@
                         isResize: true,
                         slide: false,
                         onClosed: me.reload.bind(me),
-                        data: { "Sid": selected.APPLY_ID, "view": false }
+                        data: { sid: selected.APPLY_ID, isNew: false, isView: false }
                     });
                 } else {
                     LG.tip('请选择行!');
@@ -460,6 +460,7 @@
                     return;
                 }
 
+                var apply = me.grid.getSelectedRows()[0];
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
@@ -473,7 +474,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "Sid": apply.APPLY_ID, "view": apply.AUDITING != "0" }
+                    data: { sid: apply.APPLY_ID, isNew: false, isView: apply.AUDITING !== "0" }
                 });
             },
             bindGridEvent: function () {

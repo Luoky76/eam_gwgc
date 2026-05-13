@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -8,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Special.Services
 {
-    public class DrugRequestDetService : IDrugRequestDetService
+    public class DrugRequestDetService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

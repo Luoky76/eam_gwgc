@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -35,6 +35,13 @@
         var isView;
         var fileMark;
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
@@ -60,7 +67,8 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
+                        inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "基础信息" },
@@ -122,7 +130,7 @@
                             { display: "维保部门", name: "SHIP_DEPT", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "保养负责人", name: "EXE_USER", newline: false, upper: true, type: "text", options: {} },
                             { display: "保养负责人ID", name: "EXE_USERID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: 786, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
 
                             //隐藏
@@ -355,7 +363,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -421,12 +430,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -461,16 +470,10 @@
                             me.import();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }

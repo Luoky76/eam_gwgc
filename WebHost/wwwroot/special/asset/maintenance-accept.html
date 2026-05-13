@@ -29,6 +29,8 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -162,8 +164,8 @@
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
                     },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.view(rowid);
+                    onDblClickRow: function (rowdata, rowid, row) {
+                        me.openDetail({ sid: rowdata.REPORT_ID, isNew: false, isView: true });
                     }
                 });
                 me.grid.isValid = true;
@@ -191,16 +193,27 @@
                 }
                 return true;
             },
-            isAudited: function () {
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (row.AUDITING == "1") {
-                        LG.tip("有数据已提交，无法变更！");
-                        return true;
+                    if (!["1", "2", "3"].includes(row.AUDITING_ACCEPT)) {
+                        if (msg) { LG.tip(msg); }
+                        return false;
                     }
                 }
-                return false;
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (["1", "2", "3"].includes(row.AUDITING_ACCEPT)) {
+                        if (msg) { LG.tip(msg); }
+                        return false;
+                    }
+                }
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -210,32 +223,29 @@
                             me.reload();
                             break;
                         case "modify":
-                            if (!me.isSelectSingleRow() || me.isAudited()) break;
-                            me.modify();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.openDetail({isNew: false, isView: false});
+                            }
                             break;
                         case "submit":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.submit();
-                                }
-                            });
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                    if (confirm) {
+                                        me.submit();
+                                    }
+                                });
+                            }
                             break;
                         case "revoke":
-                            if (!me.isSelectSingleRow()) break;
-                            me.revoke();
+                            if (me.isSelectSingleRow() && me.isAllAudited()) {
+                                me.revoke();
+                            }
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -243,18 +253,16 @@
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function () { //查看
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) { //打开明细
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
+                if (!isNew && !sid) {
+                    sid = me.grid.getSelectedRow().REPORT_ID;
                 }
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[查看]维修验收',
+                    title: (isNew ? '[新增]' : isView ? '[查看]' : '[修改]') + '维修验收',
                     url: "maintenance-accept-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -263,26 +271,7 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": selected.REPORT_ID, "isNew": false, "isView": true }
-                });
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改]维修验收',
-                    url: "maintenance-accept-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": selected.REPORT_ID, "isNew": false, "isView": false }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
             },
             submit: function () { //提交
@@ -372,12 +361,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -414,7 +403,7 @@
                     EnterMoveNextControl: true,
                     space: 3,
                     labelAlign: 'right',
-                    labelWidth: 100,
+                    labelWidth: me.formLabelWidth,
                     buttons: [{
                         text: '查询',
                         width: 60,
@@ -429,7 +418,6 @@
                 });
             },
             init: function () {
-                debugger
                 var me = this;
                 me.setDialogSize();
                 me.loadComboxData();

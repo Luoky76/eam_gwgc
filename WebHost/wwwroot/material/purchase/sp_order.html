@@ -303,7 +303,6 @@
                 me.buttons[0].click();
             },
             export: function () { //模板导出
-                debugger
                 var me = this;
                 var rules = LG.bulidFilterGroup(me.searchForm.id);
                 var year = "";
@@ -317,7 +316,6 @@
                     loading: '正在导出中...',
                     data: { where: JSON2.stringify(rules), YEAR: year },
                     callback: function (status, data) {
-                        debugger
                         if (status) {
                             LG.showSuccess(data.Message);
                         }

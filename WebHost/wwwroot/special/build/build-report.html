@@ -366,8 +366,8 @@
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
                     },
-                    onDblClickRow: function (data, rowid, rowdata) {
-                        me.view(rowid);
+                    onDblClickRow: function (rowdata, rowid, row) {
+                        me.openDetail({ sid: rowdata.BUILD_ID, isNew: false, isView: true });
                     }
                 });
                 me.grid.isValid = true;
@@ -385,10 +385,10 @@
                             me.import();
                             break;
                         case "add":
-                            me.add();
+                            me.openDetail({isNew: true, isView: false});
                             break;
                         case "modify":
-                            me.modify();
+                            me.openDetail({isNew: false, isView: false});
                             break;
                         case "delete":
                             me.delete();
@@ -403,23 +403,40 @@
                             me.exportmonth();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function (rowid) { //查看
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) { //打开明细
                 var me = this;
+                if (!isNew && !sid) {
+                    var selected = me.grid.getSelectedRow();
+                    if (!selected) {
+                        LG.tip('请选择行!');
+                        return;
+                    }
+                    sid = selected.BUILD_ID;
+                }
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 520,
+                    allowClose: true,
+                    title: (isNew ? '[新增]' : isView ? '[查看]' : '[修改]') + '施工能耗',
+                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: sid, isNew: isNew, isView: isView }
+                });
             },
             export: function () { //模板导出
                 var date = new Date($("#_search_STARTDATE").val());
@@ -480,49 +497,6 @@
                         }
                         else LG.showError(data.Message);
                     }
-                });
-            },
-            add: function () { //新增
-                var me = this;
-                $.ligerDialog.open({
-                    width: 1100,
-                    height: 520,
-                    allowClose: true,
-                    title: '[新增]',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": null }
-                });
-                //me.grid.addEditRow({}, true);
-            },
-            modify: function () { //修改
-                var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (!selected) {
-                    LG.tip('请选择行!');
-                    return;
-                }
-                var sid = selected.BUILD_ID;
-                $.ligerDialog.open({
-                    width: 1100,
-                    height: 520,
-                    allowClose: true,
-                    title: '[修改]',
-                    url: "build-count-detail.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid }
                 });
             },
             save: function () { //保存
@@ -588,12 +562,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

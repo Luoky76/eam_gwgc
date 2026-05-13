@@ -178,13 +178,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls&MenuNo=" + me.menuNo, window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf&MenuNo=" + me.menuNo, window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
@@ -439,12 +439,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '??Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

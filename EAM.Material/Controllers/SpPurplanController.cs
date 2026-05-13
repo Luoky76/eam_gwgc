@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpPurplanController : AreaController
     {
-        private readonly ISpPurplanService _service;
+        private readonly SpPurplanService _service;
 
-        public SpPurplanController(ISpPurplanService service)
+        public SpPurplanController(SpPurplanService service)
         {
             _service = service;
         }

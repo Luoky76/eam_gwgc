@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Special.Controller
     [GksybAuthorize(MenuNo = "labor")]
     public class LaborController : AreaController
     {
-        private readonly ILaborService _service;
+        private readonly LaborService _service;
 
-        public LaborController(ILaborService laborService)
+        public LaborController(LaborService laborService)
         {
 
             _service = laborService;

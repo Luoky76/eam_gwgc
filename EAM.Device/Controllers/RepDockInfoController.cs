@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class RepDockInfoController : AreaController
     {
-        private readonly IRepDockInfoService _service;
+        private readonly RepDockInfoService _service;
 
-        public RepDockInfoController(IRepDockInfoService service)
+        public RepDockInfoController(RepDockInfoService service)
         {
             _service = service;
         }

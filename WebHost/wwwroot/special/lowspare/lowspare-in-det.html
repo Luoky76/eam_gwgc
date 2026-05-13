@@ -21,18 +21,25 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             //dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             dialogData: {},
             sdid: getQueryStringByName("sdid"),
-            isAddNew: false,
+            isNew: false,
             isView: true,
             orginData: {},
             setConfig: function () {
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 70,
+                        labelwidth: me.formLabelWidth,
                         fields: [
                             {
                                 display: "记录状态", name: "AUDITING", width: 250, type: "select", options: {
@@ -100,7 +107,7 @@
                             { display: "入账数量", name: "IN_NUM", width: 250, type: "float", validate: { required: true } },
                             { display: "存放地点", name: "LOCATION", width: 250, type: "text" },
                             { display: "办理人", name: "HANDLE_USER", width: 250, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO",width: 1155, type: "textarea" },
+                            { display: "备注", name: "MEMO",width: me.getTextareaWidth(), type: "textarea" },
                             { display: "办理人id", name: "HANDLE_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "保管人id", name: "USER_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "部门id", name: "DEPT_ID", newline: false, upper: true, type: "hidden", options: {} },
@@ -137,7 +144,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({
                         AUDITING: "0",
                         HANDLE_USERID: window.session.UserID,
@@ -183,7 +190,7 @@
                 var original = handle(me.orginData);
 
                 var changeRow = new Object();
-                if (me.isAddNew) {
+                if (me.isNew) {
                     changeRow["added"] = [data];
                 }
                 else {
@@ -265,7 +272,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 200,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -282,7 +289,7 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sdid != undefined) me.sdid = me.dialogData.sdid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
                     if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -22,7 +22,8 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
+                        inputWidth: me.formInputWidth,
                         fields: [
                             {
                                 display: "记录状态", name: "AUDITING_OUTSOURCE", width: 300, type: "select", options: {
@@ -47,7 +48,7 @@
                             { display: "存放位置", name: "INSTALL_SITE", width: 300, type: "text", options: { disabled: true } },
 
                             { display: "故障发生时间", name: "FAILURE_TIME", width: 300, type: "date", options: { disabled: true }, group: "故障信息" },
-                            { display: "故障现象描述", name: "FAILURE_DESCRIBE", width: 1146, type: "textarea", options: { disabled: true } },
+                            { display: "故障现象描述", name: "FAILURE_DESCRIBE", width: me.getTextareaWidth(), type: "textarea", options: { disabled: true } },
 
                             { display: "申请部门", name: "APPLY_DEPT", width: 300, type: "text", options: { disabled: true }, group: "申请信息" },
                             { display: "申请人", name: "APPLY_USER", width: 300, type: "text", options: { disabled: true } },
@@ -61,7 +62,7 @@
                             },
                             { display: "供应商", name: "PROVIDER", width: 300, type: "text", options: {} },
                             { display: "供应商联系电话", name: "PROVIDER_TEL", width: 300, type: "text", options: {} },
-                            { display: "备注", name: "OUTSOURCE_MEMO", width: 1146, type: "textarea", options: {} },
+                            { display: "备注", name: "OUTSOURCE_MEMO", width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             //隐藏
                             { display: "主键", name: "REPORT_ID", width: 300, type: "hidden" },
@@ -80,14 +81,12 @@
             menuNo: getQueryStringByName("MenuNo"),
             formButtons: [],
             orginData: {},
-            //成功提示框，当已有提示框未关闭时不会重复弹出
-            showSuccessMessage: function (message = '成功') {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
                 var me = this;
-                if (me.showSuccessMessage.isShown) return;
-                me.showSuccessMessage.isShown = true;
-                LG.showSuccess(message, function () {
-                    me.showSuccessMessage.isShown = false;
-                });
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
             //获取下拉框数据
             loadComboxData: function () {
@@ -116,7 +115,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -183,7 +183,7 @@
             save: function () {
                 var me = this;
                 if ($.isEmptyObject(LG.getFormCombChanges(me.mainform.getData(), me.orginData, true))) {
-                    me.showSuccessMessage('无修改');
+                    LG.showSuccess('无修改');
                     return;
                 }
                 if (!me.mainform.valid()) {
@@ -209,7 +209,7 @@
                     loading: '正在保存中...',
                     data: { request: changeRow },
                     success: function (result) {
-                        me.showSuccessMessage('保存成功');
+                        LG.showSuccess('保存成功');
                         me.loadData();
                     },
                     error: function (message) {
@@ -241,7 +241,6 @@
             //初始化
             init: function () {
                 var me = this;
-                debugger
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;
                     me.dialogData = me.dialog.get('data');

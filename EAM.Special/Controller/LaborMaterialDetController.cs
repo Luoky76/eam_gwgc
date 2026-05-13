@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,13 +10,13 @@ namespace EAM.Special.Controller
     [GksybAuthorize(MenuNo = "LaborMaterial")]
     public class LaborMaterialDetController : AreaController
     {
-        private readonly ILaborMaterialDetService _service;
+        private readonly LaborMaterialDetService _service;
 
         /// <summary>
         /// 船舶常规物料清册
         /// </summary>
         /// <param name="service"></param>
-        public LaborMaterialDetController(ILaborMaterialDetService service)
+        public LaborMaterialDetController(LaborMaterialDetService service)
         {
             _service = service;
         }
@@ -54,18 +54,6 @@ namespace EAM.Special.Controller
         {
             return await _service.GetCertainLaborMaterialAsync(laborMaterialId);
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
-        {
-            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

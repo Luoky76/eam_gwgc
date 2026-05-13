@@ -14,6 +14,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             maintDept: [],
             repSourceType: [],
@@ -32,17 +39,17 @@
                             { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
 
                             { display: "维修项目", name: "REP_ITEM", newline: true, width: 780, upper: true, type: "text", options: { rows: "1", disabled: true } },
-                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "故障原因", name: "REASON", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "解决方法", name: "SOLUTION", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "维修内容", name: "REP_CONTENT", newline: true, width: 780, upper: true, type: "textarea",  options: { rows: "2", disabled: true } },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "故障原因", name: "REASON", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "解决方法", name: "SOLUTION", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "维修内容", name: "REP_CONTENT", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea",  options: { rows: "2", disabled: true } },
 
                             { display: "是否有遗留问题", name: "IS_LEAVE", newline: true, upper: true,  type: "select", options: { data: me.isleave, disabled: true } },
 
                             { display: "确认人", name: "CONFIRM_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
 
-                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, width: 780, upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
 
 
                             { display: "合同编号", name: "PACT_CODE", newline: false, upper: true, type: "text", options: {},group: "码头维修合同详情" },
@@ -75,7 +82,7 @@
                             { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: {} },
                             { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
                             { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
-                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: 780, upper: true, validate: { required: true }, type: "textarea", options: { rows: "2"} },
+                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: me.getTextareaWidth(), upper: true, validate: { required: true }, type: "textarea", options: { rows: "2"} },
 
                             { display: "主键", name: "CHECK_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]
@@ -219,7 +226,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 140,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;

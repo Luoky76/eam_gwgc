@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -13,7 +12,7 @@ namespace EAM.Special.Services
     /// <summary>
     /// 低值品入账
     /// </summary>
-    public class LowspareInService : ILowspareInService
+    public class LowspareInService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

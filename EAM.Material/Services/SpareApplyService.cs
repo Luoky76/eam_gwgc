@@ -1,5 +1,4 @@
 ﻿using EAM.Material.DTO;
-using EAM.Material.Interfaces;
 using Gksyb.Common.Office;
 using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
@@ -13,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpareApplyService : BaseService, ISpareApplyService
+    public class SpareApplyService : BaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

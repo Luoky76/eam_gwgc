@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -11,9 +11,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class RepFaultController : AreaController
     {
-        private readonly IRepFaultService _service;
+        private readonly RepFaultService _service;
 
-        public RepFaultController(IRepFaultService service)
+        public RepFaultController(RepFaultService service)
         {
             _service = service;
         }

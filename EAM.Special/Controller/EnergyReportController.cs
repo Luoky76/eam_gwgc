@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Special.Controller
     [GksybAuthorize(true)]
     public class EnergyReportController : AreaController
     {
-        private readonly IEnergyReportService _service;
+        private readonly EnergyReportService _service;
 
-        public EnergyReportController(IEnergyReportService service)
+        public EnergyReportController(EnergyReportService service)
         {
             _service = service;
         }
@@ -57,7 +57,7 @@ namespace EAM.Special.Controller
             return AjaxResult<GridData>.Success(await Service.GridListAsync(request), "成功");
         }
 
-        private IEnergyReportService Service
+        private EnergyReportService Service
         {
             get
             {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -31,11 +31,18 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
             type: getQueryStringByName("type"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing: [],
@@ -43,7 +50,8 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
+                        inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing, disabled: true }, group: "盘点申请" },
@@ -54,7 +62,7 @@
                             { display: "盘点人", name: "SCAN_USER", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text' } },
                             { display: "盘点人ID", name: "SCAN_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             //隐藏
                             { display: "物资分类", name: "SCAN_TYPE", newline: false, upper: true, type: "hidden", options: {} },
@@ -113,7 +121,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({ AUDITING: "0", SCAN_TYPE: me.type });
                     inner();
                 }
@@ -254,7 +262,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -322,12 +331,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -356,16 +365,10 @@
                             me.import();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true, data: { gridid: "detgird" } });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true, data: { gridid: "detgird" } });
                             break;
                     }
                 }
@@ -517,8 +520,8 @@
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
                     if (me.dialogData.type) me.type = me.dialogData.type;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
-                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
 
                 //加在基础信息
@@ -536,7 +539,7 @@
                 }
                 me.reloadDet();
 
-                if (me.dialogData.view != undefined) {
+                if (me.dialogData.isView != undefined) {
                     const commonGridOptions = {
                         enabledEdit: false,
                     };

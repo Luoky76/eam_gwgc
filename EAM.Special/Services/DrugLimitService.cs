@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -9,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Special.Services
 {
-    public class DrugLimitService : IDrugLimitService
+    public class DrugLimitService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,13 +10,13 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class DeviceConsTreeController : AreaController
     {
-        private readonly IDeviceConsTreeService _service;
+        private readonly DeviceConsTreeService _service;
 
         /// <summary>
         /// 设备分类
         /// </summary>
         /// <param name="service"></param>
-        public DeviceConsTreeController(IDeviceConsTreeService service)
+        public DeviceConsTreeController(DeviceConsTreeService service)
         {
             _service = service;
         }

@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class BaseSpUnitController : AreaController
     {
-        private readonly IBaseSpUnitService _service;
+        private readonly BaseSpUnitService _service;
 
-        public BaseSpUnitController(IBaseSpUnitService service)
+        public BaseSpUnitController(BaseSpUnitService service)
         {
             _service = service;
         }

@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -10,13 +10,13 @@ namespace EAM.Material.Controller
     [GksybAuthorize(true)]
     public class ProviderAssessTaskController : AreaController
     {
-        private readonly IProviderAssessTaskService _service;
+        private readonly ProviderAssessTask _service;
 
         /// <summary>
         /// 供应商评估任务制定
         /// </summary>
         /// <param name="service"></param>
-        public ProviderAssessTaskController(IProviderAssessTaskService service)
+        public ProviderAssessTaskController(ProviderAssessTask service)
         {
             _service = service;
         }
@@ -44,18 +44,6 @@ namespace EAM.Material.Controller
             if (id.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_TASK>.Error("请传递参数");
             return AjaxResult<PROVIDER_ASSESS_TASK>.Success(await _service.GetAsync(id), "成功");
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
-        {
-            return AjaxResult<string>.Success(_service.CreatePrimaryKey(), "成功");
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

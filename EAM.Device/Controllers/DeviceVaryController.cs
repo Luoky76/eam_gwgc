@@ -1,4 +1,4 @@
-﻿using EAM.Device.Interfaces;
+﻿using EAM.Device.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Device.Controller
     [GksybAuthorize(true)]
     public class DeviceVaryController : AreaController
     {
-        private readonly IDeviceVaryService _service;
+        private readonly DeviceVaryService _service;
 
-        public DeviceVaryController(IDeviceVaryService service)
+        public DeviceVaryController(DeviceVaryService service)
         {
             _service = service;
         }

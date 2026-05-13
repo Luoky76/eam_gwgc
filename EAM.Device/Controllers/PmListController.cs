@@ -1,4 +1,4 @@
-﻿using EAM.Device.Interfaces;
+﻿using EAM.Device.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -11,9 +11,9 @@ namespace EAM.Device.Controller
     [GksybAuthorize(true)]
     public class PmListController : AreaController
     {
-        private readonly IPmListService _service;
+        private readonly PmListService _service;
 
-        public PmListController(IPmListService service)
+        public PmListController(PmListService service)
         {
             _service = service;
         }

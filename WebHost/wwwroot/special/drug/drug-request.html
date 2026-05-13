@@ -29,6 +29,8 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -240,13 +242,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
@@ -444,12 +446,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '??Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -486,7 +488,7 @@
                     EnterMoveNextControl: true,
                     space: 3,
                     labelAlign: 'right',
-                    labelWidth: 82,
+                    labelWidth: me.formLabelWidth,
                     buttons: [{
                         text: '查询',
                         width: 60,
@@ -501,7 +503,6 @@
                 });
             },
             init: function () {
-                debugger
                 var me = this;
                 me.setDialogSize();
                 me.loadComboxData();

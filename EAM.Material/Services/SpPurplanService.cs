@@ -1,5 +1,4 @@
-﻿using EAM.Material.Interfaces;
-using Gksyb.Core.Application;
+﻿using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -9,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpPurplanService : BaseService, ISpPurplanService
+    public class SpPurplanService : BaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

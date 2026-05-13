@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Core.Auth;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +8,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class ReportController : AreaController
     {
-        private readonly IReportService _service;
+        private readonly ReportService _service;
 
-        public ReportController(IReportService service)
+        public ReportController(ReportService service)
         {
             _service = service;
         }

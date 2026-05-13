@@ -1,4 +1,4 @@
-﻿using EAM.Device.interfaces;
+﻿using EAM.Device.services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,9 +10,9 @@ namespace EAM.Device.controller
     [GksybAuthorize(true)]
     public class DeviceStopController : AreaController
     {
-        private readonly IDeviceStopService _service;
+        private readonly DeviceStopService _service;
 
-        public DeviceStopController(IDeviceStopService service)
+        public DeviceStopController(DeviceStopService service)
         {
             _service = service;
         }

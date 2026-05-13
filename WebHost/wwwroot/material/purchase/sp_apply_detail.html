@@ -24,6 +24,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             rootPath: 'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
             //明细页面大小
@@ -39,7 +46,7 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 200,
+                        labelwidth: me.formLabelWidth,
                         fields: [
                             //基础信息
                             { display: "申请单号", name: "APPLY_NO", type: "text", options: { disabled: true } },
@@ -67,8 +74,8 @@
                             { display: "紧急程度", name: "EXIG_DEV", type: "select", options: { type: 'select', data: me.exigData }, validate: { required: true }, },
                             { display: "申请部门", name: "DEPT_NAME", validate: { required: true }, type: "text", options: { type: 'text', disabled: true } },
                             { display: "船舶部门", name: "SHIP_DEPT", type: "select", options: { type: "select", data: me.ShipDept } },
-                            { display: "用途", name: "USE_MEMO", newline: true, type: "textarea", validate: { required: true }, width: 786, },
-                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, width: 786, type: "textarea", options: {} },
+                            { display: "用途", name: "USE_MEMO", newline: true, type: "textarea", validate: { required: true }, width: me.getTextareaWidth(), },
+                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             //隐藏
                             { display: "主键", name: "APPLY_ID", type: "hidden" },
@@ -560,7 +567,7 @@
                     labelAlign: 'right',
                     space: 3,
                     validate: true,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                     }
@@ -569,17 +576,15 @@
             },
             init: function () {
                 var me = this;
-                debugger;
-
                 me.dialog = frameElement.dialog;
                 if (me.dialog) {
                     me.dialogData = me.dialog?.get('data');
-                    me.Sid = me.dialogData.Sid;
-                    me.isView = Boolean(me.dialogData.view);
+                    me.Sid = me.dialogData.sid;
+                    me.isView = Boolean(me.dialogData.isView);
                 }
                 else {
                     var formData = JSON.parse(parent.window.business.data.FormData);
-                    me.Sid = formData.Sid;
+                    me.Sid = formData.sid || formData.Sid;
                     me.isView = Boolean(formData.isView);
                 }
 

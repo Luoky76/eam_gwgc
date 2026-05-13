@@ -176,17 +176,6 @@ namespace EAM.Special.Services
                 }).GetGridData(null);
             return list;
         }
-
-        /// <summary>
-        /// 生成主键
-        /// </summary>
-        /// <param></param>
-        /// <returns></returns>
-        public string CreatePrimaryKey()
-        {
-            return GuidHelper.NewSnowflakeId().ToString();
-        }
-
         /// <summary>
         /// 保存
         /// </summary>

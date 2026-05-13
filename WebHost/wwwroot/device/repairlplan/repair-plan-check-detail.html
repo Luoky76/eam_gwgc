@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -31,6 +31,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             menuNo: getQueryStringByName("MenuNo"),
             isView: false,
@@ -71,8 +78,8 @@
                             { display: "维修类型", name: "MAINT_TYPE", newline: true, type: "select", options: { data: me.repairtype, disabled: true } },
                             { display: "维修处理方式", name: "DEAL_TYPE", type: "select", options: { data: me.repairhandtype, disabled: true } },
                             { display: "安装地点", name: "INSTALL_SITE", newline: true, width: 880, type: "text", options: { disabled: true } },
-                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 880, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "备注", name: "PLAN_MEMO", newline: true, width: 880, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, type: "date", options: { format: 'yyyy-MM-dd HH:mm', disabled: true } },
                             { display: "计划完工时间", name: "PLAN_END_DATE", type: "date", options: { format: 'yyyy-MM-dd HH:mm', disabled: true } },
                             { display: "负责人", name: "CHARGE_USER", newline: true, type: "text", options: { disabled: true } },
@@ -86,13 +93,13 @@
                             { display: "实施提交日期", name: "EIDT_DATE", type: "text", options: { disabled: true } },
                             { display: "是否有遗留问题", name: "IS_LEAVE", type: "text", options: { disabled: true } },
                             { display: "协助人", name: "ASSIST_USER", newline: true, type: "text", options: { disabled: true } },
-                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: 880, type: "textarea", options: { rows: "2", disabled: true } },
-                            { display: "实施情况登记", name: "EXE_DESC", newline: true, width: 880, type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "遗留问题描述", name: "LEAVE_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
+                            { display: "实施情况登记", name: "EXE_DESC", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
 
                             { display: "验收人", name: "CHECK_USER", newline: true, type: "text", options: { disabled: true }, group: "维修验收" },
                             { display: "验收时间", name: "CHECK_DATE", type: "date", validate: { required: true }, options: { format: 'yyyy-MM-dd HH:mm' } },
-                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: 880, type: "textarea", options: { rows: "2" } },
-                            { display: "备注", name: "CHECK_MEMO", newline: true, width: 880, type: "textarea", options: { rows: "2" }},
+                            { display: "验收情况", name: "CHECK_DESC", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
+                            { display: "备注", name: "CHECK_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" }},
                         ]
                     },
                     grid: {
@@ -275,7 +282,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -330,16 +338,10 @@
                 me.toolbarBtnItemClick = function (item) {
                     switch (item.id) {
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 };
@@ -362,12 +364,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

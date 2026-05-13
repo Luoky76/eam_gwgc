@@ -29,6 +29,13 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -75,7 +82,7 @@
                                     data: me.requestType
                                 }
                             },
-                            { display: "备注", name: "MEMO", width: 1146, newline: "true", type: "textarea", options: {} },
+                            { display: "备注", name: "MEMO", width: me.getTextareaWidth(), newline: "true", type: "textarea", options: {} },
                             //隐藏
                             { display: "主键", name: "REQUEST_ID", width: 300, type: "hidden" },
                             { display: "申请部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
@@ -335,7 +342,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -392,12 +399,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '??Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -435,13 +442,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=xls&MenuNo=" + me.menuNo,
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls&MenuNo=" + me.menuNo, window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../../../System/Export.html?exporttype=doc&MenuNo=" + me.menuNo,
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf&MenuNo=" + me.menuNo, window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
@@ -588,7 +595,6 @@
                 }
             },
             init: function () {
-                debugger
                 var me = this;
                 if (frameElement && frameElement.dialog) {
                     me.dialog = frameElement.dialog;

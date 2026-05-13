@@ -1,4 +1,4 @@
-﻿using EAM.Special.Interfaces;
+﻿using EAM.Special.Services;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
@@ -10,13 +10,13 @@ namespace EAM.Special.Controller
     [GksybAuthorize(MenuNo = "DrugLimit,DrugRequest")]
     public class DrugLimitController : AreaController
     {
-        private readonly IDrugLimitService _service;
+        private readonly DrugLimitService _service;
 
         /// <summary>
         /// 药品数量配置
         /// </summary>
         /// <param name="service"></param>
-        public DrugLimitController(IDrugLimitService service)
+        public DrugLimitController(DrugLimitService service)
         {
             _service = service;
         }

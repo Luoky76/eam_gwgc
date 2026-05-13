@@ -6,14 +6,13 @@ using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using EAM.Special.Interfaces;
 using Gksyb.Core.Interfaces.Auth;
 using System.Collections.Concurrent;
 using Gksyb.Model.UI;
 
 namespace EAM.Special.Services
 {
-    public class EnergyReportService : BaseService, IEnergyReportService
+    public class EnergyReportService : BaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;

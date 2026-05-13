@@ -1,6 +1,5 @@
 ﻿using Chloe;
 using EAM.Special.DTO;
-using EAM.Special.Interfaces;
 using Gksyb.Common;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
@@ -16,7 +15,7 @@ using System.Collections.Concurrent;
 
 namespace EAM.Special.Services
 {
-    public class BuildService : IBuildService
+    public class BuildService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

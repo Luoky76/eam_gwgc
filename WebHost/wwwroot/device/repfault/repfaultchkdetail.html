@@ -38,10 +38,17 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             menuNo: getQueryStringByName("MenuNo"),
             dialogData: {},
             sid: getQueryStringByName("sid"),
-            isAddNew: false,
+            isNew: false,
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
@@ -58,7 +65,7 @@
                 var me = this;
                 me.config = {
                     form: {
-                        labelwidth: 220,
+                        labelwidth: me.formLabelWidth,
                         fields: [
                             //基础信息
                             { display: "记录状态", name: "AUDITING_B", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "设备故障上报" },
@@ -101,7 +108,7 @@
                             },
                             { display: "上报人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             //{ display: "上报人ID", name: "EDIT_USERID", newline: false, upper: true, type: "text", options: {} },
-                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: 775, type: "textarea", editor: { disabled: true }, options: {} },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", editor: { disabled: true }, options: {} },
 
                             { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.disposeType }, group: "故障处理" },
                             { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repType } },
@@ -119,15 +126,15 @@
                                 }
                             },
                             { display: "维修工时(H)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float", editor: { disabled: true }, options: {} },
-                            { display: "故障及解决方法描述", name: "FAULT_REASON", newline: true, upper: true, editor: { disabled: true }, width: 775, type: "textarea", options: {} },
-                            { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: 775, editor: { disabled: true }, type: "textarea", options: {} },
-                            { display: "故障处理备注", name: "FAULT_MEMO", newline: true, upper: true, width: 775, editor: { disabled: true }, type: "textarea", options: {} },
+                            { display: "故障及解决方法描述", name: "FAULT_REASON", newline: true, upper: true, editor: { disabled: true }, width: me.getTextareaWidth(), type: "textarea", options: {} },
+                            { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: me.getTextareaWidth(), editor: { disabled: true }, type: "textarea", options: {} },
+                            { display: "故障处理备注", name: "FAULT_MEMO", newline: true, upper: true, width: me.getTextareaWidth(), editor: { disabled: true }, type: "textarea", options: {} },
 
 
                             { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {}, group: "设备验收" },
                             { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "验收结果", name: "CHECK_RESULT", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.checkResult } },
-                            { display: "验收说明", name: "CHECK_MEMO", newline: true, upper: true, width: 775, type: "textarea", options: {} },
+                            { display: "验收说明", name: "CHECK_MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
 
 
@@ -196,7 +203,7 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (me.isAddNew) {
+                if (me.isNew) {
                     me.mainform.setData({ AUDITING_B: "0", FAULT_STATUS: "30", FAULT_SRC: "10", DISPOSE_TYPE: "20" });
                     inner();
                 }
@@ -240,7 +247,7 @@
                 var original = handle(me.orginData);
 
                 var changeRow = new Object();
-                if (me.isAddNew) {
+                if (me.isNew) {
                     changeRow["added"] = [data];
                 }
                 else {
@@ -311,7 +318,7 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
                         me.buttons = g.options.buttons;
@@ -420,8 +427,8 @@
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
                     if (me.dialogData.sid) me.sid = me.dialogData.sid;
-                    if (me.dialogData.isNew != undefined) me.isAddNew = me.dialogData.isNew;
-                    if (me.dialogData.view != undefined) me.isView = me.dialogData.view;
+                    if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
+                    if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }
 
                 //加在基础信息
@@ -436,7 +443,7 @@
                 me.setGrid2();
                 me.reloadPep();
                 me.reloadSp();
-                if (me.dialogData.view != undefined) {
+                if (me.dialogData.isView != undefined) {
                     const commonGridOptions = {
                         enabledEdit: false,
                     };

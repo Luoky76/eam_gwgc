@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpOrderStopController : AreaController
     {
-        private readonly ISpOrderStopService _service;
+        private readonly SpOrderStopService _service;
 
-        public SpOrderStopController(ISpOrderStopService service)
+        public SpOrderStopController(SpOrderStopService service)
         {
             _service = service;
         }

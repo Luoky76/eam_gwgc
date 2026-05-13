@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -35,6 +35,13 @@
         var isView;
         var fileMark;
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             menuNo: getQueryStringByName("MenuNo"),
             isView: false,
@@ -78,8 +85,8 @@
                             { display: "维修类型", name: "MAINT_TYPE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
                             { display: "维修处理方式", name: "DEAL_TYPE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.repairhandtype } },
                            
-                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: 846, type: "textarea", editor: { }, options: { rows: "2" } },
-                            { display: "备注", name: "PLAN_MEMO", newline: true, width: 846, type: "textarea", editor: { }, options: { rows: "2" } },
+                            { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", editor: { }, options: { rows: "2" } },
+                            { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", editor: { }, options: { rows: "2" } },
                             
                             {
                                 display: "计划开工时间", name: "PLAN_START_DATE", newline: true, width: 200, type: "date", validate: { required: true },
@@ -103,7 +110,7 @@
                             { display: "审核人", name: "AUDIT_USER", width: 200, type: "text", editor: { disabled: true }, options: {} },
                             { display: "采购方式", name: "COLLECT_METHOD", width: 200, type: "text", options: {} },
                             { display: "预估维修金额", name: "PLAN_MONEY", width: 200, type: "float", options: {} },
-                            { display: "维修内容", name: "REPAIR_MEMO", newline: true, width: 846, type: "textarea", options: { rows: "2" } }
+                            { display: "维修内容", name: "REPAIR_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } }
                         ]
                     },
                     grid: {
@@ -204,7 +211,7 @@
                     var originData = {};
                     LG.ajax({
                         async: false,
-                        url: 'Repair/RepairPlan/CreatePrimaryKey',
+                        url: 'Common/General/CreatePrimaryKey',
                         loading: '正在获取中...',
                         success: function (data, message) {
                             me.sid = data;
@@ -363,7 +370,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;
@@ -430,16 +438,10 @@
                             me.delete();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=xls",
-                                modal: true
-                            });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
-                        case "Word":
-                            $.ligerDialog.open({
-                                url: "../../System/Export.html?exporttype=doc",
-                                modal: true
-                            });
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
                 }
@@ -569,12 +571,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '导出Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });

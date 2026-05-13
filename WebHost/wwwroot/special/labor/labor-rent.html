@@ -21,6 +21,8 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -154,13 +156,13 @@
                             break;
                         case "Excel":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=xls",
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
-                        case "Word":
+                        case "Pdf":
                             $.ligerDialog.open({
-                                url: "../System/Export.html?exporttype=doc",
+                                url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase),
                                 modal: true
                             });
                             break;
@@ -302,12 +304,12 @@
                         line: true
                     },
                     {
-                        id: 'Word',
-                        text: '导出Word',
+                        id: 'Pdf',
+                        text: '??Pdf',
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-word-o"
+                        icon: "fa fa-file-pdf-o"
                     }
                     ]
                 });
@@ -339,8 +341,8 @@
                 var $formsearch = $("#formsearch")
                 //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
-                    labelWidth: 100,
-                    inputWidth: 150,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     labelAlign: 'left',
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,

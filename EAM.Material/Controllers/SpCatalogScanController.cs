@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpCatalogScanController : AreaController
     {
-        private readonly ISpCatalogScanService _service;
+        private readonly SpCatalogScanService _service;
 
-        public SpCatalogScanController(ISpCatalogScanService service)
+        public SpCatalogScanController(SpCatalogScanService service)
         {
             _service = service;
         }

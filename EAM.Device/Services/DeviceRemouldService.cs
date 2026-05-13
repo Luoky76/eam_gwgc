@@ -1,5 +1,4 @@
 ﻿using Chloe;
-using EAM.Device.Interfaces;
 using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
@@ -8,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Device.Services
 {
-    public class DeviceRemouldService : IDeviceRemouldService
+    public class DeviceRemouldService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

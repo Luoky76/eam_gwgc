@@ -1,4 +1,4 @@
-﻿using EAM.Material.Interfaces;
+﻿using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -9,9 +9,9 @@ namespace EAM.Material.Controllers
     [GksybAuthorize(true)]
     public class SpOutController : AreaController
     {
-        private readonly ISpOutService _service;
+        private readonly SpOutService _service;
 
-        public SpOutController(ISpOutService service)
+        public SpOutController(SpOutService service)
         {
             _service = service;
         }
