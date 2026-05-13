@@ -26,18 +26,18 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", width: 300, type: "select", options: {
+                                display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }
                             },
-                            { display: "记录编码", name: "ASSET_CODE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "采购日期", name: "PUR_DATE", width: 300, type: "date", validate: { required: true }, options: {} },
-                            { display: "设备名称", name: "ASSET_NAME", width: 300, type: "text", validate: { required: true }, options: {} },
+                            { display: "记录编码", name: "ASSET_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "采购日期", name: "PUR_DATE", width: me.formInputWidth, type: "date", validate: { required: true }, options: {} },
+                            { display: "设备名称", name: "ASSET_NAME", width: me.formInputWidth, type: "text", validate: { required: true }, options: {} },
                             //实际为设备类型ID
                             {
-                                display: "设备类型", name: "TYPE_ID", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "设备类型", name: "TYPE_ID", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.assetDeviceType,
                                     autocomplete: true,
@@ -51,12 +51,12 @@
                                     }
                                 }
                             },
-                            { display: "资产编号", name: "ASSETNO", width: 300, type: "text", options: {} },
-                            { display: "型号规格", name: "ASSET_SIZE", width: 300, type: "text", options: {} },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 300, type: "text", options: {} },
-                            { display: "责任人", name: "PERSON", width: 300, type: "text", options: {} },
+                            { display: "资产编号", name: "ASSETNO", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "型号规格", name: "ASSET_SIZE", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "品牌、厂家", name: "PRODUCE", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "责任人", name: "PERSON", width: me.formInputWidth, type: "text", options: {} },
                             {
-                                display: "管理部门", name: "MDEPT_NAME", width: 300, type: "select", options: {
+                                display: "管理部门", name: "MDEPT_NAME", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.corp,
                                     autocomplete: true,
@@ -69,18 +69,18 @@
                                     }
                                 }
                             },
-                            { display: "使用人", name: "CARD_USER", width: 300, type: "text", options: {} },
-                            { display: "存放位置", name: "INSTALL_SITE", width: 300, type: "text", options: {} },
+                            { display: "使用人", name: "CARD_USER", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "存放位置", name: "INSTALL_SITE", width: me.formInputWidth, type: "text", options: {} },
                             {
-                                display: "使用情况", name: "USE_STATE", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "使用情况", name: "USE_STATE", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.assetStatus
                                 }
                             },
-                            { display: "序列号", name: "SERIAL_NUM", width: 300, type: "text", options: {} },
-                            { display: "供应商", name: "PROVIDER_NAME", width: 300, type: "text", options: {} },
+                            { display: "序列号", name: "SERIAL_NUM", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "供应商", name: "PROVIDER_NAME", width: me.formInputWidth, type: "text", options: {} },
                             {
-                                display: "使用部门", name: "DEPT_NAME", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "使用部门", name: "DEPT_NAME", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.corp,
                                     autocomplete: true,
@@ -94,7 +94,7 @@
                                 }
                             },
                             {
-                                display: "管理人", name: "MANAGER_USER", width: 300, type: "select", options: {
+                                display: "管理人", name: "MANAGER_USER", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.user,
                                     autocomplete: true,
@@ -108,7 +108,7 @@
                                 }
                             },
                             {
-                                display: "编辑人", name: "MODIFY_USERID", width: 300, type: "select", options: {
+                                display: "编辑人", name: "MODIFY_USERID", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.user,
                                     disabled: true

@@ -26,7 +26,7 @@ namespace EAM.Material.Services
         }
 
         #region 物资编码申请
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

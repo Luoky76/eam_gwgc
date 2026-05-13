@@ -147,6 +147,38 @@
                 me.loadToolbar();
                 me.bindGridEvent();
             },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING == "1") {
+                        if (msg) { LG.tip(msg); }
+                        return false;
+                    }
+                }
+                return true;
+            },
             loadToolbar: function () {
                 var me = this;
                 me.toolbarBtnItemClick = function (item) {
@@ -161,20 +193,28 @@
                             me.add();
                             break;
                         case "modify":
-                            me.modify();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.modify();
+                            }
                             break;
                         case "delete":
-                            me.delete();
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                me.delete();
+                            }
                             break;
                         case "file":
-                            me.f_attachManage();
+                            if (me.isSelectSingleRow()) {
+                                me.f_attachManage();
+                            }
                             break;
                         case "submit":
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.submit();
-                                }
-                            });
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                    if (confirm) {
+                                        me.submit();
+                                    }
+                                });
+                            }
                             break;
                         case "Excel":
                             $.ligerDialog.open({
@@ -192,14 +232,13 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            openDetail: function ({ sid = null, isNew = false, isView = false } = {}) {
                 var me = this;
-
                 $.ligerDialog.open({
                     width: 1500,
                     height: 700,
                     allowClose: true,
-                    title: '[新增]低值品入账',
+                    title: isNew ? "[新增]低值品入账" : (isView ? "[查看]低值品入账" : "[修改]低值品入账"),
                     url: "lowspare-in-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -207,41 +246,17 @@
                     showMin: false,
                     isResize: true,
                     slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sdid": null, "isView": false ,"isNew": true }
+                    onClosed: isView ? me.buttons[0].click : me.reload.bind(me),
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
             },
-            modify: function () { //修改
+            add: function () {
+                this.openDetail({ sid: null, isNew: true, isView: false });
+            },
+            modify: function () {
                 var me = this;
-                var rows = me.grid.getSelectedRows();
-                if (rows.length > 1) {
-                    LG.showError("不能选择多行");
-                    return;
-                } else if (rows.length == 0) {
-                    LG.showError("请选择一行");
-                    return;
-                }
                 var selected = me.grid.getSelectedRow();
-                if (selected.AUDITING == "1") {
-                    LG.showError("已提交,不可修改");
-                    return;
-                }
-                $.ligerDialog.open({
-                    width: 1500,
-                    height: 700,
-                    allowClose: true,
-                    title: '[修改]低值品入账',
-                    url: "lowspare-in-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sdid": selected.IN_ID, "isView": false }
-                });
-
+                me.openDetail({ sid: selected.IN_ID, isNew: false, isView: false });
             },
             delete: function () { //删除
                 var me = this;
@@ -267,28 +282,14 @@
                     }
                 }
             },
-            view: function () {
+            view: function (rowid) {
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                //if (!selected) {
-                //    LG.tip('请选择行!');
-                //    return;
-                //}
-                $.ligerDialog.open({
-                    width: 1500,
-                    height: 700,
-                    allowClose: true,
-                    title: '[查看]低值品入账',
-                    url: "lowspare-in-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.buttons[0].click,
-                    data: { "sdid": selected.IN_ID, "isView": true }
-                });
+                var selected = rowid != undefined ? me.grid.records[rowid] : me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                me.openDetail({ sid: selected.IN_ID, isNew: false, isView: true });
             },
             save: function () { //保存
                 var me = this;
@@ -316,43 +317,31 @@
                 }
 
             },
-            submit: function () { //提交
+            submit: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        if (ori.AUDITING == "1") {
-                            LG.showError("有数据已提交，无法重复提交！");
-                            return;
-                        }
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Special/LowspareIn/Save',
-                        loading: '正在提交中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
+                if (selecteds.length == 0) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    sids.push(selecteds[i].IN_ID);
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/LowspareIn/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;

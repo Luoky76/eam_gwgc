@@ -28,31 +28,36 @@
         var business = {
             formLabelWidth: 120,
             formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             setConfig: function () {
                 var me = this;
                 me.config = {
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", width: 300, type: "select", options: {
+                                display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     data: me.auditing,
                                     value: "0",
                                     disabled: true
                                 }
                             },
                             {
-                                display: "船名", name: "SHIP_NAME", width: 300, type: "text", options: {
+                                display: "船名", name: "SHIP_NAME", width: me.formInputWidth, type: "text", options: {
                                     value: window.session.Corp.CName,
                                     disabled: true
                                 }
                             },
                             {
-                                display: "部门", name: "DEPT_NAME", width: 300, type: "text", options: {
+                                display: "部门", name: "DEPT_NAME", width: me.formInputWidth, type: "text", options: {
                                     value: window.session.Corp.CName,
                                     disabled: true
                                 }
                             },
-                            { display: "日期", name: "DATE", width: 300, type: "date", options:{} },
+                            { display: "日期", name: "DATE", width: me.formInputWidth, type: "date", options:{} },
                             //隐藏
                             { display: "主键", name: "LABOR_MATERIAL_ID", type: "hidden", options: {} },
                             {

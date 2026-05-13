@@ -426,6 +426,161 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 提交维修申请
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SubmitApplyAsync(List<string> sids)
+        {
+            var sysdate = await _dbContext.GetSysdate();
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => sids.Contains(c.REPORT_ID),
+                c => new ASSET_REPORT
+                {
+                    AUDITING_APPLY = "1",
+                    APPLY_DATE = sysdate
+                });
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销维修申请提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeApplyAsync(string sid)
+        {
+            var entity = await _dbContext.Query<ASSET_REPORT>()
+                .Where(c => c.REPORT_ID == sid)
+                .FirstOrDefaultAsync();
+            if (entity == null) return AjaxResult.Error("记录不存在");
+            if (entity.AUDITING_CHECK == "1") return AjaxResult.Error("维修实施已提交，无法撤销！");
+
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => c.REPORT_ID == sid,
+                c => new ASSET_REPORT
+                {
+                    AUDITING_APPLY = "0"
+                });
+            return AjaxResult.Success("撤销成功");
+        }
+
+        /// <summary>
+        /// 提交维修实施
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SubmitCheckAsync(List<string> sids)
+        {
+            var sysdate = await _dbContext.GetSysdate();
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => sids.Contains(c.REPORT_ID),
+                c => new ASSET_REPORT
+                {
+                    AUDITING_CHECK = "1",
+                    CHECK_DATE = sysdate
+                });
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销维修实施提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeCheckAsync(string sid)
+        {
+            var entity = await _dbContext.Query<ASSET_REPORT>()
+                .Where(c => c.REPORT_ID == sid)
+                .FirstOrDefaultAsync();
+            if (entity == null) return AjaxResult.Error("记录不存在");
+            if (entity.AUDITING_OUTSOURCE == "1") return AjaxResult.Error("委外维修已提交，无法撤销！");
+            if (entity.AUDITING_ACCEPT == "1") return AjaxResult.Error("维修已验收，无法撤销！");
+
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => c.REPORT_ID == sid,
+                c => new ASSET_REPORT
+                {
+                    AUDITING_CHECK = "0"
+                });
+            return AjaxResult.Success("撤销成功");
+        }
+
+        /// <summary>
+        /// 提交委外维修
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SubmitOutsourceAsync(List<string> sids)
+        {
+            var sysdate = await _dbContext.GetSysdate();
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => sids.Contains(c.REPORT_ID),
+                c => new ASSET_REPORT
+                {
+                    AUDITING_OUTSOURCE = "1",
+                    OUTSOURCE_DATE = sysdate
+                });
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销委外维修提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeOutsourceAsync(string sid)
+        {
+            var entity = await _dbContext.Query<ASSET_REPORT>()
+                .Where(c => c.REPORT_ID == sid)
+                .FirstOrDefaultAsync();
+            if (entity == null) return AjaxResult.Error("记录不存在");
+            if (entity.AUDITING_ACCEPT == "1") return AjaxResult.Error("维修已验收，无法撤销！");
+
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => c.REPORT_ID == sid,
+                c => new ASSET_REPORT
+                {
+                    AUDITING_OUTSOURCE = "0"
+                });
+            return AjaxResult.Success("撤销成功");
+        }
+
+        /// <summary>
+        /// 提交维修验收
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SubmitAcceptAsync(List<string> sids)
+        {
+            var sysdate = await _dbContext.GetSysdate();
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => sids.Contains(c.REPORT_ID),
+                c => new ASSET_REPORT
+                {
+                    AUDITING_ACCEPT = "1",
+                    ACCEPT_DATE = sysdate
+                });
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销维修验收提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeAcceptAsync(string sid)
+        {
+            await _dbContext.UpdateAsync<ASSET_REPORT>(
+                c => c.REPORT_ID == sid,
+                c => new ASSET_REPORT
+                {
+                    AUDITING_ACCEPT = "0"
+                });
+            return AjaxResult.Success("撤销成功");
+        }
+
+        /// <summary>
         /// 创建编码
         /// </summary>
         /// <param name="headCode"></param>
@@ -509,7 +664,7 @@ namespace EAM.Special.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

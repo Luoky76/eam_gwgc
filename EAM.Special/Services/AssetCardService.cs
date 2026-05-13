@@ -185,6 +185,36 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> SubmitAsync(List<string> sids)
+        {
+            return await _dbContext.UpdateAsync<ASSET_CARD>(
+                c => sids.Contains(c.ASSET_ID),
+                c => new ASSET_CARD
+                {
+                    AUDITING = "1"
+                });
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> RevokeAsync(List<string> sids)
+        {
+            return await _dbContext.UpdateAsync<ASSET_CARD>(
+                c => sids.Contains(c.ASSET_ID),
+                c => new ASSET_CARD
+                {
+                    AUDITING = "0"
+                });
+        }
+
+        /// <summary>
         /// 创建编码
         /// </summary>
         /// <param name="headCode"></param>
@@ -284,7 +314,7 @@ namespace EAM.Special.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

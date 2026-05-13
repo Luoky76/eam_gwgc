@@ -71,25 +71,25 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING_B", width: 200, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
-                            { display: "故障申报单号", name: "EXE_CODE", width: 200, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
-                            { display: "船舶名称", name: "DEVICE_NAME", width: 200, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "船舶编号", name: "DEVICE_NO", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "船舶型号", name: "DEVICE_TYPE", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "安装地点", name: "INSTALL_SITE", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "报修人", name: "REPORT_USER", width: 200, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维保部门", name: "WSEC_DEPT", width: 200, type: "select", editor: { disabled: true }, options: { data: me.maintdept } },
-                            { display: "维修类型", name: "MAINT_TYPE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.repairhandtype } },
+                            { display: "记录状态", name: "AUDITING_B", width: me.formInputWidth, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
+                            { display: "故障申报单号", name: "EXE_CODE", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "船舶名称", name: "DEVICE_NAME", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "船舶编号", name: "DEVICE_NO", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "船舶型号", name: "DEVICE_TYPE", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "安装地点", name: "INSTALL_SITE", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "报修人", name: "REPORT_USER", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维保部门", name: "WSEC_DEPT", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.maintdept } },
+                            { display: "维修类型", name: "MAINT_TYPE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.repairhandtype } },
                            
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", editor: { }, options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", editor: { }, options: { rows: "2" } },
                             
                             {
-                                display: "计划开工时间", name: "PLAN_START_DATE", newline: true, width: 200, type: "date", validate: { required: true },
+                                display: "计划开工时间", name: "PLAN_START_DATE", newline: true, width: me.formInputWidth, type: "date", validate: { required: true },
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
@@ -98,7 +98,7 @@
                                 },
                             },
                             {
-                                display: "计划完工时间", name: "PLAN_END_DATE", width: 200, type: "date", validate: { required: true },
+                                display: "计划完工时间", name: "PLAN_END_DATE", width: me.formInputWidth, type: "date", validate: { required: true },
                                 options: {
                                     format: 'yyyy-MM-dd HH:mm:ss',
                                     onChangeValue: function (input, value, g) {
@@ -106,10 +106,10 @@
                                     },
                                 }
                             },
-                            { display: "计划停机时长(H)", name: "PLAN_STOP_TIME", width: 200, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "审核人", name: "AUDIT_USER", width: 200, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "采购方式", name: "COLLECT_METHOD", width: 200, type: "text", options: {} },
-                            { display: "预估维修金额", name: "PLAN_MONEY", width: 200, type: "float", options: {} },
+                            { display: "计划停机时长(H)", name: "PLAN_STOP_TIME", width: me.formInputWidth, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "审核人", name: "AUDIT_USER", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "采购方式", name: "COLLECT_METHOD", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "预估维修金额", name: "PLAN_MONEY", width: me.formInputWidth, type: "float", options: {} },
                             { display: "维修内容", name: "REPAIR_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } }
                         ]
                     },

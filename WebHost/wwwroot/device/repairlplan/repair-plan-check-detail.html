@@ -77,7 +77,7 @@
                             { display: "维保部门", name: "WSEC_DEPT", type: "select", options: { data: me.maintdept, disabled: true } },
                             { display: "维修类型", name: "MAINT_TYPE", newline: true, type: "select", options: { data: me.repairtype, disabled: true } },
                             { display: "维修处理方式", name: "DEAL_TYPE", type: "select", options: { data: me.repairhandtype, disabled: true } },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: true, width: 880, type: "text", options: { disabled: true } },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: true, width: me.formInputWidth, type: "text", options: { disabled: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "计划开工时间", name: "PLAN_START_DATE", newline: true, type: "date", options: { format: 'yyyy-MM-dd HH:mm', disabled: true } },

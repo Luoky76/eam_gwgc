@@ -187,16 +187,27 @@
                 }
                 return true;
             },
-            isAudited: function () {
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (!(row.AUDITING == "1")) {
+                        if (msg) { LG.tip(msg); }
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
                     if (["1", "2", "3"].includes(row.AUDITING)) {
-                        LG.tip("有数据已提交，无法变更！");
-                        return true;
+                        if (msg) { LG.tip(msg); }
+                        return false;
                     }
                 }
-                return false;
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -209,28 +220,34 @@
                             me.add();
                             break;
                         case "modify":
-                            if (!me.isSelectSingleRow() || me.isAudited()) break;
-                            me.modify();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.modify();
+                            }
                             break;
                         case "delete":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            me.delete();
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                me.delete();
+                            }
                             break;
                         case "submit":
-                            if (!me.isSelectSingleRow() || me.isAudited()) break;
-                            me.submit();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.submit();
+                            }
                             break;
                         case "revoke":
-                            if (!me.isSelectSingleRow()) break;
-                            me.revoke();
+                            if (me.isSelectSingleRow() && me.isAllAudited()) {
+                                me.revoke();
+                            }
                             break;
                         case "detail":
-                            if (!me.isSelectSingleRow()) break;
-                            me.detail();
+                            if (me.isSelectSingleRow()) {
+                                me.detail();
+                            }
                             break;
                         case "attach":
-                            if (!me.isSelectSingleRow()) break;
-                            me.attach();
+                            if (me.isSelectSingleRow()) {
+                                me.attach();
+                            }
                             break;
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
@@ -243,65 +260,36 @@
             
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function (rowid) { //查看
+            openDetail: function ({ sid = null, isNew = false, isView = false, title = null, ver = null } = {}) {
+                var me = this;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: title || (isNew ? "[新增]物资请购" : (isView ? "[查看]物资请购" : "[修改]物资请购")),
+                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo + (ver ? "&ver=" + ver : ""),
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: sid, isNew: isNew, isView: isView }
+                });
+            },
+            view: function (rowid) {
                 var me = this;
                 var selected = me.grid.records[rowid];
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[查看]物资请购',
-                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": selected.COLLECT_ID, "isView": true }
-                });
+                me.openDetail({ sid: selected.COLLECT_ID, isNew: false, isView: true });
             },
-            add: function () { //新增
-                var me = this;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[新增]物资请购',
-                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": null, "isNew": true, "isView": false }
-                });
+            add: function () {
+                this.openDetail({ sid: null, isNew: true, isView: false });
             },
-            modify: function (rowdata) { //修改
+            modify: function (rowdata) {
                 var me = this;
-                var rows = me.grid.getSelectedRows();
-                var selected = rows[0];
-                if (rowdata) {
-                    selected = rowdata;
-                }
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改]物资请购',
-                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": selected.COLLECT_ID, "isView": false }
-                });
+                var selected = rowdata || me.grid.getSelectedRow();
+                me.openDetail({ sid: selected.COLLECT_ID, isNew: false, isView: false });
             },
             save: function () { //保存
                 var me = this;
@@ -435,28 +423,14 @@
                     LG.tip('请选择行!');
                 }
             },
-            detail: function () { //明细
+            detail: function () {
                 var me = this;
                 var apply = me.grid.getSelectedRow();
                 if (apply.COLLECT_ID == null) {
                     LG.showError("请先保存再打开明细");
-                    return
+                    return;
                 }
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[修改需求申请明细]',
-                    url: "sp_collect_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": apply.COLLECT_ID, "isView": ["1", "2", "3"].includes(apply.AUDITING) }
-                });
+                me.openDetail({ sid: apply.COLLECT_ID, isNew: false, isView: ["1", "2", "3"].includes(apply.AUDITING), title: "[修改需求申请明细]", ver: me.ver });
             },
             attach: function () {
                 var me = this;

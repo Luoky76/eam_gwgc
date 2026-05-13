@@ -126,9 +126,10 @@
                             me.delete();
                             break;
                         case "submit":
+                            if (!me.isSelectRow() || !me.isAllUnaudited()) return;
                             $.ligerDialog.confirm("提交后不可修改和撤销，是否继续？", function (confirm) {
                                 if (confirm) {
-                                    me.sumbit();
+                                    me.submit();
                                 }
                             });
                             break;
@@ -143,47 +144,95 @@
                 me.grid.toolbarManager.options.group = 'list';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows || rows.length === 0) {
+                    LG.tip('请选择行!');
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows || rows.length === 0) {
+                    LG.showError("请选择一行");
+                    return false;
+                }
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return false;
+                }
+                return true;
+            },
+            isAllAudited: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].AUDITING !== "1") {
+                        LG.showError("该数据未提交，无法撤销！");
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].AUDITING === "1") {
+                        LG.showError("该数据已提交，无法重复提交！");
+                        return false;
+                    }
+                }
+                return true;
+            },
+            openDetail: function (options) {
+                var me = this;
+                options = options || {};
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: options.title,
+                    url: "scancatedet.html?MenuNo=" + me.menuNo + "&type=" + me.type,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
+                });
+            },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
             },
-            sumbit: function () { //提交
+            submit: function () { //提交
                 var me = this;
+                if (!me.isSelectRow() || !me.isAllUnaudited()) return;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        if (ori.AUDITING == "1") {
-                            LG.showError("该数据已提交，无法重复提交！");
-                            return;
-                        }
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/SpCatalogScan/Save',
-                        loading: '正在提交中...',
-                        data: { request: changeRow, requestdet: null },
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
-                    LG.tip('请选择行!');
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    sids.push(selecteds[i].SCAN_ID);
                 }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpCatalogScan/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             bindGridEvent: function () {
                 var me = this;
@@ -256,95 +305,28 @@
 
                 me.searchForm.setVisible(["_search_SCAN_TYPE"], false);
             },
-
             add: function () {
                 var me = this;
-                $.ligerDialog.open({
-                    width: 1100,
-                    height: 620,
-                    allowClose: true,
-                    title: '新增盘点申请',
-                    url: "scancatedet.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.buttons[0].click,
-                    data: { "sdid": null, "isNew": true, "type": me.type }
-                });
+                me.openDetail({ title: '新增盘点申请', sid: null, isNew: true, isView: false });
             },
-
             view: function (rowdata) { //查看
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (rowdata) {
-                    selected = rowdata.SCAN_ID;
-                }
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: 1100,
-                        height: 620,
-                        allowClose: true,
-                        title: '查看盘点申请',
-                        url: "scancatedet.html?MenuNo=" + me.menuNo,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.buttons[0].click,
-                        data: { "sid": selected, "isView": true }
-                    });
-                } else {
+                var selected = rowdata || me.grid.getSelectedRow();
+                if (!selected) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                me.openDetail({ title: '查看盘点申请', sid: selected.SCAN_ID, isNew: false, isView: true });
             },
-
             modify: function (rowdata) { //修改
                 var me = this;
-                var rows = me.grid.getSelectedRows();
-                if (rows.length > 1) {
-                    LG.showError("不能选择多行")
-                    return
-                } else if (rows.length == 0) {
-                    LG.showError("请选择一行")
-                    return
-                }
-                var selected = me.grid.getSelectedRow();
+                if (!rowdata && !me.isSelectSingleRow()) return;
+                var selected = rowdata || me.grid.getSelectedRows()[0];
                 if (selected.AUDITING == "1") {
                     LG.tip('已提交，无法修改!');
+                    return;
                 }
-
-                else {
-                    if (rowdata) {
-                        selected = rowdata;
-                    }
-                    if (selected) {
-                        $.ligerDialog.open({
-                            width: 1100,
-                            height: 620,
-                            allowClose: true,
-                            title: '修改盘点申请',
-                            url: "scancatedet.html?MenuNo=" + me.menuNo,
-                            isHidden: false,
-                            showMax: false,
-                            showToggle: false,
-                            showMin: false,
-                            isResize: true,
-                            slide: false,
-                            onClosed: me.buttons[0].click,
-                            data: { "sid": selected.SCAN_ID }
-                        });
-
-
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
-
+                me.openDetail({ title: '修改盘点申请', sid: selected.SCAN_ID, isNew: false, isView: false });
             },
 
             save: function () { //保存

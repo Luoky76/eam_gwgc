@@ -42,33 +42,33 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", width: 300, type: "select", options: {
+                                display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }
                             },
-                            { display: "请购单号", name: "COLLECT_CODE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "请购日期", name: "CREATEDATE", width: 300, type: "string", options: { disabled: true } },
+                            { display: "请购单号", name: "COLLECT_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "请购日期", name: "CREATEDATE", width: me.formInputWidth, type: "string", options: { disabled: true } },
                             {
-                                display: "采购人", name: "CREATE_USERID", width: 300, type: "select", options: {
+                                display: "采购人", name: "CREATE_USERID", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.user,
                                     disabled: true
                                 }
                             },
-                            { display: "采购部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
+                            { display: "采购部门", name: "DEPT_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             {
-                                display: "采购方式", name: "COLLECT_METHOD", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "采购方式", name: "COLLECT_METHOD", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.drugCollectMethod
                                 }
                             },
-                            { display: "总金额", name: "COLLECT_MONEY", width: 300, type: "float", options: { disabled: true } },
+                            { display: "总金额", name: "COLLECT_MONEY", width: me.formInputWidth, type: "float", options: { disabled: true } },
                             { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             //隐藏
-                            { display: "主键", name: "COLLECT_ID", width: 300, type: "hidden" },
-                            { display: "采购部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
+                            { display: "主键", name: "COLLECT_ID", width: me.formInputWidth, type: "hidden" },
+                            { display: "采购部门ID", name: "DEPT_ID", width: me.formInputWidth, type: "hidden" },
                         ]
                     },
                     collectGrid: {

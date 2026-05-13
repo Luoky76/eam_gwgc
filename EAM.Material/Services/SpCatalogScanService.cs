@@ -44,7 +44,7 @@ namespace EAM.Material.Services
         /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "Auditing",null}
@@ -299,6 +299,33 @@ namespace EAM.Material.Services
                 errMsg = "未提交的状态下才能删除";
                 throw new MessageException("未提交的状态下才能删除");
             }
+        }
+
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.QueryByKeyAsync<SP_CATALOG_SCAN>(sid);
+                    if (entity == null) continue;
+                    if (entity.AUDITING == "1") return AjaxResult.Error("该数据已提交，无法重复提交！");
+
+                    entity.AUDITING = "1";
+                    await BeforUpdate(entity);
+                    await _dbContext.UpdateAsync<SP_CATALOG_SCAN>(x => x.SCAN_ID == sid,
+                        x => new SP_CATALOG_SCAN
+                        {
+                            AUDITING = entity.AUDITING,
+                            MODIFY_USERID = entity.MODIFY_USERID,
+                            MODIFYDATE = entity.MODIFYDATE
+                        });
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("提交成功");
         }
 
         public async Task<GridData> DetailListAsync(GridRequest request)

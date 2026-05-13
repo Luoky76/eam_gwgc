@@ -55,6 +55,28 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
+        {
+            return await _service.RevokeAsync(sids);
+        }
+
+        /// <summary>
         /// 同时保存采购主表以及与其关联的采购明细子表、采购需求子表
         /// </summary>
         /// <param name="request1"></param>
@@ -74,9 +96,9 @@ namespace EAM.Special.Controller
         /// <param></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
     }
 }

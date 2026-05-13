@@ -187,16 +187,27 @@
                 }
                 return true;
             },
-            isAudited: function () {
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING != "1") {
+                        if (msg) { LG.tip(msg); }
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
                     if (row.AUDITING == "1") {
-                        LG.tip("有数据已提交，无法变更！");
-                        return true;
+                        if (msg) { LG.tip(msg); }
+                        return false;
                     }
                 }
-                return false;
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -206,20 +217,23 @@
                             me.reload();
                             break;
                         case "modify":
-                            if (!me.isSelectSingleRow() || me.isAudited()) break;
-                            me.modify();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.modify();
+                            }
                             break;
                         case "submit":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.submit();
-                                }
-                            });
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                    if (confirm) {
+                                        me.submit();
+                                    }
+                                });
+                            }
                             break;
                         case "revoke":
-                            if (!me.isSelectRow()) break;
-                            me.revoke();
+                            if (me.isSelectRow() && me.isAllAudited()) {
+                                me.revoke();
+                            }
                             break;
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
@@ -232,15 +246,13 @@
                 me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            view: function (rowid) { //查看
+            openDetail: function ({ sid = null, isNew = false, isView = false } = {}) {
                 var me = this;
-                var selected = me.grid.records[rowid];
-                var sid = selected.ASSESS_ID;
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[查看]评估明细',
+                    title: isView ? "[查看]评估明细" : "评分录入",
                     url: "provider-assess-det.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
@@ -249,101 +261,73 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": sid, "isView": true }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
             },
-            modify: function () { //修改（评分）
+            view: function (rowid) {
+                var me = this;
+                var selected = me.grid.records[rowid];
+                me.openDetail({ sid: selected.ASSESS_ID, isNew: false, isView: true });
+            },
+            modify: function () {
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected.EXAMINER_ID != window.session.UserID) {
                     LG.tip("您不是该任务的评分人！");
                     return;
                 }
-                var sid = selected.ASSESS_ID;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '评分录入',
-                    url: "provider-assess-det.html?MenuNo=" + me.menuNo,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": sid, "isView": false }
-                });
+                me.openDetail({ sid: selected.ASSESS_ID, isNew: false, isView: false });
             },
-            submit: function () { //提交
+            submit: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        if (selecteds[i].EXAMINER_ID != window.session.UserID) {
-                            LG.tip("您不是该任务的评分人！");
-                            return;
-                        }
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/ProviderAssess/Save',
-                        loading: '正在提交中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
+                if (selecteds.length == 0) {
                     LG.tip('请选择行!');
+                    return;
                 }
-            },
-            revoke: function () { //撤销提交
-                var me = this;
-                var selecteds = me.grid.getSelectedRows();
-                var updatedarr = [];
-                var orginarr = [];
+                var sids = [];
                 for (var i = 0; i < selecteds.length; i++) {
                     if (selecteds[i].EXAMINER_ID != window.session.UserID) {
                         LG.tip("您不是该任务的评分人！");
                         return;
                     }
-                    var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                    var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                    if (ori.AUDITING == "1") {
-                        upd.AUDITING = "0";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    else {
-                        LG.tip("未提交数据无需撤销！");
-                        return;
-                    }
+                    sids.push(selecteds[i].ASSESS_ID);
                 }
-                var changeRow = new Object();
-                changeRow["updated"] = updatedarr;
-                changeRow["original"] = orginarr;
                 LG.ajax({
                     jsToken: true,
-                    url: 'Material/ProviderAssess/Save',
+                    url: 'Material/ProviderAssess/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            revoke: function () {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length == 0) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    if (selecteds[i].EXAMINER_ID != window.session.UserID) {
+                        LG.tip("您不是该任务的评分人！");
+                        return;
+                    }
+                    sids.push(selecteds[i].ASSESS_ID);
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/ProviderAssess/Revoke',
                     loading: '正在撤销中...',
-                    data: changeRow,
+                    data: { sids: sids },
                     success: function () {
                         LG.showSuccess('撤销成功');
                         me.grid.isDataChanged = false;

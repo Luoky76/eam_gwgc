@@ -31,7 +31,7 @@
             menuNo: getQueryStringByName("MenuNo"),
             //dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             dialogData: {},
-            sdid: getQueryStringByName("sdid"),
+            sid: getQueryStringByName("sid"),
             isNew: false,
             isView: true,
             orginData: {},
@@ -42,16 +42,16 @@
                         labelwidth: me.formLabelWidth,
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", width: 250, type: "select", options: {
+                                display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.Auditing,
                                     disabled: true
                                 }
                             },
-                            { display: "入账单号", name: "IN_CODE", width: 250, type: "text", options: { disabled: true } },
-                            { display: "入账日期", name: "IN_DATE", width: 250, type: "date", options: { disabled: true } },
+                            { display: "入账单号", name: "IN_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "入账日期", name: "IN_DATE", width: me.formInputWidth, type: "date", options: { disabled: true } },
                             {
-                                display: "物料编码", name: "SP_CODE", width: 250, type: "select", validate: { required: true }, options: {
+                                display: "物料编码", name: "SP_CODE", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.SpcatalogCard,
                                     autocomplete: true,
@@ -75,20 +75,20 @@
                                     }
                                 }
                             },
-                            { display: "物料名称", name: "SP_NAME", width: 250, type: "text" ,options: { disabled: true } },
-                            { display: "型号规格", name: "SP_SIZE", width: 250, type: "text", options: { disabled: true } },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 250, type: "text", options: { disabled: true } },
-                            { display: "计量单位", name: "UNIT", width: 250, type: "text", options: { disabled: true } },
-                            { display: "物料分类", name: "TYPE_NAME", width: 250, type: "text", options: { disabled: true } },
+                            { display: "物料名称", name: "SP_NAME", width: me.formInputWidth, type: "text" ,options: { disabled: true } },
+                            { display: "型号规格", name: "SP_SIZE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "品牌、厂家", name: "PRODUCE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "计量单位", name: "UNIT", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "物料分类", name: "TYPE_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             {
-                                display: "低值类别", name: "LOW_TYPE", width: 250, type: "select", validate: { required: true },
+                                display: "低值类别", name: "LOW_TYPE", width: me.formInputWidth, type: "select", validate: { required: true },
                                 options: {
                                     type: 'select',
                                     data: me.LowType
                                 }
                             },
                             {
-                                display: "保管人", name: "USER_NAME", width: 250, type: "select", validate: { required: true }, options: {
+                                display: "保管人", name: "USER_NAME", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.UserDept,
                                     autocomplete: true,
@@ -103,16 +103,16 @@
                                     }
                                 }
                             },
-                            { display: "使用部门", name: "DEPT_NAME", width: 250, type: "text", options: { disabled: true } },
-                            { display: "入账数量", name: "IN_NUM", width: 250, type: "float", validate: { required: true } },
-                            { display: "存放地点", name: "LOCATION", width: 250, type: "text" },
-                            { display: "办理人", name: "HANDLE_USER", width: 250, type: "text", options: { disabled: true } },
+                            { display: "使用部门", name: "DEPT_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "入账数量", name: "IN_NUM", width: me.formInputWidth, type: "float", validate: { required: true } },
+                            { display: "存放地点", name: "LOCATION", width: me.formInputWidth, type: "text" },
+                            { display: "办理人", name: "HANDLE_USER", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             { display: "备注", name: "MEMO",width: me.getTextareaWidth(), type: "textarea" },
                             { display: "办理人id", name: "HANDLE_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "保管人id", name: "USER_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "部门id", name: "DEPT_ID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "备件品种id", name: "SP_ID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "主键", name: "IN_ID",width: 300, type: "hidden" }
+                            { display: "主键", name: "IN_ID",width: me.formInputWidth, type: "hidden" }
                         ]
                     }
                 };
@@ -159,7 +159,7 @@
                         async: false,
                         url: 'special/LowspareIn/Get',
                         loading: '正在获取中...',
-                        data: { sdid: me.sdid },
+                        data: { sid: me.sid },
                         success: function (data, message) {
                             me.mainform.setData(data);
                             inner();
@@ -288,7 +288,7 @@
                     me.dialog = frameElement.dialog;
                     me.dialogData = me.dialog.get('data');
                     me.callback = me.dialogData.callback;
-                    if (me.dialogData.sdid != undefined) me.sdid = me.dialogData.sdid;
+                    if (me.dialogData.sid != undefined) me.sid = me.dialogData.sid;
                     if (me.dialogData.isNew != undefined) me.isNew = me.dialogData.isNew;
                     if (me.dialogData.isView != undefined) me.isView = me.dialogData.isView;
                 }

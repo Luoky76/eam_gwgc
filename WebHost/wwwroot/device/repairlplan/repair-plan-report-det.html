@@ -71,20 +71,20 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING_A", width: 200, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
-                            { display: "故障申报单号", name: "EXE_CODE", width: 200, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", width: 200, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "记录状态", name: "AUDITING_A", width: me.formInputWidth, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
+                            { display: "故障申报单号", name: "EXE_CODE", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维修状态", name: "PLAN_STATE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
                             {
-                                display: "船舶名称", name: "DEVICE_ID", width: 200, type: "select", options: {
+                                display: "船舶名称", name: "DEVICE_ID", width: me.formInputWidth, type: "select", options: {
                                     data: me.shiplist,
                                     autocomplete: true,
                                     selectBoxWidth: 400,
                                     valueField: "DEVICE_ID",
                                     textField: "DEVICE_NAME",
                                     columns: [
-                                        { header: "船舶名称", name: "DEVICE_NAME", width: 100 },
-                                        { header: "设备编号", name: "DEVICE_NO", width: 100 },
-                                        { header: "使用部门", name: "DEPT_NAME", width: 100 }
+                                        { header: "船舶名称", name: "DEVICE_NAME", width: me.formInputWidth },
+                                        { header: "设备编号", name: "DEVICE_NO", width: me.formInputWidth },
+                                        { header: "使用部门", name: "DEPT_NAME", width: me.formInputWidth }
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
@@ -99,15 +99,15 @@
                                     }
                                 }
                             },
-                            { display: "船舶编号", name: "DEVICE_NO", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "船舶型号", name: "DEVICE_TYPE", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", width: 200, newline: true, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "使用部门ID", name: "DEPT_ID", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", width: 200, type: "hidden", editor: { disabled: true }, options: {} },
-                            { display: "报修人", name: "REPORT_USER", width: 200, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维保部门", name: "WSEC_DEPT", width: 200, type: "select", options: { data: me.maintdept } },
-                            { display: "维修类型", name: "MAINT_TYPE", width: 200, type: "select", options: { data: me.repairtype } },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 200, type: "select", options: { data: me.repairhandtype } },
+                            { display: "船舶编号", name: "DEVICE_NO", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "船舶型号", name: "DEVICE_TYPE", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "资产编号", name: "ASSET_CODE", width: me.formInputWidth, newline: true, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "使用部门ID", name: "DEPT_ID", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
+                            { display: "报修人", name: "REPORT_USER", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "维保部门", name: "WSEC_DEPT", width: me.formInputWidth, type: "select", options: { data: me.maintdept } },
+                            { display: "维修类型", name: "MAINT_TYPE", width: me.formInputWidth, type: "select", options: { data: me.repairtype } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: me.formInputWidth, type: "select", options: { data: me.repairhandtype } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
                             { display: "EXE_ID", name: "EXE_ID", type: "hidden", },

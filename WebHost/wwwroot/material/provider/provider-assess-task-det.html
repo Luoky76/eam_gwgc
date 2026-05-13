@@ -61,11 +61,11 @@
                         labelwidth: me.formLabelWidth,
                         inputWidth: me.formInputWidth,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: 300, type: "select", editor: { type: 'select', data: me.auditing, disabled: true } },
-                            { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: 300, type: "text", options: { disabled: true } },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.auditing, disabled: true } },
+                            { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             //实际为供应商id
                             {
-                                display: "供应商名", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: 300, type: "select", editor: {
+                                display: "供应商名", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: me.formInputWidth, type: "select", editor: {
                                     type: 'select',
                                     options: {
                                         autocomplete: true,
@@ -88,10 +88,10 @@
                                 },
                                 validate: { required: true }
                             },
-                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 300, type: "text" },
+                            { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: me.formInputWidth, type: "text" },
                             //实际为任务制定人id
                             {
-                                display: "任务制定人", name: "CREATE_USERID", width: 300, type: "select", editor: {
+                                display: "任务制定人", name: "CREATE_USERID", width: me.formInputWidth, type: "select", editor: {
                                     type: "select",
                                     options: {
                                         autocomplete: true,
@@ -100,13 +100,13 @@
                                     disabled: true
                                 }
                             },
-                            { display: "评估年度", name: "ASSESS_YEAR", dbname: "ASSESS_YEAR", width: 300, type: "int" },
-                            { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
-                            { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: 300, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
+                            { display: "评估年度", name: "ASSESS_YEAR", dbname: "ASSESS_YEAR", width: me.formInputWidth, type: "int" },
+                            { display: "考核开始时间", name: "BEGIN_TIME", dbname: "BEGIN_TIME", width: me.formInputWidth, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
+                            { display: "考核结束时间", name: "END_TIME", dbname: "END_TIME", width: me.formInputWidth, type: "date", format: "yyyy-MM-dd hh:mm ", options: { format: "yyyy-MM-dd hh:mm ", showTime: true } },
                             { display: "备注", name: "REMARK", dbname: "REMARK", width: me.getTextareaWidth(), type: "textarea" },
                             //隐藏
-                            { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: 300, type: "hidden" },
-                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 300, type: "hidden" }
+                            { display: "主键", name: "ASSESS_TASK_ID", dbname: "ASSESS_TASK_ID", width: me.formInputWidth, type: "hidden" },
+                            { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: me.formInputWidth, type: "hidden" }
                         ]
                     },
                     grid: {

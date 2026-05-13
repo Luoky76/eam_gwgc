@@ -17,9 +17,9 @@ namespace EAM.Device.Controller
             _service = service;
         }
 
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            var comboxData = await _service.ComboxData();
+            var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
                 VaryType = comboxData["VaryType"],
@@ -42,6 +42,12 @@ namespace EAM.Device.Controller
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_VARY> request)
         {
             return await _service.SaveAsync(request);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
         }
     }
 }

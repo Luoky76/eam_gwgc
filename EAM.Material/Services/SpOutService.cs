@@ -46,7 +46,7 @@ namespace EAM.Material.Services
         /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "SpapplyType",null},

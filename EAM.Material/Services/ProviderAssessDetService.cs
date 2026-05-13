@@ -140,7 +140,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

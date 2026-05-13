@@ -52,7 +52,7 @@ namespace EAM.Special.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {
@@ -118,9 +118,9 @@ namespace EAM.Special.Services
         /// 通过ID查询记录
         /// </summary>
         /// <returns></returns>
-        public async Task<SPEC_LOWSPARE_IN> GetAsync(string sdid)
+        public async Task<SPEC_LOWSPARE_IN> GetAsync(string sid)
         {
-            return await _dbContext.Query<SPEC_LOWSPARE_IN>().Where(c => c.IN_ID == sdid).FirstOrDefaultAsync();
+            return await _dbContext.Query<SPEC_LOWSPARE_IN>().Where(c => c.IN_ID == sid).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -160,6 +160,23 @@ namespace EAM.Special.Services
                 },
                 c => a => a.IN_ID == c.IN_ID
                 , BeforeAdd, BeforeUpdate, null, false, null, AfterSave); ;
+        }
+
+        /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> SubmitAsync(List<string> sids)
+        {
+            return await _dbContext.UpdateAsync<SPEC_LOWSPARE_IN>(
+                c => sids.Contains(c.IN_ID),
+                c => new SPEC_LOWSPARE_IN
+                {
+                    AUDITING = "1",
+                    MODIFY_USERID = _userSession.UserID.ToString(),
+                    MODIFY_DATE = Sysdate
+                });
         }
 
         /// <summary>

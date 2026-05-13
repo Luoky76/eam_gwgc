@@ -234,6 +234,31 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_IN_BACK>(x => x.IN_BACK_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING == "1")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                    }
+
+                    entity.AUDITING = "1";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("提交成功");
+        }
+
         /// <summary>
         /// 删除
         /// </summary>

@@ -45,7 +45,7 @@
                             { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "故障程度", name: "FRDB_LEVEL", newline: false, upper: true, validate: { required: true }, type: "select", options: { data: me.frdbLevel } },
                             {
-                                display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.shipInfo,
                                     autocomplete: true,
@@ -54,7 +54,7 @@
                                     textField: "TEXT",
                                     columns: [
                                         { header: '船舶名称', name: 'TEXT' },
-                                        { header: '船舶编号', name: 'VALUE', width: 200 },
+                                        { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
@@ -75,7 +75,7 @@
                             { display: "故障原因", name: "FAULT_REASON", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
                             { display: "解决方法", name: "MEASURES", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
                             { display: "备注", name: "MEMO", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
-                            { display: "外键", name: "FRDB_ID", width: 100, type: "hidden", },
+                            { display: "外键", name: "FRDB_ID", width: me.formInputWidth, type: "hidden", },
 
 
                         ]

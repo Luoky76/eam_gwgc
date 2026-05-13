@@ -35,9 +35,9 @@ namespace EAM.Material.Controllers
 		/// </summary>
 		/// <returns></returns>
 		[HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
 
         /// <summary>
@@ -153,9 +153,9 @@ namespace EAM.Material.Controllers
         }
 
         [HttpPost]
-        public async Task<AjaxResult> ApplyComboxData()
+        public async Task<AjaxResult> ApplyComboxDataAsync()
         {
-            return await _service.ApplyComboxData();
+            return await _service.ApplyComboxDataAsync();
         }
 
         /// <summary>

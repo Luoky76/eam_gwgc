@@ -19,6 +19,11 @@
         var business = {
             formLabelWidth: 120,
             formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             dialogData: {},
             isView: true,
             sid: getQueryStringByName("sid"),

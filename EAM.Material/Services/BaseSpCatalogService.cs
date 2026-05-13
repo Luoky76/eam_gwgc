@@ -23,7 +23,7 @@ namespace EAM.Material.Services
         }
 
 
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
                 { "BasePurtype", (Expression<Func <BC_CODE, bool>>)null},

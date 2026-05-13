@@ -43,6 +43,18 @@ namespace EAM.Material.Controllers
             return await _service.Save(request, requestdet);
         }
 
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> BackAsync(List<string> sids)
+        {
+            return await _service.BackAsync(sids);
+        }
+
         public async Task<AjaxResult> HouseList()
         {
             return await _service.HouseList();

@@ -310,70 +310,48 @@
                     }
                 }
             },
-            submit: function () { //提交
+            submit: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        if (selecteds[i].CREATE_USERID != window.session.UserID) {
-                            LG.tip("您不是登记的采购人！");
-                            return;
-                        }
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Special/DrugCollect/save',
-                        loading: '正在提交中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
+                if (selecteds.length == 0) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    if (selecteds[i].CREATE_USERID != window.session.UserID) {
+                        LG.tip("您不是登记的采购人！");
+                        return;
+                    }
+                    sids.push(selecteds[i].COLLECT_ID);
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/DrugCollect/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
-            revoke: function () { //撤销提交
+            revoke: function () {
                 var me = this;
                 var selected = me.grid.getSelectedRow();
                 if (selected.CREATE_USERID != window.session.UserID) {
                     LG.tip("您不是登记的采购人！");
                     return;
                 }
-                if (selected.AUDITING == "0") {
-                    LG.tip("未提交数据无需撤销！");
-                    return;
-                }
-                var updatedarr = [];
-                var orginarr = [];
-                var ori = JSON.parse(JSON.stringify(selected));
-                var upd = JSON.parse(JSON.stringify(selected));
-                upd.AUDITING = "0";
-                orginarr.push(ori);
-                updatedarr.push(upd)
-                var changeRow = new Object();
-                changeRow["updated"] = updatedarr;
-                changeRow["original"] = orginarr;
                 LG.ajax({
                     jsToken: true,
-                    url: 'Special/DrugCollect/save',
+                    url: 'Special/DrugCollect/Revoke',
                     loading: '正在撤销中...',
-                    data: changeRow,
+                    data: { sids: [selected.COLLECT_ID] },
                     success: function () {
                         LG.showSuccess('撤销成功');
                         me.grid.isDataChanged = false;

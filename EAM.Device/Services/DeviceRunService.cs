@@ -43,7 +43,7 @@ namespace EAM.Device.services
         /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
                 { "RunStatus",null},
@@ -79,7 +79,7 @@ namespace EAM.Device.services
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING == "1")
                 .Where((a, b, c) => a.STATUS == "1" && a.TYPE_ID == "2");
             return await qry
-                .Select((a, b, c) => new ComboxData()
+                .Select((a, b, c) => new ComboxDataAsync()
                 {
                     ID = a.DEVICE_ID,
                     TEXT = a.DEVICE_NAME,

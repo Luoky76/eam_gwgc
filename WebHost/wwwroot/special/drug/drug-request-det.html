@@ -42,61 +42,61 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", width: 300, type: "select", options: {
+                                display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }
                             },
-                            { display: "需求计划单号", name: "REQUEST_CODE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "申请日期", name: "CREATEDATE", width: 300, type: "string", options: { disabled: true } },
+                            { display: "需求计划单号", name: "REQUEST_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "申请日期", name: "CREATEDATE", width: me.formInputWidth, type: "string", options: { disabled: true } },
                             {
-                                display: "所属月份", name: "REQUEST_MONTH", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "所属月份", name: "REQUEST_MONTH", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.month
                                 }
                             },
                             {
-                                display: "所属年份", name: "REQUEST_YEAR", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "所属年份", name: "REQUEST_YEAR", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.year
                                 }
                             },
                             {
-                                display: "申请人", name: "CREATE_USERID", width: 300, type: "select", options: {
+                                display: "申请人", name: "CREATE_USERID", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.user,
                                     disabled: true
                                 }
                             },
-                            { display: "申请部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
+                            { display: "申请部门", name: "DEPT_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             {
-                                display: "港内/港外", name: "POSITION", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "港内/港外", name: "POSITION", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.position
                                 }
                             },
                             {
-                                display: "类别", name: "REQUEST_TYPE", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "类别", name: "REQUEST_TYPE", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.requestType
                                 }
                             },
                             { display: "备注", name: "MEMO", width: me.getTextareaWidth(), newline: "true", type: "textarea", options: {} },
                             //隐藏
-                            { display: "主键", name: "REQUEST_ID", width: 300, type: "hidden" },
-                            { display: "申请部门ID", name: "DEPT_ID", width: 300, type: "hidden" },
-                            { display: "申请部门编号", name: "DEPT_CODE", width: 300, type: "hidden" },
-                            { display: "物资归属船舶ID", name: "SHIP_ID", width: 300, type: "hidden" },
-                            { display: "物资归属船舶", name: "SHIP_NAME", width: 300, type: "hidden" },
-                            { display: "物资归属船舶编码", name: "SHIP_CODE", width: 300, type: "hidden" },
-                            { display: "二级单位ID", name: "SEC_DEPTID", width: 300, type: "hidden" },
-                            { display: "二级单位", name: "SEC_DEPT", width: 300, type: "hidden" },
-                            { display: "格式号", name: "FORM_ID", width: 300, type: "hidden" },
-                            { display: "来源单号", name: "SRC_CODE", width: 300, type: "hidden" },
-                            { display: "申请人", name: "REQUEST_USER", width: 100, type: "hidden" },
-                            { display: "修改人ID", name: "MODIFY_USERID", width: 300, type: "hidden" },
-                            { display: "修改时间", name: "MODIFYDATE", width: 300, type: "hidden" }
+                            { display: "主键", name: "REQUEST_ID", width: me.formInputWidth, type: "hidden" },
+                            { display: "申请部门ID", name: "DEPT_ID", width: me.formInputWidth, type: "hidden" },
+                            { display: "申请部门编号", name: "DEPT_CODE", width: me.formInputWidth, type: "hidden" },
+                            { display: "物资归属船舶ID", name: "SHIP_ID", width: me.formInputWidth, type: "hidden" },
+                            { display: "物资归属船舶", name: "SHIP_NAME", width: me.formInputWidth, type: "hidden" },
+                            { display: "物资归属船舶编码", name: "SHIP_CODE", width: me.formInputWidth, type: "hidden" },
+                            { display: "二级单位ID", name: "SEC_DEPTID", width: me.formInputWidth, type: "hidden" },
+                            { display: "二级单位", name: "SEC_DEPT", width: me.formInputWidth, type: "hidden" },
+                            { display: "格式号", name: "FORM_ID", width: me.formInputWidth, type: "hidden" },
+                            { display: "来源单号", name: "SRC_CODE", width: me.formInputWidth, type: "hidden" },
+                            { display: "申请人", name: "REQUEST_USER", width: me.formInputWidth, type: "hidden" },
+                            { display: "修改人ID", name: "MODIFY_USERID", width: me.formInputWidth, type: "hidden" },
+                            { display: "修改时间", name: "MODIFYDATE", width: me.formInputWidth, type: "hidden" }
                         ]
                     },
                     grid: {

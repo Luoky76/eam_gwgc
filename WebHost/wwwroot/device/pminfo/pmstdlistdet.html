@@ -44,7 +44,7 @@
                                     valueField: "ID",
                                     textField: "TEXT",
                                     columns: [
-                                        { header: '船舶编号', name: 'VALUE', width: 150 },
+                                        { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '船舶名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {
@@ -70,7 +70,7 @@
                             { display: "执行人", name: "EXE_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },
                             { display: "检查人", name: "CHK_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },   
                             { display: "是否附件判断", name: "IS_ATTACH", newline: false, type: "select", options: { data: me.isAttach } },
-                            { display: "维保项目", name: "PART_NAME", newline: true, width: 1146, type: "text", options: {} },
+                            { display: "维保项目", name: "PART_NAME", newline: true, width: me.formInputWidth, type: "text", options: {} },
                             { display: "维保内容", name: "CONTENT", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "主键", name: "PM_STD_LIST_ID", newline: false, type: "text", type: "hidden" },

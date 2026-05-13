@@ -133,16 +133,27 @@
                 }
                 return true;
             },
-            isAudited: function () {
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING != "1") {
+                        if (msg) { LG.tip(msg); }
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
                     if (row.AUDITING == "1") {
-                        LG.tip("有数据已提交，无法变更！");
-                        return true;
+                        if (msg) { LG.tip(msg); }
+                        return false;
                     }
                 }
-                return false;
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -155,27 +166,31 @@
                             me.add();
                             break;
                         case "modify":
-                            if (!me.isSelectSingleRow() || me.isAudited()) break;
-                            me.modify();
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.modify();
+                            }
                             break;
                         case "delete":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            me.delete();
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                me.delete();
+                            }
                             break;
                         case "save":
                             me.save();
                             break;
                         case "submit":
-                            if (!me.isSelectRow() || me.isAudited()) break;
-                            $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
-                                if (confirm) {
-                                    me.submit();
-                                }
-                            });
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
+                                    if (confirm) {
+                                        me.submit();
+                                    }
+                                });
+                            }
                             break;
                         case "revoke":
-                            if (!me.isSelectRow()) break;
-                            me.revoke();
+                            if (me.isSelectRow() && me.isAllAudited()) {
+                                me.revoke();
+                            }
                             break;
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
@@ -189,14 +204,13 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            openDetail: function ({ sid = null, isNew = false, isView = false } = {}) {
                 var me = this;
-
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]供应商信息登记',
+                    title: isNew ? "[新增]供应商信息登记" : (isView ? "[查看]供应商信息登记" : "[修改]供应商信息登记"),
                     url: "provider-info-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
                     isHidden: false,
                     showMax: false,
@@ -205,113 +219,72 @@
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { "sid": null, "isNew": true, "isView": false }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
             },
-            view: function () { //查看
+            add: function () {
+                this.openDetail({ sid: null, isNew: true, isView: false });
+            },
+            view: function (rowid) {
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[查看]供应商信息登记',
-                        url: "provider-info-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": selected.PROVIDER_ID, "isNew": false, "isView": true }
-                    });
-                } else {
+                var selected = rowid != undefined ? me.grid.records[rowid] : me.grid.getSelectedRow();
+                if (!selected) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                me.openDetail({ sid: selected.PROVIDER_ID, isNew: false, isView: true });
             },
-            modify: function () { //修改
+            modify: function () {
                 var me = this;
                 var selected = me.grid.getSelectedRow();
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]供应商信息登记',
-                        url: "provider-info-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": selected.PROVIDER_ID, isNew: false, isView: false }
-                    });
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
                 }
+                me.openDetail({ sid: selected.PROVIDER_ID, isNew: false, isView: false });
             },
-            submit: function () { //提交
+            submit: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/ProviderInfo/Save',
-                        loading: '正在提交中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
+                if (selecteds.length == 0) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    sids.push(selecteds[i].PROVIDER_ID);
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/ProviderInfo/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             revoke: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                var updatedarr = [];
-                var orginarr = [];
-                for (var i = 0; i < selecteds.length; i++) {
-                    var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                    var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                    if (ori.AUDITING == "1") {
-                        upd.AUDITING = "0";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    else {
-                        LG.tip("未提交数据无需撤销！");
-                        return;
-                    }
+                if (selecteds.length == 0) {
+                    LG.tip('请选择行!');
+                    return;
                 }
-                var changeRow = new Object();
-                changeRow["updated"] = updatedarr;
-                changeRow["original"] = orginarr;
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    sids.push(selecteds[i].PROVIDER_ID);
+                }
                 LG.ajax({
                     jsToken: true,
-                    url: 'Material/ProviderInfo/Save',
+                    url: 'Material/ProviderInfo/Revoke',
                     loading: '正在撤销中...',
-                    data: changeRow,
+                    data: { sids: sids },
                     success: function () {
                         LG.showSuccess('撤销成功');
                         me.grid.isDataChanged = false;

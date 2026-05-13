@@ -331,6 +331,71 @@ namespace EAM.Material.Services
             await Task.CompletedTask;
         }
 
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_INSTORE>(x => x.IN_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING == "1")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                    }
+                    if (!entity.IN_DATE.HasValue)
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("入库日期未填写！");
+                    }
+                    if (entity.AUDITING == "7")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已注销，无法提交！");
+                    }
+
+                    entity.AUDITING = "1";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("提交成功");
+        }
+
+        public async Task<AjaxResult> BackAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_INSTORE>(x => x.IN_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING == "1")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已提交，无法退回验收！");
+                    }
+                    if (entity.AUDITING == "7")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已注销，无法退回验收！");
+                    }
+
+                    entity.AUDITING = "7";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("提交成功");
+        }
+
         /// <summary>
         /// 删除
         /// </summary>

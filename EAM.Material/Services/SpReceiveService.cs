@@ -26,7 +26,7 @@ namespace EAM.Material.Services
         /// 获取下拉框信息
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {
@@ -355,6 +355,111 @@ namespace EAM.Material.Services
 
             }
             await Task.CompletedTask;
+        }
+
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING == "1")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                    }
+
+                    entity.AUDITING = "1";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("提交成功");
+        }
+
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING == "0")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据未提交，无法撤销！");
+                    }
+                    if (entity.AUDITING_CHK == "1")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已验收，无法撤销！");
+                    }
+
+                    entity.AUDITING = "-1";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("撤销成功");
+        }
+
+        public async Task<AjaxResult> SubmitCheckAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING_CHK == "1")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                    }
+
+                    entity.AUDITING_CHK = "1";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("提交成功");
+        }
+
+        public async Task<AjaxResult> RevokeCheckAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+
+            using (var trans = _dbContext.BeginTransaction())
+            {
+                foreach (var sid in sids)
+                {
+                    var entity = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_ID == sid).FirstOrDefaultAsync();
+                    if (entity == null) continue;
+                    if (entity.AUDITING_CHK == "0")
+                    {
+                        trans.Rollback();
+                        return AjaxResult.Error("该数据未提交，无法撤销！");
+                    }
+
+                    entity.AUDITING_CHK = "-1";
+                    await BeforeUpdate(entity);
+                    await _dbContext.UpdateAsync(entity);
+                }
+                trans.Commit();
+            }
+            return AjaxResult.Success("撤销成功");
         }
 
         private async Task DetBeforUpdate(SP_RECEIVE_DET entity)

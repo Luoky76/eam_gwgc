@@ -127,6 +127,48 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            foreach (var sid in sids)
+            {
+                var entity = await _dbContext.Query<DRUG_COLLECT>()
+                    .Where(c => c.COLLECT_ID == sid)
+                    .FirstOrDefaultAsync();
+                if (entity == null) continue;
+                entity.AUDITING = "1";
+                await BeforeUpdate(entity);
+            }
+
+            await _dbContext.UpdateAsync<DRUG_COLLECT>(
+                c => sids.Contains(c.COLLECT_ID),
+                c => new DRUG_COLLECT
+                {
+                    AUDITING = "1"
+                });
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
+        {
+            await _dbContext.UpdateAsync<DRUG_COLLECT>(
+                c => sids.Contains(c.COLLECT_ID),
+                c => new DRUG_COLLECT
+                {
+                    AUDITING = "0"
+                });
+            return AjaxResult.Success("撤销成功");
+        }
+
+        /// <summary>
         /// 添加前验证
         /// </summary>
         /// <param name="entity"></param>
@@ -254,7 +296,7 @@ namespace EAM.Special.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

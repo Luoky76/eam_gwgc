@@ -36,7 +36,7 @@ namespace EAM.Material.Services
         /// 获取下拉框信息
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

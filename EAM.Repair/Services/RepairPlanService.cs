@@ -41,7 +41,7 @@ namespace EAM.Repair.services
         /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             var result = await _comboxDataService.Get(new Dictionary<string, object>(){
                     { "ShipList", null },

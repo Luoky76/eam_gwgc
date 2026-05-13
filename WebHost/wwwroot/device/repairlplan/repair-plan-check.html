@@ -245,24 +245,28 @@
                     }
                 });
             },
-            add: function () { //新增
+            openDetail: function (options) {
                 var me = this;
+                options = options || {};
                 $.ligerDialog.open({
                     width: me.detailWidth,
                     height: me.detailHeight,
                     allowClose: true,
-                    title: '[新增]维修验收',
-                    url: "repair-plan-check-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
+                    title: options.title,
+                    url: "repair-plan-check-detail.html?MenuNo=" + me.menuNo + (options.isView ? "" : "&ver=" + me.ver),
                     isHidden: false,
-                    showMax: true,
+                    showMax: !!options.showMax,
                     showToggle: false,
                     showMin: false,
                     isResize: true,
                     slide: false,
-                    rownumbers: true,
-                    onClosed: null,
-                    data: { sid: "", isNew: true, isView: false }
+                    onClosed: me.reload.bind(me),
+                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
                 });
+            },
+            add: function () {
+                var me = this;
+                me.openDetail({ title: '[新增]维修验收', sid: null, isNew: true, isView: false, showMax: true });
             },
             submit: function () { //提交
                 var me = this;
@@ -288,52 +292,29 @@
             },
             view: function (rowdata) { //查看
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
-                if (rowdata) {
-                    selected = rowdata;
+                var selected = rowdata || me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
                 }
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[查看]维修验收',
-                        url: "repair-plan-check-detail.html?MenuNo=" + me.menuNo,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.buttons[0].click,
-                        data: { sid: selected.EXE_ID, isView: true }
-                    });
-                }
+                me.openDetail({ title: '[查看]维修验收', sid: selected.EXE_ID, isNew: false, isView: true });
             },
             modify: function (rowdata) { //修改
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (rowdata) {
-                    selected = rowdata;
+                var selected = rowdata;
+                if (!selected) {
+                    var rows = me.grid.getSelectedRows();
+                    if (!rows || rows.length === 0) {
+                        LG.showError("请选择一行");
+                        return;
+                    }
+                    if (rows.length > 1) {
+                        LG.showError("不能选择多行");
+                        return;
+                    }
+                    selected = rows[0];
                 }
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]维修验收',
-                        url: "repair-plan-check-detail.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { sid: selected.EXE_ID }
-                    });
-                }
+                me.openDetail({ title: '[修改]维修验收', sid: selected.EXE_ID, isNew: false, isView: false });
             },
             reload: function () { //刷新
                 var me = this;

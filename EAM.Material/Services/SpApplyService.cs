@@ -83,7 +83,7 @@ namespace EAM.Material.Services
         /// 获取下拉框信息
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {
@@ -896,7 +896,7 @@ namespace EAM.Material.Services
                 .GetGridData(request);
         }
 
-        public async Task<AjaxResult> ApplyComboxData()
+        public async Task<AjaxResult> ApplyComboxDataAsync()
         {
             try
             {

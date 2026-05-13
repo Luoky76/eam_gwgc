@@ -96,7 +96,7 @@
                             { display: "保养计划单号", name: "PLAN_CODE", editor: { disabled: true }, type: "text", options: {} },
                             { display: "保养来源", name: "SOURCE", type: "select", options: { data: me.bySource, } },
                             {
-                                display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", editor: { disabled: true },
+                                display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
                                     data: me.deviceInfo,
                                 }

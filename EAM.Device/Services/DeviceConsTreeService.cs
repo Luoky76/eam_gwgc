@@ -24,7 +24,7 @@ namespace EAM.Device.services
             _comboxService = comboxService;
         }
 
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxService.Get(new Dictionary<string, object>(){
                 { "DeviceComposeCode",(Expression<Func <BASE_DEVICE_COMPOSE, bool>>)null },

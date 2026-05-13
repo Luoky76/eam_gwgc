@@ -25,7 +25,7 @@ namespace EAM.Device.Services
 
         #region 设备卡片
 
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = await _comboxDataService.Get(new Dictionary<string, object>()
             {
@@ -96,6 +96,17 @@ namespace EAM.Device.Services
                 c => new { c.PRE_DEVICE_ID, c.TREE_NODE, c.DEVICE_NO, c.DEVICE_NAME, c.BOM_ID, c.BOM_NAME, c.BOM_CODE, c.TYPE_ID, c.TYPE_NAME, c.TYPE_CODE, c.DEVICE_TYPE, c.DEVICE_SIZE, c.CARD_DATE, c.DEPT_ID, c.DEPT_NAME, c.INSTALL_SITE, c.REV_DATE, c.FDEVICE_ID, c.FDEVICE_CODE, c.SPECIAL_TYPE, c.ABC_TYPE, c.LABEL_CODE, c.STATUS, c.STATUS_DATE, c.ASSET_CODE, c.FINAN_TYPE, c.DEP_MONTH, c.DEP_VALUE, c.INSTALL_FEE, c.PRICE, c.ORG_VALUE, c.NET_VALUE, c.USE_YEAR, c.NET_RATE, c.DEP_RATE, c.ASSET_SOURCE, c.PROVIDER_ID, c.PROVIDER_NAME, c.FACTORY, c.OUT_CODE, c.OUT_DATE, c.PURPOSE, c.GRAPH_NO, c.PARAMS, c.MEMO, c.CARD_USERID, c.CARD_USER, c.INSTALL_ID, c.BOX_DET_ID, c.USED_COUNT, c.SHIP_LENGTH, c.SHIP_WIDTH, c.SHIP_DEPTH, c.SHIP_DRAFT, c.SHIP_TYPE, c.MAIN_POWER, c.SECOND_POWER, c.REP_DATE, c.SHIP_ID, c.SPEED, c.DRAG_FORCE, c.TOTAL_TON, c.PURE_TON, c.ORDINAL, c.IS_GREEN, c.REP_DATE5 },
                 c => a => a.DEVICE_ID == c.DEVICE_ID,
                 BeforeAdd, BeforeUpdate, BeforeDelete, orgin: true);
+        }
+
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+            await _dbContext.UpdateAsync<DEVICE_CARD>(x => sids.Contains(x.DEVICE_ID),
+                x => new DEVICE_CARD
+                {
+                    AUDITING = "1"
+                });
+            return AjaxResult.Success("提交成功");
         }
 
         /// <summary>

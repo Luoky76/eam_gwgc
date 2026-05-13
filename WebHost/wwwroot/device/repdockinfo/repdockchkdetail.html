@@ -38,7 +38,7 @@
                             { display: "确认单状态", name: "AUDITING_CONFIRM", newline: false, upper: true, type: "select", options: { type: 'select', data: me.status, disabled: true }, group: "码头确认单详情" },
                             { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
 
-                            { display: "维修项目", name: "REP_ITEM", newline: true, width: 780, upper: true, type: "text", options: { rows: "1", disabled: true } },
+                            { display: "维修项目", name: "REP_ITEM", newline: true, width: me.formInputWidth, upper: true, type: "text", options: { rows: "1", disabled: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "故障原因", name: "REASON", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "解决方法", name: "SOLUTION", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },

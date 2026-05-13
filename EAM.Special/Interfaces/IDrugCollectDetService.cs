@@ -45,6 +45,6 @@ namespace EAM.Special.Interfaces
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public Task<AjaxResult> ComboxData();
+        public Task<AjaxResult> ComboxDataAsync();
     }
 }

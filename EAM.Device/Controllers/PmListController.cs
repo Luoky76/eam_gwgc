@@ -24,9 +24,9 @@ namespace EAM.Device.Controller
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            var comboxData = await _service.ComboxData();
+            var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
                 maintDept = comboxData["MaintDept"],

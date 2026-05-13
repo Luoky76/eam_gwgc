@@ -27,10 +27,10 @@ namespace EAM.Special.Controller
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<SPEC_LOWSPARE_IN>> GetAsync(string sdid)
+        public async Task<AjaxResult<SPEC_LOWSPARE_IN>> GetAsync(string sid)
         {
-            if (sdid.IsNullOrEmpty()) return AjaxResult<SPEC_LOWSPARE_IN>.Error("请传递参数");
-            return AjaxResult<SPEC_LOWSPARE_IN>.Success(await _service.GetAsync(sdid), "成功");
+            if (sid.IsNullOrEmpty()) return AjaxResult<SPEC_LOWSPARE_IN>.Error("请传递参数");
+            return AjaxResult<SPEC_LOWSPARE_IN>.Success(await _service.GetAsync(sid), "成功");
         }
 
         /// <summary>
@@ -49,9 +49,9 @@ namespace EAM.Special.Controller
         /// <param></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
 
         /// <summary>
@@ -63,6 +63,17 @@ namespace EAM.Special.Controller
         public async Task<AjaxResult> SaveAsync(SaveRequest<SPEC_LOWSPARE_IN> request)
         {
             return await _service.SaveAsync(request);
+        }
+
+        /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return AjaxResult.Success(await _service.SubmitAsync(sids), "成功");
         }
 
         /// <summary>

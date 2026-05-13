@@ -17,9 +17,9 @@ namespace EAM.Special.Controller
             _service = service;
         }
 
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await Service.ComboxData();
+            return await Service.ComboxDataAsync();
         }
 
         /// <summary>

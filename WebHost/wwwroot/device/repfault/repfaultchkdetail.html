@@ -72,7 +72,7 @@
                             { display: "故障单号", name: "FAULT_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
                             { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultStatus } },
                             {
-                                display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: 180, type: "select", align: "left", editor: { disabled: true },
+                                display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
                                     data: me.shipInfo,
                                 }
@@ -86,7 +86,7 @@
                                 }
                             },
                             {
-                                display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", editor: { disabled: true },
+                                display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
                                     data: me.deviceInfo,
                                 }

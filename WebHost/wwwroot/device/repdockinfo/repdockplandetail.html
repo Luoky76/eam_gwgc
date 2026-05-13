@@ -60,7 +60,7 @@
                             { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
                             { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             {
-                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.dockInfo,
                                     autocomplete: true,
@@ -68,7 +68,7 @@
                                     valueField: "ID",
                                     textField: "VALUE",
                                     columns: [
-                                        { header: '码头编号', name: 'TEXT', width: 130 },
+                                        { header: '码头编号', name: 'TEXT', width: me.formInputWidth },
                                         { header: '码头名称', name: 'VALUE' },
                                         { header: '码头地址', name: 'EXTEND1' }
                                     ],

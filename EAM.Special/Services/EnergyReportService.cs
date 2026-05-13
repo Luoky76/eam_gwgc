@@ -40,7 +40,7 @@ namespace EAM.Special.Services
             }
         }
 
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             var data = new ConcurrentDictionary<string, List<ComboxData>>();
             data.TryAdd("corpData", await _corpService.ComboxDataAsync());

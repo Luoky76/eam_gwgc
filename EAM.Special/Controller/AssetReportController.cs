@@ -104,14 +104,102 @@ namespace EAM.Special.Controller
         }
 
         /// <summary>
+        /// 提交维修申请
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitApplyAsync(List<string> sids)
+        {
+            return await _service.SubmitApplyAsync(sids);
+        }
+
+        /// <summary>
+        /// 撤销维修申请提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeApplyAsync(string sid)
+        {
+            return await _service.RevokeApplyAsync(sid);
+        }
+
+        /// <summary>
+        /// 提交维修实施
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitCheckAsync(List<string> sids)
+        {
+            return await _service.SubmitCheckAsync(sids);
+        }
+
+        /// <summary>
+        /// 撤销维修实施提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeCheckAsync(string sid)
+        {
+            return await _service.RevokeCheckAsync(sid);
+        }
+
+        /// <summary>
+        /// 提交委外维修
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitOutsourceAsync(List<string> sids)
+        {
+            return await _service.SubmitOutsourceAsync(sids);
+        }
+
+        /// <summary>
+        /// 撤销委外维修提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeOutsourceAsync(string sid)
+        {
+            return await _service.RevokeOutsourceAsync(sid);
+        }
+
+        /// <summary>
+        /// 提交维修验收
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAcceptAsync(List<string> sids)
+        {
+            return await _service.SubmitAcceptAsync(sids);
+        }
+
+        /// <summary>
+        /// 撤销维修验收提交
+        /// </summary>
+        /// <param name="sid"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> RevokeAcceptAsync(string sid)
+        {
+            return await _service.RevokeAcceptAsync(sid);
+        }
+
+        /// <summary>
         /// 获取下拉框数据
         /// </summary>
         /// <param></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
     }
 }

@@ -37,7 +37,7 @@ namespace EAM.Material.Services
         /// 获取下拉框信息
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {
@@ -435,7 +435,7 @@ namespace EAM.Material.Services
         #endregion
 
         #region 库存报表
-        public async Task<AjaxResult> ReportComboxData()
+        public async Task<AjaxResult> ReportComboxDataAsync()
         {
             try
             {

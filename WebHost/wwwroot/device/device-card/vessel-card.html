@@ -177,9 +177,10 @@
                             me.save();
                             break;
                         case "sumbit":
+                            if (!me.isSelectRow() || !me.isAllUnaudited()) return;
                             $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
                                 if (confirm) {
-                                    me.sumbit();
+                                    me.submit();
                                 }
                             });
                             break;
@@ -193,32 +194,77 @@
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows || rows.length === 0) {
+                    LG.tip('请选择行!');
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows || rows.length === 0) {
+                    LG.showError("请选择一行");
+                    return false;
+                }
+                if (rows.length > 1) {
+                    LG.showError("不能选择多行");
+                    return false;
+                }
+                return true;
+            },
+            isAllAudited: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].AUDITING !== "1") {
+                        LG.showError("选中数据有未提交记录");
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                for (var i = 0; i < rows.length; i++) {
+                    if (rows[i].AUDITING === "1") {
+                        LG.showError("该数据已提交，无法重复提交！");
+                        return false;
+                    }
+                }
+                return true;
+            },
+            openDetail: function (options) {
+                var me = this;
+                options = options || {};
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: options.title,
+                    url: "vessel-card-det.html?MenuNo=" + me.menuNo + (options.isView ? "" : "&ver=" + me.ver),
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
+                });
+            },
             view: function (rowdata) { //查看
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
-                if (rowdata) {
-                    selected = rowdata;
-                }
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[查看]船舶卡片',
-                        url: "vessel-card-det.html?MenuNo=" + me.menuNo,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.buttons[0].click,
-                        data: { "sid": selected.DEVICE_ID, "isView": true }
-                    });
-                } else {
+                var selected = rowdata || me.grid.getSelectedRow();
+                if (!selected) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                me.openDetail({ title: '[查看]船舶卡片', sid: selected.DEVICE_ID, isNew: false, isView: true });
             },
             doc: function () { //船舶随机资料
                 var me = this;
@@ -310,94 +356,38 @@
                     LG.tip('请选择行!');
                 }
             },
-            sumbit: function () { //提交
+            submit: function () { //提交
                 var me = this;
+                if (!me.isSelectRow() || !me.isAllUnaudited()) return;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        if (ori.AUDITING == "1") {
-                            LG.showError("该数据已提交，无法重复提交！");
-                            return;
-                        }
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Device/DeviceCard/Save',
-                        loading: '正在提交中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
-                } else {
-                    LG.tip('请选择行!');
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    sids.push(selecteds[i].DEVICE_ID);
                 }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Device/DeviceCard/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             add: function () { //新增
                 var me = this;
-                $.ligerDialog.open({
-                    width: me.detailWidth,
-                    height: me.detailHeight,
-                    allowClose: true,
-                    title: '[新增]船舶卡片',
-                    url: "vessel-card-det.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                    isHidden: false,
-                    showMax: false,
-                    showToggle: false,
-                    showMin: false,
-                    isResize: true,
-                    slide: false,
-                    onClosed: me.reload.bind(me),
-                    data: { "sid": null }
-                });
+                me.openDetail({ title: '[新增]船舶卡片', sid: null, isNew: true, isView: false });
             },
             modify: function () { //修改
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-                if (selected.length > 1) {
-                    LG.showError("不能选择多行")
-                    return
-                } else if (selected.length == 0) {
-                    LG.showError("请选择一行")
-                    return
-                }
-                //注：原为已提交不可修改，现改为均可修改，2023.10.07
-                if (selected) {
-                    var sid = selected.DEVICE_ID;
-                    $.ligerDialog.open({
-                        width: me.detailWidth,
-                        height: me.detailHeight,
-                        allowClose: true,
-                        title: '[修改]船舶卡片',
-                        url: "vessel-card-det.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.reload.bind(me),
-                        data: { "sid": sid }
-                    });
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
+                if (!me.isSelectSingleRow()) return;
+                var selected = me.grid.getSelectedRows()[0];
+                me.openDetail({ title: '[修改]船舶卡片', sid: selected.DEVICE_ID, isNew: false, isView: false });
             },
             save: function () { //保存
                 var me = this;

@@ -32,9 +32,9 @@ namespace EAM.Material.Controllers
 		/// </summary>
 		/// <returns></returns>
 		[HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
 
         /// <summary>
@@ -99,9 +99,9 @@ namespace EAM.Material.Controllers
 
         #region 库存报表
         [HttpPost]
-        public async Task<AjaxResult> ReportComboxData()
+        public async Task<AjaxResult> ReportComboxDataAsync()
         {
-            return await _service.ReportComboxData();
+            return await _service.ReportComboxDataAsync();
         }
 
         /// <summary>

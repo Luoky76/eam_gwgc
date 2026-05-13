@@ -73,7 +73,7 @@
                             { display: "故障单号", name: "FAULT_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
                             { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultStatus } },
                             {
-                                display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.shipInfo,
                                     autocomplete: true,
@@ -82,9 +82,9 @@
                                     textField: "TEXT",
                                     columns: [
                                         { header: '船舶名称', name: 'TEXT' },
-                                        { header: '船舶编号', name: 'VALUE', width: 100 },
-                                        { header: '使用部门', name: 'EXTEND', width: 100 },
-                                        { header: '维保部门', name: 'EXTEND1', width: 100 },
+                                        { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
+                                        { header: '使用部门', name: 'EXTEND', width: me.formInputWidth },
+                                        { header: '维保部门', name: 'EXTEND1', width: me.formInputWidth },
                                     ],
                                     onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
@@ -103,7 +103,7 @@
                                 }
                             },
                             {
-                                display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.deviceInfo,
                                     autocomplete: true,
@@ -111,7 +111,7 @@
                                     valueField: "ID",
                                     textField: "TEXT",
                                     columns: [
-                                        { header: '设备编号', name: 'VALUE', width: 150 },
+                                        { header: '设备编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '设备名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {

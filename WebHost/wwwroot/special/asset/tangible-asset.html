@@ -31,6 +31,11 @@
         var business = {
             formLabelWidth: 120,
             formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -300,64 +305,48 @@
                     });
                 }
             },
-            submit: function () { //提交
+            submit: function () {
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
-                if (selecteds) {
-                    var updatedarr = [];
-                    var orginarr = [];
-                    for (var i = 0; i < selecteds.length; i++) {
-                        var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                        var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                        upd.AUDITING = "1";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    var changeRow = new Object();
-                    changeRow["updated"] = updatedarr;
-                    changeRow["original"] = orginarr;
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Special/AssetCard/Save',
-                        loading: '正在提交中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('提交成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
+                if (selecteds.length == 0) {
+                    LG.tip('请选择行!');
+                    return;
                 }
-            },
-            revoke: function () { //撤销提交
-                var me = this;
-                var selecteds = me.grid.getSelectedRows();
-                var updatedarr = [];
-                var orginarr = [];
+                var sids = [];
                 for (var i = 0; i < selecteds.length; i++) {
-                    var ori = JSON.parse(JSON.stringify(selecteds[i]));
-                    var upd = JSON.parse(JSON.stringify(selecteds[i]));
-                    if (ori.AUDITING == "1") {
-                        upd.AUDITING = "0";
-                        orginarr.push(ori);
-                        updatedarr.push(upd)
-                    }
-                    else {
-                        LG.tip("未提交数据无需撤销！");
-                        return;
-                    }
+                    sids.push(selecteds[i].ASSET_ID);
                 }
-                var changeRow = new Object();
-                changeRow["updated"] = updatedarr;
-                changeRow["original"] = orginarr;
                 LG.ajax({
                     jsToken: true,
-                    url: 'Special/AssetCard/Save',
+                    url: 'Special/AssetCard/Submit',
+                    loading: '正在提交中...',
+                    data: { sids: sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            revoke: function () {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                if (selecteds.length == 0) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                var sids = [];
+                for (var i = 0; i < selecteds.length; i++) {
+                    sids.push(selecteds[i].ASSET_ID);
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Special/AssetCard/Revoke',
                     loading: '正在撤销中...',
-                    data: changeRow,
+                    data: { sids: sids },
                     success: function () {
                         LG.showSuccess('撤销成功');
                         me.grid.isDataChanged = false;

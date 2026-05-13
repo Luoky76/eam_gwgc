@@ -48,5 +48,11 @@ namespace EAM.Material.Controllers
             return await _service.Save(request, requestdet);
         }
 
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
+        }
+
     }
 }

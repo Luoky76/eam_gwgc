@@ -174,6 +174,36 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> SubmitAsync(List<string> sids)
+        {
+            return await _dbContext.UpdateAsync<PROVIDER_ASSESS>(
+                c => sids.Contains(c.ASSESS_ID),
+                c => new PROVIDER_ASSESS
+                {
+                    AUDITING = "1"
+                });
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> RevokeAsync(List<string> sids)
+        {
+            return await _dbContext.UpdateAsync<PROVIDER_ASSESS>(
+                c => sids.Contains(c.ASSESS_ID),
+                c => new PROVIDER_ASSESS
+                {
+                    AUDITING = "0"
+                });
+        }
+
+        /// <summary>
         /// 添加前验证
         /// </summary>
         /// <param name="entity"></param>
@@ -236,7 +266,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

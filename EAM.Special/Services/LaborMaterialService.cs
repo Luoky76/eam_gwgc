@@ -72,6 +72,21 @@ namespace EAM.Special.Services
         }
 
         /// <summary>
+        /// 提交
+        /// </summary>
+        /// <param name="sids"></param>
+        /// <returns></returns>
+        public async Task<int> SubmitAsync(List<string> sids)
+        {
+            return await _dbContext.UpdateAsync<LABOR_MATERIAL>(
+                c => sids.Contains(c.LABOR_MATERIAL_ID),
+                c => new LABOR_MATERIAL
+                {
+                    AUDITING = "1"
+                });
+        }
+
+        /// <summary>
         /// 添加前验证
         /// </summary>
         /// <param name="entity"></param>
@@ -116,7 +131,7 @@ namespace EAM.Special.Services
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
             try
             {

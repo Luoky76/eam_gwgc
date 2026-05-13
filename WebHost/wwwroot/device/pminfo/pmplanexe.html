@@ -238,36 +238,45 @@
                 var me = this;
                 me.buttons[0].click();
             },
-
-            modify: function () { //填写信息
+            openDetail: function (options) {
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
-                if (selected) {
-                    if (selected.AUDITING_EXE != "0") {
-                        LG.tip('已提交，无法填写!');
-                    } else {
-                        var sid = selected.EXE_ID;
-                        $.ligerDialog.open({
-                            width: 1100,
-                            height: 620,
-                            allowClose: true,
-                            title: '[实施单]',
-                            url: "pmplanexedet.html?MenuNo=" + me.menuNo + "&ver=" + me.ver,
-                            isHidden: false,
-                            showMax: false,
-                            showToggle: false,
-                            showMin: false,
-                            isResize: true,
-                            slide: false,
-                            onClosed: me.reload.bind(me),
-                            data: { "sid": sid, "isNew": false, "isView": false }
-                        });
+                options = options || {};
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: options.title,
+                    url: "pmplanexedet.html?MenuNo=" + me.menuNo + (options.isView ? "" : "&ver=" + me.ver),
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
+                });
+            },
+            modify: function (rowdata) { //修改
+                var me = this;
+                var selected = rowdata;
+                if (!selected) {
+                    var rows = me.grid.getSelectedRows();
+                    if (!rows || rows.length === 0) {
+                        LG.showError("请选择一行");
+                        return;
                     }
+                    if (rows.length > 1) {
+                        LG.showError("不能选择多行");
+                        return;
+                    }
+                    selected = rows[0];
                 }
-                else {
-                    LG.tip('请选择行!');
+                if (selected.AUDITING_EXE == "1") {
+                    LG.tip('已提交，无法填写!');
+                    return;
                 }
+                me.openDetail({ title: '[实施单]', sid: selected.EXE_ID, isNew: false, isView: false });
             },
 
             submit: function () {    //提交
@@ -379,33 +388,14 @@
                 });
                 LG.commonSearch($formsearch1, me.grid);
             },
-
             view: function (rowdata) { //查看
                 var me = this;
-                var selected = me.grid.getSelectedRow();
-
-                if (rowdata) {
-                    selected = rowdata;
-                }
-                if (selected) {
-                    $.ligerDialog.open({
-                        width: 1100,
-                        height: 620,
-                        allowClose: true,
-                        title: '查看维保实施',
-                        url: "pmplanexedet.html?MenuNo=" + me.menuNo,
-                        isHidden: false,
-                        showMax: false,
-                        showToggle: false,
-                        showMin: false,
-                        isResize: true,
-                        slide: false,
-                        onClosed: me.buttons[0].click,
-                        data: { "sid": selected.EXE_ID, "isView": true }
-                    });
-                } else {
+                var selected = rowdata || me.grid.getSelectedRow();
+                if (!selected) {
                     LG.tip('请选择行!');
+                    return;
                 }
+                me.openDetail({ title: '查看维保实施', sid: selected.EXE_ID, isNew: false, isView: true });
             },
             init: function () {
                 var me = this;

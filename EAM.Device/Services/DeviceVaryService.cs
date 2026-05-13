@@ -27,7 +27,7 @@ namespace EAM.Device.Services
         /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             var result = await _comboxDataService.Get(new Dictionary<string, object>(){
                     {"VaryType",null }
@@ -67,6 +67,17 @@ namespace EAM.Device.Services
                 },
                 c => a => a.VARY_ID == c.VARY_ID
                 , BeforeAdd, BeforeUpdate, BeforeDelete);
+        }
+
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
+            await _dbContext.UpdateAsync<DEVICE_VARY>(x => sids.Contains(x.VARY_ID),
+                x => new DEVICE_VARY
+                {
+                    AUDITING = "1"
+                });
+            return AjaxResult.Success("提交成功");
         }
 
 

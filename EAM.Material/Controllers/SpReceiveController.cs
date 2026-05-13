@@ -19,9 +19,9 @@ namespace EAM.Material.Controllers
 		/// </summary>
 		/// <returns></returns>
 		[HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
         public async Task<AjaxResult> ListAsync(GridRequest request)
         {
@@ -42,6 +42,30 @@ namespace EAM.Material.Controllers
         public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
         {
             return await _service.Save(request, requestdet);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
+        {
+            return await _service.RevokeAsync(sids);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> SubmitCheckAsync(List<string> sids)
+        {
+            return await _service.SubmitCheckAsync(sids);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> RevokeCheckAsync(List<string> sids)
+        {
+            return await _service.RevokeCheckAsync(sids);
         }
 
         public async Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request)

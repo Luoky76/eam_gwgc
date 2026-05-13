@@ -26,46 +26,46 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING_OUTSOURCE", width: 300, type: "select", options: {
+                                display: "记录状态", name: "AUDITING_OUTSOURCE", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
                                     data: me.auditing,
                                     disabled: true
                                 }, group: "基础信息"
                             },
-                            { display: "维修申请单号", name: "APPLY_CODE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "委外提交时间", name: "OUTSOURCE_DATE", width: 300, type: "text", options: { disabled: true } },
+                            { display: "维修申请单号", name: "APPLY_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "委外提交时间", name: "OUTSOURCE_DATE", width: me.formInputWidth, type: "text", options: { disabled: true } },
 
-                            { display: "设备编码", name: "ASSET_CODE", width: 300, type: "text", options: { disabled: true }, group: "设备信息" },
-                            { display: "设备名称", name: "ASSET_NAME", width: 300, type: "text", options: { disabled: true } },
-                            { display: "设备类型", name: "TYPE_NAME", width: 300, type: "text", options: { disabled: true } },
-                            { display: "使用部门", name: "DEPT_NAME", width: 300, type: "text", options: { disabled: true } },
-                            { display: "使用人", name: "CARD_USER", width: 300, type: "text", options: { disabled: true } },
-                            { display: "责任人", name: "PERSON", width: 300, type: "text", options: { disabled: true } },
-                            { display: "资产编号", name: "ASSETNO", width: 300, type: "text", options: { disabled: true } },
-                            { display: "型号规格", name: "ASSET_SIZE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 300, type: "text", options: { disabled: true } },
-                            { display: "序列号", name: "SERIAL_NUM", width: 300, type: "text", options: { disabled: true } },
-                            { display: "存放位置", name: "INSTALL_SITE", width: 300, type: "text", options: { disabled: true } },
+                            { display: "设备编码", name: "ASSET_CODE", width: me.formInputWidth, type: "text", options: { disabled: true }, group: "设备信息" },
+                            { display: "设备名称", name: "ASSET_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "设备类型", name: "TYPE_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "使用部门", name: "DEPT_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "使用人", name: "CARD_USER", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "责任人", name: "PERSON", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "资产编号", name: "ASSETNO", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "型号规格", name: "ASSET_SIZE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "品牌、厂家", name: "PRODUCE", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "序列号", name: "SERIAL_NUM", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "存放位置", name: "INSTALL_SITE", width: me.formInputWidth, type: "text", options: { disabled: true } },
 
-                            { display: "故障发生时间", name: "FAILURE_TIME", width: 300, type: "date", options: { disabled: true }, group: "故障信息" },
+                            { display: "故障发生时间", name: "FAILURE_TIME", width: me.formInputWidth, type: "date", options: { disabled: true }, group: "故障信息" },
                             { display: "故障现象描述", name: "FAILURE_DESCRIBE", width: me.getTextareaWidth(), type: "textarea", options: { disabled: true } },
 
-                            { display: "申请部门", name: "APPLY_DEPT", width: 300, type: "text", options: { disabled: true }, group: "申请信息" },
-                            { display: "申请人", name: "APPLY_USER", width: 300, type: "text", options: { disabled: true } },
-                            { display: "申请人联系电话", name: "APPLY_TEL", width: 300, type: "text", options: { disabled: true } },
+                            { display: "申请部门", name: "APPLY_DEPT", width: me.formInputWidth, type: "text", options: { disabled: true }, group: "申请信息" },
+                            { display: "申请人", name: "APPLY_USER", width: me.formInputWidth, type: "text", options: { disabled: true } },
+                            { display: "申请人联系电话", name: "APPLY_TEL", width: me.formInputWidth, type: "text", options: { disabled: true } },
 
                             {
-                                display: "是否在保修期内", name: "IS_UNDER_WARRANTY", width: 300, type: "select", validate: { required: true }, options: {
+                                display: "是否在保修期内", name: "IS_UNDER_WARRANTY", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
                                     data: me.yesOrNo
                                 }, group: "委外信息"
                             },
-                            { display: "供应商", name: "PROVIDER", width: 300, type: "text", options: {} },
-                            { display: "供应商联系电话", name: "PROVIDER_TEL", width: 300, type: "text", options: {} },
+                            { display: "供应商", name: "PROVIDER", width: me.formInputWidth, type: "text", options: {} },
+                            { display: "供应商联系电话", name: "PROVIDER_TEL", width: me.formInputWidth, type: "text", options: {} },
                             { display: "备注", name: "OUTSOURCE_MEMO", width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             //隐藏
-                            { display: "主键", name: "REPORT_ID", width: 300, type: "hidden" },
+                            { display: "主键", name: "REPORT_ID", width: me.formInputWidth, type: "hidden" },
                         ]
                     }
                 };

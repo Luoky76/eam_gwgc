@@ -19,9 +19,9 @@ namespace EAM.Device.Controller
 
         #region 设备卡片
         [HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await _service.ComboxData();
+            return await _service.ComboxDataAsync();
         }
         /// <summary>
         /// 树形
@@ -59,6 +59,12 @@ namespace EAM.Device.Controller
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request)
         {
             return await _service.SaveAsync(request);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
         }
         #endregion
 

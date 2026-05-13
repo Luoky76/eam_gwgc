@@ -48,7 +48,7 @@
 
                             { display: "停机编码", name: "STOP_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
                             {
-                                display: "船舶编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 180, type: "select", align: "left", validate: { required: true },
+                                display: "船舶编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
                                     data: me.deviceInfo,
                                     autocomplete: true,
@@ -56,7 +56,7 @@
                                     valueField: "ID",
                                     textField: "TEXT",
                                     columns: [
-                                        { header: '船舶编号', name: 'VALUE', width: 150 },
+                                        { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '船舶名称', name: 'TEXT' }
                                     ],
                                     onChangeValue: function (input, value, g) {

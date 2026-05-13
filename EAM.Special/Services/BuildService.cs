@@ -34,7 +34,7 @@ namespace EAM.Special.Services
         /// 下拉
         /// </summary>
         /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             return await _comboxDataService.Get(new Dictionary<string, object>(){
                 { "ShipInfo",null},
@@ -49,7 +49,7 @@ namespace EAM.Special.Services
         public async Task<GridData> ListAsync(GridRequest request)
         {/*
             var ship = await _dbContext.Query<BC_CODE>().Where(a => a.CODE_TYPE == "shipdepartmentpermission")
-                .Select(c => new ComboxData() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
+                .Select(c => new ComboxDataAsync() { ID = c.CODE_EN, TEXT = c.CODE_CN, VALUE = c.CODE_CN })
                 .FirstOrDefaultAsync();*/
             var list = await _dbContext.Query<BUILD_COUNT>()
                 .LeftJoin<DEVICE_CARD>((a, b) => a.DEVICE_ID == b.DEVICE_ID)

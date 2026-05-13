@@ -21,9 +21,9 @@ namespace EAM.Material.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> ComboxData()
+        public async Task<AjaxResult> ComboxDataAsync()
         {
-            var comboxData = await _service.ComboxData();
+            var comboxData = await _service.ComboxDataAsync();
             return AjaxResult.Success(new
             {
                 auditing = comboxData["Auditing"]
@@ -55,6 +55,12 @@ namespace EAM.Material.Controllers
         public async Task<AjaxResult> SaveAsync(SaveRequest<SP_CATALOG_SCAN> request, SaveRequest<SP_CATALOG_SCAN_DET> requestdet)
         {
             return await _service.SaveAsync(request, requestdet);
+        }
+
+        [HttpPost]
+        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        {
+            return await _service.SubmitAsync(sids);
         }
 
         [HttpPost]
