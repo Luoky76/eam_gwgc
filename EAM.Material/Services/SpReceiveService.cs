@@ -55,10 +55,9 @@ namespace EAM.Material.Services
             return AjaxResult.Success(query);
         }
         /// <summary>
-        /// 保存
+        /// 同时保存主子表
         /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
         {
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {
@@ -589,10 +588,9 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 保存
+        /// 子表保存
         /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> SaveDet(SaveRequest<SP_RECEIVE_DET> request)
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_RECEIVE_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 a => new

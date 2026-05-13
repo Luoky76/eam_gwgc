@@ -60,8 +60,10 @@ namespace EAM.Material.Services
         /// 保存
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_STORE> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_STORE> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -367,7 +369,10 @@ namespace EAM.Material.Services
                 .GetGridData(request);
         }
 
-        public async Task<AjaxResult> LimitSave(SaveRequest<SP_LIMIT> request)
+        /// <summary>
+        /// 预警保存
+        /// </summary>
+        public async Task<AjaxResult> LimitSaveAsync(SaveRequest<SP_LIMIT> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new

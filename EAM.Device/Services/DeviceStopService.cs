@@ -133,8 +133,10 @@ namespace EAM.Device.services
         /// <summary>
         /// 提交
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> Submit(List<string> sids)
+        /// <summary>
+        /// 提交
+        /// </summary>
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             return await _dbContext.UpdateAsync<RUN_STOP>(x => sids.Contains(x.RUN_STOP_ID),
                 x => new RUN_STOP

@@ -118,7 +118,10 @@ namespace EAM.Material.Services
             return result;
         }
 
-        public async Task<AjaxResult> Save(SaveRequest<SP_IN_BACK> request, SaveRequest<SP_INBACK_DET> requestdet)
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_IN_BACK> request, SaveRequest<SP_INBACK_DET> requestdet)
         {
             using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
             {

@@ -38,10 +38,10 @@ namespace EAM.Device.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request)
         {
             var result = await _service.ListAsync(request);
-            return AjaxResult<GridData>.Success(result);
+            return AjaxResult.Success(result);
         }
 
         [HttpPost]
@@ -59,12 +59,6 @@ namespace EAM.Device.Controller
         public async Task<AjaxResult> SaveAsync(SaveRequest<DEVICE_CARD> request)
         {
             return await _service.SaveAsync(request);
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult> SubmitAsync(List<string> sids)
-        {
-            return await _service.SubmitAsync(sids);
         }
         #endregion
 
@@ -150,20 +144,20 @@ namespace EAM.Device.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DeviceListAllAsync(GridRequest request)
+        public async Task<AjaxResult> DeviceListAllAsync(GridRequest request)
         {
             var result = await _service.DeviceListAllAsync(request);
-            return AjaxResult<GridData>.Success(result);
+            return AjaxResult.Success(result);
         }
         #endregion
 
         #region 维保设备
 
         [HttpPost]
-        public async Task<AjaxResult<GridData>> PmListAsync(GridRequest request)
+        public async Task<AjaxResult> PmListAsync(GridRequest request)
         {
             var result = await _service.PmListAsync(request);
-            return AjaxResult<GridData>.Success(result);
+            return AjaxResult.Success(result);
         }
 
         #endregion

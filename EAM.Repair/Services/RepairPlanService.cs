@@ -692,6 +692,8 @@ namespace EAM.Repair.services
             }
         }
 
+        public Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData() => ComboxDataAsync();
+
         #endregion 维修计划实施
     }
 }

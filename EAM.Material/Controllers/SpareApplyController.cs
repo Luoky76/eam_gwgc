@@ -36,9 +36,9 @@ namespace EAM.Material.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult.Success(await _service.ListAsync(request), "成功");
         }
 
         /// <summary>
@@ -95,9 +95,9 @@ namespace EAM.Material.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DetailListAsync(GridRequest request)
+        public async Task<AjaxResult> DetailListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.DetailListAsync(request), "成功");
+            return AjaxResult.Success(await _service.DetailListAsync(request), "成功");
         }
         /// <summary>
         /// 明细-保存
@@ -116,19 +116,19 @@ namespace EAM.Material.Controllers
 
         #region 物资编码禁用
         [HttpPost]
-        public async Task<AjaxResult<GridData>> SpcatalogListAsync(GridRequest request)
+        public async Task<AjaxResult> SpcatalogListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.SpcatalogListAsync(request), "成功");
+            return AjaxResult.Success(await _service.SpcatalogListAsync(request), "成功");
         }
         [HttpPost]
-        public async Task<AjaxResult<GridData>> SpDisableListAsync(GridRequest request)
+        public async Task<AjaxResult> SpDisableListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.SpDisableListAsync(request), "成功");
+            return AjaxResult.Success(await _service.SpDisableListAsync(request), "成功");
         }
         [HttpPost]
-        public async Task<AjaxResult<GridData>> SpDisableDetailListAsync(GridRequest request)
+        public async Task<AjaxResult> SpDisableDetailListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.SpDisableDetailListAsync(request), "成功");
+            return AjaxResult.Success(await _service.SpDisableDetailListAsync(request), "成功");
         }
 
         /// <summary>
@@ -172,14 +172,14 @@ namespace EAM.Material.Controllers
 
         #region 物资编码启用
         [HttpPost]
-        public async Task<AjaxResult<GridData>> SpEnableListAsync(GridRequest request)
+        public async Task<AjaxResult> SpEnableListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.SpEnableListAsync(request), "成功");
+            return AjaxResult.Success(await _service.SpEnableListAsync(request), "成功");
         }
         [HttpPost]
-        public async Task<AjaxResult<GridData>> SpEnableDetailListAsync(GridRequest request)
+        public async Task<AjaxResult> SpEnableDetailListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.SpEnableDetailListAsync(request), "成功");
+            return AjaxResult.Success(await _service.SpEnableDetailListAsync(request), "成功");
         }
 
         /// <summary>

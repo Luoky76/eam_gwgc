@@ -27,10 +27,10 @@ namespace EAM.Special.Controller
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<SPEC_LOWSPARE_IN>> GetAsync(string sid)
+        public async Task<AjaxResult> GetAsync(string sid)
         {
-            if (sid.IsNullOrEmpty()) return AjaxResult<SPEC_LOWSPARE_IN>.Error("请传递参数");
-            return AjaxResult<SPEC_LOWSPARE_IN>.Success(await _service.GetAsync(sid), "成功");
+            if (sid.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(sid), "成功");
         }
 
         /// <summary>

@@ -87,9 +87,12 @@ namespace EAM.Material.Services
             return res;
         }
 
-        public async Task<SP_COLLECT> GetCollectDetail(string ID)
+        /// <summary>
+        /// 根据ID获取记录
+        /// </summary>
+        public async Task<SP_COLLECT> GetAsync(string collectId)
         {
-            return await _dbContext.QueryByKeyAsync<SP_COLLECT>(ID);
+            return await _dbContext.QueryByKeyAsync<SP_COLLECT>(collectId);
         }
 
         /// <summary>
@@ -118,10 +121,55 @@ namespace EAM.Material.Services
         /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="requestdet"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_COLLECT> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                     c => new
+                     {
+                         c.AUDITING,
+                         c.COLLECT_ID,
+                         c.COLLECT_CODE,
+                         c.COLLECT_DATE,
+                         c.COLLECT_USER,
+                         c.COLLECT_USERID,
+                         c.DEPT_ID,
+                         c.DEPT_NAME,
+                         c.SEC_DEPT,
+                         c.SEC_DEPTID,
+                         c.HOUSE_NAME,
+                         c.HOUSE_ID,
+                         c.MEMO,
+                         c.CREATE_USERID,
+                         c.CREATEDATE,
+                         c.MODIFY_USERID,
+                         c.MODIFYDATE,
+                         c.COLLECT_METHOD,
+                         c.EDIT_USER,
+                         c.COLLECT_PRICE,
+                         c.CONFIRM_AUDIT,
+                         c.TAX_MONEY,
+                         c.NOTAX_MONEY,
+                         c.CONFIRM_CODE,
+                         c.CONFIRM_DATE,
+                         c.PROVIDER_CODE,
+                         c.PROVIDER_ID,
+                         c.PROVIDER_NAME,
+                         c.HOUSE_CODE,
+                         c.STORE_TYPE,
+                         c.HOUSE_USER,
+                         c.HOUSE_USERID,
+                         c.COLLECT_SPTYPE,
+                         c.RATIO,
+                         c.CONSULT_PROVIDER,
+                         c.BD_NO
+                     },
+                      c => a => a.COLLECT_ID == c.COLLECT_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+        }
+
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
         {
             //添加主子表新增记录的关联键值
             if (!request.Added.IsNullOrEmpty() && request.Added.Any())
@@ -301,9 +349,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 提交
         /// </summary>
-        /// <param name="sids"></param>
-        /// <returns></returns>
-        public async Task<int> Submit(List<string> sids)
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             var updateRowCnt = await _dbContext.UpdateAsync<SP_COLLECT>(x => sids.Contains(x.COLLECT_ID),
                     x => new SP_COLLECT
@@ -437,7 +483,10 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
-        public async Task<AjaxResult> Revoke(List<string> sids)
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
             var list = _dbContext.Query<SP_COLLECT>().Where(x => sids.Contains(x.COLLECT_ID)).ToList();
 
@@ -471,11 +520,9 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 明细-列表
+        /// 获取子表明细列表
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<GridData> DetailListAsync(GridRequest request)
+        public async Task<GridData> DetListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_COLLECT_DET>()
                 .OrderBy(a => a.SP_CODE)
@@ -483,11 +530,9 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 明细-保存
+        /// 子表保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request)
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_COLLECT_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -554,9 +599,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 需求保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> RequestSave(SaveRequest<SP_COLLECT_REQUEST> request)
+        public async Task<AjaxResult> RequestSaveAsync(SaveRequest<SP_COLLECT_REQUEST> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -729,12 +772,9 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 选中的采购申请明细
+        /// 选中采购申请明细
         /// </summary>
-        /// <param name="SpdetID"></param>
-        /// <param name="Cid"></param>
-        /// <returns></returns>
-        public async Task<int> SelectApply(List<string> SpdetID, string Cid)
+        public async Task<int> SelectApplyAsync(List<string> SpdetID, string Cid)
         {
             var appledet = _dbContext.Query<SP_APPLY_DETAIL>()
                 .Where(t => SpdetID.Contains(t.SPDET_ID))
@@ -954,6 +994,18 @@ namespace EAM.Material.Services
 
             return AjaxResult.Success("创建流程成功", "成功");
         }
+
+        #region 旧接口兼容方法
+        public Task<SP_COLLECT> GetCollectDetail(string ID) => GetAsync(ID);
+        public Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet) => SaveAllAsync(request, requestdet);
+        public Task<AjaxResult> ComboxData() => ComboxDataAsync();
+        public Task<int> Submit(List<string> sids) => SubmitAsync(sids);
+        public Task<AjaxResult> Revoke(List<string> sids) => RevokeAsync(sids);
+        public Task<GridData> DetailListAsync(GridRequest request) => DetListAsync(request);
+        public Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request) => DetSaveAsync(request);
+        public Task<AjaxResult> RequestSave(SaveRequest<SP_COLLECT_REQUEST> request) => RequestSaveAsync(request);
+        public Task<int> SelectApply(List<string> SpdetID, string Cid) => SelectApplyAsync(SpdetID, Cid);
+        #endregion
     }
 
     #region SP_COLLECT_REQUEST DTO

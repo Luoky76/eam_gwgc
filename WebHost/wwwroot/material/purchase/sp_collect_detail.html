@@ -99,16 +99,16 @@
                     delete me.orginData;
                     me.orginData = data;
                 }
-                if (!me.sid) {
-                    me.mainform.setData({ AUDITING: "0", COLLECT_USER: window.session.RealName });
+                if (me.isNew) {
+                    me.mainform.setOrginData({ AUDITING: "0", COLLECT_ID: me.sid, COLLECT_USER: window.session.RealName });
                     inner();
                 }
                 else {
                     LG.ajax({
                         async: false,
-                        url: 'Material/SpCollect/GetCollectDetail',
+                        url: 'Material/SpCollect/Get',
                         loading: '正在获取中...',
-                        data: { id: me.sid },
+                        data: { collectId: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data);
                             inner();
@@ -308,7 +308,7 @@
                     var data = handle(me.mainform.getData());
                     var original = handle(me.mainform.getOrginData());
                     var changeRow = new Object();
-                    if (!me.sid) {
+                    if (me.isNew) {
                         changeRow["added"] = [data];
                     }
                     else {
@@ -326,12 +326,12 @@
                     if (isSave) {
                         LG.ajax({
                             jsToken: true,
-                            url: me.rootPath + 'Save',
+                            url: me.rootPath + 'SaveAll',
                             loading: '正在保存中...',
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {
                                 LG.showSuccess('保存成功', function () {
-                                    if (me.dialog && !me.sid) me.dialog.close();
+                                    if (me.dialog && me.isNew) me.dialog.close();
                                     else {
                                         me.loadData();
                                         me.reloadDet();
@@ -468,17 +468,35 @@
                 });
                 me.setFormDefaultBtn();
             },
+            getPrimaryKey: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/General/CreatePrimaryKey',
+                    loading: '正在获取中...',
+                    success: function (data, message) {
+                        me.sid = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
             init: function () {
                 var me = this;
 
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
-                if (me.dialogData.sid) me.sid = me.dialogData.sid;
+                me.sid = me.dialogData.sid;
                 me.isView = Boolean(me.dialogData.isView);
+                me.isNew = Boolean(me.dialogData.isNew);
+                if (me.isNew) {
+                    me.getPrimaryKey();
+                }
 
                 me.setConfig();
                 me.setForm();
-             
+
                 me.loadData();
                 me.setGrid();
                 me.reloadDet();

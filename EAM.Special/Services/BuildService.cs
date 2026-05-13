@@ -107,8 +107,10 @@ namespace EAM.Special.Services
         /// <summary>
         /// 保存
         /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<BUILD_COUNT> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<BUILD_COUNT> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new

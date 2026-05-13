@@ -40,9 +40,9 @@ namespace EAM.Material.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
+        public async Task<AjaxResult> ListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
+            return AjaxResult.Success(await _service.ListAsync(request), "成功");
         }
 
         /// <summary>
@@ -133,9 +133,9 @@ namespace EAM.Material.Controllers
         /// 待盘点项目
         /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DetailAnsListAsync(GridRequest request)
+        public async Task<AjaxResult> DetailAnsListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.DetailAnsListAsync(request), "成功");
+            return AjaxResult.Success(await _service.DetailAnsListAsync(request), "成功");
         }
 
         /// <summary>

@@ -59,10 +59,10 @@ namespace EAM.Device.Controller
         }
 
         [HttpPost]
-        public async Task<AjaxResult<PM_STD_LIST>> GetAsync(string id)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<PM_STD_LIST>.Error("请传递参数");
-            return AjaxResult<PM_STD_LIST>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>

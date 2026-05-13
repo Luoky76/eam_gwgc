@@ -61,10 +61,10 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<ASSET_CARD>> GetAsync(string id)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<ASSET_CARD>.Error("请传递参数");
-            return AjaxResult<ASSET_CARD>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(id), "成功");
         }
         /// <summary>
         /// 保存

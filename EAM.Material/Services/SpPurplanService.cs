@@ -57,8 +57,10 @@ namespace EAM.Material.Services
         /// 保存
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_PURPLAN> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_PURPLAN> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -146,7 +148,7 @@ namespace EAM.Material.Services
             await _dbContext.DeleteAsync<SP_PURPLAN_DET>(x => x.PURPLAN_ID == entity.PURPLAN_ID);
         }
 
-        public async Task<int> Submit(List<string> sids)
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             DateTime? dt = await _dbContext.GetSysdate();
             var updatedevice = await _dbContext.UpdateAsync<SP_PURPLAN>(x => sids.Contains(x.PURPLAN_ID),
@@ -244,7 +246,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
             var list = _dbContext.Query<SP_PURPLAN>().Where(x => sids.Contains(x.PURPLAN_ID)).ToList();
 
@@ -278,12 +280,18 @@ namespace EAM.Material.Services
             return AjaxResult.Success("成功");
         }
 
-        public async Task<GridData> DetailListAsync(string PURPLAN_ID, GridRequest request)
+        /// <summary>
+        /// 获取子表明细列表
+        /// </summary>
+        public async Task<GridData> DetListAsync(string PURPLAN_ID, GridRequest request)
         {
             return await _dbContext.Query<SP_PURPLAN_DET>().Where(t => t.PURPLAN_ID == PURPLAN_ID).GetGridData(request);
         }
 
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_PURPLAN_DET> request)
+        /// <summary>
+        /// 子表保存
+        /// </summary>
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_PURPLAN_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new

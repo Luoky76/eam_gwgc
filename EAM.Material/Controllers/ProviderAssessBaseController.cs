@@ -49,10 +49,10 @@ namespace EAM.Material.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<PROVIDER_ASSESS_BASE>> GetAsync(string id)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
-            return AjaxResult<PROVIDER_ASSESS_BASE>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using EAM.Material.Services;
+using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -17,65 +17,74 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取下拉框数据
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
-        {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
-        }
-
-        /// <summary>
-		/// 获取下拉框数据
-		/// </summary>
-		/// <returns></returns>
-		[HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
             return await _service.ComboxDataAsync();
         }
 
         /// <summary>
+        /// 获取列表
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> ListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ListAsync(request), "成功");
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_PURPLAN> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_PURPLAN> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.Save(request);
+            return await _service.SaveAsync(request);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Submit(sids), "成功");
+            await _service.SubmitAsync(sids);
+            return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult> CancelSubmitAsync(List<string> sids)
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.CancelSubmit(sids), "成功");
+            await _service.RevokeAsync(sids);
+            return AjaxResult.Success("撤销提交成功");
         }
 
+        /// <summary>
+        /// 获取子表明细列表
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DetailListAsync(string PURPLAN_ID, GridRequest request)
+        public async Task<AjaxResult> DetListAsync(string PURPLAN_ID, GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.DetailListAsync(PURPLAN_ID, request), "成功");
+            return AjaxResult.Success(await _service.DetListAsync(PURPLAN_ID, request), "成功");
         }
 
+        /// <summary>
+        /// 子表保存
+        /// </summary>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_PURPLAN_DET> request)
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_PURPLAN_DET> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.DetailSave(request);
+            return await _service.DetSaveAsync(request);
         }
     }
 }

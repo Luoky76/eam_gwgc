@@ -79,8 +79,10 @@ namespace EAM.Material.Services
         /// 保存
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_HOUSE> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_HOUSE> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -163,7 +165,7 @@ namespace EAM.Material.Services
         }
 
 
-        public async Task<int> Submit(List<string> sids)
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_HOUSE>(x => sids.Contains(x.HOUSE_ID),
                     x => new SP_HOUSE

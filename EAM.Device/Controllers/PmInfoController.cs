@@ -87,7 +87,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetPmPlanListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<PM_PLAN_EXE>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
             return AjaxResult.Success(await _service.GetPmPlanListDetail(ID), "成功");
         }
 

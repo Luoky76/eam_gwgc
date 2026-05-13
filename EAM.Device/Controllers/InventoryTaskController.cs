@@ -69,7 +69,7 @@ namespace EAM.Device.controller
         {
             if (sid.IsNullOrEmpty() || deptid.IsNullOrEmpty())
             {
-                return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
+                return AjaxResult.Error("请传递参数");
             }
             return AjaxResult.Success(await _service.MakeScanList(sid, deptid, typeid), "成功");
         }
@@ -81,7 +81,8 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Submit(sids), "成功");
+            await _service.SubmitAsync(sids);
+            return AjaxResult.Success("提交成功");
         }
 
 

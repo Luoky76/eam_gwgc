@@ -28,10 +28,10 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<REPORT_ENERGY>> GetAsync(string id)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            if (id == null) return AjaxResult<REPORT_ENERGY>.Error("请传递参数");
-            return AjaxResult<REPORT_ENERGY>.Success(await _service.GetAsync(id), "成功");
+            if (id == null) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace EAM.Special.Controller
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> GridListAsync(GridRequest request)
+        public async Task<AjaxResult> GridListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await Service.GridListAsync(request), "成功");
+            return AjaxResult.Success(await Service.GridListAsync(request), "成功");
         }
 
         private EnergyReportService Service

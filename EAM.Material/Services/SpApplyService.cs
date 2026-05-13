@@ -105,18 +105,61 @@ namespace EAM.Material.Services
             }
         }
 
-        public async Task<SP_APPLY> GetApplyDetail(string ID)
+        /// <summary>
+        /// 根据ID获取记录
+        /// </summary>
+        public async Task<SP_APPLY> GetAsync(string applyId)
         {
-            return await _dbContext.QueryByKeyAsync<SP_APPLY>(ID);
+            return await _dbContext.QueryByKeyAsync<SP_APPLY>(applyId);
         }
 
         /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="requestdet"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_APPLY> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                     c => new
+                     {
+                         c.AUDITING,
+                         c.APPLY_NO,
+                         c.APPLY_DATE,
+                         c.APPLY_USERID,
+                         c.APPLY_USER,
+                         c.DEPT_ID,
+                         c.DEPT_CODE,
+                         c.DEPT_NAME,
+                         c.SHIP_DEPT,
+                         c.IS_REC,
+                         c.TIME_REQ,
+                         c.SOURCE_ID,
+                         c.SOURCE,
+                         c.USE_MEMO,
+                         c.TYPE_ID,
+                         c.TYPE_CODE,
+                         c.TYPE_NAME,
+                         c.EXIG_DEV,
+                         c.PROJECT_CODE,
+                         c.OA_CHECK,
+                         c.OA_DATE,
+                         c.OA_MEMO,
+                         c.SEC_DEPTID,
+                         c.SEC_DEPT,
+                         c.MEMO,
+                         c.CREATE_USERID,
+                         c.CREATEDATE,
+                         c.MODIFY_USERID,
+                         c.MODIFYDATE,
+                         c.TYPE_ID2,
+                         c.CGFS
+                     },
+                     c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+        }
+
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_APPLY> request, SaveRequest<SP_APPLY_DETAIL> requestdet)
         {
             if (!request.Added.IsNullOrEmpty() && request.Added.Any())
             {
@@ -189,7 +232,7 @@ namespace EAM.Material.Services
                 if (mainSuccess)  //主表是否保存成功
                 {
                     requestdet ??= new SaveRequest<SP_APPLY_DETAIL>();
-                    execResult = await DetailSave(requestdet);
+                    execResult = await DetSaveAsync(requestdet);
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
                 if (mainSuccess && detSuccess)
@@ -260,7 +303,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids">主键数组</param>
         /// <returns>匹配记录数</returns>
-        public async Task<int> Submit(List<string> sids)
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             int updateCnt = 0;
             await _dbContext.UseTransactionAsync(async () =>
@@ -453,7 +496,7 @@ namespace EAM.Material.Services
         /// <param name="sids"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                      x => new SP_APPLY
@@ -470,7 +513,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<int> CheckSubmit(List<string> sids)
+        public async Task<int> CheckSubmitAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_APPLY>(x => sids.Contains(x.APPLY_ID),
                     x => new SP_APPLY
@@ -492,7 +535,7 @@ namespace EAM.Material.Services
         /// <param name="sids"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<AjaxResult> CheckCancelSubmit(List<string> sids)
+        public async Task<AjaxResult> CheckRevokeAsync(List<string> sids)
         {
             var list = _dbContext.Query<SP_APPLY>().Where(x => sids.Contains(x.APPLY_ID)).ToList();
 
@@ -573,7 +616,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> SaveCheckList(SaveRequest<SP_APPLY_DETAIL> request)
+        public async Task<AjaxResult> SaveCheckListAsync(SaveRequest<SP_APPLY_DETAIL> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
@@ -614,7 +657,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> SubmitCheckList(List<string> sids)
+        public async Task<AjaxResult> SubmitCheckListAsync(List<string> sids)
         {
             var sp_apply_details = await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.SPDET_ID), x => new SP_APPLY_DETAIL
             {
@@ -630,7 +673,7 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> RevokeCheckList(List<string> sids)
+        public async Task<AjaxResult> RevokeCheckListAsync(List<string> sids)
         {
             //判断是否已在物资需求申请
             var sp_collect_request_list = await _dbContext.Query<SP_COLLECT_REQUEST>(a => _dbContext.Query<SP_APPLY_DETAIL>(b => sids.Contains(b.SPDET_ID))
@@ -673,7 +716,7 @@ namespace EAM.Material.Services
         /// Excel导入
         /// </summary>
         /// <returns></returns>
-        public async Task<AjaxResult> ImportInDetail([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
+        public async Task<AjaxResult> ImportInDetailAsync([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
         {
             var apply = string.IsNullOrEmpty(sid) ? new SP_APPLY { AUDITING = "0" } : _dbContext.QueryByKey<SP_APPLY>(sid);
             if (string.IsNullOrEmpty(sid))
@@ -733,7 +776,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GridData> DetailListAsync(GridRequest request)
+        /// <summary>
+        /// 获取子表明细列表
+        /// </summary>
+        public async Task<GridData> DetListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_APPLY_DETAIL>()
                 .OrderBy(c => c.SP_CODE)
@@ -745,7 +791,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_APPLY_DETAIL> request)
+        /// <summary>
+        /// 子表保存
+        /// </summary>
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_APPLY_DETAIL> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new

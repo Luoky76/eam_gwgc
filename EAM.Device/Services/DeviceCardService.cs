@@ -98,17 +98,6 @@ namespace EAM.Device.Services
                 BeforeAdd, BeforeUpdate, BeforeDelete, orgin: true);
         }
 
-        public async Task<AjaxResult> SubmitAsync(List<string> sids)
-        {
-            if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
-            await _dbContext.UpdateAsync<DEVICE_CARD>(x => sids.Contains(x.DEVICE_ID),
-                x => new DEVICE_CARD
-                {
-                    AUDITING = "1"
-                });
-            return AjaxResult.Success("提交成功");
-        }
-
         /// <summary>
         /// 添加前验证
         /// </summary>

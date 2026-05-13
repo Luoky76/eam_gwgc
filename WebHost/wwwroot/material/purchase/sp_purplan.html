@@ -240,7 +240,7 @@
                     columns: me.config.grid.columns2,
                     usePager: false,
                     toolbar: { group: "detail" },
-                    url: me.rootPath + 'DetailList',
+                    url: me.rootPath + 'DetList',
                     parms: {
                         PURPLAN_ID: "",
                         where: JSON.stringify({
@@ -378,7 +378,7 @@
 
                     LG.ajax({
                         jsToken: true,
-                        url: me.rootPath + 'CancelSubmit',
+                        url: me.rootPath + 'Revoke',
                         loading: '正在撤销中...',
                         data: { "sids": sids },
                         success: function () {
@@ -411,7 +411,7 @@
                     var changeRow = me.gridReq.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: me.rootPath + 'DetailSave',
+                        url: me.rootPath + 'DetSave',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {

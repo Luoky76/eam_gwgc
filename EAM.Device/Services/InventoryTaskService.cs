@@ -209,8 +209,10 @@ namespace EAM.Device.services
         /// <summary>
         /// 提交
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> Submit(List<string> sids)
+        /// <summary>
+        /// 提交
+        /// </summary>
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             var query = _dbContext.Query<DEVICE_SCAN_DET>()
                  .Where(c => sids.Contains(c.SCAN_ID)).First();

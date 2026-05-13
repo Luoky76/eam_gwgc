@@ -16,9 +16,9 @@ namespace EAM.Common.Controllers
         /// <param></param>
         /// <returns></returns>
         [HttpPost]
-        public AjaxResult<string> CreatePrimaryKey()
+        public AjaxResult CreatePrimaryKey()
         {
-            return AjaxResult<string>.Success(GuidHelper.NewSnowflakeId().ToString(), "成功");
+            return AjaxResult.Success(GuidHelper.NewSnowflakeId().ToString(), "成功");
         }
     }
 }

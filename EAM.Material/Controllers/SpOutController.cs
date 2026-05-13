@@ -60,7 +60,7 @@ namespace EAM.Material.Controllers
         [HttpPost]
         public async Task<AjaxResult> GetSpOutAppListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<SP_OUT_APP>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
             return AjaxResult.Success(await _service.GetSpOutAppListDetail(ID), "成功");
         }
 
@@ -122,7 +122,7 @@ namespace EAM.Material.Controllers
         [HttpPost]
         public async Task<AjaxResult> GetSpOutStoreListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<SP_OUTSTORE>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
             return AjaxResult.Success(await _service.GetSpOutStoreListDetail(ID), "成功");
         }
 
@@ -194,7 +194,7 @@ namespace EAM.Material.Controllers
         [HttpPost]
         public async Task<AjaxResult> GetSpOutBackListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<PROVIDER_ASSESS_BASE>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
             return AjaxResult.Success(await _service.GetSpOutBackListDetail(ID), "成功");
         }
 

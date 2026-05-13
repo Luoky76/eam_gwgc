@@ -73,7 +73,7 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     toolbar: { group:"detail" },
-                    url: me.rootPath + 'DetailList',
+                    url: me.rootPath + 'DetList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -184,7 +184,7 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: me.rootPath + 'DetailSave',
+                        url: me.rootPath + 'DetSave',
                         loading: '正在保存中...',
                         data: changeRow,
                         success: function () {

@@ -1,4 +1,4 @@
-﻿using EAM.Material.DTO;
+using EAM.Material.DTO;
 using EAM.Material.Services;
 using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
@@ -20,107 +20,97 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取下拉框数据
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="YEAR"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request, string YEAR)
-        {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request, YEAR), "成功");
-        }
-
-        /// <summary>
-		/// 获取下拉框数据
-		/// </summary>
-		/// <returns></returns>
-		[HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
             return await _service.ComboxDataAsync();
         }
 
         /// <summary>
+        /// 获取列表
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> ListAsync(GridRequest request, string YEAR)
+        {
+            return AjaxResult.Success(await _service.ListAsync(request, YEAR), "成功");
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_ORDER> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_ORDER> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.Save(request);
+            return await _service.SaveAsync(request);
         }
 
+        /// <summary>
+        /// 提交
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Submit(sids), "成功");
+            await _service.SubmitAsync(sids);
+            return AjaxResult.Success("提交成功");
         }
 
         /// <summary>
         /// 撤销提交
         /// </summary>
-        /// <param name="sids"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> CancelSubmitAsync(List<string> sids)
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.CancelSubmit(sids), "成功");
+            await _service.RevokeAsync(sids);
+            return AjaxResult.Success("撤销提交成功");
         }
 
         /// <summary>
-        /// 获取明细列表信息
+        /// 获取子表明细列表
         /// </summary>
-        /// <param name="ORDER_ID"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DetailListAsync(string ORDER_ID, GridRequest request)
+        public async Task<AjaxResult> DetListAsync(string ORDER_ID, GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.DetailListAsync(ORDER_ID, request), "成功");
+            return AjaxResult.Success(await _service.DetListAsync(ORDER_ID, request), "成功");
         }
+
         /// <summary>
-        /// 明细保存
+        /// 子表保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_ORDER_DETAIL> request)
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_ORDER_DETAIL> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.DetailSave(request);
-        }
-
-        [HttpPost]
-        public async Task<AjaxResult<GridData>> OrderOverListAsync(GridRequest request)
-        {
-            return AjaxResult<GridData>.Success(await _service.OrderOverListAsync(request), "成功");
+            return await _service.DetSaveAsync(request);
         }
 
         /// <summary>
-        /// 订单完成情况
+        /// 获取超期订单列表
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> OrderListAsync(GridRequest request)
+        public async Task<AjaxResult> OrderOverListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.OrderListAsync(request), "成功");
+            return AjaxResult.Success(await _service.OrderOverListAsync(request), "成功");
         }
 
         /// <summary>
-        /// 模板导出
+        /// 获取订单完成情况列表
         /// </summary>
-        /// <param name="webHostEnvironment"></param>
-        /// <param name="request"></param>
-        /// <param name="YEAR"></param>
-        /// <returns></returns>
+        [HttpPost]
+        public async Task<AjaxResult> OrderListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.OrderListAsync(request), "成功");
+        }
+
+        /// <summary>
+        /// 导出Excel模板
+        /// </summary>
         [HttpGet, HttpPost]
         public async Task<FileResult> ExportExcelTemplate([FromServices] IWebHostEnvironment webHostEnvironment, GridRequest request, string YEAR)
         {

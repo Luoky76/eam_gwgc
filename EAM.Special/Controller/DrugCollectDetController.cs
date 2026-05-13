@@ -49,10 +49,10 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_COLLECT_DET>> GetAsync(string id)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_COLLECT_DET>.Error("请传递参数");
-            return AjaxResult<DRUG_COLLECT_DET>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>

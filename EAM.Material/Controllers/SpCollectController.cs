@@ -17,109 +17,135 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取下拉框数据
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
-        {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
-        }
-
-        /// <summary>
-        /// 根据物料领用申请ID获取信息
-        /// </summary>
-        /// <param name="ID"></param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<AjaxResult> GetCollectDetailAsync(string ID)
-        {
-            if (ID.IsNullOrEmpty()) return AjaxResult<SP_OUT_APP>.Error("请传递参数");
-            return AjaxResult.Success(await _service.GetCollectDetail(ID), "成功");
-        }
-
-        /// <summary>
-		/// 获取下拉框数据
-		/// </summary>
-		/// <returns></returns>
-		[HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
             return await _service.ComboxDataAsync();
         }
 
         /// <summary>
+        /// 根据ID获取记录
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> GetAsync(string collectId)
+        {
+            if (collectId.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(collectId), "成功");
+        }
+
+        /// <summary>
+        /// 获取列表
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> ListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ListAsync(request), "成功");
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <param name="requestdet"></param>
-        /// <returns></returns>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> Save(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_COLLECT> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.Save(request, requestdet);
+            return await _service.SaveAsync(request);
         }
+
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_COLLECT> request, SaveRequest<SP_COLLECT_REQUEST> requestdet)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.SaveAllAsync(request, requestdet);
+        }
+
         /// <summary>
         /// 提交
         /// </summary>
-        /// <param name="sids"></param>
-        /// <returns></returns>
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Submit(sids), "成功");
+            await _service.SubmitAsync(sids);
+            return AjaxResult.Success("提交成功");
         }
 
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Revoke(sids), "成功");
+            await _service.RevokeAsync(sids);
+            return AjaxResult.Success("撤销提交成功");
         }
 
+        /// <summary>
+        /// 获取子表明细列表
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> DetailListAsync(GridRequest request)
+        public async Task<AjaxResult> DetListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.DetailListAsync(request), "成功");
+            return AjaxResult.Success(await _service.DetListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 子表保存
+        /// </summary>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_COLLECT_DET> request)
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_COLLECT_DET> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.DetailSave(request);
+            return await _service.DetSaveAsync(request);
         }
 
+        /// <summary>
+        /// 获取需求列表
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> RequestListAsync(GridRequest request)
+        public async Task<AjaxResult> RequestListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.RequestListAsync(request), "成功");
+            return AjaxResult.Success(await _service.RequestListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 需求保存
+        /// </summary>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> RequestSave(SaveRequest<SP_COLLECT_REQUEST> request)
+        public async Task<AjaxResult> RequestSaveAsync(SaveRequest<SP_COLLECT_REQUEST> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.RequestSave(request);
+            return await _service.RequestSaveAsync(request);
         }
 
+        /// <summary>
+        /// 获取待请购的采购申请明细
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> SpApplyListAsync(GridRequest request)
+        public async Task<AjaxResult> SpApplyListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.SpApplyListAsync(request), "成功");
+            return AjaxResult.Success(await _service.SpApplyListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 选中采购申请明细
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SelectApplyAsync(List<string> SpdetID, string Cid)
         {
-            return AjaxResult.Success(await _service.SelectApply(SpdetID, Cid), "成功");
+            return AjaxResult.Success(await _service.SelectApplyAsync(SpdetID, Cid), "成功");
         }
     }
 }

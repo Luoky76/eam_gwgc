@@ -38,10 +38,10 @@ namespace EAM.Special.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<DRUG_COLLECT_REQUEST>> GetAsync(string id)
+        public async Task<AjaxResult> GetAsync(string id)
         {
-            if (id.IsNullOrEmpty()) return AjaxResult<DRUG_COLLECT_REQUEST>.Error("请传递参数");
-            return AjaxResult<DRUG_COLLECT_REQUEST>.Success(await _service.GetAsync(id), "成功");
+            if (id.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
+            return AjaxResult.Success(await _service.GetAsync(id), "成功");
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace EAM.Special.Controller
         /// <param name="spId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<List<DRUG_COLLECT_REQUEST>>> GetCertainSpIdAsync(string spId)
+        public async Task<AjaxResult> GetCertainSpIdAsync(string spId)
         {
-            return AjaxResult<List<DRUG_COLLECT_REQUEST>>.Success(await _service.GetCertainSpIdAsync(spId));
+            return AjaxResult.Success(await _service.GetCertainSpIdAsync(spId));
         }
 
         /// <summary>

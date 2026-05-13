@@ -46,9 +46,12 @@ namespace EAM.Special.Controller
             return await _service.GetAsync(ID);
         }
 
-        public async Task<AjaxResult> Save(SaveRequest<BUILD_COUNT> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<BUILD_COUNT> request)
         {
-            return await _service.Save(request);
+            return await _service.SaveAsync(request);
         }
 
         /// <summary>

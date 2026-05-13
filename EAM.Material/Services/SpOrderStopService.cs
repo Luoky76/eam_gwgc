@@ -61,8 +61,10 @@ namespace EAM.Material.Services
         /// 保存
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
-        public async Task<AjaxResult> Save(SaveRequest<SP_ORDER_STOP> request)
+        /// <summary>
+        /// 保存
+        /// </summary>
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_ORDER_STOP> request)
         {
             await _dbContext.SaveEntityAnsyc(request,
                c => new
@@ -137,7 +139,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<int> Submit(List<string> sids)
+        /// <summary>
+        /// 提交
+        /// </summary>
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_ORDER_STOP>(x => sids.Contains(x.STOP_ID),
                     x => new SP_ORDER_STOP
@@ -199,7 +204,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="sids"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> CancelSubmit(List<string> sids)
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        public async Task<AjaxResult> RevokeAsync(List<string> sids)
         {
             var updatedevice = await _dbContext.UpdateAsync<SP_ORDER_STOP>(x => sids.Contains(x.STOP_ID),
                     x => new SP_ORDER_STOP
@@ -264,7 +272,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<GridData> DetailListAsync(GridRequest request)
+        /// <summary>
+        /// 获取子表明细列表
+        /// </summary>
+        public async Task<GridData> DetListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_STOP_DET>()
                 .LeftJoin<SP_ORDER_DETAIL>((a, b) => a.ORDERDET_ID == b.ORDERDET_ID)
@@ -297,7 +308,10 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<AjaxResult> DetailSave(SaveRequest<SP_STOP_DET> request)
+        /// <summary>
+        /// 子表保存
+        /// </summary>
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_STOP_DET> request)
         {
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new

@@ -50,7 +50,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetBaseDockListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<BASE_DOCK>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
             return AjaxResult.Success(await _service.GetBaseDockListDetail(ID), "成功");
         }
 
@@ -71,7 +71,8 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> SubmitAsync(List<string> sids)
         {
-            return AjaxResult.Success(await _service.Submit(sids), "成功");
+            await _service.SubmitAsync(sids);
+            return AjaxResult.Success("提交成功");
         }
 
         /// <summary>
@@ -104,7 +105,7 @@ namespace EAM.Device.controller
         [HttpPost]
         public async Task<AjaxResult> GetRepDockPlanListDetailAsync(string ID)
         {
-            if (ID.IsNullOrEmpty()) return AjaxResult<REP_DOCK_PLAN>.Error("请传递参数");
+            if (ID.IsNullOrEmpty()) return AjaxResult.Error("请传递参数");
             return AjaxResult.Success(await _service.GetRepDockPlanListDetail(ID), "成功");
         }
 

@@ -1,4 +1,4 @@
-﻿using EAM.Material.Services;
+using EAM.Material.Services;
 using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
@@ -17,40 +17,37 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取下拉框数据
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> ListAsync(GridRequest request)
-        {
-            return AjaxResult<GridData>.Success(await _service.ListAsync(request), "成功");
-        }
-
-        /// <summary>
-		/// 获取下拉框数据
-		/// </summary>
-		/// <returns></returns>
-		[HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
             return await _service.ComboxDataAsync();
         }
 
         /// <summary>
+        /// 获取列表
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> ListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ListAsync(request), "成功");
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult> Save(SaveRequest<SP_STORE> request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_STORE> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.Save(request);
+            return await _service.SaveAsync(request);
         }
 
-
+        /// <summary>
+        /// 获取树形数据
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> TreeAsync()
         {
@@ -58,46 +55,62 @@ namespace EAM.Material.Controllers
         }
 
         #region 库存预警
+
         /// <summary>
-        /// 选择库存
+        /// 获取库存汇总列表
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> StoreSumListAsync(GridRequest request)
+        public async Task<AjaxResult> StoreSumListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.StoreSumListAsync(request), "成功");
+            return AjaxResult.Success(await _service.StoreSumListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 获取预警列表
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> LimitListAsync(GridRequest request)
+        public async Task<AjaxResult> LimitListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.LimitListAsync(request), "成功");
+            return AjaxResult.Success(await _service.LimitListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 获取库存预警列表
+        /// </summary>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> StoreLimitListAsync(GridRequest request)
+        public async Task<AjaxResult> StoreLimitListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.StoreLimitListAsync(request), "成功");
+            return AjaxResult.Success(await _service.StoreLimitListAsync(request), "成功");
         }
 
+        /// <summary>
+        /// 保存预警设置
+        /// </summary>
         [HttpPost]
         [JsToken]
-        public async Task<AjaxResult> LimitSave(SaveRequest<SP_LIMIT> request)
+        public async Task<AjaxResult> LimitSaveAsync(SaveRequest<SP_LIMIT> request)
         {
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
-            return await _service.LimitSave(request);
+            return await _service.LimitSaveAsync(request);
         }
 
+        /// <summary>
+        /// 设置上下限
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SetTopLower(string LIMITID, int? TOP, int? LOWER)
         {
             return AjaxResult.Success(await _service.SetTopLower(LIMITID, TOP, LOWER), "成功");
         }
+
         #endregion
 
         #region 库存报表
+
+        /// <summary>
+        /// 获取报表下拉框数据
+        /// </summary>
         [HttpPost]
         public async Task<AjaxResult> ReportComboxDataAsync()
         {
@@ -107,25 +120,21 @@ namespace EAM.Material.Controllers
         /// <summary>
         /// 物资查询
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> StoreSearchListAsync(GridRequest request)
+        public async Task<AjaxResult> StoreSearchListAsync(GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.StoreSearchListAsync(request), "成功");
+            return AjaxResult.Success(await _service.StoreSearchListAsync(request), "成功");
         }
 
         /// <summary>
         /// 收发存报表
         /// </summary>
-        /// <param name="CREATEDATE"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpPost]
-        public async Task<AjaxResult<GridData>> StoreInOutListAsync(DateTime? CREATEDATE, GridRequest request)
+        public async Task<AjaxResult> StoreInOutListAsync(DateTime? CREATEDATE, GridRequest request)
         {
-            return AjaxResult<GridData>.Success(await _service.StoreInOutListAsync(CREATEDATE, request), "成功");
+            return AjaxResult.Success(await _service.StoreInOutListAsync(CREATEDATE, request), "成功");
         }
+
         #endregion
     }
 }

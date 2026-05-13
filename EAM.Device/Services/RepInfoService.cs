@@ -110,8 +110,10 @@ namespace EAM.Device.services
         /// <summary>
         /// 提交
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> Submit(List<string> sids)
+        /// <summary>
+        /// 提交
+        /// </summary>
+        public async Task<int> SubmitAsync(List<string> sids)
         {
             return await _dbContext.UpdateAsync<REP_FRDB>(x => sids.Contains(x.FRDB_ID),
                 x => new REP_FRDB

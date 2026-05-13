@@ -199,7 +199,7 @@
                 else {
                     LG.ajax({
                         async: false,
-                        url: me.rootPath + 'GetApplyDetail',
+                        url: me.rootPath + 'Get',
                         loading: '正在获取中...',
                         data: { id: me.Sid },
                         success: function (data, message) {
@@ -227,7 +227,7 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     toolbar: { group: "detail" },
-                    url: me.rootPath + 'DetailList',
+                    url: me.rootPath + 'DetList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -440,7 +440,7 @@
                     if (isSave) {
                         LG.ajax({
                             jsToken: true,
-                            url: me.rootPath + 'Save',
+                            url: me.rootPath + 'SaveAll',
                             loading: '正在保存中...',
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {

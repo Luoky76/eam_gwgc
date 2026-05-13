@@ -79,7 +79,7 @@ namespace EAM.Device.services
                 .LeftJoin<RUN_TRANS>((a, b, c) => b.DEVICE_ID == c.DEVICE_ID && b.SUBMITDATE == c.SUBMITDATE && c.AUDITING == "1")
                 .Where((a, b, c) => a.STATUS == "1" && a.TYPE_ID == "2");
             return await qry
-                .Select((a, b, c) => new ComboxDataAsync()
+                .Select((a, b, c) => new ComboxData
                 {
                     ID = a.DEVICE_ID,
                     TEXT = a.DEVICE_NAME,
@@ -156,8 +156,10 @@ namespace EAM.Device.services
         /// <summary>
         /// 提交
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> Submit(string sids)
+        /// <summary>
+        /// 提交
+        /// </summary>
+        public async Task<int> SubmitAsync(string sids)
         {
             return await _dbContext.UpdateAsync<RUN_TRANS>(x => x.TRANS_ID == sids,
                 x => new RUN_TRANS
