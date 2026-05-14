@@ -51,9 +51,9 @@ menuNo: getQueryStringByName("MenuNo"),
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
                             { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "盘点状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.ScanStatus } },
+                            { display: "盘点状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { type: "select", data: me.ScanStatus } },
 
                         ]
                     },
@@ -70,14 +70,9 @@ menuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.DeptData,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.DeptData.length; i++) {
-                                                if (rowdata.value == me.DeptData[i].ID) {
-                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.DeptData[i].TEXT, rowdata.record);
-                                                    liger.get("maingrid").updateCell("DEPT_CODE", me.DeptData[i].VALUE, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("DEPT_NAME", rowdata.selected.TEXT, rowdata.record);
+                                            liger.get("maingrid").updateCell("DEPT_CODE", rowdata.selected.VALUE, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("DEPT_NAME", "", rowdata.record);
                                             liger.get("maingrid").updateCell("DEPT_CODE", "", rowdata.record);
@@ -91,9 +86,8 @@ menuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.BCCode,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            var selectedType = me.BCCode.find(type => type.ID == rowdata.value);
-                                            liger.get("maingrid").updateCell("TYPE_NAME", selectedType.TEXT, rowdata.record);
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
                                         }
@@ -108,13 +102,8 @@ menuNo: getQueryStringByName("MenuNo"),
                                     valueField: "Id",
                                     textField: "Name",
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.peopleData.length; i++) {
-                                                if (rowdata.value == me.peopleData[i].Id) {
-                                                    liger.get("maingrid").updateCell("USER_NAME", me.peopleData[i].Name, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("USER_NAME", rowdata.selected.Name, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("USER_NAME", "", rowdata.record);
                                         }

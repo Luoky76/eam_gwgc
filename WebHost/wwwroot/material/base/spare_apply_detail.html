@@ -61,14 +61,9 @@ rootPath:'Material/SpareApply/',
                                     type: 'select',
                                     data: me.BaseSpType,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.BaseSpType.length; i++) {
-                                                if (rowdata.value == me.BaseSpType[i].ID) {
-                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.BaseSpType[i].TEXT, rowdata.record);
-                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.BaseSpType[i].VALUE, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_CODE", rowdata.selected.VALUE, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
                                             liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);

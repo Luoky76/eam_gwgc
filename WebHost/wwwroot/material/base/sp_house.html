@@ -59,7 +59,7 @@ MenuNo: getQueryStringByName("MenuNo"),
                             {
                                 display: "仓库货位名称", name: "_search_HOUSE_NAME", dbname: "HOUSE_NAME", newline: false, width: 200, type: "text",
                             },
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
 
                         ]
                     },
@@ -76,13 +76,8 @@ MenuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.DeptData,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.DeptData.length; i++) {
-                                                if (rowdata.value == me.DeptData[i].ID) {
-                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.DeptData[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("DEPT_NAME", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("DEPT_NAME", "", rowdata.record);
                                         }

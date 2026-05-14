@@ -72,13 +72,8 @@ menuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.BasePurtype,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.BasePurtype.length; i++) {
-                                                if (rowdata.value == me.BasePurtype[i].ID) {
-                                                    liger.get("maingrid").updateCell("PURTYPE_NAME", me.BasePurtype[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("PURTYPE_NAME", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("PURTYPE_NAME", "", rowdata.record);
                                         }
@@ -107,14 +102,9 @@ menuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.SpTypeName,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.SpTypeName.length; i++) {
-                                                if (rowdata.value == me.SpTypeName[i].ID) {
-                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.SpTypeName[i].VALUE, rowdata.record);
-                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.SpTypeName[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("TYPE_CODE", rowdata.selected.VALUE, rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);

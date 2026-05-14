@@ -40,34 +40,26 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", align: "left", options: { data: me.auditing }, editor: { disabled: true },
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", align: "left", options: { type: "select", disabled: true, data: me.auditing }, 
                             },
                             {
                                 display: "设备编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.DeviceData,
-                                    autocomplete: true,
-                                    selectBoxWidth: 400,
-                                    valueField: "ID",
-                                    textField: "VALUE",
-                                    columns: [
+                                options: { type: "select", data: me.DeviceData, autocomplete: true, selectBoxWidth: 400, valueField: "ID", textField: "VALUE", columns: [
                                         { header: '设备编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '设备名称', name: 'TEXT' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#RUN_STATUS').val(g.selected.EXTEND == null ? '' : g.selected.EXTEND);
                                             $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "设备编号", name: "DEVICE_NO", dbname: "DEVICE_NO", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "hidden", options: {} },
-                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, width: me.formInputWidth, type: "text", options: {}, editor: { disabled: true }, },
-                            { display: "状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", width: me.formInputWidth, validate: { required: true }, minWidth: 150, type: "date", editor: { type: 'date', showTime: false, format: "yyyy-MM-dd" } },
-                            { display: "原状态", name: "RUN_STATUS", newline: false, upper: true, width: me.formInputWidth, type: "text", options: {}, editor: { disabled: true }, },
-                            { display: "现状态", name: "NEW_RUN_STATUS", newline: false, upper: true, width: me.formInputWidth, type: "select", options: { data: me.RunStatus } },
+                            { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, width: me.formInputWidth, type: "text", options: { disabled: true },  },
+                            { display: "状态转换时间", name: "TRANS_DATE", dbname: "TRANS_DATE", width: me.formInputWidth, validate: { required: true }, minWidth: 150, type: "date", options: { type: 'date', showTime: false, format: "yyyy-MM-dd" } },
+                            { display: "原状态", name: "RUN_STATUS", newline: false, upper: true, width: me.formInputWidth, type: "text", options: { disabled: true },  },
+                            { display: "现状态", name: "NEW_RUN_STATUS", newline: false, upper: true, width: me.formInputWidth, type: "select", options: { type: "select", data: me.RunStatus } },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, width: me.formInputWidth, type: "hidden", options: {} },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, width: me.formInputWidth, type: "hidden", options: {} },
 

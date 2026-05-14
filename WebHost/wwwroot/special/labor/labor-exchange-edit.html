@@ -51,12 +51,12 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { disabled: true, data: me.Auditing } },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.Auditing } },
                             { display: "退换单号", name: "EXCHANGE_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "退换日期", name: "EXCHANGE_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
-                            { display: "退换类型", name: "EXCHANGE_TYPE", newline: false, upper: true, type: "select", options: { data: me.exchangeType }, validate: { required: true } },
-                            { display: "申请人", name: "EXCHANGE_USER", newline: false, upper: true, type: "select", options: { data: me.User } },
-                            { display: "申请部门", name: "EXCHANGE_DEPT", newline: false, upper: true, type: "select", options: { data: me.Corp }, validate: { required: true } },
+                            { display: "退换类型", name: "EXCHANGE_TYPE", newline: false, upper: true, type: "select", options: { type: "select", data: me.exchangeType }, validate: { required: true } },
+                            { display: "申请人", name: "EXCHANGE_USER", newline: false, upper: true, type: "select", options: { type: "select", data: me.User } },
+                            { display: "申请部门", name: "EXCHANGE_DEPT", newline: false, upper: true, type: "select", options: { type: "select", data: me.Corp }, validate: { required: true } },
                             { display: "退换原因", name: "EXCHANGE_REASON", newline: false, upper: true, type: "text", options: {}, validate: { required: true } },
                             { display: "备注", name: "MEMO", newline: false, upper: true, type: "text", options: {} },
                         ]

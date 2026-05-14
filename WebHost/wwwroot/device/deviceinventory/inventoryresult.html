@@ -47,7 +47,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         fields: [
 
                             { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "盘点状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.ScanStatus } },
+                            { display: "盘点状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { type: "select", data: me.ScanStatus } },
                         ]
                     },
                     grid: {

@@ -43,36 +43,28 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select", align: "left", options: { data: me.auditing }, editor: { disabled: true }, group: "设备停机记录"
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select", align: "left", options: { type: "select", disabled: true, data: me.auditing },  group: "设备停机记录"
                             },
 
-                            { display: "停机编码", name: "STOP_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
+                            { display: "停机编码", name: "STOP_CODE", newline: false, upper: true, type: "text", options: { disabled: true },  },
                             {
                                 display: "船舶编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.DeviceInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 350,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
+                                options: { type: "select", data: me.DeviceInfo, autocomplete: true, selectBoxWidth: 350, valueField: "ID", textField: "TEXT", columns: [
                                         { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '船舶名称', name: 'TEXT' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NO').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_TYPE').val(g.selected.EXTEND1 == null ? '' : g.selected.EXTEND1);
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
                                         }
-                                    }
-                                }
+                                    } }
                             },
-                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "设备分类", name: "TYPE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "停机分类名称", name: "STOP_SOURCE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.StopSource } },
+                            { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "设备分类", name: "TYPE_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "停机分类名称", name: "STOP_SOURCE", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: "select", data: me.StopSource } },
                             {
                                 display: "停机开始时间", name: "RUN_START", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
@@ -93,18 +85,18 @@
                                     },
                                 }
                             },
-                            { display: "总停机台时(h)", name: "STOP_HOURS", newline: false, upper: true, type: "float", options: {}, editor: { disabled: true } },
-                            { display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "编制部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", options: {}, editor: { disabled: true } },
+                            { display: "总停机台时(h)", name: "STOP_HOURS", newline: false, upper: true, type: "float", options: { disabled: true } },
+                            { display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "编制部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
                             { display: "停机过程描述", name: "STOP_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
 
                             { display: "分析人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: {}, group: "停机分析报告" },
                             { display: "分析人ID", name: "CHECK_USERID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "分析部门", name: "CHECK_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "分析部门", name: "CHECK_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "分析日期", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.RepType } },
+                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", options: { type: "select", data: me.RepType } },
                             { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", options: {} },
                             { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "计划后续措施", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },

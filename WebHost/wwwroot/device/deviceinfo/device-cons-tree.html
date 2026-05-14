@@ -76,12 +76,8 @@ menuNo: getQueryStringByName("MenuNo"),
                             { display: "编码", name: "COMPOSE_CODE", dbname: "COMPOSE_CODE", minWidth: 200, type: "text", editor: { type: 'text' }, validate: { required: true } },
                             { display: "名称", name: "COMPOSE_NAME", dbname: "COMPOSE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             {
-                                display: "结构分类", name: "COMPOSE_TYPE", dbname: "COMPOSE_TYPE", minWidth: 100, type: "text",  validate: { required: true },
-                                editor: {
-                                    type: "combobox", options: {
-                                        data: me.ConsType, autocomplete: true, selectBoxHeight: 280
-                                    }
-                                }
+                                display: "结构分类", name: "COMPOSE_TYPE", dbname: "COMPOSE_TYPE", minWidth: 100, type: "select",  validate: { required: true },
+                                editor: { type: "select", data: me.ConsType, autocomplete: true, selectBoxHeight: 280 }
                             },
                             //{ display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 150, type: "text",  readonly: true, hide: true },
                             //{ display: "上级节点", name: "PRE_COMPOSE_NAME", dbname: "PRE_COMPOSE_NAME", minWidth: 200,  type: "text" },
@@ -90,11 +86,10 @@ menuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.DeviceComposeName,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            var selectedType = me.DeviceComposeName.find(type => type.ID == rowdata.value);
-                                            liger.get("maingrid").updateCell("TYPE_ID", selectedType.VALUE, rowdata.record);
-                                            liger.get("maingrid").updateCell("TYPE_NAME", selectedType.EXTEND, rowdata.record);
-                                            liger.get("maingrid").updateCell("TYPE_CODE", selectedType.EXTEND1, rowdata.record);
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("TYPE_ID", rowdata.selected.VALUE, rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.EXTEND, rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_CODE", rowdata.selected.EXTEND1, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_ID", "", rowdata.record);
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);

@@ -56,33 +56,25 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_PLAN", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
-                            { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
-                            { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "记录状态", name: "AUDITING_PLAN", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.auditing },  group: "码头维修计划详情" },
+                            { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true,  type: "text", options: { disabled: true } },
+                            { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true,  options: { disabled: true } },
                             {
                                 display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.DockInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 500,
-                                    valueField: "ID",
-                                    textField: "VALUE",
-                                    columns: [
+                                options: { type: "select", data: me.DockInfo, autocomplete: true, selectBoxWidth: 500, valueField: "ID", textField: "VALUE", columns: [
                                         { header: '码头编号', name: 'TEXT', width: me.formInputWidth },
                                         { header: '码头名称', name: 'VALUE' },
                                         { header: '码头地址', name: 'EXTEND1' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DOCK_NAME').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                             $('#DOCK_CODE').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "码头名称", name: "DOCK_NAME", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date",  options: { disabled: true } },
+                            { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 

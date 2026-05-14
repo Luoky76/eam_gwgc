@@ -41,7 +41,7 @@ rootPath:'Material/SpApply/',
                 me.config = {
                     search: {
                         fields: [
-                            { display: "采购状态", name: "_search_SP_STATUS", dbname: "SP_STATUS", newline: false, upper: true, type: "select", options: { data: me.StatusData } },
+                            { display: "采购状态", name: "_search_SP_STATUS", dbname: "SP_STATUS", newline: false, upper: true, type: "select", options: { type: "select", data: me.StatusData } },
                             { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]

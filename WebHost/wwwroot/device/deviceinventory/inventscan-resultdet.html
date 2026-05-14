@@ -46,8 +46,8 @@ menuNo: getQueryStringByName("MenuNo"),
                 me.config = {
                     search: {
                         fields: [
-                            { display: "已处理", name: "_search_HANDLE", dbname: "HANDLE", newline: false, type: "select", options: { data: me.handle } },
-                            { display: "盘点结果", name: "_search_SCAN_RESULT", dbname: "SCAN_RESULT", newline: false, type: "select", options: { data: me.scanresult } },
+                            { display: "已处理", name: "_search_HANDLE", dbname: "HANDLE", newline: false, type: "select", options: { type: "select", data: me.handle } },
+                            { display: "盘点结果", name: "_search_SCAN_RESULT", dbname: "SCAN_RESULT", newline: false, type: "select", options: { type: "select", data: me.scanresult } },
                         ]
                     },
                     grid: {

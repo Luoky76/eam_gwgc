@@ -57,22 +57,20 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_EXE", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "码头维修计划详情" },
-                            { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
-                            { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
-                            { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
+                            { display: "记录状态", name: "AUDITING_EXE", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.auditing },  group: "码头维修计划详情" },
+                            { display: "实施单单号", name: "EXE_CODE", newline: false, upper: true,  type: "text", options: { disabled: true } },
+                            { display: "计划单单号", name: "PLAN_CODE", newline: false, upper: true,  type: "text", options: { disabled: true } },
+                            { display: "码头编号", name: "DOCK_CODE", newline: false, upper: true,  options: { disabled: true } },
                             {
-                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
-                                options: {
-                                    data: me.DockInfo,
-                                }
+                                display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: me.formInputWidth, type: "select", align: "left", 
+                                options: { type: "select", disabled: true, data: me.DockInfo }
                             },
                             { display: "码头名称", name: "DOCK_NAME", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", editor: { disabled: true }, options: {} },
+                            { display: "计划制定日期", name: "EDIT_DATE", newline: false, upper: true, type: "date",  options: { disabled: true } },
+                            { display: "计划制定人", name: "EDIT_USER", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "故障现象描述", name: "REP_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea",  options: { disabled: true } },
 
-                            { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", editor: { disabled: true }, options: {} },
+                            { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea",  options: { disabled: true } },
                             {
                                 display: "实际开工时间", name: "EXE_BDATE", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
@@ -91,8 +89,8 @@
                                     },
                                 }
                             },
-                            { display: "维修工时(h)", name: "EXE_HOUR", newline: false, upper: true, type: "float", editor: { type: 'float', disabled: true } },
-                            { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", editor: { type: 'text' } },
+                            { display: "维修工时(h)", name: "EXE_HOUR", newline: false, upper: true, type: "float", options: { type: 'float', disabled: true } },
+                            { display: "实施人", name: "EXE_USER", newline: false, upper: true, type: "text", options: { type: 'text' } },
                             {
                                 display: "实施提交日期", name: "EXE_DATE", newline: false, upper: true, type: "date",
                                 options: {
@@ -100,17 +98,15 @@
                                 }
                             },
                             {
-                                display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", editor: { type: 'float' },
-                                options: {
-                                    onChangeValue: function (input, value, g) {
+                                display: "实际维修费用", name: "EXE_COST", newline: false, upper: true, type: "float", 
+                                options: { type: 'float', onChangeValue: function (input, value, g) {
                                         if (value < 0) {
                                             $('#EXE_COST').val("");
                                             LG.showError("实际维修费用不可为负数！");
                                         }
-                                    }
-                                }
+                                    } }
                             },
-                            { display: "是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, editor: { type: 'select', data: me.isLose } },
+                            { display: "是否遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: 'select', data: me.isLose } },
                             { display: "遗留问题描述", name: "LEAVE_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "实施情况描述", name: "EXE_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 

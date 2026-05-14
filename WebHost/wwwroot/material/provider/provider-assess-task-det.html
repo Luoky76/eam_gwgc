@@ -61,29 +61,18 @@
                         labelwidth: me.formLabelWidth,
                         inputWidth: me.formInputWidth,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.Auditing, disabled: true } },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", options: { type: 'select', data: me.Auditing, disabled: true } },
                             { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             //实际为供应商id
                             {
-                                display: "供应商名", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: me.formInputWidth, type: "select", editor: {
-                                    type: 'select',
-                                    options: {
-                                        autocomplete: true,
-                                        data: me.ProviderName
-                                    },
-                                    render: function (rowdata, rowindex, value, column) {
-                                        var showText = '';
-                                        for (var i = 0; i < me.ProviderName.length; ++i) {
-                                            if (rowdata == me.ProviderName[i].ID) {
-                                                showText = me.ProviderName[i].TEXT;
-                                                //同时填充其它字段
-                                                me.mainform.setData({
-                                                    PROVIDER_NAME: me.ProviderName[i].VALUE
-                                                });
-                                                break;
-                                            }
-                                        }
-                                        return showText;
+                                display: "供应商名", name: "PROVIDER_ID", dbname: "PROVIDER_ID", width: me.formInputWidth, type: "select",
+                                options: {
+                                    type: "select",
+                                    data: me.ProviderName,
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        me.mainform.setData({
+                                            PROVIDER_NAME: obj.selected ? obj.selected.VALUE : ""
+                                        });
                                     }
                                 },
                                 validate: { required: true }
@@ -91,12 +80,10 @@
                             { display: "供应商产品", name: "PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: me.formInputWidth, type: "text" },
                             //实际为任务制定人id
                             {
-                                display: "任务制定人", name: "CREATE_USERID", width: me.formInputWidth, type: "select", editor: {
+                                display: "任务制定人", name: "CREATE_USERID", width: me.formInputWidth, type: "select",
+                                options: {
                                     type: "select",
-                                    options: {
-                                        autocomplete: true,
-                                        data: me.User
-                                    },
+                                    data: me.User,
                                     disabled: true
                                 }
                             },

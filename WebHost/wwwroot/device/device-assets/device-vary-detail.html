@@ -32,48 +32,36 @@
                     form: {
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "hidden"},
-                            { display: "变动单号", name: "VARY_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "登记人", name: "EIDT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "变动单号", name: "VARY_CODE", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "登记人", name: "EIDT_USER", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             {
-                                display: "调出使用部门", name: "DEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.Corp }, options: {
-                                    onChangeValue: function (input, value, g) {
+                                display: "调出使用部门", name: "DEPT_ID", newline: false, upper: true, type: "select",  options: { type: 'select', data: me.Corp, onChangeValue: function (input, value, g) {
 
-                                        if (value) {
-                                            for (var i = 0; i < me.Corp.length; i++) {
-                                                if (value == me.Corp[i].ID) {
-                                                    $("#DEPT_NAME").val(me.Corp[i].VALUE);
-                                                }
-                                            }
+                                        if (g.selected) {
+                                            $("#DEPT_NAME").val(g.selected.VALUE);
                                         } else {
                                             $("#DEPT_NAME").val('');
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             {
-                                display: "调入使用部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.Corp }, options: {
-                                    onChangeValue: function (input, value, g) {
+                                display: "调入使用部门", name: "WDEPT_ID", newline: false, upper: true, type: "select",  options: { type: 'select', data: me.Corp, onChangeValue: function (input, value, g) {
 
-                                        if (value) {
-                                            for (var i = 0; i < me.Corp.length; i++) {
-                                                if (value == me.Corp[i].ID) {
-                                                    $("#WDEPT_NAME").val(me.Corp[i].VALUE);
-                                                }
-                                            }
+                                        if (g.selected) {
+                                            $("#WDEPT_NAME").val(g.selected.VALUE);
                                         } else {
                                             $("#WDEPT_NAME").val('');
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "DEPT_NAME", name: "DEPT_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "WDEPT_NAME", name: "WDEPT_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "申请日期", name: "APPLY_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
-                            { display: "变动完成日期", name: "VARY_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "变动类型", name: "VARY_TYPE", newline: false, upper: true, type: "select", options: { data: me.VaryType }, validate: { required: true } },
-                            { display: "设备总原值", name: "SUM_ORG_VALUE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "设备总净值", name: "SUM_NET_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "总已提折旧", name: "SUM_DEP_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "变动完成日期", name: "VARY_DATE", newline: false, upper: true, type: "date",  options: { disabled: true } },
+                            { display: "变动类型", name: "VARY_TYPE", newline: false, upper: true, type: "select", options: { type: "select", data: me.VaryType }, validate: { required: true } },
+                            { display: "设备总原值", name: "SUM_ORG_VALUE", newline: true, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "设备总净值", name: "SUM_NET_VALUE", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "总已提折旧", name: "SUM_DEP_VALUE", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             { display: "变动原因", name: "REASONS", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" }, validate: { required: true } },
                             { display: "设备技术状态", name: "TECH_STATUS", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
                             { display: "备注", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },

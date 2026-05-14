@@ -69,52 +69,35 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_B", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "设备故障上报" },
-                            { display: "故障单号", name: "FAULT_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
-                            { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.FaultStatus } },
+                            { display: "记录状态", name: "AUDITING_B", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.auditing },  group: "设备故障上报" },
+                            { display: "故障单号", name: "FAULT_CODE", newline: false, upper: true, type: "text", options: { disabled: true },  },
+                            { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select",  options: { type: "select", disabled: true, data: me.FaultStatus } },
                             {
                                 display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.ShipInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 400,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
+                                options: { type: "select", data: me.ShipInfo, autocomplete: true, selectBoxWidth: 400, valueField: "ID", textField: "TEXT", columns: [
                                         { header: '船舶名称', name: 'TEXT' },
                                         { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '使用部门', name: 'EXTEND', width: me.formInputWidth },
                                         { header: '维保部门', name: 'EXTEND1', width: me.formInputWidth },
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#SHIP_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#SHIP_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "船舶编码", name: "SHIP_CODE", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "船舶名称", name: "SHIP_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "故障发生时间", name: "FAULT_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
                             {
-                                display: "设备状态", name: "DEVICE_STATUS", newline: false, upper: true, type: "select", validate: { required: true }, options: {
-                                    data: me.DeviceStatus,
-                                }
+                                display: "设备状态", name: "DEVICE_STATUS", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: "select", data: me.DeviceStatus }
                             },
                             {
                                 display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.DeviceInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 300,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
+                                options: { type: "select", data: me.DeviceInfo, autocomplete: true, selectBoxWidth: 300, valueField: "ID", textField: "TEXT", columns: [
                                         { header: '设备编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '设备名称', name: 'TEXT' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
@@ -122,43 +105,35 @@
                                             $('#TYPE_NAME').val(g.selected.EXTEND2 == null ? '' : g.selected.EXTEND2);
                                             $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
                                         }
-                                    }
-                                }
+                                    } }
                             },
-                            { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "异常来源", name: "FAULT_SRC", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.FaultSrc } },
+                            { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true,  options: { disabled: true } },
+                            { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true,  options: { disabled: true } },
+                            { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "异常来源", name: "FAULT_SRC", newline: false, upper: true, type: "select",  options: { type: "select", disabled: true, data: me.FaultSrc } },
                             //{ display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "维修人", name: "REPAIR_USER", newline: false, upper: true, type: "text", options: {} },
                             { display: "维修人ID", name: "REPAIR_USERID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             //{ display: "使用部门", name: "DEPT_ID", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
 
                             { display: "维保部门", name: "WDEPT_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             {
-                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: {
-                                    data: me.MaintDept,
-                                    onChangeValue: function (input, value, g) {
-                                        if (value) {
-                                            for (var i = 0; i < me.MaintDept.length; i++) {
-                                                if (value == me.MaintDept[i].ID) {
-                                                    me.mainform.setData({ 'WDEPT_NAME': me.MaintDept[i].VALUE })
-                                                }
-                                            }
+                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: "select", data: me.MaintDept, onChangeValue: function (input, value, g) {
+                                        if (g.selected) {
+                                            me.mainform.setData({ 'WDEPT_NAME': g.selected.VALUE })
                                         } else {
                                             me.mainform.setData({ 'WDEPT_NAME': '' })
                                         }
-                                    }
-                                }
+                                    } }
                             },
-                            { display: "上报人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "上报人", name: "EDIT_USER", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             //{ display: "上报人ID", name: "EDIT_USERID", newline: false, upper: true, type: "text", options: {} },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), validate: { required: true }, type: "textarea", options: {} },
 
-                            { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.DisposeType }, group: "故障处理" },
-                            { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.RepType } },
+                            { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: "select", data: me.DisposeType }, group: "故障处理" },
+                            { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: "select", data: me.RepType } },
                             { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text", options: {} },
                             {
                                 display: "开工时间", name: "ORDER_DATE", newline: false, upper: true, type: "date", validate: { required: true },
@@ -178,7 +153,7 @@
                                     },
                                 }
                             },
-                            { display: "维修工时(h)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float", editor: { disabled: true }, options: {} },
+                            { display: "维修工时(h)", name: "REPAIR_HOURS", newline: false, upper: true, type: "float",  options: { disabled: true } },
                             { display: "故障及解决方法描述", name: "FAULT_REASON", newline: true, upper: true, validate: { required: true }, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "解决方法", name: "MEASURES", newline: true, upper: true, width: me.getTextareaWidth(), validate: { required: true }, type: "textarea", options: {} },
                             { display: "故障处理备注", name: "FAULT_MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },

@@ -44,9 +44,9 @@ rootPath: 'Material/SpStore/',
                         fields: [
                             { display: "统计时间", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: me.formLabelWidth, width: 130, op: 'greaterorequal', type: "date" },
                             { display: "至", name: "_search_EDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: me.formLabelWidth, width: 130, op: 'lessorequal', type: "date" },
-                            { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { data: me.SpHouseName } },
-                            { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.BaseSpType } },
-                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { data: me.BasePurtype } },
+                            { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { type: "select", data: me.SpHouseName } },
+                            { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { type: "select", data: me.BaseSpType } },
+                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { type: "select", data: me.BasePurtype } },
                         ]
                     },
                     grid: {

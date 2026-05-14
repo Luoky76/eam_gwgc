@@ -69,14 +69,9 @@ rootPath: 'Material/SpApply/',
                                     type: 'select',
                                     data: me.BasePurtype,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.BasePurtype.length; i++) {
-                                                if (rowdata.value == me.BasePurtype[i].ID) {
-                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.BasePurtype[i].TEXT, rowdata.record);
-                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.BasePurtype[i].VALUE, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_CODE", rowdata.selected.VALUE, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
                                             liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);

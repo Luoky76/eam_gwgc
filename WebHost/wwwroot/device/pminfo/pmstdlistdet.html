@@ -37,17 +37,10 @@
                             { display: "编号", name: "STD_CODE", newline: false, upper: true, type: "text", options: {}, group: "维保标准明细" },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.DeviceInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 200,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
+                                options: { type: "select", data: me.DeviceInfo, autocomplete: true, selectBoxWidth: 200, valueField: "ID", textField: "TEXT", columns: [
                                         { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '船舶名称', name: 'TEXT' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
@@ -56,20 +49,19 @@
                                             $('#INSTALL_SITE').val(g.selected.EXTEND5 == null ? '' : g.selected.EXTEND5);
                                             $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
                                         }
-                                    }
-                                }
+                                    } }
                             },
-                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true,  options: { disabled: true } },
+                            { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "部门", name: "DEPARTMENT", newline: false, type: "select", options: { data: me.MaintDept } },
-                            { display: "周期", name: "CYCLE", newline: false, type: "select", options: { data: me.PmcycleUnit } },
-                            { display: "执行人", name: "EXE_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.PmShippost } },
-                            { display: "检查人", name: "CHK_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.PmShippost } },
-                            { display: "是否附件判断", name: "IS_ATTACH", newline: false, type: "select", options: { data: me.isAttach } },
+                            { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true,  options: { disabled: true } },
+                            { display: "部门", name: "DEPARTMENT", newline: false, type: "select", options: { type: "select", data: me.MaintDept } },
+                            { display: "周期", name: "CYCLE", newline: false, type: "select", options: { type: "select", data: me.PmcycleUnit } },
+                            { display: "执行人", name: "EXE_USER", newline: false, type: "select", options: { type: "select", alwayShowInDown: true, data: me.PmShippost } },
+                            { display: "检查人", name: "CHK_USER", newline: false, type: "select", options: { type: "select", alwayShowInDown: true, data: me.PmShippost } },
+                            { display: "是否附件判断", name: "IS_ATTACH", newline: false, type: "select", options: { type: "select", data: me.isAttach } },
                             { display: "维保项目", name: "PART_NAME", newline: true, width: me.formInputWidth, type: "text", options: {} },
                             { display: "维保内容", name: "CONTENT", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },

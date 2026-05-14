@@ -40,37 +40,29 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select", align: "left", options: { data: me.auditing }, editor: { disabled: true }, group: "设备停机记录"
+                                display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select", align: "left", options: { type: "select", disabled: true, data: me.auditing },  group: "设备停机记录"
                             },
-                            { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "故障程度", name: "FRDB_LEVEL", newline: false, upper: true, validate: { required: true }, type: "select", options: { data: me.FrdbLevel } },
+                            { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "故障程度", name: "FRDB_LEVEL", newline: false, upper: true, validate: { required: true }, type: "select", options: { type: "select", data: me.FrdbLevel } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.ShipInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 400,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
+                                options: { type: "select", data: me.ShipInfo, autocomplete: true, selectBoxWidth: 400, valueField: "ID", textField: "TEXT", columns: [
                                         { header: '船舶名称', name: 'TEXT' },
                                         { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
                                         }
-                                    }
-                                }
+                                    } }
                             },
-                            { display: "船舶编码", name: "DEVICE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "船舶编码", name: "DEVICE_CODE", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", },
                             { display: "维修设备名称", name: "REP_DEVICE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "来源功能", name: "SRC_FUNCTION", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.FaultSrc } },
-                            { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "添加日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "添加人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "来源功能", name: "SRC_FUNCTION", newline: false, upper: true, type: "select",  options: { type: "select", disabled: true, data: me.FaultSrc } },
+                            { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text",  options: { disabled: true } },
+                            { display: "添加日期", name: "EDIT_DATE", newline: false, upper: true, type: "date",  options: { disabled: true } },
+                            { display: "添加人", name: "EDIT_USER", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             { display: "故障现象", name: "FAULT_DESCRIBE", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
                             { display: "故障原因", name: "FAULT_REASON", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },
                             { display: "解决方法", name: "MEASURES", newline: false, upper: true, width: me.getTextareaWidth(), type: "textarea", validate: { required: true }, options: {} },

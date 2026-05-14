@@ -34,16 +34,16 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { disabled: true, data: me.Auditing } },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.Auditing } },
                             { display: "租借单号", name: "RENT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "租借状态", name: "RENT_STATUS", newline: false, upper: true, type: "select", options: { disabled: true, data: me.RentState } },
+                            { display: "租借状态", name: "RENT_STATUS", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.RentState } },
                             { display: "租借提交日期", name: "RENT_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
                             { display: "租借开始日期", name: "BEGIN_DATE", newline: true, upper: true, type: "date", options: {}, validate: { required: true } },
                             { display: "租借结束日期", name: "END_DATE", newline: false, upper: true, type: "date", options: { disabled: true } },
                             { display: "经办部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "经办人", name: "USER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "租借部门", name: "RENT_DEPT", newline: true, upper: true, type: "select", options: { data: me.Corp }, validate: { required: true } },
-                            { display: "租借人", name: "RENT_USER", newline: false, upper: true, type: "select", options: { data: me.User }, validate: { required: true } },
+                            { display: "租借部门", name: "RENT_DEPT", newline: true, upper: true, type: "select", options: { type: "select", data: me.Corp }, validate: { required: true } },
+                            { display: "租借人", name: "RENT_USER", newline: false, upper: true, type: "select", options: { type: "select", data: me.User }, validate: { required: true } },
                             { display: "租借原因", name: "RENT_REASON", newline: true, upper: true, type: "textarea", width: me.getTextareaWidth(), options: {} },
                             { display: "备注", name: "MEMO", newline: true, upper: true, type: "textarea", width: me.getTextareaWidth(), options: {} }
                         ]

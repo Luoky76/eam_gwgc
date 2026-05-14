@@ -52,7 +52,7 @@ rootPath:'Material/SpApply/',
                     search: {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "text", hide: true },
-                            { display: "记录状态", name: "_search_AUDITING_CHECK", dbname: "AUDITING_CHECK", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING_CHECK", dbname: "AUDITING_CHECK", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
                             { display: "申请单号", name: "_search_APPLY_NO", dbname: "APPLY_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
@@ -66,14 +66,9 @@ rootPath:'Material/SpApply/',
                                     type: 'select',
                                     data: me.BasePurtype,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.BasePurtype.length; i++) {
-                                                if (rowdata.value == me.BasePurtype[i].ID) {
-                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.BasePurtype[i].TEXT, rowdata.record);
-                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.BasePurtype[i].VALUE, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
+                                            liger.get("maingrid").updateCell("TYPE_CODE", rowdata.selected.VALUE, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
                                             liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);
@@ -87,13 +82,8 @@ rootPath:'Material/SpApply/',
                                     type: 'select',
                                     data: me.CGFS,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.CGFS.length; i++) {
-                                                if (rowdata.value == me.CGFS[i].ID) {
-                                                    liger.get("maingrid").updateCell("CGFS", me.CGFS[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("CGFS", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("CGFS", "", rowdata.record);
                                         }

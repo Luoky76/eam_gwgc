@@ -71,22 +71,15 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "基础信息" },
-                            { display: "保养计划单号", name: "PLAN_CODE", newline: false, upper: true, editor: { disabled: true }, type: "text", options: {} },
-                            { display: "保养来源", name: "SOURCE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.BySource, } },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", disabled: true, data: me.auditing },  group: "基础信息" },
+                            { display: "保养计划单号", name: "PLAN_CODE", newline: false, upper: true,  type: "text", options: { disabled: true } },
+                            { display: "保养来源", name: "SOURCE", newline: false, upper: true, type: "select",  options: { type: "select", disabled: true, data: me.BySource } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
-                                options: {
-                                    data: me.DeviceInfo,
-                                    autocomplete: true,
-                                    selectBoxWidth: 300,
-                                    valueField: "ID",
-                                    textField: "TEXT",
-                                    columns: [
+                                options: { type: "select", data: me.DeviceInfo, autocomplete: true, selectBoxWidth: 300, valueField: "ID", textField: "TEXT", columns: [
                                         { header: '船舶编号', name: 'VALUE', width: me.formInputWidth },
                                         { header: '船舶名称', name: 'TEXT' }
-                                    ],
-                                    onChangeValue: function (input, value, g) {
+                                    ], onChangeValue: function (input, value, g) {
                                         if (g.selected != undefined) {
                                             $('#DEVICE_NAME').val(g.selected.TEXT == null ? '' : g.selected.TEXT);
                                             $('#DEVICE_CODE').val(g.selected.VALUE == null ? '' : g.selected.VALUE);
@@ -95,8 +88,7 @@
                                             $('#INSTALL_SITE').val(g.selected.EXTEND5 == null ? '' : g.selected.EXTEND5);
                                             $('#DEPT_NAME').val(g.selected.EXTEND3 == null ? '' : g.selected.EXTEND3);
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, type: "hidden", options: {} },
@@ -104,28 +96,21 @@
                             { display: "资产编号", name: "ASSET_CODE", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "hidden", options: {} },
 
-                            { display: "维护类别", name: "PM_TYPE", newline: false, upper: true, type: "select", options: { data: me.PmType } },
+                            { display: "维护类别", name: "PM_TYPE", newline: false, upper: true, type: "select", options: { type: "select", data: me.PmType } },
 
-                            { display: "计划编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
+                            { display: "计划编制日期", name: "EDIT_DATE", newline: false, upper: true, type: "date",  options: { disabled: true } },
                             { display: "计划完成时间", name: "PLAN_FINISH_TIME", newline: false, upper: true, validate: { required: true }, type: "date", options: {} },
-                            { display: "计划编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "计划编制人", name: "EDIT_USER", newline: false, upper: true, type: "text",  options: { disabled: true } },
 
-                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
+                            { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text",  options: { disabled: true } },
                             {
-                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: {
-                                    data: me.MaintDept,
-                                    onChangeValue: function (input, value, g) {
-                                        if (value) {
-                                            for (var i = 0; i < me.MaintDept.length; i++) {
-                                                if (value == me.MaintDept[i].ID) {
-                                                    me.mainform.setData({ 'SHIP_DEPT': me.MaintDept[i].VALUE })
-                                                }
-                                            }
+                                display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", validate: { required: true }, options: { type: "select", data: me.MaintDept, onChangeValue: function (input, value, g) {
+                                        if (g.selected) {
+                                            me.mainform.setData({ 'SHIP_DEPT': g.selected.VALUE })
                                         } else {
                                             me.mainform.setData({ 'SHIP_DEPT': '' })
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "维保部门", name: "SHIP_DEPT", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "保养负责人", name: "EXE_USER", newline: false, upper: true, type: "text", options: {} },
@@ -530,17 +515,13 @@
                         ]
                     },
                     fields: [
-                        { display: "周期", name: "CYCLE", width: 150, type: "select", options: { data: me.PmcycleUnit } },
+                        { display: "周期", name: "CYCLE", width: 150, type: "select", options: { type: "select", data: me.PmcycleUnit } },
                         {
                             display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: 150, type: "select", align: "left",
-                            options: {
-                                data: me.DeviceInfo,
-                            }
+                            options: { type: "select", data: me.DeviceInfo }
                         },
                         {
-                            display: "维保部门", name: "DEPARTMENT", dbname: "DEPARTMENT", width: 150, type: "select", options: {
-                                data: me.MaintDept,
-                            }
+                            display: "维保部门", name: "DEPARTMENT", dbname: "DEPARTMENT", width: 150, type: "select", options: { type: "select", data: me.MaintDept }
                         },
                     ],
                     callback: function (values, rows) {

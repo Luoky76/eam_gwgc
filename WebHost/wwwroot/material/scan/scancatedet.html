@@ -54,9 +54,9 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.Auditing, disabled: true }, group: "盘点申请" },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.Auditing, disabled: true }, group: "盘点申请" },
                             { display: "盘点单号", name: "SCAN_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "盘点日期", name: "SCAN_DATE", validate: { required: true }, newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "盘点日期", name: "SCAN_DATE", validate: { required: true }, newline: false, upper: true, type: "date", options: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
 
                             { display: "盘点部门", name: "DEPT_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
                             { display: "盘点人", name: "SCAN_USER", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text' } },

@@ -60,82 +60,58 @@
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "船舶机型", name: "BOM_NAME", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             {
-                                display: "船舶类别", name: "TYPE_ID", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.BCCode, disabled: true }, validate: { required: true }, options: {
-                                    onChangeValue: function (input, value, g) {
-                                        if (value) {
-                                            for (var i = 0; i < me.BCCode.length; i++) {
-                                                if (value == me.BCCode[i].ID) {
-                                                    $("#TYPE_NAME").val(me.BCCode[i].TEXT);
-                                                }
-                                            }
+                                display: "船舶类别", name: "TYPE_ID", newline: false, width: me.formInputWidth, type: "select",  validate: { required: true }, options: { type: 'select', data: me.BCCode, disabled: true, onChangeValue: function (input, value, g) {
+                                        if (g.selected) {
+                                            $("#TYPE_NAME").val(g.selected.TEXT);
                                         } else {
                                             $("#TYPE_NAME").val('');
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "船舶机型", name: "TYPE_NAME", newline: false, width: me.formInputWidth, type: "hidden" },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             {
-                                display: "使用部门", name: "DEPT_ID", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.Corp }, options: {
-                                    onChangeValue: function (input, value, g) {
+                                display: "使用部门", name: "DEPT_ID", newline: false, width: me.formInputWidth, type: "select",  options: { type: 'select', data: me.Corp, onChangeValue: function (input, value, g) {
 
-                                        if (value) {
-                                            for (var i = 0; i < me.Corp.length; i++) {
-                                                if (value == me.Corp[i].ID) {
-                                                    $("#DEPT_NAME").val(me.Corp[i].VALUE);
-                                                }
-                                            }
+                                        if (g.selected) {
+                                            $("#DEPT_NAME").val(g.selected.VALUE);
                                         } else {
                                             $("#DEPT_NAME").val('');
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             {
-                                display: "维保部门", name: "WDEPT_ID", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.Corp }, options: {
-                                    onChangeValue: function (input, value, g) {
+                                display: "维保部门", name: "WDEPT_ID", newline: false, width: me.formInputWidth, type: "select",  options: { type: 'select', data: me.Corp, onChangeValue: function (input, value, g) {
 
-                                        if (value) {
-                                            for (var i = 0; i < me.Corp.length; i++) {
-                                                if (value == me.Corp[i].ID) {
-                                                    $("#WDEPT_NAME").val(me.Corp[i].VALUE);
-                                                }
-                                            }
+                                        if (g.selected) {
+                                            $("#WDEPT_NAME").val(g.selected.VALUE);
                                         } else {
                                             $("#WDEPT_NAME").val('');
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, width: me.formInputWidth, type: "hidden" },
                             { display: "维保部门", name: "WDEPT_NAME", newline: false, width: me.formInputWidth, type: "hidden" },
                             {
-                                display: "负责人", name: "CARD_USERID", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.User }, options: {
-                                    onChangeValue: function (input, value, g) {
+                                display: "负责人", name: "CARD_USERID", newline: false, width: me.formInputWidth, type: "select",  options: { type: 'select', data: me.User, onChangeValue: function (input, value, g) {
 
-                                        if (value) {
-                                            for (var i = 0; i < me.User.length; i++) {
-                                                if (value == me.User[i].ID) {
-                                                    $("#CARD_USER").val(me.User[i].VALUE);
-                                                }
-                                            }
+                                        if (g.selected) {
+                                            $("#CARD_USER").val(g.selected.VALUE);
                                         } else {
                                             $("#CARD_USER").val('');
                                         }
-                                    }
-                                }
+                                    } }
                             },
                             { display: "负责人", name: "CARD_USER", newline: false, width: me.formInputWidth, type: "hidden" },
                             { display: "安装地点", name: "INSTALL_SITE", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "启用日期", name: "REV_DATE", newline: false, width: me.formInputWidth, type: "date", options: {} },
-                            { display: "当前管理状态", name: "STATUS", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.assetStatus }, options: {} },
+                            { display: "当前管理状态", name: "STATUS", newline: false, width: me.formInputWidth, type: "select",  options: { type: 'select', data: me.assetStatus } },
                             { display: "状态变动日期", name: "STATUS_DATE", newline: false, width: me.formInputWidth, type: "date", options: { disabled: true } },
                             { display: "供应商", name: "PROVIDER_NAME", newline: false, width: me.formInputWidth, type: "text", options: {}, group: "船舶信息" },
                             { display: "制造厂", name: "FACTORY", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "出厂编号", name: "OUT_CODE", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "出厂日期", name: "OUT_DATE", newline: false, width: me.formInputWidth, type: "date", options: {} },
-                            { display: "生产用途", name: "PURPOSE", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.purpose }, options: {} },
+                            { display: "生产用途", name: "PURPOSE", newline: false, width: me.formInputWidth, type: "select",  options: { type: 'select', data: me.purpose } },
                             { display: "图号", name: "GRAPH_NO", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "船舶类型", name: "SHIP_TYPE", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "船舶识别号", name: "SHIP_ID", newline: false, width: me.formInputWidth, type: "text", options: {} },
@@ -150,7 +126,7 @@
                             { display: "总吨", name: "TOTAL_TON", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "净吨", name: "PURE_TON", newline: false, width: me.formInputWidth, type: "text", options: {} },
                             { display: "坞修日期(三年)", name: "REP_DATE", newline: false, width: me.formInputWidth, type: "date", options: {} },
-                            { display: "是否环保", name: "IS_GREEN", newline: false, width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.yesno }, options: {} },
+                            { display: "是否环保", name: "IS_GREEN", newline: false, width: me.formInputWidth, type: "select",  options: { type: 'select', data: me.yesno } },
                             { display: "坞修日期(五年)", name: "REP_DATE5", newline: false, width: me.formInputWidth, type: "date", options: {} },
                             { display: "资产编号", name: "ASSET_CODE", newline: false, width: me.formInputWidth, type: "text", options: {}, group: "财务信息" },
                             { display: "财务分类", name: "FINAN_TYPE", newline: false, width: me.formInputWidth, type: "text", options: {} },

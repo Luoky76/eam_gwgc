@@ -44,7 +44,7 @@
                             { display: "解决方法", name: "SOLUTION", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "维修内容", name: "REP_CONTENT", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea",  options: { rows: "2", disabled: true } },
 
-                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: true, upper: true,  type: "select", options: { data: me.isleave, disabled: true } },
+                            { display: "是否有遗留问题", name: "IS_LEAVE", newline: true, upper: true,  type: "select", options: { type: "select", data: me.isleave, disabled: true } },
 
                             { display: "确认人", name: "CONFIRM_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
 
@@ -80,8 +80,8 @@
                             },
                             { display: "验收时间", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {}, group: "码头维修验收" },
                             { display: "验收人", name: "CHECK_USER", newline: false, upper: true, type: "text", options: {} },
-                            { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
-                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
+                            { display: "实际开工时间", name: "EXE_BDATE", minWidth: 100, type: "date", options: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
+                            { display: "实际完工时间", name: "EXE_EDATE", minWidth: 100, type: "date", options: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm", disabled: true } },
                             { display: "验收情况", name: "CHECK_DESC", newline: true, width: me.getTextareaWidth(), upper: true, validate: { required: true }, type: "textarea", options: { rows: "2"} },
 
                             { display: "主键", name: "CHECK_ID", newline: false, upper: true, type: "hidden", options: {} },

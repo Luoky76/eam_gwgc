@@ -49,7 +49,7 @@ rootPath: 'Material/SpPurplan/',
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
                             { display: "询价单号", name: "_search_PLAN_NO", dbname: "PLAN_NO", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
@@ -66,13 +66,8 @@ rootPath: 'Material/SpPurplan/',
                                     type: 'select',
                                     data: me.ProviderName,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.ProviderName.length; i++) {
-                                                if (rowdata.value == me.ProviderName[i].ID) {
-                                                    liger.get("maingrid").updateCell("PLAN_PROVIDER", me.ProviderName[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("PLAN_PROVIDER", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("PLAN_PROVIDER", "", rowdata.record);
                                         }

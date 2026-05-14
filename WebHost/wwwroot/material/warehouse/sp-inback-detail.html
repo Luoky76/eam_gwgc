@@ -58,22 +58,18 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: {
-                                    type: "select",
-                                    data: me.auditing,
-                                    disabled: true
-                                }, editor: { disabled: true }, group: "入库冲红"
+                                display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.auditing, disabled: true },  group: "入库冲红"
                             },
-                            { display: "冲红单号", name: "BACK_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "冲红单号", name: "BACK_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "冲红日期", name: "BACK_DATE", newline: false, upper: true, type: "date", options: {}, validate: { required: true } },
-                            { display: "送货单号", name: "DELIVERY_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }},
-                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "入库日期", name: "IN_DATE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "冲红金额", name: "SUM_MONEY", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "送货单号", name: "DELIVERY_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "供应商", name: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "订单号", name: "ORDER_CODE", newline: false, upper: true, type: "text", options: { disabled: true }},
+                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "入库日期", name: "IN_DATE", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "采购人", name: "PUR_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "编制人", name: "EDIT_USER", newline: false, upper: true, type: "text", options: { disabled: true } },
+                            { display: "冲红金额", name: "SUM_MONEY", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "备注", name: "MEMO", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: {} },
                             { display: "主键", name: "IN_BACK_ID", newline: false, upper: true, type: "hidden", options: {} },
                         ]

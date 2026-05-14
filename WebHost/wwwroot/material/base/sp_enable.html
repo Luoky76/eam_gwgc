@@ -40,7 +40,7 @@ rootPath:'Material/SpareApply/',
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
                             { display: "启用单号", name: "_search_ENABLE_CODE", dbname: "ENABLE_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },

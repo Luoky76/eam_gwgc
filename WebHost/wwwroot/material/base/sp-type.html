@@ -53,7 +53,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         fields: [
                             { display: "物料分类编码", name: "_search_TYPE_CODE", dbname: "TYPE_CODE", width: 200, upper: true, type: "text", options: {} },
                             { display: "物料分类名称", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", width: 200, type: "text", options: {} },
-                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", width: 200, type: "select", options: { data: me.BasePurtype } },
+                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", width: 200, type: "select", options: { type: "select", data: me.BasePurtype } },
                             { display: "上一节点id", name: "_search_PRE_TYPEID", dbname: "PRE_TYPEID", op: "equal", type: "hidden", options: {} },
                         ]
                     },
@@ -68,13 +68,8 @@ menuNo: getQueryStringByName("MenuNo"),
                                     type: 'select',
                                     data: me.BasePurtype,
                                     onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.value) {
-                                            for (var i = 0; i < me.BasePurtype.length; i++) {
-                                                if (rowdata.value == me.BasePurtype[i].ID) {
-                                                    liger.get("maingrid").updateCell("PURTYPE_NAME", me.BasePurtype[i].TEXT, rowdata.record);
-                                                    break;
-                                                }
-                                            }
+                                        if (rowdata.selected) {
+                                            liger.get("maingrid").updateCell("PURTYPE_NAME", rowdata.selected.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("PURTYPE_NAME", "", rowdata.record);
                                         }

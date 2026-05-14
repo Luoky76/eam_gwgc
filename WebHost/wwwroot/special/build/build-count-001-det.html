@@ -35,7 +35,7 @@
                         fields: [
                             { display: "主键", name: "BUILD_ID", type: "hidden" },
                             { display: "日期", name: "STARTDATE", width: me.formInputWidth, type: "date", validate: { required: true }, options: {}, group: "基础信息" },
-                            { display: "船舶名称", name: "DEVICE_NAME", width: me.formInputWidth, type: "text", options: {}, editor: { disabled: true } },
+                            { display: "船舶名称", name: "DEVICE_NAME", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             { display: "设备ID", name: "DEVICE_ID", width: me.formInputWidth, type: "hidden", options: {} },
 
                             { display: "船次", name: "SHIPTIMES", width: me.formInputWidth, type: "int", options: {}, group: "产量" },

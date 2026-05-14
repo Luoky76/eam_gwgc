@@ -37,7 +37,7 @@ Status: [],
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
                             { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
                             {
                                 display: "盘点日期", name: "_search_SCAN_DATE", dbname: "SCAN_DATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
@@ -51,7 +51,7 @@ Status: [],
                                     format: "yyyy-MM-dd"
                                 }
                             },
-                            { display: "盘点结果", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { data: me.scanresult } },
+                            { display: "盘点结果", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "select", options: { type: "select", data: me.scanresult } },
                             { display: "设备编号", name: "_search_DEVICE_NO", dbname: "DEVICE_NO", newline: false, upper: true, type: "text", options: {} },
                             { display: "设备名称", name: "_search_DEVICE_NAME", dbname: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]

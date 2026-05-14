@@ -179,30 +179,34 @@ menuNo: getQueryStringByName("MenuNo"),
                     labelWidth: me.formLabelWidth,
                     inputWidth: me.formInputWidth,
                     fields: [
-                        { display: "批次号", name: "STORE_CODE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", editor: { type: 'text' }, validate: { required: true } },
-                        { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: 180, type: "text", readonly: "readonly", validate: { required: true } },
-                        { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", readonly: "readonly", validate: { required: true } },
-                        { display: "型号规格", name: "SP_SIZE", labelWidth: me.formLabelWidth, width: 180, type: "text", readonly: "readonly" },
-                        { display: "品牌、厂家", name: "PRODUCE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", readonly: "readonly", },
-                        { display: "计量单位", name: "UNIT", labelWidth: me.formLabelWidth, width: 180, type: "text", readonly: "readonly" },
-                        { display: "物料分类", name: "TYPE_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", readonly: "readonly", },
+                        { display: "批次号", name: "STORE_CODE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", options: { type: 'text' }, validate: { required: true } },
+                        { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: 180, type: "text", validate: { required: true }, options: { disabled: true } },
+                        { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", validate: { required: true }, options: { disabled: true } },
+                        { display: "型号规格", name: "SP_SIZE", labelWidth: me.formLabelWidth, width: 180, type: "text", options: { disabled: true } },
+                        { display: "品牌、厂家", name: "PRODUCE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", options: { disabled: true } },
+                        { display: "计量单位", name: "UNIT", labelWidth: me.formLabelWidth, width: 180, type: "text", options: { disabled: true } },
+                        { display: "物料分类", name: "TYPE_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", options: { disabled: true } },
                         {
-                            display: "库位名称", name: "STOCK_ID", labelWidth: me.formLabelWidth, width: 180, type: "select", editor: {
-                                type: 'select', options: { data: me.stockData },
+                            display: "库位名称", name: "STOCK_ID", labelWidth: me.formLabelWidth, width: 180, type: "select",
+                            options: {
+                                type: "select",
+                                data: me.stockData,
                                 onChangeValue: function (input, value, g) {
-                                    var da = me.stockData.find((va) => va.ID == value);
-                                    if (da != null) {
-                                        $("#STOCK_CODE").val(da.VALUE);
-                                        $("#STOCK_NAME").val(da.TEXT);
+                                    if (g.selected) {
+                                        $("#STOCK_CODE").val(g.selected.VALUE);
+                                        $("#STOCK_NAME").val(g.selected.TEXT);
+                                    } else {
+                                        $("#STOCK_CODE").val("");
+                                        $("#STOCK_NAME").val("");
                                     }
                                 }
                             }, validate: { required: true }
                         },
 
-                        { display: "来源类型", name: "SRC_TYPE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select", editor: { type: 'select', options: { data: me.BCCode } }, validate: { required: true } },
+                        { display: "来源类型", name: "SRC_TYPE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select", options: { type: "select", data: me.BCCode }, validate: { required: true } },
                         {
                             display: "库存数量", name: "NUM", labelWidth: me.formLabelWidth, width: 180, type: "float",
-                            editor: {
+                            options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -220,7 +224,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存单价(元)", name: "PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", editor: {
+                            display: "库存单价(元)", name: "PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", options: {
                                 type: 'float', onChangeValue: function (input, value, g) {
                                     if (value < 0) {
                                         $('#PRICE').val("");
@@ -235,7 +239,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存金额(元)", name: "MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", editor: {
+                            display: "库存金额(元)", name: "MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -250,7 +254,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         },
 
                         {
-                            display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", editor: {
+                            display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -265,7 +269,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             }
                         },
                         {
-                            display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", editor: {
+                            display: "不含税金额(元)", name: "NOTAX_MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -279,9 +283,9 @@ menuNo: getQueryStringByName("MenuNo"),
                             }
                         },
 
-                        { display: "入库日期", name: "IN_DATE", labelWidth: me.formLabelWidth, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
+                        { display: "入库日期", name: "IN_DATE", labelWidth: me.formLabelWidth, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", options: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
                         {
-                            display: "税率", name: "TAX_RATE", labelWidth: me.formLabelWidth, width: 180, type: "float", editor: {
+                            display: "税率", name: "TAX_RATE", labelWidth: me.formLabelWidth, width: 180, type: "float", options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
@@ -292,36 +296,26 @@ menuNo: getQueryStringByName("MenuNo"),
                             }
                         },
                         {
-                            display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select", editor: {
-                                type: 'select',
-                                options: {
-                                    autocomplete: true,
-                                    data: me.ProviderName
-                                },
-                                render: function (rowdata, rowindex, value, column) {
-                                    var showText = rowindex;
+                            display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select",
+                            options: {
+                                type: "select",
+                                data: me.ProviderName,
+                                onChangeValue: function (inputDom, selectedId, obj) {
                                     me.viewForm.setData({
-                                        PROVIDER_NAME: rowindex
+                                        PROVIDER_NAME: obj.selected ? obj.selected.TEXT : ""
                                     });
-                                    return showText;
                                 }
                             }
                         },
-                        { display: "申请单号", name: "APPLY_NO", labelWidth: me.formLabelWidth, width: 180, type: "text", editor: { type: 'text' } },
+                        { display: "申请单号", name: "APPLY_NO", labelWidth: me.formLabelWidth, width: 180, type: "text", options: { type: 'text' } },
                         {
-                            display: "部门", name: "DEPT_ID", labelWidth: me.formLabelWidth, newline: true, upper: true, type: "select", editor: { type: 'select', data: me.DeptData }, options: {
-                                onChangeValue: function (input, value, g) {
-                                    if (value) {
-                                        for (var i = 0; i < me.DeptData.length; i++) {
-                                            if (value == me.DeptData[i].ID) {
-                                                $("#DEPT_NAME").val(me.DeptData[i].VALUE);
-                                            }
-                                        }
+                            display: "部门", name: "DEPT_ID", labelWidth: me.formLabelWidth, newline: true, upper: true, type: "select",  options: { type: 'select', data: me.DeptData, onChangeValue: function (input, value, g) {
+                                    if (g.selected) {
+                                        $("#DEPT_NAME").val(g.selected.VALUE);
                                     } else {
                                         $("#DEPT_NAME").val('');
                                     }
-                                }
-                            }, validate: { required: true }
+                                } }, validate: { required: true }
                         },
                         //隐藏
                         { display: "SP_ID", name: "SP_ID", dbname: "SP_ID", width: 180, type: "hidden" },

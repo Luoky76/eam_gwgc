@@ -66,17 +66,17 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING_D", type: "select", options: { data: me.auditing, disabled: true }, group: "故障报修" },
+                            { display: "记录状态", name: "AUDITING_D", type: "select", options: { type: "select", data: me.auditing, disabled: true }, group: "故障报修" },
                             { display: "故障申报单号", name: "EXE_CODE", type: "text", options: { disabled: true } },
-                            { display: "维修状态", name: "PLAN_STATE", type: "select", options: { data: me.PlanState, disabled: true } },
+                            { display: "维修状态", name: "PLAN_STATE", type: "select", options: { type: "select", data: me.PlanState, disabled: true } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: true, type: "text", options: { disabled: true } },
                             { display: "船舶编号", name: "DEVICE_NO", type: "text", options: { disabled: true } },
                             { display: "船舶型号", name: "DEVICE_TYPE", type: "text", options: { disabled: true } },
                             { display: "资产编号", name: "ASSET_CODE", newline: true, type: "text", options: { disabled: true } },
                             { display: "使用部门", name: "DEPT_NAME", type: "text", options: { disabled: true } },
-                            { display: "维保部门", name: "WSEC_DEPT", type: "select", options: { data: me.MaintDept, disabled: true } },
-                            { display: "维修类型", name: "MAINT_TYPE", newline: true, type: "select", options: { data: me.RepairType, disabled: true } },
-                            { display: "维修处理方式", name: "DEAL_TYPE", type: "select", options: { data: me.RepairDealType, disabled: true } },
+                            { display: "维保部门", name: "WSEC_DEPT", type: "select", options: { type: "select", data: me.MaintDept, disabled: true } },
+                            { display: "维修类型", name: "MAINT_TYPE", newline: true, type: "select", options: { type: "select", data: me.RepairType, disabled: true } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", type: "select", options: { type: "select", data: me.RepairDealType, disabled: true } },
                             { display: "安装地点", name: "INSTALL_SITE", newline: true, width: me.formInputWidth, type: "text", options: { disabled: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },

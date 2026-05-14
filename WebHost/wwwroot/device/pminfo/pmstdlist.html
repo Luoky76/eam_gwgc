@@ -40,9 +40,9 @@ MaintDept: [],
                         fields: [
                             { display: "编号", name: "_search_STD_CODE", dbname: "STD_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "维保项目", name: "_search_PART_NAME", dbname: "PART_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "执行人", name: "_search_EXE_USER", dbname: "EXE_USER", newline: false, upper: true, type: "select", options: { data: me.PmShippost, } },
-                            { display: "检查人", name: "_search_CHK_USER", dbname: "CHK_USER", newline: false, upper: true, type: "select", options: { data: me.PmShippost, } },
-                            { display: "周期", name: "_search_CYCLE", dbname: "CYCLE", newline: false, upper: true, type: "select", options: { data: me.PmcycleUnit, } },
+                            { display: "执行人", name: "_search_EXE_USER", dbname: "EXE_USER", newline: false, upper: true, type: "select", options: { type: "select", data: me.PmShippost } },
+                            { display: "检查人", name: "_search_CHK_USER", dbname: "CHK_USER", newline: false, upper: true, type: "select", options: { type: "select", data: me.PmShippost } },
+                            { display: "周期", name: "_search_CYCLE", dbname: "CYCLE", newline: false, upper: true, type: "select", options: { type: "select", data: me.PmcycleUnit } },
                         ]
                     },
                     grid: {

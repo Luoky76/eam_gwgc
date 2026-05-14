@@ -39,9 +39,7 @@
                         fields: [
                             { display: "船名", name: "_search_SHIP_NAME", dbname: "SHIP_NAME", type: "text" },
                             {
-                                display: "部门", name: "_search_DEPT_ID", dbname: "DEPT_ID", type: "select", op: "equal", options: {
-                                    data: me.Corp
-                                }
+                                display: "部门", name: "_search_DEPT_ID", dbname: "DEPT_ID", type: "select", op: "equal", options: { type: "select", data: me.Corp }
                             },
                         ]
                     },
