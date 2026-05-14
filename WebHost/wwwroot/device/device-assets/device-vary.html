@@ -231,7 +231,7 @@ setConfig: function () {
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
+                    data: { sid: options.sid || null, isNew: options.isNew, isView: options.isView }
                 });
             },
             add: function () { //新增

@@ -239,20 +239,20 @@ PlanState: [],
                     height: me.detailHeight,
                     allowClose: true,
                     title: options.title,
-                    url: "repair-plan-audit-det.html?MenuNo=" + me.menuNo + (options.isView ? "" : "&ver=" + me.ver),
+                    url: `repair-plan-audit-det.html?MenuNo=${me.menuNo}&ver=${me.ver}`,
                     isHidden: false,
-                    showMax: !!options.showMax,
+                    showMax: true,
                     showToggle: false,
                     showMin: false,
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
+                    data: { sid: options.sid || null, isNew: options.isNew, isView: options.isView }
                 });
             },
             add: function () {
                 var me = this;
-                me.openDetail({ title: '[新增]故障核验', sid: null, isNew: true, isView: false, showMax: true });
+                me.openDetail({ title: '[新增]故障核验', sid: null, isNew: true, isView: false });
             },
             save: function () { //保存
                 var me = this;
@@ -331,7 +331,7 @@ PlanState: [],
                     isResize: true,
                     slide: false,
                     onClosed: me.buttons[0].click,
-                    data: { "sid": selected.EXE_ID }
+                    data: { sid: selected.EXE_ID }
                 });
             },
             view: function (rowdata) { //查看

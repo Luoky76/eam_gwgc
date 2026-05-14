@@ -262,7 +262,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
+                    data: { sid: options.sid || null, isNew: options.isNew, isView: options.isView }
                 });
             },
             view: function (rowdata) { //查看
