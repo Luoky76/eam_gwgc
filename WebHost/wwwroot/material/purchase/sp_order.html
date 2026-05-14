@@ -43,8 +43,8 @@
 rootPath: 'Material/SpOrder/',
             MenuNo: getQueryStringByName("MenuNo"),
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
-            gyData: [],
-            typeData: [],
+            ProviderName: [],
+            BCCode: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -59,7 +59,7 @@ rootPath: 'Material/SpOrder/',
                         columns: [
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "订单号", name: "ORDER_CODE", width: 180, type: "text" },
-                            { display: "订单类型", name: "ORDER_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.typeData }, validate: { required: true }, },
+                            { display: "订单类型", name: "ORDER_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.BCCode }, validate: { required: true }, },
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", editor: { type: 'date', format: "yyyy-MM-dd", }, validate: { required: true }, },
                             { display: "申购公司", name: "DEPT_NAME", width: 180, type: "text", },
                             { display: "采购员", name: "BUY_USER", width: 120, type: "text", },
@@ -69,11 +69,11 @@ rootPath: 'Material/SpOrder/',
                                     type: 'select',
                                     options: {
                                         autocomplete: true,
-                                        data: me.gyData
+                                        data: me.ProviderName
                                     },
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            liger.get("maingrid").updateCell("PROVIDER_NAME", me.gyData.find((a) => a.ID == rowdata.value).TEXT, rowdata.record);
+                                            liger.get("maingrid").updateCell("PROVIDER_NAME", me.ProviderName.find((a) => a.ID == rowdata.value).TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("PROVIDER_NAME", "", rowdata.record);
                                         }
@@ -146,8 +146,8 @@ rootPath: 'Material/SpOrder/',
                     url: me.rootPath + 'ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.gyData = data.ProviderName;
-                        me.typeData = data.BCCode;
+                        me.ProviderName = data.ProviderName;
+                        me.BCCode = data.BCCode;
                     },
                     error: function (message) {
                         LG.showError(message);

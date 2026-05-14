@@ -45,13 +45,13 @@ menuNo: getQueryStringByName("MenuNo"),
             iframeloading: $("#iframeloading"),
             tree: null,
             ConsType: [],
-            unitdata: [],
+            SpUnit: [],
             DeviceComposeName: [],
             DeviceTypeName: [],
             currentNode: null,
             setConfig: function () {
                 var me = this;
-                basePurtype: [];
+                BasePurtype: [];
                 me.config = {
                     search: {
                         fields: [
@@ -70,12 +70,12 @@ menuNo: getQueryStringByName("MenuNo"),
                             {
                                 display: "采购分类", name: "PURTYPE_ID", validate: { required: true }, minWidth: 200, type: "select", editor: {
                                     type: 'select',
-                                    data: me.basePurtype,
+                                    data: me.BasePurtype,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            for (var i = 0; i < me.basePurtype.length; i++) {
-                                                if (rowdata.value == me.basePurtype[i].ID) {
-                                                    liger.get("maingrid").updateCell("PURTYPE_NAME", me.basePurtype[i].TEXT, rowdata.record);
+                                            for (var i = 0; i < me.BasePurtype.length; i++) {
+                                                if (rowdata.value == me.BasePurtype[i].ID) {
+                                                    liger.get("maingrid").updateCell("PURTYPE_NAME", me.BasePurtype[i].TEXT, rowdata.record);
                                                     break;
                                                 }
                                             }
@@ -89,7 +89,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             {
                                 display: "计量单位", name: "UNIT", minWidth: 100, type: "select", editor: {
                                     type: 'select',
-                                    data: me.unitdata,
+                                    data: me.SpUnit,
                                 }
                             },
                             { display: "品牌、厂家", name: "PRODUCE", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -98,20 +98,20 @@ menuNo: getQueryStringByName("MenuNo"),
                             //{ display: "设备分类", name: "TYPE_NAME", dbname: "TYPE_NAME", minWidth: 150, type: "text",  readonly: true, hide: true },
                             //{ display: "上级节点", name: "PRE_COMPOSE_NAME", dbname: "PRE_COMPOSE_NAME", minWidth: 200,  type: "text" },
                             /*{
-                                display: "上级节点", name: "PRE_CATALOGID", dbname: "PRE_CATALOGID", minWidth: 200, type: "select", editor: { type: 'select', data: me.spCatalogName }
+                                display: "上级节点", name: "PRE_CATALOGID", dbname: "PRE_CATALOGID", minWidth: 200, type: "select", editor: { type: 'select', data: me.SpCatalogName }
 
                             },*/
                             {
                                 display: "物料分类", name: "TYPE_ID", dbname: "TYPE_ID", minWidth: 200, type: "select",
                                 editor: {
                                     type: 'select',
-                                    data: me.spTypeName,
+                                    data: me.SpTypeName,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            for (var i = 0; i < me.spTypeName.length; i++) {
-                                                if (rowdata.value == me.spTypeName[i].ID) {
-                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.spTypeName[i].VALUE, rowdata.record);
-                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.spTypeName[i].TEXT, rowdata.record);
+                                            for (var i = 0; i < me.SpTypeName.length; i++) {
+                                                if (rowdata.value == me.SpTypeName[i].ID) {
+                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.SpTypeName[i].VALUE, rowdata.record);
+                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.SpTypeName[i].TEXT, rowdata.record);
                                                     break;
                                                 }
                                             }
@@ -146,10 +146,10 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Material/BaseSpCatalog/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.basePurtype = data.BasePurtype
-                        me.spCatalogName = data.SpCatalogName
-                        me.spTypeName = data.SpTypeName
-                        me.unitdata = data.SpUnit
+                        me.BasePurtype = data.BasePurtype
+                        me.SpCatalogName = data.SpCatalogName
+                        me.SpTypeName = data.SpTypeName
+                        me.SpUnit = data.SpUnit
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -240,7 +240,7 @@ menuNo: getQueryStringByName("MenuNo"),
                 }
                 else {
                     var nodeId = me.currentNode.data.SP_ID;
-                    var item = me.spTypeName.find(item => item.ID === nodeId);
+                    var item = me.SpTypeName.find(item => item.ID === nodeId);
                     if (nodeId == "ROOT") {
                         LG.showError("请选择非根节点进行新增数据");
                         return;

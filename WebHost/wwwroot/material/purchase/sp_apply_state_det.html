@@ -39,7 +39,7 @@
             form: null,
             formDate: null,
             buttons: null,
-            statusData: [],
+            StatusData: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -47,7 +47,7 @@
                         fields: [
                             { display: "主键", name: "SPDET_ID", readonly: "readonly" },
 
-                            { display: "采购状态", name: "SP_STATUS", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "select", options: { data: me.statusData }, readonly: "readonly" },
+                            { display: "采购状态", name: "SP_STATUS", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "select", options: { data: me.StatusData }, readonly: "readonly" },
                             { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: me.formInputWidth, type: "text", readonly: "readonly", },
 
                             { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: me.formInputWidth, newline: true, type: "text", readonly: "readonly" },
@@ -142,7 +142,7 @@
                     url:'Material/SpApply/ApplyComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.statusData = data.StatusData;
+                        me.StatusData = data.StatusData;
                     },
                     error: function (message) {
                         LG.showError(message);

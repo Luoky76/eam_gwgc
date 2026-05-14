@@ -53,13 +53,13 @@
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             checkResult: [{ "ID": "1", "TEXT": "合格" }, { "ID": "0", "TEXT": "不合格" }],
-            disposeType: [],
-            deviceStatus: [],
-            faultSrc: [],
-            faultStatus: [],
-            repType: [],
-            shipInfo: [],
-            maintDept: [],
+            DisposeType: [],
+            DeviceStatus: [],
+            FaultSrc: [],
+            FaultStatus: [],
+            RepType: [],
+            ShipInfo: [],
+            MaintDept: [],
             start: null,
             setConfig: function () {
                 var me = this;
@@ -70,11 +70,11 @@
                             //基础信息
                             { display: "记录状态", name: "AUDITING_B", newline: false, upper: true, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "设备故障上报" },
                             { display: "故障单号", name: "FAULT_CODE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true }, },
-                            { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultStatus } },
+                            { display: "故障状态", name: "FAULT_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.FaultStatus } },
                             {
                                 display: "船舶名称", name: "SHIP_ID", dbname: "SHIP_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
-                                    data: me.shipInfo,
+                                    data: me.ShipInfo,
                                 }
                             },
                             { display: "船舶编码", name: "SHIP_CODE", newline: false, upper: true, type: "hidden", editor: { disabled: true }, options: {} },
@@ -82,19 +82,19 @@
                             { display: "故障发生时间", name: "FAULT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             {
                                 display: "设备状态", name: "DEVICE_STATUS", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {
-                                    data: me.deviceStatus,
+                                    data: me.DeviceStatus,
                                 }
                             },
                             {
                                 display: "故障设备名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
-                                    data: me.deviceInfo,
+                                    data: me.DeviceInfo,
                                 }
                             },
                             { display: "设备编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "设备型号", name: "DEVICE_TYPE", newline: false, upper: true, editor: { disabled: true }, options: {} },
                             { display: "设备类别", name: "TYPE_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "异常来源", name: "FAULT_SRC", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultSrc } },
+                            { display: "异常来源", name: "FAULT_SRC", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.FaultSrc } },
                             //{ display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             //{ display: "使用部门", name: "DEPT_ID", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -103,15 +103,15 @@
                             { display: "设备名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             {
                                 display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { disabled: true }, options: {
-                                    data: me.maintDept,
+                                    data: me.MaintDept,
                                 }
                             },
                             { display: "上报人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             //{ display: "上报人ID", name: "EDIT_USERID", newline: false, upper: true, type: "text", options: {} },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", editor: { disabled: true }, options: {} },
 
-                            { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.disposeType }, group: "故障处理" },
-                            { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.repType } },
+                            { display: "处理方式", name: "DISPOSE_TYPE", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.DisposeType }, group: "故障处理" },
+                            { display: "故障分类", name: "REP_TYPE_ID", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.RepType } },
                             { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             {
                                 display: "开工时间", name: "ORDER_DATE", newline: false, upper: true, type: "date", editor: { disabled: true },
@@ -181,14 +181,14 @@
                     url: 'Device/RepFault/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.faultStatus = data.FaultStatus;
-                        me.maintDept = data.MaintDept;
-                        me.shipInfo = data.ShipInfo;
-                        me.deviceInfo = data.DeviceInfo;
-                        me.disposeType = data.DisposeType;
-                        me.deviceStatus = data.DeviceStatus;
-                        me.repType = data.RepType;
-                        me.faultSrc = data.FaultSrc;
+                        me.FaultStatus = data.FaultStatus;
+                        me.MaintDept = data.MaintDept;
+                        me.ShipInfo = data.ShipInfo;
+                        me.DeviceInfo = data.DeviceInfo;
+                        me.DisposeType = data.DisposeType;
+                        me.DeviceStatus = data.DeviceStatus;
+                        me.RepType = data.RepType;
+                        me.FaultSrc = data.FaultSrc;
                     },
                     error: function (message) {
                         LG.showError(message);

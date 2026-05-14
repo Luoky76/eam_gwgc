@@ -37,7 +37,7 @@
 menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
-            auditing: [],
+            Auditing: [],
             disposeType: [],
             setConfig: function () {
                 var me = this;
@@ -69,7 +69,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING_A", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditing, selectBoxHeight: 100 } },
+                            { display: "记录状态", name: "AUDITING_A", minWidth: 100, type: "select", editor: { type: 'select', data: me.Auditing, selectBoxHeight: 100 } },
                             {
                                 display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "text",
                                 editor: { type: 'text' },
@@ -110,8 +110,8 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Material/SpOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
-                        me.spapplyType = data.SpapplyType;
+                        me.Auditing = data.Auditing;
+                        me.SpapplyType = data.SpapplyType;
                     },
                     error: function (message) {
                         LG.showError(message);

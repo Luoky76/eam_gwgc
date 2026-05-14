@@ -81,7 +81,7 @@ setConfig: function () {
                     url: 'Material/SpOut/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.auditing = data.Auditing;
+                        me.Auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);

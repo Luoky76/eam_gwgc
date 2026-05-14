@@ -45,7 +45,7 @@ setConfig: function () {
                             {
                                 display: "供应商", name: "_search_PROVIDER_ID", dbname: "PROVIDER_ID", width: 200, type: "select", op: "equal", options: {
                                     type: "select",
-                                    data: me.providerName
+                                    data: me.ProviderName
                                 }
                             },
                             { display: "供应商产品", name: "_search_PROVIDER_PRODUCTION", dbname: "PROVIDER_PRODUCTION", width: 200, type: "text" },
@@ -75,8 +75,8 @@ setConfig: function () {
                     }
                 };
             },
-            providerName: [],
-            user: [],
+            ProviderName: [],
+            User: [],
             thisYear: null,
             lastYear: null,
             assessYear: null,
@@ -90,8 +90,8 @@ setConfig: function () {
                     url: 'Material/ProviderAssessTask/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.providerName = data.ProviderName;
-                        me.user = data.User;
+                        me.ProviderName = data.ProviderName;
+                        me.User = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);

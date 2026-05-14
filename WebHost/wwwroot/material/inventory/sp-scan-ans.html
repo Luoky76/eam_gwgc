@@ -34,7 +34,7 @@
             },
 rootPath: 'Material/SpScan/',
             MenuNo: getQueryStringByName("MenuNo"),
-            scanType: [],
+            ScanType: [],
             StoreSrc: [],
             setConfig: function () {
                 var me = this;
@@ -74,7 +74,7 @@ rootPath: 'Material/SpScan/',
                     grid: {
                         columns: [
                             { display: "盘点单号", name: "SCAN_CODE", type: "text" },
-                            { display: "盘点类型", name: "SCAN_TYPE", type: "select", format: { data: me.scanType } },
+                            { display: "盘点类型", name: "SCAN_TYPE", type: "select", format: { data: me.ScanType } },
                             { display: "来源类型", name: "SRC_TYPE", type: "select", format: { data: me.StoreSrc } },
                             { display: "库存数量", name: "STORE_NUM", type: "text" },
                             { display: "盘点数量", name: "SCAN_NUM", type: "text", validate: { required: true }, editor: { type: 'text' } },
@@ -110,7 +110,7 @@ rootPath: 'Material/SpScan/',
                     url: me.rootPath + 'ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.scanType = data.ScanType;
+                        me.ScanType = data.ScanType;
                         me.StoreSrc = data.StoreSrc;
                     },
                     error: function (message) {

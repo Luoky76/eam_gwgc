@@ -38,9 +38,9 @@ menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             peopleData: [],
-            scanStatus: [],
+            ScanStatus: [],
             secDept: [],
-            deptData: [],
+            DeptData: [],
             devicetype: [],
             userid: null,
             detailWidth: 920,
@@ -53,7 +53,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.dataCheck } },
                             { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "盘点状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.scanStatus } },
+                            { display: "盘点状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.ScanStatus } },
 
                         ]
                     },
@@ -62,19 +62,19 @@ menuNo: getQueryStringByName("MenuNo"),
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "盘点单号", name: "SCAN_CODE", minWidth: 120, type: "text" },
                             {
-                                display: "盘点状态", name: "STATUS", minWidth: 100, type: "select", format: { data: me.scanStatus }
+                                display: "盘点状态", name: "STATUS", minWidth: 100, type: "select", format: { data: me.ScanStatus }
                             },
                             {
                                 display: "盘点部门", name: "DEPT_ID", minWidth: 120, type: "select", validate: { required: true },
                                 editor: {
                                     type: 'select',
-                                    data: me.deptData,
+                                    data: me.DeptData,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            for (var i = 0; i < me.deptData.length; i++) {
-                                                if (rowdata.value == me.deptData[i].ID) {
-                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.deptData[i].TEXT, rowdata.record);
-                                                    liger.get("maingrid").updateCell("DEPT_CODE", me.deptData[i].VALUE, rowdata.record);
+                                            for (var i = 0; i < me.DeptData.length; i++) {
+                                                if (rowdata.value == me.DeptData[i].ID) {
+                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.DeptData[i].TEXT, rowdata.record);
+                                                    liger.get("maingrid").updateCell("DEPT_CODE", me.DeptData[i].VALUE, rowdata.record);
                                                     break;
                                                 }
                                             }
@@ -89,10 +89,10 @@ menuNo: getQueryStringByName("MenuNo"),
                                 display: "设备类别", name: "TYPE_ID", minWidth: 100, type: "select",
                                 editor: {
                                     type: 'select',
-                                    data: me.deviceType,
+                                    data: me.BCCode,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            var selectedType = me.deviceType.find(type => type.ID == rowdata.value);
+                                            var selectedType = me.BCCode.find(type => type.ID == rowdata.value);
                                             liger.get("maingrid").updateCell("TYPE_NAME", selectedType.TEXT, rowdata.record);
                                         } else {
                                             liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
@@ -150,9 +150,9 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Device/InventoryTask/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.deviceType = data.BCCode;
-                        me.scanStatus = data.ScanStatus;
-                        me.deptData = data.DeptData;
+                        me.BCCode = data.BCCode;
+                        me.ScanStatus = data.ScanStatus;
+                        me.DeptData = data.DeptData;
                     },
                     error: function (message) {
                         LG.showError(message);

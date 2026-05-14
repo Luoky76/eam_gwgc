@@ -40,7 +40,7 @@
                             { display: "船名", name: "_search_SHIP_NAME", dbname: "SHIP_NAME", type: "text" },
                             {
                                 display: "部门", name: "_search_DEPT_ID", dbname: "DEPT_ID", type: "select", op: "equal", options: {
-                                    data: me.corp
+                                    data: me.Corp
                                 }
                             },
                         ]
@@ -65,7 +65,7 @@
             grid: null,
             searchForm: null,
             buttons: null,
-            corp: [],
+            Corp: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -73,7 +73,7 @@
                     url: 'Special/LaborMaterial/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.corp = data.Corp;
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);

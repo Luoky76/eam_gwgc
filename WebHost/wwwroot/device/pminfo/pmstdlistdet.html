@@ -25,9 +25,9 @@
             dialogData: {},
             isView: true,
             sid: getQueryStringByName("sid"),
-            maintDept: [],
-            pmcycleUnit: [],
-            pmShippost: [],
+            MaintDept: [],
+            PmcycleUnit: [],
+            PmShippost: [],
             isAttach: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             setConfig: function () {
                 var me = this;
@@ -38,7 +38,7 @@
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", type: "select", align: "left", validate: { required: true },
                                 options: {
-                                    data: me.deviceInfo,
+                                    data: me.DeviceInfo,
                                     autocomplete: true,
                                     selectBoxWidth: 200,
                                     valueField: "ID",
@@ -65,10 +65,10 @@
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "船舶编号", name: "DEVICE_CODE", newline: false, upper: true, editor: { disabled: true }, options: {} },
-                            { display: "部门", name: "DEPARTMENT", newline: false, type: "select", options: { data: me.maintDept } },
-                            { display: "周期", name: "CYCLE", newline: false, type: "select", options: { data: me.pmcycleUnit } },
-                            { display: "执行人", name: "EXE_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },
-                            { display: "检查人", name: "CHK_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.pmShippost } },
+                            { display: "部门", name: "DEPARTMENT", newline: false, type: "select", options: { data: me.MaintDept } },
+                            { display: "周期", name: "CYCLE", newline: false, type: "select", options: { data: me.PmcycleUnit } },
+                            { display: "执行人", name: "EXE_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.PmShippost } },
+                            { display: "检查人", name: "CHK_USER", newline: false, type: "select", options: { alwayShowInDown: true, data: me.PmShippost } },
                             { display: "是否附件判断", name: "IS_ATTACH", newline: false, type: "select", options: { data: me.isAttach } },
                             { display: "维保项目", name: "PART_NAME", newline: true, width: me.formInputWidth, type: "text", options: {} },
                             { display: "维保内容", name: "CONTENT", newline: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
@@ -88,10 +88,10 @@
                     url: 'Device/PmList/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.maintDept = data.MaintDept;
-                        me.deviceInfo = data.DeviceInfo;
-                        me.pmcycleUnit = data.PmcycleUnit;
-                        me.pmShippost = data.PmShippost;
+                        me.MaintDept = data.MaintDept;
+                        me.DeviceInfo = data.DeviceInfo;
+                        me.PmcycleUnit = data.PmcycleUnit;
+                        me.PmShippost = data.PmShippost;
                     },
                     error: function (message) {
                         LG.showError(message);

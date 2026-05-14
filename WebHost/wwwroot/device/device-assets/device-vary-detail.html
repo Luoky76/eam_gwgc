@@ -25,7 +25,7 @@
             dialogData: {},
             isView: true,
             sid: getQueryStringByName("sid"),
-            dataCorp: [],
+            Corp: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -35,13 +35,13 @@
                             { display: "变动单号", name: "VARY_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "登记人", name: "EIDT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             {
-                                display: "调出使用部门", name: "DEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                display: "调出使用部门", name: "DEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.Corp }, options: {
                                     onChangeValue: function (input, value, g) {
 
                                         if (value) {
-                                            for (var i = 0; i < me.dataCorp.length; i++) {
-                                                if (value == me.dataCorp[i].ID) {
-                                                    $("#DEPT_NAME").val(me.dataCorp[i].VALUE);
+                                            for (var i = 0; i < me.Corp.length; i++) {
+                                                if (value == me.Corp[i].ID) {
+                                                    $("#DEPT_NAME").val(me.Corp[i].VALUE);
                                                 }
                                             }
                                         } else {
@@ -51,13 +51,13 @@
                                 }
                             },
                             {
-                                display: "调入使用部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.dataCorp }, options: {
+                                display: "调入使用部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", editor: { type: 'select', data: me.Corp }, options: {
                                     onChangeValue: function (input, value, g) {
 
                                         if (value) {
-                                            for (var i = 0; i < me.dataCorp.length; i++) {
-                                                if (value == me.dataCorp[i].ID) {
-                                                    $("#WDEPT_NAME").val(me.dataCorp[i].VALUE);
+                                            for (var i = 0; i < me.Corp.length; i++) {
+                                                if (value == me.Corp[i].ID) {
+                                                    $("#WDEPT_NAME").val(me.Corp[i].VALUE);
                                                 }
                                             }
                                         } else {
@@ -70,7 +70,7 @@
                             { display: "WDEPT_NAME", name: "WDEPT_NAME", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "申请日期", name: "APPLY_DATE", newline: false, upper: true, type: "date", validate: { required: true }, options: {} },
                             { display: "变动完成日期", name: "VARY_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
-                            { display: "变动类型", name: "VARY_TYPE", newline: false, upper: true, type: "select", options: { data: me.varytype }, validate: { required: true } },
+                            { display: "变动类型", name: "VARY_TYPE", newline: false, upper: true, type: "select", options: { data: me.VaryType }, validate: { required: true } },
                             { display: "设备总原值", name: "SUM_ORG_VALUE", newline: true, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "设备总净值", name: "SUM_NET_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "总已提折旧", name: "SUM_DEP_VALUE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -84,7 +84,7 @@
             },
             mainform: null,
             buttons: null,
-            varytype: [],
+            VaryType: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -92,8 +92,8 @@
                     url: 'Device/DeviceVary/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.varytype = data.VaryType;
-                        me.dataCorp = data.Corp;
+                        me.VaryType = data.VaryType;
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);

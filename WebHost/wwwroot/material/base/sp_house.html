@@ -42,8 +42,8 @@ MenuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             tree: null,
             currentNode: null,
-            deptData: [],
-            HouseProperty: [],
+            DeptData: [],
+            BCCode: [],
             HouseType: [],
             SpHouseName: [],
             parentNo: "",
@@ -69,17 +69,17 @@ MenuNo: getQueryStringByName("MenuNo"),
                             { display: "仓库货位编码", name: "HOUSE_CODE", dbname: "HOUSE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             { display: "仓库货位名称", name: "HOUSE_NAME", dbname: "HOUSE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             { display: "类型", name: "HOUSE_TYPE", dbname: "HOUSE_TYPE", minWidth: 100, type: "select", editor: { type: 'select', data: me.HouseType }, validate: { required: true } },
-                            { display: "仓库属性", name: "HOUSE_PROPERTY", dbname: "HOUSE_PROPERTY", minWidth: 150, type: "select", editor: { type: 'select', data: me.HouseProperty }, validate: { required: true } },
+                            { display: "仓库属性", name: "HOUSE_PROPERTY", dbname: "HOUSE_PROPERTY", minWidth: 150, type: "select", editor: { type: 'select', data: me.BCCode }, validate: { required: true } },
                             {
                                 display: "所属单位", name: "DEPT_ID", minWidth: 150, type: "select", validate: { required: true },
                                 editor: {
                                     type: 'select',
-                                    data: me.deptData,
+                                    data: me.DeptData,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            for (var i = 0; i < me.deptData.length; i++) {
-                                                if (rowdata.value == me.deptData[i].ID) {
-                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.deptData[i].TEXT, rowdata.record);
+                                            for (var i = 0; i < me.DeptData.length; i++) {
+                                                if (rowdata.value == me.DeptData[i].ID) {
+                                                    liger.get("maingrid").updateCell("DEPT_NAME", me.DeptData[i].TEXT, rowdata.record);
                                                     break;
                                                 }
                                             }
@@ -116,9 +116,9 @@ MenuNo: getQueryStringByName("MenuNo"),
                     url: 'Material/BaseSpHouse/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.HouseProperty = data.BCCode
+                        me.BCCode = data.BCCode
                         me.HouseType = data.HouseType;
-                        me.deptData = data.DeptData;
+                        me.DeptData = data.DeptData;
                         me.SpHouseName = data.SpHouseName;
                     },
                     error: function (message) {

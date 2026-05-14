@@ -50,16 +50,16 @@
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             runStatus: [],
-            maintdept: [],
-            repairtype: [],
+            MaintDept: [],
+            RepairType: [],
             shiplist: [],
             iscomplete: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
-            repairhandtype: [],
+            RepairDealType: [],
             repairhandtype1: [{ "ID": "自修", "TEXT": "自修" }, { "ID": "厂修", "TEXT": "厂修" }],
             stopSource: [],
             malType: [],
             deviceInfo: [],
-            plan_state: [],
+            PlanState: [],
             start: null,
             setConfig: function () {
                 var me = this;
@@ -68,15 +68,15 @@
                         fields: [
                             { display: "记录状态", name: "AUDITING_D", type: "select", options: { data: me.auditing, disabled: true }, group: "故障报修" },
                             { display: "故障申报单号", name: "EXE_CODE", type: "text", options: { disabled: true } },
-                            { display: "维修状态", name: "PLAN_STATE", type: "select", options: { data: me.plan_state, disabled: true } },
+                            { display: "维修状态", name: "PLAN_STATE", type: "select", options: { data: me.PlanState, disabled: true } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: true, type: "text", options: { disabled: true } },
                             { display: "船舶编号", name: "DEVICE_NO", type: "text", options: { disabled: true } },
                             { display: "船舶型号", name: "DEVICE_TYPE", type: "text", options: { disabled: true } },
                             { display: "资产编号", name: "ASSET_CODE", newline: true, type: "text", options: { disabled: true } },
                             { display: "使用部门", name: "DEPT_NAME", type: "text", options: { disabled: true } },
-                            { display: "维保部门", name: "WSEC_DEPT", type: "select", options: { data: me.maintdept, disabled: true } },
-                            { display: "维修类型", name: "MAINT_TYPE", newline: true, type: "select", options: { data: me.repairtype, disabled: true } },
-                            { display: "维修处理方式", name: "DEAL_TYPE", type: "select", options: { data: me.repairhandtype, disabled: true } },
+                            { display: "维保部门", name: "WSEC_DEPT", type: "select", options: { data: me.MaintDept, disabled: true } },
+                            { display: "维修类型", name: "MAINT_TYPE", newline: true, type: "select", options: { data: me.RepairType, disabled: true } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", type: "select", options: { data: me.RepairDealType, disabled: true } },
                             { display: "安装地点", name: "INSTALL_SITE", newline: true, width: me.formInputWidth, type: "text", options: { disabled: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2", disabled: true } },
@@ -99,7 +99,8 @@
                             { display: "验收人", name: "CHECK_USER", newline: true, type: "text", options: { disabled: true }, group: "维修验收" },
                             { display: "验收时间", name: "CHECK_DATE", type: "date", validate: { required: true }, options: { format: 'yyyy-MM-dd HH:mm' } },
                             { display: "验收情况", name: "CHECK_DESC", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
-                            { display: "备注", name: "CHECK_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" }},
+                            { display: "备注", name: "CHECK_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", options: { rows: "2" } },
+                            { display: "主键", name: "EXE_ID", type: "hidden", options: {} },
                         ]
                     },
                     grid: {
@@ -111,7 +112,7 @@
                             { display: "序号", name: "REP_INDEX", width: 150, type: "text", },
                             { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", },
                             { display: "维修项目分类", name: "ITEM_TYPE", width: 150, type: "text", },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.RepairDealType, selectBoxHeight: 100 } },
                             { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80 },
                             {
                                 display: "实际开工时间", name: "BEGIN_TIME", width: 120, type: "date"
@@ -135,10 +136,10 @@
                     url: 'Repair/RepairPlan/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.maintdept = data.MaintDept;
-                        me.repairtype = data.RepairType;
-                        me.repairhandtype = data.RepairDealType;
-                        me.plan_state = data.PlanState;
+                        me.MaintDept = data.MaintDept;
+                        me.RepairType = data.RepairType;
+                        me.RepairDealType = data.RepairDealType;
+                        me.PlanState = data.PlanState;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -159,7 +160,19 @@
             loadData: function () {
                 var me = this;
                 if (!me.sid) {
-
+                    LG.ajax({
+                        async: false,
+                        url: 'Common/General/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data) {
+                            me.sid = data;
+                            me.mainform.setData({ EXE_ID: data });
+                            me.mainform.setOrginData({ EXE_ID: data });
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
                     LG.ajax({

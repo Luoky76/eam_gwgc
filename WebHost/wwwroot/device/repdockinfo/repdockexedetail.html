@@ -46,7 +46,7 @@
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
-            dockInfo: [],
+            DockInfo: [],
             start: null,
             isLose: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             setConfig: function () {
@@ -64,7 +64,7 @@
                             {
                                 display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
-                                    data: me.dockInfo,
+                                    data: me.DockInfo,
                                 }
                             },
                             { display: "码头名称", name: "DOCK_NAME", newline: false, upper: true, type: "hidden", options: {} },
@@ -181,7 +181,7 @@
                     url: 'Device/RepDockInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.dockInfo = data.DockInfo;
+                        me.DockInfo = data.DockInfo;
                     },
                     error: function (message) {
                         LG.showError(message);

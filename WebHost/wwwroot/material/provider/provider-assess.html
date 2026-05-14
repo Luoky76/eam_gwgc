@@ -45,7 +45,7 @@ setConfig: function () {
                             {
                                 display: "评分人", name: "_search_EXAMINER_NAME", dbname: "EXAMINER_ID", width: 200, op: "equal", vt: "int", type: "select", options: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.User
                                 }
                             },
                             {
@@ -63,7 +63,7 @@ setConfig: function () {
                             {
                                 display: "评分人", name: "EXAMINER_ID", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.User
                                 }
                             },
                             { display: "考核说明", name: "REMARK", width: 100, type: "text" },
@@ -74,7 +74,7 @@ setConfig: function () {
                             {
                                 display: "任务制定人", name: "CREATE_USERID", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.User
                                 }
                             },
                             { display: "评估年度", name: "ASSESS_YEAR", width: 100, type: "text" },
@@ -105,7 +105,7 @@ setConfig: function () {
             grid: null,
             searchForm: null,
             buttons: null,
-            user: [],
+            User: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -113,7 +113,7 @@ setConfig: function () {
                     url: 'Material/ProviderAssess/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.user = data.User;
+                        me.User = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);

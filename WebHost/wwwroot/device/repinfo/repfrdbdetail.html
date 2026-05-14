@@ -31,9 +31,9 @@
             callback: null,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
-            shipInfo: [],
-            faultsrc: [],
-            frdbLevel: [],
+            ShipInfo: [],
+            FaultSrc: [],
+            FrdbLevel: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -43,11 +43,11 @@
                                 display: "记录状态", name: "AUDITING", dbname: "AUDITING", minWidth: 200, type: "select", align: "left", options: { data: me.auditing }, editor: { disabled: true }, group: "设备停机记录"
                             },
                             { display: "故障库编码", name: "FRDB_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "故障程度", name: "FRDB_LEVEL", newline: false, upper: true, validate: { required: true }, type: "select", options: { data: me.frdbLevel } },
+                            { display: "故障程度", name: "FRDB_LEVEL", newline: false, upper: true, validate: { required: true }, type: "select", options: { data: me.FrdbLevel } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
-                                    data: me.shipInfo,
+                                    data: me.ShipInfo,
                                     autocomplete: true,
                                     selectBoxWidth: 400,
                                     valueField: "ID",
@@ -67,7 +67,7 @@
                             { display: "船舶编码", name: "DEVICE_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "hidden", },
                             { display: "维修设备名称", name: "REP_DEVICE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "来源功能", name: "SRC_FUNCTION", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.faultsrc } },
+                            { display: "来源功能", name: "SRC_FUNCTION", newline: false, upper: true, type: "select", editor: { disabled: true }, options: { data: me.FaultSrc } },
                             { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
                             { display: "添加日期", name: "EDIT_DATE", newline: false, upper: true, type: "date", editor: { disabled: true }, options: {} },
                             { display: "添加人", name: "EDIT_USER", newline: false, upper: true, type: "text", editor: { disabled: true }, options: {} },
@@ -91,9 +91,9 @@
                     url: 'Device/RepInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.faultsrc = data.FaultSrc;
-                        me.frdbLevel = data.FrdbLevel;
-                        me.shipInfo = data.ShipInfo;
+                        me.FaultSrc = data.FaultSrc;
+                        me.FrdbLevel = data.FrdbLevel;
+                        me.ShipInfo = data.ShipInfo;
                     },
                     error: function (message) {
                         LG.showError(message);

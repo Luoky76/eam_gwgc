@@ -73,7 +73,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             {
                                 display: "使用部门", name: "DEPT_ID", type: "select", editor: {
                                     type: 'select',
-                                    data: me.dataCorp,
+                                    data: me.Corp,
                                     onChange: function (rowdata) {
                                         rowdata.grid.updateCell("DEPT_NAME", rowdata.selected?.TEXT ?? "", rowdata.record);
                                     }
@@ -95,7 +95,7 @@ menuNo: getQueryStringByName("MenuNo"),
             //当前选中的树节点
             selectedNode: null,
             //下拉数据
-            dataCorp: [],
+            Corp: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -103,7 +103,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Device/DeviceCard/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.dataCorp = data.Corp;
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);

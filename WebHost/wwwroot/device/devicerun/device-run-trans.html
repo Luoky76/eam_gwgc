@@ -38,7 +38,7 @@
 menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
-            runStatus: [],
+            RunStatus: [],
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             setConfig: function () {
                 var me = this;
@@ -91,7 +91,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Device/DeviceRun/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.runStatus = data.RunStatus;
+                        me.RunStatus = data.RunStatus;
                     },
                     error: function (message) {
                         LG.showError(message);

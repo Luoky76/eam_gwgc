@@ -70,15 +70,15 @@
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
-            bySource: [],
-            pmType: [],
-            deviceInfo: [],
-            maintDept: [],
-            storeSou: [],
-            workState: [],
+            BySource: [],
+            PmType: [],
+            DeviceInfo: [],
+            MaintDept: [],
+            StoreSou: [],
+            WorkState: [],
             btime: null,
             etime: null,
-            maintCycle: [],
+            MaintCycle: [],
             planMonth: [{ "ID": "1月", "TEXT": "1月" }, { "ID": "2月", "TEXT": "2月" }, { "ID": "3月", "TEXT": "3月" }, { "ID": "4月", "TEXT": "4月" }, { "ID": "5月", "TEXT": "5月" }
                 , { "ID": "6月", "TEXT": "6月" }, { "ID": "7月", "TEXT": "7月" }, { "ID": "8月", "TEXT": "8月" }, { "ID": "9月", "TEXT": "9月" }, { "ID": "10月", "TEXT": "10月" }
                 , { "ID": "11月", "TEXT": "11月" }, { "ID": "12月", "TEXT": "12月" }],
@@ -94,11 +94,11 @@
                             //基础信息
                             { display: "记录状态", name: "AUDITING_EXE", type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "基础信息" },
                             { display: "保养计划单号", name: "PLAN_CODE", editor: { disabled: true }, type: "text", options: {} },
-                            { display: "保养来源", name: "SOURCE", type: "select", options: { data: me.bySource, } },
+                            { display: "保养来源", name: "SOURCE", type: "select", options: { data: me.BySource, } },
                             {
                                 display: "船舶名称", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", editor: { disabled: true },
                                 options: {
-                                    data: me.deviceInfo,
+                                    data: me.DeviceInfo,
                                 }
                             },
                             { display: "船舶名称", name: "DEVICE_NAME", type: "hidden", options: {} },
@@ -106,7 +106,7 @@
                             { display: "船舶型号", name: "DEVICE_TYPE", editor: { disabled: true }, options: {} },
                             { display: "资产编号", name: "ASSET_CODE", type: "text", editor: { disabled: true }, options: {} },
                             { display: "安装地点", name: "INSTALL_SITE", type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维护类别", name: "PM_TYPE", type: "select", editor: { disabled: true }, options: { data: me.pmType } },
+                            { display: "维护类别", name: "PM_TYPE", type: "select", editor: { disabled: true }, options: { data: me.PmType } },
 
                             //{ display: "计划编制日期", name: "EDIT_DATE", type: "date", editor: { disabled: true }, options: {} },
                             { display: "计划完成时间", name: "PLAN_FINISH_TIME", editor: { disabled: true }, type: "date", options: {} },
@@ -115,7 +115,7 @@
                             { display: "使用部门", name: "DEPT_NAME", type: "text", editor: { disabled: true }, options: {} },
                             {
                                 display: "维保部门", name: "WDEPT_ID", type: "select", editor: { disabled: true }, options: {
-                                    data: me.maintDept,
+                                    data: me.MaintDept,
                                 }
                             },
                             { display: "维保部门", name: "SHIP_DEPT", type: "hidden", options: {} },
@@ -170,8 +170,8 @@
                             { display: "保养项目", name: "OBJECT_NAME", minWidth: 150, type: "text", },
                             { display: "保养内容", name: "CONTENT", minWidth: 250, type: "text", },
                             { display: "保养类型", name: "STD_LEVEL", minWidth: 100, type: "select", format: { data: me.stdLevel } },
-                            { display: "作业时设备状态", name: "WORK_STATE", minWidth: 140, type: "select", format: { data: me.workState } },
-                            { display: "保养周期", name: "MAINT_CYCLE", minWidth: 100, type: "select", format: { data: me.maintCycle } },
+                            { display: "作业时设备状态", name: "WORK_STATE", minWidth: 140, type: "select", format: { data: me.WorkState } },
+                            { display: "保养周期", name: "MAINT_CYCLE", minWidth: 100, type: "select", format: { data: me.MaintCycle } },
                             { display: "计划保养月份", name: "PLAN_MONTH", minWidth: 100, type: "select", format: { data: me.planMonth } },
                             { display: "上次完成时间", name: "LAST_COMP_DATE", minWidth: 100, type: "date", },
                             { display: "下次保养截止日期", name: "NEXT_ENDDATE", minWidth: 100, type: "date", },
@@ -183,7 +183,7 @@
                     },
                     grid2: {
                         columns: [
-                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "select", format: { data: me.storeSou } },
+                            { display: "来源", name: "SP_SOURCE", minWidth: 100, type: "select", format: { data: me.StoreSou } },
                             { display: "备件品种编码", name: "SP_CODE", minWidth: 100, type: "text", },
                             { display: "备件品种名称", name: "SP_NAME", minWidth: 100, type: "text", },
                             { display: "型号规格", name: "SP_SIZE", minWidth: 100, type: "text", },
@@ -364,13 +364,13 @@
                     url: 'Device/PmInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.maintDept = data.MaintDept;
-                        me.pmType = data.PmType;
-                        me.deviceInfo = data.DeviceInfo;
-                        me.bySource = data.BySource;
-                        me.workState = data.WorkState;
-                        me.maintCycle = data.MaintCycle;
-                        me.storeSou = data.StoreSou;
+                        me.MaintDept = data.MaintDept;
+                        me.PmType = data.PmType;
+                        me.DeviceInfo = data.DeviceInfo;
+                        me.BySource = data.BySource;
+                        me.WorkState = data.WorkState;
+                        me.MaintCycle = data.MaintCycle;
+                        me.StoreSou = data.StoreSou;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -386,8 +386,20 @@
                     me.orginData = data;
                 }
                 if (me.isNew) {
-                    me.mainform.setData({ AUDITING_EXE: "0", SOURCE: "3", PM_TYPE: "maint", });
-                    inner();
+                    LG.ajax({
+                        async: false,
+                        url: 'Common/General/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data) {
+                            me.sid = data;
+                            me.EXE_ID = data;
+                            me.mainform.setData({ EXE_ID: data, AUDITING_EXE: "0", SOURCE: "3", PM_TYPE: "maint" });
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
                     LG.ajax({
@@ -796,7 +808,7 @@
                             url: 'Device/PmInfo/ImportSpList',
                             rowKey: "STORE_ID",
                             columns: [
-                                { display: "来源类型", name: "SRC_TYPE", minWidth: 100, type: "select", format: { data: me.storeSou } },
+                                { display: "来源类型", name: "SRC_TYPE", minWidth: 100, type: "select", format: { data: me.StoreSou } },
                                 { display: "物料编码", name: "SP_CODE", minWidth: 100, type: "text" },
                                 { display: "物料名称", name: "SP_NAME", minWidth: 100, type: "text" },
                                 { display: "规格型号", name: "SP_SIZE", minWidth: 100, type: "text" },

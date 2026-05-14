@@ -44,7 +44,7 @@
                             {
                                 display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.auditing,
+                                    data: me.Auditing,
                                     disabled: true
                                 }
                             },
@@ -65,7 +65,7 @@
                             {
                                 display: "申请人", name: "CREATE_USERID", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.user,
+                                    data: me.User,
                                     disabled: true
                                 }
                             },
@@ -79,7 +79,7 @@
                             {
                                 display: "类别", name: "REQUEST_TYPE", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
-                                    data: me.requestType
+                                    data: me.RequestType
                                 }
                             },
                             { display: "备注", name: "MEMO", width: me.getTextareaWidth(), newline: "true", type: "textarea", options: {} },
@@ -136,9 +136,9 @@
             sid: "",
             isNew: false,
             isView: true,
-            auditing: [],
-            user: [],
-            requestType: [],
+            Auditing: [],
+            User: [],
+            RequestType: [],
             position: [{ ID: "1", TEXT: "港内" }, { ID: "2", TEXT: "港外" }],
             month: [],
             year: [],
@@ -163,9 +163,9 @@
                     url: 'Special/DrugRequest/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.auditing = data.Auditing;
-                        me.user = data.User;
-                        me.requestType = data.RequestType;
+                        me.Auditing = data.Auditing;
+                        me.User = data.User;
+                        me.RequestType = data.RequestType;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -182,7 +182,7 @@
                     var originData = {};
                     LG.ajax({
                         async: false,
-                        url: 'Special/DrugRequest/CreatePrimaryKey',
+                        url: 'Common/General/CreatePrimaryKey',
                         loading: '正在获取中...',
                         success: function (data, message) {
                             me.sid = data;

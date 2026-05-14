@@ -63,7 +63,7 @@
                             {
                                 display: "使用情况", name: "USE_STATE", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.assetStatus,
+                                    data: me.AssetStatus,
                                     disabled: true
                                 }
                             },
@@ -98,8 +98,8 @@
             grid: null,
             searchForm: null,
             buttons: null,
-            user: [],
-            assetStatus: [],
+            User: [],
+            AssetStatus: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -107,8 +107,8 @@
                     url: 'Special/AssetCard/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.user = data.User;
-                        me.assetStatus = data.AssetStatus;
+                        me.User = data.User;
+                        me.AssetStatus = data.AssetStatus;
                     },
                     error: function (message) {
                         LG.showError(message);

@@ -36,14 +36,14 @@ setConfig: function () {
                         fields: [
                             { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.auditingData }},
                             { display: "变动单号", name: "_search_VARY_CODE", dbname: "VARY_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "变动类型", name: "_search_VARY_TYPE", dbname: "VARY_TYPE", newline: false, upper: true, type: "select", options: { type: 'select', data: me.varytype }},
+                            { display: "变动类型", name: "_search_VARY_TYPE", dbname: "VARY_TYPE", newline: false, upper: true, type: "select", options: { type: 'select', data: me.VaryType }},
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "主键", name: "VARY_ID", type: "text", editor: { type: 'text' }, hide: true },
                             { display: "已提交", name: "AUDITING", minWidth: 120, type: "chk" },
-                            { display: "变动类型", name: "VARY_TYPE", minWidth: 120,  type: "select", editor: { type: 'select', data: me.varytype, selectBoxHeight: 100 } },
+                            { display: "变动类型", name: "VARY_TYPE", minWidth: 120,  type: "select", editor: { type: 'select', data: me.VaryType, selectBoxHeight: 100 } },
                             { display: "变动单号", name: "VARY_CODE", minWidth: 120,  type: "text", editor: { type: 'text' } },
                             { display: "登记人", name: "EIDT_USER", minWidth: 120,  type: "text", editor: { type: 'text' } },
                             { display: "调出使用部门", name: "DEPT_NAME", minWidth: 120,  type: "text", editor: { type: 'text' } },
@@ -67,7 +67,7 @@ setConfig: function () {
             searchForm: null,
             type: null,
             buttons: null,
-            varytype:[],
+            VaryType:[],
             auditingData: [
                 { ID: "0", TEXT: "未提交", VALUE: "0" },
                 { ID: "1", TEXT: "已提交", VALUE: "1" }
@@ -80,7 +80,7 @@ setConfig: function () {
                     loading: '正在获取中...',
                     success: function (data, message) {
 
-                        me.varytype = data.VaryType;
+                        me.VaryType = data.VaryType;
                     },
                     error: function (message) {
                         LG.showError(message);

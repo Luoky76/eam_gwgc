@@ -29,7 +29,7 @@
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
-status: [],
+Status: [],
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             scanresult: [{ "ID": "盘盈", "TEXT": "盘盈" }, { "ID": "盘亏", "TEXT": "盘亏" }],
             setConfig: function () {
@@ -68,7 +68,7 @@ status: [],
                             { display: "二级单位", name: "SEC_DEPT", width: 100, type: "text" },
                             /*{ display: "设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
                             { display: "设备类别", name: "TYPE_NAME", width: 100, type: "text"},*/
-                            { display: "当前管理状态", name: "STATUS", width: 100, type: "select", format: { data: me.status } },
+                            { display: "当前管理状态", name: "STATUS", width: 100, type: "select", format: { data: me.Status } },
                             {
                                 display: "结果说明", name: "RESULT_MEMO", minWidth: 200, type: "text",validate: { required: true },
                                 editor: {
@@ -90,7 +90,7 @@ status: [],
                     url: 'Device/InventoryTask/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.status = data.Status;
+                        me.Status = data.Status;
                     },
                     error: function (message) {
                         LG.showError(message);

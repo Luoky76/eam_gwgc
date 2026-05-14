@@ -34,18 +34,18 @@
             },
 rootPath: 'Material/SpStore/',
             MenuNo: getQueryStringByName("MenuNo"),
-            stockData: [],
-            typeData: [],
-            purtypeData: [],
+            SpHouseName: [],
+            BaseSpType: [],
+            BasePurtype: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
                             { display: "统计日期", name: "_search_BDATE", dbname: "CREATEDATE", newline: false, showTime: false, labelWidth: me.formLabelWidth, width: 130, op: 'lessorequal', type: "date" },
-                            { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { data: me.stockData } },
-                            { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.typeData } },
-                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { data: me.purtypeData } },
+                            { display: "仓库", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", newline: false, upper: true, type: "select", options: { data: me.SpHouseName } },
+                            { display: "物料分类", name: "_search_TYPE_ID", dbname: "TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.BaseSpType } },
+                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", newline: false, upper: true, type: "select", options: { data: me.BasePurtype } },
                         ]
                     },
                     grid: {
@@ -104,9 +104,9 @@ rootPath: 'Material/SpStore/',
                     url: me.rootPath + 'ReportComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.stockData = data.SpHouseName;
-                        me.typeData = data.BaseSpType;
-                        me.purtypeData = data.BasePurtype;
+                        me.SpHouseName = data.SpHouseName;
+                        me.BaseSpType = data.BaseSpType;
+                        me.BasePurtype = data.BasePurtype;
                     },
                     error: function (message) {
                         LG.showError(message);

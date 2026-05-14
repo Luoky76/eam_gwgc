@@ -34,21 +34,21 @@
             },
 rootPath:'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
-            statusData: [],
-            exigData: [],
+            StatusData: [],
+            BCCode: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "采购状态", name: "_search_SP_STATUS", dbname: "SP_STATUS", newline: false, upper: true, type: "select", options: { data: me.statusData } },
+                            { display: "采购状态", name: "_search_SP_STATUS", dbname: "SP_STATUS", newline: false, upper: true, type: "select", options: { data: me.StatusData } },
                             { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text", options: {} },
                             { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "采购状态", name: "SP_STATUS", labelWidth: me.formLabelWidth, width: 100, newline: true, type: "select", format: { data: me.statusData } },
+                            { display: "采购状态", name: "SP_STATUS", labelWidth: me.formLabelWidth, width: 100, newline: true, type: "select", format: { data: me.StatusData } },
                             {
                                 display: "物料编码", name: "SP_CODE", width: 150, type: "text",
                                 render: function (rowdata, rowindex, value, column) {
@@ -62,7 +62,7 @@ rootPath:'Material/SpApply/',
                             { display: "物料分类", name: "TYPE_NAME", width: 150, type: "text", },
 
                             { display: "是否协议", name: "IS_XY", dbname: "IS_XY", width: 80, type: "text", formatType: "chk", },
-                            { display: "紧急程度", name: "EXIG_DEV", width: 120, type: "select", editor: { type: 'select', data: me.exigData }, },
+                            { display: "紧急程度", name: "EXIG_DEV", width: 120, type: "select", editor: { type: 'select', data: me.BCCode }, },
 
                             { display: "申请人", name: "APPLY_USER", width: 100, type: "text", },
                             { display: "申请日期", name: "APPLY_DATE", width: 150, type: "date", showTime: true, format: "yyyy-MM-dd hh:mm" },
@@ -84,8 +84,8 @@ rootPath:'Material/SpApply/',
                     url: me.rootPath + 'ApplyComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.statusData = data.StatusData;
-                        me.exigData = data.BCCode;
+                        me.StatusData = data.StatusData;
+                        me.BCCode = data.BCCode;
                     },
                     error: function (message) {
                         LG.showError(message);

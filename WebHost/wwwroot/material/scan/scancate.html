@@ -37,20 +37,20 @@
 menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             type: getQueryStringByName("type"),
-            auditing: [],
+            Auditing: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
                             { display: "物资分类", name: "_search_SCAN_TYPE", dbname: "SCAN_TYPE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.Auditing } },
                             { display: "盘点单号", name: "_search_SCAN_CODE", dbname: "SCAN_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditing, selectBoxHeight: 100 } },
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", editor: { type: 'select', data: me.Auditing, selectBoxHeight: 100 } },
                             {
                                 display: "盘点单号", name: "SCAN_CODE", minWidth: 100, type: "text",
                                 editor: { type: 'text' },
@@ -78,7 +78,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Material/SpCatalogScan/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
+                        me.Auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);

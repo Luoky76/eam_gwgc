@@ -40,10 +40,10 @@
             isView: true,
             //主键
             sid: getQueryStringByName("sid"),
-            auditing: [],
-            assessBaseContent: [],
-            user: [],
-            appraise: [],
+            Auditing: [],
+            AssessBaseContent: [],
+            User: [],
+            Appraise: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -52,7 +52,7 @@
                             {
                                 display: "记录状态", name: "AUDITING", dbname: "AUDITING", type: "select", group: "评估任务信息总览", options: {
                                     type: "select",
-                                    data: me.auditing,
+                                    data: me.Auditing,
                                     disabled: true
                                 }
                             },
@@ -60,7 +60,7 @@
                             {
                                 display: "任务制定人", name: "FORMULATER_ID", dbname: "FORMULATER_ID", type: "select", options: {
                                     type: "select",
-                                    data: me.user,
+                                    data: me.User,
                                     disabled: true
                                 }
                             },
@@ -68,7 +68,7 @@
                             {
                                 display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", type: "select", options: {
                                     type: "select",
-                                    data: me.user,
+                                    data: me.User,
                                     disabled: true
                                 }
                             },
@@ -92,7 +92,7 @@
                                 //实际为评估基础主键
                                 display: "评估内容", name: "ASSESS_BASE_ID", minWidth: 400, type: "select", editor: {
                                     type: "select",
-                                    data: me.assessBaseContent,
+                                    data: me.AssessBaseContent,
                                     disabled: true
                                 }
                             },
@@ -100,7 +100,7 @@
                             {
                                 display: "分数等级", name: "SCORE_DESC", width: 100, type: "select", editor: {
                                     type: 'select',
-                                    data: me.appraise
+                                    data: me.Appraise
                                 }
                             },
                             //隐藏
@@ -118,10 +118,10 @@
                     url: 'Material/ProviderAssess/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.auditing = data.Auditing;
-                        me.assessBaseContent = data.AssessBaseContent;
-                        me.user = data.User;
-                        me.appraise = data.Appraise;
+                        me.Auditing = data.Auditing;
+                        me.AssessBaseContent = data.AssessBaseContent;
+                        me.User = data.User;
+                        me.Appraise = data.Appraise;
                     },
                     error: function (message) {
                         LG.showError(message);

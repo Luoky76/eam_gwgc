@@ -44,9 +44,9 @@
             isNew: false,
             isView: false,
             orginData: {},
-            auditing: [],
-            spapplyType: [],
-            purtypeName: [],
+            Auditing: [],
+            SpapplyType: [],
+            PurtypeName: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -55,7 +55,7 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.auditing, disabled: true }, group: "物料领用申请" },
+                            { display: "记录状态", name: "AUDITING_A", newline: false, upper: true, type: "select", options: { data: me.Auditing, disabled: true }, group: "物料领用申请" },
                             { display: "申请单号", name: "APPLY_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "申请日期", name: "APPLY_DATE", validate: { required: true }, newline: false, upper: true, type: "date", options: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "项目编号", name: "PROJECT_CODE", newline: false, upper: true, type: "text", options: { type: 'text' } },
@@ -63,9 +63,9 @@
                             { display: "领用部门", name: "DEPT_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
                             { display: "领用人", name: "USER_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text' } },
                             { display: "领用人ID", name: "USER_ID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "申请类型", name: "APPLY_TYPE", newline: false, upper: true, type: "select", options: { data: me.spapplyType, disabled: true } },
+                            { display: "申请类型", name: "APPLY_TYPE", newline: false, upper: true, type: "select", options: { data: me.SpapplyType, disabled: true } },
                             { display: "二级单位", name: "SEC_DEPT", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "用途", name: "PURTYPE_NAME", validate: { required: true }, newline: false, upper: true, type: "select", options: { data: me.purtypeName, } },
+                            { display: "用途", name: "PURTYPE_NAME", validate: { required: true }, newline: false, upper: true, type: "select", options: { data: me.PurtypeName, } },
                             //{ display: "领用总金额(元)", name: "SUM_MONEY", newline: false, upper: true, type: "float", options: { disabled: true } },
                             { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
@@ -110,9 +110,9 @@
                     url: 'Material/SpOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
-                        me.spapplyType = data.SpapplyType;
-                        me.purtypeName = data.PurtypeName;
+                        me.Auditing = data.Auditing;
+                        me.SpapplyType = data.SpapplyType;
+                        me.PurtypeName = data.PurtypeName;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -128,8 +128,19 @@
                     me.orginData = data;
                 }
                 if (me.isNew) {
-                    me.mainform.setData({ AUDITING_A: "0" });
-                    inner();
+                    LG.ajax({
+                        async: false,
+                        url: 'Common/General/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data) {
+                            me.sid = data;
+                            me.mainform.setData({ OUT_ID: data, AUDITING_A: "0" });
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
                     LG.ajax({
@@ -385,8 +396,7 @@
             addGrid: function (row = {}) {
                 var me = this;
                 $.extend(row, {
-                    EXE_ID: me.EXE_ID,
-                    DONEITEM_ID: me.DONEITEM_ID,
+                    OUT_ID: me.sid,
                 });
                 me.grid.addEditRow(row, true);
             },

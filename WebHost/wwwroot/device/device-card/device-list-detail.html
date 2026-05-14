@@ -55,7 +55,7 @@
             menuNo: getQueryStringByName("MenuNo"),
             isView: false,
             sid: getQueryStringByName("sid"),
-            dataCorp: [],
+            Corp: [],
             rootPath: "../",
             dialog: null,
             dialogData: null,
@@ -70,9 +70,9 @@
             purpose: [
                 { "ID": "0", "TEXT": "非生产" }, { "ID": "1", "TEXT": "生产" }
             ],
-            dataCorp: [],
-            auditing: [],
-            user: [],
+            Corp: [],
+            Auditing: [],
+            User: [],
             stopSource: [],
             malType: [],
             deviceInfo: [],
@@ -124,7 +124,7 @@
                     },
                     pmgrid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING_EXE", dbname: "AUDITING_EXE", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "记录状态", name: "AUDITING_EXE", dbname: "AUDITING_EXE", width: 100, type: "select", format: { data: me.Auditing } },
                             { display: "保养实施单号", name: "EXE_CODE", minWidth: 150, type: "text", editor: { type: 'text' } },
                             { display: "资产编号", name: "ASSET_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "设备编号", name: "DEVICE_CODE", minWidth: 100, type: "text", editor: { type: 'text' } },
@@ -174,9 +174,9 @@
                     url: 'Device/DeviceCard/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.auditing = data.Auditing;
-                        me.user = data.User;
-                        me.dataCorp = data.Corp;
+                        me.Auditing = data.Auditing;
+                        me.User = data.User;
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);

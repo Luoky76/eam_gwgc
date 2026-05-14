@@ -32,10 +32,10 @@
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             runStatus: [],
-            stopSource: [],
-            repType: [],
-            malType : [],
-            deviceInfo: [],
+            StopSource: [],
+            RepType: [],
+            MalType : [],
+            DeviceInfo: [],
             start : null,
             setConfig: function () {
                 var me = this;
@@ -50,7 +50,7 @@
                             {
                                 display: "船舶编号", name: "DEVICE_ID", dbname: "DEVICE_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
-                                    data: me.deviceInfo,
+                                    data: me.DeviceInfo,
                                     autocomplete: true,
                                     selectBoxWidth: 350,
                                     valueField: "ID",
@@ -72,7 +72,7 @@
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "设备分类", name: "TYPE_NAME", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
-                            { display: "停机分类名称", name: "STOP_SOURCE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.stopSource } },
+                            { display: "停机分类名称", name: "STOP_SOURCE", newline: false, upper: true, type: "select", validate: { required: true }, options: { data: me.StopSource } },
                             {
                                 display: "停机开始时间", name: "RUN_START", newline: false, upper: true, type: "date", validate: { required: true },
                                 options: {
@@ -104,7 +104,7 @@
                             { display: "分析人ID", name: "CHECK_USERID", newline: false, upper: true, type: "hidden", options: {} },
                             { display: "分析部门", name: "CHECK_DEPT", newline: false, upper: true, type: "text", options: {}, editor: { disabled: true } },
                             { display: "分析日期", name: "CHECK_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.repType } },
+                            { display: "故障分类", name: "MAL_TYPE_ID", newline: false, upper: true, type: "select", options: { data: me.RepType } },
                             { display: "故障部位", name: "MAL_PARTS", newline: false, upper: true, type: "text", options: {} },
                             { display: "主要原因", name: "CHECK_DESC", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
                             { display: "计划后续措施", name: "MEMO", newline: true, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
@@ -160,10 +160,10 @@
                     url: 'Device/DeviceStop/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.stopSource = data.StopSource;
-                        me.malType = data.MalType;
-                        me.deviceInfo = data.DeviceInfo;
-                        me.repType = data.RepType;
+                        me.StopSource = data.StopSource;
+                        me.MalType = data.MalType;
+                        me.DeviceInfo = data.DeviceInfo;
+                        me.RepType = data.RepType;
                     },
                     error: function (message) {
                         LG.showError(message);

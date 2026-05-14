@@ -152,10 +152,10 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Device/PmInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.faultStatus = data.FaultStatus;
-                        me.disposeType = data.DisposeType;
-                        me.faultSrc = data.FaultSrc;
-                        me.deviceStatus = data.DeviceStatus;
+                        me.FaultStatus = data.FaultStatus;
+                        me.DisposeType = data.DisposeType;
+                        me.FaultSrc = data.FaultSrc;
+                        me.DeviceStatus = data.DeviceStatus;
                     },
                     error: function (message) {
                         LG.showError(message);

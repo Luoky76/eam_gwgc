@@ -47,10 +47,10 @@
             sid: null,
             isNew: false,
             isView: true,
-            auditing: [],
-            assessBaseContent: [],
-            user: [],
-            providerName: [],
+            Auditing: [],
+            AssessBaseContent: [],
+            User: [],
+            ProviderName: [],
             orginData: {},
             gridOriginData: [],
             examinerGridOriginData: [],
@@ -61,7 +61,7 @@
                         labelwidth: me.formLabelWidth,
                         inputWidth: me.formInputWidth,
                         fields: [
-                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.auditing, disabled: true } },
+                            { display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", editor: { type: 'select', data: me.Auditing, disabled: true } },
                             { display: "编码字段", name: "ASSESS_TASK_CODE", dbname: "ASSESS_TASK_CODE", width: me.formInputWidth, type: "text", options: { disabled: true } },
                             //实际为供应商id
                             {
@@ -69,16 +69,16 @@
                                     type: 'select',
                                     options: {
                                         autocomplete: true,
-                                        data: me.providerName
+                                        data: me.ProviderName
                                     },
                                     render: function (rowdata, rowindex, value, column) {
                                         var showText = '';
-                                        for (var i = 0; i < me.providerName.length; ++i) {
-                                            if (rowdata == me.providerName[i].ID) {
-                                                showText = me.providerName[i].TEXT;
+                                        for (var i = 0; i < me.ProviderName.length; ++i) {
+                                            if (rowdata == me.ProviderName[i].ID) {
+                                                showText = me.ProviderName[i].TEXT;
                                                 //同时填充其它字段
                                                 me.mainform.setData({
-                                                    PROVIDER_NAME: me.providerName[i].VALUE
+                                                    PROVIDER_NAME: me.ProviderName[i].VALUE
                                                 });
                                                 break;
                                             }
@@ -95,7 +95,7 @@
                                     type: "select",
                                     options: {
                                         autocomplete: true,
-                                        data: me.user
+                                        data: me.User
                                     },
                                     disabled: true
                                 }
@@ -115,7 +115,7 @@
                                 //实际为评估基础主键
                                 display: "评估内容", name: "ASSESS_BASE_ID", dbname: "ASSESS_BASE_ID", minWidth: 400, op: "equal", type: "select", editor: {
                                     type: "select",
-                                    data: me.assessBaseContent
+                                    data: me.AssessBaseContent
                                 }
                             },
                             //隐藏
@@ -130,7 +130,7 @@
                                 //实际为评分人id
                                 display: "评分人", name: "EXAMINER_ID", dbname: "EXAMINER_ID", minWidth: 400, op: "equal", type: "select", editor: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.User
                                 }
                             },
                             //隐藏
@@ -316,10 +316,10 @@
                     url: 'Material/ProviderAssessTaskDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.providerName = data.ProviderName;
-                        me.assessBaseContent = data.AssessBaseContent;
-                        me.auditing = data.Auditing;
-                        me.user = data.User;
+                        me.ProviderName = data.ProviderName;
+                        me.AssessBaseContent = data.AssessBaseContent;
+                        me.Auditing = data.Auditing;
+                        me.User = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);

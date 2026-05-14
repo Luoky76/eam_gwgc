@@ -52,18 +52,18 @@
             dialogData: null,
             callback: null,
             orginData: {},
-            auditing: [],
+            Auditing: [],
             runStatus: [],
-            maintdept: [],
-            repairtype: [],
+            MaintDept: [],
+            RepairType: [],
             shiplist: [],
             iscomplete: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
-            repairhandtype: [],
+            RepairDealType: [],
             repairhandtype1: [{ "ID": "自修", "TEXT": "自修" }, { "ID": "厂修", "TEXT": "厂修" }],
             stopSource: [],
             malType: [],
-            plan_state: [],
-            repitemtype: [],
+            PlanState: [],
+            RepitemType: [],
             deviceInfo: [],
             start: null,
             setConfig: function () {
@@ -71,9 +71,9 @@
                 me.config = {
                     form: {
                         fields: [
-                            { display: "记录状态", name: "AUDITING_B", width: me.formInputWidth, type: "select", options: { data: me.auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
+                            { display: "记录状态", name: "AUDITING_B", width: me.formInputWidth, type: "select", options: { data: me.Auditing }, editor: { disabled: true }, group: "维修计划-设备信息" },
                             { display: "故障申报单号", name: "EXE_CODE", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维修状态", name: "PLAN_STATE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.plan_state } },
+                            { display: "维修状态", name: "PLAN_STATE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.PlanState } },
                             { display: "船舶名称", name: "DEVICE_NAME", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
                             { display: "船舶编号", name: "DEVICE_NO", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
                             { display: "船舶型号", name: "DEVICE_TYPE", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
@@ -81,9 +81,9 @@
                             { display: "使用部门", name: "DEPT_NAME", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
                             { display: "安装地点", name: "INSTALL_SITE", width: me.formInputWidth, type: "hidden", editor: { disabled: true }, options: {} },
                             { display: "报修人", name: "REPORT_USER", width: me.formInputWidth, type: "text", editor: { disabled: true }, options: {} },
-                            { display: "维保部门", name: "WSEC_DEPT", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.maintdept } },
-                            { display: "维修类型", name: "MAINT_TYPE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.repairtype } },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.repairhandtype } },
+                            { display: "维保部门", name: "WSEC_DEPT", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.MaintDept } },
+                            { display: "维修类型", name: "MAINT_TYPE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.RepairType } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: me.formInputWidth, type: "select", editor: { disabled: true }, options: { data: me.RepairDealType } },
 
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), type: "textarea", editor: { }, options: { rows: "2" } },
                             { display: "备注", name: "PLAN_MEMO", newline: true, width: me.getTextareaWidth(), type: "textarea", editor: { }, options: { rows: "2" } },
@@ -131,11 +131,11 @@
                                 },
                             },
                             { display: "维修内容", name: "REP_CONTENT", width: 150, type: "text", editor: { type: 'text' } },
-                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
+                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.RepitemType, selectBoxHeight: 100 } },
                             {
                                 display: "是否月度询价", name: "IS_ASKBID", width: 150, type: "select", editor: { type: 'select', data: me.iscomplete, selectBoxHeight: 100 },
                             },
-                            { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.repairhandtype, selectBoxHeight: 100 }, validate: { required: true } },
+                            { display: "维修处理方式", name: "DEAL_TYPE", width: 150, type: "select", editor: { type: 'select', data: me.RepairDealType, selectBoxHeight: 100 }, validate: { required: true } },
                             { display: "检修负责人", name: "STOCK_NAME", type: "text", width: 80, editor: { type: 'text' }, },
 
 
@@ -176,12 +176,12 @@
                     url: 'Repair/RepairPlan/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.maintdept = data.MaintDept;
-                        me.repairtype = data.RepairType;
-                        me.repitemtype = data.RepitemType;
-                        me.repairhandtype = data.RepairDealType;
-                        me.plan_state = data.PlanState;
-                        me.auditing = data.Auditing;
+                        me.MaintDept = data.MaintDept;
+                        me.RepairType = data.RepairType;
+                        me.RepitemType = data.RepitemType;
+                        me.RepairDealType = data.RepairDealType;
+                        me.PlanState = data.PlanState;
+                        me.Auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);

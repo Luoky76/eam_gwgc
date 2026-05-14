@@ -56,14 +56,14 @@
                             {
                                 display: "申请人", name: "_search_CREATE_USERID", dbname: "CREATE_USERID", width: 200, newline: true, op: "equal", vt: "int", type: "select", options: {
                                     type: "select",
-                                    data: me.user
+                                    data: me.User
                                 }
                             },
                             { display: "申请部门", name: "_search_DEPT_NAME", dbname: "DEPT_NAME", width: 200, type: "text", options: {} },
                             {
                                 display: "类别", name: "_search_REQUEST_TYPE", dbname: "REQUEST_TYPE", width: 200, type: "select", options: {
                                     type: "select",
-                                    data: me.requestType
+                                    data: me.RequestType
                                 }
                             },
                         ]
@@ -78,7 +78,7 @@
                             {
                                 display: "申请人", name: "CREATE_USERID", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.user,
+                                    data: me.User,
                                     disabled: true
                                 }
                             },
@@ -86,7 +86,7 @@
                             {
                                 display: "类别", name: "REQUEST_TYPE", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.requestType,
+                                    data: me.RequestType,
                                     disabled: true
                                 }
                             },
@@ -111,8 +111,8 @@
             grid: null,
             searchForm: null,
             buttons: null,
-            user: [],
-            requestType: [],
+            User: [],
+            RequestType: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -120,8 +120,8 @@
                     url: 'Special/DrugRequest/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.user = data.User;
-                        me.requestType = data.RequestType;
+                        me.User = data.User;
+                        me.RequestType = data.RequestType;
                     },
                     error: function (message) {
                         LG.showError(message);

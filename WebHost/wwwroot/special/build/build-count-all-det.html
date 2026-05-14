@@ -27,7 +27,7 @@
             isView: true,
             sid: getQueryStringByName("sid"),
             dataCorp: [],
-            shipinfo: [],
+            ShipInfo: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -116,7 +116,7 @@
                     loading: '正在获取中...',
                     success: function (data, message) {
 
-                        me.shipinfo = data.ShipInfo;
+                        me.ShipInfo = data.ShipInfo;
                     },
                     error: function (message) {
                         LG.showError(message);

@@ -37,8 +37,8 @@ rootPath:'Material/SpareApply/',
             dialog: null,
             dialogData: null,
             applyId: null,
-            typeData: [],
-            unitData: [],
+            BaseSpType: [],
+            SpUnit: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -55,17 +55,17 @@ rootPath:'Material/SpareApply/',
                             { display: "物料名称", name: "SP_NAME", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
                             { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", editor: { type: 'text' } },
                             { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", editor: { type: 'text' } },
-                            { display: "计量单位", name: "UNIT", width: 150, type: "select", validate: { required: true }, editor: { type: 'select', data: me.unitData } },
+                            { display: "计量单位", name: "UNIT", width: 150, type: "select", validate: { required: true }, editor: { type: 'select', data: me.SpUnit } },
                             {
                                 display: "物料分类", name: "TYPE_ID", width: 150, type: "select", validate: { required: true }, editor: {
                                     type: 'select',
-                                    data: me.typeData,
+                                    data: me.BaseSpType,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            for (var i = 0; i < me.typeData.length; i++) {
-                                                if (rowdata.value == me.typeData[i].ID) {
-                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.typeData[i].TEXT, rowdata.record);
-                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.typeData[i].VALUE, rowdata.record);
+                                            for (var i = 0; i < me.BaseSpType.length; i++) {
+                                                if (rowdata.value == me.BaseSpType[i].ID) {
+                                                    liger.get("maingrid").updateCell("TYPE_NAME", me.BaseSpType[i].TEXT, rowdata.record);
+                                                    liger.get("maingrid").updateCell("TYPE_CODE", me.BaseSpType[i].VALUE, rowdata.record);
                                                     break;
                                                 }
                                             }
@@ -110,8 +110,8 @@ rootPath:'Material/SpareApply/',
                         if (!me.isView) {
                             data.BaseSpType = data.BaseSpType.filter(x => x.FLAG == "0");
                         }
-                        me.typeData = data.BaseSpType;
-                        me.unitData = data.SpUnit;
+                        me.BaseSpType = data.BaseSpType;
+                        me.SpUnit = data.SpUnit;
                     },
                     error: function (message) {
                         LG.showError(message);

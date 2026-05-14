@@ -39,8 +39,8 @@ menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
-            faultsrc: [],
-            frdbLevel: [],
+            FaultSrc: [],
+            FrdbLevel: [],
             alreadySubmitted: false,
             setConfig: function () {
                 var me = this;
@@ -66,9 +66,9 @@ menuNo: getQueryStringByName("MenuNo"),
                             { display: "船舶编码", name: "DEVICE_CODE", width: 100, type: "text", },
                             { display: "船舶名称", name: "DEVICE_NAME", width: 100, type: "text", },
                             { display: "维修设备名称", name: "REP_DEVICE", width: 100, type: "text", },
-                            { display: "来源功能", name: "SRC_FUNCTION", width: 100, type: "select", format: { data: me.faultsrc } },
+                            { display: "来源功能", name: "SRC_FUNCTION", width: 100, type: "select", format: { data: me.FaultSrc } },
                             { display: "来源单号", name: "SRC_CODE", width: 100, type: "text", },
-                            { display: "故障程度", name: "FRDB_LEVEL", minWidth: 100, type: "select", format: { data: me.frdbLevel } },
+                            { display: "故障程度", name: "FRDB_LEVEL", minWidth: 100, type: "select", format: { data: me.FrdbLevel } },
                             { display: "故障现象", name: "FAULT_DESCRIBE", minWidth: 250, type: "text", },
                             { display: "故障原因", name: "FAULT_REASON", minWidth: 200, type: "text", },
                             { display: "解决方法", name: "MEASURES", minWidth: 200, type: "text", },
@@ -90,8 +90,8 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Device/RepInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.faultsrc = data.FaultSrc;
-                        me.frdbLevel = data.FrdbLevel;
+                        me.FaultSrc = data.FaultSrc;
+                        me.FrdbLevel = data.FrdbLevel;
                     },
                     error: function (message) {
                         LG.showError(message);

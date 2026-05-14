@@ -43,7 +43,7 @@
 rootPath: 'Material/SpPurplan/',
             MenuNo: getQueryStringByName("MenuNo"),
             dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
-            gyData:[],
+            ProviderName:[],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -64,12 +64,12 @@ rootPath: 'Material/SpPurplan/',
                             {
                                 display: "中标供应商", name: "PLAN_PROVIDERID", width: 180, type: "select", editor: {
                                     type: 'select',
-                                    data: me.gyData,
+                                    data: me.ProviderName,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.value) {
-                                            for (var i = 0; i < me.gyData.length; i++) {
-                                                if (rowdata.value == me.gyData[i].ID) {
-                                                    liger.get("maingrid").updateCell("PLAN_PROVIDER", me.gyData[i].TEXT, rowdata.record);
+                                            for (var i = 0; i < me.ProviderName.length; i++) {
+                                                if (rowdata.value == me.ProviderName[i].ID) {
+                                                    liger.get("maingrid").updateCell("PLAN_PROVIDER", me.ProviderName[i].TEXT, rowdata.record);
                                                     break;
                                                 }
                                             }
@@ -155,7 +155,7 @@ rootPath: 'Material/SpPurplan/',
                     url: me.rootPath + 'ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.gyData = data.ProviderName;
+                        me.ProviderName = data.ProviderName;
                     },
                     error: function (message) {
                         LG.showError(message);

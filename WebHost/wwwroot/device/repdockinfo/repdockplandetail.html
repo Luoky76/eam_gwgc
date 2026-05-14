@@ -45,7 +45,7 @@
             isView: false,
             orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
-            dockInfo: [],
+            DockInfo: [],
             pmShippost: [],
             start: null,
             setConfig: function () {
@@ -62,7 +62,7 @@
                             {
                                 display: "码头名称", name: "DOCK_ID", dbname: "DOCK_ID", width: me.formInputWidth, type: "select", align: "left", validate: { required: true },
                                 options: {
-                                    data: me.dockInfo,
+                                    data: me.DockInfo,
                                     autocomplete: true,
                                     selectBoxWidth: 500,
                                     valueField: "ID",
@@ -133,7 +133,7 @@
                     url: 'Device/RepDockInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.dockInfo = data.DockInfo;
+                        me.DockInfo = data.DockInfo;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -149,8 +149,19 @@
                     me.orginData = data;
                 }
                 if (me.isNew) {
-                    me.mainform.setData({ AUDITING_PLAN: "0"});
-                    inner();
+                    LG.ajax({
+                        async: false,
+                        url: 'Common/General/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data) {
+                            me.sid = data;
+                            me.mainform.setData({ PLAN_ID: data, AUDITING_PLAN: "0" });
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
                     LG.ajax({

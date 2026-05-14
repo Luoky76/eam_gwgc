@@ -45,7 +45,7 @@
             isNew: false,
             isView: false,
             orginData: {},
-            auditing: [],
+            Auditing: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -54,7 +54,7 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing, disabled: true }, group: "盘点申请" },
+                            { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.Auditing, disabled: true }, group: "盘点申请" },
                             { display: "盘点单号", name: "SCAN_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "盘点日期", name: "SCAN_DATE", validate: { required: true }, newline: false, upper: true, type: "date", editor: { type: 'date', disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
 
@@ -106,7 +106,7 @@
                     url: 'Material/SpCatalogScan/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
+                        me.Auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -122,8 +122,19 @@
                     me.orginData = data;
                 }
                 if (me.isNew) {
-                    me.mainform.setData({ AUDITING: "0", SCAN_TYPE: me.type });
-                    inner();
+                    LG.ajax({
+                        async: false,
+                        url: 'Common/General/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data) {
+                            me.sid = data;
+                            me.mainform.setData({ SCAN_ID: data, AUDITING: "0", SCAN_TYPE: me.type });
+                            inner();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
                 }
                 else {
 
@@ -379,8 +390,7 @@
             addGrid: function (row = {}) {
                 var me = this;
                 $.extend(row, {
-                    EXE_ID: me.EXE_ID,
-                    DONEITEM_ID: me.DONEITEM_ID,
+                    SCAN_ID: me.sid,
                 });
                 me.grid.addEditRow(row, true);
             },

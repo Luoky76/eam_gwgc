@@ -42,24 +42,24 @@
             },
 rootPath: 'Material/SpOrder/',
             MenuNo: getQueryStringByName("MenuNo"),
-            typeData: [],
-            statusData: [],
+            BCCode: [],
+            OrderStatus: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "订单状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.statusData } },
+                            { display: "订单状态", name: "_search_STATUS", dbname: "STATUS", newline: false, upper: true, type: "select", options: { data: me.OrderStatus } },
                             { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", newline: false, upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "订单状态", name: "STATUS", labelWidth: me.formLabelWidth, width: 100, newline: true, type: "select", format: { data: me.statusData } },
+                            { display: "订单状态", name: "STATUS", labelWidth: me.formLabelWidth, width: 100, newline: true, type: "select", format: { data: me.OrderStatus } },
                             { display: "订单号", name: "ORDER_CODE", width: 180, type: "text" },
                             { display: "下单日期", name: "ORDER_DATE", width: 150, type: "date", format: "yyyy-MM-dd", },
 
-                            { display: "订单类型", name: "ORDER_TYPE", width: 180, type: "select", format: { data: me.typeData } },
+                            { display: "订单类型", name: "ORDER_TYPE", width: 180, type: "select", format: { data: me.BCCode } },
                             { display: "是否超期", name: "OVERDUE", width: 180, type: "text", formatType: "chk", },
 
                             { display: "订单金额(元)", name: "ORDER_MONEY", width: 120, type: "text", },
@@ -120,8 +120,8 @@ rootPath: 'Material/SpOrder/',
                     url: me.rootPath + 'ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.typeData = data.BCCode;
-                        me.statusData = data.OrderStatus;
+                        me.BCCode = data.BCCode;
+                        me.OrderStatus = data.OrderStatus;
                     },
                     error: function (message) {
                         LG.showError(message);

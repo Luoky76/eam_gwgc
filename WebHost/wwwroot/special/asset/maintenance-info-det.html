@@ -28,7 +28,7 @@
                             {
                                 display: "记录状态", name: "AUDITING_ACCEPT", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.auditing,
+                                    data: me.Auditing,
                                     disabled: true
                                 }, group: "基础信息"
                             },
@@ -36,7 +36,7 @@
                             {
                                 display: "修复状态", name: "REPORT_STATE", width: me.formInputWidth, type: "select", validate: { required: true }, options: {
                                     type: "select",
-                                    data: me.reportState,
+                                    data: me.ReportState,
                                     disabled: true
                                 }
                             },
@@ -86,7 +86,7 @@
                             {
                                 display: "验收评价", name: "ACCEPT_APPRAISE", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.appraise,
+                                    data: me.Appraise,
                                     disabled: true
                                 }
                             },
@@ -96,10 +96,10 @@
                     }
                 };
             },
-            auditing: [],
+            Auditing: [],
             yesOrNo: [{ ID: "0", TEXT: "否" }, { ID: "1", TEXT: "是" }],
-            appraise: [],
-            reportState: [],
+            Appraise: [],
+            ReportState: [],
             dialog: null,
             dialogData: null,
             callback: null,
@@ -124,9 +124,9 @@
                     url: 'Special/AssetReport/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
-                        me.reportState = data.ReportState;
-                        me.appraise = data.Appraise;
+                        me.Auditing = data.Auditing;
+                        me.ReportState = data.ReportState;
+                        me.Appraise = data.Appraise;
                     },
                     error: function (message) {
                         LG.showError(message);

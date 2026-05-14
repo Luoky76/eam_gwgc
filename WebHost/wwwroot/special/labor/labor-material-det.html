@@ -40,7 +40,7 @@
                         fields: [
                             {
                                 display: "记录状态", name: "AUDITING", width: me.formInputWidth, type: "select", options: {
-                                    data: me.auditing,
+                                    data: me.Auditing,
                                     value: "0",
                                     disabled: true
                                 }
@@ -73,7 +73,7 @@
                             {
                                 display: "物料名称", name: "SP_ID", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.laborMaterialCard,
+                                    data: me.LaborMaterialCard,
                                     selectBoxWidth: 800,
                                     columns: [
                                         { header: '物料名称', name: 'TEXT' },
@@ -140,8 +140,8 @@
             sid: "",
             isNew: false,
             isView: true,
-            auditing: [],
-            laborMaterialCard: [],
+            Auditing: [],
+            LaborMaterialCard: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -149,8 +149,8 @@
                     url: 'Special/LaborMaterialDet/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.auditing = data.Auditing;
-                        me.laborMaterialCard = data.LaborMaterialCard;
+                        me.Auditing = data.Auditing;
+                        me.LaborMaterialCard = data.LaborMaterialCard;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -167,7 +167,7 @@
                     };
                     LG.ajax({
                         async: false,
-                        url: 'Special/LaborMaterial/CreatePrimaryKey',
+                        url: 'Common/General/CreatePrimaryKey',
                         loading: '正在获取中...',
                         success: function (data, message) {
                             me.sid = data;

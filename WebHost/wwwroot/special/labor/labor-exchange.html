@@ -51,22 +51,22 @@ exchangeType: [
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.auditing } },
+                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { data: me.Auditing } },
                             { display: "退换单号", name: "_search_EXCHANGE_CODE", dbname: "EXCHANGE_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: { data: me.dataCorp } },
-                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: { data: me.user } },
+                            { display: "申请部门", name: "_search_EXCHANGE_DEPT", dbname: "EXCHANGE_DEPT", newline: false, upper: true, type: "text", options: { data: me.Corp } },
+                            { display: "申请人", name: "_search_EXCHANGE_USER", dbname: "EXCHANGE_USER", newline: false, upper: true, type: "text", options: { data: me.User } },
                             { display: "退换类型", name: "_search_EXCHANGE_TYPE", dbname: "EXCHANGE_TYPE", newline: false, upper: true, type: "select", options: { data: me.exchangeType } },
                         ]
                     },
                     grid: {
                         columns: [
 
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.auditing } },
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { type: 'select', data: me.Auditing } },
                             { display: "主键", name: "EXCHANGE_ID", width: 100, type: "text", hide:true,editor: { type: 'text' } },
                             { display: "退换单号", name: "EXCHANGE_CODE", width: 100, type: "text", editor: { type: 'text' } },
                             { display: "退换日期", name: "EXCHANGE_DATE", width: 100, type: "date", editor: { type: 'date', format: "yyyy-MM-dd hh:mm" } },
-                            { display: "申请部门", name: "EXCHANGE_DEPT", width: 100, type: "select", editor: { type: 'select', data: me.dataCorp } },
-                            { display: "申请人", name: "EXCHANGE_USER", width: 100, type: "select", editor: { type: 'select', data: me.user } },
+                            { display: "申请部门", name: "EXCHANGE_DEPT", width: 100, type: "select", editor: { type: 'select', data: me.Corp } },
+                            { display: "申请人", name: "EXCHANGE_USER", width: 100, type: "select", editor: { type: 'select', data: me.User } },
                             { display: "退换类型", name: "EXCHANGE_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.exchangeType } },
                             { display: "退换原因", name: "EXCHANGE_REASON", width: 100, type: "text", editor: { type: 'text' } }
                         ]
@@ -83,10 +83,10 @@ exchangeType: [
                     url: 'special/labor/comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.auditing = data.Auditing;
-                        me.user = data.User;
-                        me.rentstate = data.RentState
-                        me.dataCorp = data.Corp;
+                        me.Auditing = data.Auditing;
+                        me.User = data.User;
+                        me.RentState = data.RentState
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);

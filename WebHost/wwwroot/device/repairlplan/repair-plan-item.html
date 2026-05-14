@@ -52,7 +52,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             { display: "维修部位", name: "DEVICE_NAME", width: 100, type: "text" },
                             { display: "维修设备型号", name: "DEVICE_TYPE", width: 100, type: "text" },
                             { display: "维修内容", name: "REP_CONTENT", width: 300, type: "text", validate: { required: true },  editor: { type: 'text' } },
-                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.repitemtype, selectBoxHeight: 100 } },
+                            { display: "维修项目分类", name: "ITEM_TYPE", width: 100, type: "select", editor: { type: 'select', data: me.RepitemType, selectBoxHeight: 100 } },
                             { display: "外键", name: "EXE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "主键", name: "EXE_ITEM_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
                             { display: "维修部位ID", name: "DEVICE_ID", width: 100, type: "text", editor: { type: 'text' }, hide: true },
@@ -64,7 +64,7 @@ menuNo: getQueryStringByName("MenuNo"),
                 };
             },
             grid: null,
-            repitemtype: [],
+            RepitemType: [],
             isaskbid: [
                 { ID: "0", TEXT: "否", VALUE: "0" },
                 { ID: "1", TEXT: "是", VALUE: "1" }
@@ -77,7 +77,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Repair/RepairPlan/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.repitemtype = data.RepitemType;
+                        me.RepitemType = data.RepitemType;
                     },
                     error: function (message) {
                         LG.showError(message);

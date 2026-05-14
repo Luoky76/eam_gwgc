@@ -30,7 +30,7 @@
             sid: getQueryStringByName("sid"),
             isNew: false,
             isView: true,
-            auditing: [],
+            Auditing: [],
             dataDevice: [],
             orginData: {},
             setConfig: function () {
@@ -43,7 +43,7 @@
                             {
                                 display: "记录状态", name: "AUDITING", dbname: "AUDITING", width: me.formInputWidth, type: "select", options: {
                                     type: 'select',
-                                    data: me.auditing,
+                                    data: me.Auditing,
                                     value: "0",
                                     disabled: true
                                 }, group: "基础信息"
@@ -68,7 +68,7 @@
                             {
                                 display: "企业性质", name: "ENTER_NATURE", dbname: "ENTER_NATURE", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.enterNature
+                                    data: me.EnterNature
                                 }
                             },
                             { display: "营业执照号", name: "LICENSE_CODE", dbname: "LICENSE_CODE", width: me.formInputWidth, type: "text" },
@@ -84,13 +84,13 @@
                             {
                                 display: "供应商来源", name: "PROVIDER_SRC", dbname: "PROVIDER_SRC", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.providerSrc
+                                    data: me.ProviderSrc
                                 }
                             },
                             {
                                 display: "供应商分类", name: "PROVIDER_TYPE", dbname: "PROVIDER_TYPE", width: me.formInputWidth, type: "select", options: {
                                     type: "select",
-                                    data: me.providerType
+                                    data: me.ProviderType
                                 }
                             },
                             //{ display: "供应商状态", name: "PROVIDER_STATUS", dbname: "PROVIDER_STATUS", width: me.formInputWidth, type: "text" },
@@ -132,10 +132,10 @@
             mainform: null,
             buttons: null,
             yesNo: [{ ID: 0, TEXT: "否" }, { ID: 1, TEXT: "是" }],
-            auditing: [],
-            enterNature: [],
-            providerSrc: [],
-            providerType: [],
+            Auditing: [],
+            EnterNature: [],
+            ProviderSrc: [],
+            ProviderType: [],
             loadData: function () {
                 var me = this;
                 function inner() {
@@ -284,10 +284,10 @@
                     url: 'Material/ProviderInfo/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
-                        me.enterNature = data.EnterNature;
-                        me.providerSrc = data.ProviderSrc;
-                        me.providerType = data.ProviderType;
+                        me.Auditing = data.Auditing;
+                        me.EnterNature = data.EnterNature;
+                        me.ProviderSrc = data.ProviderSrc;
+                        me.ProviderType = data.ProviderType;
                     },
                     error: function (message) {
                         LG.showError(message);

@@ -317,7 +317,7 @@ menuNo: getQueryStringByName("MenuNo"),
             grid: null,
             searchForm: null,
             buttons: null,
-            shipinfo: [],
+            ShipInfo: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -325,7 +325,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Special/Build/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.shipinfo = data.ShipInfo;
+                        me.ShipInfo = data.ShipInfo;
                     },
                     error: function (message) {
                         LG.showError(message);

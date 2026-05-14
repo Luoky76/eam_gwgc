@@ -37,9 +37,9 @@
 menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             voyagecodedata: null,
-            auditing: [],
+            Auditing: [],
             disposeType: [],
-            purtypeName: [],
+            PurtypeName: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -55,7 +55,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING_A", minWidth: 100, type: "select", editor: { type: 'select', data: me.auditing, selectBoxHeight: 100 } },
+                            { display: "记录状态", name: "AUDITING_A", minWidth: 100, type: "select", editor: { type: 'select', data: me.Auditing, selectBoxHeight: 100 } },
                             {
                                 display: "申请单号", name: "APPLY_CODE", minWidth: 100, type: "text",
                                 editor: { type: 'text' },
@@ -64,7 +64,7 @@ menuNo: getQueryStringByName("MenuNo"),
                                 },
                             },
                             { display: "申请日期", name: "APPLY_DATE", minWidth: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "用途", name: "PURTYPE_NAME", minWidth: 100, type: "select", editor: { type: 'select', data: me.purtypeName } },
+                            { display: "用途", name: "PURTYPE_NAME", minWidth: 100, type: "select", editor: { type: 'select', data: me.PurtypeName } },
                             { display: "领用人", name: "USER_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             { display: "领用部门", name: "DEPT_NAME", minWidth: 100, type: "text", editor: { type: 'text' } },
                             //{ display: "领用总金额(元)", name: "SUM_MONEY", minWidth: 100, type: "decimal", editor: { type: 'decimal' } },
@@ -89,9 +89,9 @@ menuNo: getQueryStringByName("MenuNo"),
                     url: 'Material/SpOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data, message) {
-                        me.auditing = data.Auditing;
-                        me.spapplyType = data.SpapplyType;
-                        me.purtypeName = data.PurtypeName;
+                        me.Auditing = data.Auditing;
+                        me.SpapplyType = data.SpapplyType;
+                        me.PurtypeName = data.PurtypeName;
                     },
                     error: function (message) {
                         LG.showError(message);

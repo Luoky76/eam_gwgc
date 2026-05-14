@@ -65,7 +65,7 @@
                             {
                                 display: "修复状态", name: "REPORT_STATE", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.reportState,
+                                    data: me.ReportState,
                                     disabled: true
                                 }
                             },
@@ -85,7 +85,7 @@
                             {
                                 display: "验收评价", name: "ACCEPT_APPRAISE", minWidth: 100, type: "select", editor: {
                                     type: "select",
-                                    data: me.appraise,
+                                    data: me.Appraise,
                                     disabled: true
                                 }
                             },
@@ -107,8 +107,8 @@
             grid: null,
             searchForm: null,
             buttons: null,
-            reportState: [],
-            appraise: [],
+            ReportState: [],
+            Appraise: [],
 
             loadComboxData: function () {
                 var me = this;
@@ -117,8 +117,8 @@
                     url: 'Special/AssetReport/Comboxdata',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.reportState = data.ReportState;
-                        me.appraise = data.Appraise;
+                        me.ReportState = data.ReportState;
+                        me.Appraise = data.Appraise;
                     },
                     error: function (message) {
                         LG.showError(message);

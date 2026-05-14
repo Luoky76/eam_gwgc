@@ -22,9 +22,9 @@
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
             dialogData: {},
-            maintDept: [],
-            repSourceType: [],
-            repOutType: [],
+            MaintDept: [],
+            RepSourceType: [],
+            RepOutType: [],
             isleave: [{ "ID": "1", "TEXT": "是" }, { "ID": "0", "TEXT": "否" }],
             status: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             isView: true,
@@ -37,16 +37,16 @@
                         fields: [
                             { display: "记录状态", name: "AUDITING", newline: false, upper: true, type: "select", options: { type: 'select', data: me.status, disabled: true } },
                             { display: "委外单号", name: "OUT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "委外状态", name: "OUT_STATUS", newline: false, upper: true, type: "select", options: {  data: me.repOutType, disabled: true } },
+                            { display: "委外状态", name: "OUT_STATUS", newline: false, upper: true, type: "select", options: {  data: me.RepOutType, disabled: true } },
                             { display: "船舶名称", name: "DEVICE_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "船舶编号", name: "DEVICE_NO", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "船舶型号", name: "DEVICE_TYPE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "安装地点", name: "INSTALL_SITE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "维修设备名称", name: "REP_DEVICE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "来源类型", name: "SRC_TYPE", newline: false, upper: true, type: "select", options: { disabled: true, data: me.repSourceType } },
+                            { display: "来源类型", name: "SRC_TYPE", newline: false, upper: true, type: "select", options: { disabled: true, data: me.RepSourceType } },
                             { display: "来源单号", name: "SRC_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
                             { display: "使用部门", name: "DEPT_NAME", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", options: { data: me.maintDept, disabled: true } },
+                            { display: "维保部门", name: "WDEPT_ID", newline: false, upper: true, type: "select", options: { data: me.MaintDept, disabled: true } },
                             { display: "是否有遗留问题", name: "IS_LEAVE", newline: false, upper: true, type: "select", options: { data: me.isleave } },
                             { display: "确认人", name: "CONFIRM_USER", newline: false, upper: true, type: "text", options: { }, validate: { required: true } },
                             { display: "故障现象描述", name: "FAULT_DESCRIBE", newline: true, width: me.getTextareaWidth(), upper: true, type: "textarea", options: { rows: "2", disabled: true } },
@@ -69,9 +69,9 @@
                     url: 'Device/RepOut/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.maintDept = data.MaintDept;
-                        me.repSourceType = data.RepSourceType;
-                        me.repOutType = data.RepOutType;
+                        me.MaintDept = data.MaintDept;
+                        me.RepSourceType = data.RepSourceType;
+                        me.RepOutType = data.RepOutType;
                     },
                     error: function (message) {
                         LG.showError(message);
