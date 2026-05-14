@@ -52,6 +52,7 @@
 		<PluginPublishProject Include="..\EAM.Special\EAM.Special.csproj" />
 		<PluginPublishProject Include="..\EAM.Energy\EAM.Energy.csproj" />
 		<PluginPublishProject Include="..\EAM.Third\EAM.Third.csproj" />
+		<PluginPublishProject Include="..\EAM.Common\EAM.Common.csproj" />
 	</ItemGroup>
 	<!--自定义生成-->
 	<PropertyGroup>
