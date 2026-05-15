@@ -118,9 +118,9 @@ namespace EAM.Special.Services
         /// 通过ID查询记录
         /// </summary>
         /// <returns></returns>
-        public async Task<SPEC_LOWSPARE_IN> GetAsync(string sid)
+        public async Task<SPEC_LOWSPARE_IN> GetAsync(string inId)
         {
-            return await _dbContext.Query<SPEC_LOWSPARE_IN>().Where(c => c.IN_ID == sid).FirstOrDefaultAsync();
+            return await _dbContext.Query<SPEC_LOWSPARE_IN>().Where(c => c.IN_ID == inId).FirstOrDefaultAsync();
         }
 
         /// <summary>

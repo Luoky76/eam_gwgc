@@ -67,7 +67,6 @@
             sid: getQueryStringByName("sid"),
             isNew: false,
             isView: false,
-            orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             complete: [{ "ID": "1", "TEXT": "已完成" }, { "ID": "0", "TEXT": "未完成" }],
             BySource: [],
@@ -375,12 +374,6 @@
             },
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     LG.ajax({
                         async: false,
@@ -390,7 +383,7 @@
                             me.sid = data;
                             me.EXE_ID = data;
                             me.mainform.setData({ EXE_ID: data, AUDITING_EXE: "0", SOURCE: "3", PM_TYPE: "maint" });
-                            inner();
+                            me.mainform.setOrginData(me.mainform.getData());
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -406,8 +399,7 @@
                         success: function (data, message) {
                             data.OLDMODIFYDATE = data.MODIFYDATE;
                             me.EXE_ID = data.EXE_ID;
-                            me.mainform.setData(data);
-                            inner();
+                            me.mainform.setOrginData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -443,7 +435,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow1 = new Object();
                 if (me.isNew) {
@@ -479,7 +471,7 @@
                             }
                             else {
                                 //保存后原始数据变为当前数据
-                                me.orginData = data;
+                                me.mainform.setOrginData(data);
                                 me.loadData();
                                 me.grid.isDataChanged = false;
                                 me.reloadDet();
@@ -501,7 +493,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     var isChangedGrid = me.grid.getChangedRows();
                     if (updateFields || isChangedGrid.updated.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {

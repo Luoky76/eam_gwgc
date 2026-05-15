@@ -51,7 +51,6 @@
             AssessBaseContent: [],
             User: [],
             ProviderName: [],
-            orginData: {},
             gridOriginData: [],
             examinerGridOriginData: [],
             setConfig: function () {
@@ -131,12 +130,6 @@
             buttons: null,
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     //设置记录状态的初值为未提交，设置主键，设置任务制定人为当前登录用户
                     me.mainform.setData({
@@ -144,7 +137,7 @@
                         ASSESS_TASK_ID: me.sid,
                         CREATE_USERID: window.session.UserID
                     });
-                    inner();
+                    me.mainform.setOrginData(me.mainform.getData());
                 }
                 else {
                     LG.ajax({
@@ -153,8 +146,7 @@
                         loading: '正在获取中...',
                         data: { id: me.sid },
                         success: function (data, message) {
-                            me.mainform.setData(data);
-                            inner();
+                            me.mainform.setOrginData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -197,7 +189,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow = new Object();
                 if (me.isNew) {
@@ -217,7 +209,7 @@
                         //保存过一次后自动变为修改模式
                         me.isNew = false;
                         //保存后原始数据变为当前数据
-                        me.orginData = data;
+                        me.mainform.setOrginData(data);
                         me.loadData();
                     },
                     error: function (message) {
@@ -229,7 +221,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields || me.grid.isDataChanged || me.examinerGrid.isDataChanged) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {

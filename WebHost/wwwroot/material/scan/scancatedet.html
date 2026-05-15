@@ -44,7 +44,6 @@
             type: getQueryStringByName("type"),
             isNew: false,
             isView: false,
-            orginData: {},
             Auditing: [],
             setConfig: function () {
                 var me = this;
@@ -115,12 +114,6 @@
             },
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     LG.ajax({
                         async: false,
@@ -129,7 +122,7 @@
                         success: function (data) {
                             me.sid = data;
                             me.mainform.setData({ SCAN_ID: data, AUDITING: "0", SCAN_TYPE: me.type });
-                            inner();
+                            me.mainform.setOrginData(me.mainform.getData());
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -149,7 +142,7 @@
                         data: { where: JSON2.stringify(where) },
                         success: function (data, message) {
                             me.mainform.setData(data.Rows[0]);
-                            inner();
+                            me.mainform.setOrginData(me.mainform.getData());
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -228,7 +221,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     var isChangedGrid = me.grid.getChangedRows();
                     if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {

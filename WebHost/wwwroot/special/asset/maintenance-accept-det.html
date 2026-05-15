@@ -107,7 +107,7 @@
             mainform: null,
             menuNo: getQueryStringByName("MenuNo"),
             formButtons: [],
-            orginData: {},
+            detailData: {},
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -136,7 +136,7 @@
                 var me = this;
                 me.config.form.fields.removeNull();
                 //若不是委外维修，则删除委外维修字段
-                if (me.orginData.REPORT_STATE != "4") {
+                if (me.detailData.REPORT_STATE != "4") {
                     me.config.form.fields.splice(27, 5);
                 }
 
@@ -157,7 +157,7 @@
                     }
                 });
                 me.setFormDefaultBtn();
-                me.mainform.setOrginData(me.orginData);
+                me.mainform.setOrginData(me.detailData);
             },
             //表单底部按钮
             setFormDefaultBtn: function (cancelCallback, savedCallback) {
@@ -169,7 +169,7 @@
                             $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
                                 if (confirm) {
                                     //me.loadData();
-                                    me.mainform.setData(me.orginData);
+                                    me.mainform.setData(me.mainform.getOrginData());
                                 }
                             });
                         }
@@ -190,7 +190,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
@@ -216,7 +216,7 @@
             //保存表单
             save: function () {
                 var me = this;
-                if ($.isEmptyObject(LG.getFormCombChanges(me.mainform.getData(), me.orginData, true))) {
+                if ($.isEmptyObject(LG.getFormCombChanges(me.mainform.getData(), me.mainform.getOrginData(), true))) {
                     LG.showSuccess('无修改');
                     return;
                 }
@@ -231,7 +231,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow = new Object();
                 changeRow["updated"] = [data];
@@ -260,7 +260,7 @@
                     loading: '正在获取中...',
                     data: { id: me.sid },
                     success: function (data, message) {
-                        me.orginData = data;
+                        me.detailData = data;
                         if (me.mainform) me.mainform.setOrginData(data);
                     },
                     error: function (message) {

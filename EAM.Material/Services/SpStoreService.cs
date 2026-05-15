@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpStoreService : BaseService, IBaseService
+    public class SpStoreService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

@@ -21,7 +21,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpCollectService : BaseService, ISpCollectService, IBaseService
+    public class SpCollectService : ISpCollectService, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

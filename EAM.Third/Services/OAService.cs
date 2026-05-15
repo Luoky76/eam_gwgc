@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace EAM.Third.Services
 {
-    public class OAService : BaseService, Gksyb.Common.IBaseService
+    public class OAService : Gksyb.Common.IBaseService
     {
         private IDbContext _dbContext;
         private readonly UserSession _userSession;

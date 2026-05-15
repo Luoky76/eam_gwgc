@@ -63,7 +63,7 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取记录
         /// </summary>
-        public async Task<AjaxResult> GetAsync(string ID)
+        public async Task<AjaxResult> GetAsync(string inId)
         {
             var query = await _dbContext.Query<SP_INSTORE>().LeftJoin<SP_RECEIVE>((a, b) => a.RECEIVE_ID == b.RECEIVE_ID).Select((a, b) => new
             {
@@ -80,7 +80,7 @@ namespace EAM.Material.Services
                 a.DEPT_NAME,
                 a.MEMO,
                 a.IN_ID
-            }).Where(c => c.IN_ID == ID).ToListAsync();
+            }).Where(c => c.IN_ID == inId).ToListAsync();
 
             return AjaxResult.Success(query);
         }

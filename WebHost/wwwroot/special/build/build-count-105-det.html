@@ -100,7 +100,7 @@
                         async: false,
                         url: 'Special/Build/GET',
                         loading: '正在获取中...',
-                        data: { id: me.sid },
+                        data: { buildId: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data[0]);
                         },

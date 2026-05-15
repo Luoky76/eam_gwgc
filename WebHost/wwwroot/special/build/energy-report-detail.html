@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -31,7 +31,6 @@
             isView: true,
             sid: getQueryStringByName("sid"),
             pid: "",
-            orginData: {},
             dataType: [{ ID: "集装箱", TEXT: "集装箱" }, { ID: "散杂货", TEXT: "散杂货" }, { ID: "其它", TEXT: "其它" }],
             setConfig: function () {
                 var me = this;
@@ -237,15 +236,9 @@
             buttons: null,
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     me.mainform.setData({});
-                    inner();
+                    me.mainform.setOrginData(me.mainform.getData());
                 }
                 else {
                     LG.ajax({
@@ -255,8 +248,7 @@
                         data: { id: me.sid },
                         success: function (data, message) {
                             data.OLDMODIFYDATE = data.MODIFYDATE;
-                            me.mainform.setData(data);
-                            inner();
+                            me.mainform.setOrginData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -283,7 +275,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
                 var changeRow = new Object();
                 if (me.isNew) {
                     changeRow["added"] = [data];
@@ -312,7 +304,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {

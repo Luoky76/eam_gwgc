@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -38,7 +38,7 @@
             detailHeight: window.innerHeight * 0.9,
             dialog: null,
             dialogData: null,
-            Sid: null,
+            sid: null,
             BasePurtype: [],
             ExigData: [],
             SpUnit: [],
@@ -183,28 +183,21 @@
                     }
                 });
             },
-            orginData: {},
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
-                if (!me.Sid) {
-                    me.mainform.setData({ AUDITING: "0", APPLY_USER: window.session.RealName });
-                    inner();
+                if (!me.sid) {
+                    var defaultData = { AUDITING: "0", APPLY_USER: window.session.RealName };
+                    me.mainform.setData(defaultData);
+                    me.mainform.setOrginData(defaultData);
                 }
                 else {
                     LG.ajax({
                         async: false,
                         url: me.rootPath + 'Get',
                         loading: '正在获取中...',
-                        data: { id: me.Sid },
+                        data: { applyId: me.sid },
                         success: function (data, message) {
-                            me.mainform.setData(data);
-                            inner();
+                            me.mainform.setOrginData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -348,7 +341,7 @@
                                 "YG_PRICE": list[i].STORE_PRICE,
                                 "PURTYPE_ID": list[i].PURTYPE_ID,
                                 "PURTYPE_NAME": list[i].PURTYPE_NAME,
-                                "APPLY_ID": me.Sid,
+                                "APPLY_ID": me.sid,
                                 "IS_XY": "0",
                                 "NO_PRODUCE": "0"
                             });
@@ -421,7 +414,7 @@
                     var data = handle(me.mainform.getData());
                     var original = handle(me.mainform.getOrginData());
                     var changeRow = new Object();
-                    if (!me.Sid) {
+                    if (!me.sid) {
                         changeRow["added"] = [data];
                     }
                     else {
@@ -445,7 +438,7 @@
                             data: { request: changeRow, requestdet: changeRowDet },
                             success: function () {
                                 LG.showSuccess('保存成功');
-                                if (!me.Sid) me.dialog.close();
+                                if (!me.sid) me.dialog.close();
                                 else me.reload();
                             },
                             error: function (message) {
@@ -480,14 +473,14 @@
                         width: 1920
                     },
                     showSuccess: false,
-                    data: { folder: '../../Adv', "sid": me.Sid || "" },
+                    data: { folder: '../../Adv', "sid": me.sid || "" },
                     callback: function (status, data) {
                         if (status) {
                             LG.showSuccess("导入成功");
-                            if (!me.Sid) {
-                                me.Sid = data.Data.APPLY_ID;
+                            if (!me.sid) {
+                                me.sid = data.Data.APPLY_ID;
                                 me.mainform.setData(data.Data);
-                                me.orginData = data.Data;
+                                me.mainform.setOrginData(data.Data);
                             }
                             me.reload();
                         }
@@ -497,7 +490,7 @@
             },
             create: function () {
                 var me = this;
-                me.grid.addEditRow({ "APPLY_ID": me.Sid });
+                me.grid.addEditRow({ "APPLY_ID": me.sid });
             },
             delete: function () { //删除
                 var me = this;
@@ -521,7 +514,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     var isChangedGrid = me.grid.getChangedRows();
                     if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
@@ -581,12 +574,12 @@
                 me.dialog = frameElement.dialog;
                 if (me.dialog) {
                     me.dialogData = me.dialog?.get('data');
-                    me.Sid = me.dialogData.sid;
+                    me.sid = me.dialogData.sid;
                     me.isView = Boolean(me.dialogData.isView);
                 }
                 else {
                     var formData = JSON.parse(parent.window.business.data.FormData);
-                    me.Sid = formData.sid || formData.Sid;
+                    me.sid = formData.sid;
                     me.isView = Boolean(formData.isView);
                 }
 

@@ -41,7 +41,6 @@
             dialog: null,
             dialogData: null,
             sid: getQueryStringByName("sid"),
-            orginData: {},
             //明细页面大小
             detailWidth: window.innerWidth * 0.9,
             detailHeight: window.innerHeight * 0.9,
@@ -93,15 +92,8 @@
             formButtons: null,
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     me.mainform.setOrginData({ AUDITING: "0", COLLECT_ID: me.sid, COLLECT_USER: window.session.RealName });
-                    inner();
                 }
                 else {
                     LG.ajax({
@@ -111,7 +103,6 @@
                         data: { collectId: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data);
-                            inner();
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -368,7 +359,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     var isChangedGrid = me.grid.getChangedRows();
                     if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {

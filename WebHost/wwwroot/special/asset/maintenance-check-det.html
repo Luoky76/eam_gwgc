@@ -128,7 +128,6 @@
             mainform: null,
             menuNo: getQueryStringByName("MenuNo"),
             formButtons: [],
-            orginData: {},
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -186,7 +185,7 @@
                             $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
                                 if (confirm) {
                                     //me.loadData();
-                                    me.mainform.setData(me.orginData);
+                                    me.mainform.setData(me.mainform.getOrginData());
                                 }
                             });
                         }
@@ -207,7 +206,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
@@ -246,7 +245,7 @@
                 var me = this;
                 //未通过验证时停止保存
                 if (!me.vertifyBeforeSave()) return;
-                if ($.isEmptyObject(LG.getFormCombChanges(me.mainform.getData(), me.orginData, true))) {
+                if ($.isEmptyObject(LG.getFormCombChanges(me.mainform.getData(), me.mainform.getOrginData(), true))) {
                     LG.showSuccess('无修改');
                     return;
                 }
@@ -261,7 +260,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow = new Object();
                 changeRow["updated"] = [data];
@@ -284,13 +283,8 @@
             //表单数据
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    me.orginData = data;
-                }
                 function initializeData(data) {
                     me.mainform.setOrginData(data);
-                    inner();
                     //对于修改模式，若处理人无值则设置处理人为当前登录用户，若处理部门无值处理部门为该用户部门
                     if (!me.isView) {
                         data.CHECK_USERID = data.CHECK_USERID ?? window.session.UserID;

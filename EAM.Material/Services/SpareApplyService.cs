@@ -12,7 +12,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpareApplyService : BaseService, IBaseService
+    public class SpareApplyService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

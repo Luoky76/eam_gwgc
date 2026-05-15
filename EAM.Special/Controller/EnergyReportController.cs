@@ -22,7 +22,7 @@ namespace EAM.Special.Controller
         /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
-            return await Service.ComboxDataAsync();
+            return await _service.ComboxDataAsync();
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace EAM.Special.Controller
         [JsToken]
         public async Task<AjaxResult> SaveAsync(SaveRequest<REPORT_ENERGY> request)
         {
-            return await Service.SaveAsync(request);
+            return await _service.SaveAsync(request);
         }
 
         /// <summary>
@@ -57,16 +57,7 @@ namespace EAM.Special.Controller
         [HttpPost]
         public async Task<AjaxResult> GridListAsync(GridRequest request)
         {
-            return AjaxResult.Success(await Service.GridListAsync(request), "成功");
-        }
-
-        private EnergyReportService Service
-        {
-            get
-            {
-                _service.SetUser(CurrentUser);
-                return _service;
-            }
+            return AjaxResult.Success(await _service.GridListAsync(request), "成功");
         }
     }
 }

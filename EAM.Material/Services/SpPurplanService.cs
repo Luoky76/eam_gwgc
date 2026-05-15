@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpPurplanService : BaseService, IBaseService
+    public class SpPurplanService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

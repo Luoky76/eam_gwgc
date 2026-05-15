@@ -129,7 +129,6 @@
             mainform: null,
             menuNo: getQueryStringByName("MenuNo"),
             formButtons: [],
-            orginData: {},
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -187,7 +186,7 @@
                             $.ligerDialog.confirm("确定重置数据吗?", function (confirm) {
                                 if (confirm) {
                                     //me.loadData();
-                                    me.mainform.setData(me.orginData);
+                                    me.mainform.setData(me.mainform.getOrginData());
                                 }
                             });
                         }
@@ -208,7 +207,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
@@ -249,7 +248,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow = new Object();
                 if (me.isNew) {
@@ -278,10 +277,6 @@
             //表单数据
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     //设置主键，设置记录状态的初值为未提交，设置修复状态为待修复
                     //设置申请人为当前登录用户，设置申请部门为登录用户部门
@@ -294,7 +289,7 @@
                         APPLY_DEPTID: window.session.Corp.CorpID,
                         APPLY_DEPT: window.session.Corp.CName
                     });
-                    inner();
+                    me.mainform.setOrginData(me.mainform.getData());
                 }
                 else {
                     LG.ajax({
@@ -304,7 +299,6 @@
                         data: { id: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data);
-                            inner();
                         },
                         error: function (message) {
                             LG.showError(message);

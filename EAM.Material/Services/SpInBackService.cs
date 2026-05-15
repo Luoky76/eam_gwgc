@@ -46,9 +46,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取记录
         /// </summary>
-        public async Task<AjaxResult> GetAsync(string ID)
+        public async Task<AjaxResult> GetAsync(string inBackId)
         {
-            var query = await _dbContext.Query<SP_IN_BACK>().Where(x => x.IN_BACK_ID == ID).ToListAsync();
+            var query = await _dbContext.Query<SP_IN_BACK>().Where(x => x.IN_BACK_ID == inBackId).ToListAsync();
 
             return AjaxResult.Success(query);
         }

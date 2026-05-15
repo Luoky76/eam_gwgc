@@ -100,9 +100,9 @@ namespace EAM.Special.Services
         /// <summary>
         /// 获取记录
         /// </summary>
-        public async Task<AjaxResult> GetAsync(string ID)
+        public async Task<AjaxResult> GetAsync(string buildId)
         {
-            var list = await _dbContext.Query<BUILD_COUNT>(x => x.BUILD_ID == ID).ToListAsync();
+            var list = await _dbContext.Query<BUILD_COUNT>(x => x.BUILD_ID == buildId).ToListAsync();
 
             return AjaxResult.Success(list);
         }

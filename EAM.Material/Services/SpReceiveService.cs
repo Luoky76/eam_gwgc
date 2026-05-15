@@ -54,9 +54,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取记录
         /// </summary>
-        public async Task<AjaxResult> GetAsync(string ID)
+        public async Task<AjaxResult> GetAsync(string receiveId)
         {
-            var query = await _dbContext.Query<SP_RECEIVE>().Where(x => x.RECEIVE_ID == ID).ToListAsync();
+            var query = await _dbContext.Query<SP_RECEIVE>().Where(x => x.RECEIVE_ID == receiveId).ToListAsync();
 
             return AjaxResult.Success(query);
         }

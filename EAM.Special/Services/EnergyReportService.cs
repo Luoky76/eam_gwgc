@@ -12,7 +12,7 @@ using Gksyb.Model.UI;
 
 namespace EAM.Special.Services
 {
-    public class EnergyReportService : BaseService, IBaseService
+    public class EnergyReportService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;

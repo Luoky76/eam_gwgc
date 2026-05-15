@@ -15,7 +15,7 @@ using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpApplyService : BaseService, IFlowInterceptor, IBaseService
+    public class SpApplyService : IFlowInterceptor, IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;

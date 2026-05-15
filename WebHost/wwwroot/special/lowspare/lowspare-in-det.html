@@ -1,4 +1,4 @@
-﻿
+
 <!DOCTYPE html>
 <html>
 
@@ -34,7 +34,6 @@
             sid: getQueryStringByName("sid"),
             isNew: false,
             isView: true,
-            orginData: {},
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -138,12 +137,6 @@
             },
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     me.mainform.setData({
                         AUDITING: "0",
@@ -152,17 +145,16 @@
                         //APPLY_DEPTID: window.session.Corp.CorpID,
                         //APPLY_DEPT: window.session.Corp.CName
                     });
-                    inner();
+                    me.mainform.setOrginData(me.mainform.getData());
                 }
                 else {
                     LG.ajax({
                         async: false,
                         url: 'special/LowspareIn/Get',
                         loading: '正在获取中...',
-                        data: { sid: me.sid },
+                        data: { inId: me.sid },
                         success: function (data, message) {
-                            me.mainform.setData(data);
-                            inner();
+                            me.mainform.setOrginData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -187,7 +179,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow = new Object();
                 if (me.isNew) {
@@ -217,7 +209,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {

@@ -51,7 +51,6 @@
             dialog: null,
             dialogData: null,
             callback: null,
-            orginData: {},
             auditing: [{ "ID": "1", "TEXT": "已提交" }, { "ID": "0", "TEXT": "未提交" }],
             runStatus: [],
             MaintDept: [],
@@ -185,12 +184,6 @@
             },
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     var originData = {};
                     LG.ajax({
@@ -210,7 +203,6 @@
                         PLAN_STATE: "10"
                     });
                     me.mainform.setOrginData(originData);
-                    inner();
                 }
                 else {
                     LG.ajax({
@@ -220,7 +212,6 @@
                         data: { id: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data);
-                            inner();
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -293,7 +284,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     var isChangedGrid = me.grid.getChangedRows();
                     if (updateFields || isChangedGrid.updated.length > 0 || isChangedGrid.added.length > 0) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {

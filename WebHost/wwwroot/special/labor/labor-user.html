@@ -20,7 +20,6 @@
     </form>
     <script type="text/javascript">
         'use strict';
-        var sexselect = [{ "ID": 0, "TEXT": "男", "VALUE": "0" }, {"ID":1,"TEXT":"女","VALUE":"1"}]
         var business = {
 
             formLabelWidth: 120,
@@ -30,6 +29,7 @@
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
+            sexselect: [{ "ID": 0, "TEXT": "男", "VALUE": "0" }, { "ID": 1, "TEXT": "女", "VALUE": "1" }],
 setConfig: function () {
                 var me = this;
                 me.config = {
@@ -63,7 +63,7 @@ setConfig: function () {
                             },
                             { display: "人员ID", name: "USER_ID", width: 100, type: "text",hide:true, editor: { type: 'text'} },
                             //{ display: "部门ID", name: "DEPT_ID", width: 100, type: "text",  editor: { type: 'text'} },
-                            { display: "性别", name: "SEX", width: 100, type: "select", editor: { type: 'select', data: sexselect } },
+                            { display: "性别", name: "SEX", width: 100, type: "select", editor: { type: 'select', data: me.sexselect } },
                             { display: "生日", name: "BIRTHDAY", width: 100, type: "date", editor: { type: 'date', format: "yyyy-MM-dd"} },
                             { display: "是否注销", name: "IS_NOVALID", width: 60, type: "chk", editor: { type: 'chkStr' } },
                             { display: "尺码数量", name: "Count", width: 100, type: "text", hide: true, editor: { type: 'text' } },

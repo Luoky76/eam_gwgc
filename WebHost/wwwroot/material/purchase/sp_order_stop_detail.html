@@ -36,7 +36,7 @@ rootPath:'Material/SpOrderStop/',
             MenuNo: getQueryStringByName("MenuNo"),
             dialog: null,
             dialogData: null,
-            Sid: null,
+            sid: null,
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -141,7 +141,7 @@ rootPath:'Material/SpOrderStop/',
                             return
                         }
                         me.grid.addEditRow({
-                            "STOP_ID": me.Sid,
+                            "STOP_ID": me.sid,
                             "ORDER_ID": list[i].ORDER_ID,
                             "ORDERDET_ID": list[i].ORDERDET_ID,
                             "ORDER_CODE": list[i].ORDER_CODE,
@@ -249,7 +249,7 @@ rootPath:'Material/SpOrderStop/',
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
-                        me.searchForm.setData({ "_search_STOP_ID": me.Sid });
+                        me.searchForm.setData({ "_search_STOP_ID": me.sid });
                     }
                 });
             },
@@ -258,7 +258,7 @@ rootPath:'Material/SpOrderStop/',
 
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
-                me.Sid = me.dialogData.sid;
+                me.sid = me.dialogData.sid;
                 me.isView = Boolean(me.dialogData.isView);
 
                 me.loadComboxData();

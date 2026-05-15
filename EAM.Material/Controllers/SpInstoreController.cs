@@ -53,11 +53,11 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 根据ID获取记录
+        /// 根据入库ID获取记录
         /// </summary>
-        public async Task<AjaxResult> GetAsync(string ID)
+        public async Task<AjaxResult> GetAsync(string inId)
         {
-            return await _service.GetAsync(ID);
+            return await _service.GetAsync(inId);
         }
 
         /// <summary>

@@ -137,7 +137,6 @@
             requestGrid: null,
             menuNo: getQueryStringByName("MenuNo"),
             formButtons: [],
-            orginData: {},
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -218,7 +217,7 @@
                 var me = this;
                 function inner(callback) {
                     var data = me.mainform.getData();
-                    var updateFields = LG.getFormCombChanges(data, me.orginData, true);
+                    var updateFields = LG.getFormCombChanges(data, me.mainform.getOrginData(), true);
                     if (updateFields || me.collectGrid.isDataChanged || me.requestGrid.isDataChanged) {
                         $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
                             if (confirm) {
@@ -259,7 +258,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow = new Object();
                 if (me.isNew) {
@@ -279,7 +278,7 @@
                         //保存过一次后自动变为修改模式
                         me.isNew = false;
                         //保存后原始数据变为当前数据
-                        me.orginData = data;
+                        me.mainform.setOrginData(data);
                         me.loadData();
                     },
                     error: function (message) {
@@ -290,12 +289,6 @@
             //表单数据
             loadData: function () {
                 var me = this;
-                function inner() {
-                    var data = me.mainform.getData();
-                    LG.getFormCombChanges(data, me.orginData, true);
-                    delete me.orginData;
-                    me.orginData = data;
-                }
                 if (me.isNew) {
                     //设置记录状态的初值为未提交，设置主键，设置采购人为当前登录用户
                     //设置采购部门为登录用户部门
@@ -306,7 +299,7 @@
                         DEPT_ID: window.session.Corp.CorpID,
                         DEPT_NAME: window.session.Corp.CName
                     });
-                    inner();
+                    me.mainform.setOrginData(me.mainform.getData());
                 }
                 else {
                     LG.ajax({
@@ -316,7 +309,6 @@
                         data: { id: me.sid },
                         success: function (data, message) {
                             me.mainform.setOrginData(data);
-                            inner();
                         },
                         error: function (message) {
                             LG.showError(message);
@@ -843,7 +835,7 @@
                     return data;
                 }
                 var data = handle(me.mainform.getData());
-                var original = handle(me.orginData);
+                var original = handle(me.mainform.getOrginData());
 
                 var changeRow1 = new Object();
                 if (me.isNew) {
@@ -871,7 +863,7 @@
                         //保存过一次后自动变为修改模式
                         me.isNew = false;
                         //保存后原始数据变为当前数据
-                        me.orginData = data;
+                        me.mainform.setOrginData(data);
                         me.loadData();
                         me.collectGrid.isDataChanged = false;
                         me.reloadCollect();

@@ -47,9 +47,9 @@ namespace EAM.Special.Controller
         /// <summary>
         /// 获取记录
         /// </summary>
-        public async Task<AjaxResult> GetAsync(string ID)
+        public async Task<AjaxResult> GetAsync(string buildId)
         {
-            return await _service.GetAsync(ID);
+            return await _service.GetAsync(buildId);
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class BaseSpUnitService : BaseService, IBaseService
+    public class BaseSpUnitService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;

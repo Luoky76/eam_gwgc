@@ -7,7 +7,7 @@ using Gksyb.Model.Grid;
 
 namespace EAM.Material.Services
 {
-    public class BaseSptypeService : BaseService, IBaseService
+    public class BaseSptypeService : IBaseService
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
