@@ -152,15 +152,71 @@ namespace EAM.Material.Services
         /// <summary>
         /// 删除前验证
         /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
         private async Task BeforeDelete(BASE_SPTYPE entity)
         {
-            //验证是否存在下属节点
-            var query = await _dbContext.Query<BASE_SPTYPE>().Where(c => c.IS_CANCEL == "1" && c.PRE_TYPEID == entity.TYPE_ID).ToListAsync();
-            if (query.Count > 0) throw new MessageException("该节点存在有效下级节点，不能删除！");
-
-            await Task.CompletedTask;
+            // 删除分类时，同时删除所有子类
+            // 所有被删除的分类，将该类下的物资改为被删除分类的上级分类，或临时类别
+            var newPreType = new BASE_SPTYPE();
+            if (entity.PRE_TYPEID.IsNullOrWhiteSpace())
+            {
+                newPreType = await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_NAME == "临时类别").FirstOrDefaultAsync();
+            }
+            else
+            {
+                newPreType = await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_ID == entity.PRE_TYPEID).FirstOrDefaultAsync();
+            }
+            if (newPreType == null)
+            {
+                // 无可替代的分类，判断是否已有物资在分类下，有则不允许删除
+                var anySp = await _dbContext.Query<BASE_SPCATALOG>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE)).AnyAsync();
+                if (anySp)
+                {
+                    MessageException.Throw("该分类下已有物资，无法删除！");
+                }
+            }
+            await _dbContext.DeleteAsync<BASE_SPTYPE>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE));
+            await _dbContext.UpdateAsync<BASE_SPCATALOG>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new BASE_SPCATALOG
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_APPLY_DETAIL
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_COLLECT_DET
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_COLLECT_REQUEST>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_COLLECT_REQUEST
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_OUTAPP_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTAPP_DET
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_OUTBACK_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTBACK_DET
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTSTORE_DET
+            {
+                TYPE_ID = newPreType.TYPE_ID,
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
         }
 
         /// <summary>
