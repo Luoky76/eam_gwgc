@@ -120,15 +120,12 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(BASE_SPTYPE entity)
         {
-            entity.TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-            var query = await _dbContext.Query<BASE_SPTYPE>()
-                .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
-                .FirstOrDefaultAsync();
-            if (query != null)
+            // 生成主键
+            if (entity.TYPE_ID.IsNullOrWhiteSpace())
             {
-                throw new MessageException("上级节点只能为父节点！");
+                entity.TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            await Task.CompletedTask;
+            await UpdateCodeCascade(entity);
         }
 
         /// <summary>
@@ -138,15 +135,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeUpdate(BASE_SPTYPE entity)
         {
-            var query = await _dbContext.Query<BASE_SPTYPE>()
-                .Where(c => c.TYPE_ID == entity.PRE_TYPEID && c.PRE_TYPEID == entity.TYPE_ID || c.TYPE_ID == entity.PRE_TYPEID && c.TYPE_ID == entity.TYPE_ID)
-                .FirstOrDefaultAsync();
-            if (query != null)
-            {
-                throw new MessageException("上级节点只能为父节点！");
-            }
-
-            await Task.CompletedTask;
+            await UpdateCodeCascade(entity);
         }
 
         /// <summary>
@@ -174,48 +163,49 @@ namespace EAM.Material.Services
                     MessageException.Throw("该分类下已有物资，无法删除！");
                 }
             }
-            await _dbContext.DeleteAsync<BASE_SPTYPE>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE));
+            // 删除所有字类，此处不能删除本身，否则将导致SaveEntity方法删除失败
+            await _dbContext.DeleteAsync<BASE_SPTYPE>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE) && x.TYPE_ID != entity.TYPE_ID);
             await _dbContext.UpdateAsync<BASE_SPCATALOG>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new BASE_SPCATALOG
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
             await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_APPLY_DETAIL
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
             await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_COLLECT_DET
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
             await _dbContext.UpdateAsync<SP_COLLECT_REQUEST>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_COLLECT_REQUEST
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
             await _dbContext.UpdateAsync<SP_OUTAPP_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTAPP_DET
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
             await _dbContext.UpdateAsync<SP_OUTBACK_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTBACK_DET
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
             await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTSTORE_DET
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME,
+                TYPE_CODE = newPreType.TYPE_CODE
             });
         }
 
@@ -225,6 +215,109 @@ namespace EAM.Material.Services
         private async Task AfterSave(List<BASE_SPTYPE> added, List<BASE_SPTYPE> updated, List<BASE_SPTYPE> deleted)
         {
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 逐级更新编码
+        /// </summary>
+        private async Task UpdateCodeCascade(BASE_SPTYPE entity)
+        {
+            //确定当前节点的编码
+            if (!entity.PRE_TYPEID.IsNullOrWhiteSpace())
+            {
+                var preType = await _dbContext.QueryByKeyAsync<BASE_SPTYPE>(entity.PRE_TYPEID);
+                //编码正确，无需重编
+                if (!entity.TYPE_CODE.IsNullOrWhiteSpace() && entity.TYPE_CODE.Length >= 3 && entity.TYPE_CODE[..^3] == preType.TYPE_CODE) return;
+                //为当前节点生成编码
+                var cur_code = await _dbContext.Query<BASE_SPTYPE>(x => x.TYPE_CODE.StartsWith(preType.TYPE_CODE) && x.TYPE_CODE.Length == preType.TYPE_CODE.Length + 3)
+                    .MaxAsync(x => x.TYPE_CODE);
+                entity.TYPE_CODE = cur_code.IsNullOrWhiteSpace()
+                    ? $"{preType.TYPE_CODE}001"
+                    : $"{cur_code[..^3]}{long.Parse(cur_code[^3..]) + 1:D3}";
+            }
+            else
+            {
+                //根节点
+                if (entity.TYPE_CODE.IsNullOrWhiteSpace() || entity.TYPE_CODE.Length != 3)
+                {
+                    //为根节点生成编码
+                    var cur_code = await _dbContext.Query<BASE_SPTYPE>(x => string.IsNullOrWhiteSpace(x.PRE_TYPEID))
+                        .MaxAsync(x => x.TYPE_CODE);
+                    entity.TYPE_CODE = cur_code.IsNullOrWhiteSpace() ? "001" : $"{long.Parse(cur_code) + 1:D3}";
+                }
+                else
+                {
+                    var curType = await _dbContext.QueryByKeyAsync<BASE_SPTYPE>(entity.TYPE_ID);
+                    //编码未发生修改则直接返回
+                    if (curType != null && entity.TYPE_CODE == curType.TYPE_CODE) return;
+                }
+            }
+
+            //使用广搜逐级更新子节点编码，同时判环
+            var keySet = new HashSet<string>() { entity.TYPE_ID };
+            var list = new Queue<BASE_SPTYPE>();
+            list.Enqueue(entity);
+            while (list.Any())
+            {
+                var parent = list.Dequeue();
+                //更新关联表的类别数据
+                await UpdateRelatedTable(parent);
+                var childList = await _dbContext.Query<BASE_SPTYPE>(x => x.PRE_TYPEID == parent.TYPE_ID)
+                    .OrderBy(x => x.TYPE_ID)
+                    .ToListAsync();
+                for (var i = 0; i < childList.Count; ++i)
+                {
+                    var child = childList[i];
+                    MessageException.ThrowIf(keySet.Contains(child.TYPE_ID), "出现上级链路循环");
+                    keySet.Add(child.TYPE_ID);
+                    _dbContext.TrackEntity(child);
+                    child.TYPE_CODE = $"{parent.TYPE_CODE}{i + 1:D3}";
+                    await _dbContext.UpdateAsync(child);
+                    list.Enqueue(child);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新关联表的类别数据
+        /// </summary>
+        private async Task UpdateRelatedTable(BASE_SPTYPE entity)
+        {
+            await _dbContext.UpdateAsync<BASE_SPCATALOG>(x => x.TYPE_ID == entity.TYPE_ID, x => new BASE_SPCATALOG
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_APPLY_DETAIL
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_COLLECT_DET>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_COLLECT_DET
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_COLLECT_REQUEST>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_COLLECT_REQUEST
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_OUTAPP_DET>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_OUTAPP_DET
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_OUTBACK_DET>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_OUTBACK_DET
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
+            await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_OUTSTORE_DET
+            {
+                TYPE_NAME = entity.TYPE_NAME,
+                TYPE_CODE = entity.TYPE_CODE
+            });
         }
     }
 }

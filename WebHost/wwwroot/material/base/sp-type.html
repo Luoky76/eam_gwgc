@@ -32,7 +32,6 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -40,28 +39,40 @@
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
-menuNo: getQueryStringByName("MenuNo"),
+            menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             iframeloading: $("#iframeloading"),
             tree: null,
             currentNode: null,
             setConfig: function () {
                 var me = this;
-                BasePurtype: [];
                 me.config = {
                     search: {
                         fields: [
-                            { display: "物料分类编码", name: "_search_TYPE_CODE", dbname: "TYPE_CODE", width: 200, upper: true, type: "text", options: {} },
-                            { display: "物料分类名称", name: "_search_TYPE_NAME", dbname: "TYPE_NAME", width: 200, type: "text", options: {} },
-                            { display: "采购分类", name: "_search_PURTYPE_ID", dbname: "PURTYPE_ID", width: 200, type: "select", options: { type: "select", data: me.BasePurtype } },
-                            { display: "上一节点id", name: "_search_PRE_TYPEID", dbname: "PRE_TYPEID", op: "equal", type: "hidden", options: {} },
+                            {
+                                display: "通用搜索",
+                                name: "_search_all",
+                                hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "TYPE_NAME", type: "string" },
+                                    { op: "like", field: "TYPE_CODE", type: "string" },
+                                    { op: "like", field: "MEMO", type: "string" }
+                                ],
+                                options: {
+                                    //回车自动搜索
+                                    onEnter: function () {
+                                        var me = this;
+                                        var $formsearch = $("#formsearch");
+                                        LG.commonSearch($formsearch, me.grid);
+                                    }.bind(me)
+                                },
+                            },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "物料分类编码", name: "TYPE_CODE", validate: { required: true }, minWidth: 200, type: "text", editor: { type: 'text' } },
-                            { display: "物料分类名称", name: "TYPE_NAME", validate: { required: true }, minWidth: 200, type: "text", editor: { type: 'text' } },
-                            //{ display: "分类级别", name: "TYPE_LEVEL", minWidth: 200, type: "text", editor: { type: 'text' } },
+                            { display: "物料分类名称", name: "TYPE_NAME", validate: { required: true }, minWidth: 200, type: "text", align: "left", editor: { type: 'text' } },
+                            { display: "物料分类编码", name: "TYPE_CODE", minWidth: 200, type: "text", align: "left" },
                             {
                                 display: "采购分类", name: "PURTYPE_ID", validate: { required: true }, minWidth: 200, type: "select",
                                 editor: {
@@ -76,12 +87,8 @@ menuNo: getQueryStringByName("MenuNo"),
                                     },
                                 }
                             },
-                            {
-                                display: "上级节点", name: "PRE_TYPEID", dbname: "PRE_TYPEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.SpTypeName },
-                            },
-                            {
-                                display: "是否注销", name: "IS_CANCEL", dbname: "IS_CANCEL", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
-                            },
+                            { display: "上级节点", name: "PRE_TYPEID", minWidth: 200, type: "select", editor: { type: 'select', data: me.SpTypeName } },
+                            { display: "是否注销", name: "IS_CANCEL", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
                             { display: "失效日期", name: "NOVALID_DATE", minWidth: 200, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
                             { display: "备注", name: "MEMO", minWidth: 300, type: "text", editor: { type: 'text' } },
                             //隐藏
@@ -101,7 +108,6 @@ menuNo: getQueryStringByName("MenuNo"),
             grid: null,
             loadComboxData: function () {
                 var me = this;
-                var dataControl = [];
                 LG.ajax({
                     async: false,
                     url: 'Material/BaseSptype/ComboxData',
@@ -109,13 +115,11 @@ menuNo: getQueryStringByName("MenuNo"),
                     success: function (data, message) {
                         me.BasePurtype = data.BasePurtype
                         me.SpTypeName = data.SpTypeName
-
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
-                return dataControl;
             },
             setGrid: function () {
                 var me = this;
