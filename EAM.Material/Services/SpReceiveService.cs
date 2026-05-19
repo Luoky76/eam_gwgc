@@ -143,7 +143,7 @@ namespace EAM.Material.Services
         private async Task BeforeAdd(SP_RECEIVE entity)
         {
             entity.RECEIVE_ID = masterID = GuidHelper.NewSnowflakeId().ToString();
-            entity.USER_NAME = _userSession.UserName.ToString();
+            entity.USER_NAME = _userSession.RealName;
 
             string type = "DJ" + DateTime.Now.ToString("yyyyMM");
             string def = type + "0000";
@@ -268,7 +268,7 @@ namespace EAM.Material.Services
             if (entity.AUDITING_CHK == "1")
             {
                 entity.CHK_DATE = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd"));
-                entity.EDIT_USER = _userSession.UserName;
+                entity.EDIT_USER = _userSession.RealName;
 
                 SP_INSTORE _in = new();
 
@@ -342,7 +342,7 @@ namespace EAM.Material.Services
             {
                 entity.AUDITING_CHK = "0";
                 entity.CHK_DATE = null;
-                entity.EDIT_USER = _userSession.UserName;
+                entity.EDIT_USER = _userSession.RealName;
 
                 if (_dbContext.Query<SP_INSTORE>().Any(t => t.RECEIVE_ID == entity.RECEIVE_ID && t.AUDITING != "0"))
                 {

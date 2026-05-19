@@ -183,9 +183,9 @@ namespace EAM.Device.services
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
             //维修人当前登陆人
-            entity.REPAIR_USER = _userSession.UserName;
+            entity.REPAIR_USER = _userSession.RealName;
             entity.REPAIR_USERID = _userSession.UserID.ToString();
-            entity.EDIT_USER = _userSession.UserName;
+            entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.FAULT_SRC = "10";
             entity.FAULT_STATUS = "30";
@@ -409,7 +409,7 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAddCheck(REP_FAULT entity)
         {
-            entity.CHECK_USER = _userSession.UserName;
+            entity.CHECK_USER = _userSession.RealName;
             entity.CHECK_USERID = _userSession.UserID.ToString();
             entity.CHECK_DATE = Sysdate;
             await Task.CompletedTask;

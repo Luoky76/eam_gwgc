@@ -290,7 +290,7 @@ namespace EAM.Material.Services
                     var data = new SP_RECEIVE
                     {
                         RECEIVE_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        USER_NAME = _userSession.UserName.ToString(),
+                        USER_NAME = _userSession.RealName,
                         USER_ID = _userSession.UserID.ToString(),
                         RECEIVE_CODE = type + index.ToString("D4"),
                         CREATEDATE = DateTime.Now,

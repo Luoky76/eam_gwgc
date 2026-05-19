@@ -342,7 +342,7 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_COLLECT entity)
         {
             DateTime? dt = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.UserName;
+            entity.MODIFY_USERID = _userSession.RealName;
             entity.MODIFYDATE = dt;
         }
 

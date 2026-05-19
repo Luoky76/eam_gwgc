@@ -143,7 +143,7 @@ namespace EAM.Repair.services
             {
                 AUDITING_C = "1",
                 PLAN_STATE = "40", // 待验收
-                EXE_USER = _userSession.UserName,
+                EXE_USER = _userSession.RealName,
                 EXE_USERID = _userSession.UserID.ToString(),
                 EIDT_DATE = sysdate
             });
@@ -159,7 +159,7 @@ namespace EAM.Repair.services
             {
                 AUDITING_D = "1",
                 PLAN_STATE = "50", // 已验收
-                CHECK_USER = _userSession.UserName,
+                CHECK_USER = _userSession.RealName,
                 CHECK_USERID = _userSession.UserID.ToString()
             });
             return AjaxResult.Success();
@@ -476,7 +476,7 @@ namespace EAM.Repair.services
             if (entity.AUDITING_C.IsNullOrWhiteSpace()) entity.AUDITING_C = "0";
             if (entity.AUDITING_D.IsNullOrWhiteSpace()) entity.AUDITING_D = "0";
 
-            entity.REPORT_USER = _userSession.UserName;
+            entity.REPORT_USER = _userSession.RealName;
             entity.REPORT_USERID = _userSession.UserID.ToString();
             string type = "WXSB" + DateTime.Now.ToString("yyyyMM");
             string def = type + "0000";

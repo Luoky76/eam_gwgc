@@ -209,7 +209,7 @@ namespace EAM.Device.services
         {
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.EDIT_USER = _userSession.UserName;
+            entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.EDIT_DATE = Sysdate;
             string aa = "MTJH" + DateTime.Now.ToString("yyyyMM");
