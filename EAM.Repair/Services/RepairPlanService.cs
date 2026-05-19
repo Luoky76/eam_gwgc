@@ -6,6 +6,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Core.Interfaces.OA;
 using Gksyb.Core.Interfaces.Repair;
 using Gksyb.Model;
@@ -24,15 +25,17 @@ namespace EAM.Repair.services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly IUserService _userService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private readonly ICorpService _corpService;
         private string errMsg = string.Empty;
 
-        public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
+        public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICodeCreatorService codeCreatorService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userService = userService;
+            _codeCreatorService = codeCreatorService;
             _corpService = corpService;
             _userSession = userSession;
         }
@@ -392,71 +395,72 @@ namespace EAM.Repair.services
                     }
                 }
             }
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            try
             {
-                bool mainSuccess = false, detSuccess = false;
-                var execResult = await _dbContext.SaveEntityAnsyc(request,
-                     c => new
-                     {
-                         c.AUDITING_A,
-                         c.AUDITING_B,
-                         c.AUDITING_C,
-                         c.AUDITING_D,
-                         c.EXE_CODE,
-                         c.MAINT_TYPE,
-                         c.DEAL_TYPE,
-                         c.PLAN_STATE,
-                         c.ACT_START_DATE,
-                         c.ACT_END_DATE,
-                         c.ACT_STOP_TIME,
-                         c.EXE_USER,
-                         c.ASSIST_USER,
-                         c.IS_LEAVE,
-                         c.EXE_DESC,
-                         c.LEAVE_MEMO,
-                         c.FAULT_DESCRIBE,
-                         c.REP_LEVEL,
-                         c.AUDIT_USER,
-                         c.REPORT_USER,
-                         c.AUDIT_USERID,
-                         c.REPORT_USERID,
-                         c.CHARGE_USER,
-                         c.REPAIR_MEMO,
-                         c.EIDT_DATE,
-                         c.DEVICE_ID,
-                         c.CHECK_CODE,
-                         c.CHECK_DESC,
-                         c.CHECK_DATE,
-                         c.CHECK_MEMO,
-                         c.CHECK_USER,
-                         c.EXE_ID,
-                         c.DEPT_NAME,
-                         c.WSEC_DEPT,
-                         c.PLAN_MEMO,
-                         c.PLAN_START_DATE,
-                         c.PLAN_END_DATE,
-                         c.PLAN_STOP_TIME,
-                         c.COLLECT_METHOD,
-                         c.PLAN_MONEY,
-                         c.ACT_MONEY
-                     },
-                     c => a => a.EXE_ID == c.EXE_ID
-                     , BeforeAdd, null, BeforeDelete, false, null, null, true, null);
+                await _dbContext.UseTransactionAsync(async () =>
+                {
+                    var execResult = await _dbContext.SaveEntityAnsyc(request,
+                         c => new
+                         {
+                             c.AUDITING_A,
+                             c.AUDITING_B,
+                             c.AUDITING_C,
+                             c.AUDITING_D,
+                             c.EXE_CODE,
+                             c.MAINT_TYPE,
+                             c.DEAL_TYPE,
+                             c.PLAN_STATE,
+                             c.ACT_START_DATE,
+                             c.ACT_END_DATE,
+                             c.ACT_STOP_TIME,
+                             c.EXE_USER,
+                             c.ASSIST_USER,
+                             c.IS_LEAVE,
+                             c.EXE_DESC,
+                             c.LEAVE_MEMO,
+                             c.FAULT_DESCRIBE,
+                             c.REP_LEVEL,
+                             c.AUDIT_USER,
+                             c.REPORT_USER,
+                             c.AUDIT_USERID,
+                             c.REPORT_USERID,
+                             c.CHARGE_USER,
+                             c.REPAIR_MEMO,
+                             c.EIDT_DATE,
+                             c.DEVICE_ID,
+                             c.CHECK_CODE,
+                             c.CHECK_DESC,
+                             c.CHECK_DATE,
+                             c.CHECK_MEMO,
+                             c.CHECK_USER,
+                             c.EXE_ID,
+                             c.DEPT_NAME,
+                             c.WSEC_DEPT,
+                             c.PLAN_MEMO,
+                             c.PLAN_START_DATE,
+                             c.PLAN_END_DATE,
+                             c.PLAN_STOP_TIME,
+                             c.COLLECT_METHOD,
+                             c.PLAN_MONEY,
+                             c.ACT_MONEY
+                         },
+                         c => a => a.EXE_ID == c.EXE_ID
+                         , BeforeAdd, null, BeforeDelete, false, null, null, true, null);
 
-                mainSuccess = !execResult.IsError;
-                if (mainSuccess)  //主表是否保存成功
-                {
+                    if (execResult.IsError)
+                    {
+                        throw new MessageException(errMsg.IsNullOrWhiteSpace() ? "维修计划保存失败" : errMsg);
+                    }
                     requestdet ??= new SaveRequest<REP_PLAN_EXE_ITEM>();
-                    detSuccess = !(await SaveExeItem(requestdet)).IsError;  //明细表是否保存成功
-                }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
-                {
-                    trans.Rollback();
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
-                }
+                    if ((await SaveExeItem(requestdet)).IsError)
+                    {
+                        throw new MessageException("维修项目明细保存失败");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
             }
             return AjaxResult.Success("保存成功");
         }
@@ -475,14 +479,15 @@ namespace EAM.Repair.services
             if (entity.AUDITING_B.IsNullOrWhiteSpace()) entity.AUDITING_B = "0";
             if (entity.AUDITING_C.IsNullOrWhiteSpace()) entity.AUDITING_C = "0";
             if (entity.AUDITING_D.IsNullOrWhiteSpace()) entity.AUDITING_D = "0";
-
-            entity.REPORT_USER = _userSession.RealName;
-            entity.REPORT_USERID = _userSession.UserID.ToString();
-            string type = "WXSB" + DateTime.Now.ToString("yyyyMM");
-            string def = type + "0000";
-            var model = await _dbContext.Query<REP_PLAN_EXE>(x => x.EXE_CODE.Contains(type)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
-            entity.EXE_CODE = type + index.ToString("D4");
+            if (entity.REPORT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.REPORT_USERID = _userSession.UserID.ToString();
+                entity.REPORT_USER = _userSession.RealName;
+            }
+            if (entity.EXE_CODE.IsNullOrWhiteSpace())
+            {
+                entity.EXE_CODE = await _codeCreatorService.CreateCodeAsync<REP_PLAN_EXE>("WXSB", a => a.EXE_CODE);
+            }
 
             await Task.CompletedTask;
         }

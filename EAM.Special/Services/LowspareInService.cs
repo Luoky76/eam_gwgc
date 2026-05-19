@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -17,6 +18,7 @@ namespace EAM.Special.Services
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private DateTime? _Sysdate;
 
         /// <summary>
@@ -24,12 +26,14 @@ namespace EAM.Special.Services
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="comboxDataService"></param>
+        /// <param name="codeCreatorService"></param>
         /// <param name="userSession"></param>
 
-        public LowspareInService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public LowspareInService(IDbContext dbContext, IComboxDataService comboxDataService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
 
         }
@@ -193,11 +197,14 @@ namespace EAM.Special.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFY_DATE = Sysdate;
 
-            string aa = "RZ" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<SPEC_LOWSPARE_IN>(x => x.IN_CODE.Contains(aa)).Select(x => Sql.Max(x.IN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.IN_CODE = aa + index.ToString("D4");
+            if (entity.IN_CODE.IsNullOrWhiteSpace())
+            {
+                entity.IN_CODE = await _codeCreatorService.CreateCodeAsync<SPEC_LOWSPARE_IN>("RZ", a => a.IN_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
             await Task.CompletedTask;
         }
 

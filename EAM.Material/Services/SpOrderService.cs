@@ -3,6 +3,7 @@ using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -13,12 +14,14 @@ namespace EAM.Material.Services
     public class SpOrderService : IBaseService
     {
         private readonly IDbContext _dbContext;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
 
-        public SpOrderService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpOrderService(IDbContext dbContext, ICodeCreatorService codeCreatorService, IComboxDataService comboxDataService, UserSession userSession)
         {
             _dbContext = dbContext;
+            _codeCreatorService = codeCreatorService;
             _comboxDataService = comboxDataService;
             _userSession = userSession;
         }
@@ -280,10 +283,7 @@ namespace EAM.Material.Services
                 var depts = dets.Select(t => new { t.DEPT_ID, t.DEPT_NAME }).Distinct().ToList();
                 foreach (var dept in depts)
                 {
-                    string type = "DJ" + DateTime.Now.ToString("yyyyMM");
-                    string def = type + "0000";
-                    var model = await _dbContext.Query<SP_RECEIVE>(x => x.RECEIVE_CODE.Contains(type)).Select(x => Sql.Max(x.RECEIVE_CODE) ?? def).FirstOrDefaultAsync();
-                    var index = model.SubStr(8, 4).CastTo<int>() + 1;
+                    var receive_code = await _codeCreatorService.CreateCodeAsync<SP_RECEIVE>("DJ", a => a.RECEIVE_CODE);
 
                     var det = dets.Where(t => t.DEPT_ID == dept.DEPT_ID).ToList();
                     var apply = det.FirstOrDefault();
@@ -292,7 +292,7 @@ namespace EAM.Material.Services
                         RECEIVE_ID = GuidHelper.NewSnowflakeId().ToString(),
                         USER_NAME = _userSession.RealName,
                         USER_ID = _userSession.UserID.ToString(),
-                        RECEIVE_CODE = type + index.ToString("D4"),
+                        RECEIVE_CODE = receive_code,
                         CREATEDATE = DateTime.Now,
                         CREATE_USERID = _userSession.UserID.ToString(),
                         AUDITING = "0",

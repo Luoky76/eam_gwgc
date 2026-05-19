@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -16,6 +17,7 @@ namespace EAM.Device.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
         /// <summary>
@@ -32,10 +34,11 @@ namespace EAM.Device.services
                 return _Sysdate;
             }
         }
-        public RepFaultService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public RepFaultService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -178,23 +181,43 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(REP_FAULT entity)
         {
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
             //维修人当前登陆人
-            entity.REPAIR_USER = _userSession.RealName;
-            entity.REPAIR_USERID = _userSession.UserID.ToString();
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
-            entity.FAULT_SRC = "10";
-            entity.FAULT_STATUS = "30";
-            string aa = "GZ" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<REP_FAULT>(x => x.FAULT_CODE.Contains(aa)).Select(x => Sql.Max(x.FAULT_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.FAULT_CODE = aa + index.ToString("D4");
-            entity.AUDITING_B = "0";
+            if (entity.REPAIR_USERID.IsNullOrWhiteSpace())
+            {
+                entity.REPAIR_USERID = _userSession.UserID.ToString();
+                entity.REPAIR_USER = _userSession.RealName;
+            }
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
+            if (entity.FAULT_SRC.IsNullOrWhiteSpace())
+            {
+                entity.FAULT_SRC = "10";
+            }
+            if (entity.FAULT_STATUS.IsNullOrWhiteSpace())
+            {
+                entity.FAULT_STATUS = "30";
+            }
+            if (entity.FAULT_CODE.IsNullOrWhiteSpace())
+            {
+                entity.FAULT_CODE = await _codeCreatorService.CreateCodeAsync<REP_FAULT>("GZ", a => a.FAULT_CODE);
+            }
+            if (entity.AUDITING_B.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING_B = "0";
+            }
             entity.FAULT_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -326,14 +349,11 @@ namespace EAM.Device.services
                  .Where(c => sids.Contains(c.FAULT_ID)).ToList();
                 foreach (var qrylist in qrylists)
                 {
-                    string aa = "GZK" + DateTime.Now.ToString("yyyyMM");
-                    string def = aa + "0000";
-                    var model = await _dbContext.Query<REP_FRDB>(x => x.FRDB_CODE.Contains(aa)).Select(x => Sql.Max(x.FRDB_CODE) ?? def).FirstOrDefaultAsync();
-                    var index = model.SubStr(9, 4).CastTo<int>() + 1;
+                    var frdb_code = await _codeCreatorService.CreateCodeAsync<REP_FRDB>("GZK", a => a.FRDB_CODE);
                     var scandet = new REP_FRDB()
                     {
                         FRDB_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        FRDB_CODE = aa + index.ToString("D4"),
+                        FRDB_CODE = frdb_code,
                         DEVICE_CODE = qrylist.SHIP_CODE,
                         DEVICE_ID = qrylist.SHIP_ID,
                         FAULT_DESCRIBE = qrylist.FAULT_DESCRIBE,

@@ -2,6 +2,7 @@
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -15,6 +16,7 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
         private string errMsg = string.Empty;
@@ -33,10 +35,11 @@ namespace EAM.Material.Services
             }
         }
 
-        public SpCatalogScanService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public SpCatalogScanService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -98,7 +101,7 @@ namespace EAM.Material.Services
                 }
             }
 
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 bool mainSuccess = true, detSuccess = true;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
@@ -164,15 +167,12 @@ namespace EAM.Material.Services
 
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
+                if (!mainSuccess || !detSuccess)
                 {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+            });
             return AjaxResult.Success("保存成功");
         }
 
@@ -185,17 +185,28 @@ namespace EAM.Material.Services
             {
                 entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.SCAN_DATE = Sysdate;
-            string aa = "PD" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<SP_CATALOG_SCAN>(x => x.SCAN_CODE.Contains(aa)).Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.SCAN_CODE = aa + index.ToString("D4");
-            entity.AUDITING = "0";
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (!entity.SCAN_DATE.HasValue)
+            {
+                entity.SCAN_DATE = Sysdate;
+            }
+            if (entity.SCAN_CODE.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_CODE = await _codeCreatorService.CreateCodeAsync<SP_CATALOG_SCAN>("PD", a => a.SCAN_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
         }
         /// <summary>
         /// 新增前处理
@@ -210,7 +221,10 @@ namespace EAM.Material.Services
             {
                 entity.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            entity.AUDITING = "0";
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
             await Task.CompletedTask;
         }
 
@@ -283,11 +297,7 @@ namespace EAM.Material.Services
                                     MODIFYDATE = DateTime.Now
                                 };//库存表
 
-                                string type = "PC" + DateTime.Now.ToString("yyyyMM");
-                                string def = type + "0000";
-                                var model = await _dbContext.Query<SP_STORE>(x => x.STORE_CODE.Contains(type)).Select(x => Sql.Max(x.STORE_CODE) ?? def).FirstOrDefaultAsync();
-                                var index = model.SubStr(8, 4).CastTo<int>() + 1;
-                                _STORE.STORE_CODE = type + index.ToString("D4");
+                                _STORE.STORE_CODE = await _codeCreatorService.CreateCodeAsync<SP_STORE>("PC", a => a.STORE_CODE);
 
                                 result.STORE_ID = _STORE.STORE_ID;
                                 await _dbContext.InsertAsync(_STORE);
@@ -323,13 +333,13 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
                     var entity = await _dbContext.QueryByKeyAsync<SP_CATALOG_SCAN>(sid);
                     if (entity == null) continue;
-                    if (entity.AUDITING == "1") return AjaxResult.Error("该数据已提交，无法重复提交！");
+                    if (entity.AUDITING == "1") throw new Exception("该数据已提交，无法重复提交！");
 
                     entity.AUDITING = "1";
                     await BeforUpdate(entity);
@@ -341,8 +351,7 @@ namespace EAM.Material.Services
                             MODIFYDATE = entity.MODIFYDATE
                         });
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("提交成功");
         }
 

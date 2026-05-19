@@ -2,6 +2,7 @@
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -15,6 +16,7 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
         private string errMsg = string.Empty;
@@ -35,10 +37,11 @@ namespace EAM.Material.Services
             }
         }
 
-        public SpOutService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public SpOutService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -141,37 +144,40 @@ namespace EAM.Material.Services
                 }
             }
 
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            try
             {
-                bool mainSuccess = true, detSuccess = true;
-                var execResult = await _dbContext.SaveEntityAnsyc(request,
-                         c => new
-                         {
-                             c.AUDITING_A,
-                             c.APPLY_CODE,
-                             c.APPLY_DATE,
-                             c.PROJECT_CODE,
-                             c.PROJECT_NAME,
-                             c.USER_ID,
-                             c.USER_NAME,
-                             c.APPLY_TYPE,
-                             c.SEC_DEPTID,
-                             c.PURTYPE_ID,
-                             c.SEC_DEPT,
-                             c.PURTYPE_NAME,
-                             c.SUM_MONEY,
-                             c.MEMO,
-                             c.OUT_ID,
-                             c.DEVICE_NO,
-                             c.DEVICE_NAME,
-                             c.DEPT_ID,
-                             c.DEPT_NAME
-                         },
-                         c => a => a.OUT_ID == c.OUT_ID, BeforeAdd, SpOutAppBeforUpdate, SpOutAppBeforDelete, false, null, null);
-
-                mainSuccess = !execResult.IsError;
-                if (mainSuccess)  //主表是否保存成功
+                await _dbContext.UseTransactionAsync(async () =>
                 {
+                    var execResult = await _dbContext.SaveEntityAnsyc(request,
+                             c => new
+                             {
+                                 c.AUDITING_A,
+                                 c.APPLY_CODE,
+                                 c.APPLY_DATE,
+                                 c.PROJECT_CODE,
+                                 c.PROJECT_NAME,
+                                 c.USER_ID,
+                                 c.USER_NAME,
+                                 c.APPLY_TYPE,
+                                 c.SEC_DEPTID,
+                                 c.PURTYPE_ID,
+                                 c.SEC_DEPT,
+                                 c.PURTYPE_NAME,
+                                 c.SUM_MONEY,
+                                 c.MEMO,
+                                 c.OUT_ID,
+                                 c.DEVICE_NO,
+                                 c.DEVICE_NAME,
+                                 c.DEPT_ID,
+                                 c.DEPT_NAME
+                             },
+                             c => a => a.OUT_ID == c.OUT_ID, BeforeAdd, SpOutAppBeforUpdate, SpOutAppBeforDelete, false, null, null);
+
+                    if (execResult.IsError)
+                    {
+                        throw new MessageException("主表保存失败");
+                    }
+
                     requestdet ??= new SaveRequest<SP_OUTAPP_DET>();
 
                     execResult = await _dbContext.SaveEntityAnsyc(requestdet,
@@ -205,16 +211,15 @@ namespace EAM.Material.Services
                       },
                       c => a => a.OUTDET_ID == c.OUTDET_ID, BeforeAddSpOutAppdet);
 
-                    detSuccess = !execResult.IsError;  //明细表是否保存成功
-                }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
-                {
-                    trans.Rollback();
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
-                }
+                    if (execResult.IsError)
+                    {
+                        throw new MessageException("明细表保存失败");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
             }
             return AjaxResult.Success("保存成功");
         }
@@ -228,17 +233,34 @@ namespace EAM.Material.Services
             {
                 entity.OUT_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.APPLY_DATE = Sysdate;
-            string aa = "LY" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<SP_OUT_APP>(x => x.APPLY_CODE.Contains(aa)).Select(x => Sql.Max(x.APPLY_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.APPLY_CODE = aa + index.ToString("D4");
-            entity.AUDITING_A = "0";
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            }
+            if (entity.SEC_DEPT.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+            }
+            if (entity.DEPT_NAME.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (!entity.APPLY_DATE.HasValue)
+            {
+                entity.APPLY_DATE = Sysdate;
+            }
+            if (entity.APPLY_CODE.IsNullOrWhiteSpace())
+            {
+                entity.APPLY_CODE = await _codeCreatorService.CreateCodeAsync<SP_OUT_APP>("LY", a => a.APPLY_CODE);
+            }
+            if (entity.AUDITING_A.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING_A = "0";
+            }
         }
         /// <summary>
         /// 新增前处理
@@ -294,10 +316,7 @@ namespace EAM.Material.Services
         public async Task<int> SubmitSpOutApp(string sid)
         {
             //出库单号
-            string aa = "CK" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<SP_OUTSTORE>(x => x.OUT_CODE.Contains(aa)).Select(x => Sql.Max(x.OUT_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
+            var out_code = await _codeCreatorService.CreateCodeAsync<SP_OUTSTORE>("CK", a => a.OUT_CODE);
             //取物资申请表数据
             var qryoutapps = await _dbContext.Query<SP_OUT_APP>()
                  .Where(c => sid == c.OUT_ID)
@@ -363,7 +382,7 @@ namespace EAM.Material.Services
                 var outst = qryoutapps.MapTo<SP_OUTSTORE>();
 
                 outst.OUT_ID = GuidHelper.NewSnowflakeId().ToString();
-                outst.OUT_CODE = aa + index.ToString("D4");
+                outst.OUT_CODE = out_code;
                 outst.OUT_DATE = Sysdate;
                 outst.IS_RED = "0";
                 outst.AUDITING_A = "0";
@@ -496,23 +515,26 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> ManageSpOutStore(SaveRequest<SP_OUTSTORE> request, SaveRequest<SP_OUTSTORE_DET> requestdet)
         {
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            try
             {
-                bool mainSuccess = true, detSuccess = true;
-                var execResult = await _dbContext.SaveEntityAnsyc(request,
-                         c => new
-                         {
-                             c.OUT_DATE,
-                             c.M_USERID,
-                             c.M_USER,
-                             c.MEMO,
-                             c.OUT_ID,
-                         },
-                         c => a => a.OUT_ID == c.OUT_ID, null, SpOutStoreBeforUpdate);
-
-                mainSuccess = !execResult.IsError;
-                if (mainSuccess)  //主表是否保存成功
+                await _dbContext.UseTransactionAsync(async () =>
                 {
+                    var execResult = await _dbContext.SaveEntityAnsyc(request,
+                             c => new
+                             {
+                                 c.OUT_DATE,
+                                 c.M_USERID,
+                                 c.M_USER,
+                                 c.MEMO,
+                                 c.OUT_ID,
+                             },
+                             c => a => a.OUT_ID == c.OUT_ID, null, SpOutStoreBeforUpdate);
+
+                    if (execResult.IsError)
+                    {
+                        throw new MessageException("主表保存失败");
+                    }
+
                     requestdet ??= new SaveRequest<SP_OUTSTORE_DET>();
 
                     execResult = await _dbContext.SaveEntityAnsyc(requestdet,
@@ -524,16 +546,15 @@ namespace EAM.Material.Services
                       },
                       c => a => a.OUTDET_ID == c.OUTDET_ID, BeforeAddSpOutStoredet);
 
-                    detSuccess = !execResult.IsError;  //明细表是否保存成功
-                }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
-                {
-                    trans.Rollback();
-                    if (string.IsNullOrWhiteSpace(errMsg2)) errMsg2 = "保存失败";
-                    return AjaxResult.Error(errMsg2);
-                }
+                    if (execResult.IsError)
+                    {
+                        throw new MessageException("明细表保存失败");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
             }
             return AjaxResult.Success("保存成功");
         }
@@ -608,77 +629,75 @@ namespace EAM.Material.Services
                 .Where(s => outstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
             var stwater = new List<STORE_WATER>();
-            using var transaction = _dbContext.BeginTransaction();
-
             try
             {
-                foreach (var qryoutstdet in qryoutstdets)
+                await _dbContext.UseTransactionAsync(async () =>
                 {
-                    //获取库存数据
-                    var qrystore = qryStores.FirstOrDefault(s =>
-                        s.STORE_ID == qryoutstdet.STORE_ID);
-                    if (qrystore.NUM < qryoutstdet.COUNT)
+                    foreach (var qryoutstdet in qryoutstdets)
                     {
-                        throw new MessageException("当前批次库存已经没这么多，请重新选择出库数量！");
+                        //获取库存数据
+                        var qrystore = qryStores.FirstOrDefault(s =>
+                            s.STORE_ID == qryoutstdet.STORE_ID);
+                        if (qrystore.NUM < qryoutstdet.COUNT)
+                        {
+                            throw new MessageException("当前批次库存已经没这么多，请重新选择出库数量！");
+                        }
+                        if (qrystore != null)
+                        {
+                            //期初库存数量
+                            var bnum = qrystore.NUM;
+                            //期初库存金额
+                            var bmoney = qrystore.TAX_MONEY;
+                            //剩余库存数量
+                            var surnum = qrystore.NUM - qryoutstdet.COUNT;
+                            //剩余库存金额
+                            var surmoney = surnum * qrystore.PRICE;
+                            //剩余不含税金额
+                            var surnomoney = surnum * qrystore.NOTAX_PRICE;
+                            //更新库存表
+                            var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
+                                 x => new SP_STORE
+                                 {
+                                     NUM = surnum,
+                                     MONEY = surmoney,
+                                     TAX_MONEY = surmoney,
+                                     NOTAX_MONEY = surnomoney,
+                                 });
+
+                            //往流水表插数据
+                            var waterdata = qryoutstdet.MapTo<STORE_WATER>();
+                            waterdata.SRC_CODE = qryoutst.OUT_CODE;
+                            waterdata.SRC_TYPE = "3";
+                            waterdata.INIT_NUM = bnum;
+                            waterdata.INIT_MONEY = bmoney;
+                            waterdata.IN_NUM = 0;
+                            waterdata.IN_PRICE = 0;
+                            waterdata.IN_MONEY = 0;
+                            waterdata.OUT_NUM = qryoutstdet.COUNT;
+                            waterdata.OUT_MONEY = qrystore.PRICE;
+                            waterdata.IN_MONEY = qryoutstdet.COUNT * qrystore.PRICE;
+                            waterdata.CUR_NUM = surnum;
+                            waterdata.CUR_MONEY = surmoney;
+                            waterdata.IS_BACK = "0";
+
+                            waterdata.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
+                            waterdata.CREATE_USERID = _userSession.UserID.ToString();
+                            waterdata.CREATEDATE = Sysdate;
+                            waterdata.WATER_DATE = Sysdate;
+                            stwater.Add(waterdata);
+
+                            await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
+                                      x => new SP_OUTSTORE_DET
+                                      {
+                                          WATER_ID = waterdata.WATER_ID,
+                                      });
+                        }
                     }
-                    if (qrystore != null)
-                    {
-                        //期初库存数量
-                        var bnum = qrystore.NUM;
-                        //期初库存金额
-                        var bmoney = qrystore.TAX_MONEY;
-                        //剩余库存数量
-                        var surnum = qrystore.NUM - qryoutstdet.COUNT;
-                        //剩余库存金额
-                        var surmoney = surnum * qrystore.PRICE;
-                        //剩余不含税金额
-                        var surnomoney = surnum * qrystore.NOTAX_PRICE;
-                        //更新库存表
-                        var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
-                             x => new SP_STORE
-                             {
-                                 NUM = surnum,
-                                 MONEY = surmoney,
-                                 TAX_MONEY = surmoney,
-                                 NOTAX_MONEY = surnomoney,
-                             });
-
-                        //往流水表插数据
-                        var waterdata = qryoutstdet.MapTo<STORE_WATER>();
-                        waterdata.SRC_CODE = qryoutst.OUT_CODE;
-                        waterdata.SRC_TYPE = "3";
-                        waterdata.INIT_NUM = bnum;
-                        waterdata.INIT_MONEY = bmoney;
-                        waterdata.IN_NUM = 0;
-                        waterdata.IN_PRICE = 0;
-                        waterdata.IN_MONEY = 0;
-                        waterdata.OUT_NUM = qryoutstdet.COUNT;
-                        waterdata.OUT_MONEY = qrystore.PRICE;
-                        waterdata.IN_MONEY = qryoutstdet.COUNT * qrystore.PRICE;
-                        waterdata.CUR_NUM = surnum;
-                        waterdata.CUR_MONEY = surmoney;
-                        waterdata.IS_BACK = "0";
-
-                        waterdata.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
-                        waterdata.CREATE_USERID = _userSession.UserID.ToString();
-                        waterdata.CREATEDATE = Sysdate;
-                        waterdata.WATER_DATE = Sysdate;
-                        stwater.Add(waterdata);
-
-                        await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
-                                  x => new SP_OUTSTORE_DET
-                                  {
-                                      WATER_ID = waterdata.WATER_ID,
-                                  });
-                    }
-                }
-                await _dbContext.InsertRangeAsync(stwater);
-
-                transaction.Commit();
+                    await _dbContext.InsertRangeAsync(stwater);
+                });
             }
             catch (Exception)
             {
-                transaction.Rollback();
                 throw;
             }
             return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
@@ -718,47 +737,45 @@ namespace EAM.Material.Services
             var qryStores = await _dbContext.Query<SP_STORE>()
                 .Where(s => outstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
-            using var transaction = _dbContext.BeginTransaction();
-
             try
             {
-                foreach (var qryoutstdet in qryoutstdets)
+                await _dbContext.UseTransactionAsync(async () =>
                 {
-                    //获取库存数据
-                    var qrystore = qryStores.FirstOrDefault(s =>
-                        s.STORE_ID == qryoutstdet.STORE_ID);
+                    foreach (var qryoutstdet in qryoutstdets)
+                    {
+                        //获取库存数据
+                        var qrystore = qryStores.FirstOrDefault(s =>
+                            s.STORE_ID == qryoutstdet.STORE_ID);
 
-                    //剩余库存数量
-                    var surnum = qrystore.NUM + qryoutstdet.COUNT;
-                    //剩余库存金额
-                    var surmoney = surnum * qrystore.PRICE;
-                    //剩余不含税金额
-                    var surnomoney = surnum * qrystore.NOTAX_PRICE;
-                    //更新库存表
-                    var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
-                         x => new SP_STORE
-                         {
-                             NUM = surnum,
-                             MONEY = surmoney,
-                             TAX_MONEY = surmoney,
-                             NOTAX_MONEY = surnomoney,
-                         });
+                        //剩余库存数量
+                        var surnum = qrystore.NUM + qryoutstdet.COUNT;
+                        //剩余库存金额
+                        var surmoney = surnum * qrystore.PRICE;
+                        //剩余不含税金额
+                        var surnomoney = surnum * qrystore.NOTAX_PRICE;
+                        //更新库存表
+                        var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
+                             x => new SP_STORE
+                             {
+                                 NUM = surnum,
+                                 MONEY = surmoney,
+                                 TAX_MONEY = surmoney,
+                                 NOTAX_MONEY = surnomoney,
+                             });
 
-                    //往流水表插数据
-                    await _dbContext.DeleteAsync<SP_OUTSTORE>(c => c.OUT_ID == sid);
+                        //往流水表插数据
+                        await _dbContext.DeleteAsync<SP_OUTSTORE>(c => c.OUT_ID == sid);
 
-                    await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
-                              x => new SP_OUTSTORE_DET
-                              {
-                                  WATER_ID = "",
-                              });
-                }
-
-                transaction.Commit();
+                        await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
+                                  x => new SP_OUTSTORE_DET
+                                  {
+                                      WATER_ID = "",
+                                  });
+                    }
+                });
             }
             catch (Exception)
             {
-                transaction.Rollback();
                 throw;
             }
             return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
@@ -824,62 +841,54 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request)
         {
-            using var trans = _dbContext.BeginTransaction(); // 事务保证保存数据的一致性
             try
             {
-                var outlist = request.Select(x => x.OUT_ID).ToList();
-                var outBackDets = _dbContext.Query<SP_OUTSTORE>().ToList();
-                var request2 = outBackDets
-                .Where(x => outlist.Contains(x.OUT_ID))
-                .Select(x =>
+                await _dbContext.UseTransactionAsync(async () =>
                 {
-                    return x.MapTo<SP_OUT_BACK>();
-                })
-                .ToList();
-
-                int index = 0;
-                foreach (var request1 in request2)
-                {
-                    request1.BACK_DATE = Sysdate;
-                    string aa = "CH" + DateTime.Now.ToString("yyyyMM");
-                    string def = aa + "0000";
-                    var model = await _dbContext.Query<SP_OUT_BACK>(x => x.BACK_CODE.Contains(aa))
-                        .Select(x => Sql.Max(x.BACK_CODE) ?? def)
-                        .FirstOrDefaultAsync();
-
-                    index++; // 增加 index
-                    request1.BACK_CODE = aa + (model.SubStr(8, 4).CastTo<int>() + index).ToString("D4");
-                    request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
-                    request1.MEMO = "";
-                    outDic[request1.OUT_ID] = request1.OUT_BACK_ID;
-                }
-                await _dbContext.InsertRangeAsync(request2);
-                if (request2.Count > 0)
-                {
-                    var keylist = request2.Select(x => x.OUT_ID).ToList();
-                    var outstoreDets = _dbContext.Query<SP_OUTSTORE_DET>().ToList();
-
-                    var spoutbackdets = outstoreDets
-                        .Where(x => keylist.Contains(x.OUT_ID))
-                        .Select(x =>
-                        {
-                            return x.MapTo<SP_OUTBACK_DET>();
-                        })
-                        .ToList();
-                    foreach (var spoutbackdet in spoutbackdets)
+                    var outlist = request.Select(x => x.OUT_ID).ToList();
+                    var outBackDets = _dbContext.Query<SP_OUTSTORE>().ToList();
+                    var request2 = outBackDets
+                    .Where(x => outlist.Contains(x.OUT_ID))
+                    .Select(x =>
                     {
-                        spoutbackdet.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        spoutbackdet.OUT_BACK_ID = outDic[spoutbackdet.OUT_ID];
-                    }
-                    await _dbContext.InsertRangeAsync(spoutbackdets); // 插入明细数据
-                }
+                        return x.MapTo<SP_OUT_BACK>();
+                    })
+                    .ToList();
 
-                trans.Commit();
+                    foreach (var request1 in request2)
+                    {
+                        request1.BACK_DATE = Sysdate;
+                        var back_code = await _codeCreatorService.CreateCodeAsync<SP_OUT_BACK>("CH", a => a.BACK_CODE);
+                        request1.BACK_CODE = back_code;
+                        request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
+                        request1.MEMO = "";
+                        outDic[request1.OUT_ID] = request1.OUT_BACK_ID;
+                    }
+                    await _dbContext.InsertRangeAsync(request2);
+                    if (request2.Count > 0)
+                    {
+                        var keylist = request2.Select(x => x.OUT_ID).ToList();
+                        var outstoreDets = _dbContext.Query<SP_OUTSTORE_DET>().ToList();
+
+                        var spoutbackdets = outstoreDets
+                            .Where(x => keylist.Contains(x.OUT_ID))
+                            .Select(x =>
+                            {
+                                return x.MapTo<SP_OUTBACK_DET>();
+                            })
+                            .ToList();
+                        foreach (var spoutbackdet in spoutbackdets)
+                        {
+                            spoutbackdet.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
+                            spoutbackdet.OUT_BACK_ID = outDic[spoutbackdet.OUT_ID];
+                        }
+                        await _dbContext.InsertRangeAsync(spoutbackdets); // 插入明细数据
+                    }
+                });
                 return AjaxResult.Success("保存成功");
             }
             catch (Exception ex)
             {
-                trans.Rollback();
                 return AjaxResult.Error("保存失败：" + ex.Message);
             }
         }

@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -16,12 +17,14 @@ namespace EAM.Device.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly ICorpService _corpService;
+        private readonly ICodeCreatorService _codeCreatorService;
 
-        public DeviceVaryService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService)
+        public DeviceVaryService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, ICodeCreatorService codeCreatorService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _corpService = corpService;
+            _codeCreatorService = codeCreatorService;
         }
 
         /// <summary>
@@ -98,54 +101,26 @@ namespace EAM.Device.Services
         /// <returns></returns>
         private async Task BeforeAdd(DEVICE_VARY entity)
         {
-            string type = string.Empty;
-            string def = string.Empty;
-            string model = string.Empty;
-            int index;
-
             entity.VARY_ID = GuidHelper.NewSnowflakeId().ToString();
-            #region 根据变动类型保存变动单号
-            switch (entity.VARY_TYPE)
+
+            if (entity.VARY_CODE.IsNullOrWhiteSpace())
             {
-                case "trans":
-                    type = "DB" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
-                case "disable":
-                    type = "ST" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
-                case "enable":
-                    type = "TQ" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
-                case "idle":
-                    type = "XZ" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
-                case "unidle":
-                    type = "XQ" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
-                case "scrap":
-                    type = "BF" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
-                case "allot":
-                    type = "BM" + DateTime.Now.ToString("yyMM");
-                    def = type + "0000";
-                    model = await _dbContext.Query<DEVICE_VARY>(x => x.VARY_CODE.Contains(type)).Select(x => Sql.Max(x.VARY_CODE) ?? def).FirstOrDefaultAsync();
-                    break;
+                string prefix = entity.VARY_TYPE switch
+                {
+                    "trans" => "DB",
+                    "disable" => "ST",
+                    "enable" => "TQ",
+                    "idle" => "XZ",
+                    "unidle" => "XQ",
+                    "scrap" => "BF",
+                    "allot" => "BM",
+                    _ => ""
+                };
+                if (!prefix.IsNullOrEmpty())
+                {
+                    entity.VARY_CODE = await _codeCreatorService.CreateCodeAsync<DEVICE_VARY>(prefix, a => a.VARY_CODE);
+                }
             }
-            #endregion
-            index = model.SubStr(6, 4).CastTo<int>() + 1;
-            entity.VARY_CODE = type + index.ToString("D4");
 
             await Task.CompletedTask;
         }

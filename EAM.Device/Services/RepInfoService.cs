@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -14,12 +15,14 @@ namespace EAM.Device.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
 
-        public RepInfoService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public RepInfoService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -98,15 +101,20 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(REP_FRDB entity)
         {
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = await _dbContext.GetSysdate();
-            string aa = "GZK" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<REP_FRDB>(x => x.FRDB_CODE.Contains(aa)).Select(x => Sql.Max(x.FRDB_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(9, 4).CastTo<int>() + 1;
-            entity.FRDB_CODE = aa + index.ToString("D4");
-            entity.AUDITING = "0";
+            if (entity.FRDB_CODE.IsNullOrWhiteSpace())
+            {
+                entity.FRDB_CODE = await _codeCreatorService.CreateCodeAsync<REP_FRDB>("GZK", a => a.FRDB_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
             entity.FRDB_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 

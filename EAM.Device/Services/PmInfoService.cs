@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -16,6 +17,7 @@ namespace EAM.Device.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
 
@@ -34,10 +36,11 @@ namespace EAM.Device.services
             }
         }
 
-        public PmInfoService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public PmInfoService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -228,20 +231,40 @@ namespace EAM.Device.services
             {
                 entity.EXE_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            }
+            if (entity.SEC_DEPT.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+            }
+            if (entity.DEPT_NAME.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = Sysdate;
-            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
-            entity.PLAN_CODE = aa + index.ToString("D4");
-            entity.AUDITING = "0";
-            entity.AUDITING_EXE = "0";
+            if (entity.PLAN_CODE.IsNullOrWhiteSpace())
+            {
+                entity.PLAN_CODE = await _codeCreatorService.CreateCodeAsync<PM_PLAN_EXE>("BYJH", a => a.PLAN_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
+            if (entity.AUDITING_EXE.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING_EXE = "0";
+            }
         }
 
         /// <summary>
@@ -258,25 +281,16 @@ namespace EAM.Device.services
                 if (!list.Any()) throw new MessageException("维保计划无明细数据，请添加维保项目！");
             }
 
-            string aa = "BYSS" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.EXE_CODE.Contains(aa)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>();
-
             foreach (var sid in sids)
             {
-                index++;
-
-                string newExeCode = aa + index.ToString("D4");
-
+                var exe_code = await _codeCreatorService.CreateCodeAsync<PM_PLAN_EXE>("BYSS", a => a.EXE_CODE);
                 await _dbContext.UpdateAsync<PM_PLAN_EXE>(
                     x => x.EXE_ID == sid,
                     x => new PM_PLAN_EXE
                     {
                         AUDITING = "1",
                         AUDITING_EXE = "0",
-                        EXE_CODE = newExeCode,
+                        EXE_CODE = exe_code,
                         EDIT_USER = _userSession.RealName,
                         EDIT_USERID = _userSession.UserID.ToString(),
                         EDIT_DATE = Sysdate

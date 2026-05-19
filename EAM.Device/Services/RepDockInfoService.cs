@@ -4,6 +4,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -16,6 +17,7 @@ namespace EAM.Device.services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
         private readonly ICorpService _corpService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
 
@@ -33,11 +35,12 @@ namespace EAM.Device.services
                 return _Sysdate;
             }
         }
-        public RepDockInfoService(IDbContext dbContext, IComboxDataService comboxService, ICorpService corpService, UserSession userSession)
+        public RepDockInfoService(IDbContext dbContext, IComboxDataService comboxService, ICorpService corpService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
             _corpService = corpService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -108,15 +111,20 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(BASE_DOCK entity)
         {
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = await _dbContext.GetSysdate();
-            string aa = "MT" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<BASE_DOCK>(x => x.DOCK_CODE.Contains(aa)).Select(x => Sql.Max(x.DOCK_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.DOCK_CODE = aa + index.ToString("D4");
-            entity.AUDITING = "0";
+            if (entity.DOCK_CODE.IsNullOrWhiteSpace())
+            {
+                entity.DOCK_CODE = await _codeCreatorService.CreateCodeAsync<BASE_DOCK>("MT", a => a.DOCK_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
             entity.DOCK_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -207,17 +215,28 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(REP_DOCK_PLAN entity)
         {
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+            }
+            if (entity.DEPT_NAME.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = Sysdate;
-            string aa = "MTJH" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<REP_DOCK_PLAN>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>() + 1;
-            entity.PLAN_CODE = aa + index.ToString("D4");
-            entity.AUDITING_PLAN = "0";
+            if (entity.PLAN_CODE.IsNullOrWhiteSpace())
+            {
+                entity.PLAN_CODE = await _codeCreatorService.CreateCodeAsync<REP_DOCK_PLAN>("MTJH", a => a.PLAN_CODE);
+            }
+            if (entity.AUDITING_PLAN.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING_PLAN = "0";
+            }
             entity.PLAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -227,23 +246,16 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<AjaxResult> SubmitRepDockPlan(List<string> sids)
         {
-            string aa = "MTSS" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<REP_DOCK_PLAN>(x => x.EXE_CODE.Contains(aa)).Select(x => Sql.Max(x.EXE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(10, 4).CastTo<int>();
             foreach (var sid in sids)
             {
-                index++;
-
-                string newExeCode = aa + index.ToString("D4");
-
+                var exe_code = await _codeCreatorService.CreateCodeAsync<REP_DOCK_PLAN>("MTSS", a => a.EXE_CODE);
                 await _dbContext.UpdateAsync<REP_DOCK_PLAN>(
                     x => x.PLAN_ID == sid,
                     x => new REP_DOCK_PLAN
                     {
                         AUDITING_PLAN = "1",
                         AUDITING_EXE = "0",
-                        EXE_CODE = newExeCode,
+                        EXE_CODE = exe_code,
                     });
             }
             return AjaxResult.Success("更新成功");

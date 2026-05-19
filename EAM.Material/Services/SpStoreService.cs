@@ -2,6 +2,7 @@
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -14,12 +15,14 @@ namespace EAM.Material.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
 
-        public SpStoreService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpStoreService(IDbContext dbContext, IComboxDataService comboxDataService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -151,11 +154,10 @@ namespace EAM.Material.Services
             entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFYDATE = dt;
 
-            string type = "PC" + DateTime.Now.ToString("yyyyMM");
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_STORE>(x => x.STORE_CODE.Contains(type)).Select(x => Sql.Max(x.STORE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.STORE_CODE = type + index.ToString("D4");
+            if (entity.STORE_CODE.IsNullOrWhiteSpace())
+            {
+                entity.STORE_CODE = await _codeCreatorService.CreateCodeAsync<SP_STORE>("PC", a => a.STORE_CODE);
+            }
 
 
             //存入流水库存中

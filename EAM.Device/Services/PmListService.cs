@@ -5,6 +5,7 @@ using Gksyb.Common.Office;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -19,6 +20,7 @@ namespace EAM.Device.Services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
 
@@ -38,10 +40,11 @@ namespace EAM.Device.Services
         }
 
 
-        public PmListService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public PmListService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -187,10 +190,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task WeekTimer()
         {
-            //保养计划的id
-            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
             //取当前月份
             var currentMonth = DateTime.Now.Month;
             //保养计划的临时数据
@@ -231,11 +230,11 @@ namespace EAM.Device.Services
                 var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "每周" && c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
-                    var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
+                    var plan_code = await _codeCreatorService.CreateCodeAsync<PM_PLAN_EXE>("BYJH", a => a.PLAN_CODE);
                     var scandet = new PM_PLAN_EXE()
                     {
                         EXE_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        PLAN_CODE = aa + index.ToString("D4"),
+                        PLAN_CODE = plan_code,
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
@@ -280,10 +279,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task MonthTimer()
         {
-            //保养计划的id
-            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
             //取当前月份
             var currentMonth = DateTime.Now.Month;
             //保养计划的临时数据
@@ -324,11 +319,11 @@ namespace EAM.Device.Services
                 var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "月度" && c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
-                    var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
+                    var plan_code = await _codeCreatorService.CreateCodeAsync<PM_PLAN_EXE>("BYJH", a => a.PLAN_CODE);
                     var scandet = new PM_PLAN_EXE()
                     {
                         EXE_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        PLAN_CODE = aa + index.ToString("D4"),
+                        PLAN_CODE = plan_code,
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
@@ -373,10 +368,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task QuarterTimer()
         {
-            //保养计划的id
-            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
             //取当前月份
             var currentMonth = DateTime.Now.Month;
             //保养计划的临时数据
@@ -417,11 +408,11 @@ namespace EAM.Device.Services
                 var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "季度" && c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
-                    var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
+                    var plan_code = await _codeCreatorService.CreateCodeAsync<PM_PLAN_EXE>("BYJH", a => a.PLAN_CODE);
                     var scandet = new PM_PLAN_EXE()
                     {
                         EXE_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        PLAN_CODE = aa + index.ToString("D4"),
+                        PLAN_CODE = plan_code,
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",
@@ -466,10 +457,6 @@ namespace EAM.Device.Services
         /// <returns></returns>
         public async Task YearTimer()
         {
-            //保养计划的id
-            string aa = "BYJH" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<PM_PLAN_EXE>(x => x.PLAN_CODE.Contains(aa)).Select(x => Sql.Max(x.PLAN_CODE) ?? def).FirstOrDefaultAsync();
             //取当前月份
             var currentMonth = DateTime.Now.Month;
             //保养计划的临时数据
@@ -510,11 +497,11 @@ namespace EAM.Device.Services
                 var qryPmlistCards = _dbContext.Query<PM_STD_LIST>(c => c.CYCLE == "年度" && c.DEPARTMENT == department);
                 foreach (var qrycard in qrycards)
                 {
-                    var index = model.SubStr(10, 4).CastTo<int>() + cardPmList.Count + 1;
+                    var plan_code = await _codeCreatorService.CreateCodeAsync<PM_PLAN_EXE>("BYJH", a => a.PLAN_CODE);
                     var scandet = new PM_PLAN_EXE()
                     {
                         EXE_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        PLAN_CODE = aa + index.ToString("D4"),
+                        PLAN_CODE = plan_code,
                         AUDITING = "0",
                         DEVICE_ID = qrycard.DEVICE_ID ?? "",
                         DEVICE_NAME = qrycard.DEVICE_NAME ?? "",

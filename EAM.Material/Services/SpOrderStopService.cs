@@ -1,6 +1,7 @@
 ﻿using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 
@@ -9,11 +10,13 @@ namespace EAM.Material.Services
     public class SpOrderStopService : IBaseService
     {
         private readonly IDbContext _dbContext;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
 
-        public SpOrderStopService(IDbContext dbContext, UserSession userSession)
+        public SpOrderStopService(IDbContext dbContext, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -103,20 +106,19 @@ namespace EAM.Material.Services
 
             entity.STOP_ID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            string type = $"ZZ{dt.Value.ToString("yyyyMM")}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_ORDER_STOP>(x => x.STOP_CODE.Contains(type)).Select(x => Sql.Max(x.STOP_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.STOP_CODE = type + index.ToString("D4");
+            if (entity.STOP_CODE.IsNullOrWhiteSpace())
+            {
+                entity.STOP_CODE = await _codeCreatorService.CreateCodeAsync<SP_ORDER_STOP>("ZZ", a => a.STOP_CODE);
+            }
 
-            entity.EDIT_DATE = dt;
-            entity.USER_ID = _userSession.UserID.ToString();
-            entity.USER_NAME = _userSession.RealName;
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.AUDITING = "0";
+            entity.EDIT_DATE = entity.EDIT_DATE ?? dt;
+            entity.USER_ID = entity.USER_ID ?? _userSession.UserID.ToString();
+            entity.USER_NAME = entity.USER_NAME ?? _userSession.RealName;
+            entity.SEC_DEPTID = entity.SEC_DEPTID ?? _userSession.ParentCompany.CorpID;
+            entity.SEC_DEPT = entity.SEC_DEPT ?? _userSession.ParentCompany.CName;
+            entity.DEPT_ID = entity.DEPT_ID ?? _userSession.Corp.CorpID;
+            entity.DEPT_NAME = entity.DEPT_NAME ?? _userSession.Corp.CName;
+            entity.AUDITING = entity.AUDITING ?? "0";
 
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;

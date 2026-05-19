@@ -3,6 +3,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 
@@ -13,14 +14,16 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxDataService;
         private readonly ICorpService _corpService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private string masterID = string.Empty, errMsg = string.Empty;
 
-        public SpInBackService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, UserSession userSession)
+        public SpInBackService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _corpService = corpService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -151,7 +154,7 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_IN_BACK> request, SaveRequest<SP_INBACK_DET> requestdet)
         {
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 bool mainSuccess = false, detSuccess = false;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
@@ -204,15 +207,12 @@ namespace EAM.Material.Services
 
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
+                if (!mainSuccess || !detSuccess)
                 {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+            });
             return AjaxResult.Success("保存成功");
         }
 
@@ -224,13 +224,17 @@ namespace EAM.Material.Services
         {
             entity.IN_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
             masterID = entity.IN_BACK_ID;
-            entity.EDIT_USER = _userSession.RealName;
 
-            string type = "RCH" + DateTime.Now.ToString("yyyyMM");
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_IN_BACK>(x => x.BACK_CODE.Contains(type)).Select(x => Sql.Max(x.BACK_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(9, 4).CastTo<int>() + 1;
-            entity.BACK_CODE = type + index.ToString("D4");
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
+
+            if (entity.BACK_CODE.IsNullOrWhiteSpace())
+            {
+                entity.BACK_CODE = await _codeCreatorService.CreateCodeAsync<SP_IN_BACK>("RCH", a => a.BACK_CODE);
+            }
 
             await Task.CompletedTask;
         }
@@ -272,7 +276,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -280,16 +284,14 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING == "1")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                        throw new Exception("该数据已提交，无法重复提交！");
                     }
 
                     entity.AUDITING = "1";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("提交成功");
         }
 

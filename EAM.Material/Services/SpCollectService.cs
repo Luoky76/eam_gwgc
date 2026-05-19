@@ -5,6 +5,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Interfaces.OA;
 using Gksyb.Model;
@@ -27,15 +28,17 @@ namespace EAM.Material.Services
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
         private readonly IUserService _userService;
+        private readonly ICodeCreatorService _codeCreatorService;
 
         private string errMsg = string.Empty;
 
-        public SpCollectService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IUserService userService)
+        public SpCollectService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IUserService userService, ICodeCreatorService codeCreatorService)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userSession = userSession;
             _userService = userService;
+            _codeCreatorService = codeCreatorService;
         }
 
         #region 请购申请
@@ -192,7 +195,7 @@ namespace EAM.Material.Services
                 }
             }
 
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 bool mainSuccess = true, detSuccess = true;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
@@ -289,15 +292,12 @@ namespace EAM.Material.Services
 
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
+                if (!mainSuccess || !detSuccess)
                 {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+            });
             return AjaxResult.Success("保存成功");
         }
 
@@ -313,12 +313,10 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             //单号
-            string type = $"QG{dt.Value:yyyyMM}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_COLLECT>(x => x.COLLECT_CODE.Contains(type)).Select(x => Sql.Max(x.COLLECT_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-
-            entity.COLLECT_CODE = type + index.ToString("D4");
+            if (entity.COLLECT_CODE.IsNullOrWhiteSpace())
+            {
+                entity.COLLECT_CODE = await _codeCreatorService.CreateCodeAsync<SP_COLLECT>("QG", a => a.COLLECT_CODE);
+            }
 
             entity.COLLECT_DATE = dt;
             entity.COLLECT_USERID = _userSession.UserID.ToString();
@@ -327,8 +325,14 @@ namespace EAM.Material.Services
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.AUDITING = "0";
-            entity.CONFIRM_AUDIT = "0";
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
+            if (entity.CONFIRM_AUDIT.IsNullOrWhiteSpace())
+            {
+                entity.CONFIRM_AUDIT = "0";
+            }
 
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
@@ -420,20 +424,16 @@ namespace EAM.Material.Services
                 DateTime? dt = await _dbContext.GetSysdate();
                 var importDetail = new List<SP_ORDER_DETAIL>();
                 var importList = new List<SP_ORDER>();
-                string type = $"DD{dt.Value:yyyyMM}";
-                string def = type + "0000";
-                var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
-                var i = 1;
 
                 foreach (var item in list)
                 {
-                    var index = model.SubStr(8, 4).CastTo<int>() + i;
+                    var order_code = await _codeCreatorService.CreateCodeAsync<SP_ORDER>("DD", a => a.ORDER_CODE);
                     //形成采购订单
                     var temp = new SP_ORDER
                     {
                         PURPLAN_ID = item.COLLECT_ID,
                         ORDER_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        ORDER_CODE = type + index.ToString("D4"),
+                        ORDER_CODE = order_code,
                         ORDER_DATE = dt,
                         ORDER_MONEY = item.COLLECT_PRICE,
                         BUY_USERID = item.COLLECT_USERID,
@@ -446,7 +446,6 @@ namespace EAM.Material.Services
                         AUDITING = "0",
                         IS_STOP = "0"
                     };
-                    i++;
                     importList.Add(temp);
                     await Task.CompletedTask;
 

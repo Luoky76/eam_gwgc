@@ -3,6 +3,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 
@@ -11,14 +12,16 @@ namespace EAM.Material.Services
     public class SpInstoreService : IBaseService
     {
         private readonly IDbContext _dbContext;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly IComboxDataService _comboxDataService;
         private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
         private string errMsg = string.Empty;
 
-        public SpInstoreService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, UserSession userSession)
+        public SpInstoreService(IDbContext dbContext, ICodeCreatorService codeCreatorService, IComboxDataService comboxDataService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
+            _codeCreatorService = codeCreatorService;
             _comboxDataService = comboxDataService;
             _corpService = corpService;
             _userSession = userSession;
@@ -162,7 +165,7 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_INSTORE> request, SaveRequest<SP_INSTORE_DET> requestdet)
         {
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 bool mainSuccess = false, detSuccess = false;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
@@ -203,15 +206,12 @@ namespace EAM.Material.Services
 
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
+                if (!mainSuccess || !detSuccess)
                 {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+            });
             return AjaxResult.Success("保存成功");
         }
 
@@ -311,11 +311,10 @@ namespace EAM.Material.Services
                     _STORE.MODIFY_USERID = _userSession.UserID.ToString();
                     _STORE.MODIFYDATE = DateTime.Now;
 
-                    string type = "PC" + DateTime.Now.ToString("yyyyMM");
-                    string def = type + "0000";
-                    var model = await _dbContext.Query<SP_STORE>(x => x.STORE_CODE.Contains(type)).Select(x => Sql.Max(x.STORE_CODE) ?? def).FirstOrDefaultAsync();
-                    var index = model.SubStr(8, 4).CastTo<int>() + 1;
-                    _STORE.STORE_CODE = type + index.ToString("D4");
+                    if (_STORE.STORE_CODE.IsNullOrWhiteSpace())
+                    {
+                        _STORE.STORE_CODE = await _codeCreatorService.CreateCodeAsync<SP_STORE>("PC", a => a.STORE_CODE);
+                    }
 
                     STORE_WATER _WATER = new();//库存流水表
 
@@ -356,7 +355,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -364,26 +363,22 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING == "1")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                        throw new Exception("该数据已提交，无法重复提交！");
                     }
                     if (!entity.IN_DATE.HasValue)
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("入库日期未填写！");
+                        throw new Exception("入库日期未填写！");
                     }
                     if (entity.AUDITING == "7")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已注销，无法提交！");
+                        throw new Exception("该数据已注销，无法提交！");
                     }
 
                     entity.AUDITING = "1";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("提交成功");
         }
 
@@ -394,7 +389,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -402,21 +397,18 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING == "1")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已提交，无法退回验收！");
+                        throw new Exception("该数据已提交，无法退回验收！");
                     }
                     if (entity.AUDITING == "7")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已注销，无法退回验收！");
+                        throw new Exception("该数据已注销，无法退回验收！");
                     }
 
                     entity.AUDITING = "7";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("提交成功");
         }
 

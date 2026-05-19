@@ -3,6 +3,7 @@ using Gksyb.Common;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
@@ -15,12 +16,14 @@ namespace EAM.Device.services
     {
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
 
-        public DeviceStopService(IDbContext dbContext, IComboxDataService comboxService, UserSession userSession)
+        public DeviceStopService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxService = comboxService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -118,18 +121,30 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(RUN_STOP entity)
         {
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.EDIT_USER = _userSession.RealName;
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = await _dbContext.GetSysdate();
-            string aa = "TG" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<RUN_STOP>(x => x.STOP_CODE.Contains(aa)).Select(x => Sql.Max(x.STOP_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.STOP_CODE = aa + index.ToString("D4");
-            entity.AUDITING = "0";
+            if (entity.STOP_CODE.IsNullOrWhiteSpace())
+            {
+                entity.STOP_CODE = await _codeCreatorService.CreateCodeAsync<RUN_STOP>("TG", a => a.STOP_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
             entity.RUN_STOP_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 

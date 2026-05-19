@@ -4,6 +4,7 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
@@ -18,6 +19,7 @@ namespace EAM.Device.services
         private readonly IDbContext _dbContext;
         private readonly IComboxDataService _comboxService;
         private readonly ICorpService _corpService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
 
@@ -36,10 +38,11 @@ namespace EAM.Device.services
             }
         }
 
-        public InventoryTaskService(IDbContext dbContext, ICorpService corpService, IComboxDataService comboxService, UserSession userSession)
+        public InventoryTaskService(IDbContext dbContext, ICorpService corpService, ICodeCreatorService codeCreatorService, IComboxDataService comboxService, UserSession userSession)
         {
             _dbContext = dbContext;
             _corpService = corpService;
+            _codeCreatorService = codeCreatorService;
             _comboxService = comboxService;
             _userSession = userSession;
         }
@@ -126,17 +129,31 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(DEVICE_SCAN entity)
         {
-            string aa = "PD" + DateTime.Now.ToString("yyyyMM");
-            string def = aa + "0000";
-            var model = await _dbContext.Query<DEVICE_SCAN>(x => x.SCAN_CODE.Contains(aa)).Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.SCAN_CODE = aa + index.ToString("D4");
+            if (entity.SCAN_CODE.IsNullOrWhiteSpace())
+            {
+                entity.SCAN_CODE = await _codeCreatorService.CreateCodeAsync<DEVICE_SCAN>("PD", a => a.SCAN_CODE);
+            }
             entity.AUDITING = "0";
-            entity.STATUS = "1";
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
+            if (entity.STATUS.IsNullOrWhiteSpace())
+            {
+                entity.STATUS = "1";
+            }
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+            }
+            if (entity.SEC_DEPT.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+            }
+            if (entity.DEPT_NAME.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }
 
@@ -356,30 +373,24 @@ namespace EAM.Device.services
                            STATUS = "3",
                        });
 
-                    string aa = DateTime.Now.ToString("yyyyMM");
-                    string def = aa + "0000";
                     var queryups = _dbContext.Query<DEVICE_SCAN_DET>()
                      .Where(c => c.SCAN_ID == sid && c.SCAN_RESULT != "正常").ToList();
                     if (queryups != null)
                     {
                         var scandetreList = new List<DEVICE_SCAN_RESULT>();
-                        var scan_code = 0;
                         var scan_type = "";
                         var pyk = "";
                         foreach (var queryup in queryups)
                         {
                             scan_type = queryup.SCAN_RESULT == "盘盈" ? "盘盈" : "盘亏";
                             pyk = queryup.SCAN_RESULT == "盘盈" ? "PY" : "PK";
-                            var scanTypeCount = scandetreList.Count(item => item.SCAN_TYPE == scan_type);
-                            var scanQuery = _dbContext.Query<DEVICE_SCAN_RESULT>(x => x.SCAN_CODE.Contains(aa) && x.SCAN_TYPE == scan_type);
-                            var maxScanCode = await scanQuery.Select(x => Sql.Max(x.SCAN_CODE) ?? def).FirstOrDefaultAsync();
-                            scan_code = maxScanCode.SubStr(8, 4).CastTo<int>() + (scanTypeCount > 0 ? scanTypeCount + 1 : 1);
+                            var scan_code_str = await _codeCreatorService.CreateCodeAsync<DEVICE_SCAN_RESULT>(pyk, a => a.SCAN_CODE);
                             var scandetre = new DEVICE_SCAN_RESULT()
                             {
                                 RESULT_ID = GuidHelper.NewSnowflakeId().ToString(),
                                 AUDITING = "0",
                                 SCAN_ID = sid,
-                                SCAN_CODE = pyk + aa + scan_code.ToString("D4"),
+                                SCAN_CODE = scan_code_str,
                                 SCAN_DATE = Sysdate,
                                 SCAN_TYPE = scan_type,
                                 DEVICE_NO = queryup.DEVICE_NO,

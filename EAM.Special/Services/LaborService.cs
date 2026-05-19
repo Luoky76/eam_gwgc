@@ -4,11 +4,9 @@ using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EAM.Special.Services
 {
@@ -19,15 +17,17 @@ namespace EAM.Special.Services
         private readonly IComboxDataService _comboxDataService;
         private readonly IUserService _userService;
         private readonly ICorpService _corpService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private string errMsg = string.Empty;
 
-        public LaborService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, UserSession userSession)
+        public LaborService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
             _comboxDataService = comboxDataService;
             _userService = userService;
             _corpService = corpService;
+            _codeCreatorService = codeCreatorService;
             _userSession = userSession;
         }
 
@@ -512,7 +512,7 @@ namespace EAM.Special.Services
         public async Task<AjaxResult> LaborExchangeSave(SaveRequest<LABOR_EXCHANGE> request, SaveRequest<LABOR_EXCHANGE_APPDET> requestdet)
         {
             //添加主子表新增记录的关联键值
-            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            if (request.Added != null && request.Added.Any())
             {
                 string exchange_id;
                 if (request.Added[0].EXCHANGE_ID.IsNullOrEmpty())
@@ -532,9 +532,8 @@ namespace EAM.Special.Services
                 }
             }
 
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
-                bool mainSuccess = false, detSuccess = false;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
                      {
@@ -559,52 +558,50 @@ namespace EAM.Special.Services
                      c => a => a.EXCHANGE_ID == c.EXCHANGE_ID
                      , LaborExchangeBeforAdd, LaborExchangeBeforUpdate, LaborExchangeBeforDelete, false, null, null);
 
-                mainSuccess = !execResult.IsError;
-                if (mainSuccess)  //主表是否保存成功
+                if (execResult.IsError)
                 {
-                    requestdet = requestdet ?? new SaveRequest<LABOR_EXCHANGE_APPDET>();
-
-                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
-                         c => new
-                         {
-                             c.SP_CODE,
-                             c.SP_DAIMA,
-                             c.SP_NAME,
-                             c.SP_SIZE,
-                             c.PRODUCE,
-                             c.UNIT,
-                             c.FACTORY,
-                             c.OTHER_CODE,
-                             c.EXCHANGE_NUM,
-                             c.TYPE_CODE,
-                             c.TYPE_NAME,
-                             c.PURPOSE,
-                             c.MEMO,
-                             c.EXCHANGE_APPDET_ID,
-                             c.EXCHANGE_ID,
-                             c.TYPE_ID,
-                             c.SP_ID,
-                             c.CREATE_USERID,
-                             c.CREATEDATE,
-                             c.MODIFY_USERID,
-                             c.MODIFYDATE,
-                             c.STORE_ID,
-                             c.OUT_DET_ID
-                         },
-                         c => a => a.EXCHANGE_APPDET_ID == c.EXCHANGE_APPDET_ID
-                         , LaborExchangeAppDetBeforAdd, LaborExchangeAppDetBeforUpdate, null, false, null, null);
-
-                    detSuccess = !execResult.IsError;  //明细表是否保存成功
-                }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
-                {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+
+                requestdet = requestdet ?? new SaveRequest<LABOR_EXCHANGE_APPDET>();
+
+                execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                     c => new
+                     {
+                         c.SP_CODE,
+                         c.SP_DAIMA,
+                         c.SP_NAME,
+                         c.SP_SIZE,
+                         c.PRODUCE,
+                         c.UNIT,
+                         c.FACTORY,
+                         c.OTHER_CODE,
+                         c.EXCHANGE_NUM,
+                         c.TYPE_CODE,
+                         c.TYPE_NAME,
+                         c.PURPOSE,
+                         c.MEMO,
+                         c.EXCHANGE_APPDET_ID,
+                         c.EXCHANGE_ID,
+                         c.TYPE_ID,
+                         c.SP_ID,
+                         c.CREATE_USERID,
+                         c.CREATEDATE,
+                         c.MODIFY_USERID,
+                         c.MODIFYDATE,
+                         c.STORE_ID,
+                         c.OUT_DET_ID
+                     },
+                     c => a => a.EXCHANGE_APPDET_ID == c.EXCHANGE_APPDET_ID
+                     , LaborExchangeAppDetBeforAdd, LaborExchangeAppDetBeforUpdate, null, false, null, null);
+
+                if (execResult.IsError)
+                {
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    throw new Exception(errMsg);
+                }
+            });
             return AjaxResult.Success("保存成功");
         }
         /// <summary>
@@ -618,14 +615,14 @@ namespace EAM.Special.Services
             }
             var sysDate = await _dbContext.GetSysdate();
 
-            string rentCode = "LBZJ" + sysDate.Value.ToString("yyyyMM");
-            string sn = "0001";
-            var lastCode = await _dbContext.Query<LABOR_EXCHANGE>(x => x.EXCHANGE_CODE.Contains(rentCode)).Select(x => Sql.Max(x.EXCHANGE_CODE)).FirstOrDefaultAsync();
-            if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
-            else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
-
-            entity.AUDITING = "0";
-            entity.EXCHANGE_CODE = rentCode;
+            if (entity.EXCHANGE_CODE.IsNullOrWhiteSpace())
+            {
+                entity.EXCHANGE_CODE = await _codeCreatorService.CreateCodeAsync<LABOR_EXCHANGE>("LBZJ", a => a.EXCHANGE_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
 
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
@@ -756,7 +753,7 @@ namespace EAM.Special.Services
         public async Task<AjaxResult> LaborRentSave(SaveRequest<LABOR_RENT> request, SaveRequest<LABOR_RENT_DET> requestdet)
         {
             //添加主子表新增记录的关联键值
-            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
+            if (request.Added != null && request.Added.Any())
             {
                 string rent_id;
                 if (request.Added[0].RENT_ID.IsNullOrEmpty())
@@ -776,9 +773,8 @@ namespace EAM.Special.Services
                 }
             }
 
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
-                bool mainSuccess = false, detSuccess = false;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
                      {
@@ -804,47 +800,45 @@ namespace EAM.Special.Services
                      c => a => a.RENT_ID == c.RENT_ID
                      , LaborRentBeforAdd, LaborRentBeforUpdate, LaborRentBeforDelete, false, null, null);
 
-                mainSuccess = !execResult.IsError;
-                if (mainSuccess)  //主表是否保存成功
+                if (execResult.IsError)
                 {
-                    requestdet = requestdet ?? new SaveRequest<LABOR_RENT_DET>();
-
-                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
-                         c => new
-                         {
-                             c.SP_CODE,
-                             c.SP_DAIMA,
-                             c.SP_NAME,
-                             c.SP_SIZE,
-                             c.PRODUCE,
-                             c.UNIT,
-                             c.FACTORY,
-                             c.OTHER_CODE,
-                             c.RENT_NUM,
-                             c.TYPE_CODE,
-                             c.TYPE_NAME,
-                             c.MEMO,
-                             c.RENT_DET_ID,
-                             c.RENT_ID,
-                             c.TYPE_ID,
-                             c.SP_ID,
-                             c.STORE_ID,
-                             c.HOUSE_ID
-                         },
-                         c => a => a.RENT_DET_ID == c.RENT_DET_ID
-                         , LaborRentDetBeforAdd, LaborRentDetBeforUpdate, null, false, null, null);
-
-                    detSuccess = !execResult.IsError;  //明细表是否保存成功
-                }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
-                {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+
+                requestdet = requestdet ?? new SaveRequest<LABOR_RENT_DET>();
+
+                execResult = await _dbContext.SaveEntityAnsyc(requestdet,
+                     c => new
+                     {
+                         c.SP_CODE,
+                         c.SP_DAIMA,
+                         c.SP_NAME,
+                         c.SP_SIZE,
+                         c.PRODUCE,
+                         c.UNIT,
+                         c.FACTORY,
+                         c.OTHER_CODE,
+                         c.RENT_NUM,
+                         c.TYPE_CODE,
+                         c.TYPE_NAME,
+                         c.MEMO,
+                         c.RENT_DET_ID,
+                         c.RENT_ID,
+                         c.TYPE_ID,
+                         c.SP_ID,
+                         c.STORE_ID,
+                         c.HOUSE_ID
+                     },
+                     c => a => a.RENT_DET_ID == c.RENT_DET_ID
+                     , LaborRentDetBeforAdd, LaborRentDetBeforUpdate, null, false, null, null);
+
+                if (execResult.IsError)
+                {
+                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
+                    throw new Exception(errMsg);
+                }
+            });
             return AjaxResult.Success("保存成功");
         }
         /// <summary>
@@ -858,19 +852,28 @@ namespace EAM.Special.Services
             }
             var sysDate = await _dbContext.GetSysdate();
 
-            string rentCode = "LBZJ" + sysDate.Value.ToString("yyyyMM");
-            string sn = "0001";
-            var lastCode = await _dbContext.Query<LABOR_RENT>(x => x.RENT_CODE.Contains(rentCode)).Select(x => Sql.Max(x.RENT_CODE)).FirstOrDefaultAsync();
-            if (string.IsNullOrWhiteSpace(lastCode)) rentCode += sn;
-            else rentCode += (int.Parse(lastCode.Substring(10, 4)) + 1).ToString("0000");
-
-            entity.AUDITING = "0";
-            entity.RENT_CODE = rentCode;
-            entity.USER_ID = _userSession.UserID.ToString();
-            entity.USER_NAME = _userSession.RealName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.RENT_STATUS = "0";
+            if (entity.RENT_CODE.IsNullOrWhiteSpace())
+            {
+                entity.RENT_CODE = await _codeCreatorService.CreateCodeAsync<LABOR_RENT>("LBZJ", a => a.RENT_CODE);
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
+            if (entity.RENT_STATUS.IsNullOrWhiteSpace())
+            {
+                entity.RENT_STATUS = "0";
+            }
+            if (entity.USER_ID.IsNullOrWhiteSpace())
+            {
+                entity.USER_ID = _userSession.UserID.ToString();
+                entity.USER_NAME = _userSession.RealName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
             entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }

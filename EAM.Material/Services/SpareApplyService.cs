@@ -4,6 +4,7 @@ using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
@@ -17,12 +18,14 @@ namespace EAM.Material.Services
         private readonly IDbContext _dbContext;
         private readonly UserSession _userSession;
         private readonly IComboxDataService _comboxDataService;
+        private readonly ICodeCreatorService _codeCreatorService;
 
-        public SpareApplyService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxDataService)
+        public SpareApplyService(IDbContext dbContext, UserSession userSession, IComboxDataService comboxDataService, ICodeCreatorService codeCreatorService)
         {
             _dbContext = dbContext;
             _userSession = userSession;
             _comboxDataService = comboxDataService;
+            _codeCreatorService = codeCreatorService;
         }
 
         #region 物资编码申请
@@ -139,12 +142,7 @@ namespace EAM.Material.Services
 
             entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            string type = $"SQ{dt.Value.ToString("yyyyMM")}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SPARE_APPLY>(x => x.APPLY_CODE.Contains(type)).Select(x => Sql.Max(x.APPLY_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-
-            entity.APPLY_CODE = type + index.ToString("D4");
+            entity.APPLY_CODE = await _codeCreatorService.CreateCodeAsync<SPARE_APPLY>("SQ", a => a.APPLY_CODE);
             entity.APPLY_DATE = dt;
             entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
@@ -518,20 +516,30 @@ namespace EAM.Material.Services
 
             entity.DISABLE_ID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            string type = $"JY{dt.Value.ToString("yyyyMM")}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_DISABLE>(x => x.DISABLE_CODE.Contains(type)).Select(x => Sql.Max(x.DISABLE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-
-            entity.DISABLE_CODE = type + index.ToString("D4");
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.DISABLE_DATE = dt;
-            entity.AUDITING = "0";
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            entity.DISABLE_CODE = await _codeCreatorService.CreateCodeAsync<SP_DISABLE>("JY", a => a.DISABLE_CODE);
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (!entity.DISABLE_DATE.HasValue)
+            {
+                entity.DISABLE_DATE = dt;
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();
@@ -726,20 +734,30 @@ namespace EAM.Material.Services
 
             entity.ENABLE_ID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            string type = $"QY{dt.Value.ToString("yyyyMM")}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_ENABLE>(x => x.ENABLE_CODE.Contains(type)).Select(x => Sql.Max(x.ENABLE_CODE) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-
-            entity.ENABLE_CODE = type + index.ToString("D4");
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.AUDITING = "0";
-            entity.ENABLE_DATE = dt;
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            entity.ENABLE_CODE = await _codeCreatorService.CreateCodeAsync<SP_ENABLE>("QY", a => a.ENABLE_CODE);
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
+            if (!entity.ENABLE_DATE.HasValue)
+            {
+                entity.ENABLE_DATE = dt;
+            }
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();

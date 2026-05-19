@@ -4,6 +4,7 @@ using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model;
 using Gksyb.Model.Core;
@@ -21,9 +22,10 @@ namespace EAM.Material.Services
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
         private readonly IFlowEngineService _flowEngineService;
+        private readonly ICodeCreatorService _codeCreatorService;
         private string errMsg = string.Empty;
 
-        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IFlowEngineService flowEngineService)
+        public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IFlowEngineService flowEngineService, ICodeCreatorService codeCreatorService)
         {
             _dbContext = dbContext;
             //添加船舶物资需求的软删除字段过滤
@@ -31,6 +33,7 @@ namespace EAM.Material.Services
             _comboxDataService = comboxDataService;
             _userSession = userSession;
             _flowEngineService = flowEngineService;
+            _codeCreatorService = codeCreatorService;
         }
 
         #region 船舶物资申请
@@ -181,7 +184,7 @@ namespace EAM.Material.Services
                 }
             }
 
-            using (var trans = _dbContext.BeginTransaction())  //事务保证保存数据的一致性
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 bool mainSuccess = true, detSuccess = true;
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
@@ -235,15 +238,12 @@ namespace EAM.Material.Services
                     execResult = await DetSaveAsync(requestdet);
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
-                if (mainSuccess && detSuccess)
-                    trans.Commit();
-                else
+                if (!mainSuccess || !detSuccess)
                 {
-                    trans.Rollback();
                     if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    return AjaxResult.Error(errMsg);
+                    throw new Exception(errMsg);
                 }
-            }
+            });
             return AjaxResult.Success("保存成功");
         }
 
@@ -258,11 +258,10 @@ namespace EAM.Material.Services
                 entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
             }
 
-            string type = $"SQ{DateTime.Now:yyyyMM}";
-            string def = type + "0000";
-            var model = await _dbContext.Query<SP_APPLY>(x => x.APPLY_NO.Contains(type)).Select(x => Sql.Max(x.APPLY_NO) ?? def).FirstOrDefaultAsync();
-            var index = model.SubStr(8, 4).CastTo<int>() + 1;
-            entity.APPLY_NO = type + index.ToString("D4");
+            if (entity.APPLY_NO.IsNullOrWhiteSpace())
+            {
+                entity.APPLY_NO = await _codeCreatorService.CreateCodeAsync<SP_APPLY>("SQ", a => a.APPLY_NO);
+            }
 
             entity.APPLY_DATE = dt;
             entity.APPLY_USERID = _userSession.UserID.ToString();
@@ -271,8 +270,14 @@ namespace EAM.Material.Services
             entity.SEC_DEPT = _userSession.ParentCompany.CName;
             entity.DEPT_ID = _userSession.Corp.CorpID;
             entity.DEPT_NAME = _userSession.Corp.CName;
-            entity.AUDITING = "0";
-            entity.AUDITING_CHECK = "0";
+            if (entity.AUDITING.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING = "0";
+            }
+            if (entity.AUDITING_CHECK.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING_CHECK = "0";
+            }
             entity.CREATE_USERID = _userSession.UserID.ToString();
             entity.CREATEDATE = dt;
             entity.MODIFY_USERID = _userSession.UserID.ToString();

@@ -2,6 +2,7 @@
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
+using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
@@ -11,12 +12,14 @@ namespace EAM.Material.Services
     public class SpPurplanService : IBaseService
     {
         private readonly IDbContext _dbContext;
+        private readonly ICodeCreatorService _codeCreatorService;
         private readonly IComboxDataService _comboxDataService;
         private readonly UserSession _userSession;
 
-        public SpPurplanService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession)
+        public SpPurplanService(IDbContext dbContext, ICodeCreatorService codeCreatorService, IComboxDataService comboxDataService, UserSession userSession)
         {
             _dbContext = dbContext;
+            _codeCreatorService = codeCreatorService;
             _comboxDataService = comboxDataService;
             _userSession = userSession;
         }
@@ -180,21 +183,15 @@ namespace EAM.Material.Services
             {
                 var importDetail = new List<SP_ORDER_DETAIL>();
                 var importList = new List<SP_ORDER>();
-                //单号
-                string type = $"DD{dt.Value.ToString("yyyyMM")}";
-                string def = type + "0000";
-                var model = await _dbContext.Query<SP_ORDER>(x => x.ORDER_CODE.Contains(type)).Select(x => Sql.Max(x.ORDER_CODE) ?? def).FirstOrDefaultAsync();
-
-                var i = 1;
                 foreach (var item in list)
                 {
-                    var index = model.SubStr(8, 4).CastTo<int>() + i;
+                    var order_code = await _codeCreatorService.CreateCodeAsync<SP_ORDER>("DD", a => a.ORDER_CODE);
                     //形成物资询价方案
                     var temp = new SP_ORDER
                     {
                         PURPLAN_ID = item.PURPLAN_ID,
                         ORDER_ID = GuidHelper.NewSnowflakeId().ToString(),
-                        ORDER_CODE = type + index.ToString("D4"),
+                        ORDER_CODE = order_code,
                         ORDER_DATE = dt,
                         ORDER_MONEY = item.SUM_MONEY,
                         BUY_USERID = item.PUR_USERID,
@@ -209,8 +206,6 @@ namespace EAM.Material.Services
                         IS_STOP = "0"
                     };
                     importList.Add(temp);
-                    i++;
-                    await Task.CompletedTask;
 
                     var data = _dbContext.Query<SP_PURPLAN_DET>().Where(x => x.PURPLAN_ID == item.PURPLAN_ID).ToList();
 

@@ -178,7 +178,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -186,16 +186,14 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING == "1")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                        throw new Exception("该数据已提交，无法重复提交！");
                     }
 
                     entity.AUDITING = "1";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("提交成功");
         }
 
@@ -206,7 +204,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -214,21 +212,18 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING == "0")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据未提交，无法撤销！");
+                        throw new Exception("该数据未提交，无法撤销！");
                     }
                     if (entity.AUDITING_CHK == "1")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已验收，无法撤销！");
+                        throw new Exception("该数据已验收，无法撤销！");
                     }
 
                     entity.AUDITING = "0";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("撤销成功");
         }
 
@@ -239,7 +234,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -247,16 +242,14 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING_CHK == "1")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据已提交，无法重复提交！");
+                        throw new Exception("该数据已提交，无法重复提交！");
                     }
 
                     entity.AUDITING_CHK = "1";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("提交成功");
         }
 
@@ -267,7 +260,7 @@ namespace EAM.Material.Services
         {
             if (sids == null || sids.Count == 0) return AjaxResult.Error("请选择行");
 
-            using (var trans = _dbContext.BeginTransaction())
+            await _dbContext.UseTransactionAsync(async () =>
             {
                 foreach (var sid in sids)
                 {
@@ -275,16 +268,14 @@ namespace EAM.Material.Services
                     if (entity == null) continue;
                     if (entity.AUDITING_CHK == "0")
                     {
-                        trans.Rollback();
-                        return AjaxResult.Error("该数据未提交，无法撤销！");
+                        throw new Exception("该数据未提交，无法撤销！");
                     }
 
                     entity.AUDITING_CHK = "0";
                     await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
-                trans.Commit();
-            }
+            });
             return AjaxResult.Success("撤销成功");
         }
 
