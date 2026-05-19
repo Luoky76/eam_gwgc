@@ -1,5 +1,4 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
@@ -22,6 +21,7 @@ namespace EAM.Material.Services
             _comboxDataService = comboxDataService;
             _userSession = userSession;
         }
+
         /// <summary>
         /// 获取下拉框信息
         /// </summary>
@@ -32,6 +32,7 @@ namespace EAM.Material.Services
             {
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
+                    { "BCCode@#Auditing", "auditing" },
                     { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)null}
                 });
                 return AjaxResult.Success(dic);
