@@ -48,7 +48,7 @@ namespace EAM.Material.Controllers
         /// </summary>
         public async Task<AjaxResult> GetAsync(string receiveId)
         {
-            return await _service.GetAsync(receiveId);
+            return AjaxResult.Success(await _service.GetAsync(receiveId));
         }
 
         /// <summary>
@@ -93,30 +93,6 @@ namespace EAM.Material.Controllers
         public async Task<AjaxResult> RevokeCheckAsync(List<string> sids)
         {
             return await _service.RevokeCheckAsync(sids);
-        }
-
-        /// <summary>
-        /// 子表保存
-        /// </summary>
-        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_RECEIVE_DET> request)
-        {
-            return await _service.DetSaveAsync(request);
-        }
-
-        /// <summary>
-        /// 获取订单列表
-        /// </summary>
-        public async Task<AjaxResult> OrderList()
-        {
-            return await _service.OrderList();
-        }
-
-        /// <summary>
-        /// 获取物资列表
-        /// </summary>
-        public async Task<AjaxResult> SpList(GridRequest request)
-        {
-            return await _service.SpList(request);
         }
     }
 }

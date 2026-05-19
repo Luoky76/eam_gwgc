@@ -250,9 +250,9 @@
                     var changeRow = me.grid.getChangedRows();
                     LG.ajax({
                         jsToken: true,
-                        url: 'Material/SpReceive/Save',
+                        url: 'Material/SpReceive/SaveAll',
                         loading: '正在保存中...',
-                        data: { request: changeRow, requestdet: null },
+                        data: { request: changeRow, requestdet: undefined },
                         success: function () {
                             LG.showSuccess('保存成功');
                             me.grid.isDataChanged = false;
