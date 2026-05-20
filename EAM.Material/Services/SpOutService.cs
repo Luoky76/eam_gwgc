@@ -20,6 +20,7 @@ namespace EAM.Material.Services
         private string errMsg = string.Empty;
         private string _outID = string.Empty, errMsg2 = string.Empty;
         private Dictionary<string, string> outDic = new();
+
         /// <summary>
         /// 获取数据库时间
         /// </summary>
@@ -50,8 +51,8 @@ namespace EAM.Material.Services
         public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
         {
             return await _comboxService.Get(new Dictionary<string, object>(){
-                { "SpapplyType",null},
-                { "Auditing",null},
+                { "SpapplyType", null },
+                { "BCCode@#Auditing", "auditing" },
                 { "BCCode", "purtypeName" },
             });
         }

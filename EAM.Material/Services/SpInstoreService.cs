@@ -1,5 +1,4 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -32,9 +31,18 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
         {
-            var data = await _comboxDataService.Get(new Dictionary<string, object>());
-            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
-            return AjaxResult.Success(data);
+            try
+            {
+                var data = await _comboxDataService.Get(new Dictionary<string, object>()
+                {
+                    { "BCCode@#Auditing", "auditing" }
+                });
+                return AjaxResult.Success(data);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("获取下拉数据失败！原因：" + e.Message);
+            }
         }
 
         /// <summary>
