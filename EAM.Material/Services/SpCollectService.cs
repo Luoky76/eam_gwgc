@@ -1,6 +1,5 @@
 ﻿using Gksyb.Common.Office.Core;
 using Gksyb.Common.Office.Excel;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
@@ -310,21 +309,27 @@ namespace EAM.Material.Services
             {
                 entity.COLLECT_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            DateTime? dt = await _dbContext.GetSysdate();
 
             //单号
             if (entity.COLLECT_CODE.IsNullOrWhiteSpace())
             {
                 entity.COLLECT_CODE = await _codeCreatorService.CreateCodeAsync<SP_COLLECT>("QG", a => a.COLLECT_CODE);
             }
-
-            entity.COLLECT_DATE = dt;
-            entity.COLLECT_USERID = _userSession.UserID.ToString();
-            entity.COLLECT_USER = _userSession.RealName;
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
+            if (!entity.COLLECT_DATE.HasValue)
+            {
+                entity.COLLECT_DATE = await _dbContext.GetSysdate();
+            }
+            if (entity.COLLECT_USERID.IsNullOrWhiteSpace()) {
+                entity.COLLECT_USERID = _userSession.UserID.ToString();
+                entity.COLLECT_USER = _userSession.RealName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace()) {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            
             if (entity.AUDITING.IsNullOrWhiteSpace())
             {
                 entity.AUDITING = "0";
@@ -340,6 +345,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_COLLECT entity)
         {
+            await Task.CompletedTask;
         }
 
         /// <summary>
