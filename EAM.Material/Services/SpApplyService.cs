@@ -22,8 +22,6 @@ namespace EAM.Material.Services
         private readonly UserSession _userSession;
         private readonly IFlowEngineService _flowEngineService;
         private readonly ICodeCreatorService _codeCreatorService;
-        private string errMsg = string.Empty;
-
         public SpApplyService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IFlowEngineService flowEngineService, ICodeCreatorService codeCreatorService)
         {
             _dbContext = dbContext;
@@ -239,8 +237,7 @@ namespace EAM.Material.Services
                 }
                 if (!mainSuccess || !detSuccess)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");
@@ -263,12 +260,21 @@ namespace EAM.Material.Services
             }
 
             entity.APPLY_DATE = dt;
-            entity.APPLY_USERID = _userSession.UserID.ToString();
-            entity.APPLY_USER = _userSession.RealName;
-            entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            entity.DEPT_ID = _userSession.Corp.CorpID;
-            entity.DEPT_NAME = _userSession.Corp.CName;
+            if (entity.APPLY_USERID.IsNullOrWhiteSpace())
+            {
+                entity.APPLY_USERID = _userSession.UserID.ToString();
+                entity.APPLY_USER = _userSession.RealName;
+            }
+            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
+            {
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
             if (entity.AUDITING.IsNullOrWhiteSpace())
             {
                 entity.AUDITING = "0";
@@ -693,17 +699,17 @@ namespace EAM.Material.Services
                 .ToListAsync();
             if (sp_collect_request_list.Any())
             {
-                errMsg = "物资";
+                string msg = "物资";
                 foreach (var sp_collect_request in sp_collect_request_list)
                 {
-                    errMsg += $"「{sp_collect_request.SP_NAME}」";
+                    msg += $"「{sp_collect_request.SP_NAME}」";
                 }
-                errMsg += "已在物资需求申请单中，无法撤销提交\n申请单号";
+                msg += "已在物资需求申请单中，无法撤销提交\n申请单号";
                 foreach (var sp_collect_request in sp_collect_request_list)
                 {
-                    errMsg += $"「{sp_collect_request.COLLECT_CODE}」";
+                    msg += $"「{sp_collect_request.COLLECT_CODE}」";
                 }
-                MessageException.Throw(errMsg);
+                MessageException.Throw(msg);
             }
             var sp_apply_details = await _dbContext.UpdateAsync<SP_APPLY_DETAIL>(x => sids.Contains(x.SPDET_ID), x => new SP_APPLY_DETAIL
             {

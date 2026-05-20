@@ -15,7 +15,6 @@ namespace EAM.Material.Services
         private readonly ICorpService _corpService;
         private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
-        private string masterID = string.Empty, errMsg = string.Empty;
 
         public SpInBackService(IDbContext dbContext, IComboxDataService comboxDataService, ICorpService corpService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
@@ -208,8 +207,7 @@ namespace EAM.Material.Services
                 }
                 if (!mainSuccess || !detSuccess)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new Exception("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");
@@ -222,7 +220,6 @@ namespace EAM.Material.Services
         private async Task BeforeAdd(SP_IN_BACK entity)
         {
             entity.IN_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
-            masterID = entity.IN_BACK_ID;
 
             if (entity.EDIT_USERID.IsNullOrWhiteSpace())
             {
@@ -313,7 +310,6 @@ namespace EAM.Material.Services
         private async Task BeforeAddDet(SP_INBACK_DET entity)
         {
             entity.INDET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.IN_BACK_ID = masterID;
 
             await Task.CompletedTask;
         }

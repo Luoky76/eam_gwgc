@@ -28,8 +28,6 @@ namespace EAM.Repair.services
         private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private readonly ICorpService _corpService;
-        private string errMsg = string.Empty;
-
         public RepairPlanService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICodeCreatorService codeCreatorService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
@@ -449,7 +447,7 @@ namespace EAM.Repair.services
 
                     if (execResult.IsError)
                     {
-                        throw new MessageException(errMsg.IsNullOrWhiteSpace() ? "维修计划保存失败" : errMsg);
+                        throw new MessageException("维修计划保存失败");
                     }
                     requestdet ??= new SaveRequest<REP_PLAN_EXE_ITEM>();
                     if ((await SaveExeItem(requestdet)).IsError)

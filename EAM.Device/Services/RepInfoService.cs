@@ -166,8 +166,11 @@ namespace EAM.Device.services
         /// </summary>
         public async Task BeforeAdd(REP_TYPE entity)
         {
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = await _dbContext.GetSysdate();
             entity.REP_TYPE_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;

@@ -60,9 +60,12 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.UNIT_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.MODIFY_USER = _userSession.RealName;
-            entity.EDIT_USER = _userSession.RealName;
-            entity.EDIT_USERID = _userSession.UserID.ToString();
+            if (entity.EDIT_USERID.IsNullOrWhiteSpace())
+            {
+                entity.EDIT_USERID = _userSession.UserID.ToString();
+                entity.EDIT_USER = _userSession.RealName;
+                entity.MODIFY_USER = _userSession.RealName;
+            }
             entity.EDIT_DATE = dt;
         }
 

@@ -17,8 +17,6 @@ namespace EAM.Material.Services
         private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
-        private string errMsg = string.Empty;
-        private string _outID = string.Empty, errMsg2 = string.Empty;
         private Dictionary<string, string> outDic = new();
 
         /// <summary>
@@ -276,7 +274,6 @@ namespace EAM.Material.Services
         {
             if (!entity.AUDITING_A.Equals("0"))
             {
-                errMsg = "未提交的状态下才能修改";
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
@@ -290,7 +287,6 @@ namespace EAM.Material.Services
                 await _dbContext.DeleteAsync<SP_OUTAPP_DET>(x => x.OUT_ID.Equals(entity.OUT_ID));
             else
             {
-                errMsg = "未提交的状态下才能删除";
                 throw new MessageException("未提交的状态下才能删除");
             }
         }
@@ -546,7 +542,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAddSpOutStoredet(SP_OUTSTORE_DET entity)
         {
-            entity.OUT_ID = _outID;
             entity.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
             await Task.CompletedTask;
         }
@@ -556,13 +551,8 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task SpOutStoreBeforUpdate(SP_OUTSTORE entity)
         {
-            if (entity.AUDITING_A.Equals("0"))
+            if (!entity.AUDITING_A.Equals("0"))
             {
-                _outID = entity.OUT_ID;
-            }
-            else
-            {
-                errMsg2 = "未提交的状态下才能修改";
                 throw new MessageException("未提交的状态下才能修改");
             }
         }

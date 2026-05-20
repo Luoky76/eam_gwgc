@@ -29,8 +29,6 @@ namespace EAM.Material.Services
         private readonly IUserService _userService;
         private readonly ICodeCreatorService _codeCreatorService;
 
-        private string errMsg = string.Empty;
-
         public SpCollectService(IDbContext dbContext, IComboxDataService comboxDataService, UserSession userSession, IUserService userService, ICodeCreatorService codeCreatorService)
         {
             _dbContext = dbContext;
@@ -293,8 +291,7 @@ namespace EAM.Material.Services
                 }
                 if (!mainSuccess || !detSuccess)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");

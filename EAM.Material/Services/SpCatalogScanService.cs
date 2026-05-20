@@ -17,7 +17,6 @@ namespace EAM.Material.Services
         private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
         private DateTime? _Sysdate;
-        private string errMsg = string.Empty;
         /// <summary>
         /// 获取数据库时间
         /// </summary>
@@ -167,8 +166,7 @@ namespace EAM.Material.Services
                 }
                 if (!mainSuccess || !detSuccess)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");
@@ -319,7 +317,6 @@ namespace EAM.Material.Services
                 await _dbContext.DeleteAsync<SP_CATALOG_SCAN_DET>(x => x.SCAN_ID.Equals(entity.SCAN_ID));
             else
             {
-                errMsg = "未提交的状态下才能删除";
                 throw new MessageException("未提交的状态下才能删除");
             }
         }

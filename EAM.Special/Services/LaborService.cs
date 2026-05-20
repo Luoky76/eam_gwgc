@@ -19,8 +19,6 @@ namespace EAM.Special.Services
         private readonly ICorpService _corpService;
         private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
-        private string errMsg = string.Empty;
-
         public LaborService(IDbContext dbContext, IComboxDataService comboxDataService, IUserService userService, ICorpService corpService, ICodeCreatorService codeCreatorService, UserSession userSession)
         {
             _dbContext = dbContext;
@@ -560,8 +558,7 @@ namespace EAM.Special.Services
 
                 if (execResult.IsError)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
 
                 requestdet = requestdet ?? new SaveRequest<LABOR_EXCHANGE_APPDET>();
@@ -598,8 +595,7 @@ namespace EAM.Special.Services
 
                 if (execResult.IsError)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");
@@ -635,7 +631,6 @@ namespace EAM.Special.Services
             }
             else
             {
-                errMsg = "未提交的状态下才能修改";
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
@@ -648,7 +643,6 @@ namespace EAM.Special.Services
                 await _dbContext.DeleteAsync<LABOR_RENT_DET>(x => x.RENT_ID.Equals(entity.EXCHANGE_ID));
             else
             {
-                errMsg = "未提交的状态下才能删除";
                 throw new MessageException("未提交的状态下才能删除");
             }
         }
@@ -790,8 +784,7 @@ namespace EAM.Special.Services
 
                 if (execResult.IsError)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
 
                 requestdet = requestdet ?? new SaveRequest<LABOR_RENT_DET>();
@@ -823,8 +816,7 @@ namespace EAM.Special.Services
 
                 if (execResult.IsError)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");
@@ -874,7 +866,6 @@ namespace EAM.Special.Services
             }
             else
             {
-                errMsg = "未提交的状态下才能修改";
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
@@ -887,7 +878,6 @@ namespace EAM.Special.Services
                 await _dbContext.DeleteAsync<LABOR_RENT_DET>(x => x.RENT_ID.Equals(entity.RENT_ID));
             else
             {
-                errMsg = "未提交的状态下才能删除";
                 throw new MessageException("未提交的状态下才能删除");
             }
         }

@@ -15,8 +15,6 @@ namespace EAM.Material.Services
         private readonly IComboxDataService _comboxDataService;
         private readonly ICorpService _corpService;
         private readonly UserSession _userSession;
-        private string errMsg = string.Empty;
-
         public SpInstoreService(IDbContext dbContext, ICodeCreatorService codeCreatorService, IComboxDataService comboxDataService, ICorpService corpService, UserSession userSession)
         {
             _dbContext = dbContext;
@@ -216,8 +214,7 @@ namespace EAM.Material.Services
                 }
                 if (!mainSuccess || !detSuccess)
                 {
-                    if (string.IsNullOrWhiteSpace(errMsg)) errMsg = "保存失败";
-                    throw new Exception(errMsg);
+                    throw new MessageException("保存失败");
                 }
             });
             return AjaxResult.Success("保存成功");
