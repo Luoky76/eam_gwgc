@@ -156,8 +156,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeUpdate(SP_RECEIVE entity)
         {
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = await _dbContext.GetSysdate();
         }
 
         /// <summary>

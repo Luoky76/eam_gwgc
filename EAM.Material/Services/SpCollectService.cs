@@ -333,11 +333,6 @@ namespace EAM.Material.Services
             {
                 entity.CONFIRM_AUDIT = "0";
             }
-
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -345,9 +340,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_COLLECT entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.RealName;
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -440,9 +432,6 @@ namespace EAM.Material.Services
                         BUY_USER = item.COLLECT_USER,
                         PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
-                        CREATEDATE = dt,
-                        MODIFY_USERID = "",
-                        MODIFYDATE = dt,
                         AUDITING = "0",
                         IS_STOP = "0"
                     };
@@ -469,10 +458,6 @@ namespace EAM.Material.Services
                         req.SPDET_ID = det.REQUEST_DET_ID;
 
                         req.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        req.CREATE_USERID = "";
-                        req.CREATEDATE = dt;
-                        req.MODIFY_USERID = "";
-                        req.MODIFYDATE = dt;
 
                         req.COUNT = det.CHECK_NUM;
                         req.PRICE = det.TAX_PRICE;
@@ -580,13 +565,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAddDet(SP_COLLECT_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.COLLECT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -594,10 +573,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateDet(SP_COLLECT_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -669,12 +644,7 @@ namespace EAM.Material.Services
             {
                 throw new MessageException("外键 COLLECT_ID 为空！");
             }
-            DateTime? dt = await _dbContext.GetSysdate();
             entity.COLLECT_REQUEST_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
 
             var appledet = _dbContext.Query<SP_APPLY_DETAIL>()
               .Where(t => t.SPDET_ID == entity.REQUEST_DET_ID)
@@ -717,9 +687,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateRequest(SP_COLLECT_REQUEST entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>

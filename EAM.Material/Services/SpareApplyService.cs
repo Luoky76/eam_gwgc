@@ -151,10 +151,6 @@ namespace EAM.Material.Services
             entity.AUDITING = "0";
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATE_DATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = dt;
         }
 
         /// <summary>
@@ -162,11 +158,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SPARE_APPLY entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = dt;
-
         }
 
         /// <summary>
@@ -182,7 +173,6 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<int> Submit(List<string> sids)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
             var list = _dbContext.Query<SPARE_APPLY>().Where(t => sids.Contains(t.APPLY_ID)).ToList();
             var det = _dbContext.Query<SPARE_APPLY_DET>().Where(t => sids.Contains(t.APPLY_ID)).ToList();
 
@@ -223,11 +213,7 @@ namespace EAM.Material.Services
                         SEC_DEPT = item.SEC_DEPT,
                         PURTYPE_ID = d.PURTYPE_ID,
                         PURTYPE_NAME = d.PURTYPE_NAME,
-                        IS_RIGGING = d.IS_RIGGING,
-                        CREATE_USERID = _userSession.UserID.ToString(),
-                        CREATEDATE = dt,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
-                        MODIFYDATE = dt
+                        IS_RIGGING = d.IS_RIGGING
                     };
                     importResult.Add(data);
                 }
@@ -385,8 +371,6 @@ namespace EAM.Material.Services
             entity.EDIT_DATE = dt;
             entity.ADD_USERID = _userSession.UserID.ToString();
             entity.ADD_DATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = dt;
         }
 
         /// <summary>
@@ -394,10 +378,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateDet(SPARE_APPLY_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = dt;
         }
         #endregion
 
@@ -540,20 +520,12 @@ namespace EAM.Material.Services
                 entity.EDIT_USERID = _userSession.UserID.ToString();
                 entity.EDIT_USER = _userSession.RealName;
             }
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
         /// <summary>
         /// 更新前处理
         /// </summary>
         private async Task SpDisableBeforeUpdate(SP_DISABLE entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -561,7 +533,6 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<int> SpDisableSubmit(List<string> sids)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
             var det = _dbContext.Query<SP_DISABLE_DET>().Where(t => sids.Contains(t.DISABLE_ID)).ToList();
             foreach (var d in det)
             {
@@ -632,13 +603,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task SpDisableBeforeAddDet(SP_DISABLE_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.DISABLE_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -646,10 +611,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task SpDisableBeforeUpdateDet(SP_DISABLE_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
         #endregion
 
@@ -758,20 +719,12 @@ namespace EAM.Material.Services
                 entity.EDIT_USERID = _userSession.UserID.ToString();
                 entity.EDIT_USER = _userSession.RealName;
             }
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
         /// <summary>
         /// 更新前处理
         /// </summary>
         private async Task SpEnableBeforeUpdate(SP_ENABLE entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -779,7 +732,6 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<int> SpEnableSubmit(List<string> sids)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
             var det = _dbContext.Query<SP_ENABLE_DET>().Where(t => sids.Contains(t.ENABLE_ID)).ToList();
             foreach (var d in det)
             {
@@ -850,13 +802,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task SpEnableBeforeAddDet(SP_ENABLE_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.ENABLE_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -864,10 +810,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task SpEnableBeforeUpdateDet(SP_ENABLE_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
         #endregion
     }

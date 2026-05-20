@@ -283,13 +283,8 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task SpOutAppBeforUpdate(SP_OUT_APP entity)
         {
-            if (entity.AUDITING_A.Equals("0"))
+            if (!entity.AUDITING_A.Equals("0"))
             {
-                var sysDate = await _dbContext.GetSysdate();
-                entity.MODIFY_USERID = _userSession.UserID.ToString();
-                entity.MODIFYDATE = sysDate;
-            }
-            else
             {
                 errMsg = "未提交的状态下才能修改";
                 throw new MessageException("未提交的状态下才能修改");
@@ -386,8 +381,6 @@ namespace EAM.Material.Services
                 outst.OUT_DATE = Sysdate;
                 outst.IS_RED = "0";
                 outst.AUDITING_A = "0";
-                outst.CREATE_USERID = _userSession.UserID.ToString();
-                outst.CREATEDATE = Sysdate;
                 await _dbContext.InsertAsync(outst);
 
                 var spoutstoredet = new List<SP_OUTSTORE_DET>();
@@ -417,8 +410,6 @@ namespace EAM.Material.Services
                         outstdet3.COUNT = applyNumToUse;
                         //outstdet2.IN_DATE = qryoutappdet.IN_DATE;
                         outstdet3.APPLY_MONEY = qrypc.PRICE * applyNumToUse;
-                        outstdet3.CREATE_USERID = _userSession.UserID.ToString();
-                        outstdet3.CREATEDATE = Sysdate;
                         if (outstdet3.MONEY.HasValue)
                         {
                             appmoney += outstdet3.MONEY.Value;
@@ -576,10 +567,7 @@ namespace EAM.Material.Services
         {
             if (entity.AUDITING_A.Equals("0"))
             {
-                var sysDate = await _dbContext.GetSysdate();
                 _outID = entity.OUT_ID;
-                entity.MODIFY_USERID = _userSession.UserID.ToString();
-                entity.MODIFYDATE = sysDate;
             }
             else
             {
@@ -681,8 +669,6 @@ namespace EAM.Material.Services
                             waterdata.IS_BACK = "0";
 
                             waterdata.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
-                            waterdata.CREATE_USERID = _userSession.UserID.ToString();
-                            waterdata.CREATEDATE = Sysdate;
                             waterdata.WATER_DATE = Sysdate;
                             stwater.Add(waterdata);
 

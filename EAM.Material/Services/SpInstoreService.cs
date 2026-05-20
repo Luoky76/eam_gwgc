@@ -221,10 +221,6 @@ namespace EAM.Material.Services
         /// <returns></returns>
         private async Task BeforeAdd(SP_INSTORE entity)
         {
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = DateTime.Now;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = DateTime.Now;
             await Task.CompletedTask;
         }
 
@@ -306,10 +302,6 @@ namespace EAM.Material.Services
                     _STORE.IN_CODE = request.IN_CODE;
                     _STORE.DEPT_ID = iten.DEPT_ID;
                     _STORE.DEPT_NAME = iten.DEPT_NAME;
-                    _STORE.CREATE_USERID = _userSession.UserID.ToString();
-                    _STORE.CREATEDATE = DateTime.Now;
-                    _STORE.MODIFY_USERID = _userSession.UserID.ToString();
-                    _STORE.MODIFYDATE = DateTime.Now;
 
                     if (_STORE.STORE_CODE.IsNullOrWhiteSpace())
                     {
@@ -343,8 +335,6 @@ namespace EAM.Material.Services
                     });
                 }
             }
-            request.MODIFY_USERID = _userSession.UserID.ToString();
-            request.MODIFYDATE = DateTime.Now;
             await Task.CompletedTask;
         }
 

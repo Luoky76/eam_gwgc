@@ -407,8 +407,6 @@ namespace EAM.Device.services
                         EXE_EDATE = query.EXE_EDATE,
                         IS_LEAVE = query.IS_LEAVE,
                         PLAN_ITEM_ID = qrydet.PLAN_ITEM_ID,
-                        CREATE_USERID = _userSession.UserID.ToString(),
-                        CREATEDATE = Sysdate,
                     };
                     checkList.Add(plandet);
                 }

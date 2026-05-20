@@ -113,10 +113,6 @@ namespace EAM.Device.Services
                 pmlists.IS_ATTACH = is_fj;
                 pmlists.DEVICE_ID = deviceId;
                 pmlists.PM_STD_LIST_ID = GuidHelper.NewSnowflakeId().ToString();
-                pmlists.CREATE_USERID = _userSession.UserID.ToString();
-                pmlists.CREATEDATE = Sysdate;
-                pmlists.MODIFY_USERID = _userSession.UserID.ToString();
-                pmlists.MODIFYDATE = Sysdate;
                 await _dbContext.InsertAsync(pmlists);
             });
             return AjaxResult.Success(1);

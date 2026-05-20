@@ -119,11 +119,6 @@ namespace EAM.Material.Services
             entity.DEPT_ID = entity.DEPT_ID ?? _userSession.Corp.CorpID;
             entity.DEPT_NAME = entity.DEPT_NAME ?? _userSession.Corp.CName;
             entity.AUDITING = entity.AUDITING ?? "0";
-
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -131,10 +126,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_ORDER_STOP entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -346,13 +337,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task DetBeforeAdd(SP_STOP_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.STOP_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -360,10 +345,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task DetBeforeUpdate(SP_STOP_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>

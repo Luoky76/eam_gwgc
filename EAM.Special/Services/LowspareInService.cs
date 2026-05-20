@@ -177,9 +177,7 @@ namespace EAM.Special.Services
                 c => sids.Contains(c.IN_ID),
                 c => new SPEC_LOWSPARE_IN
                 {
-                    AUDITING = "1",
-                    MODIFY_USERID = _userSession.UserID.ToString(),
-                    MODIFY_DATE = Sysdate
+                    AUDITING = "1"
                 });
         }
 
@@ -194,8 +192,6 @@ namespace EAM.Special.Services
             entity.IN_DATE = Sysdate;
             entity.ADD_USERID = _userSession.UserID.ToString();
             entity.ADD_DATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
 
             if (entity.IN_CODE.IsNullOrWhiteSpace())
             {
@@ -215,8 +211,6 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeUpdate(SPEC_LOWSPARE_IN entity)
         {
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFY_DATE = Sysdate;
             await Task.CompletedTask;
         }
 

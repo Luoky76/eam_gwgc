@@ -56,13 +56,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAdd(BASE_PURTYPE entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.PURTYPE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -70,11 +64,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(BASE_PURTYPE entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
-
         }
     }
 }

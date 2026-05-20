@@ -61,11 +61,7 @@ namespace EAM.Material.Services
             DateTime? dt = await _dbContext.GetSysdate();
 
             entity.UNIT_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID;
-            entity.CREATE_DATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID;
             entity.MODIFY_USER = _userSession.RealName;
-            entity.MODIFY_DATE = dt;
             entity.EDIT_USER = _userSession.RealName;
             entity.EDIT_USERID = _userSession.UserID.ToString();
             entity.EDIT_DATE = dt;
@@ -76,10 +72,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_UNIT entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID;
-            entity.MODIFY_DATE = dt;
             entity.MODIFY_USER = _userSession.RealName;
         }
     }

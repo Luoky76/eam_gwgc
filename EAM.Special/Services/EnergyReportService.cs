@@ -163,8 +163,6 @@ namespace EAM.Special.Services
             entity.ADD_DATE = Sysdate;
             entity.ADD_USERID = _userSession.UserID.ToString();
             entity.ADD_USERNAME = _userSession.RealName;
-            entity.MODIFY_DATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFY_USERNAME = _userSession.RealName;
 
             await Task.CompletedTask;
@@ -177,8 +175,6 @@ namespace EAM.Special.Services
         /// <returns></returns>
         private async Task BeforeUpdate(REPORT_ENERGY entity)
         {
-            entity.MODIFY_DATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             entity.MODIFY_USERNAME = _userSession.RealName;
 
             await Task.CompletedTask;

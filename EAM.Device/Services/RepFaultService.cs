@@ -364,9 +364,7 @@ namespace EAM.Device.services
                         FAULT_REASON = qrylist.FAULT_REASON,
                         MEASURES = qrylist.MEASURES,
                         AUDITING = "0",
-                        CREATE_USERID = _userSession.UserID.ToString(),
                         EDIT_USERID = _userSession.UserID.ToString(),
-                        CREATEDATE = Sysdate,
                         EDIT_DATE = Sysdate,
                     };
                     var insertScanId = await _dbContext.InsertAsync(scandet);

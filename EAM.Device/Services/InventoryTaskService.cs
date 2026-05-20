@@ -214,8 +214,6 @@ namespace EAM.Device.services
                         DEPT_NAME = qrylist.DEPT_NAME,
                         DEPT_ID = qrylist.DEPT_ID,
                         STATUS = qrylist.STATUS,
-                        CREATE_USERID = _userSession.UserID.ToString(),
-                        CREATEDATE = Sysdate,
                         HANDLE = "0",
                     };
                     dsdList.Add(scandet);
@@ -402,8 +400,6 @@ namespace EAM.Device.services
                                 SEC_DEPT = queryup.SEC_DEPT,
                                 DEVICE_ID = queryup.DEVICE_ID,
                                 MEMO = queryup.MEMO,
-                                CREATE_USERID = _userSession.UserID.ToString(),
-                                CREATEDATE = Sysdate,
                             };
                             scandetreList.Add(scandetre);
                         }

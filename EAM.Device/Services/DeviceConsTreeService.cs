@@ -162,10 +162,6 @@ namespace EAM.Device.services
         private async Task BeforeAdd(BASE_DEVICE_COMPOSE entity)
         {
             entity.COMPOSE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATEDATE = Sysdate;
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = Sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
             var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
                 .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
                 .FirstOrDefaultAsync();
@@ -185,8 +181,6 @@ namespace EAM.Device.services
         {
             if (entity.PRE_COMPOSEID != "")
             {
-                entity.MODIFYDATE = Sysdate;
-                entity.MODIFY_USERID = _userSession.UserID.ToString();
                 var query = await _dbContext.Query<BASE_DEVICE_COMPOSE>()
                     .Where(c => c.COMPOSE_ID == entity.PRE_COMPOSEID && c.PRE_COMPOSEID == entity.COMPOSE_ID || c.COMPOSE_ID == entity.PRE_COMPOSEID && c.COMPOSE_ID == entity.COMPOSE_ID)
                     .FirstOrDefaultAsync();

@@ -278,10 +278,6 @@ namespace EAM.Material.Services
             {
                 entity.AUDITING_CHECK = "0";
             }
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -289,9 +285,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_APPLY entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
         /// <summary>
         /// 删除前处理
@@ -388,7 +381,6 @@ namespace EAM.Material.Services
                             .Select(a => Sql.Max(a.SP_CODE)).FirstOrDefaultAsync() ?? newCode;
                         newCode = headCode + (long.Parse(model[headCode.Length..]) + 1).ToString("D4");
                         string newId = GuidHelper.NewSnowflakeId().ToString();
-                        var sysdate = await _dbContext.GetSysdate();
                         var new_sp = new BASE_SPCATALOG
                         {
                             SP_ID = newId,
@@ -409,10 +401,6 @@ namespace EAM.Material.Services
                             SEC_DEPT = _userSession.ParentCompany.CName,
                             PURTYPE_ID = sp_apply_details[i].PURTYPE_ID,
                             PURTYPE_NAME = sp_apply_details[i].PURTYPE_NAME,
-                            CREATE_USERID = _userSession.UserID.ToString(),
-                            CREATEDATE = sysdate,
-                            MODIFY_USERID = _userSession.UserID.ToString(),
-                            MODIFYDATE = sysdate,
                         };
                         await _dbContext.InsertAsync(new_sp);
 
@@ -874,12 +862,7 @@ namespace EAM.Material.Services
             {
                 throw new MessageException("外键 APPLY_ID 为空！");
             }
-            DateTime? dt = await _dbContext.GetSysdate();
             entity.SPDET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
             entity.SP_STATUS = "10";//物资申请
             entity.AUDITING_CHECK = "0";    //需求确认状态
 
@@ -892,11 +875,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateDet(SP_APPLY_DETAIL entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
-
             //获取库存数量
             entity.STORE_NUM = await GetStoreNumAsync(entity.SP_ID);
         }

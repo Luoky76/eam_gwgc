@@ -146,13 +146,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAdd(SP_STORE entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.STORE_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
 
             if (entity.STORE_CODE.IsNullOrWhiteSpace())
             {
@@ -171,11 +165,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_STORE entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
-
         }
 
         /// <summary>
@@ -410,13 +399,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task LimitBeforeAdd(SP_LIMIT entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.LIMIT_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -424,11 +407,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task LimitBeforeUpdate(SP_LIMIT entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
-
         }
 
         /// <summary>
@@ -440,14 +418,11 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<int> SetTopLower(string LIMITID, int? TOP, int? LOWER)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
             var updatedevice = await _dbContext.UpdateAsync<SP_LIMIT>(x => x.LIMIT_ID == LIMITID,
                     x => new SP_LIMIT
                     {
                         STORE_TOP = TOP,
-                        STORE_LOWER = LOWER,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
-                        MODIFYDATE = dt
+                        STORE_LOWER = LOWER
                     });
             return updatedevice;
         }

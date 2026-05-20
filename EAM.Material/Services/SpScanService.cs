@@ -160,11 +160,6 @@ namespace EAM.Material.Services
                 entity.DEPT_ID = _userSession.Corp.CorpID;
                 entity.DEPT_NAME = _userSession.Corp.CName;
             }
-
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = sysdate;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = sysdate;
         }
 
         /// <summary>
@@ -172,10 +167,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_SCAN entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -281,13 +272,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAddDet(SP_SCAN_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
             entity.AUDITING = "0";
             await HandleDet(entity);
         }
@@ -297,10 +282,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateDet(SP_SCAN_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
             await HandleDet(entity);
         }
 
@@ -401,16 +382,11 @@ namespace EAM.Material.Services
 
             //删除已有明细
             await _dbContext.DeleteAsync<SP_SCAN_DET>(x => x.SCAN_ID == scanId);
-            var sysdate = await _dbContext.GetSysdate();
             var importList = new List<SP_SCAN_DET>();
             foreach (var store in store_data)
             {
                 var scan_det = store.MapTo<SP_SCAN_DET>();
                 scan_det.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
-                scan_det.CREATE_USERID = _userSession.UserID.ToString();
-                scan_det.CREATEDATE = sysdate;
-                scan_det.MODIFY_USERID = _userSession.UserID.ToString();
-                scan_det.MODIFYDATE = sysdate;
                 scan_det.SCAN_ID = scanId;
                 scan_det.STORE_NUM = store.NUM;
                 scan_det.AUDITING = "0";

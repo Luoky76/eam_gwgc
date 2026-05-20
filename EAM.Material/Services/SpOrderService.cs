@@ -230,13 +230,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAdd(SP_ORDER entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.ORDER_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
             entity.IS_STOP = "0";
             entity.AUDITING = "0";
         }
@@ -246,11 +240,8 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_ORDER entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
             entity.DEPT_ID = string.IsNullOrEmpty(entity.DEPT_ID) ? _userSession.Corp.CorpID : entity.DEPT_ID;
             entity.DEPT_NAME = string.IsNullOrEmpty(entity.DEPT_NAME) ? _userSession.Corp.CName : entity.DEPT_NAME;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -293,8 +284,6 @@ namespace EAM.Material.Services
                         USER_NAME = _userSession.RealName,
                         USER_ID = _userSession.UserID.ToString(),
                         RECEIVE_CODE = receive_code,
-                        CREATEDATE = DateTime.Now,
-                        CREATE_USERID = _userSession.UserID.ToString(),
                         AUDITING = "0",
                         PROVIDER_NAME = s.PROVIDER_NAME,
                         PROVIDER_ID = s.PROVIDER_ID,
@@ -313,8 +302,6 @@ namespace EAM.Material.Services
                         var req = item.MapTo<SP_RECEIVE_DET>();
                         req.RECEIVE_ID = data.RECEIVE_ID;
                         req.RECDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        req.CREATEDATE = DateTime.Now;
-                        req.CREATE_USERID = _userSession.UserID.ToString();
 
                         spReceiveDet.Add(req);
                     }
@@ -482,13 +469,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task DetBeforeAdd(SP_ORDER_DETAIL entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
             entity.IS_STOP = "0";
         }
 
@@ -497,10 +478,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task DetBeforeUpdate(SP_ORDER_DETAIL entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>

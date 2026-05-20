@@ -131,13 +131,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeAdd(SP_PURPLAN entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.PURPLAN_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -145,11 +139,6 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_PURPLAN entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
-
         }
 
         /// <summary>
@@ -198,10 +187,6 @@ namespace EAM.Material.Services
                         BUY_USER = item.PUR_USER,
                         PROVIDER_ID = item.PROVIDER_ID,
                         PROVIDER_NAME = item.PROVIDER_NAME,
-                        CREATE_USERID = _userSession.UserID.ToString(),
-                        CREATEDATE = dt,
-                        MODIFY_USERID = _userSession.UserID.ToString(),
-                        MODIFYDATE = dt,
                         AUDITING = "0",
                         IS_STOP = "0"
                     };
@@ -230,10 +215,6 @@ namespace EAM.Material.Services
                         req.SPDET_ID = det.SPDET_ID;
 
                         req.ORDERDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        req.CREATE_USERID = _userSession.UserID.ToString();
-                        req.CREATEDATE = dt;
-                        req.MODIFY_USERID = _userSession.UserID.ToString();
-                        req.MODIFYDATE = dt;
                         req.IS_STOP = "0";
                         req.ORDER_ID = temp.ORDER_ID;
                         importDetail.Add(req);
@@ -371,13 +352,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task DetBeforeAdd(SP_PURPLAN_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
             entity.PLAN_ID = GuidHelper.NewSnowflakeId().ToString();
-            entity.CREATE_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = dt;
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
 
         /// <summary>
@@ -385,11 +360,8 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task DetBeforeUpdate(SP_PURPLAN_DET entity)
         {
-            DateTime? dt = await _dbContext.GetSysdate();
-
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = dt;
         }
+
         /// <summary>
         /// 保存后处理
         /// </summary>

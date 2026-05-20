@@ -623,9 +623,6 @@ namespace EAM.Special.Services
             {
                 entity.AUDITING = "0";
             }
-
-            entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
         /// <summary>
         /// 更新前处理
@@ -635,9 +632,6 @@ namespace EAM.Special.Services
             var olddata = _dbContext.QueryByKey<LABOR_EXCHANGE>(entity.EXCHANGE_ID);
             if (olddata.AUDITING.Equals("0"))
             {
-                var sysDate = await _dbContext.GetSysdate();
-                entity.MODIFY_USERID = _userSession.UserID.ToString();
-                entity.MODIFYDATE = sysDate;
             }
             else
             {
@@ -671,18 +665,12 @@ namespace EAM.Special.Services
             {
                 entity.EXCHANGE_APPDET_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            var sysDate = await _dbContext.GetSysdate();
-            entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
         /// <summary>
         /// 更新前处理
         /// </summary>
         private async Task LaborExchangeAppDetBeforUpdate(LABOR_EXCHANGE_APPDET entity)
         {
-            var sysDate = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = sysDate;
         }
 
         /// <summary>
@@ -874,8 +862,6 @@ namespace EAM.Special.Services
                 entity.DEPT_ID = _userSession.Corp.CorpID;
                 entity.DEPT_NAME = _userSession.Corp.CName;
             }
-            entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
         /// <summary>
         /// 更新前处理
@@ -885,9 +871,6 @@ namespace EAM.Special.Services
             var model = await _dbContext.QueryByKeyAsync<LABOR_RENT>(entity.RENT_ID);
             if (model.AUDITING.Equals("0"))
             {
-                var sysDate = await _dbContext.GetSysdate();
-                entity.MODIFY_USERID = _userSession.UserID.ToString();
-                entity.MODIFYDATE = sysDate;
             }
             else
             {
@@ -921,19 +904,12 @@ namespace EAM.Special.Services
             {
                 entity.RENT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            var sysDate = await _dbContext.GetSysdate();
-
-            entity.CREATE_USERID = entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.CREATEDATE = entity.MODIFYDATE = sysDate;
         }
         /// <summary>
         /// 更新前处理
         /// </summary>
         private async Task LaborRentDetBeforUpdate(LABOR_RENT_DET entity)
         {
-            var sysDate = await _dbContext.GetSysdate();
-            entity.MODIFY_USERID = _userSession.UserID.ToString();
-            entity.MODIFYDATE = sysDate;
         }
         #endregion
     }
