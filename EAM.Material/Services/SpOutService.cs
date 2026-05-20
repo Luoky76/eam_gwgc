@@ -1,12 +1,10 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 
@@ -262,6 +260,7 @@ namespace EAM.Material.Services
                 entity.AUDITING_A = "0";
             }
         }
+
         /// <summary>
         /// 新增前处理
         /// </summary>
@@ -285,11 +284,11 @@ namespace EAM.Material.Services
         {
             if (!entity.AUDITING_A.Equals("0"))
             {
-            {
                 errMsg = "未提交的状态下才能修改";
                 throw new MessageException("未提交的状态下才能修改");
             }
         }
+
         /// <summary>
         /// 删除前处理
         /// </summary>
