@@ -138,21 +138,12 @@ namespace EAM.Device.services
             {
                 entity.STATUS = "1";
             }
-            if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
-            {
-                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-            }
-            if (entity.SEC_DEPT.IsNullOrWhiteSpace())
-            {
-                entity.SEC_DEPT = _userSession.ParentCompany.CName;
-            }
             if (entity.DEPT_ID.IsNullOrWhiteSpace())
             {
                 entity.DEPT_ID = _userSession.Corp.CorpID;
-            }
-            if (entity.DEPT_NAME.IsNullOrWhiteSpace())
-            {
                 entity.DEPT_NAME = _userSession.Corp.CName;
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
             }
             entity.SCAN_ID = GuidHelper.NewSnowflakeId().ToString();
         }

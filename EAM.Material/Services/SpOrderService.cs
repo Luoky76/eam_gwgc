@@ -240,8 +240,11 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SP_ORDER entity)
         {
-            entity.DEPT_ID = string.IsNullOrEmpty(entity.DEPT_ID) ? _userSession.Corp.CorpID : entity.DEPT_ID;
-            entity.DEPT_NAME = string.IsNullOrEmpty(entity.DEPT_NAME) ? _userSession.Corp.CName : entity.DEPT_NAME;
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+            }
         }
 
         /// <summary>

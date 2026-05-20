@@ -218,9 +218,6 @@ namespace EAM.Device.services
             if (entity.DEPT_ID.IsNullOrWhiteSpace())
             {
                 entity.DEPT_ID = _userSession.Corp.CorpID;
-            }
-            if (entity.DEPT_NAME.IsNullOrWhiteSpace())
-            {
                 entity.DEPT_NAME = _userSession.Corp.CName;
             }
             if (entity.EDIT_USERID.IsNullOrWhiteSpace())

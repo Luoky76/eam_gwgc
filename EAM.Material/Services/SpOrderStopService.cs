@@ -112,12 +112,18 @@ namespace EAM.Material.Services
             }
 
             entity.EDIT_DATE = entity.EDIT_DATE ?? dt;
-            entity.USER_ID = entity.USER_ID ?? _userSession.UserID.ToString();
-            entity.USER_NAME = entity.USER_NAME ?? _userSession.RealName;
-            entity.SEC_DEPTID = entity.SEC_DEPTID ?? _userSession.ParentCompany.CorpID;
-            entity.SEC_DEPT = entity.SEC_DEPT ?? _userSession.ParentCompany.CName;
-            entity.DEPT_ID = entity.DEPT_ID ?? _userSession.Corp.CorpID;
-            entity.DEPT_NAME = entity.DEPT_NAME ?? _userSession.Corp.CName;
+            if (entity.USER_ID.IsNullOrWhiteSpace())
+            {
+                entity.USER_ID = _userSession.UserID.ToString();
+                entity.USER_NAME = _userSession.RealName;
+            }
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
+                entity.DEPT_ID = _userSession.Corp.CorpID;
+                entity.DEPT_NAME = _userSession.Corp.CName;
+                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
+                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+            }
             entity.AUDITING = entity.AUDITING ?? "0";
         }
 
