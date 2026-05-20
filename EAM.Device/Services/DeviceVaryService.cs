@@ -8,7 +8,6 @@ using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
 using System.Collections.Concurrent;
-using Gksyb.Core.Auth;
 
 namespace EAM.Device.Services
 {

@@ -5,7 +5,6 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.IdentityModel.Tokens;
-using Gksyb.Core.Auth;
 
 namespace EAM.Special.Services
 {

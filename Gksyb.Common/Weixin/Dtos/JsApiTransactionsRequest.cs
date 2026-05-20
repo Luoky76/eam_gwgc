@@ -134,7 +134,7 @@ namespace Gksyb.Common.Weixin
     /// <summary>
     /// 金额
     /// </summary>
-    public class TransactionsAmount: TransactionsAmountV3
+    public class TransactionsAmount : TransactionsAmountV3
     {
         /// <summary>
         /// 订单总金额，单位为分。

@@ -53,6 +53,6 @@
         /// 扩展6
         /// </summary>
         public object EXTEND6 { get; set; }
-        
+
     }
 }

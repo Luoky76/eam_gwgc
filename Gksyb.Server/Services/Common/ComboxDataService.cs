@@ -101,7 +101,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> DeviceTypeName(Expression<Func<BASE_DEVICETYPE, bool>> predicate)
         {
             var dbContext = _dbContext.Clone();
-            return await dbContext.Query<BASE_DEVICETYPE>(c => c.STATUS!="0").Where(predicate)
+            return await dbContext.Query<BASE_DEVICETYPE>(c => c.STATUS != "0").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.TYPE_ID, TEXT = c.TYPE_NAME, VALUE = c.TYPE_CODE })
                 .Distinct()
                .ToListAsync();
@@ -129,7 +129,7 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<BASE_DEVICE_COMPOSE>().Where(predicate)
-                .Select(c => new ComboxData() { ID = c.COMPOSE_ID, TEXT = c.COMPOSE_NAME, VALUE = c.TYPE_ID, EXTEND =c.TYPE_NAME, EXTEND1=c.TYPE_CODE })
+                .Select(c => new ComboxData() { ID = c.COMPOSE_ID, TEXT = c.COMPOSE_NAME, VALUE = c.TYPE_ID, EXTEND = c.TYPE_NAME, EXTEND1 = c.TYPE_CODE })
                 .Distinct()
                .ToListAsync();
         }
@@ -156,7 +156,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> SpCatalogName(Expression<Func<BASE_SPCATALOG, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<BASE_SPCATALOG>(c => c.IS_CANCEL != "1"&&c.IS_RECOVERY != "1").Where(predicate)
+            return await dbContext.Query<BASE_SPCATALOG>(c => c.IS_CANCEL != "1" && c.IS_RECOVERY != "1").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.SP_ID, TEXT = c.SP_NAME, VALUE = c.SP_NAME })
                 .Distinct()
                .ToListAsync();
@@ -446,12 +446,12 @@ namespace Gksyb.Server.Services.Common
                     ID = c.DEVICE_ID,
                     TEXT = c.DEVICE_NAME,
                     VALUE = c.DEVICE_NO,
-                    EXTEND =c.STATUS,
-                    EXTEND1 =c.DEVICE_TYPE,
-                    EXTEND2 =c.TYPE_NAME,
-                    EXTEND3 =c.DEPT_NAME,
-                    EXTEND4 =c.ASSET_CODE,
-                    EXTEND5 =c.INSTALL_SITE,
+                    EXTEND = c.STATUS,
+                    EXTEND1 = c.DEVICE_TYPE,
+                    EXTEND2 = c.TYPE_NAME,
+                    EXTEND3 = c.DEPT_NAME,
+                    EXTEND4 = c.ASSET_CODE,
+                    EXTEND5 = c.INSTALL_SITE,
                 })
                .ToListAsync();
         }
@@ -471,13 +471,13 @@ namespace Gksyb.Server.Services.Common
             //除超管和船机部外，按部门过滤数据
             var qry = dbContext.Query<DEVICE_CARD>()
                 .WhereIf(!_userSession.IsAdmin && _userSession.Corp.CorpID != engineCorpId, a => _userSession.Corp.CorpID == a.DEPT_ID);
-            return await qry.Where(predicate).Where(c => c.TYPE_ID=="1")
+            return await qry.Where(predicate).Where(c => c.TYPE_ID == "1")
                 .Select(c => new ComboxData()
                 {
                     ID = c.DEVICE_ID,
                     TEXT = c.DEVICE_NAME,
                     VALUE = c.DEVICE_NO,
-                    EXTEND =c.DEPT_NAME,
+                    EXTEND = c.DEPT_NAME,
                 })
                .ToListAsync();
         }
@@ -614,7 +614,7 @@ namespace Gksyb.Server.Services.Common
             var corpPath = dbContext.Query<CF_CORP>().Where(predicate)
                 .Select(c => c.CORP_PATH).ToList().Join();
             return await dbContext.Query<CF_CORP>()
-                .Where(a => (","+a.CORP_PATH).Contains(","+corpPath))
+                .Where(a => ("," + a.CORP_PATH).Contains("," + corpPath))
                 .Select(c => new ComboxData() { ID = c.CORPID, TEXT = c.CNAME, VALUE = c.CNO })
                 .Distinct()
                 .ToListAsync();
@@ -628,7 +628,7 @@ namespace Gksyb.Server.Services.Common
         private async Task<List<ComboxData>> SpHouseName(Expression<Func<SP_HOUSE, bool>> predicate)
         {
             using var dbContext = _dbContext.Clone();
-            return await dbContext.Query<SP_HOUSE>(c => c.AUDITING =="1").Where(predicate)
+            return await dbContext.Query<SP_HOUSE>(c => c.AUDITING == "1").Where(predicate)
                 .Select(c => new ComboxData() { ID = c.HOUSE_ID, TEXT = c.HOUSE_NAME, VALUE = c.HOUSE_CODE })
                 .Distinct()
                .ToListAsync();
@@ -673,8 +673,8 @@ namespace Gksyb.Server.Services.Common
         {
             using var dbContext = _dbContext.Clone();
             return await dbContext.Query<CF_USER>()
-                .LeftJoin<CF_DEPT>((a, c) => a.DEPARTCODE==c.DEPT_CODE)
-                .Select((a, c) => new ComboxData() { ID = a.USERID, TEXT = a.REALNAME, VALUE = c.DEPT_ID, EXTEND=c.DEPT_NAME })
+                .LeftJoin<CF_DEPT>((a, c) => a.DEPARTCODE == c.DEPT_CODE)
+                .Select((a, c) => new ComboxData() { ID = a.USERID, TEXT = a.REALNAME, VALUE = c.DEPT_ID, EXTEND = c.DEPT_NAME })
                 .Distinct()
                 .ToListAsync();
         }
@@ -875,7 +875,7 @@ namespace Gksyb.Server.Services.Common
                     EXTEND1 = c.TYPE_NAME,
                     EXTEND2 = c.PRODUCE,
                     EXTEND3 = c.UNIT,
-                    EXTEND4 =  c.STORE_NUM
+                    EXTEND4 = c.STORE_NUM
                 })
                 .ToListAsync();
         }

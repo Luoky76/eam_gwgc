@@ -1,5 +1,4 @@
-﻿using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.Material;
 using Gksyb.Core.Interfaces.Repair;

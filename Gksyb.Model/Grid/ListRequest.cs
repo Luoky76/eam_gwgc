@@ -27,7 +27,7 @@ namespace Gksyb.Model.Grid
             if (Rules?.Count > 0)
             {
                 group = new FilterGroup() { Rules = Rules };
-                json =  group.ToMiniJson();
+                json = group.ToMiniJson();
             }
             var request = new GridRequest
             {

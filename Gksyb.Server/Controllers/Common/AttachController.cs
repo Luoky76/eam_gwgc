@@ -1,18 +1,8 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
-using Gksyb.Core.Common;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Grid;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Gksyb.Server.Controllers.Auth
 {
@@ -46,7 +36,7 @@ namespace Gksyb.Server.Controllers.Auth
         /// <param name="formFile"></param>
         /// <param name="parms"></param>
         /// <returns></returns>
-        [HttpPost, 
+        [HttpPost,
          DisableRequestSizeLimit,
          RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue, ValueLengthLimit = int.MaxValue)]
         public async Task<AjaxResult> Upload([FileOptions("gif,jpg,jpeg,bmp,png,pdf,xlsx,xls,doc,docx", 200)] IFormFile formFile, string parms)

@@ -1,14 +1,13 @@
 ﻿using Chloe;
 using Gksyb.Common;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using Gksyb.Core.Interfaces.Auth;
-using System.Collections.Concurrent;
 using Gksyb.Model.UI;
+using System.Collections.Concurrent;
 
 namespace EAM.Special.Services
 {

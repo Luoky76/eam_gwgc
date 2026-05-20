@@ -1,5 +1,4 @@
-﻿using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Model;
 using Gksyb.Model.Grid;

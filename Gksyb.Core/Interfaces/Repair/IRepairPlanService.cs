@@ -1,9 +1,6 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Application;
-using Gksyb.Model;
+﻿using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 
 namespace Gksyb.Core.Interfaces.Repair

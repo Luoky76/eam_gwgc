@@ -1,13 +1,6 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Application;
-using Gksyb.Core.Auth;
-using Gksyb.Core.Common;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Gksyb.Core.Interfaces.Common
 {

@@ -1,12 +1,10 @@
-﻿using Gksyb.Common;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.General;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 

@@ -6,7 +6,6 @@ using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
-using Gksyb.Core.Auth;
 
 namespace EAM.Special.Services
 {

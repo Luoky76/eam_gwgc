@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Flurl;
 using Flurl.Http;
 using Flurl.Http.Content;
-using Flurl;
+using Newtonsoft.Json.Linq;
 
 namespace Gksyb.Core.Interfaces.OA
 {

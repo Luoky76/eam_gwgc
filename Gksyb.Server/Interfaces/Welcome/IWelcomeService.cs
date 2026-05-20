@@ -1,13 +1,8 @@
 ﻿using Gksyb.Server.Services.Services.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gksyb.Server.Interfaces.Welcome
 {
-    public interface IWelcomeService:IService
+    public interface IWelcomeService : IService
     {
         #region 顶部数据
         Task<GetDeviceRepairCountResponse> GetDeviceRepairCount(DateTime datetime);

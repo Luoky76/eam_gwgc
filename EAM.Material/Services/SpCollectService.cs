@@ -319,17 +319,19 @@ namespace EAM.Material.Services
             {
                 entity.COLLECT_DATE = await _dbContext.GetSysdate();
             }
-            if (entity.COLLECT_USERID.IsNullOrWhiteSpace()) {
+            if (entity.COLLECT_USERID.IsNullOrWhiteSpace())
+            {
                 entity.COLLECT_USERID = _userSession.UserID.ToString();
                 entity.COLLECT_USER = _userSession.RealName;
             }
-            if (entity.DEPT_ID.IsNullOrWhiteSpace()) {
+            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            {
                 entity.DEPT_ID = _userSession.Corp.CorpID;
                 entity.DEPT_NAME = _userSession.Corp.CName;
                 entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
                 entity.SEC_DEPT = _userSession.ParentCompany.CName;
             }
-            
+
             if (entity.AUDITING.IsNullOrWhiteSpace())
             {
                 entity.AUDITING = "0";

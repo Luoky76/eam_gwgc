@@ -4,7 +4,6 @@ using Gksyb.Core.Auth;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Mvc;
-using static EAM.Device.services.RepFaultService;
 
 namespace EAM.Device.controller
 {

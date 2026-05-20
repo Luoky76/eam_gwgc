@@ -217,7 +217,8 @@ namespace Gksyb.Server.Services.Auth
                             RECORDSTATUS = status
                         });
                     }
-                };
+                }
+                ;
             });
             foreach (var a in roleList)
             {

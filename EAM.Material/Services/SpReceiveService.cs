@@ -66,7 +66,8 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_RECEIVE> request, SaveRequest<SP_RECEIVE_DET> requestdet)
         {
-            await _dbContext.UseTransactionAsync(async () => {
+            await _dbContext.UseTransactionAsync(async () =>
+            {
                 request ??= new SaveRequest<SP_RECEIVE>();
                 var execResult = await _dbContext.SaveEntityAnsyc(request,
                      c => new
@@ -134,7 +135,8 @@ namespace EAM.Material.Services
                 entity.USER_ID = _userSession.UserID.ToString();
                 entity.USER_NAME = _userSession.RealName;
             }
-            if (entity.RECEIVE_CODE.IsNullOrWhiteSpace()) {
+            if (entity.RECEIVE_CODE.IsNullOrWhiteSpace())
+            {
                 entity.RECEIVE_CODE = await _codeCreatorService.CreateCodeAsync<SP_RECEIVE>("DJ", x => x.RECEIVE_CODE);
             }
         }

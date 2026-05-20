@@ -1,18 +1,12 @@
-﻿using Chloe;
-using Gksyb.Common;
-using Gksyb.Core.Auth;
+﻿using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using System;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Gksyb.Server.Services.Common
 {

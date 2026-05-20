@@ -20,7 +20,7 @@ namespace Gksyb.Server.Services.Message
         {
             _dbContext = dbContext;
             _user = userSession;
-            if (userSession.Corp.CName!="船机部")
+            if (userSession.Corp.CName != "船机部")
             {
                 allDataShow = false;
             }
@@ -38,7 +38,7 @@ namespace Gksyb.Server.Services.Message
                                                .Select((a, b) => new todolist
                                                {
                                                    ID = a.EXE_ID,
-                                                   TEXT = a.EXE_CODE + "," + a.WDEPT_NAME??" " + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
+                                                   TEXT = a.EXE_CODE + "," + a.WDEPT_NAME ?? " " + "," + b.DEVICE_NAME + "," + b.DEVICE_NO,
                                                    TYPENAME = "维修实施",
                                                    MENUNAME = "exe",
                                                    IDKEY = "EXE_ID",
@@ -273,9 +273,9 @@ namespace Gksyb.Server.Services.Message
                                        LUBRICATE = Sql.Sum(x.LUBRICATE)
 
                                    }).ToListAsync();
-             result.FreshWaterCostList = Enumerable.Range(1, 12)
-            .GroupJoin(query, m => m, q => q.Month, (m, q) => q.FirstOrDefault()?.DAILYCONSUMPTION ??0)
-            .ToList();
+            result.FreshWaterCostList = Enumerable.Range(1, 12)
+           .GroupJoin(query, m => m, q => q.Month, (m, q) => q.FirstOrDefault()?.DAILYCONSUMPTION ?? 0)
+           .ToList();
 
             result.DieselOilCostList = Enumerable.Range(1, 12)
                 .GroupJoin(query, m => m, q => q.Month, (m, q) => q.FirstOrDefault()?.SUBTOTAL ?? 0)

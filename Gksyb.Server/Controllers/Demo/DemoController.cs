@@ -42,7 +42,7 @@ namespace Gksyb.Server.Controllers.Auth
         }
 
         [GksybAuthorize(Group = "内部API")]
-        public async Task<AjaxResult> RoleApiAsync([FromServices] IDbContext db,[FromBody] ListRequest listRequest)
+        public async Task<AjaxResult> RoleApiAsync([FromServices] IDbContext db, [FromBody] ListRequest listRequest)
         {
             var gridRequest = listRequest.ToGridRequest();
             var list = await db.Query<BC_CODE>().GetGridData(gridRequest);

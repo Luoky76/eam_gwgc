@@ -5,7 +5,6 @@ using Gksyb.Core.Interfaces.Common;
 using Gksyb.Model;
 using Gksyb.Model.Grid;
 using System.Linq.Expressions;
-using Gksyb.Core.Auth;
 
 namespace EAM.Device.Services
 {

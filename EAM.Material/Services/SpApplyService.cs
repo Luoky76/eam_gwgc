@@ -1,6 +1,5 @@
 ﻿using EAM.Material.DTO;
 using Gksyb.Common.Office;
-using Gksyb.Core.Application;
 using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Common;
@@ -686,12 +685,14 @@ namespace EAM.Material.Services
                     .ToList()
                     .Contains(a.REQUEST_DET_ID))
                 .InnerJoin<SP_COLLECT>((a, b) => a.COLLECT_ID == b.COLLECT_ID)
-                .Select((a, b) => new {
+                .Select((a, b) => new
+                {
                     a.SP_NAME,
                     b.COLLECT_CODE
                 })
                 .ToListAsync();
-            if (sp_collect_request_list.Any()) {
+            if (sp_collect_request_list.Any())
+            {
                 errMsg = "物资";
                 foreach (var sp_collect_request in sp_collect_request_list)
                 {
