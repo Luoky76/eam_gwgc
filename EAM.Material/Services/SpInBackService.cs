@@ -245,13 +245,17 @@ namespace EAM.Material.Services
 
                 foreach (var item in det)
                 {
-                    await _dbContext.UpdateAsync<SP_STORE>(x => item.IN_DET_ID == x.INDET_ID,
+                    //通过明细ID查找对应的库存记录
+                    var storeIds = await _dbContext.Query<SP_STORE>(x => item.IN_DET_ID == x.INDET_ID)
+                        .Select(x => x.STORE_ID).ToListAsync();
+
+                    await _dbContext.UpdateAsync<SP_STORE>(x => storeIds.Contains(x.STORE_ID),
                     x => new SP_STORE
                     {
                         IS_BACK = "1",
                     });
 
-                    await _dbContext.UpdateAsync<STORE_WATER>(x => item.IN_DET_ID == x.INDET_ID,
+                    await _dbContext.UpdateAsync<STORE_WATER>(x => storeIds.Contains(x.STORE_ID),
                     x => new STORE_WATER
                     {
                         IS_BACK = "1",
