@@ -5,18 +5,50 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
-
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类sp_instore_det
+    /// 实体类SP_INSTORE_DET
     /// </summary>
-    [Table("sp_instore_det")]
+    [Table("SP_INSTORE_DET")]
     public class SP_INSTORE_DET
     {
+        /// <summary>
+        /// 主键
+        /// </summary>
+        [Description("主键")]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        public string IN_DET_ID { get; set; }
+
+        /// <summary>
+        /// 入库单ID
+        /// </summary>
+        [Description("入库单ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string IN_ID { get; set; }
+
+        /// <summary>
+        /// 物资请购需求明细ID
+        /// </summary>
+        [Description("物资请购需求明细ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string COLLECT_REQUEST_ID { get; set; }
+
+        /// <summary>
+        /// 需求计划明细ID
+        /// </summary>
+        [Description("需求计划明细ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string REQUEST_DET_ID { get; set; }
+
+        /// <summary>
+        /// 物料ID
+        /// </summary>
+        [Description("物料ID")]
+        [Column(DbType = DbType.AnsiString)]
+        public string SP_ID { get; set; }
 
         /// <summary>
         /// 物料编码
@@ -33,9 +65,9 @@ namespace Gksyb.Model
         public string SP_NAME { get; set; }
 
         /// <summary>
-        /// 规格型号
+        /// 型号规格
         /// </summary>
-        [Description("规格型号")]
+        [Description("型号规格")]
         [Column(DbType = DbType.AnsiString)]
         public string SP_SIZE { get; set; }
 
@@ -54,154 +86,88 @@ namespace Gksyb.Model
         public string UNIT { get; set; }
 
         /// <summary>
-        /// 重量(KG)
+        /// 物料分类ID
         /// </summary>
-        [Description("重量(KG)")]
-        public decimal? WEIGHT { get; set; }
-
-        /// <summary>
-        /// 图号
-        /// </summary>
-        [Description("图号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DRAWING_NO { get; set; }
-
-        /// <summary>
-        /// 分类ID
-        /// </summary>
-        [Description("分类ID")]
+        [Description("物料分类ID")]
         [Column(DbType = DbType.AnsiString)]
         public string TYPE_ID { get; set; }
 
         /// <summary>
-        /// 分类编码
+        /// 物料分类
         /// </summary>
-        [Description("分类编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string TYPE_CODE { get; set; }
-
-        /// <summary>
-        /// 分类名称
-        /// </summary>
-        [Description("分类名称")]
+        [Description("物料分类")]
         [Column(DbType = DbType.AnsiString)]
         public string TYPE_NAME { get; set; }
+
+        /// <summary>
+        /// 仓库id
+        /// </summary>
+        [Description("仓库id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string HOUSE_ID { get; set; }
+
+        /// <summary>
+        /// 仓库名称
+        /// </summary>
+        [Description("仓库名称")]
+        [Column(DbType = DbType.AnsiString)]
+        public string HOUSE_NAME { get; set; }
+
+        /// <summary>
+        /// 仓库编码
+        /// </summary>
+        [Description("仓库编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string HOUSE_CODE { get; set; }
 
         /// <summary>
         /// 入库数量
         /// </summary>
         [Description("入库数量")]
-        public decimal? COUNT { get; set; }
+        public decimal? IN_NUM { get; set; }
 
         /// <summary>
-        /// 入库单价(元)
+        /// 税率
         /// </summary>
-        [Description("入库单价(元)")]
-        public decimal? PRICE { get; set; }
+        [Description("税率")]
+        public decimal? TAX_RATE { get; set; }
 
         /// <summary>
-        /// 入库金额(元)
+        /// 含税单价
         /// </summary>
-        [Description("入库金额(元)")]
-        public decimal? MONEY { get; set; }
+        [Description("含税单价")]
+        public decimal? TAX_PRICE { get; set; }
 
         /// <summary>
-        /// 货位ID
+        /// 含税金额
         /// </summary>
-        [Description("货位ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string STOCK_ID { get; set; }
+        [Description("含税金额")]
+        public decimal? TAX_MONEY { get; set; }
 
         /// <summary>
-        /// 货位编码
+        /// 不含税单价
         /// </summary>
-        [Description("货位编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string STOCK_CODE { get; set; }
+        [Description("不含税单价")]
+        public decimal? NOTAX_PRICE { get; set; }
 
         /// <summary>
-        /// 货位名称
+        /// 不含税金额
         /// </summary>
-        [Description("货位名称")]
-        [Column(DbType = DbType.AnsiString)]
-        public string STOCK_NAME { get; set; }
-
-        /// <summary>
-        /// 申请人ID
-        /// </summary>
-        [Description("申请人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string APPLY_USERID { get; set; }
-
-        /// <summary>
-        /// 申请人
-        /// </summary>
-        [Description("申请人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string APPLY_USER { get; set; }
-
-        /// <summary>
-        /// 申请单号
-        /// </summary>
-        [Description("申请单号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string APPLY_NO { get; set; }
-
-        /// <summary>
-        /// 说明
-        /// </summary>
-        [Description("说明")]
-        [Column(DbType = DbType.AnsiString)]
-        public string MEMO { get; set; }
-
-        /// <summary>
-        /// 流水账ID
-        /// </summary>
-        [Description("流水账ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string WATER_ID { get; set; }
-
-        /// <summary>
-        /// 入库单ID
-        /// </summary>
-        [Description("入库单ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IN_ID { get; set; }
-
-        /// <summary>
-        /// 库存ID
-        /// </summary>
-        [Description("库存ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string STORE_ID { get; set; }
-
-        /// <summary>
-        /// 申请明细ID
-        /// </summary>
-        [Description("申请明细ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SPDET_ID { get; set; }
-
-        /// <summary>
-        /// 订单明细ID
-        /// </summary>
-        [Description("订单明细ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ORDERDET_ID { get; set; }
-
-        /// <summary>
-        /// 主键
-        /// </summary>
-        [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string INDET_ID { get; set; }
+        [Description("不含税金额")]
+        public decimal? NOTAX_MONEY { get; set; }
 
         /// <summary>
         /// 添加人ID
         /// </summary>
         [Description("添加人ID")]
+        public long? CREATE_USERID { get; set; }
+
+        /// <summary>
+        /// 添加人
+        /// </summary>
+        [Description("添加人")]
         [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
+        public string CREATEUSER { get; set; }
 
         /// <summary>
         /// 添加时间
@@ -213,149 +179,20 @@ namespace Gksyb.Model
         /// 修改人ID
         /// </summary>
         [Description("修改人ID")]
+        public long? MODIFY_USERID { get; set; }
+
+        /// <summary>
+        /// 修改人
+        /// </summary>
+        [Description("修改人")]
         [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
+        public string MODIFYUSER { get; set; }
 
         /// <summary>
         /// 修改时间
         /// </summary>
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
-
-        /// <summary>
-        /// 需求备注
-        /// </summary>
-        [Description("需求备注")]
-        [Column(DbType = DbType.AnsiString)]
-        public string APPLY_MEMO { get; set; }
-
-        /// <summary>
-        /// 用途
-        /// </summary>
-        [Description("用途")]
-        [Column(DbType = DbType.AnsiString)]
-        public string USE_MEMO { get; set; }
-
-        /// <summary>
-        /// 是否退回
-        /// </summary>
-        [Description("是否退回")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_STOP { get; set; }
-
-        /// <summary>
-        /// 验收明细ID
-        /// </summary>
-        [Description("验收明细ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string RECDET_ID { get; set; }
-
-        /// <summary>
-        /// 物料ID
-        /// </summary>
-        [Description("物料ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SP_ID { get; set; }
-
-        /// <summary>
-        /// 是否零库存物料
-        /// </summary>
-        [Description("是否零库存物料")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_FIC { get; set; }
-
-        /// <summary>
-        /// 送货单号
-        /// </summary>
-        [Description("送货单号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DELIVERY_CODE { get; set; }
-
-        /// <summary>
-        /// 部门ID
-        /// </summary>
-        [Description("部门ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_ID { get; set; }
-
-        /// <summary>
-        /// 部门名称
-        /// </summary>
-        [Description("部门名称")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_NAME { get; set; }
-
-        /// <summary>
-        /// 订单号
-        /// </summary>
-        [Description("订单号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ORDER_CODE { get; set; }
-
-        /// <summary>
-        /// 发票号
-        /// </summary>
-        [Description("发票号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string INVOICE_CODE { get; set; }
-
-        /// <summary>
-        /// 不含税单价(元)
-        /// </summary>
-        [Description("不含税单价(元)")]
-        public decimal? NOTAX_PRICE { get; set; }
-
-        /// <summary>
-        /// 不含税金额(元)
-        /// </summary>
-        [Description("不含税金额(元)")]
-        public decimal? UNTAX_MONEY { get; set; }
-
-        /// <summary>
-        /// 税率
-        /// </summary>
-        [Description("税率")]
-        public decimal? TAX_RATE { get; set; }
-
-        /// <summary>
-        /// 是否入库冲红
-        /// </summary>
-        [Description("是否入库冲红")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_INBACK { get; set; }
-
-        /// <summary>
-        /// 采购种类
-        /// </summary>
-        [Description("采购种类")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PURTYPE_NAME { get; set; }
-
-        /// <summary>
-        /// 采购ID
-        /// </summary>
-        [Description("采购ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PURTYPE_ID { get; set; }
-
-        /// <summary>
-        /// 入库数量
-        /// </summary>
-        [Description("入库数量")]
-        public decimal? COUNT2 { get; set; }
-
-        /// <summary>
-        /// 入库单价(元)
-        /// </summary>
-        [Description("入库单价(元)")]
-        public decimal? PRICE2 { get; set; }
-
-        /// <summary>
-        /// 是否是旧库存
-        /// </summary>
-        [Description("是否是旧库存")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ISOLD { get; set; }
 
     }
 }

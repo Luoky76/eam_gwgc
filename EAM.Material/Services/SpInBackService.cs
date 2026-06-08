@@ -55,7 +55,7 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取入库列表
         /// </summary>
         public async Task<AjaxResult> InListAsync()
         {
@@ -69,11 +69,8 @@ namespace EAM.Material.Services
                    a.AUDITING,
                    a.IN_CODE,
                    a.IN_DATE,
-                   a.ORDER_CODE,
                    a.PROVIDER_NAME,
-                   a.INSTORE_MONEY,
-                   a.PUR_USER,
-                   a.USER_NAME,
+                   a.IN_USER,
                    a.CHK_USER,
                    a.DEPT_NAME,
                    a.MEMO,
@@ -83,15 +80,12 @@ namespace EAM.Material.Services
                    b.UNIT,
                    b.SP_SIZE,
                    b.PRODUCE,
-                   b.STORE_ID,
-                   b.COUNT,
-                   b.DELIVERY_CODE,
-                   b.STOCK_NAME,
-                   b.PRICE,
-                   b.MONEY,
-                   b.APPLY_USER,
-                   b.APPLY_NO,
-                   b.INDET_ID
+                   b.HOUSE_ID,
+                   b.IN_NUM,
+                   b.TAX_PRICE,
+                   b.TAX_MONEY,
+                   b.HOUSE_NAME,
+                   b.IN_DET_ID
                })
                .ToListAsync();
             return AjaxResult.Success(result, "成功");
@@ -240,21 +234,24 @@ namespace EAM.Material.Services
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        /// <summary>
+        /// 更新前（提交时触发）
+        /// </summary>
         private async Task BeforeUpdate(SP_IN_BACK request)
         {
             if (request.AUDITING == "1")
             {
                 var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID).ToListAsync();
 
-                foreach (var iten in det)
+                foreach (var item in det)
                 {
-                    await _dbContext.UpdateAsync<SP_STORE>(x => iten.STORE_ID.Contains(x.STORE_ID),
+                    await _dbContext.UpdateAsync<SP_STORE>(x => item.IN_DET_ID == x.INDET_ID,
                     x => new SP_STORE
                     {
                         IS_BACK = "1",
                     });
 
-                    await _dbContext.UpdateAsync<STORE_WATER>(x => iten.STORE_ID.Contains(x.STORE_ID),
+                    await _dbContext.UpdateAsync<STORE_WATER>(x => item.IN_DET_ID == x.INDET_ID,
                     x => new STORE_WATER
                     {
                         IS_BACK = "1",

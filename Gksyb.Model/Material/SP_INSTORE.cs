@@ -5,18 +5,22 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
-
 namespace Gksyb.Model
 {
     /// <summary>
-    /// 实体类sp_instore
+    /// 实体类SP_INSTORE
     /// </summary>
-    [Table("sp_instore")]
+    [Table("SP_INSTORE")]
     public class SP_INSTORE
     {
+        /// <summary>
+        /// 主键
+        /// </summary>
+        [Description("主键")]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        public string IN_ID { get; set; }
 
         /// <summary>
         /// 记录状态
@@ -39,27 +43,6 @@ namespace Gksyb.Model
         public DateTime? IN_DATE { get; set; }
 
         /// <summary>
-        /// 订单号
-        /// </summary>
-        [Description("订单号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string ORDER_CODE { get; set; }
-
-        /// <summary>
-        /// 合同号
-        /// </summary>
-        [Description("合同号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string CONTRACT_NO { get; set; }
-
-        /// <summary>
-        /// 供应商ID
-        /// </summary>
-        [Description("供应商ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PROVIDER_ID { get; set; }
-
-        /// <summary>
         /// 供应商
         /// </summary>
         [Description("供应商")]
@@ -67,38 +50,18 @@ namespace Gksyb.Model
         public string PROVIDER_NAME { get; set; }
 
         /// <summary>
-        /// 入库金额
-        /// </summary>
-        [Description("入库金额")]
-        public decimal? INSTORE_MONEY { get; set; }
-
-        /// <summary>
-        /// 采购人ID
-        /// </summary>
-        [Description("采购人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PUR_USERID { get; set; }
-
-        /// <summary>
-        /// 采购人
-        /// </summary>
-        [Description("采购人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PUR_USER { get; set; }
-
-        /// <summary>
         /// 仓管员ID
         /// </summary>
         [Description("仓管员ID")]
         [Column(DbType = DbType.AnsiString)]
-        public string USER_ID { get; set; }
+        public string IN_USERID { get; set; }
 
         /// <summary>
         /// 仓管员
         /// </summary>
         [Description("仓管员")]
         [Column(DbType = DbType.AnsiString)]
-        public string USER_NAME { get; set; }
+        public string IN_USER { get; set; }
 
         /// <summary>
         /// 验收人ID
@@ -115,37 +78,16 @@ namespace Gksyb.Model
         public string CHK_USER { get; set; }
 
         /// <summary>
-        /// 仓库ID
+        /// 收货部门ID
         /// </summary>
-        [Description("仓库ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string HOUSE_ID { get; set; }
-
-        /// <summary>
-        /// 仓库名称
-        /// </summary>
-        [Description("仓库名称")]
-        [Column(DbType = DbType.AnsiString)]
-        public string HOUSE_NAME { get; set; }
-
-        /// <summary>
-        /// 入库性质
-        /// </summary>
-        [Description("入库性质")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PROPERTY { get; set; }
-
-        /// <summary>
-        /// 公司ID
-        /// </summary>
-        [Description("公司ID")]
+        [Description("收货部门ID")]
         [Column(DbType = DbType.AnsiString)]
         public string DEPT_ID { get; set; }
 
         /// <summary>
-        /// 公司名称
+        /// 收货部门（船舶）
         /// </summary>
-        [Description("公司名称")]
+        [Description("收货部门（船舶）")]
         [Column(DbType = DbType.AnsiString)]
         public string DEPT_NAME { get; set; }
 
@@ -157,18 +99,31 @@ namespace Gksyb.Model
         public string MEMO { get; set; }
 
         /// <summary>
-        /// 主键
+        /// 收货人id
         /// </summary>
-        [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
-        public string IN_ID { get; set; }
+        [Description("收货人id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CONSIGNEE_ID { get; set; }
+
+        /// <summary>
+        /// 收货人
+        /// </summary>
+        [Description("收货人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CONSIGNEE { get; set; }
 
         /// <summary>
         /// 添加人ID
         /// </summary>
         [Description("添加人ID")]
+        public long? CREATE_USERID { get; set; }
+
+        /// <summary>
+        /// 添加人
+        /// </summary>
+        [Description("添加人")]
         [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
+        public string CREATEUSER { get; set; }
 
         /// <summary>
         /// 添加时间
@@ -180,63 +135,20 @@ namespace Gksyb.Model
         /// 修改人ID
         /// </summary>
         [Description("修改人ID")]
+        public long? MODIFY_USERID { get; set; }
+
+        /// <summary>
+        /// 修改人
+        /// </summary>
+        [Description("修改人")]
         [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
+        public string MODIFYUSER { get; set; }
 
         /// <summary>
         /// 修改时间
         /// </summary>
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
-
-        /// <summary>
-        /// 验收单ID
-        /// </summary>
-        [Description("验收单ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string RECEIVE_ID { get; set; }
-
-        /// <summary>
-        /// 送货单号
-        /// </summary>
-        [Description("送货单号")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DELIVERY_CODE { get; set; }
-
-        /// <summary>
-        /// 入库类型
-        /// </summary>
-        [Description("入库类型")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SRC_TYPE { get; set; }
-
-        /// <summary>
-        /// 编制部门ID
-        /// </summary>
-        [Description("编制部门ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EDIT_DEPTID { get; set; }
-
-        /// <summary>
-        /// 编制部门
-        /// </summary>
-        [Description("编制部门")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EDIT_DEPT { get; set; }
-
-        /// <summary>
-        /// 盘点部门编码
-        /// </summary>
-        [Description("盘点部门编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_CODE { get; set; }
-
-        /// <summary>
-        /// 是否冲红
-        /// </summary>
-        [Description("是否冲红")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_RED { get; set; }
 
     }
 }

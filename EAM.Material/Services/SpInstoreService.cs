@@ -1,4 +1,4 @@
-﻿using Gksyb.Core.Auth;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
 using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
@@ -46,26 +46,9 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取列表
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<SP_INSTORE>().LeftJoin<SP_RECEIVE>((a, b) => a.RECEIVE_ID == b.RECEIVE_ID).Select((a, b) => new
-            {
-                a.AUDITING,
-                a.IN_CODE,
-                a.IN_DATE,
-                b.ORDER_CODE,
-                a.PROVIDER_NAME,
-                a.INSTORE_MONEY,
-                a.PUR_USER,
-                b.CHK_DATE,
-                a.USER_NAME,
-                a.CHK_USER,
-                a.DEPT_NAME,
-                a.MEMO,
-                a.IN_ID
-            }).GetGridData(request);
+            var list = await _dbContext.Query<SP_INSTORE>().GetGridData(request);
             return list;
         }
 
@@ -74,22 +57,9 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<AjaxResult> GetAsync(string inId)
         {
-            var query = await _dbContext.Query<SP_INSTORE>().LeftJoin<SP_RECEIVE>((a, b) => a.RECEIVE_ID == b.RECEIVE_ID).Select((a, b) => new
-            {
-                a.AUDITING,
-                a.IN_CODE,
-                a.IN_DATE,
-                b.ORDER_CODE,
-                a.PROVIDER_NAME,
-                a.INSTORE_MONEY,
-                a.PUR_USER,
-                b.CHK_DATE,
-                a.USER_NAME,
-                a.CHK_USER,
-                a.DEPT_NAME,
-                a.MEMO,
-                a.IN_ID
-            }).Where(c => c.IN_ID == inId).ToListAsync();
+            var query = await _dbContext.Query<SP_INSTORE>()
+                .Where(c => c.IN_ID == inId)
+                .FirstOrDefaultAsync();
 
             return AjaxResult.Success(query);
         }
@@ -97,11 +67,10 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取货位列表
         /// </summary>
-        /// <returns></returns>
         public async Task<AjaxResult> HouseList()
         {
             var list = await _dbContext.Query<SP_HOUSE>(a => a.AUDITING == "1")
-                .Select(c => new { STOCK_ID = c.HOUSE_ID, STOCK_NAME = c.HOUSE_NAME, STOCK_CODE = c.HOUSE_CODE })
+                .Select(c => new { HOUSE_ID = c.HOUSE_ID, HOUSE_NAME = c.HOUSE_NAME, HOUSE_CODE = c.HOUSE_CODE })
                 .ToListAsync();
             return AjaxResult.Success(list);
         }
@@ -109,57 +78,45 @@ namespace EAM.Material.Services
         /// <summary>
         /// 获取明细列表
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         public async Task<GridData> DetListAsync(GridRequest request)
         {
-            var list = await _dbContext.Query<SP_INSTORE_DET>(a => a.IS_STOP == "0").GetGridData(request);
+            var list = await _dbContext.Query<SP_INSTORE_DET>().GetGridData(request);
             return list;
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取明细列表（详情汇总用）
         /// </summary>
         public async Task<GridData> DetailListAsync(GridRequest request)
         {
             var list = await _dbContext.Query<SP_INSTORE_DET>()
                 .LeftJoin<SP_INSTORE>((a, b) => a.IN_ID == b.IN_ID)
                 .LeftJoin<BASE_SPCATALOG>((a, b, c) => a.SP_CODE == c.SP_CODE)
-                .LeftJoin<SP_STORE>((a, b, c, d) => a.STORE_ID == d.STORE_ID)
-                .Where((a, b, c, d) => a.IS_STOP == "0" && b.AUDITING == "1")
-                .Select((a, b, c, d) => new
+                .Where((a, b, c) => b.AUDITING == "1")
+                .Select((a, b, c) => new
                 {
-                    a.DELIVERY_CODE,
                     b.IN_CODE,
                     b.IN_DATE,
-                    b.ORDER_CODE,
-                    d.STORE_CODE,
                     b.PROVIDER_NAME,
-                    b.PUR_USER,
-                    a.SP_CODE,
-                    b.USER_NAME,
+                    b.IN_USER,
                     b.CHK_USER,
-                    a.DEPT_NAME,
-                    a.MEMO,
+                    b.DEPT_NAME,
+                    b.MEMO,
+                    a.SP_CODE,
                     a.SP_NAME,
                     a.SP_SIZE,
                     a.PRODUCE,
-                    c.LAST_PROVIDER,
                     a.UNIT,
-                    a.COUNT,
-                    a.PRICE,
-                    a.MONEY,
-                    a.STOCK_CODE,
-                    a.STOCK_NAME,
-                    a.APPLY_USER,
-                    a.APPLY_NO,
-                    a.APPLY_MEMO,
-                    a.USE_MEMO,
+                    a.IN_NUM,
+                    a.TAX_PRICE,
+                    a.TAX_MONEY,
+                    a.HOUSE_NAME,
                     a.TAX_RATE,
                     a.NOTAX_PRICE,
-                    a.UNTAX_MONEY,
+                    a.NOTAX_MONEY,
+                    c.LAST_PROVIDER,
                     c.LAST_PRICE,
-                    a.INDET_ID,
+                    a.IN_DET_ID,
                     a.IN_ID
                 }).GetGridData(request);
 
@@ -180,18 +137,20 @@ namespace EAM.Material.Services
                          c.AUDITING,
                          c.IN_CODE,
                          c.IN_DATE,
-                         c.ORDER_CODE,
                          c.PROVIDER_NAME,
-                         c.INSTORE_MONEY,
-                         c.PUR_USER,
-                         c.USER_NAME,
+                         c.IN_USERID,
+                         c.IN_USER,
+                         c.CHK_USERID,
                          c.CHK_USER,
+                         c.DEPT_ID,
                          c.DEPT_NAME,
                          c.MEMO,
+                         c.CONSIGNEE_ID,
+                         c.CONSIGNEE,
                          c.IN_ID
                      },
                      c => a => a.IN_ID == c.IN_ID
-                     , BeforeAdd, BeforeUpdate, BeforeDelete, false, null, null);
+                     , BeforeAdd, BeforeUpdate, BeforeDelete, orgin: true);
 
                 mainSuccess = !execResult.IsError;
                 if (mainSuccess)  //主表是否保存成功
@@ -201,14 +160,30 @@ namespace EAM.Material.Services
                     execResult = await _dbContext.SaveEntityAnsyc(requestdet,
                          c => new
                          {
-                             c.DELIVERY_CODE,
-                             c.STOCK_NAME,
-                             c.STOCK_ID,
-                             c.STOCK_CODE,
-                             c.INDET_ID,
+                             c.IN_ID,
+                             c.COLLECT_REQUEST_ID,
+                             c.REQUEST_DET_ID,
+                             c.SP_ID,
+                             c.SP_CODE,
+                             c.SP_NAME,
+                             c.SP_SIZE,
+                             c.PRODUCE,
+                             c.UNIT,
+                             c.TYPE_ID,
+                             c.TYPE_NAME,
+                             c.HOUSE_ID,
+                             c.HOUSE_NAME,
+                             c.HOUSE_CODE,
+                             c.IN_NUM,
+                             c.TAX_RATE,
+                             c.TAX_PRICE,
+                             c.TAX_MONEY,
+                             c.NOTAX_PRICE,
+                             c.NOTAX_MONEY,
+                             c.IN_DET_ID,
                          },
-                         c => a => a.INDET_ID == c.INDET_ID,
-                         BeforeAddDet, BeforeUpdateDet, null, false, null, null);
+                         c => a => a.IN_DET_ID == c.IN_DET_ID,
+                         BeforeAddDet, BeforeUpdateDet, null, orgin: true);
 
                     detSuccess = !execResult.IsError;  //明细表是否保存成功
                 }
@@ -221,123 +196,72 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 新增
+        /// 新增前
         /// </summary>
-        /// <returns></returns>
         private async Task BeforeAdd(SP_INSTORE entity)
         {
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 更新
+        /// 更新前（提交时触发）
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         private async Task BeforeUpdate(SP_INSTORE request)
         {
-            if (request.AUDITING == "7")
+            if (request.AUDITING == "1")
             {
-                await _dbContext.UpdateAsync<SP_INSTORE_DET>(x => request.IN_ID.Contains(x.IN_ID),
-                    x => new SP_INSTORE_DET
-                    {
-                        IS_STOP = "1",
-                    });
-            }
-            else if (request.AUDITING == "1")
-            {
-                var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID)
-                    .LeftJoin<SP_APPLY>((a, b) => a.APPLY_NO == b.APPLY_NO)
-                    .Select((a, b) => new
-                    {
-                        b.DEPT_NAME,
-                        b.DEPT_ID,
-                        b.DEPT_CODE,
-                        a.SP_CODE,
-                        a.PRICE,
-                        a.SP_ID,
-                        a.SP_NAME,
-                        a.SP_SIZE,
-                        a.APPLY_NO,
-                        a.DELIVERY_CODE,
-                        a.STOCK_NAME,
-                        a.RECDET_ID,
-                        a.STOCK_ID,
-                        a.APPLY_USER,
-                        a.COUNT,
-                        a.PRODUCE,
-                        a.UNIT,
-                        a.TYPE_NAME,
-                        a.TYPE_CODE,
-                        a.TYPE_ID,
-                        a.MONEY,
-                        a.MEMO,
-                        a.NOTAX_PRICE,
-                        a.UNTAX_MONEY,
-                        a.INDET_ID,
-                    })
-                    .ToListAsync();
+                var det = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == request.IN_ID).ToListAsync();
 
-                foreach (var iten in det)
+                foreach (var item in det)
                 {
-                    SP_STORE _STORE = new();//库存表
-
+                    //生成库存记录
+                    SP_STORE _STORE = new();
                     _STORE.SRC_TYPE = "2";
                     _STORE.IS_BACK = "0";
-                    _STORE.SP_CODE = iten.SP_CODE;
-                    _STORE.SP_ID = iten.SP_ID;
-                    _STORE.SP_NAME = iten.SP_NAME;
-                    _STORE.SP_SIZE = iten.SP_SIZE;
-                    _STORE.STOCK_NAME = iten.STOCK_NAME;
-                    _STORE.UNIT = iten.UNIT;
-                    _STORE.PRODUCE = iten.PRODUCE;
-                    _STORE.TYPE_NAME = iten.TYPE_NAME;
-                    _STORE.TYPE_CODE = iten.TYPE_CODE;
-                    _STORE.TYPE_ID = iten.TYPE_ID;
-                    _STORE.NUM = iten.COUNT;
-                    _STORE.PRICE = iten.PRICE;
-                    _STORE.MONEY = iten.MONEY;
-                    _STORE.NOTAX_PRICE = iten.NOTAX_PRICE;
-                    _STORE.NOTAX_MONEY = iten.UNTAX_MONEY;
+                    _STORE.SP_CODE = item.SP_CODE;
+                    _STORE.SP_ID = item.SP_ID;
+                    _STORE.SP_NAME = item.SP_NAME;
+                    _STORE.SP_SIZE = item.SP_SIZE;
+                    _STORE.UNIT = item.UNIT;
+                    _STORE.PRODUCE = item.PRODUCE;
+                    _STORE.TYPE_NAME = item.TYPE_NAME;
+                    _STORE.TYPE_ID = item.TYPE_ID;
+                    _STORE.NUM = item.IN_NUM;
+                    _STORE.PRICE = item.TAX_PRICE;
+                    _STORE.MONEY = item.TAX_MONEY;
+                    _STORE.NOTAX_PRICE = item.NOTAX_PRICE;
+                    _STORE.NOTAX_MONEY = item.NOTAX_MONEY;
                     _STORE.PROVIDER_NAME = request.PROVIDER_NAME;
-                    _STORE.APPLY_NO = iten.APPLY_NO;
-                    _STORE.DELIVERY_CODE = iten.DELIVERY_CODE;
-                    _STORE.INDET_ID = iten.INDET_ID;
+                    _STORE.INDET_ID = item.IN_DET_ID;
                     _STORE.STORE_ID = GuidHelper.NewSnowflakeId().ToString();
                     _STORE.IN_CODE = request.IN_CODE;
-                    _STORE.DEPT_ID = iten.DEPT_ID;
-                    _STORE.DEPT_NAME = iten.DEPT_NAME;
+                    _STORE.DEPT_ID = request.DEPT_ID;
+                    _STORE.DEPT_NAME = request.DEPT_NAME;
 
                     if (_STORE.STORE_CODE.IsNullOrWhiteSpace())
                     {
                         _STORE.STORE_CODE = await _codeCreatorService.CreateCodeAsync<SP_STORE>("PC", a => a.STORE_CODE);
                     }
 
-                    STORE_WATER _WATER = new();//库存流水表
-
+                    //生成库存流水记录
+                    STORE_WATER _WATER = new();
                     _WATER.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
                     _WATER.SRC_TYPE = "2";
                     _WATER.IS_BACK = "0";
                     _WATER.STORE_ID = _STORE.STORE_ID;
                     _WATER.WATER_DATE = DateTime.Now;
                     _WATER.SRC_CODE = request.IN_CODE;
-                    _WATER.SP_CODE = iten.SP_CODE;
-                    _WATER.SP_NAME = iten.SP_NAME;
-                    _WATER.SP_SIZE = iten.SP_SIZE;
-                    _WATER.IN_NUM = iten.COUNT;
-                    _WATER.IN_PRICE = iten.PRICE;
-                    _WATER.IN_MONEY = iten.MONEY;
-                    _WATER.CUR_NUM = iten.COUNT;
-                    _WATER.CUR_MONEY = iten.MONEY;
-
+                    _WATER.SP_CODE = item.SP_CODE;
+                    _WATER.SP_NAME = item.SP_NAME;
+                    _WATER.SP_SIZE = item.SP_SIZE;
+                    _WATER.IN_NUM = item.IN_NUM;
+                    _WATER.IN_PRICE = item.TAX_PRICE;
+                    _WATER.IN_MONEY = item.TAX_MONEY;
+                    _WATER.CUR_NUM = item.IN_NUM;
+                    _WATER.CUR_MONEY = item.TAX_MONEY;
 
                     await _dbContext.InsertAsync(_STORE);
                     await _dbContext.InsertAsync(_WATER);
-                    await _dbContext.UpdateAsync<SP_INSTORE_DET>(x => iten.INDET_ID.Contains(x.INDET_ID),
-                    x => new SP_INSTORE_DET
-                    {
-                        STORE_ID = _STORE.STORE_ID,
-                    });
                 }
             }
             await Task.CompletedTask;
@@ -364,10 +288,6 @@ namespace EAM.Material.Services
                     {
                         throw new Exception("入库日期未填写！");
                     }
-                    if (entity.AUDITING == "7")
-                    {
-                        throw new Exception("该数据已注销，无法提交！");
-                    }
 
                     entity.AUDITING = "1";
                     await BeforeUpdate(entity);
@@ -378,7 +298,7 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 处理业务
+        /// 退回
         /// </summary>
         public async Task<AjaxResult> BackAsync(List<string> sids)
         {
@@ -394,13 +314,8 @@ namespace EAM.Material.Services
                     {
                         throw new Exception("该数据已提交，无法退回验收！");
                     }
-                    if (entity.AUDITING == "7")
-                    {
-                        throw new Exception("该数据已注销，无法退回验收！");
-                    }
 
                     entity.AUDITING = "7";
-                    await BeforeUpdate(entity);
                     await _dbContext.UpdateAsync(entity);
                 }
             });
@@ -408,39 +323,36 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 删除
+        /// 删除前
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         private async Task BeforeDelete(SP_INSTORE request)
         {
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 新增
+        /// 新增明细前
         /// </summary>
-        /// <returns></returns>
         private async Task BeforeAddDet(SP_INSTORE_DET entity)
         {
+            if (entity.IN_DET_ID.IsNullOrWhiteSpace())
+            {
+                entity.IN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 更新
+        /// 更新明细前
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         private async Task BeforeUpdateDet(SP_INSTORE_DET request)
         {
             await Task.CompletedTask;
         }
 
         /// <summary>
-        /// 删除
+        /// 删除明细前
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         private async Task BeforeDeleteDet(SP_INSTORE_DET request)
         {
             await Task.CompletedTask;

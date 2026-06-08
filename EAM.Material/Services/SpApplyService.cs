@@ -291,6 +291,7 @@ namespace EAM.Material.Services
         private async Task BeforeUpdate(SP_APPLY entity)
         {
         }
+
         /// <summary>
         /// 删除前处理
         /// </summary>

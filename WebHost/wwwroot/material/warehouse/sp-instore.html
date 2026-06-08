@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -33,25 +33,21 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "入库单号", name: "_search_IN_CODE", dbname: "IN_CODE", upper: true, type: "text",options:{} },
-                            { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", upper: true, type: "text",options:{} },
+                            { display: "入库单号", name: "_search_IN_CODE", dbname: "IN_CODE", upper: true, type: "text", options: {} },
+                            { display: "订单号", name: "_search_ORDER_CODE", dbname: "ORDER_CODE", upper: true, type: "text", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", type: "select", editor: { data: me.Auditing } },
-                            { display: "入库单号", name: "IN_CODE", type: "text",  editor: { type: 'text'} },
-                            { display: "入库日期", name: "IN_DATE", type: "date",  editor: { type: 'date',showTime: true,format: "yyyy-MM-dd hh:mm"} },
-                            { display: "订单号", name: "ORDER_CODE", type: "text",  editor: { type: 'text'} },
-                            { display: "供应商", name: "PROVIDER_NAME", type: "text",  editor: { type: 'text'} },
-                            { display: "入库金额", name: "INSTORE_MONEY", type: "text",  editor: { type: 'decimal'} },
-                            { display: "采购人", name: "PUR_USER", type: "text",  editor: { type: 'text'} },
-                            { display: "仓管员", name: "USER_NAME", type: "text",  editor: { type: 'text'} },
-                            { display: "验收人", name: "CHK_USER", type: "text", editor: { type: 'text' } },
-                            { display: "验收日期", name: "CHK_DATE", type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "公司名称", name: "DEPT_NAME", type: "text",  editor: { type: 'text'} },
-                            { display: "备注", name: "MEMO", type: "text",  editor: { type: 'text'} },
-                            { display: "主键", name: "IN_ID", type: "text", hide: true },
+                            { display: "记录状态", name: "AUDITING", type: "select", format: { data: me.Auditing } },
+                            { display: "入库单号", name: "IN_CODE", type: "string" },
+                            { display: "入库日期", name: "IN_DATE", type: "date", format: "yyyy-MM-dd hh:mm" },
+                            { display: "供应商", name: "PROVIDER_NAME", type: "string" },
+                            { display: "仓管员", name: "IN_USER", type: "string" },
+                            { display: "验收人", name: "CHK_USER", type: "string" },
+                            { display: "收货部门", name: "DEPT_NAME", type: "string" },
+                            { display: "备注", name: "MEMO", type: "string" },
+                            { display: "主键", name: "IN_ID", type: "string", hide: true },
                         ]
                     }
                 };
@@ -82,7 +78,7 @@
                     columns: me.config.grid.columns,
                     usePager: false,
                     dataAction: 'server',
-                    toolbar: { group:'list'},
+                    toolbar: { group: 'list' },
                     url: 'Material/SpInstore/List',
                     parms: {
                         where: JSON.stringify({
@@ -95,22 +91,7 @@
                     width: '98%',
                     height: '100%',
                     checkbox: true,
-                    onBeforeEdit: function (editParm) {
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
-                    },
                     onSuccess: function (data, g) {
-                        if (data && data.Rows) {
-                            var rows = data.Rows || [];
-                            for (var i = 0, len = rows.length; i < len; i++) {
-                                var row = rows[i];
-                                row.OLDROLEID = row.ROLEID;
-                            }
-                        }
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
@@ -218,12 +199,12 @@
                     data: { sid: options.sid || null, isNew: !!options.isNew, isView: !!options.isView }
                 });
             },
-            view: function (rowid) { //查看
+            view: function (rowid) {
                 var me = this;
                 if (!rowid) return;
                 me.openDetail({ title: '[查看]', sid: me.grid.getRow(rowid).IN_ID, isNew: false, isView: true });
             },
-            modify: function () { //修改
+            modify: function () {
                 var me = this;
                 if (!me.isSelectSingleRow()) return;
                 var selected = me.grid.getSelectedRows()[0];
@@ -237,7 +218,7 @@
                 }
                 me.openDetail({ title: '[修改]', sid: selected.IN_ID, isNew: false, isView: false });
             },
-            submit: function () { //提交
+            submit: function () {
                 var me = this;
                 if (!me.isSelectRow()) return;
                 var selecteds = me.grid.getSelectedRows();
@@ -272,7 +253,7 @@
                     }
                 });
             },
-            back: function () { //退回验收
+            back: function () {
                 var me = this;
                 if (!me.isSelectRow()) return;
                 var selecteds = me.grid.getSelectedRows();
@@ -303,7 +284,7 @@
                     }
                 });
             },
-            reload: function () { //刷新
+            reload: function () {
                 var me = this;
                 me.buttons[0].click();
             },
@@ -357,7 +338,6 @@
                 var me = this;
                 me.config.search.fields.removeNull();
                 var $formsearch = $("#formsearch")
-                //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
                     labelWidth: me.formLabelWidth,
                     inputWidth: me.formInputWidth,
@@ -378,7 +358,6 @@
             },
             init: function () {
                 var me = this;
-                //me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();
@@ -391,4 +370,5 @@
         });
     </script>
 </body>
+
 </html>
