@@ -461,7 +461,7 @@ namespace EAM.Device.services
         /// <returns></returns>
         public async Task<GridData> ImportSpList(GridRequest request)
         {
-            return await _dbContext.Query<SP_STORE>(c => c.NUM > 0)
+            return await _dbContext.Query<SP_STORE>(c => c.STORE_NUM > 0)
                 .GetGridData(request);
         }
         /// <summary>

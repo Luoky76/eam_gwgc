@@ -375,7 +375,7 @@ namespace EAM.Material.Services
             if (!scan.STOCK_ID.IsNullOrWhiteSpace())
             {
                 var house_code = (await _dbContext.Query<SP_HOUSE>(x => x.HOUSE_ID == scan.STOCK_ID).FirstOrDefaultAsync()).HOUSE_CODE;
-                store_query = store_query.Where(x => _dbContext.Query<SP_HOUSE>(house => house.HOUSE_ID == x.STOCK_ID && house.HOUSE_CODE.StartsWith(house_code)).Any());
+                store_query = store_query.Where(x => _dbContext.Query<SP_HOUSE>(house => house.HOUSE_ID == x.HOUSE_ID && house.HOUSE_CODE.StartsWith(house_code)).Any());
             }
             var store_data = await store_query.ToListAsync();
             MessageException.ThrowIf(!store_data.Any(), "没有对应库存清单");
@@ -388,7 +388,7 @@ namespace EAM.Material.Services
                 var scan_det = store.MapTo<SP_SCAN_DET>();
                 scan_det.SCAN_DET_ID = GuidHelper.NewSnowflakeId().ToString();
                 scan_det.SCAN_ID = scanId;
-                scan_det.STORE_NUM = store.NUM;
+                scan_det.STORE_NUM = store.STORE_NUM;
                 scan_det.AUDITING = "0";
                 importList.Add(scan_det);
             }

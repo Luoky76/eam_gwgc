@@ -64,15 +64,15 @@ namespace EAM.Material.Services
         public async Task<GridData> ImportSpList(GridRequest request)
         {
             return await _dbContext.Query<SP_STORE>()
-                .Where(c => c.NUM > 0 && c.SP_NAME != null && c.SP_CODE != null)
+                .Where(c => c.STORE_NUM > 0 && c.SP_NAME != null && c.SP_CODE != null)
                 .GroupBy(t => new
                 {
                     t.SP_ID,
-                    t.STOCK_ID,
+                    t.HOUSE_ID,
                     t.SP_SIZE,
                     t.UNIT,
                     t.SP_NAME,
-                    t.STOCK_NAME,
+                    t.HOUSE_NAME,
                     t.SP_CODE,
                 })
                 .Select(c => new
@@ -82,9 +82,8 @@ namespace EAM.Material.Services
                     c.SP_SIZE,
                     c.UNIT,
                     c.SP_CODE,
-                    c.STOCK_NAME,
-                    NUM = Sql.Sum(c.NUM),
-                    MONEY = Sql.Sum(c.MONEY),
+                    c.HOUSE_NAME,
+                    STORE_NUM = Sql.Sum(c.STORE_NUM),
                     TAX_MONEY = Sql.Sum(c.TAX_MONEY),
                     NOTAX_MONEY = Sql.Sum(c.NOTAX_MONEY),
                 })
@@ -375,28 +374,28 @@ namespace EAM.Material.Services
                 var appmoney = 0m;
                 foreach (var qryoutappdet in qryoutappdets)
                 {
-                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.NUM > 0)
-                        .Where(c => c.SP_CODE == qryoutappdet.SP_CODE && c.SP_ID == qryoutappdet.SP_ID && c.STOCK_ID == qryoutappdet.STOCK_ID
-                             && c.SP_SIZE == qryoutappdet.SP_SIZE && c.UNIT == qryoutappdet.UNIT && c.SP_NAME == qryoutappdet.SP_NAME && c.STOCK_NAME == qryoutappdet.STOCK_NAME)
+                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.STORE_NUM > 0)
+                        .Where(c => c.SP_CODE == qryoutappdet.SP_CODE && c.SP_ID == qryoutappdet.SP_ID && c.HOUSE_ID == qryoutappdet.STOCK_ID
+                             && c.SP_SIZE == qryoutappdet.SP_SIZE && c.UNIT == qryoutappdet.UNIT && c.SP_NAME == qryoutappdet.SP_NAME && c.HOUSE_NAME == qryoutappdet.STOCK_NAME)
                         .OrderBy(c => c.IN_DATE)
                         .ToListAsync();
                     //取总数量
                     var res = qryoutappdet.APPLY_NUM;
                     foreach (var qrypc in qrypcs)
                     {
-                        var applyNumToUse = res < qrypc.NUM ? res : qrypc.NUM;
+                        var applyNumToUse = res < qrypc.STORE_NUM ? res : qrypc.STORE_NUM;
                         var outstdet2 = qryoutappdet.MapTo<SP_OUTSTORE_DET>();
                         var outstdet3 = qrypc.MapTo(outstdet2);
 
                         outstdet3.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
                         outstdet3.OUT_ID = outst.OUT_ID;
-                        outstdet3.MONEY = qrypc.PRICE * applyNumToUse;
-                        outstdet3.STORE_NUM = qrypc.NUM;
-                        outstdet3.NOTAX_MONEY = qrypc.NOTAX_PRICE * qrypc.NOTAX_MONEY;
+                        outstdet3.MONEY = qrypc.TAX_PRICE * applyNumToUse;
+                        outstdet3.STORE_NUM = qrypc.STORE_NUM;
+                        outstdet3.NOTAX_MONEY = qrypc.NOTAX_PRICE * applyNumToUse;
                         outstdet3.APPLY_NUM = applyNumToUse;
                         outstdet3.COUNT = applyNumToUse;
                         //outstdet2.IN_DATE = qryoutappdet.IN_DATE;
-                        outstdet3.APPLY_MONEY = qrypc.PRICE * applyNumToUse;
+                        outstdet3.APPLY_MONEY = qrypc.TAX_PRICE * applyNumToUse;
                         if (outstdet3.MONEY.HasValue)
                         {
                             appmoney += outstdet3.MONEY.Value;
@@ -597,7 +596,7 @@ namespace EAM.Material.Services
             var qryStores = await _dbContext.Query<SP_STORE>()
                 .Where(s => outstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
-            var stwater = new List<STORE_WATER>();
+            var stwater = new List<SP_STORE_WATER>();
             try
             {
                 await _dbContext.UseTransactionAsync(async () =>
@@ -607,47 +606,47 @@ namespace EAM.Material.Services
                         //获取库存数据
                         var qrystore = qryStores.FirstOrDefault(s =>
                             s.STORE_ID == qryoutstdet.STORE_ID);
-                        if (qrystore.NUM < qryoutstdet.COUNT)
+                        if (qrystore.STORE_NUM < qryoutstdet.COUNT)
                         {
                             throw new MessageException("当前批次库存已经没这么多，请重新选择出库数量！");
                         }
                         if (qrystore != null)
                         {
                             //期初库存数量
-                            var bnum = qrystore.NUM;
+                            var bnum = qrystore.STORE_NUM;
                             //期初库存金额
                             var bmoney = qrystore.TAX_MONEY;
                             //剩余库存数量
-                            var surnum = qrystore.NUM - qryoutstdet.COUNT;
+                            var surnum = qrystore.STORE_NUM - qryoutstdet.COUNT;
                             //剩余库存金额
-                            var surmoney = surnum * qrystore.PRICE;
+                            var surmoney = surnum * qrystore.TAX_PRICE;
                             //剩余不含税金额
                             var surnomoney = surnum * qrystore.NOTAX_PRICE;
                             //更新库存表
                             var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
                                  x => new SP_STORE
                                  {
-                                     NUM = surnum,
-                                     MONEY = surmoney,
+                                     STORE_NUM = surnum,
                                      TAX_MONEY = surmoney,
                                      NOTAX_MONEY = surnomoney,
                                  });
 
                             //往流水表插数据
-                            var waterdata = qryoutstdet.MapTo<STORE_WATER>();
+                            var waterdata = new SP_STORE_WATER();
+                            waterdata.STORE_ID = qryoutstdet.STORE_ID;
                             waterdata.SRC_CODE = qryoutst.OUT_CODE;
                             waterdata.SRC_TYPE = "3";
                             waterdata.INIT_NUM = bnum;
-                            waterdata.INIT_MONEY = bmoney;
+                            waterdata.INIT_TAX_MONEY = bmoney;
                             waterdata.IN_NUM = 0;
-                            waterdata.IN_PRICE = 0;
-                            waterdata.IN_MONEY = 0;
+                            waterdata.IN_TAX_MONEY = 0;
+                            waterdata.IN_NOTAX_MONEY = 0;
                             waterdata.OUT_NUM = qryoutstdet.COUNT;
-                            waterdata.OUT_MONEY = qrystore.PRICE;
-                            waterdata.IN_MONEY = qryoutstdet.COUNT * qrystore.PRICE;
+                            waterdata.OUT_TAX_MONEY = qryoutstdet.COUNT * qrystore.TAX_PRICE;
+                            waterdata.OUT_NOTAX_MONEY = qryoutstdet.COUNT * qrystore.NOTAX_PRICE;
                             waterdata.CUR_NUM = surnum;
-                            waterdata.CUR_MONEY = surmoney;
-                            waterdata.IS_BACK = "0";
+                            waterdata.CUR_TAX_MONEY = surmoney;
+                            waterdata.CUR_NOTAX_MONEY = surnomoney;
 
                             waterdata.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
                             waterdata.WATER_DATE = Sysdate;
@@ -715,17 +714,16 @@ namespace EAM.Material.Services
                             s.STORE_ID == qryoutstdet.STORE_ID);
 
                         //剩余库存数量
-                        var surnum = qrystore.NUM + qryoutstdet.COUNT;
+                        var surnum = qrystore.STORE_NUM + qryoutstdet.COUNT;
                         //剩余库存金额
-                        var surmoney = surnum * qrystore.PRICE;
+                        var surmoney = surnum * qrystore.TAX_PRICE;
                         //剩余不含税金额
                         var surnomoney = surnum * qrystore.NOTAX_PRICE;
                         //更新库存表
                         var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
                              x => new SP_STORE
                              {
-                                 NUM = surnum,
-                                 MONEY = surmoney,
+                                 STORE_NUM = surnum,
                                  TAX_MONEY = surmoney,
                                  NOTAX_MONEY = surnomoney,
                              });
@@ -879,7 +877,7 @@ namespace EAM.Material.Services
                 .Where(s => backstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
             //获取流水表的库存数据
-            var qryWaters = await _dbContext.Query<STORE_WATER>()
+            var qryWaters = await _dbContext.Query<SP_STORE_WATER>()
                 .Where(s => backstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
             foreach (var qrybackdet in qrybackdets)
@@ -890,21 +888,20 @@ namespace EAM.Material.Services
                 if (qrystore != null)
                 {
                     //期初库存数量
-                    var bnum = qrystore.NUM;
+                    var bnum = qrystore.STORE_NUM;
                     //期初库存金额
                     var bmoney = qrystore.TAX_MONEY;
                     //冲红库存数量
-                    var chnum = qrystore.NUM + qrybackdet.COUNT;
+                    var chnum = qrystore.STORE_NUM + qrybackdet.COUNT;
                     //冲红库存金额
-                    var chmoney = chnum * qrystore.PRICE;
+                    var chmoney = chnum * qrystore.TAX_PRICE;
                     //冲红不含税金额
                     var chnomoney = chnum * qrystore.NOTAX_PRICE;
                     //更新库存表
                     var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qrybackdet.STORE_ID,
                          x => new SP_STORE
                          {
-                             NUM = chnum,
-                             MONEY = chmoney,
+                             STORE_NUM = chnum,
                              TAX_MONEY = chmoney,
                              NOTAX_MONEY = chnomoney,
                          });
@@ -919,12 +916,6 @@ namespace EAM.Material.Services
                              x => new SP_OUTSTORE
                              {
                                  IS_RED = "1",
-                             });
-                        //更新流水表
-                        var updatespwater = await _dbContext.UpdateAsync<STORE_WATER>(x => x.WATER_ID == qryWater.WATER_ID,
-                             x => new STORE_WATER
-                             {
-                                 IS_BACK = "1",
                              });
                     }
                 }

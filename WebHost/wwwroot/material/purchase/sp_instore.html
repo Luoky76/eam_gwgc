@@ -4,12 +4,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <title></title>
+    <title>验收入库</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
 <body style="padding: 5px; height: 100%;">
-    <div id="mainsearch" style="width: 98%">
+    <div id="mainsearch">
         <form action="" id="formsearch" class="l-form">
         </form>
     </div>
@@ -20,49 +20,63 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-            formLabelWidth: 120,
-            formInputWidth: 180,
-            getTextareaWidth: function () {
-                var me = this;
-                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
-                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
-            },
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "入库单号", name: "_search_IN_CODE", dbname: "IN_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "入库日期", name: "_search_IN_DATE", dbname: "IN_DATE", newline: false, upper: true, type: "date", options: {} },
-                            { display: "供应商", name: "_search_PROVIDER_NAME", dbname: "PROVIDER_NAME", newline: false, upper: true, type: "text", options: {} },
+                            {
+                                display: "通用搜索",
+                                name: "_search_all",
+                                hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "IN_CODE", type: "string" },
+                                    { op: "like", field: "IN_USER", type: "string" },
+                                    { op: "like", field: "CHK_USER", type: "string" },
+                                    { op: "like", field: "DEPT_NAME", type: "string" },
+                                    { op: "like", field: "PROVIDER_NAME", type: "string" }
+                                ],
+                                options: {
+                                    onEnter: function () {
+                                        var me = this;
+                                        var $formsearch = $("#formsearch");
+                                        LG.commonSearch($formsearch, me.grid);
+                                    }.bind(me)
+                                },
+                            },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", editor: { data: me.Auditing } },
-                            { display: "入库单号", name: "IN_CODE", width: 100, type: "string" },
-                            { display: "入库日期", name: "IN_DATE", width: 100, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "供应商", name: "PROVIDER_NAME", width: 100, type: "string" },
-                            { display: "仓管员", name: "IN_USER", width: 100, type: "string" },
-                            { display: "验收人", name: "CHK_USER", width: 100, type: "string" },
-                            { display: "收货部门", name: "DEPT_NAME", width: 100, type: "string" },
-                            { display: "备注", name: "MEMO", width: 100, type: "string" },
-                            { display: "主键", name: "IN_ID", width: 100, type: "string", hide: true },
+                            { display: "记录状态", name: "AUDITING", type: "select", editor: { data: me.Auditing } },
+                            { display: "入库单号", name: "IN_CODE", type: "string" },
+                            { display: "入库日期", name: "IN_DATE", type: "date", format: "yyyy-MM-dd hh:mm" },
+                            { display: "供应商", name: "PROVIDER_NAME", type: "string" },
+                            { display: "仓管员", name: "IN_USER", type: "string" },
+                            { display: "验收人", name: "CHK_USER", type: "string" },
+                            { display: "收货部门", name: "DEPT_NAME", type: "string" },
+                            { display: "备注", name: "MEMO", type: "string" },
+                            { display: "主键", name: "IN_ID", type: "string", hide: true },
                         ]
                     }
                 };
             },
+            menuNo: getQueryStringByName("MenuNo"),
             grid: null,
             searchForm: null,
             buttons: null,
+            //下拉数据
+            Auditing: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'SpInstore/comboxdata',
+                    url: 'Material/SpInstore/ComboxData',
                     loading: '正在获取中...',
                     success: function (data) {
-                        me.Corp = data.Corp;
+                        me.Auditing = data.Auditing;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -73,35 +87,88 @@
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
+                    dateFormat: 'yyyy-MM-dd HH:mm',
                     autoWidth: true,
                     delayLoad: true,
                     columns: me.config.grid.columns,
-                    usePager: false,
+                    usePager: true,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'SpInstore/list',
+                    url: 'Material/SpInstore/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'AUDITING',
-                    sortOrder: 'asc',
-                    width: '98%',
+                    sortName: 'AUDITING, IN_CODE',
+                    sortOrder: 'desc',
+                    width: '100%',
                     height: '100%',
                     checkbox: true,
                     enabledEdit: true,
                     clickToEdit: true,
-                    onSuccess: function (data, g) {
+                    onBeforeEdit: function (editParm) {
+                        return false;
                     },
+                    onSuccess: function (data, g) { },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
+                    },
+                    onDblClickRow: function (rowdata, rowid, row) {
+                        me.openDetail({ sid: rowdata.IN_ID, isNew: false, isView: true });
                     }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
                 me.bindGridEvent();
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (!["1", "2", "3"].includes(row.AUDITING)) {
+                        if (msg) {
+                            LG.tip(msg);
+                        }
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (["1", "2", "3"].includes(row.AUDITING)) {
+                        if (msg) {
+                            LG.tip(msg);
+                        }
+                        return false;
+                    }
+                }
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -110,8 +177,28 @@
                         case "refresh":
                             me.reload();
                             break;
-                        case "save":
-                            me.save();
+                        case "add":
+                            me.openDetail({ isNew: true, isView: false });
+                            break;
+                        case "modify":
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.openDetail({ isNew: false, isView: false });
+                            }
+                            break;
+                        case "delete":
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                me.delete();
+                            }
+                            break;
+                        case "submit":
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                me.submit();
+                            }
+                            break;
+                        case "revoke":
+                            if (me.isSelectSingleRow() && me.isAllAudited()) {
+                                me.revoke();
+                            }
                             break;
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
@@ -121,36 +208,89 @@
                             break;
                     }
                 }
+                me.grid.toolbarManager.options.group = 'main';
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            save: function () {
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) {
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
+                if (!isNew && !sid) {
+                    sid = me.grid.getSelectedRow().IN_ID;
+                }
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: (isNew ? '[新增]' : isView ? '[查看]' : '[修改]') + document.title,
+                    url: "sp_instore_detail.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: sid, isNew: isNew, isView: isView }
+                });
+            },
+            reload: function () {
+                var me = this;
+                me.buttons[0].click();
+            },
+            delete: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows) return;
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    var changeRow = { deleted: rows };
                     LG.ajax({
                         jsToken: true,
-                        url: 'SpInstore/save',
-                        loading: '正在保存中...',
-                        data: changeRow,
+                        url: 'Material/SpInstore/SaveAll',
+                        loading: '正在删除中...',
+                        data: { request: changeRow, requestDet: {} },
                         success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
+                            LG.showSuccess('删除成功');
                             me.reload();
                         },
                         error: function (message) {
                             LG.showError(message);
                         }
                     });
-                }
+                });
             },
-            reload: function () {
+            submit: function () {
                 var me = this;
-                me.buttons[0].click();
+                var row = me.grid.getSelectedRow();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpInstore/Submit',
+                    loading: '正在提交中...',
+                    data: { inId: row.IN_ID },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            revoke: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpInstore/Revoke',
+                    loading: '正在撤销中...',
+                    data: { inId: row.IN_ID },
+                    success: function () {
+                        LG.showSuccess('撤销成功');
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             bindGridEvent: function () {
                 var me = this;
@@ -183,17 +323,6 @@
                     });
                     return false;
                 });
-                me.grid.bind('beforeSubmitEdit', function (e) {
-                    if (this.isValid) {
-                        if (!LG.validator.form()) {
-                            LG.showInvalidTip();
-                            return false;
-                        }
-                    } else {
-                        $(".l-verify-tip").remove();
-                    }
-                    return true;
-                });
                 LG.validate($("#mainform"), {
                     debug: true
                 });
@@ -201,10 +330,8 @@
             setForm: function () {
                 var me = this;
                 me.config.search.fields.removeNull();
-                var $formsearch = $("#formsearch")
+                var $formsearch = $("#formsearch");
                 me.searchForm = $formsearch.ligerForm({
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
@@ -227,10 +354,16 @@
                 me.setForm();
                 me.setGrid();
                 me.reload();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
 

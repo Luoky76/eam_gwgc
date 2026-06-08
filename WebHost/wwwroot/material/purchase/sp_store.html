@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -55,43 +55,32 @@ menuNo: getQueryStringByName("MenuNo"),
                 me.config = {
                     search: {
                         fields: [
-                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, type: "text", },
-                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, type: "text", },
-                            { display: "仓库ID", name: "_search_STOCK_CODE", dbname: "STOCK_CODE", op: "startwith", type: "hidden", options: {} },
-                            { display: "库存数量", name: "_search_NUM", dbname: "NUM", op: "greater", type: "hidden", }
+                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, type: "string", },
+                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, type: "string", },
+                            { display: "仓库编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", op: "startwith", type: "hidden", options: {} },
+                            { display: "库存数量", name: "_search_STORE_NUM", dbname: "STORE_NUM", op: "greater", type: "hidden", }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "来源类型", name: "SRC_TYPE", dbname: "SRC_TYPE", width: 100, type: "select", format: { data: me.BCCode } },
-                            { display: "物料编码", name: "SP_CODE", dbname: "SP_CODE", width: 120, type: "text", },
-                            { display: "物料名称", name: "SP_NAME", dbname: "SP_NAME", width: 150, type: "text", },
-                            { display: "规格型号", name: "SP_SIZE", dbname: "SP_SIZE", width: 150, type: "text", },
-
-                            { display: "分类", name: "TYPE_NAME", dbname: "TYPE_NAME", width: 150, type: "text", },
-                            { display: "品牌、厂家", name: "PRODUCE", dbname: "PRODUCE", width: 150, type: "text", },
-
-                            { display: "库位名称", name: "STOCK_NAME", dbname: "STOCK_NAME", width: 150, type: "text", },
-                            { display: "批次号", name: "STORE_CODE", dbname: "STORE_CODE", width: 150, type: "text", },
-                            { display: "计量单位", name: "UNIT", dbname: "UNIT", width: 150, type: "text", },
-                            { display: "库存数量", name: "NUM", dbname: "NUM", width: 150, type: "text", },
-                            { display: "库存单价(元)", name: "PRICE", dbname: "PRICE", width: 150, type: "text", },
-                            { display: "库存金额(元)", name: "MONEY", dbname: "MONEY", width: 150, type: "text", },
-
-                            { display: "税率", name: "TAX_RATE", dbname: "TAX_RATE", width: 150, type: "text", },
-                            { display: "不含税单价(元)", name: "NOTAX_PRICE", dbname: "NOTAX_PRICE", width: 150, type: "text", },
-                            { display: "不含税金额(元)", name: "NOTAX_MONEY", dbname: "NOTAX_MONEY", width: 150, type: "text", },
-
-                            { display: "入库日期", name: "IN_DATE", dbname: "IN_DATE", width: 120, type: "date", format: "yyyy-MM-dd" },
-                            { display: "供应商", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 150, type: "text", },
-                            { display: "库龄(月)", name: "STORE_MONTH", dbname: "STORE_MONTH", width: 150, type: "text", },
-
-                            { display: "申请单号", name: "APPLY_NO", dbname: "APPLY_NO", width: 150, type: "text", },
-                            { display: "送货单号", name: "DELIVERY_CODE", dbname: "DELIVERY_CODE", width: 150, type: "text", },
-
-                            { display: "单位名称", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 150, type: "text", },
-                            { display: "主键", name: "STORE_ID", dbname: "STORE_ID", width: 100, type: "text", hide: true },
-
+                            { display: "批次号", name: "BATCH_CODE", width: 150, type: "string" },
+                            { display: "物资编码", name: "SP_CODE", width: 120, type: "string" },
+                            { display: "物资名称", name: "SP_NAME", width: 150, type: "string" },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "string" },
+                            { display: "物资分类", name: "TYPE_NAME", width: 150, type: "string" },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "string" },
+                            { display: "仓库名称", name: "HOUSE_NAME", width: 150, type: "string" },
+                            { display: "计量单位", name: "UNIT", width: 100, type: "string" },
+                            { display: "库存数量", name: "STORE_NUM", width: 100, type: "float" },
+                            { display: "含税单价(元)", name: "TAX_PRICE", width: 120, type: "float" },
+                            { display: "含税金额(元)", name: "TAX_MONEY", width: 120, type: "float" },
+                            { display: "不含税单价(元)", name: "NOTAX_PRICE", width: 130, type: "float" },
+                            { display: "不含税金额(元)", name: "NOTAX_MONEY", width: 130, type: "float" },
+                            { display: "入库日期", name: "IN_DATE", width: 120, type: "date", format: "yyyy-MM-dd" },
+                            { display: "供应商", name: "PROVIDER_NAME", width: 150, type: "string" },
+                            { display: "属性", name: "PROPERTY", width: 100, type: "string" },
+                            { display: "部门", name: "DEPT_NAME", width: 150, type: "string" },
+                            { display: "主键", name: "STORE_ID", width: 100, type: "string", hide: true },
                         ]
                     }
                 };
@@ -122,9 +111,8 @@ menuNo: getQueryStringByName("MenuNo"),
                     delayLoad: true,
                     usePager: false,
                     columns: me.config.grid.columns,
-                    //dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/SpStore/list',
+                    url: 'Material/SpStore/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -179,44 +167,44 @@ menuNo: getQueryStringByName("MenuNo"),
                     labelWidth: me.formLabelWidth,
                     inputWidth: me.formInputWidth,
                     fields: [
-                        { display: "批次号", name: "STORE_CODE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", options: { type: 'text' }, validate: { required: true } },
-                        { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: 180, type: "text", validate: { required: true }, options: { disabled: true } },
-                        { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", validate: { required: true }, options: { disabled: true } },
-                        { display: "型号规格", name: "SP_SIZE", labelWidth: me.formLabelWidth, width: 180, type: "text", options: { disabled: true } },
-                        { display: "品牌、厂家", name: "PRODUCE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", options: { disabled: true } },
-                        { display: "计量单位", name: "UNIT", labelWidth: me.formLabelWidth, width: 180, type: "text", options: { disabled: true } },
-                        { display: "物料分类", name: "TYPE_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "text", options: { disabled: true } },
+                        { display: "批次号", name: "BATCH_CODE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "string", options: {}, validate: { required: true } },
+                        { display: "物料编码", name: "SP_CODE", labelWidth: me.formLabelWidth, width: 180, type: "string", validate: { required: true }, options: { disabled: true } },
+                        { display: "物料名称", name: "SP_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "string", validate: { required: true }, options: { disabled: true } },
+                        { display: "型号规格", name: "SP_SIZE", labelWidth: me.formLabelWidth, width: 180, type: "string", options: { disabled: true } },
+                        { display: "品牌、厂家", name: "PRODUCE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "string", options: { disabled: true } },
+                        { display: "计量单位", name: "UNIT", labelWidth: me.formLabelWidth, width: 180, type: "string", options: { disabled: true } },
+                        { display: "物资分类", name: "TYPE_NAME", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "string", options: { disabled: true } },
                         {
-                            display: "库位名称", name: "STOCK_ID", labelWidth: me.formLabelWidth, width: 180, type: "select",
+                            display: "仓库名称", name: "HOUSE_ID", labelWidth: me.formLabelWidth, width: 180, type: "select",
                             options: {
                                 type: "select",
                                 data: me.stockData,
                                 onChangeValue: function (input, value, g) {
                                     if (g.selected) {
-                                        $("#STOCK_CODE").val(g.selected.VALUE);
-                                        $("#STOCK_NAME").val(g.selected.TEXT);
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({
+                                            HOUSE_CODE: g.selected.VALUE,
+                                            HOUSE_NAME: g.selected.TEXT
+                                        });
                                     } else {
-                                        $("#STOCK_CODE").val("");
-                                        $("#STOCK_NAME").val("");
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ HOUSE_CODE: "", HOUSE_NAME: "" });
                                     }
                                 }
                             }, validate: { required: true }
                         },
-
-                        { display: "来源类型", name: "SRC_TYPE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select", options: { type: "select", data: me.BCCode }, validate: { required: true } },
                         {
-                            display: "库存数量", name: "NUM", labelWidth: me.formLabelWidth, width: 180, type: "float",
+                            display: "库存数量", name: "STORE_NUM", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float",
                             options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
-                                        $('#NUM').val("");
+                                        $('#STORE_NUM').val("");
                                         LG.showError("数量不可为负数！");
                                     }
                                     else {
-                                        var editParm = $("#PRICE").val();
-                                        $("#MONEY").val((value * (editParm || 0)).toFixed(2));
-
+                                        var editParm = $("#TAX_PRICE").val();
+                                        $("#TAX_MONEY").val((value * (editParm || 0)).toFixed(2));
                                         var PRICE = $("#NOTAX_PRICE").val();
                                         $("#NOTAX_MONEY").val((value * (PRICE || 0)).toFixed(2));
                                     }
@@ -224,35 +212,33 @@ menuNo: getQueryStringByName("MenuNo"),
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存单价(元)", name: "PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", options: {
+                            display: "含税单价(元)", name: "TAX_PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", options: {
                                 type: 'float', onChangeValue: function (input, value, g) {
                                     if (value < 0) {
-                                        $('#PRICE').val("");
+                                        $('#TAX_PRICE').val("");
                                         LG.showError("单价不可为负数！");
                                     }
                                     else {
-                                        var editParm = $("#NUM").val();
-                                        $("#MONEY").val((value * (editParm || 0)).toFixed(2));
+                                        var editParm = $("#STORE_NUM").val();
+                                        $("#TAX_MONEY").val((value * (editParm || 0)).toFixed(2));
                                     }
-
                                 }
                             }, validate: { required: true }
                         },
                         {
-                            display: "库存金额(元)", name: "MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", options: {
+                            display: "含税金额(元)", name: "TAX_MONEY", labelWidth: me.formLabelWidth, width: 180, type: "float", options: {
                                 type: 'float',
                                 onChangeValue: function (input, value, g) {
                                     if (value < 0) {
-                                        $('#MONEY').val("");
+                                        $('#TAX_MONEY').val("");
                                         LG.showError("金额不可为负数！");
                                     } else {
-                                        var editParm = $("#NUM").val();
-                                        $("#PRICE").val((value / (editParm || 0)).toFixed(2));
+                                        var editParm = $("#STORE_NUM").val();
+                                        $("#TAX_PRICE").val((value / (editParm || 0)).toFixed(2));
                                     }
                                 }
                             }, validate: { required: true }
                         },
-
                         {
                             display: "不含税单价(元)", name: "NOTAX_PRICE", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "float", options: {
                                 type: 'float',
@@ -262,7 +248,7 @@ menuNo: getQueryStringByName("MenuNo"),
                                         LG.showError("单价不可为负数！");
                                     }
                                     else {
-                                        var editParm = $("#NUM").val();
+                                        var editParm = $("#STORE_NUM").val();
                                         $("#NOTAX_MONEY").val((value * (editParm || 0)).toFixed(2));
                                     }
                                 }
@@ -276,25 +262,13 @@ menuNo: getQueryStringByName("MenuNo"),
                                         $('#NOTAX_MONEY').val("");
                                         LG.showError("金额不可为负数！");
                                     } else {
-                                        var editParm = $("#NUM").val();
+                                        var editParm = $("#STORE_NUM").val();
                                         $("#NOTAX_PRICE").val((value / (editParm || 0)).toFixed(2));
                                     }
                                 }
                             }
                         },
-
-                        { display: "入库日期", name: "IN_DATE", labelWidth: me.formLabelWidth, width: 180, type: "date", newline: true, format: "yyyy-MM-dd", options: { type: 'date', format: "yyyy-MM-dd" }, validate: { required: true } },
-                        {
-                            display: "税率", name: "TAX_RATE", labelWidth: me.formLabelWidth, width: 180, type: "float", options: {
-                                type: 'float',
-                                onChangeValue: function (input, value, g) {
-                                    if (value < 0) {
-                                        $('#TAX_RATE').val("");
-                                        LG.showError("税率不可为负数！");
-                                    }
-                                }
-                            }
-                        },
+                        { display: "入库日期", name: "IN_DATE", labelWidth: me.formLabelWidth, width: 180, type: "date", newline: true, options: { format: "yyyy-MM-dd" }, validate: { required: true } },
                         {
                             display: "供应商", name: "PROVIDER_ID", dbname: "PROVIDER_ID", labelWidth: me.formLabelWidth, width: 180, newline: true, type: "select",
                             options: {
@@ -307,24 +281,28 @@ menuNo: getQueryStringByName("MenuNo"),
                                 }
                             }
                         },
-                        { display: "申请单号", name: "APPLY_NO", labelWidth: me.formLabelWidth, width: 180, type: "text", options: { type: 'text' } },
                         {
-                            display: "部门", name: "DEPT_ID", labelWidth: me.formLabelWidth, newline: true, upper: true, type: "select",  options: { type: 'select', data: me.DeptData, onChangeValue: function (input, value, g) {
+                            display: "部门", name: "DEPT_ID", labelWidth: me.formLabelWidth, newline: true, type: "select",
+                            options: {
+                                type: 'select', data: me.DeptData,
+                                onChangeValue: function (input, value, g) {
                                     if (g.selected) {
-                                        $("#DEPT_NAME").val(g.selected.VALUE);
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ DEPT_NAME: g.selected.TEXT });
                                     } else {
-                                        $("#DEPT_NAME").val('');
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ DEPT_NAME: '' });
                                     }
-                                } }, validate: { required: true }
+                                }
+                            }, validate: { required: true }
                         },
                         //隐藏
-                        { display: "SP_ID", name: "SP_ID", dbname: "SP_ID", width: 180, type: "hidden" },
-                        { display: "TYPE_ID", name: "TYPE_ID", dbname: "TYPE_ID", width: 180, type: "hidden" },
-                        { display: "TYPE_CODE", name: "TYPE_CODE", dbname: "TYPE_CODE", width: 180, type: "hidden" },
-                        { display: "供应商名", name: "PROVIDER_NAME", dbname: "PROVIDER_NAME", width: 180, type: "hidden" },
-                        { display: "仓库名", name: "STOCK_NAME", dbname: "STOCK_NAME", width: 180, type: "hidden" },
-                        { display: "仓库CODE", name: "STOCK_CODE", dbname: "STOCK_CODE", width: 180, type: "hidden" },
-                        { display: "部门名", name: "DEPT_NAME", dbname: "DEPT_NAME", width: 180, type: "hidden" }
+                        { display: "SP_ID", name: "SP_ID", width: 180, type: "hidden" },
+                        { display: "TYPE_ID", name: "TYPE_ID", width: 180, type: "hidden" },
+                        { display: "供应商名", name: "PROVIDER_NAME", width: 180, type: "hidden" },
+                        { display: "仓库CODE", name: "HOUSE_CODE", width: 180, type: "hidden" },
+                        { display: "仓库名", name: "HOUSE_NAME", width: 180, type: "hidden" },
+                        { display: "部门名", name: "DEPT_NAME", width: 180, type: "hidden" }
                     ],
                     space: 3,
                     validate: true,
@@ -332,7 +310,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         me.viewForm = g;
                     }
                 });
-                me.viewForm.setOrginData({ STOCK_NAME: (nodeName == "仓库货位" ? "" : nodeName), STOCK_ID: (nodeId == "ROOT" ? "" : nodeId), STOCK_CODE: (nodeCode == "ROOT" ? "" : nodeCode), SRC_TYPE:"1" });
+                me.viewForm.setOrginData({ HOUSE_NAME: (nodeName == "仓库货位" ? "" : nodeName), HOUSE_ID: (nodeId == "ROOT" ? "" : nodeId), HOUSE_CODE: (nodeCode == "ROOT" ? "" : nodeCode) });
                 var dialog = $.ligerDialog.open({
                     title: "库存初始化",
                     target: me.viewForm.form,
@@ -356,10 +334,9 @@ menuNo: getQueryStringByName("MenuNo"),
                                         "SP_NAME": list[0].SP_NAME,
                                         "SP_SIZE": list[0].SP_SIZE,
                                         "PRODUCE": list[0].PRODUCE,
-                                        "UNIT": list[0]. UNIT,
+                                        "UNIT": list[0].UNIT,
                                         "TYPE_NAME": list[0].TYPE_NAME,
-                                        "TYPE_ID": list[0].TYPE_ID,
-                                        "TYPE_CODE": list[0].TYPE_CODE
+                                        "TYPE_ID": list[0].TYPE_ID
                                     });
                                 }
                             };
@@ -398,8 +375,8 @@ menuNo: getQueryStringByName("MenuNo"),
                                 return;
                             }
 
-                            if (data.NUM < 0 || data.PRICE < 0 || data.MONEY < 0 || data.NOTAX_PRICE < 0 || data.NOTAX_MONEY < 0 || data.TAX_RATE < 0) {
-                                LG.showError('单价、总价、税率等字段的输入不能小于0!');
+                            if (data.STORE_NUM < 0 || data.TAX_PRICE < 0 || data.TAX_MONEY < 0 || data.NOTAX_PRICE < 0 || data.NOTAX_MONEY < 0) {
+                                LG.showError('单价、总价等字段的输入不能小于0!');
                                 return;
                             }
 
@@ -518,7 +495,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         var where = {};
                         if (nodeData) {
                             var parentNo = nodeData.HOUSE_CODE;
-                            $("#_search_STOCK_CODE").val((parentNo == "ROOT" ? "" : parentNo));
+                            $("#_search_HOUSE_CODE").val((parentNo == "ROOT" ? "" : parentNo));
                             where = {
                                 rules: [],
                                 groups: [{
@@ -528,7 +505,7 @@ menuNo: getQueryStringByName("MenuNo"),
                             if (parentNo === rootValue) {
                                 parentNo = "";
                             } else {
-                                where.groups[0].rules.push({ field: 'STOCK_CODE', value: parentNo, op: 'startwith' });
+                                where.groups[0].rules.push({ field: 'HOUSE_CODE', value: parentNo, op: 'startwith' });
                             }
 
                             me.grid.set('parms', { "where": JSON2.stringify(where) });
@@ -542,7 +519,6 @@ menuNo: getQueryStringByName("MenuNo"),
                 var me = this;
                 me.config.search.fields.removeNull();
                 var $formsearch = $("#formsearch")
-                //搜索表单应用ligerui样式
                 me.searchForm = $formsearch.ligerForm({
                     labelWidth: me.formLabelWidth,
                     inputWidth: me.formInputWidth,
@@ -558,7 +534,7 @@ menuNo: getQueryStringByName("MenuNo"),
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
-                        me.searchForm.setData({ "_search_NUM": "0" });
+                        me.searchForm.setData({ "_search_STORE_NUM": "0" });
                     }
                 });
             },
@@ -577,4 +553,5 @@ menuNo: getQueryStringByName("MenuNo"),
         business.init();
     </script>
 </body>
+
 </html>

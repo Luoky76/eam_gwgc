@@ -256,12 +256,12 @@ namespace EAM.Material.Services
                                     if (count > 0)
                                     {
                                         result.STORE_ID = detail.STORE_ID;
-                                        detail.NUM = count;
+                                        detail.STORE_NUM = count;
                                         count = 0;
                                     }
                                     else
                                     {
-                                        detail.NUM = 0;
+                                        detail.STORE_NUM = 0;
                                     }
 
                                     await _dbContext.UpdateAsync(detail);
@@ -271,29 +271,25 @@ namespace EAM.Material.Services
                             {
                                 SP_STORE _STORE = new()
                                 {
-                                    SRC_TYPE = "5",
-                                    IS_BACK = "0",
                                     SP_CODE = result.SP_CODE,
                                     SP_ID = result.SP_ID,
                                     SP_NAME = result.SP_NAME,
                                     SP_SIZE = result.SP_SIZE,
                                     PRODUCE = result.PRODUCE,
-                                    TYPE_CODE = result.TYPE_CODE,
                                     TYPE_NAME = result.TYPE_NAME,
                                     TYPE_ID = result.TYPE_ID,
-                                    STOCK_NAME = result.STOCK_NAME,
                                     UNIT = result.UNIT,
-                                    NUM = result.SCAN_NUM,
+                                    STORE_NUM = result.SCAN_NUM,
                                     STORE_ID = GuidHelper.NewSnowflakeId().ToString(),
                                     DEPT_ID = entity.DEPT_ID,
                                     DEPT_NAME = entity.DEPT_NAME,
-                                    CREATE_USERID = _userSession.UserID.ToString(),
+                                    CREATE_USERID = _userSession.UserID,
                                     CREATEDATE = DateTime.Now,
-                                    MODIFY_USERID = _userSession.UserID.ToString(),
+                                    MODIFY_USERID = _userSession.UserID,
                                     MODIFYDATE = DateTime.Now
                                 };//库存表
 
-                                _STORE.STORE_CODE = await _codeCreatorService.CreateCodeAsync<SP_STORE>("PC", a => a.STORE_CODE);
+                                _STORE.BATCH_CODE = await _codeCreatorService.CreateCodeAsync<SP_STORE>("PC", a => a.BATCH_CODE);
 
                                 result.STORE_ID = _STORE.STORE_ID;
                                 await _dbContext.InsertAsync(_STORE);

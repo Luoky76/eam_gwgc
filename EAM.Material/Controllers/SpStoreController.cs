@@ -35,7 +35,7 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
-        /// 保存
+        /// 保存库存
         /// </summary>
         [HttpPost]
         public async Task<AjaxResult> SaveAsync(SaveRequest<SP_STORE> request)
@@ -43,6 +43,17 @@ namespace EAM.Material.Controllers
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
             return await _service.SaveAsync(request);
+        }
+
+        /// <summary>
+        /// 保存库存流水
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_STORE_WATER> request)
+        {
+            var result = await ValidSaveAsync(request);
+            if (result.IsError) return result;
+            return await _service.DetSaveAsync(request);
         }
 
         /// <summary>

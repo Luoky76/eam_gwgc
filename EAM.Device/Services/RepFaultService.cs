@@ -69,7 +69,7 @@ namespace EAM.Device.services
         public async Task<GridData> ImportList(GridRequest request)
         {
             return await _dbContext.Query<SP_STORE>()
-                .Where(c => c.NUM > 0)
+                .Where(c => c.STORE_NUM > 0)
                 .GetGridData(request);
         }
 

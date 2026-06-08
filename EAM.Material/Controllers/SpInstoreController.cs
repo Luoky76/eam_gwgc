@@ -30,30 +30,11 @@ namespace EAM.Material.Controllers
         /// </summary>
         public async Task<AjaxResult> ListAsync(GridRequest request)
         {
-            var result = await _service.ListAsync(request);
-            return AjaxResult.Success(result);
+            return AjaxResult.Success(await _service.ListAsync(request));
         }
 
         /// <summary>
-        /// 获取子表明细列表
-        /// </summary>
-        public async Task<AjaxResult> DetListAsync(GridRequest request)
-        {
-            var result = await _service.DetListAsync(request);
-            return AjaxResult.Success(result);
-        }
-
-        /// <summary>
-        /// 获取子表明细列表（详情用）
-        /// </summary>
-        public async Task<AjaxResult> DetailListAsync(GridRequest request)
-        {
-            var result = await _service.DetailListAsync(request);
-            return AjaxResult.Success(result);
-        }
-
-        /// <summary>
-        /// 根据入库ID获取记录
+        /// 根据ID获取记录
         /// </summary>
         public async Task<AjaxResult> GetAsync(string inId)
         {
@@ -61,37 +42,48 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 获取明细列表
+        /// </summary>
+        public async Task<AjaxResult> DetListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.DetListAsync(request));
+        }
+
+        /// <summary>
+        /// 获取可导入的采购物资明细
+        /// </summary>
+        public async Task<AjaxResult> ImportListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ImportListAsync(request));
+        }
+
+        /// <summary>
         /// 同时保存主子表
         /// </summary>
-        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_INSTORE> request, SaveRequest<SP_INSTORE_DET> requestdet)
+        [HttpPost]
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SP_INSTORE> request, SaveRequest<SP_INSTORE_DET> requestDet)
         {
-            return await _service.SaveAllAsync(request, requestdet);
+            return await _service.SaveAllAsync(request, requestDet);
         }
 
         /// <summary>
         /// 提交
         /// </summary>
-        [HttpPost]
-        public async Task<AjaxResult> SubmitAsync(List<string> sids)
+        [JsToken]
+        public async Task<AjaxResult> SubmitAsync(string inId)
         {
-            return await _service.SubmitAsync(sids);
+            await _service.SubmitAsync(inId);
+            return AjaxResult.Success("提交成功");
         }
 
         /// <summary>
-        /// 退回
+        /// 撤销提交
         /// </summary>
-        [HttpPost]
-        public async Task<AjaxResult> BackAsync(List<string> sids)
+        [JsToken]
+        public async Task<AjaxResult> RevokeAsync(string inId)
         {
-            return await _service.BackAsync(sids);
-        }
-
-        /// <summary>
-        /// 获取仓库列表
-        /// </summary>
-        public async Task<AjaxResult> HouseList()
-        {
-            return await _service.HouseList();
+            await _service.RevokeAsync(inId);
+            return AjaxResult.Success("撤销提交成功");
         }
     }
 }

@@ -308,7 +308,7 @@ namespace EAM.Material.Services
         private async Task<decimal> GetStoreNumAsync(string sp_id)
         {
             return await _dbContext.Query<SP_STORE>(x => x.SP_ID == sp_id)
-                .Select(x => Sql.Sum(x.NUM)).FirstOrDefaultAsync() ?? 0;
+                .Select(x => Sql.Sum(x.STORE_NUM)).FirstOrDefaultAsync() ?? 0;
         }
 
         /// <summary>
