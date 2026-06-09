@@ -169,6 +169,7 @@
             Auditing: [],
             SpHouse: [],
             User: [],
+            Dept: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -179,6 +180,7 @@
                         me.Auditing = data.Auditing;
                         me.SpHouse = data.SpHouse;
                         me.User = data.User;
+                        me.Dept = data.Dept;
                     },
                     error: function (message) {
                         LG.showError(message);

@@ -37,8 +37,9 @@ namespace EAM.Material.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode@#Auditing", "auditing" },
-                    { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
-                    { "User", (Expression<Func<CF_USER, bool>>)(x => true) }
+                    { "SpHouseName@#SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
+                    { "User", (Expression<Func<CF_USER, bool>>)(x => true) },
+                    { "DeptData@#Dept", (Expression<Func<CF_CORP, bool>>)(x => true) }
                 });
                 return AjaxResult.Success(data);
             }
