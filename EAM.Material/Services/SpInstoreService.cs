@@ -65,7 +65,6 @@ namespace EAM.Material.Services
         public async Task<GridData> ReceiveListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_INSTORE>()
-                .Where(x => x.AUDITING_RECEIVE == null || x.AUDITING_RECEIVE == "" || x.AUDITING_RECEIVE == "0")
                 .GetGridData(request);
         }
 
