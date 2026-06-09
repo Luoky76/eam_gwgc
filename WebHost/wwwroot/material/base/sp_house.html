@@ -30,7 +30,6 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -38,7 +37,7 @@
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
-MenuNo: getQueryStringByName("MenuNo"),
+            MenuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
             tree: null,
             currentNode: null,

@@ -21,7 +21,6 @@ namespace EAM.Material.Services
             _userSession = userSession;
         }
 
-
         /// <summary>
         /// 获取列表
         /// </summary>
@@ -43,8 +42,6 @@ namespace EAM.Material.Services
             return AjaxResult.Success(row);
         }
 
-
-
         /// <summary>
         /// 获取下拉框信息
         /// </summary>
@@ -56,8 +53,8 @@ namespace EAM.Material.Services
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode", "houseproperty" },
-                    { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)null},
-                    { "DeptData",(Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.Corp.CorpID)},
+                    { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)(a => true) },
+                    { "DeptData",(Expression<Func<CF_CORP, bool>>)(a => true) },
                 });
 
                 var dic1 = await _comboxDataService.Get(new Dictionary<string, object>()
