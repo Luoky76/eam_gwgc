@@ -31,7 +31,7 @@
                     form: {
                         fields: [
                             {
-                                display: "收货状态", name: "AUDITING_RECEIVE", type: "select", options: {
+                                display: "记录状态", name: "AUDITING_RECEIVE", type: "select", options: {
                                     type: "select",
                                     data: me.Auditing,
                                     disabled: true
@@ -40,13 +40,31 @@
                             { display: "入库单号", name: "IN_CODE", type: "string", options: { disabled: true } },
                             { display: "入库日期", name: "IN_DATE", type: "date", options: { format: "yyyy-MM-dd hh:mm", initValue: new Date() } },
                             { display: "供应商", name: "PROVIDER_NAME", type: "string" },
-                            { display: "收货部门", name: "DEPT_NAME", type: "string", options: { disabled: true } },
-                            { display: "收货人", name: "CONSIGNEE", type: "string", options: { disabled: true } },
+                            {
+                                display: "收货部门", name: "DEPT_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.Dept,
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ DEPT_NAME: obj.selected?.TEXT ?? "" });
+                                    }
+                                }, validate: { required: true }
+                            },
+                            {
+                                display: "收货人", name: "CONSIGNEE_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.User,
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ CONSIGNEE: obj.selected?.TEXT ?? "" });
+                                    }
+                                }, validate: { required: true }
+                            },
                             { display: "备注", name: "MEMO", type: "textarea", newline: true, width: me.getTextareaWidth() },
                             //隐藏
                             { display: "主键", name: "IN_ID", type: "hidden", options: {} },
-                            { display: "收货部门ID", name: "DEPT_ID", type: "hidden", options: {} },
-                            { display: "收货人ID", name: "CONSIGNEE_ID", type: "hidden", options: {} },
+                            { display: "收货部门", name: "DEPT_NAME", type: "hidden", options: {} },
+                            { display: "收货人", name: "CONSIGNEE", type: "hidden", options: {} },
                         ]
                     },
                     grid: {
@@ -196,7 +214,7 @@
                         CONSIGNEE_ID: window.session.UserID,
                         CONSIGNEE: window.session.RealName,
                         DEPT_ID: window.session.Corp.CorpID,
-                        DEPT_NAME: window.session.Corp.SName
+                        DEPT_NAME: window.session.Corp.CName
                     });
                 }
                 else {
