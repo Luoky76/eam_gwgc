@@ -320,6 +320,18 @@ namespace EAM.Material.Services
             MessageException.ThrowIf(sp_instore == null, "收货登记单不存在");
             MessageException.ThrowIf(sp_instore.AUDITING_RECEIVE == "1", "该数据已提交收货登记，无法重复提交");
 
+            //将明细中未填的金额、税率字段补0
+            var det_list = await _dbContext.Query<SP_INSTORE_DET>(x => x.IN_ID == inId).ToListAsync();
+            foreach (var det in det_list)
+            {
+                if (!det.TAX_RATE.HasValue) det.TAX_RATE = 0;
+                if (!det.TAX_MONEY.HasValue) det.TAX_MONEY = 0;
+                if (!det.NOTAX_MONEY.HasValue) det.NOTAX_MONEY = 0;
+                if (!det.TAX_PRICE.HasValue) det.TAX_PRICE = 0;
+                if (!det.NOTAX_PRICE.HasValue) det.NOTAX_PRICE = 0;
+                await _dbContext.UpdateAsync(det);
+            }
+
             await _dbContext.UpdateAsync<SP_INSTORE>(x => x.IN_ID == inId, x => new SP_INSTORE
             {
                 AUDITING_RECEIVE = "1"
