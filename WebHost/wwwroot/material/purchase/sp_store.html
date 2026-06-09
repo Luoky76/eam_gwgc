@@ -67,10 +67,24 @@
                 me.config = {
                     search: {
                         fields: [
-                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, type: "string", },
-                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, type: "string", },
-                            { display: "仓库编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", op: "startwith", type: "hidden", options: {} },
-                            { display: "库存数量", name: "_search_STORE_NUM", dbname: "STORE_NUM", op: "greater", type: "hidden", }
+                            {
+                                display: "通用搜索",
+                                name: "_search_all",
+                                hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "BATCH_CODE", type: "string" },
+                                    { op: "like", field: "SP_CODE", type: "string" },
+                                    { op: "like", field: "SP_NAME", type: "string" },
+                                    { op: "like", field: "SP_SIZE", type: "string" },
+                                    { op: "like", field: "TYPE_NAME", type: "string" },
+                                    { op: "like", field: "PRODUCE", type: "string" },
+                                    { op: "like", field: "HOUSE_NAME", type: "string" },
+                                    { op: "like", field: "UNIT", type: "string" },
+                                    { op: "like", field: "PROVIDER_NAME", type: "string" },
+                                    { op: "like", field: "PROPERTY", type: "string" },
+                                    { op: "like", field: "DEPT_NAME", type: "string" },
+                                ],
+                            },
                         ]
                     },
                     grid: {
@@ -171,8 +185,8 @@
                             rules: []
                         })
                     },
-                    sortName: 'CREATEDATE',
-                    sortOrder: 'DESC',
+                    sortName: 'SP_CODE',
+                    sortOrder: '',
                     width: '99%',
                     height: '100%',
                     heightDiff: -150,
@@ -730,7 +744,6 @@
                     onAfterSetFields: function (g) {
                         me.searchForm = g;
                         me.buttons = g.options.buttons;
-                        me.searchForm.setData({ "_search_STORE_NUM": "0" });
                     }
                 });
             },
