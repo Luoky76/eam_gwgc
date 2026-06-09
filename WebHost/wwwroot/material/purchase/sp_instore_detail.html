@@ -44,7 +44,7 @@
                             { display: "仓管员", name: "IN_USER", type: "string", options: { disabled: true } },
                             { display: "验收人", name: "CHK_USER", type: "string", validate: { required: true } },
                             { display: "收货部门", name: "DEPT_NAME", type: "string", options: { disabled: true } },
-                            { display: "备注", name: "MEMO", type: "string" },
+                            { display: "备注", name: "MEMO", type: "textarea", newline: true, width: me.getTextareaWidth() },
                             //隐藏
                             { display: "主键", name: "IN_ID", type: "hidden", options: {} },
                             { display: "仓管员ID", name: "IN_USERID", type: "hidden", options: {} },
@@ -107,6 +107,7 @@
             //下拉数据
             Auditing: [],
             SpHouse: [],
+            User: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -116,6 +117,7 @@
                     success: function (data) {
                         me.Auditing = data.Auditing;
                         me.SpHouse = data.SpHouse;
+                        me.User = data.User;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -492,7 +494,7 @@
                 var me = this;
                 LG.ajax({
                     async: false,
-                    url: 'Material/General/CreatePrimaryKey',
+                    url: 'Common/General/CreatePrimaryKey',
                     loading: '正在获取中...',
                     success: function (data, message) {
                         me.sid = data;

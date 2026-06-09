@@ -37,7 +37,8 @@ namespace EAM.Material.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode@#Auditing", "auditing" },
-                    { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => x.AUDITING == "1") }
+                    { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
+                    { "User", (Expression<Func<CF_USER, bool>>)(x => true) }
                 });
                 return AjaxResult.Success(data);
             }
@@ -238,7 +239,7 @@ namespace EAM.Material.Services
             }
             if (entity.IN_CODE.IsNullOrWhiteSpace())
             {
-                entity.IN_CODE = await _codeCreatorService.CreateCodeAsync<SP_INSTORE>("YK", a => a.IN_CODE);
+                entity.IN_CODE = await _codeCreatorService.CreateCodeAsync<SP_INSTORE>("IN", a => a.IN_CODE);
             }
             if (!entity.IN_DATE.HasValue)
             {

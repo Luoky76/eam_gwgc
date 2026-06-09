@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EAM.Material.Controllers
 {
-    [GksybAuthorize(true)]
+    [GksybAuthorize(MenuNo = "SpReceive,SpInstore")]
     public class SpInstoreController : AreaController
     {
         private readonly SpInstoreService _service;
