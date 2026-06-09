@@ -27,6 +27,13 @@ namespace Gksyb.Model
         /// </summary>
         [Description("记录状态")]
         [Column(DbType = DbType.AnsiString)]
+        public string AUDITING_RECEIVE { get; set; }
+
+        /// <summary>
+        /// 记录状态
+        /// </summary>
+        [Description("记录状态")]
+        [Column(DbType = DbType.AnsiString)]
         public string AUDITING { get; set; }
 
         /// <summary>

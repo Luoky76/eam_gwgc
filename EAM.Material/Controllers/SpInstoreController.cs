@@ -34,6 +34,14 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 获取收货登记列表
+        /// </summary>
+        public async Task<AjaxResult> ReceiveListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.ReceiveListAsync(request));
+        }
+
+        /// <summary>
         /// 根据ID获取记录
         /// </summary>
         public async Task<AjaxResult> GetAsync(string inId)
@@ -74,6 +82,26 @@ namespace EAM.Material.Controllers
         {
             await _service.SubmitAsync(inId);
             return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 提交收货登记
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> ReceiveSubmitAsync(string inId)
+        {
+            await _service.ReceiveSubmitAsync(inId);
+            return AjaxResult.Success("提交成功");
+        }
+
+        /// <summary>
+        /// 撤销收货登记
+        /// </summary>
+        [JsToken]
+        public async Task<AjaxResult> ReceiveRevokeAsync(string inId)
+        {
+            await _service.ReceiveRevokeAsync(inId);
+            return AjaxResult.Success("撤销成功");
         }
 
         /// <summary>

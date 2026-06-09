@@ -32,8 +32,6 @@
                                 hideLabel: true,
                                 filter: [
                                     { op: "like", field: "IN_CODE", type: "string" },
-                                    { op: "like", field: "IN_USER", type: "string" },
-                                    { op: "like", field: "CHK_USER", type: "string" },
                                     { op: "like", field: "DEPT_NAME", type: "string" },
                                     { op: "like", field: "PROVIDER_NAME", type: "string" },
                                     { op: "like", field: "CONSIGNEE", type: "string" }
@@ -50,12 +48,10 @@
                     },
                     grid: {
                         columns: [
-                            { display: "记录状态", name: "AUDITING", type: "select", editor: { data: me.Auditing } },
+                            { display: "收货状态", name: "AUDITING_RECEIVE", type: "select", editor: { data: me.Auditing } },
                             { display: "入库单号", name: "IN_CODE", type: "string" },
                             { display: "入库日期", name: "IN_DATE", type: "date", format: "yyyy-MM-dd hh:mm" },
                             { display: "供应商", name: "PROVIDER_NAME", type: "string" },
-                            { display: "仓管员", name: "IN_USER", type: "string" },
-                            { display: "验收人", name: "CHK_USER", type: "string" },
                             { display: "收货部门", name: "DEPT_NAME", type: "string" },
                             { display: "收货人", name: "CONSIGNEE", type: "string" },
                             { display: "备注", name: "MEMO", type: "string" },
@@ -95,14 +91,14 @@
                     usePager: true,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/SpInstore/List',
+                    url: 'Material/SpInstore/ReceiveList',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
                             rules: []
                         })
                     },
-                    sortName: 'AUDITING, IN_CODE',
+                    sortName: 'AUDITING_RECEIVE, IN_CODE',
                     sortOrder: 'desc',
                     width: '100%',
                     height: '100%',
@@ -149,7 +145,7 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (!["1", "2", "3"].includes(row.AUDITING)) {
+                    if (row.AUDITING_RECEIVE != "1") {
                         if (msg) {
                             LG.tip(msg);
                         }
@@ -162,7 +158,7 @@
                 var me = this;
                 var selecteds = me.grid.getSelectedRows();
                 for (let row of selecteds) {
-                    if (["1", "2", "3"].includes(row.AUDITING)) {
+                    if (row.AUDITING_RECEIVE == "1") {
                         if (msg) {
                             LG.tip(msg);
                         }
@@ -264,7 +260,7 @@
                 var row = me.grid.getSelectedRow();
                 LG.ajax({
                     jsToken: true,
-                    url: 'Material/SpInstore/Submit',
+                    url: 'Material/SpInstore/ReceiveSubmit',
                     loading: '正在提交中...',
                     data: { inId: row.IN_ID },
                     success: function () {
@@ -281,7 +277,7 @@
                 var row = me.grid.getSelectedRow();
                 LG.ajax({
                     jsToken: true,
-                    url: 'Material/SpInstore/Revoke',
+                    url: 'Material/SpInstore/ReceiveRevoke',
                     loading: '正在撤销中...',
                     data: { inId: row.IN_ID },
                     success: function () {

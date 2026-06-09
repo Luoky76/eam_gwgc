@@ -49,11 +49,23 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 获取列表
+        /// 获取验收入库列表（仅已收货登记提交的记录）
         /// </summary>
         public async Task<GridData> ListAsync(GridRequest request)
         {
-            return await _dbContext.Query<SP_INSTORE>().GetGridData(request);
+            return await _dbContext.Query<SP_INSTORE>()
+                .Where(x => x.AUDITING_RECEIVE == "1")
+                .GetGridData(request);
+        }
+
+        /// <summary>
+        /// 获取收货登记列表（仅未提交收货登记的记录）
+        /// </summary>
+        public async Task<GridData> ReceiveListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_INSTORE>()
+                .Where(x => x.AUDITING_RECEIVE == null || x.AUDITING_RECEIVE == "" || x.AUDITING_RECEIVE == "0")
+                .GetGridData(request);
         }
 
         /// <summary>
@@ -176,6 +188,7 @@ namespace EAM.Material.Services
                 c => new
                 {
                     c.AUDITING,
+                    c.AUDITING_RECEIVE,
                     c.IN_CODE,
                     c.IN_DATE,
                     c.PROVIDER_NAME,
@@ -245,19 +258,23 @@ namespace EAM.Material.Services
             {
                 entity.IN_DATE = await _dbContext.GetSysdate();
             }
-            if (entity.IN_USERID.IsNullOrWhiteSpace())
-            {
-                entity.IN_USERID = _userSession.UserID.ToString();
-                entity.IN_USER = _userSession.RealName;
-            }
             if (entity.DEPT_ID.IsNullOrWhiteSpace())
             {
                 entity.DEPT_ID = _userSession.Corp.CorpID;
                 entity.DEPT_NAME = _userSession.Corp.SName;
             }
+            if (entity.CONSIGNEE_ID.IsNullOrWhiteSpace())
+            {
+                entity.CONSIGNEE_ID = _userSession.UserID.ToString();
+                entity.CONSIGNEE = _userSession.RealName;
+            }
             if (entity.AUDITING.IsNullOrWhiteSpace())
             {
                 entity.AUDITING = "0";
+            }
+            if (entity.AUDITING_RECEIVE.IsNullOrWhiteSpace())
+            {
+                entity.AUDITING_RECEIVE = "0";
             }
         }
 
@@ -292,6 +309,37 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateDet(SP_INSTORE_DET entity)
         {
+        }
+
+        /// <summary>
+        /// 提交收货登记
+        /// </summary>
+        public async Task ReceiveSubmitAsync(string inId)
+        {
+            var sp_instore = await _dbContext.QueryByKeyAsync<SP_INSTORE>(inId);
+            MessageException.ThrowIf(sp_instore == null, "收货登记单不存在");
+            MessageException.ThrowIf(sp_instore.AUDITING_RECEIVE == "1", "该数据已提交收货登记，无法重复提交");
+
+            await _dbContext.UpdateAsync<SP_INSTORE>(x => x.IN_ID == inId, x => new SP_INSTORE
+            {
+                AUDITING_RECEIVE = "1"
+            });
+        }
+
+        /// <summary>
+        /// 撤销收货登记提交
+        /// </summary>
+        public async Task ReceiveRevokeAsync(string inId)
+        {
+            var sp_instore = await _dbContext.QueryByKeyAsync<SP_INSTORE>(inId);
+            MessageException.ThrowIf(sp_instore == null, "收货登记单不存在");
+            MessageException.ThrowIf(sp_instore.AUDITING_RECEIVE != "1", "只有已提交收货登记的单据才能撤销");
+            MessageException.ThrowIf(new[] { "1", "2", "3" }.Contains(sp_instore.AUDITING), "已进行验收入库的单据不能撤销收货登记");
+
+            await _dbContext.UpdateAsync<SP_INSTORE>(x => x.IN_ID == inId, x => new SP_INSTORE
+            {
+                AUDITING_RECEIVE = "0"
+            });
         }
 
         /// <summary>

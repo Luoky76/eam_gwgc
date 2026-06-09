@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -8,7 +8,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title>验收入库明细</title>
+    <title>收货登记明细</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
@@ -31,44 +31,22 @@
                     form: {
                         fields: [
                             {
-                                display: "记录状态", name: "AUDITING", type: "select", options: {
+                                display: "收货状态", name: "AUDITING_RECEIVE", type: "select", options: {
                                     type: "select",
                                     data: me.Auditing,
                                     disabled: true
                                 }
                             },
                             { display: "入库单号", name: "IN_CODE", type: "string", options: { disabled: true } },
-                            { display: "入库日期", name: "IN_DATE", type: "date", validate: { required: true }, options: { format: "yyyy-MM-dd hh:mm", initValue: new Date() } },
+                            { display: "入库日期", name: "IN_DATE", type: "date", options: { format: "yyyy-MM-dd hh:mm", initValue: new Date() } },
                             { display: "供应商", name: "PROVIDER_NAME", type: "string" },
-                            { display: "仓管员", name: "IN_USER", type: "string", options: { disabled: true } },
-                            {
-                                display: "验收人", name: "CHK_USERID", type: "select", validate: { required: true }, options: {
-                                    type: "select",
-                                    data: me.User,
-                                    onChangeValue: function (inputDom, selectedId, obj) {
-                                        var mainform = this.options.host_form;
-                                        mainform.setData({ CHK_USER: obj.selected?.TEXT ?? "" });
-                                    }
-                                }
-                            },
                             { display: "收货部门", name: "DEPT_NAME", type: "string", options: { disabled: true } },
-                            {
-                                display: "收货人", name: "CONSIGNEE_ID", type: "select", options: {
-                                    type: "select",
-                                    data: me.User,
-                                    onChangeValue: function (inputDom, selectedId, obj) {
-                                        var mainform = this.options.host_form;
-                                        mainform.setData({ CONSIGNEE: obj.selected?.TEXT ?? "" });
-                                    }
-                                }
-                            },
+                            { display: "收货人", name: "CONSIGNEE", type: "string", options: { disabled: true } },
                             { display: "备注", name: "MEMO", type: "textarea", newline: true, width: me.getTextareaWidth() },
                             //隐藏
                             { display: "主键", name: "IN_ID", type: "hidden", options: {} },
-                            { display: "仓管员ID", name: "IN_USERID", type: "hidden", options: {} },
-                            { display: "验收人", name: "CHK_USER", type: "hidden", options: {} },
                             { display: "收货部门ID", name: "DEPT_ID", type: "hidden", options: {} },
-                            { display: "收货人", name: "CONSIGNEE", type: "hidden", options: {} },
+                            { display: "收货人ID", name: "CONSIGNEE_ID", type: "hidden", options: {} },
                         ]
                     },
                     grid: {
@@ -95,12 +73,76 @@
                                     }
                                 }, validate: { required: true }
                             },
-                            { display: "入库数量", name: "IN_NUM", type: "float", validate: { required: true }, editor: { type: "float" } },
-                            { display: "含税单价", name: "TAX_PRICE", type: "float", editor: { type: "float" } },
-                            { display: "含税金额", name: "TAX_MONEY", type: "float" },
-                            { display: "不含税单价", name: "NOTAX_PRICE", type: "float", editor: { type: "float" } },
-                            { display: "不含税金额", name: "NOTAX_MONEY", type: "float" },
-                            { display: "税率", name: "TAX_RATE", type: "float", editor: { type: "float" } },
+                            {
+                                display: "入库数量", name: "IN_NUM", type: "float", validate: { required: true }, editor: {
+                                    type: "float",
+                                    onChange: function (rowdata) {
+                                        if (rowdata.value > 0) {
+                                            if ($.isNumeric(rowdata.record.TAX_MONEY)) {
+                                                rowdata.grid.updateCell("TAX_PRICE", parseFloat((rowdata.record.TAX_MONEY / rowdata.value).toFixed(6)), rowdata.record);
+                                            }
+                                            if ($.isNumeric(rowdata.record.NOTAX_MONEY)) {
+                                                rowdata.grid.updateCell("NOTAX_PRICE", parseFloat((rowdata.record.NOTAX_MONEY / rowdata.value).toFixed(6)), rowdata.record);
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "含税单价", name: "TAX_PRICE", type: "float" },
+                            {
+                                display: "含税金额", name: "TAX_MONEY", type: "currency", editor: {
+                                    type: "float",
+                                    onChange: function (rowdata) {
+                                        if (rowdata.value >= 0) {
+                                            //计算不含税金额
+                                            var notax_money = undefined;
+                                            if (rowdata.record.TAX_RATE >= 0) {
+                                                notax_money = parseFloat((rowdata.value / (1 + rowdata.record.TAX_RATE)).toFixed(2));
+                                                rowdata.grid.updateCell("NOTAX_MONEY", notax_money, rowdata.record);
+                                                rowdata.grid.reRender({ column: rowdata.grid.getColumn("NOTAX_MONEY") });
+                                            }
+                                            if (rowdata.record.IN_NUM > 0) {
+                                                //计算含税单价
+                                                rowdata.grid.updateCell("TAX_PRICE", parseFloat((rowdata.value / rowdata.record.IN_NUM).toFixed(6)), rowdata.record);
+                                                //计算不含税单价
+                                                if (notax_money >= 0) {
+                                                    rowdata.grid.updateCell("NOTAX_PRICE", parseFloat((notax_money / rowdata.record.IN_NUM).toFixed(6)), rowdata.record);
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                totalSummary: { type: 'sum' }
+                            },
+                            {
+                                display: "税率", name: "TAX_RATE", type: "float", editor: {
+                                    type: "float",
+                                    onChange: function (rowdata) {
+                                        //税率更改时通过含税金额计算不含税金额
+                                        if (rowdata.value >= 0 && rowdata.record.TAX_MONEY >= 0) {
+                                            var notax_money = parseFloat((rowdata.record.TAX_MONEY / (1 + rowdata.value)).toFixed(2));
+                                            rowdata.grid.updateCell("NOTAX_MONEY", notax_money, rowdata.record);
+                                            rowdata.grid.reRender({ column: rowdata.grid.getColumn("NOTAX_MONEY") });
+                                            if (rowdata.record.IN_NUM > 0) {
+                                                rowdata.grid.updateCell("NOTAX_PRICE", parseFloat((notax_money / rowdata.record.IN_NUM).toFixed(6)), rowdata.record);
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            { display: "不含税单价", name: "NOTAX_PRICE", type: "float" },
+                            {
+                                display: "不含税金额", name: "NOTAX_MONEY", type: "currency", editor: {
+                                    type: "float",
+                                    onChange: function (rowdata) {
+                                        //修改不含税金额不反向修改含税金额
+                                        if (rowdata.value >= 0 && rowdata.record.IN_NUM > 0) {
+                                            rowdata.grid.updateCell("NOTAX_PRICE", parseFloat((rowdata.value / rowdata.record.IN_NUM).toFixed(6)), rowdata.record);
+                                        }
+                                    }
+                                },
+                                totalSummary: { type: 'sum' }
+                            },
                             //隐藏
                             { display: "入库单ID", name: "IN_ID", type: "string", hide: true },
                             { display: "明细ID", name: "IN_DET_ID", type: "string", hide: true },
@@ -146,7 +188,14 @@
             loadData: function () {
                 var me = this;
                 if (me.isNew) {
-                    me.mainform.setOrginData({ AUDITING: "0", IN_ID: me.sid });
+                    me.mainform.setOrginData({
+                        AUDITING_RECEIVE: "0",
+                        IN_ID: me.sid,
+                        CONSIGNEE_ID: window.session.UserID,
+                        CONSIGNEE: window.session.RealName,
+                        DEPT_ID: window.session.Corp.CorpID,
+                        DEPT_NAME: window.session.Corp.SName
+                    });
                 }
                 else {
                     LG.ajax({
@@ -416,9 +465,6 @@
                                     TYPE_NAME: item.TYPE_NAME,
                                     IN_NUM: item.REQUEST_NUM,
                                     TAX_PRICE: item.TAX_PRICE,
-                                    TAX_MONEY: item.TAX_MONEY,
-                                    NOTAX_PRICE: item.NOTAX_PRICE,
-                                    NOTAX_MONEY: item.NOTAX_MONEY,
                                     HOUSE_ID: item.HOUSE_ID,
                                     HOUSE_NAME: item.HOUSE_NAME,
                                     HOUSE_CODE: item.HOUSE_CODE,
