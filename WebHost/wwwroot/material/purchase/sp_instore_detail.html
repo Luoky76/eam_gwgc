@@ -42,14 +42,34 @@
                             { display: "入库日期", name: "IN_DATE", type: "date", validate: { required: true }, options: { format: "yyyy-MM-dd hh:mm", initValue: new Date() } },
                             { display: "供应商", name: "PROVIDER_NAME", type: "string" },
                             { display: "仓管员", name: "IN_USER", type: "string", options: { disabled: true } },
-                            { display: "验收人", name: "CHK_USER", type: "string", validate: { required: true } },
+                            {
+                                display: "验收人", name: "CHK_USERID", type: "select", validate: { required: true }, options: {
+                                    type: "select",
+                                    data: me.User,
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ CHK_USER: obj.selected?.TEXT ?? "" });
+                                    }
+                                }
+                            },
                             { display: "收货部门", name: "DEPT_NAME", type: "string", options: { disabled: true } },
+                            {
+                                display: "收货人", name: "CONSIGNEE_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.User,
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        mainform.setData({ CONSIGNEE: obj.selected?.TEXT ?? "" });
+                                    }
+                                }
+                            },
                             { display: "备注", name: "MEMO", type: "textarea", newline: true, width: me.getTextareaWidth() },
                             //隐藏
                             { display: "主键", name: "IN_ID", type: "hidden", options: {} },
                             { display: "仓管员ID", name: "IN_USERID", type: "hidden", options: {} },
-                            { display: "验收人ID", name: "CHK_USERID", type: "hidden", options: {} },
+                            { display: "验收人", name: "CHK_USER", type: "hidden", options: {} },
                             { display: "收货部门ID", name: "DEPT_ID", type: "hidden", options: {} },
+                            { display: "收货人", name: "CONSIGNEE", type: "hidden", options: {} },
                         ]
                     },
                     grid: {

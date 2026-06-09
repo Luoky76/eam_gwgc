@@ -36,7 +36,8 @@
                                     { op: "like", field: "IN_USER", type: "string" },
                                     { op: "like", field: "CHK_USER", type: "string" },
                                     { op: "like", field: "DEPT_NAME", type: "string" },
-                                    { op: "like", field: "PROVIDER_NAME", type: "string" }
+                                    { op: "like", field: "PROVIDER_NAME", type: "string" },
+                                    { op: "like", field: "CONSIGNEE", type: "string" }
                                 ],
                                 options: {
                                     onEnter: function () {
@@ -57,6 +58,7 @@
                             { display: "仓管员", name: "IN_USER", type: "string" },
                             { display: "验收人", name: "CHK_USER", type: "string" },
                             { display: "收货部门", name: "DEPT_NAME", type: "string" },
+                            { display: "收货人", name: "CONSIGNEE", type: "string" },
                             { display: "备注", name: "MEMO", type: "string" },
                             { display: "主键", name: "IN_ID", type: "string", hide: true },
                         ]
