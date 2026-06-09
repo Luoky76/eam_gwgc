@@ -51,7 +51,7 @@
                         <button class="button" id="refresh">
                             刷新
                         </button>
-                        <button class="button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                        <button class="button button-large button-fill" id="submit" style="background-color: orange">提交</button>
                     </div>
                 </div>
             </div>
@@ -189,7 +189,7 @@
                 });
 
                 //提交
-                $("#sumbit").click(function () {
+                $("#submit").click(function () {
                     var checkDom = $("#sp_scan_list input:checked");
                     var checkedIDList = [];
                     
@@ -310,7 +310,7 @@
                                                                              <div class="toolbar toolbar-bottom" id="menuDetail">
                                                                                 <div class="toolbar-inner">
                                                                                     <button class="col button button-large button-fill" id="saveDetail" >保存</button>
-                                                                                    <button class="col button button-large button-fill" id="sumbitDetail" style="background-color: orange">提交</button>
+                                                                                    <button class="col button button-large button-fill" id="submitDetail" style="background-color: orange">提交</button>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -362,7 +362,7 @@
                         });
                     });
 
-                    $("#sumbitDetail").off('click').click(function () {
+                    $("#submitDetail").off('click').click(function () {
 
                         let data = app.form.convertToData("#detail_bg_detail");
 

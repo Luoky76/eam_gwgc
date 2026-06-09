@@ -303,7 +303,7 @@
                                                                             <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
                                                                                 <div class="toolbar-inner">
                                                                                     <button class="col button button-large button-fill" id="save" >保存</button>
-                                                                                    <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                                                                                    <button class="col button button-large button-fill" id="submit" style="background-color: orange">提交</button>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -367,7 +367,7 @@
                         });
                     });
                     //提交事件
-                    $("#sumbit").off('click').click(function () {
+                    $("#submit").off('click').click(function () {
                         let data = app.form.convertToData("#detail_bg");
                         data.REPORT_ID = ID;
 
@@ -476,7 +476,7 @@
                         });
 
                         //明细数据
-                        $("#sumbit").show();
+                        $("#submit").show();
                     }
                     else {
                         //新增清空数据
@@ -519,7 +519,7 @@
                             dateFormat: { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' },
                         })
                         /* app.form.fillFromData('#detail_bg');*/
-                        $("#sumbit").hide();
+                        $("#submit").hide();
                         $("#menu").show();
                     }
                 }

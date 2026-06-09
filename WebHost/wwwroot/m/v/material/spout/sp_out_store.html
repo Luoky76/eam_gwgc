@@ -51,7 +51,7 @@
                         <!--<button class="button" id="refresh">
                             刷新
                         </button>-->
-                        <button class="button" id="sumbit">
+                        <button class="button" id="submit">
                             提交
                         </button>
                         <button class="button button-large button-fill" id="unsubmit" style="background-color: orange">注销</button>
@@ -191,7 +191,7 @@
                 });
 
                 //提交
-                $("#sumbit").click(function () {
+                $("#submit").click(function () {
                     var checkDom = $("#spout_store_list input:checked");
                     var checkedIDList = [];
                     checkDom.forEach(x => {
@@ -362,7 +362,7 @@
                                                                             <div class="toolbar toolbar-bottom" id="menu" style="display: none;">
                                                                                 <div class="toolbar-inner">
                                                                                     <button class="col button button-large button-fill" id="save" >保存</button>
-                                                                                    <button class="col button button-large button-fill" id="sumbit" style="background-color: orange">提交</button>
+                                                                                    <button class="col button button-large button-fill" id="submit" style="background-color: orange">提交</button>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -421,7 +421,7 @@
                         });
                     });
                     //提交事件
-                    $("#sumbit").off('click').click(function () {
+                    $("#submit").off('click').click(function () {
                         let data = app.form.convertToData("#detail_bg");
 
                         if (data.AUDITING_A == "1") {

@@ -218,7 +218,7 @@
                                                                                                                             </div>
                                                                                                                             <div class="toolbar toolbar-bottom " id="menu2" style="display: none;">
                                                                                                                                 <div class="toolbar-inner">
-                                                                                                                                    <button class="col button button-large button-fill" id="sumbit" >一键提交盘点结果</button>
+                                                                                                                                    <button class="col button button-large button-fill" id="submit" >一键提交盘点结果</button>
                                                                                                                                 </div>
                                                                                                                             </div>
                                                                                                                         </div>
@@ -231,7 +231,7 @@
                     scanstatus = me.params.STATUS;
 
                     //提交事件
-                    $("#sumbit").off('click').click(function () {
+                    $("#submit").off('click').click(function () {
                         app.dialog.confirm('确定要提交？', '提交', function () {
                             app.ajax({
                                 type: 'post',
@@ -282,7 +282,7 @@
                         });
 
                         //明细数据
-                        $("#sumbit").show();
+                        $("#submit").show();
                         $("#modify_list").show();
                         CreateResultDetail(ID);
                     }
@@ -292,7 +292,7 @@
                         /* app.form.fillFromData('#detail_bg');*/
                         $("#modify_list").hide();
                         $("#modify_bg").html('');
-                        $("#sumbit").hide();
+                        $("#submit").hide();
                     }
                 }
             }

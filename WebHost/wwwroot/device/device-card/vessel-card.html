@@ -184,7 +184,7 @@ menuNo: getQueryStringByName("MenuNo"),
                         case "save":
                             me.save();
                             break;
-                        case "sumbit":
+                        case "submit":
                             if (!me.isSelectRow() || !me.isAllUnaudited()) return;
                             $.ligerDialog.confirm("提交后不可修改，是否继续？", function (confirm) {
                                 if (confirm) {
