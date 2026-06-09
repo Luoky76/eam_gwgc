@@ -177,6 +177,7 @@
                     delayLoad: true,
                     usePager: false,
                     columns: me.config.grid.columns,
+                    title: '<input id="showStoreOnly" />',
                     toolbar: {},
                     url: 'Material/SpStore/List',
                     parms: {
@@ -201,6 +202,14 @@
                 me.grid.isValid = true;
                 me.loadToolbar();
                 me.bindGridEvent();
+                $("#showStoreOnly").ligerCheckBox({
+                    type: "switch",
+                    label: "只看有库存",
+                    value: true,
+                    onChangeValue: function (input, value, g) {
+                        me.applyFilter();
+                    }
+                });
             },
             setWaterGrid: function () {
                 var me = this;
@@ -596,6 +605,31 @@
                 me.selectNode = me.tree.getSelected();
                 me.tree.reload();
             },
+            applyFilter: function () { //应用过滤条件
+                var me = this;
+                var nodeData = me.currentNode ? me.currentNode.data : null;
+                var parentNo = nodeData ? nodeData.HOUSE_CODE : "ROOT";
+                var rootValue = "ROOT";
+                var showStoreOnly = liger.get("showStoreOnly") ? liger.get("showStoreOnly").getValue() : true;
+                var where = {
+                    rules: [],
+                    groups: [{
+                        rules: [], op: "or"
+                    }], op: "and"
+                };
+                if (parentNo && parentNo !== rootValue) {
+                    where.groups[0].rules.push({ field: 'HOUSE_CODE', value: parentNo, op: 'startwith' });
+                }
+                if (showStoreOnly) {
+                    where.rules.push({ field: 'STORE_NUM', value: 0, op: 'greater', type: 'float' });
+                }
+                var parms = me.grid.options.parms;
+                var whereStr = JSON2.stringify(where);
+                parms.where = whereStr;
+                parms.orginwhere = whereStr;
+                me.grid.options.NoFirstSearch = false;
+                me.grid.loadData();
+            },
             reload: function () { //刷新
                 var me = this;
                 me.buttons[0].click();
@@ -702,25 +736,8 @@
                     onSelect: function (node) {
                         var nodeData = node.data;
                         me.currentNode = node;
-                        var where = {};
                         if (nodeData) {
-                            var parentNo = nodeData.HOUSE_CODE;
-                            $("#_search_HOUSE_CODE").val((parentNo == "ROOT" ? "" : parentNo));
-                            where = {
-                                rules: [],
-                                groups: [{
-                                    rules: [], op: "or"
-                                }], op: "and"
-                            };
-                            if (parentNo === rootValue) {
-                                parentNo = "";
-                            } else {
-                                where.groups[0].rules.push({ field: 'HOUSE_CODE', value: parentNo, op: 'startwith' });
-                            }
-
-                            me.grid.set('parms', { "where": JSON2.stringify(where) });
-                            me.currentMenuParentNo = parentNo;
-                            me.reload();
+                            me.applyFilter();
                         }
                     }
                 });
@@ -756,7 +773,7 @@
                 me.setForm();
                 me.setTree();
                 me.setGrid();
-                me.reload();
+                me.applyFilter();
                 me.setWaterGrid();
                 me.reloadWater();
                 return me;
