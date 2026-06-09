@@ -46,7 +46,6 @@
             HouseType: [],
             SpHouseName: [],
             parentNo: "",
-            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -57,14 +56,11 @@
                             },
                             {
                                 display: "仓库货位名称", name: "_search_HOUSE_NAME", dbname: "HOUSE_NAME", newline: false, width: 200, type: "text",
-                            },
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
-
+                            }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
                             { display: "仓库货位编码", name: "HOUSE_CODE", dbname: "HOUSE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             { display: "仓库货位名称", name: "HOUSE_NAME", dbname: "HOUSE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
                             { display: "类型", name: "HOUSE_TYPE", dbname: "HOUSE_TYPE", minWidth: 100, type: "select", editor: { type: 'select', data: me.HouseType }, validate: { required: true } },
@@ -130,7 +126,7 @@
                     delayLoad: true,
                     usePager: false,
                     columns: me.config.grid.columns,
-                    //dataAction: 'server',
+                    dataAction: 'server',
                     toolbar: {},
                     url: 'Material/BaseSpHouse/list',
                     parms: {
@@ -147,16 +143,7 @@
                     enabledEdit: true,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.AUDITING == "1") return false;
-                            else return true;
-                        }
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
+                        return true;
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         if (rowdata && rowdata.IS_NOVALID && rowdata.IS_NOVALID == "1") {
@@ -185,9 +172,6 @@
                         case "save":
                             me.save();
                             break;
-                        case "submit":
-                            me.submit();
-                            break;
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
                             break;
@@ -201,7 +185,7 @@
             add: function () { //新增
                 var me = this;
                 var nodeId = me.currentNode == null || me.currentNode == undefined ? "ROOT" : me.currentNode.data.HOUSE_CODE;
-                me.grid.addEditRow({ "PARENT_HOUSE_CODE": (nodeId == "ROOT" ? "" : nodeId), "AUDITING": "0" });
+                me.grid.addEditRow({ "PARENT_HOUSE_CODE": (nodeId == "ROOT" ? "" : nodeId) });
             },
             save: function () { //保存
                 var me = this;
@@ -229,42 +213,6 @@
                     });
                 }
             },
-            submit: function () {    //提交
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                if (selected.length > 0) {
-                    if (selected[0].AUDITING == null) {
-                        LG.tip('请先保存!');
-                    }
-                    else if (selected[0].AUDITING != "0") {
-                        LG.tip('已提交，无法再次提交!');
-                    }
-                    else {
-                        var sids = [];
-                        selected.forEach((a) => {
-                            sids.push(a.HOUSE_ID)
-                        })
-                        LG.ajax({
-                            jsToken: true,
-                            url: 'Material/BaseSpHouse/Submit',
-                            loading: '正在保存中...',
-                            data: { "sids": sids },
-                            success: function () {
-                                LG.showSuccess('保存成功');
-                                me.grid.isDataChanged = false;
-                                me.reload();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
-                    }
-
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
-            },
             reloadTree: function () {
                 var me = this;
                 me.selectNode = me.tree.getSelected();
@@ -278,23 +226,14 @@
                 var me = this;
                 if (me.grid.endEdit() != false) {
                     var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        if (selected[0].AUDITING == "1") {
-                            LG.tip('已提交，无法删除!');
+                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (confirm) {
+                            for (var i = 0, len = (selected || []).length; i < len; i++) {
+                                me.grid.deleteRow(selected[i]);
+                            }
+                            me.save();
                         }
-                        else {
-                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                                if (confirm) {
-                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                        me.grid.deleteRow(selected[i]);
-                                    }
-                                    me.save();
-                                }
-                            });
-                        }
-                    } else {
-                        LG.tip('请选择行!');
-                    }
+                    });
                 }
             },
             bindGridEvent: function () {

@@ -18,14 +18,6 @@ namespace Gksyb.Model
     [Table("sp_house")]
     public class SP_HOUSE
     {
-
-        /// <summary>
-        /// 记录状态
-        /// </summary>
-        [Description("记录状态")]
-        [Column(DbType = DbType.AnsiString)]
-        public string AUDITING { get; set; }
-
         /// <summary>
         /// 仓库货位编码
         /// </summary>

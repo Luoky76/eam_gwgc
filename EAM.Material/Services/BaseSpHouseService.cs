@@ -70,11 +70,6 @@ namespace EAM.Material.Services
             }
         }
 
-
-        /// <summary>
-        /// 保存
-        /// </summary>
-        /// <param name="request"></param>
         /// <summary>
         /// 保存
         /// </summary>
@@ -83,7 +78,6 @@ namespace EAM.Material.Services
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
-                    c.AUDITING,
                     c.HOUSE_CODE,
                     c.HOUSE_NAME,
                     c.HOUSE_TYPE,
@@ -154,20 +148,6 @@ namespace EAM.Material.Services
             }).OrderBy(c => c.HOUSE_CODE).ToList();
             data.Add(new { HOUSE_CODE = "ROOT", HOUSE_NAME = "仓库货位", HOUSE_ID = "ROOT", PARENTID = "", ICON = "fa fa-sitemap" });
             return AjaxResult.Success(data, "成功");
-        }
-
-
-        /// <summary>
-        /// 提交
-        /// </summary>
-        public async Task<int> SubmitAsync(List<string> sids)
-        {
-            var updatedevice = await _dbContext.UpdateAsync<SP_HOUSE>(x => sids.Contains(x.HOUSE_ID),
-                    x => new SP_HOUSE
-                    {
-                        AUDITING = "1"
-                    });
-            return updatedevice;
         }
     }
 }

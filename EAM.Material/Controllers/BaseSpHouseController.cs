@@ -62,15 +62,5 @@ namespace EAM.Material.Controllers
         {
             return await _service.TreeAsync();
         }
-
-        /// <summary>
-        /// 提交
-        /// </summary>
-        [HttpPost]
-        public async Task<AjaxResult> SubmitAsync(List<string> sids)
-        {
-            await _service.SubmitAsync(sids);
-            return AjaxResult.Success("提交成功");
-        }
     }
 }
