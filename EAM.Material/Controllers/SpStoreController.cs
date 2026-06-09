@@ -35,6 +35,15 @@ namespace EAM.Material.Controllers
         }
 
         /// <summary>
+        /// 获取库存流水列表
+        /// </summary>
+        [HttpPost]
+        public async Task<AjaxResult> DetListAsync(GridRequest request)
+        {
+            return AjaxResult.Success(await _service.DetListAsync(request), "成功");
+        }
+
+        /// <summary>
         /// 保存库存
         /// </summary>
         [HttpPost]

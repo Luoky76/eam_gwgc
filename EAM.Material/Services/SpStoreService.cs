@@ -35,6 +35,14 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 获取库存流水列表
+        /// </summary>
+        public async Task<GridData> DetListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_STORE_WATER>().GetGridData(request);
+        }
+
+        /// <summary>
         /// 获取下拉框信息
         /// </summary>
         public async Task<AjaxResult> ComboxDataAsync()
@@ -44,6 +52,7 @@ namespace EAM.Material.Services
                 var dic = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode", "store_src" },
+                    { "BCCode@#SrcType", "src_type" },
                     { "ProviderName", (Expression<Func<PROVIDER, bool>>)null},
                     { "DeptData", (Expression<Func<CF_CORP, bool>>)(a => a.CORPID == _userSession.Corp.CorpID)}
                 });

@@ -17,14 +17,23 @@
         <div position="left" title="仓库货位" id="mainmenu">
             <ul id="maintree" style="margin-top:5px;"></ul>
         </div>
-        <div position="center" title="库存明细列表">
-            <div id="mainsearch">
-                <form action="" id="formsearch" class="l-form">
-                </form>
+        <div position="center" title="库存明细列表" id="center-pos">
+            <div id="tabcontainer">
+                <div id="storelist" title="物资库存" tabid="storelist">
+                    <div class="searchbox">
+                        <form action="" id="formsearch" class="l-form">
+                        </form>
+                    </div>
+                    <form id="storeform">
+                        <div id="storegrid" style="margin: 2px;"></div>
+                    </form>
+                </div>
+                <div id="waterlist" title="库存流水" tabid="waterlist">
+                    <form id="waterform">
+                        <div id="watergrid"></div>
+                    </form>
+                </div>
             </div>
-            <form id="mainform">
-                <div id="maingrid" style="margin: 2px;"></div>
-            </form>
         </div>
     </div>
     <!-- 库存初始化弹框 -->
@@ -34,20 +43,23 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
                 var me = this;
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
-                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+                return Math.floor(($("#storeform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
-menuNo: getQueryStringByName("MenuNo"),
+            menuNo: getQueryStringByName("MenuNo"),
             ver: getQueryStringByName("ver"),
+            tab: null,
+            grid: null,
+            waterGrid: null,
             tree: null,
             currentNode: null,
             ProviderName: [],
             BCCode: [],
+            SrcType: [],
             stockData: [],
             DeptData:[],
             setConfig: function () {
@@ -73,19 +85,41 @@ menuNo: getQueryStringByName("MenuNo"),
                             { display: "计量单位", name: "UNIT", width: 100, type: "string" },
                             { display: "库存数量", name: "STORE_NUM", width: 100, type: "float" },
                             { display: "含税单价(元)", name: "TAX_PRICE", width: 120, type: "float" },
-                            { display: "含税金额(元)", name: "TAX_MONEY", width: 120, type: "float" },
+                            { display: "含税金额(元)", name: "TAX_MONEY", width: 120, type: "currency", totalSummary: { type: 'sum' } },
                             { display: "不含税单价(元)", name: "NOTAX_PRICE", width: 130, type: "float" },
-                            { display: "不含税金额(元)", name: "NOTAX_MONEY", width: 130, type: "float" },
+                            { display: "不含税金额(元)", name: "NOTAX_MONEY", width: 130, type: "currency", totalSummary: { type: 'sum' } },
                             { display: "入库日期", name: "IN_DATE", width: 120, type: "date", format: "yyyy-MM-dd" },
                             { display: "供应商", name: "PROVIDER_NAME", width: 150, type: "string" },
                             { display: "属性", name: "PROPERTY", width: 100, type: "string" },
                             { display: "部门", name: "DEPT_NAME", width: 150, type: "string" },
                             { display: "主键", name: "STORE_ID", width: 100, type: "string", hide: true },
                         ]
+                    },
+                    waterGrid: {
+                        columns: [
+                            { display: "单据编码", name: "SRC_CODE", type: "string" },
+                            { display: "单据日期", name: "SRC_DATE", type: "date", format: "yyyy-MM-dd hh:mm" },
+                            { display: "来源类型", name: "SRC_TYPE", type: "select", editor: { data: me.SrcType } },
+                            { display: "流水日期", name: "WATER_DATE", type: "date", format: "yyyy-MM-dd hh:mm" },
+                            { display: "期初数量", name: "INIT_NUM", type: "float" },
+                            { display: "期初含税金额", name: "INIT_TAX_MONEY", type: "currency" },
+                            { display: "期初不含税金额", name: "INIT_NOTAX_MONEY", type: "currency" },
+                            { display: "入库数量", name: "IN_NUM", type: "float" },
+                            { display: "入库含税金额", name: "IN_TAX_MONEY", type: "currency" },
+                            { display: "入库不含税金额", name: "IN_NOTAX_MONEY", type: "currency" },
+                            { display: "出库数量", name: "OUT_NUM", type: "float" },
+                            { display: "出库含税金额", name: "OUT_TAX_MONEY", type: "currency" },
+                            { display: "出库不含税金额", name: "OUT_NOTAX_MONEY", type: "currency" },
+                            { display: "期末数量", name: "CUR_NUM", type: "float" },
+                            { display: "期末含税金额", name: "CUR_TAX_MONEY", type: "currency" },
+                            { display: "期末不含税金额", name: "CUR_NOTAX_MONEY", type: "currency" },
+                            //隐藏
+                            { display: "库存id", name: "STORE_ID", type: "string", hide: true },
+                            { display: "流水id", name: "WATER_ID", type: "string", hide: true },
+                        ]
                     }
                 };
             },
-            grid: null,
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
@@ -96,16 +130,34 @@ menuNo: getQueryStringByName("MenuNo"),
                         me.ProviderName = data.ProviderName;
                         me.BCCode = data.BCCode;
                         me.DeptData = data.DeptData;
+                        me.SrcType = data.SrcType;
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
             },
+            setTab: function () {
+                var me = this;
+                me.tab = $("#tabcontainer").ligerTab({
+                    type: "brief",
+                    onAfterSelectTabItem: function (tabid) {
+                        switch (tabid) {
+                            case 'storelist':
+                                me.grid._onResize();
+                                break;
+                            case "waterlist":
+                                me.reloadWater();
+                                me.waterGrid._onResize();
+                                break;
+                        }
+                    }
+                });
+            },
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
-                me.grid = $("#maingrid").ligerGrid({
+                me.grid = $("#storegrid").ligerGrid({
                     dateFormat: "yyyy-MM-dd hh:mm",
                     autoWidth: true,
                     delayLoad: true,
@@ -123,13 +175,50 @@ menuNo: getQueryStringByName("MenuNo"),
                     sortOrder: 'DESC',
                     width: '99%',
                     height: '100%',
+                    heightDiff: -150,
+                    inWindow: $("#center-pos"),
                     checkbox: true,
                     enabledEdit: false,
-                    clickToEdit: false
+                    clickToEdit: false,
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.tab.selectTabItem('waterlist');
+                    }
                 });
                 me.grid.isValid = true;
                 me.loadToolbar();
                 me.bindGridEvent();
+            },
+            setWaterGrid: function () {
+                var me = this;
+                me.config.waterGrid.columns.removeNull();
+                me.waterGrid = $("#watergrid").ligerGrid({
+                    dateFormat: 'yyyy-MM-dd HH:mm',
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.waterGrid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/SpStore/DetList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: []
+                        })
+                    },
+                    sortName: 'WATER_DATE',
+                    sortOrder: 'asc',
+                    width: '100%',
+                    height: '100%',
+                    heightDiff: -54,
+                    inWindow: $("#center-pos"),
+                    checkbox: true,
+                    enabledEdit: false,
+                    clickToEdit: false
+                });
+                me.waterGrid.isValid = true;
+                me.loadWaterToolbar();
+                me.bindWaterGridEvent();
             },
             loadToolbar: function () {
                 var me = this;
@@ -148,14 +237,48 @@ menuNo: getQueryStringByName("MenuNo"),
                             me.save();
                             break;
                         case "Excel":
-                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true, data: { gridid: "storegrid" } });
                             break;
                         case "Pdf":
-                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true, data: { gridid: "storegrid" } });
                             break;
                     }
                 }
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            loadWaterToolbar: function () {
+                var me = this;
+                me.waterToolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadWater();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true, data: { gridid: "watergrid" } });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true, data: { gridid: "watergrid" } });
+                            break;
+                    }
+                };
+                LG.loadToolbar(me.waterGrid, me.waterToolbarBtnItemClick);
+            },
+            reloadWater: function () {
+                var me = this;
+                var selected = me.grid ? me.grid.getSelectedRow() : null;
+                if (selected) {
+                    var where = {
+                        rules: [],
+                        groups: [{
+                            rules: [], op: "or"
+                        }], op: "and"
+                    };
+                    where.groups[0].rules.push({ field: 'STORE_ID', value: selected.STORE_ID, op: 'equal' });
+                    me.waterGrid.set('parms', { "where": JSON2.stringify(where) });
+                } else {
+                    me.waterGrid.set('parms', { "where": "" });
+                }
+                me.waterGrid.loadData();
             },
             add: function () { //库存初始化
                 var me = this;
@@ -405,6 +528,55 @@ menuNo: getQueryStringByName("MenuNo"),
                 });
                 return;
             },
+            delete: function () { //删除
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows || rows.length == 0) {
+                    LG.tip("请选择行");
+                    return;
+                }
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    var changeRow = { deleted: rows };
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpStore/Save',
+                        loading: '正在删除中...',
+                        data: changeRow,
+                        success: function () {
+                            LG.showSuccess('删除成功');
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            save: function () { //保存
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                if (!me.grid.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.grid.validChangeRows()) return false;
+                var changeRow = me.grid.getChangedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpStore/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
             reloadTree: function () {
                 var me = this;
                 me.selectNode = me.tree.getSelected();
@@ -445,18 +617,42 @@ menuNo: getQueryStringByName("MenuNo"),
                     });
                     return false;
                 });
-                me.grid.bind('beforeSubmitEdit', function (e) {
-                    if (this.isValid) {
-                        if (!LG.validator.form()) {
-                            LG.showInvalidTip();
-                            return false;
-                        }
-                    } else {
-                        $(".l-verify-tip").remove();
-                    }
-                    return true;
+                LG.validate($("#storeform"), {
+                    debug: true
                 });
-                LG.validate($("#mainform"), {
+            },
+            bindWaterGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) {
+                            me.waterToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-excel-o"
+                    },
+                    {
+                        line: true
+                    },
+                    {
+                        id: 'Pdf',
+                        text: '导出Pdf',
+                        click: function (item) {
+                            me.waterToolbarBtnItemClick(item);
+                        },
+                        icon: "fa fa-file-pdf-o"
+                    }
+                    ]
+                });
+                me.waterGrid.bind("contextmenu", function (parm, e) {
+                    menu.show({
+                        top: e.pageY,
+                        left: e.pageX
+                    });
+                    return false;
+                });
+                LG.validate($("#waterform"), {
                     debug: true
                 });
             },
@@ -543,10 +739,13 @@ menuNo: getQueryStringByName("MenuNo"),
                 $("#layout").ligerLayout({ leftWidth: 240 });
                 me.loadComboxData();
                 me.setConfig();
-                me.setGrid();
-                me.setTree();
+                me.setTab();
                 me.setForm();
+                me.setTree();
+                me.setGrid();
                 me.reload();
+                me.setWaterGrid();
+                me.reloadWater();
                 return me;
             }
         };
