@@ -37,7 +37,7 @@ namespace EAM.Material.Services
                 var data = await _comboxDataService.Get(new Dictionary<string, object>()
                 {
                     { "BCCode@#HouseType", "house_type" },
-                    { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
+                    { "SpHouseName@#SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
                 });
                 data.TryAdd("Corp", await _corpService.ComboxDataAsync());
                 return AjaxResult.Success(data);
