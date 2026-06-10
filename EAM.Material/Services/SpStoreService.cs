@@ -193,17 +193,16 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task<AjaxResult> TreeAsync()
         {
-            var list = await _dbContext.Query<SP_HOUSE>().ToListAsync();
-            var data = list.Select(c => new
+            var list = await _dbContext.Query<SP_HOUSE>().Select(c => new
             {
-                c.HOUSE_CODE,
-                c.HOUSE_NAME,
                 c.HOUSE_ID,
-                PARENTID = (string.IsNullOrWhiteSpace(c.PARENT_HOUSE_CODE) || c.PARENT_HOUSE_CODE == "0") ? "ROOT" : c.PARENT_HOUSE_CODE,
-                ICON = "fa fa-group"
-            }).OrderBy(c => c.HOUSE_CODE).ToList();
-            data.Add(new { HOUSE_CODE = "ROOT", HOUSE_NAME = "仓库货位", HOUSE_ID = "ROOT", PARENTID = "", ICON = "fa fa-sitemap" });
-            return AjaxResult.Success(data, "成功");
+                c.HOUSE_NAME,
+                c.HOUSE_CODE,
+                c.PRE_HOUSE_ID,
+                c.DEPT_ID,
+                c.DEPT_NAME
+            }).OrderBy(c => c.HOUSE_CODE).ToListAsync();
+            return AjaxResult.Success(list, "成功");
         }
 
         #region 库存预警

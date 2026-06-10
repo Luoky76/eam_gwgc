@@ -1,134 +1,137 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit">
-    <meta http-equiv="Expires" content="0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Cache-control" content="no-cache">
-    <meta http-equiv="Cache" content="no-cache">
     <title>仓库货位</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 2px; height: 100%;">
+<body style="padding: 5px; height: 100%;">
     <div id="layout">
-        <div position="left" title="仓库货位目录" id="mainmenu">
-            <ul id="maintree" style="margin-top:5px;"></ul>
+        <div position="left" title="仓库目录" id="mainmenu">
+            <ul id="maintree" style="margin-top: 5px;"></ul>
         </div>
-        <div position="center" title="仓库货位列表">
+        <div position="center" title="仓库列表">
+            <div id="iframeloading" class='l-loading'>
+            </div>
             <div id="mainsearch">
                 <form action="" id="formsearch" class="l-form">
                 </form>
             </div>
-            <form id="mainform">
-                <div id="maingrid" style="margin: 2px;"></div>
+            <form action="" id="mainform">
+                <div id="maingrid">
+                </div>
             </form>
         </div>
     </div>
     <script type="text/javascript">
         'use strict';
         var business = {
-            formLabelWidth: 120,
-            formInputWidth: 180,
-            getTextareaWidth: function () {
-                var me = this;
-                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
-                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
-            },
-            MenuNo: getQueryStringByName("MenuNo"),
-            ver: getQueryStringByName("ver"),
-            tree: null,
-            currentNode: null,
-            DeptData: [],
-            BCCode: [],
-            HouseType: [],
-            SpHouseName: [],
-            parentNo: "",
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
                             {
-                                display: "仓库货位编码", name: "_search_HOUSE_CODE", dbname: "HOUSE_CODE", newline: false, type: "text",
+                                display: "通用搜索",
+                                name: "_search_all",
+                                hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "HOUSE_NAME", type: "string" },
+                                    { op: "like", field: "HOUSE_CODE", type: "string" },
+                                    { op: "like", field: "HOUSE_TYPE", type: "string" },
+                                    { op: "like", field: "DEPT_NAME", type: "string" },
+                                    { op: "like", field: "MEMO", type: "string" }
+                                ],
+                                options: {
+                                    onEnter: function () {
+                                        var me = this;
+                                        var $formsearch = $("#formsearch");
+                                        LG.commonSearch($formsearch, me.grid);
+                                    }.bind(me)
+                                },
                             },
-                            {
-                                display: "仓库货位名称", name: "_search_HOUSE_NAME", dbname: "HOUSE_NAME", newline: false, width: 200, type: "text",
-                            }
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "仓库货位编码", name: "HOUSE_CODE", dbname: "HOUSE_CODE", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
-                            { display: "仓库货位名称", name: "HOUSE_NAME", dbname: "HOUSE_NAME", minWidth: 200, type: "text",  editor: { type: 'text' }, validate: { required: true } },
-                            { display: "类型", name: "HOUSE_TYPE", dbname: "HOUSE_TYPE", minWidth: 100, type: "select", editor: { type: 'select', data: me.HouseType }, validate: { required: true } },
-                            { display: "仓库属性", name: "HOUSE_PROPERTY", dbname: "HOUSE_PROPERTY", minWidth: 150, type: "select", editor: { type: 'select', data: me.BCCode }, validate: { required: true } },
+                            { display: "仓库名称", name: "HOUSE_NAME", type: "string", minWidth: 200, validate: { required: true }, editor: { type: "string" } },
+                            { display: "仓库编码", name: "HOUSE_CODE", type: "string", minWidth: 200 },
+                            { display: "仓库类型", name: "HOUSE_TYPE", type: "select", editor: { type: "select", data: me.HouseType } },
                             {
-                                display: "所属单位", name: "DEPT_ID", minWidth: 150, type: "select", validate: { required: true },
+                                display: "上级仓库", name: "PRE_HOUSE_ID", type: "select", minWidth: 200,
                                 editor: {
-                                    type: 'select',
-                                    data: me.DeptData,
-                                    onChange: function (rowdata, rowIndex) {
-                                        if (rowdata.selected) {
-                                            liger.get("maingrid").updateCell("DEPT_NAME", rowdata.selected.TEXT, rowdata.record);
-                                        } else {
-                                            liger.get("maingrid").updateCell("DEPT_NAME", "", rowdata.record);
-                                        }
-                                    },
+                                    type: "select", url: "Material/BaseSpHouse/HouseComboxData",
+                                    onSuccess: function (data) { me.SpHouse = data; }
+                                },
+                                format: { data: function () { return me.SpHouse; } }
+                            },
+                            {
+                                display: "部门", name: "DEPT_ID", type: "select", minWidth: 200, editor: {
+                                    type: "select",
+                                    data: me.Corp,
+                                    onChange: function (rowdata) {
+                                        rowdata.grid.updateCell("DEPT_NAME", rowdata.selected?.TEXT ?? "", rowdata.record);
+                                    }
                                 }
                             },
-                            { display: "部门", name: "DEPT_NAME", width: 100, type: "text", hide: true },
-                            {
-                                display: "上级节点", name: "PARENT_HOUSE_CODE", dbname: "PARENT_HOUSE_CODE", minWidth: 200, type: "select", editor: { type: 'select', data: me.SpHouseName },
-                            },
-                            {
-                                display: "财务属性", name: "IS_ACCOUNT", dbname: "IS_ACCOUNT", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
-                            },
-                            {
-                                display: "是否失效", name: "IS_NOVALID", dbname: "IS_NOVALID", minWidth: 50, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
-                            },
-                            { display: "失效日期", name: "NOVALID_DATE", dbname: "NOVALID_DATE", minWidth: 150, type: "date", editor: { type: 'date', showTime: true, format: "yyyy-MM-dd hh:mm" } },
-                            { display: "备注", name: "MEMO", dbname: "MEMO", minWidth: 300, type: "text",  editor: { type: 'text' } },
-                            { display: "主键", name: "HOUSE_ID", dbname: "HOUSE_ID", width: 100, type: "text",  hide: true },
+                            { display: "备注", name: "MEMO", type: "string", minWidth: 200, maxWidth: 300, editor: { type: "string" } },
 
+                            //隐藏字段
+                            { display: "部门名称", name: "DEPT_NAME", type: "string", hide: true },
                         ]
                     }
                 };
             },
             grid: null,
+            searchForm: null,
+            buttons: null,
+            isView: false,
+            //是否为选择弹窗
+            isSelectWindow: false,
+            //记录已选中需隐藏的行，用于选择弹窗
+            _storageSelect: {},
+            //分类树
+            tree: null,
+            //当前选中的树节点
+            selectedNode: null,
+            iframeloading: $("#iframeloading"),
+            //下拉数据
+            SpHouse: [],
+            HouseType: [],
+            Corp: [],
             loadComboxData: function () {
                 var me = this;
-                var dataControl = [];
                 LG.ajax({
                     async: false,
                     url: 'Material/BaseSpHouse/ComboxData',
                     loading: '正在获取中...',
-                    success: function (data, message) {
-                        me.BCCode = data.BCCode
+                    success: function (data) {
+                        me.SpHouse = data.SpHouse;
                         me.HouseType = data.HouseType;
-                        me.DeptData = data.DeptData;
-                        me.SpHouseName = data.SpHouseName;
+                        me.Corp = data.Corp;
                     },
                     error: function (message) {
                         LG.showError(message);
                     }
                 });
-                return dataControl;
             },
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
                 me.grid = $("#maingrid").ligerGrid({
-                    dateFormat: "yyyy-MM-dd hh:mm",
+                    dateFormat: 'yyyy-MM-dd HH:mm',
                     autoWidth: true,
                     delayLoad: true,
-                    usePager: false,
                     columns: me.config.grid.columns,
+                    usePager: false,
                     dataAction: 'server',
                     toolbar: {},
-                    url: 'Material/BaseSpHouse/list',
+                    url: 'Material/BaseSpHouse/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -137,19 +140,52 @@
                     },
                     sortName: 'HOUSE_CODE',
                     sortOrder: 'asc',
-                    width: '99%',
+                    width: '100%',
                     height: '100%',
                     checkbox: true,
-                    enabledEdit: true,
+                    enabledEdit: !me.isView,
                     clickToEdit: true,
                     onBeforeEdit: function (editParm) {
-                        return true;
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDID = row.ID;
+                            }
+                        }
+                        me.iframeloading.hide();
+                    },
+                    onLoadSuccess: function (data) {
+                        if (me.isSelectWindow) {
+                            for (var i = data.Rows.length - 1; i >= 0; i--) {
+                                var row = data.Rows[i];
+                                if (me._storageSelect[row.HOUSE_ID]) {
+                                    data.Rows.splice(i, 1);
+                                }
+                            }
+                        }
                     },
                     rowAttrRender: function (rowdata, rowid) {
-                        if (rowdata && rowdata.IS_NOVALID && rowdata.IS_NOVALID == "1") {
-                            return "style='color:red;'";
-                        }
                         return "";
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        if (me.isSelectWindow) {
+                            var rows = [data];
+                            var values = [data.HOUSE_ID];
+                            if (me.data.callback) {
+                                me.data.callback(values, rows);
+                            }
+                            me._storageSelect[data.HOUSE_ID] = true;
+                            me.dialog.close();
+                        }
                     }
                 });
                 me.grid.isValid = true;
@@ -162,6 +198,9 @@
                     switch (item.id) {
                         case "refresh":
                             me.reload();
+                            break;
+                        case "excel-import":
+                            me.excelImport();
                             break;
                         case "add":
                             me.add();
@@ -179,62 +218,110 @@
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
                             break;
                     }
-                }
+                };
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            //excel导入
+            excelImport: function () {
+                var me = this;
+                LG.showUpload({
+                    title: "仓库导入",
+                    server: "Material/BaseSpHouse/Import",
+                    mouldFileName: function () {
+                        window.open(window.gksybConfigs.getUrl("excel-import/仓库导入.xlsx", window.gksybConfigs.urlBase));
+                    },
+                    multiple: false,
+                    extensions: 'xls,xlsx',
+                    mimeTypes: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
+                    compress: {
+                        width: me.detailWidth
+                    },
+                    showSuccess: false,
+                    data: { folder: '../../Adv' },
+                    callback: function (status, data) {
+                        if (status) {
+                            LG.showSuccess("导入成功");
+                            me.reloadTree();
+                        }
+                    }
+                });
             },
             add: function () { //新增
                 var me = this;
-                var nodeId = me.currentNode == null || me.currentNode == undefined ? "ROOT" : me.currentNode.data.HOUSE_CODE;
-                me.grid.addEditRow({ "PARENT_HOUSE_CODE": (nodeId == "ROOT" ? "" : nodeId) });
+                var selectedNode = me.tree.getSelected();
+                me.grid.addEditRow({
+                    PRE_HOUSE_ID: selectedNode?.data?.HOUSE_ID ?? "",
+                    DEPT_ID: selectedNode?.data?.DEPT_ID ?? "",
+                    DEPT_NAME: selectedNode?.data?.DEPT_NAME ?? ""
+                }, true);
             },
             save: function () { //保存
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: 'Material/BaseSpHouse/Save',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            location.reload();
-                            me.reloadTree();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
+                if (me.grid.endEdit() === false) return;
+                if (!me.grid.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
                 }
-            },
-            reloadTree: function () {
-                var me = this;
-                me.selectNode = me.tree.getSelected();
-                me.tree.reload();
+                if (!me.grid.validChangeRows()) return false;
+                var changeRow = me.grid.getChangedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/BaseSpHouse/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reloadTree();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
             },
             reload: function () { //刷新
                 var me = this;
+                me.loadComboxData();
+
+                me.selectedNode = me.tree.getSelected();
+                if (me.selectedNode) {
+                    var where = {
+                        rules: [],
+                        groups: [{
+                            rules: [], op: "or"
+                        }], op: "and"
+                    };
+                    where.groups[0].rules.push({ field: 'HOUSE_CODE', value: me.selectedNode.data.HOUSE_CODE, op: 'startwith' });
+                    me.grid.set('parms', { "where": JSON2.stringify(where) });
+                }
+                else me.grid.set('parms', { "where": "" });
+
                 me.grid.loadData();
+            },
+            reloadTree: function () {
+                var me = this;
+                me.selectedNode = me.tree.getSelected();
+                me.tree.reload();
+            },
+            getSelectedRows: function (remove) {
+                var me = this;
+                if (me.grid.endEdit() === false) return false;
+                var rows = me.grid.getSelectedRows(remove);
+                if (rows.length < 1) {
+                    LG.tip('请选择行!');
+                    return false;
+                }
+                return rows;
             },
             delete: function () { //删除
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                        if (confirm) {
-                            for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                me.grid.deleteRow(selected[i]);
-                            }
-                            me.save();
-                        }
-                    });
-                }
+                var rows = me.getSelectedRows();
+                if (!rows) return;
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    me.grid.deleteRange(rows);
+                    me.save();
+                });
             },
             bindGridEvent: function () {
                 var me = this;
@@ -256,7 +343,7 @@
                         click: function (item) {
                             me.toolbarBtnItemClick(item);
                         },
-                        icon: "fa fa-file-pdf-o"
+                        icon: "fa fa-file-word-o"
                     }
                     ]
                 });
@@ -282,84 +369,50 @@
                     debug: true
                 });
             },
+            //设置左侧树形
             setTree: function () {
                 var me = this;
-                var rootValue = "ROOT";
                 me.tree = $("#maintree").ligerTree({
                     url: "Material/BaseSpHouse/Tree",
                     parms: {},
-                    nodeWidth: 160,
                     slide: false,
                     checkbox: false,
                     single: true,
-                    needCancel: false,
-                    idFieldName: 'HOUSE_CODE',
+                    needCancel: true,
+                    idFieldName: 'HOUSE_ID',
                     textFieldName: 'HOUSE_NAME',
-                    parentIDFieldName: 'PARENTID',
-                    iconClsFieldName: "ICON",
+                    parentIDFieldName: 'PRE_HOUSE_ID',
+                    parentIcon: "fa fa-bars",
+                    parentIconOpen: "fa fa-bars",
+                    childIcon: "fa fa-bars",
+                    filter: true,
                     isExpand: 2,
                     onSuccess: function (data) {
-                        $(".l-tree .l-body span").each(function () {
-                            var $this = $(this);
-                            var text = $this.text();
-                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
-                        });
-                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.HOUSE_CODE);
-                        else me.tree.selectNode(rootValue);
+                        if (me.selectedNode) this.selectNode(me.selectedNode?.data?.HOUSE_ID);
+                        me.reload();
                     },
-                    onSelect: function (node) {
-                        var nodeData = node.data;
-                        me.currentNode = node;
-                        var where = {};
-                        if (nodeData) {
-                            me.parentNo = nodeData.HOUSE_CODE;
-
-                            where = {
-                                rules: [],
-                                groups: [{
-                                    rules: [], op: "or"
-                                }], op: "and"
-                            };
-
-                            if (me.parentNo === rootValue) {
-                                me.parentNo = "";
-                            } else {
-                                where.groups[0].rules.push({ field: 'PARENT_HOUSE_CODE', value: me.parentNo, op: 'startwith' });
-                                where.groups[0].rules.push({ field: "HOUSE_CODE", op: "equal", value: me.parentNo });
-                            }
-
-                            me.grid.set('parms', { "where": JSON2.stringify(where) });
-                            me.currentMenuParentNo = me.parentNo;
-                            me.reload();
-                        }
+                    onClick: function (node) {
+                        me.iframeloading.show();
+                        me.reload();
+                    },
+                    render: function (nodeData, nodeText, c, tree) {
+                        return `<span style="font-size: 16px;">
+                                    ${nodeText}
+                                </span>`;
                     }
                 });
             },
             setForm: function () {
                 var me = this;
                 me.config.search.fields.removeNull();
-                var $formsearch = $("#formsearch")
-                //搜索表单应用ligerui样式
+                var $formsearch = $("#formsearch");
                 me.searchForm = $formsearch.ligerForm({
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
                         text: '查询',
                         width: 60,
                         click: function () {
-                            if (me.parentNo != "" && me.parentNo != "ROOT") {
-                                var where = {
-                                    op: 'or',
-                                    rules: []
-                                };
-                                where.rules.push({ field: 'PARENT_HOUSE_CODE', value: me.parentNo, op: 'startwith' });
-                                where.rules.push({ field: 'HOUSE_CODE', value: me.parentNo, op: 'equal' });
-                                me.grid.set('parms', { "where": JSON2.stringify(where) });
-                                me.grid.options.NoFirstSearch = false;
-                            }
-
                             LG.commonSearch($formsearch, me.grid);
                         }
                     }],
@@ -369,18 +422,72 @@
                     }
                 });
             },
+            initSelect: function () {
+                var me = this;
+                var values = $.isArray(me.data.values) ? me.data.values : (me.data.values || "").split(me.data.split);
+                var select = {};
+                for (var i = 0, l = values.length; i < l; i++) {
+                    var item = values[i];
+                    select[item] = true;
+                }
+                me._storageSelect = select;
+            },
+            setFormButtons: function () {
+                var me = this;
+                var close = function () {
+                    if (me.dialog) {
+                        me.dialog.close();
+                    }
+                };
+                var confirm = function () {
+                    var rows = me.grid.getSelectedRows() || [];
+                    var values = [];
+                    for (var i = 0, l = rows.length; i < l; i++) {
+                        var row = rows[i];
+                        values.push(row.HOUSE_ID);
+                    }
+                    if (me.data.callback) {
+                        me.data.callback(values, rows);
+                    }
+                    close();
+                };
+                var buttons = [];
+                buttons.push({ text: '关闭', onclick: close });
+                buttons.push({ text: '确定', onclick: confirm });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
             init: function () {
                 var me = this;
-                $("#layout").ligerLayout({ leftWidth: 240 });
+                if (frameElement && frameElement.dialog) {
+                    me.dialog = frameElement.dialog;
+                    me.data = frameElement.dialog.get('data') || {};
+                    if (me.data.isSelectWindow === true) {
+                        me.isSelectWindow = true;
+                        me.isView = true;
+                        me.initSelect();
+                        me.setFormButtons();
+                    }
+                }
+                $("#layout").ligerLayout({ leftWidth: "20%" });
+                me.iframeloading.show();
                 me.loadComboxData();
                 me.setConfig();
-                me.setGrid();
-                me.setTree();
                 me.setForm();
+                me.setTree();
+                me.setGrid();
+                me.reload();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
+
 </html>

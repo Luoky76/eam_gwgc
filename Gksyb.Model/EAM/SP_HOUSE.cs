@@ -5,128 +5,18 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
+using Gksyb.Common.Office.Core;
 using System.ComponentModel;
 using System.Data;
-
 namespace Gksyb.Model
 {
-
+    [ExcelImporter(MaxCount = 50000, HeaderRowIndex = 2)]
     /// <summary>
-    /// 实体类sp_house
+    /// 实体类SP_HOUSE
     /// </summary>
-    [Table("sp_house")]
+    [Table("SP_HOUSE")]
     public class SP_HOUSE
     {
-        /// <summary>
-        /// 仓库货位编码
-        /// </summary>
-        [Description("仓库货位编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string HOUSE_CODE { get; set; }
-
-        /// <summary>
-        /// 仓库货位名称
-        /// </summary>
-        [Description("仓库货位名称")]
-        [Column(DbType = DbType.AnsiString)]
-        public string HOUSE_NAME { get; set; }
-
-        /// <summary>
-        /// 类型
-        /// </summary>
-        [Description("类型")]
-        [Column(DbType = DbType.AnsiString)]
-        public string HOUSE_TYPE { get; set; }
-
-        /// <summary>
-        /// 级别
-        /// </summary>
-        [Description("级别")]
-        public decimal? HOUSE_LEVEL { get; set; }
-
-        /// <summary>
-        /// 财务属性
-        /// </summary>
-        [Description("财务属性")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_ACCOUNT { get; set; }
-
-        /// <summary>
-        /// 仓库属性
-        /// </summary>
-        [Description("仓库属性")]
-        [Column(DbType = DbType.AnsiString)]
-        public string HOUSE_PROPERTY { get; set; }
-
-        /// <summary>
-        /// 周期
-        /// </summary>
-        [Description("周期")]
-        public decimal? CYCLE_DATE { get; set; }
-
-        /// <summary>
-        /// 所属单位ID
-        /// </summary>
-        [Description("所属单位ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_ID { get; set; }
-
-        /// <summary>
-        /// 所属单位
-        /// </summary>
-        [Description("所属单位")]
-        [Column(DbType = DbType.AnsiString)]
-        public string DEPT_NAME { get; set; }
-
-        /// <summary>
-        /// 是否失效
-        /// </summary>
-        [Description("是否失效")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_NOVALID { get; set; }
-
-        /// <summary>
-        /// 失效日期
-        /// </summary>
-        [Description("失效日期")]
-        public DateTime? NOVALID_DATE { get; set; }
-
-        /// <summary>
-        /// 注销人ID
-        /// </summary>
-        [Description("注销人ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EDIT_USERID { get; set; }
-
-        /// <summary>
-        /// 注销人
-        /// </summary>
-        [Description("注销人")]
-        [Column(DbType = DbType.AnsiString)]
-        public string EDIT_USER { get; set; }
-
-        /// <summary>
-        /// 二级单位ID
-        /// </summary>
-        [Description("二级单位ID")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SEC_DEPTID { get; set; }
-
-        /// <summary>
-        /// 是否同步
-        /// </summary>
-        [Description("是否同步")]
-        [Column(DbType = DbType.AnsiString)]
-        public string IS_SYNC { get; set; }
-
-        /// <summary>
-        /// 备注
-        /// </summary>
-        [Description("备注")]
-        [Column(DbType = DbType.AnsiString)]
-        public string MEMO { get; set; }
-
         /// <summary>
         /// 主键
         /// </summary>
@@ -135,11 +25,70 @@ namespace Gksyb.Model
         public string HOUSE_ID { get; set; }
 
         /// <summary>
-        /// 添加人ID
+        /// 仓库名称
         /// </summary>
-        [Description("添加人ID")]
+        [Description("仓库名称")]
         [Column(DbType = DbType.AnsiString)]
-        public string CREATE_USERID { get; set; }
+        [ImporterHeader(Name = "仓库名称")]
+        public string HOUSE_NAME { get; set; }
+
+        /// <summary>
+        /// 仓库编码
+        /// </summary>
+        [Description("仓库编码")]
+        [Column(DbType = DbType.AnsiString)]
+        public string HOUSE_CODE { get; set; }
+
+        /// <summary>
+        /// 仓库类型
+        /// </summary>
+        [Description("仓库类型")]
+        [Column(DbType = DbType.AnsiString)]
+        [ImporterHeader(Name = "仓库类型")]
+        public string HOUSE_TYPE { get; set; }
+
+        /// <summary>
+        /// 上级仓库id
+        /// </summary>
+        [Description("上级仓库id")]
+        [Column(DbType = DbType.AnsiString)]
+        [ImporterHeader(Name = "上级仓库")]
+        public string PRE_HOUSE_ID { get; set; }
+
+        /// <summary>
+        /// 部门id
+        /// </summary>
+        [Description("部门id")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_ID { get; set; }
+
+        /// <summary>
+        /// 部门
+        /// </summary>
+        [Description("部门")]
+        [Column(DbType = DbType.AnsiString)]
+        public string DEPT_NAME { get; set; }
+
+        /// <summary>
+        /// 备注
+        /// </summary>
+        [Description("备注")]
+        [Column(DbType = DbType.AnsiString)]
+        [ImporterHeader(Name = "备注")]
+        public string MEMO { get; set; }
+
+        /// <summary>
+        /// 添加人id
+        /// </summary>
+        [Description("添加人id")]
+        public long? CREATE_USERID { get; set; }
+
+        /// <summary>
+        /// 添加人
+        /// </summary>
+        [Description("添加人")]
+        [Column(DbType = DbType.AnsiString)]
+        public string CREATEUSER { get; set; }
 
         /// <summary>
         /// 添加时间
@@ -148,11 +97,17 @@ namespace Gksyb.Model
         public DateTime? CREATEDATE { get; set; }
 
         /// <summary>
-        /// 修改人ID
+        /// 修改人id
         /// </summary>
-        [Description("修改人ID")]
+        [Description("修改人id")]
+        public long? MODIFY_USERID { get; set; }
+
+        /// <summary>
+        /// 修改人
+        /// </summary>
+        [Description("修改人")]
         [Column(DbType = DbType.AnsiString)]
-        public string MODIFY_USERID { get; set; }
+        public string MODIFYUSER { get; set; }
 
         /// <summary>
         /// 修改时间
@@ -160,21 +115,5 @@ namespace Gksyb.Model
         [Description("修改时间")]
         public DateTime? MODIFYDATE { get; set; }
 
-        /// <summary>
-        /// 二级单位
-        /// </summary>
-        [Description("二级单位")]
-        [Column(DbType = DbType.AnsiString)]
-        public string SEC_DEPT { get; set; }
-
-        /// <summary>
-        /// 上级仓库货位编码
-        /// </summary>
-        [Description("上级仓库货位编码")]
-        [Column(DbType = DbType.AnsiString)]
-        public string PARENT_HOUSE_CODE { get; set; }
-
-
     }
-
 }

@@ -608,8 +608,7 @@
             applyFilter: function () { //应用过滤条件
                 var me = this;
                 var nodeData = me.currentNode ? me.currentNode.data : null;
-                var parentNo = nodeData ? nodeData.HOUSE_CODE : "ROOT";
-                var rootValue = "ROOT";
+                var houseCode = nodeData ? nodeData.HOUSE_CODE : "";
                 var showStoreOnly = liger.get("showStoreOnly") ? liger.get("showStoreOnly").getValue() : true;
                 var where = {
                     rules: [],
@@ -617,8 +616,8 @@
                         rules: [], op: "or"
                     }], op: "and"
                 };
-                if (parentNo && parentNo !== rootValue) {
-                    where.groups[0].rules.push({ field: 'HOUSE_CODE', value: parentNo, op: 'startwith' });
+                if (houseCode) {
+                    where.groups[0].rules.push({ field: 'HOUSE_CODE', value: houseCode, op: 'startwith' });
                 }
                 if (showStoreOnly) {
                     where.rules.push({ field: 'STORE_NUM', value: 0, op: 'greater', type: 'float' });
@@ -706,7 +705,6 @@
             },
             setTree: function () {
                 var me = this;
-                var rootValue = "ROOT";
                 me.tree = $("#maintree").ligerTree({
                     url: "Material/SpStore/Tree",
                     parms: {},
@@ -714,24 +712,21 @@
                     slide: false,
                     checkbox: false,
                     single: true,
-                    needCancel: false,
-                    idFieldName: 'HOUSE_CODE',
+                    needCancel: true,
+                    idFieldName: 'HOUSE_ID',
                     textFieldName: 'HOUSE_NAME',
-                    parentIDFieldName: 'PARENTID',
-                    iconClsFieldName: "ICON",
+                    parentIDFieldName: 'PRE_HOUSE_ID',
+                    parentIcon: "fa fa-bars",
+                    parentIconOpen: "fa fa-bars",
+                    childIcon: "fa fa-bars",
+                    filter: true,
                     isExpand: 2,
                     onSuccess: function (data) {
 
                         data.forEach((a) => {
                             me.stockData.push({ ID: a.HOUSE_ID, TEXT: a.HOUSE_NAME, VALUE: a.HOUSE_CODE });
                         });
-                        $(".l-tree .l-body span").each(function () {
-                            var $this = $(this);
-                            var text = $this.text();
-                            $this.html('<acronym title="' + text + '"><span> ' + text + '</span></acronym>');
-                        });
-                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.HOUSE_CODE);
-                        else me.tree.selectNode(rootValue);
+                        if (me.selectNode && me.selectNode.data) this.selectNode(me.selectNode.data.HOUSE_ID);
                     },
                     onSelect: function (node) {
                         var nodeData = node.data;
