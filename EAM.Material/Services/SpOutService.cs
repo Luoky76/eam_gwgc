@@ -51,7 +51,7 @@ namespace EAM.Material.Services
                 { "BCCode@#Auditing", "auditing" },
                 { "BCCode@#Emergency", "emergency" },
                 { "BCCode@#ShipDept", "ship_dept" },
-                { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
+                { "SpHouseName@#SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
                 { "DeviceCard", (Expression<Func<DEVICE_CARD, bool>>)(x => _dbContext.Query<CF_CORP>(cc => cc.CORPID == x.DEPT_ID && cc.CORP_PATH.StartsWith(_userSession.ParentCompany.TreeNode)).Any()) },
                 { "User", (Expression<Func<CF_USER, bool>>)(x => true) },
             });
@@ -124,7 +124,7 @@ namespace EAM.Material.Services
             }
             if (entity.OUT_CODE.IsNullOrWhiteSpace())
             {
-                entity.OUT_CODE = await _codeCreatorService.CreateCodeAsync<SP_OUTSTORE>("CK", a => a.OUT_CODE);
+                entity.OUT_CODE = await _codeCreatorService.CreateCodeAsync<SP_OUTSTORE>("OUT", a => a.OUT_CODE);
             }
             if (entity.OUT_DEPT_ID.IsNullOrWhiteSpace())
             {

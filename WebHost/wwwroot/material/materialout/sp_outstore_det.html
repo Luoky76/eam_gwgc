@@ -58,7 +58,7 @@
                                         var mainform = this.options.host_form;
                                         mainform.setData({ OUT_USER: obj.selected?.TEXT ?? "" });
                                     }
-                                }
+                                }, validate: { required: true }
                             },
                             { display: "领用人", name: "OUT_USER", type: "hidden", options: {} },
                             {
@@ -78,7 +78,7 @@
                                         }
                                         mainform.setData(data);
                                     }
-                                }
+                                }, validate: { required: true }
                             },
                             { display: "领用部门", name: "OUT_DEPT_NAME", type: "hidden", options: {} },
                             { display: "船舶部门", name: "SHIP_DEPT", type: "select", options: { type: "select", data: me.ShipDept } },
@@ -204,7 +204,7 @@
                             LG.showError(message);
                         }
                     });
-                    $.extend(originData, { AUDITING: "0", OUT_TYPE: "20" });
+                    $.extend(originData, { AUDITING: "0", OUT_TYPE: "20", OUT_USERID: window.session.UserID, OUT_USER: window.session.RealName, OUT_DEPT_ID: window.session.CorpId, OUT_DEPT_NAME: window.session.CorpName });
                     me.mainform.setOrginData(originData);
                 }
                 else {
