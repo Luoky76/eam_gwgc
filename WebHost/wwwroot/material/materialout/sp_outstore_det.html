@@ -56,24 +56,7 @@
                                     data: me.User,
                                     onChangeValue: function (inputDom, selectedId, obj) {
                                         var mainform = this.options.host_form;
-                                        var data = {};
-                                        var selected = obj.selected;
-                                        if ($.isEmptyObject(selected)) {
-                                            data = { OUT_USER: "" };
-                                            mainform.getEditor("OUT_DEPT_ID").setData(business.Corp);
-                                        }
-                                        else {
-                                            data.OUT_USER = selected.TEXT;
-                                            let corps = selected.EXTEND;
-                                            if (corps.length == 1) {
-                                                data.OUT_DEPT_ID = corps[0].ID;
-                                                data.OUT_DEPT_NAME = corps[0].VALUE;
-                                            }
-                                            if (corps.length > 0) {
-                                                mainform.getEditor("OUT_DEPT_ID").setData(corps);
-                                            }
-                                        }
-                                        mainform.setData(data);
+                                        mainform.setData({ OUT_USER: obj.selected?.TEXT ?? "" });
                                     }
                                 }
                             },
