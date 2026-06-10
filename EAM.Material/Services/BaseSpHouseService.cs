@@ -55,9 +55,9 @@ namespace EAM.Material.Services
         {
             var data = await _comboxDataService.Get(new Dictionary<string, object>()
             {
-                { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
+                { "SpHouseName", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
             });
-            return data["SpHouse"];
+            return data["SpHouseName"];
         }
 
         /// <summary>
