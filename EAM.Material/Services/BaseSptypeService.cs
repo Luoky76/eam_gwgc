@@ -200,11 +200,10 @@ namespace EAM.Material.Services
                 TYPE_NAME = newPreType.TYPE_NAME,
                 TYPE_CODE = newPreType.TYPE_CODE
             });
-            await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.TYPE_CODE.StartsWith(entity.TYPE_CODE), x => new SP_OUTSTORE_DET
+            await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_OUTSTORE_DET
             {
                 TYPE_ID = newPreType.TYPE_ID,
-                TYPE_NAME = newPreType.TYPE_NAME,
-                TYPE_CODE = newPreType.TYPE_CODE
+                TYPE_NAME = newPreType.TYPE_NAME
             });
         }
 
@@ -314,8 +313,7 @@ namespace EAM.Material.Services
             });
             await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.TYPE_ID == entity.TYPE_ID, x => new SP_OUTSTORE_DET
             {
-                TYPE_NAME = entity.TYPE_NAME,
-                TYPE_CODE = entity.TYPE_CODE
+                TYPE_NAME = entity.TYPE_NAME
             });
         }
     }

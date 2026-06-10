@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>物资出库明细</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px 5px 50px; height: 100%; overflow: auto;">
+    <form id="mainform" style="width: 99%;">
+    </form>
+    <div style="width: 99%;" class="l-form">
+        <div class="l-form-container">
+            <div class="l-group" style="width: 100%;"><span>物资出库明细</span></div>
+            <ul style="display: block; width: 100%;" id="ulGrid">
+                <li style="width: 100%;">
+                    <form><div style="width: 100%;" id="det-grid"></div></form>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    form: {
+                        fields: [
+                            {
+                                display: "记录状态", name: "AUDITING", type: "select", options: {
+                                    type: "select",
+                                    data: me.Auditing,
+                                    disabled: true
+                                }
+                            },
+                            { display: "出库单号", name: "OUT_CODE", type: "string", options: { disabled: true } },
+                            { display: "出库日期", name: "OUT_DATE", type: "date", options: { format: "yyyy-MM-dd hh:mm", initValue: new Date() }, validate: { required: true } },
+                            {
+                                display: "领用人", name: "OUT_USERID", type: "select", options: {
+                                    type: "select",
+                                    data: me.User,
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        var data = {};
+                                        var selected = obj.selected;
+                                        if ($.isEmptyObject(selected)) {
+                                            data = { OUT_USER: "" };
+                                            mainform.getEditor("OUT_DEPT_ID").setData(business.Corp);
+                                        }
+                                        else {
+                                            data.OUT_USER = selected.TEXT;
+                                            let corps = selected.EXTEND;
+                                            if (corps.length == 1) {
+                                                data.OUT_DEPT_ID = corps[0].ID;
+                                                data.OUT_DEPT_NAME = corps[0].VALUE;
+                                            }
+                                            if (corps.length > 0) {
+                                                mainform.getEditor("OUT_DEPT_ID").setData(corps);
+                                            }
+                                        }
+                                        mainform.setData(data);
+                                    }
+                                }
+                            },
+                            { display: "领用人", name: "OUT_USER", type: "hidden", options: {} },
+                            {
+                                display: "领用部门", name: "OUT_DEPT_ID", type: "select", options: {
+                                    type: "select",
+                                    data: me.Corp,
+                                    textField: "VALUE",
+                                    onChangeValue: function (inputDom, selectedId, obj) {
+                                        var mainform = this.options.host_form;
+                                        var data = {};
+                                        var selected = obj.selected;
+                                        if ($.isEmptyObject(selected)) {
+                                            data = { OUT_DEPT_NAME: "" };
+                                        }
+                                        else {
+                                            data.OUT_DEPT_NAME = selected.VALUE;
+                                        }
+                                        mainform.setData(data);
+                                    }
+                                }
+                            },
+                            { display: "领用部门", name: "OUT_DEPT_NAME", type: "hidden", options: {} },
+                            { display: "出库类型", name: "OUT_TYPE", type: "hidden", options: {} },
+                            { display: "紧急程度", name: "EMERGENCY", type: "select", options: { data: me.Emergency, initValue: "0" } },
+                            { display: "用途", name: "PURPOSE", type: "textarea", newline: true, width: Math.floor($("#mainform").width() / 303) * 303 - 123, validate: { required: true } },
+                            { display: "备注", name: "MEMO", type: "textarea", newline: true, width: Math.floor($("#mainform").width() / 303) * 303 - 123 },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "批次号", name: "BATCH_CODE", type: "string" },
+                            { display: "物资名称", name: "SP_NAME", type: "string" },
+                            { display: "物资编码", name: "SP_CODE", type: "string" },
+                            { display: "品牌、厂家", name: "PRODUCE", type: "string" },
+                            { display: "规格型号", name: "SP_SIZE", type: "string" },
+                            { display: "计量单位", name: "UNIT", type: "string" },
+                            { display: "出库数量", name: "OUT_NUM", type: "float", editor: { type: "float", precision: 3 }, validate: { required: true } },
+                            { display: "出库含税金额", name: "TAX_MONEY", type: "currency", totalSummary: { type: 'sum' } },
+                            { display: "出库不含税金额", name: "NOTAX_MONEY", type: "currency", totalSummary: { type: 'sum' } },
+                            {
+                                display: "货位名称", name: "HOUSE_ID", type: "select", minWidth: 150, editor: {
+                                    data: me.SpHouse,
+                                    selectBoxWidth: 300,
+                                    filter: "EXTEND6",
+                                    columns: [
+                                        { header: "货位名称", name: "TEXT", minWidth: 150 },
+                                        { header: "货位编码", name: "VALUE", minWidth: 150 },
+                                    ],
+                                    onChange: function (rowdata) {
+                                        rowdata.grid.updateCell("HOUSE_NAME", rowdata.selected?.TEXT ?? "", rowdata.record);
+                                        rowdata.grid.updateCell("HOUSE_CODE", rowdata.selected?.VALUE ?? "", rowdata.record);
+                                    }
+                                }
+                            },
+                            {
+                                display: "设备名称", name: "DEVICE_ID", type: "select", minWidth: 150, editor: {
+                                    type: "select",
+                                    data: me.DeviceCard,
+                                    selectBoxWidth: 300,
+                                    filter: "EXTEND6",
+                                    columns: [
+                                        { header: "设备名称", name: "TEXT", minWidth: 150 },
+                                        { header: "设备编号", name: "VALUE", minWidth: 150 },
+                                    ],
+                                    onChange: function (rowdata) {
+                                        rowdata.grid.updateCell("DEVICE_NO", rowdata.selected?.VALUE ?? "", rowdata.record);
+                                        rowdata.grid.updateCell("DEVICE_NAME", rowdata.selected?.TEXT ?? "", rowdata.record);
+                                    }
+                                }
+                            },
+                            { display: "设备编号", name: "DEVICE_NO", type: "string" },
+                            { display: "物资分类名称", name: "TYPE_NAME", type: "string" },
+                            // 隐藏字段
+                            { display: "物资出库id", name: "OUT_ID", type: "string", hide: true },
+                            { display: "库存id", name: "STORE_ID", type: "string", hide: true },
+                            { display: "物资id", name: "SP_ID", type: "string", hide: true },
+                            { display: "物资分类id", name: "TYPE_ID", type: "string", hide: true },
+                            { display: "货位名称", name: "HOUSE_NAME", type: "string", hide: true },
+                            { display: "货位编码", name: "HOUSE_CODE", type: "string", hide: true },
+                            { display: "设备名称", name: "DEVICE_NAME", type: "string", hide: true },
+                            { display: "属性", name: "PROPERTY", type: "string", hide: true },
+                        ]
+                    }
+                };
+            },
+            menuNo: getQueryStringByName("MenuNo"),
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
+            mainform: null,
+            buttons: null,
+            sid: null,
+            isNew: false,
+            isView: true,
+            Auditing: [],
+            User: [],
+            Corp: [],
+            SpHouse: [],
+            DeviceCard: [],
+            Emergency: [],
+            showSuccessMessage: function (message = '成功') {
+                var me = this;
+                if (me.showSuccessMessage.isShown) return;
+                me.showSuccessMessage.isShown = true;
+                LG.showSuccess(message, function () {
+                    me.showSuccessMessage.isShown = false;
+                });
+            },
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpOut/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.Auditing = data.Auditing;
+                        me.User = data.User;
+                        me.Corp = data.Corp;
+                        me.SpHouse = data.SpHouse;
+                        me.DeviceCard = data.DeviceCard;
+                        me.Emergency = data.Emergency;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            loadData: function () {
+                var me = this;
+                if (me.isNew) {
+                    var originData = {};
+                    LG.ajax({
+                        async: false,
+                        url: 'Material/General/CreatePrimaryKey',
+                        loading: '正在获取中...',
+                        success: function (data, message) {
+                            me.sid = data;
+                            originData.OUT_ID = data;
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                    $.extend(originData, { AUDITING: "0", OUT_TYPE: "20" });
+                    me.mainform.setOrginData(originData);
+                }
+                else {
+                    LG.ajax({
+                        async: false,
+                        url: 'Material/SpOut/Get',
+                        loading: '正在获取中...',
+                        data: { outId: me.sid },
+                        success: function (data, message) {
+                            me.mainform.setOrginData(data);
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                }
+                me.mainform.focus();
+            },
+            closeQuery: function (callback) {
+                var me = this;
+                if (me._skipConfirm === true || ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged)) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
+            },
+            close: function (skipConfirm) {
+                var me = this;
+                me._skipConfirm = skipConfirm === true ? true : false;
+                me.closeQuery(function () {
+                    if (me.dialog) {
+                        me.dialog.close();
+                        return;
+                    }
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                if (!me.dialog) return;
+                var buttons = [];
+                buttons.push({
+                    text: '关闭',
+                    onclick: function () {
+                        me.close(false);
+                    }.bind(me)
+                });
+                if (!me.isView) buttons.push({
+                    text: '保存',
+                    icon: 'fa fa-save',
+                    onclick: function () {
+                        me.saveAll();
+                    }.bind(me)
+                });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform");
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: 120,
+                    readonly: me.isView,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            grid: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#det-grid").ligerGrid({
+                    export: { protection: false },
+                    dateFormat: "yyyy-MM-dd hh:mm",
+                    autoWidth: true,
+                    delayLoad: true,
+                    usePager: true,
+                    columns: me.config.grid.columns,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/SpOut/DetList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'OUT_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    sortName: 'SP_CODE',
+                    sortOrder: 'asc',
+                    width: '99%',
+                    height: 'auto',
+                    checkbox: true,
+                    enabledEdit: !me.isView,
+                    clickToEdit: true,
+                    onSuccess: function (data, g) { }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) { me.toolbarBtnItemClick(item); },
+                        icon: "fa fa-file-excel-o"
+                    }, { line: true }, {
+                        id: 'Pdf',
+                        text: '导出Pdf',
+                        click: function (item) { me.toolbarBtnItemClick(item); },
+                        icon: "fa fa-file-pdf-o"
+                    }]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({ top: e.pageY, left: e.pageX });
+                    return false;
+                });
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadGrid();
+                            break;
+                        case "import":
+                            me.importGrid();
+                            break;
+                        case "batch":
+                            me.importBatch();
+                            break;
+                        case "scanner":
+                            me.scanner();
+                            break;
+                        case "delete":
+                            if (me.isSelectRow()) me.deleteGrid();
+                            break;
+                        case "save":
+                            me.saveAll();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true, data: { gridid: "det-grid" } });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true, data: { gridid: "det-grid" } });
+                            break;
+                    }
+                };
+                me.grid.toolbarManager.options.group = 'detail';
+                if (!me.isView) {
+                    LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+                }
+            },
+            reloadGrid: function () {
+                var me = this;
+                me.grid.loadData();
+            },
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, { OUT_ID: me.sid });
+                me.grid.addEditRow(row, false);
+            },
+            // 导入物资（按物资汇总，系统提交时自动FIFO分配批次）
+            importGrid: function () {
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.SP_ID);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Material/SpStore/List',
+                        usePager: true,
+                        parms: {
+                            where: JSON.stringify({
+                                op: 'and',
+                                rules: [{ field: 'STORE_NUM', type: "decimal", op: 'greater', value: 0 }]
+                            })
+                        },
+                        sortName: 'SP_CODE',
+                        rowKey: "SP_ID",
+                        columns: [
+                            { display: "物资名称", name: "SP_NAME", type: "string" },
+                            { display: "库存数量", name: "STORE_NUM", type: "decimal" },
+                            { display: "物资分类名称", name: "TYPE_NAME", type: "string" },
+                            { display: "品牌、厂家", name: "PRODUCE", type: "string" },
+                            { display: "规格型号", name: "SP_SIZE", type: "string" },
+                            { display: "计量单位", name: "UNIT", type: "string" },
+                            { display: "属性", name: "PROPERTY", type: "string" },
+                            { display: "物资编码", name: "SP_CODE", type: "string" },
+                        ]
+                    },
+                    fields: [
+                        {
+                            display: "通用搜索",
+                            name: "_search_all",
+                            hideLabel: true,
+                            filter: [
+                                { op: "like", field: "SP_NAME", type: "string" },
+                                { op: "like", field: "SP_CODE", type: "string" },
+                                { op: "like", field: "TYPE_NAME", type: "string" },
+                                { op: "like", field: "PRODUCE", type: "string" },
+                                { op: "like", field: "SP_SIZE", type: "string" },
+                                { op: "like", field: "UNIT", type: "string" },
+                                { op: "like", field: "PROPERTY", type: "string" },
+                            ],
+                        },
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.SP_ID)) {
+                                me.addGrid(item);
+                            }
+                        }
+                    }
+                };
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    title: '挑选库存物资',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            // 导入批次（用户直接指定具体批次）
+            importBatch: function () {
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.STORE_ID);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Material/SpStore/List',
+                        usePager: true,
+                        parms: {
+                            where: JSON.stringify({
+                                op: 'and',
+                                rules: [{ field: 'STORE_NUM', type: "decimal", op: 'greater', value: 0 }]
+                            })
+                        },
+                        sortName: 'SP_CODE',
+                        rowKey: "STORE_ID",
+                        columns: [
+                            { display: "批次号", name: "BATCH_CODE", type: "string" },
+                            { display: "物资名称", name: "SP_NAME", type: "string" },
+                            { display: "库存数量", name: "STORE_NUM", type: "decimal" },
+                            { display: "物资分类名称", name: "TYPE_NAME", type: "string" },
+                            { display: "品牌、厂家", name: "PRODUCE", type: "string" },
+                            { display: "规格型号", name: "SP_SIZE", type: "string" },
+                            { display: "计量单位", name: "UNIT", type: "string" },
+                            { display: "属性", name: "PROPERTY", type: "string" },
+                            { display: "物资编码", name: "SP_CODE", type: "string" },
+                        ]
+                    },
+                    fields: [
+                        {
+                            display: "通用搜索",
+                            name: "_search_all",
+                            hideLabel: true,
+                            filter: [
+                                { op: "like", field: "BATCH_CODE", type: "string" },
+                                { op: "like", field: "SP_NAME", type: "string" },
+                                { op: "like", field: "SP_CODE", type: "string" },
+                                { op: "like", field: "TYPE_NAME", type: "string" },
+                                { op: "like", field: "PRODUCE", type: "string" },
+                                { op: "like", field: "SP_SIZE", type: "string" },
+                                { op: "like", field: "UNIT", type: "string" },
+                                { op: "like", field: "PROPERTY", type: "string" },
+                            ],
+                        },
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        for (let item of rows) {
+                            if (!currentSet.has(item.STORE_ID)) {
+                                item.TAX_MONEY = null;
+                                item.NOTAX_MONEY = null;
+                                me.addGrid(item);
+                            }
+                        }
+                    }
+                };
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    title: '挑选库存批次',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            // 后端导入批次
+            importBatchServer: function (store_ids) {
+                var me = this;
+                if (me.isNew) {
+                    me.saveAll({ showMessage: false, async: false });
+                }
+                LG.ajax({
+                    async: false,
+                    jsToken: true,
+                    url: 'Material/SpOut/DetImport',
+                    data: { outId: me.sid, store_ids: store_ids },
+                    success: function (result) {
+                        me.reloadGrid();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            // 扫码
+            scanner: function () {
+                var me = this;
+                var dataOptions = {
+                    callback: me.importBatchServer.bind(me)
+                };
+                $.ligerDialog.open({
+                    width: 400,
+                    height: 150,
+                    title: '扫码录入',
+                    url: "qr-code-scanner.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            // 删除
+            deleteGrid: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (confirm) {
+                            me.grid.deleteSelectedRow();
+                            me.saveAll();
+                        }
+                    });
+                }
+            },
+            // 保存前验证
+            vertifyBeforeSave: function () {
+                var me = this;
+                me.grid.endEdit();
+                var girdData = me.grid.getData();
+                for (let item of girdData) {
+                    if (item.OUT_NUM < 0) {
+                        LG.showError('物资「' + item.SP_NAME + '」的出库数量不能小于零！');
+                        return false;
+                    }
+                    if (item.OUT_NUM == 0) {
+                        LG.showError('物资「' + item.SP_NAME + '」的出库数量不能为零！');
+                        return false;
+                    }
+                }
+                return true;
+            },
+            // 同时保存主子表
+            saveAll: function ({ showMessage = true, async = true } = {}) {
+                var me = this;
+                if (!me.vertifyBeforeSave() || !me.grid.endEdit()) return;
+                if ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged) {
+                    if (showMessage) me.showSuccessMessage('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                if (!me.grid.validChangeRows()) return;
+
+                var data = me.mainform.getData();
+                // 确保OUT_TYPE为20
+                data.OUT_TYPE = "20";
+                var original = me.mainform.getOrginData();
+
+                var changeRow1 = new Object();
+                if (me.isNew) {
+                    changeRow1["added"] = [data];
+                }
+                else {
+                    changeRow1["updated"] = [data];
+                    changeRow1["original"] = [original];
+                }
+
+                var changeRow2 = me.grid.getChangedRows();
+
+                LG.ajax({
+                    async: async,
+                    jsToken: true,
+                    url: 'Material/SpOut/SaveAll',
+                    loading: '正在保存中...',
+                    data: { request1: changeRow1, request2: changeRow2 },
+                    success: function (result) {
+                        if (showMessage) me.showSuccessMessage('保存成功');
+                        me.isNew = false;
+                        me.loadData();
+                        me.grid.isDataChanged = false;
+                        me.reloadGrid();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.dialog = frameElement.dialog;
+                if (me.dialog) {
+                    me.dialogData = me.dialog.get('data');
+                }
+                else {
+                    me.dialogData = JSON.parse(parent.window.business.data.FormData);
+                }
+                me.callback = me.dialogData.callback;
+                me.sid = me.dialogData.sid;
+                me.isView = Boolean(me.dialogData.isView);
+                me.isNew = Boolean(me.dialogData.isNew);
+
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.loadData();
+                me.setGrid();
+                me.reloadGrid();
+
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

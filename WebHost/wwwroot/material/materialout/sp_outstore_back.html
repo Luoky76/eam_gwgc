@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>物料出库冲红</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch" style="width: 98%">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
+            auditing: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            { display: "冲红单号", name: "_search_BACK_CODE", dbname: "BACK_CODE", newline: false, type: "text", options: {} },
+                            {
+                                display: "出库日期", name: "_search_OUT_DATE", dbname: "OUT_DATE", newline: false, type: "date", op: 'greaterorequal', vt: 'date',
+                                options: { format: "yyyy-MM-dd" }
+                            },
+                            {
+                                display: "至", name: "_search_OUT_DATE_END", dbname: "OUT_DATE", newline: false, type: "date", op: 'lessorequal', vt: 'date',
+                                options: { format: "yyyy-MM-dd" }
+                            },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", minWidth: 100, type: "select", format: { data: me.auditing } },
+                            { display: "冲红日期", name: "BACK_DATE", minWidth: 100, type: "date" },
+                            { display: "冲红单号", name: "BACK_CODE", minWidth: 100, type: "string" },
+                            { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "string" },
+                            { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "date" },
+                            { display: "申请部门", name: "DEPT_NAME", minWidth: 100, type: "string" },
+                            { display: "领用人", name: "USER_NAME", minWidth: 100, type: "string" },
+                            { display: "冲红金额", name: "SUM_MONEY", minWidth: 100, type: "float" },
+                            { display: "备注", name: "MEMO", minWidth: 450, type: "string" },
+                            { display: "主键", name: "OUT_BACK_ID", hide: true },
+                        ]
+                    }
+                };
+            },
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/SpOut/OutBackList',
+                    parms: {
+                        where: JSON.stringify({ op: 'and', rules: [] })
+                    },
+                    width: '98%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) { },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.modify();
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            me.modify();
+                            break;
+                        case "submit":
+                            me.submit();
+                            break;
+                        case "revoke":
+                            me.revoke();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
+                            break;
+                    }
+                }
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reload: function () {
+                var me = this;
+                me.buttons[0].click();
+            },
+            submit: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING != "0") {
+                        LG.tip('无法提交！');
+                    } else {
+                        var sid = selected[0].OUT_BACK_ID;
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/SubmitOutBack',
+                            loading: '正在提交中...',
+                            data: { sid: sid },
+                            success: function () {
+                                LG.showSuccess('提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
+            revoke: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                if (selected.length !== 1) {
+                    LG.tip('请选择且仅选择一行！');
+                }
+                else {
+                    if (selected[0].AUDITING == "0") {
+                        LG.tip('未提交！');
+                    }
+                    else {
+                        var sid = selected[0].OUT_BACK_ID;
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/UnSubmitOutBack',
+                            loading: '正在撤回中...',
+                            data: { sid: sid },
+                            success: function () {
+                                LG.showSuccess('撤回提交成功');
+                                me.grid.isDataChanged = false;
+                                me.reload();
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+            },
+            add: function () {
+                var me = this;
+                var gridData = me.grid.getData();
+                var gridKeys = [];
+                for (var item of gridData) {
+                    gridKeys.push(item.OUT_CODE);
+                }
+                var dataOptions = {
+                    values: gridKeys,
+                    options: {
+                        url: 'Material/SpOut/ImportOutBackList',
+                        rowKey: "OUT_CODE",
+                        columns: [
+                            { display: "记录状态", name: "AUDITING", width: 100, type: "select", format: { data: me.auditing } },
+                            { display: "出库单号", name: "OUT_CODE", minWidth: 100, type: "string" },
+                            { display: "出库日期", name: "OUT_DATE", minWidth: 100, type: "date" },
+                            { display: "申请部门", name: "OUT_DEPT_NAME", minWidth: 100, type: "string" },
+                            { display: "领用人", name: "OUT_USER", minWidth: 100, type: "string" },
+                            { display: "备注", name: "MEMO", minWidth: 300, type: "string" },
+                            { display: "OUT_ID", name: "OUT_ID", hide: true },
+                        ]
+                    },
+                    fields: [
+                        { display: "出库单号", name: "OUT_CODE", width: 100, type: "text" },
+                    ],
+                    callback: function (values, rows) {
+                        var currentSet = new Set(gridKeys);
+                        var newrows = [];
+                        for (let item of rows) {
+                            if (!currentSet.has(item.OUT_CODE)) {
+                                newrows.push(item);
+                            }
+                        }
+                        LG.ajax({
+                            jsToken: true,
+                            url: 'Material/SpOut/ManageOutBack',
+                            loading: '正在保存中...',
+                            data: { request: newrows },
+                            success: function () {
+                                LG.showSuccess('保存成功', function () {
+                                    me.reload();
+                                });
+                            },
+                            error: function (message) {
+                                LG.showError(message);
+                            }
+                        });
+                    }
+                }
+                $.ligerDialog.open({
+                    width: 1000,
+                    height: 400,
+                    title: '选择出库单',
+                    url: window.gksybConfigs.urlBase + "popup-select/common.html",
+                    isResize: true,
+                    slide: false,
+                    data: dataOptions
+                });
+            },
+            modify: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRow();
+                if (!selected) {
+                    LG.tip('请选择行!');
+                    return;
+                }
+                var sid = selected.OUT_BACK_ID;
+                var auditing = selected.AUDITING;
+                $.ligerDialog.open({
+                    width: 1100,
+                    height: 620,
+                    allowClose: true,
+                    title: '[查看冲红明细]',
+                    url: "sp_outstore_backdet.html",
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: sid, auditing: auditing }
+                });
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) { me.toolbarBtnItemClick(item); },
+                        icon: "fa fa-file-excel-o"
+                    }, { line: true }, {
+                        id: 'Pdf',
+                        text: '导出Pdf',
+                        click: function (item) { me.toolbarBtnItemClick(item); },
+                        icon: "fa fa-file-pdf-o"
+                    }]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({ top: e.pageY, left: e.pageX });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), { debug: true });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch");
+                me.searchForm = $formsearch.ligerForm({
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>

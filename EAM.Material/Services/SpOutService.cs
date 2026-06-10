@@ -1,531 +1,338 @@
-﻿using Gksyb.Core.Auth;
+using Gksyb.Core.Auth;
 using Gksyb.Core.Grid;
+using Gksyb.Core.Interfaces.Auth;
 using Gksyb.Core.Interfaces.Common;
 using Gksyb.Core.Interfaces.General;
+using Gksyb.Core.Interfaces.Material;
+using Gksyb.Core.Interfaces.WorkFlow;
 using Gksyb.Model;
+using Gksyb.Model.Core;
 using Gksyb.Model.Grid;
 using Gksyb.Model.UI;
-using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 namespace EAM.Material.Services
 {
-    public class SpOutService : IBaseService
+    public class SpOutService : IBaseService, IFlowInterceptor
     {
+        private readonly string _flowCode = "sp_out";
         private readonly IDbContext _dbContext;
-        private readonly IComboxDataService _comboxService;
+        private readonly IComboxDataService _comboxDataService;
         private readonly ICodeCreatorService _codeCreatorService;
         private readonly UserSession _userSession;
-        private DateTime? _Sysdate;
-        private Dictionary<string, string> outDic = new();
+        private readonly ICorpService _corpService;
+        private readonly SpStoreService _spStoreService;
+        private readonly IFlowEngineService _flowEngineService;
 
-        /// <summary>
-        /// 获取数据库时间
-        /// </summary>
-        private DateTime? Sysdate
-        {
-            get
-            {
-                if (!_Sysdate.HasValue)
-                {
-                    _Sysdate = _dbContext.GetSysdate().Result();
-                }
-                return _Sysdate;
-            }
-        }
-
-        public SpOutService(IDbContext dbContext, IComboxDataService comboxService, ICodeCreatorService codeCreatorService, UserSession userSession)
+        public SpOutService(IDbContext dbContext, IComboxDataService comboxDataService,
+            ICodeCreatorService codeCreatorService, UserSession userSession,
+            ICorpService corpService, SpStoreService spStoreService,
+            IFlowEngineService flowEngineService)
         {
             _dbContext = dbContext;
-            _comboxService = comboxService;
+            _comboxDataService = comboxDataService;
             _codeCreatorService = codeCreatorService;
             _userSession = userSession;
+            _corpService = corpService;
+            _spStoreService = spStoreService;
+            _flowEngineService = flowEngineService;
         }
 
+        #region 下拉数据
+
         /// <summary>
-        /// 下拉
+        /// 获取下拉框数据
         /// </summary>
-        /// <returns></returns>
-        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxDataAsync()
+        public async Task<ConcurrentDictionary<string, List<ComboxData>>> ComboxData()
         {
-            return await _comboxService.Get(new Dictionary<string, object>(){
-                { "SpapplyType", null },
+            var data = await _comboxDataService.Get(new Dictionary<string, object>()
+            {
                 { "BCCode@#Auditing", "auditing" },
-                { "BCCode", "purtypeName" },
+                { "BCCode@#Emergency", "emergency" },
+                { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
+                { "DeviceCard", (Expression<Func<DEVICE_CARD, bool>>)(x => _dbContext.Query<CF_CORP>(cc => cc.CORPID == x.DEPT_ID && cc.CORP_PATH.StartsWith(_userSession.ParentCompany.TreeNode)).Any()) },
+                { "UserWithCorp@#User", (Expression<Func<CF_USER, bool>>)(x => true) },
             });
+            data.TryAdd("Corp", await _corpService.ComboxDataAsync());
+            return data;
         }
 
-        #region 物料领用申请
+        #endregion 下拉数据
+
+        #region 主表CRUD
 
         /// <summary>
-        /// 导入物料功能
+        /// 根据ID获取出库记录
         /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> ImportSpList(GridRequest request)
+        public async Task<SP_OUTSTORE> GetAsync(string outId)
         {
-            return await _dbContext.Query<SP_STORE>()
-                .Where(c => c.STORE_NUM > 0 && c.SP_NAME != null && c.SP_CODE != null)
-                .GroupBy(t => new
+            return await _dbContext.QueryByKeyAsync<SP_OUTSTORE>(outId);
+        }
+
+        /// <summary>
+        /// 获取出库列表
+        /// </summary>
+        public async Task<GridData> ListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_OUTSTORE>(x => _dbContext.Query<CF_CORP>().Where(a => a.CORPID == x.OUT_DEPT_ID && a.CORP_PATH.StartsWith(_userSession.ParentCompany.TreeNode)).Any())
+                .LeftJoin<BC_CODE>((a, b) => b.CODE_TYPE == "auditing" && a.AUDITING == b.CODE_EN)
+                .Select((a, b) => new
                 {
-                    t.SP_ID,
-                    t.HOUSE_ID,
-                    t.SP_SIZE,
-                    t.UNIT,
-                    t.SP_NAME,
-                    t.HOUSE_NAME,
-                    t.SP_CODE,
-                })
-                .Select(c => new
-                {
-                    c.SP_NAME,
-                    c.SP_ID,
-                    c.SP_SIZE,
-                    c.UNIT,
-                    c.SP_CODE,
-                    c.HOUSE_NAME,
-                    STORE_NUM = Sql.Sum(c.STORE_NUM),
-                    TAX_MONEY = Sql.Sum(c.TAX_MONEY),
-                    NOTAX_MONEY = Sql.Sum(c.NOTAX_MONEY),
+                    a.AUDITING,
+                    ORDERED_AUDITING = b.CODE_SEQ,
+                    a.OUT_ID,
+                    a.OUT_CODE,
+                    a.OUT_DATE,
+                    a.OUT_USERID,
+                    a.OUT_USER,
+                    a.OUT_DEPT_ID,
+                    a.OUT_DEPT_NAME,
+                    a.SHIP_DEPT,
+                    a.OUT_TYPE,
+                    a.EMERGENCY,
+                    a.PURPOSE,
+                    a.MEMO,
+                    a.IS_RED,
+                    a.RED_USERID,
+                    a.RED_USER,
+                    a.RED_DATE
                 })
                 .GetGridData(request);
         }
 
         /// <summary>
-        /// 获取物料领用申请记录
+        /// 保存主表
         /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutAppList(GridRequest request)
+        public async Task<AjaxResult> SaveAsync(SaveRequest<SP_OUTSTORE> request)
         {
-            return await _dbContext.Query<SP_OUT_APP>()
-                .OrderBy(c => c.AUDITING_A)
-                .ThenByDesc(c => c.APPLY_DATE)
-                .GetGridData(request);
-        }
-
-        /// <summary>
-        /// 获取单条物料领用申请记录
-        /// </summary>
-        /// <returns></returns>
-
-        public async Task<SP_OUT_APP> GetSpOutAppListDetail(string ID)
-        {
-            var qry = await _dbContext.QueryByKeyAsync<SP_OUT_APP>(ID);
-            return qry;
-        }
-
-        /// <summary>
-        /// 管理物料领用申请记录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> ManageSpOutApp(SaveRequest<SP_OUT_APP> request, SaveRequest<SP_OUTAPP_DET> requestdet)
-        {
-            //添加主子表新增记录的关联键值
-            if (!request.Added.IsNullOrEmpty() && request.Added.Any())
-            {
-                string out_id;
-                if (request.Added[0].OUT_ID.IsNullOrEmpty())
-                {
-                    out_id = request.Added[0].OUT_ID = GuidHelper.NewSnowflakeId().ToString();
-                }
-                else
-                {
-                    out_id = request.Added[0].OUT_ID;
-                }
-                foreach (var entity in requestdet.Added)
-                {
-                    if (entity.OUT_ID.IsNullOrEmpty())
-                    {
-                        entity.OUT_ID = out_id;
-                    }
-                }
-            }
-
-            try
-            {
-                await _dbContext.UseTransactionAsync(async () =>
-                {
-                    var execResult = await _dbContext.SaveEntityAnsyc(request,
-                             c => new
-                             {
-                                 c.AUDITING_A,
-                                 c.APPLY_CODE,
-                                 c.APPLY_DATE,
-                                 c.PROJECT_CODE,
-                                 c.PROJECT_NAME,
-                                 c.USER_ID,
-                                 c.USER_NAME,
-                                 c.APPLY_TYPE,
-                                 c.SEC_DEPTID,
-                                 c.PURTYPE_ID,
-                                 c.SEC_DEPT,
-                                 c.PURTYPE_NAME,
-                                 c.SUM_MONEY,
-                                 c.MEMO,
-                                 c.OUT_ID,
-                                 c.DEVICE_NO,
-                                 c.DEVICE_NAME,
-                                 c.DEPT_ID,
-                                 c.DEPT_NAME
-                             },
-                             c => a => a.OUT_ID == c.OUT_ID, BeforeAdd, SpOutAppBeforUpdate, SpOutAppBeforDelete, false, null, null);
-
-                    if (execResult.IsError)
-                    {
-                        throw new MessageException("主表保存失败");
-                    }
-
-                    requestdet ??= new SaveRequest<SP_OUTAPP_DET>();
-
-                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
-                      c => new
-                      {
-                          c.SP_CODE,
-                          c.SP_NAME,
-                          c.SP_SIZE,
-                          c.DEVICE_ID,
-                          c.DEVICE_NO,
-                          c.APPLY_NUM,
-                          c.DEVICE_NAME,
-                          c.MEMO,
-                          c.STOCK_ID,
-                          c.STOCK_NAME,
-                          c.TYPE_ID,
-                          c.TYPE_NAME,
-                          c.OUTDET_ID,
-                          c.OUT_ID,
-                          c.PRODUCE,
-                          c.UNIT,
-                          c.PRICE,
-                          c.APPLY_MONEY,
-                          c.STORE_CODE,
-                          c.IN_DATE,
-                          c.DEPT_NAME,
-                          c.DEPT_ID,
-                          c.TAX_RATE,
-                          c.NOTAX_PRICE,
-                          c.NOTAX_MONEY,
-                      },
-                      c => a => a.OUTDET_ID == c.OUTDET_ID, BeforeAddSpOutAppdet);
-
-                    if (execResult.IsError)
-                    {
-                        throw new MessageException("明细表保存失败");
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return AjaxResult.Error(ex.Message);
-            }
-            return AjaxResult.Success("保存成功");
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new { c.AUDITING, c.OUT_CODE, c.OUT_DATE, c.OUT_USERID, c.OUT_USER, c.OUT_DEPT_ID, c.OUT_DEPT_NAME, c.SHIP_DEPT, c.OUT_TYPE, c.EMERGENCY, c.PURPOSE, c.MEMO, c.IS_RED },
+                c => a => a.OUT_ID == c.OUT_ID,
+                BeforeAdd, BeforeUpdate, BeforeDelete, orgin: true);
         }
 
         /// <summary>
         /// 新增前处理
         /// </summary>
-        private async Task BeforeAdd(SP_OUT_APP entity)
+        private async Task BeforeAdd(SP_OUTSTORE entity)
         {
             if (entity.OUT_ID.IsNullOrWhiteSpace())
             {
                 entity.OUT_ID = GuidHelper.NewSnowflakeId().ToString();
             }
-            if (entity.DEPT_ID.IsNullOrWhiteSpace())
+            if (entity.OUT_CODE.IsNullOrWhiteSpace())
             {
-                entity.DEPT_ID = _userSession.Corp.CorpID;
-                entity.DEPT_NAME = _userSession.Corp.CName;
-                entity.SEC_DEPTID = _userSession.ParentCompany.CorpID;
-                entity.SEC_DEPT = _userSession.ParentCompany.CName;
+                entity.OUT_CODE = await _codeCreatorService.CreateCodeAsync<SP_OUTSTORE>("CK", a => a.OUT_CODE);
             }
-            if (!entity.APPLY_DATE.HasValue)
+            if (entity.OUT_DEPT_ID.IsNullOrWhiteSpace())
             {
-                entity.APPLY_DATE = Sysdate;
+                entity.OUT_DEPT_ID = _userSession.Corp.CorpID;
+                entity.OUT_DEPT_NAME = _userSession.Corp.SName;
             }
-            if (entity.APPLY_CODE.IsNullOrWhiteSpace())
+            if (entity.OUT_USERID.IsNullOrWhiteSpace())
             {
-                entity.APPLY_CODE = await _codeCreatorService.CreateCodeAsync<SP_OUT_APP>("LY", a => a.APPLY_CODE);
+                entity.OUT_USERID = _userSession.UserID.ToString();
+                entity.OUT_USER = _userSession.RealName;
             }
-            if (entity.AUDITING_A.IsNullOrWhiteSpace())
+            if (entity.AUDITING.IsNullOrWhiteSpace())
             {
-                entity.AUDITING_A = "0";
+                entity.AUDITING = "0";
             }
-        }
-
-        /// <summary>
-        /// 新增前处理
-        /// </summary>
-        private async Task BeforeAddSpOutAppdet(SP_OUTAPP_DET entity)
-        {
-            if (entity.OUT_ID.IsNullOrWhiteSpace())
+            if (entity.OUT_TYPE.IsNullOrWhiteSpace())
             {
-                throw new MessageException("外键 OUT_ID 为空！");
+                entity.OUT_TYPE = "20";
             }
-            if (entity.OUTDET_ID.IsNullOrWhiteSpace())
-            {
-                entity.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
-            }
-            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 更新前处理
         /// </summary>
-        private async Task SpOutAppBeforUpdate(SP_OUT_APP entity)
+        private async Task BeforeUpdate(SP_OUTSTORE entity)
         {
-            if (!entity.AUDITING_A.Equals("0"))
-            {
-                throw new MessageException("未提交的状态下才能修改");
-            }
+            await Task.CompletedTask;
         }
 
         /// <summary>
         /// 删除前处理
         /// </summary>
-        private async Task SpOutAppBeforDelete(SP_OUT_APP entity)
+        private async Task BeforeDelete(SP_OUTSTORE entity)
         {
-            if (entity.AUDITING_A.Equals("0"))
-                await _dbContext.DeleteAsync<SP_OUTAPP_DET>(x => x.OUT_ID.Equals(entity.OUT_ID));
-            else
-            {
-                throw new MessageException("未提交的状态下才能删除");
-            }
+            await _dbContext.DeleteAsync<SP_OUTSTORE_DET>(x => x.OUT_ID == entity.OUT_ID);
+        }
+
+        #endregion 主表CRUD
+
+        #region 明细CRUD
+
+        /// <summary>
+        /// 获取明细列表
+        /// </summary>
+        public async Task<GridData> DetListAsync(GridRequest request)
+        {
+            return await _dbContext.Query<SP_OUTSTORE_DET>().GetGridData(request);
         }
 
         /// <summary>
-        /// 提交物料领用申请
+        /// 保存明细
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> SubmitSpOutApp(string sid)
+        public async Task<AjaxResult> DetSaveAsync(SaveRequest<SP_OUTSTORE_DET> request)
         {
-            //出库单号
-            var out_code = await _codeCreatorService.CreateCodeAsync<SP_OUTSTORE>("CK", a => a.OUT_CODE);
-            //取物资申请表数据
-            var qryoutapps = await _dbContext.Query<SP_OUT_APP>()
-                 .Where(c => sid == c.OUT_ID)
-                 .Select(c => new
-                 {
-                     c.APPLY_CODE,
-                     c.APPLY_DATE,
-                     c.PROJECT_CODE,
-                     c.PROJECT_NAME,
-                     c.USER_ID,
-                     c.USER_NAME,
-                     c.APPLY_TYPE,
-                     c.SEC_DEPTID,
-                     c.PURTYPE_ID,
-                     c.SEC_DEPT,
-                     c.PURTYPE_NAME,
-                     c.SUM_MONEY,
-                     c.MEMO,
-                     c.OUT_ID,
-                     c.DEVICE_NO,
-                     c.DEVICE_NAME,
-                     c.DEPT_ID,
-                     c.DEPT_NAME
-                 }).FirstOrDefaultAsync();
-            //取明细表数据
-            var qryoutappdets = _dbContext.Query<SP_OUTAPP_DET>()
-                 .Where(c => sid == c.OUT_ID).Select(c => new
-                 {
-                     c.OUT_ID,
-                     c.APPLY_NUM,
-                     c.SP_ID,
-                     c.SP_CODE,
-                     c.SP_NAME,
-                     c.SP_SIZE,
-                     c.DEVICE_ID,
-                     c.PRODUCE,
-                     c.DEVICE_NO,
-                     c.UNIT,
-                     c.PRICE,
-                     c.APPLY_MONEY,
-                     c.STOCK_NAME,
-                     c.STORE_CODE,
-                     c.DEVICE_NAME,
-                     c.IN_DATE,
-                     c.DEPT_NAME,
-                     c.DEPT_ID,
-                     c.STOCK_ID,
-                     c.TYPE_ID,
-                     c.TYPE_NAME,
-                     c.TAX_RATE,
-                     c.NOTAX_PRICE,
-                     c.NOTAX_MONEY,
-                     c.MEMO,
-                     c.STORE_ID,
-                 }).ToList();
-            if (qryoutappdets.Count == 0)
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new { c.OUT_ID, c.STORE_ID, c.BATCH_CODE, c.SP_ID, c.SP_NAME, c.SP_CODE, c.TYPE_ID, c.TYPE_NAME, c.PRODUCE, c.SP_SIZE, c.UNIT, c.PROPERTY, c.OUT_NUM, c.TAX_MONEY, c.NOTAX_MONEY, c.HOUSE_ID, c.HOUSE_NAME, c.HOUSE_CODE, c.DEVICE_ID, c.DEVICE_NAME, c.DEVICE_NO },
+                c => a => a.OUT_DET_ID == c.OUT_DET_ID,
+                BeforeAddDet, BeforeUpdateDet, null, orgin: true);
+        }
+
+        /// <summary>
+        /// 新增明细前处理
+        /// </summary>
+        private async Task BeforeAddDet(SP_OUTSTORE_DET entity)
+        {
+            if (entity.OUT_ID.IsNullOrWhiteSpace())
             {
-                throw new MessageException("请导入明细数据！");
+                throw new MessageException("子表关联外键缺失");
+            }
+            if (entity.OUT_DET_ID.IsNullOrWhiteSpace())
+            {
+                entity.OUT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+            }
+            await HandleDet(entity);
+        }
+
+        /// <summary>
+        /// 更新明细前处理
+        /// </summary>
+        private async Task BeforeUpdateDet(SP_OUTSTORE_DET entity)
+        {
+            await HandleDet(entity);
+        }
+
+        /// <summary>
+        /// 明细检查和预处理
+        /// </summary>
+        private async Task HandleDet(SP_OUTSTORE_DET entity)
+        {
+            if (entity.OUT_NUM < 0)
+            {
+                throw new MessageException($"物资「{entity.SP_NAME}」出库数量不能为负数");
+            }
+            if (entity.OUT_NUM == 0)
+            {
+                throw new MessageException($"物资「{entity.SP_NAME}」出库数量不能为零");
+            }
+            if (!entity.OUT_NUM.HasValue)
+            {
+                throw new MessageException($"物资「{entity.SP_NAME}」出库数量不能为空");
+            }
+            // 有批次时按可变单价计算出库金额；无批次时金额为空
+            if (entity.STORE_ID.IsNullOrWhiteSpace())
+            {
+                entity.TAX_MONEY = null;
+                entity.NOTAX_MONEY = null;
             }
             else
             {
-                //往出库表插入数据
-                var outst = qryoutapps.MapTo<SP_OUTSTORE>();
+                var store = await _dbContext.QueryByKeyAsync<SP_STORE>(entity.STORE_ID);
+                MessageException.ThrowIf(store == null, $"批次「{entity.BATCH_CODE}」物资「{entity.SP_NAME}」可能已被冲红撤回，请删除后重新选择新批次");
+                // 扣减审批中和本单已占用的数量
+                var occupied_num = _dbContext.Query<SP_OUTSTORE>(so => so.AUDITING == "2" || so.OUT_ID == entity.OUT_ID)
+                    .InnerJoin<SP_OUTSTORE_DET>((so, sod) => so.OUT_ID == sod.OUT_ID)
+                    .Where((so, sod) => sod.STORE_ID == entity.STORE_ID)
+                    .Select((so, sod) => Sql.Sum(sod.OUT_NUM)).FirstOrDefault() ?? 0;
+                MessageException.ThrowIf(store.STORE_NUM - occupied_num < 0, $"批次「{entity.BATCH_CODE}」物资「{entity.SP_NAME}」库存数量不足");
+                // 可变单价计算金额
+                entity.TAX_MONEY = store.STORE_NUM == entity.OUT_NUM ? store.TAX_MONEY : Math.Round((store.TAX_MONEY * entity.OUT_NUM / store.STORE_NUM).Value, 2);
+                entity.NOTAX_MONEY = store.STORE_NUM == entity.OUT_NUM ? store.NOTAX_MONEY : Math.Round((store.NOTAX_MONEY * entity.OUT_NUM / store.STORE_NUM).Value, 2);
+            }
+            await Task.CompletedTask;
+        }
 
-                outst.OUT_ID = GuidHelper.NewSnowflakeId().ToString();
-                outst.OUT_CODE = out_code;
-                outst.OUT_DATE = Sysdate;
-                outst.IS_RED = "0";
-                outst.AUDITING_A = "0";
-                await _dbContext.InsertAsync(outst);
-
-                var spoutstoredet = new List<SP_OUTSTORE_DET>();
-                //申请金额
-                var appmoney = 0m;
-                foreach (var qryoutappdet in qryoutappdets)
+        /// <summary>
+        /// 子表导入批次
+        /// </summary>
+        public async Task<AjaxResult> DetImportAsync(string outId, List<string> store_ids)
+        {
+            var store_ids_count = store_ids.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
+            var out_det_list = await _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == outId).ToListAsync();
+            var request = new SaveRequest<SP_OUTSTORE_DET>()
+            {
+                Added = new List<SP_OUTSTORE_DET>(),
+                Original = new List<SP_OUTSTORE_DET>(),
+                Updated = new List<SP_OUTSTORE_DET>()
+            };
+            foreach (var store_id_count in store_ids_count)
+            {
+                var store_id = store_id_count.Key;
+                // 判断明细中是否已存在该批次
+                var existed_out_det = out_det_list.FirstOrDefault(x => x.STORE_ID == store_id);
+                if (existed_out_det != null)
                 {
-                    var qrypcs = await _dbContext.Query<SP_STORE>(c => c.STORE_NUM > 0)
-                        .Where(c => c.SP_CODE == qryoutappdet.SP_CODE && c.SP_ID == qryoutappdet.SP_ID && c.HOUSE_ID == qryoutappdet.STOCK_ID
-                             && c.SP_SIZE == qryoutappdet.SP_SIZE && c.UNIT == qryoutappdet.UNIT && c.SP_NAME == qryoutappdet.SP_NAME && c.HOUSE_NAME == qryoutappdet.STOCK_NAME)
-                        .OrderBy(c => c.IN_DATE)
-                        .ToListAsync();
-                    //取总数量
-                    var res = qryoutappdet.APPLY_NUM;
-                    foreach (var qrypc in qrypcs)
-                    {
-                        var applyNumToUse = res < qrypc.STORE_NUM ? res : qrypc.STORE_NUM;
-                        var outstdet2 = qryoutappdet.MapTo<SP_OUTSTORE_DET>();
-                        var outstdet3 = qrypc.MapTo(outstdet2);
-
-                        outstdet3.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
-                        outstdet3.OUT_ID = outst.OUT_ID;
-                        outstdet3.MONEY = qrypc.TAX_PRICE * applyNumToUse;
-                        outstdet3.STORE_NUM = qrypc.STORE_NUM;
-                        outstdet3.NOTAX_MONEY = qrypc.NOTAX_PRICE * applyNumToUse;
-                        outstdet3.APPLY_NUM = applyNumToUse;
-                        outstdet3.COUNT = applyNumToUse;
-                        //outstdet2.IN_DATE = qryoutappdet.IN_DATE;
-                        outstdet3.APPLY_MONEY = qrypc.TAX_PRICE * applyNumToUse;
-                        if (outstdet3.MONEY.HasValue)
-                        {
-                            appmoney += outstdet3.MONEY.Value;
-                        }
-                        spoutstoredet.Add(outstdet3);
-
-                        if (applyNumToUse == res)
-                        {
-                            break;
-                        }
-
-                        res -= applyNumToUse;
-                    }
+                    request.Original.Add(existed_out_det.MapTo<SP_OUTSTORE_DET>());
+                    existed_out_det.OUT_NUM = (existed_out_det.OUT_NUM ?? 0) + store_id_count.Value;
+                    request.Updated.Add(existed_out_det);
+                    continue;
                 }
-                await _dbContext.UpdateAsync<SP_OUTSTORE>(x => outst.OUT_ID == x.OUT_ID,
-                  x => new SP_OUTSTORE
-                  {
-                      SUM_MONEY = appmoney,
-                  });
-                await _dbContext.InsertRangeAsync(spoutstoredet);
-                return await _dbContext.UpdateAsync<SP_OUT_APP>(x => sid == x.OUT_ID,
-                      x => new SP_OUT_APP
-                      {
-                          AUDITING_A = "1",
-                      });
+                var store = await _dbContext.Query<SP_STORE>(x => x.STORE_ID == store_id).FirstOrDefaultAsync();
+                MessageException.ThrowIf(store == null, "批次不存在");
+                var new_out_det = store.MapTo<SP_OUTSTORE_DET>();
+                new_out_det.OUT_ID = outId;
+                new_out_det.OUT_NUM = store_id_count.Value;
+                new_out_det.TAX_MONEY = null;
+                new_out_det.NOTAX_MONEY = null;
+                new_out_det.CREATE_USERID = null;
+                new_out_det.CREATEUSER = null;
+                new_out_det.CREATEDATE = null;
+                new_out_det.MODIFY_USERID = null;
+                new_out_det.MODIFYUSER = null;
+                new_out_det.MODIFYDATE = null;
+                request.Added.Add(new_out_det);
             }
+            return await DetSaveAsync(request);
         }
 
+        #endregion 明细CRUD
+
+        #region 同时保存主子表
+
         /// <summary>
-        /// 撤销提交物料领用申请
+        /// 同时保存主子表
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> UnSubmitSpOutApp(string sid)
+        public async Task<AjaxResult> SaveAllAsync(
+            SaveRequest<SP_OUTSTORE> request1, SaveRequest<SP_OUTSTORE_DET> request2)
         {
-            var qrystore = await _dbContext.Query<SP_OUTSTORE>(x => sid == x.OUT_ID)
-                .Select(c => c.AUDITING_A)
-                .FirstOrDefaultAsync();
-            if (qrystore == "1")
+            string OUT_ID;
+            // 填写主子表关联键值
+            if (request1.Updated.Any() && !request1.Updated.First().OUT_ID.IsNullOrWhiteSpace())
             {
-                throw new MessageException("已领用出库，不可撤销提交！");
+                OUT_ID = request1.Updated.First().OUT_ID;
             }
-            else
+            else if (request1.Added.Any() && !request1.Added.First().OUT_ID.IsNullOrWhiteSpace())
             {
-                await _dbContext.DeleteAsync<SP_OUTSTORE>(c => c.OUT_ID == sid);
-                await _dbContext.DeleteAsync<SP_OUTSTORE_DET>(c => c.OUT_ID == sid);
-                return await _dbContext.UpdateAsync<SP_OUT_APP>(x => sid == x.OUT_ID,
-                  x => new SP_OUT_APP
-                  {
-                      AUDITING_A = "0",
-                  });
+                OUT_ID = request1.Added.First().OUT_ID;
             }
-        }
+            else OUT_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (request1.Added.Any() && request1.Added.First().OUT_ID.IsNullOrWhiteSpace())
+            {
+                request1.Added[0].OUT_ID = OUT_ID;
+            }
 
-        /// <summary>
-        /// 获取物料领用申请明细
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutAppdetList(GridRequest request)
-        {
-            return await _dbContext.Query<SP_OUTAPP_DET>()
-                .GetGridData(request);
-        }
+            foreach (var entity in request2.Added ??= new List<SP_OUTSTORE_DET>())
+            {
+                if (entity.OUT_ID.IsNullOrWhiteSpace()) entity.OUT_ID = OUT_ID;
+            }
 
-        #endregion 物料领用申请
-
-        #region 物料领用出库
-
-        /// <summary>
-        /// 获取物料领用出库记录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutStoreList(GridRequest request)
-        {
-            return await _dbContext.Query<SP_OUTSTORE>()
-                .OrderBy(c => c.AUDITING_A)
-                .ThenByDesc(c => c.OUT_CODE)
-                .GetGridData(request);
-        }
-
-        /// <summary>
-        /// 获取单条物料领用出库记录
-        /// </summary>
-        /// <returns></returns>
-
-        public async Task<SP_OUTSTORE> GetSpOutStoreListDetail(string ID)
-        {
-            var qry = await _dbContext.QueryByKeyAsync<SP_OUTSTORE>(ID);
-            return qry;
-        }
-
-        /// <summary>
-        /// 管理物料领用出库记录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> ManageSpOutStore(SaveRequest<SP_OUTSTORE> request, SaveRequest<SP_OUTSTORE_DET> requestdet)
-        {
             try
             {
                 await _dbContext.UseTransactionAsync(async () =>
                 {
-                    var execResult = await _dbContext.SaveEntityAnsyc(request,
-                             c => new
-                             {
-                                 c.OUT_DATE,
-                                 c.M_USERID,
-                                 c.M_USER,
-                                 c.MEMO,
-                                 c.OUT_ID,
-                             },
-                             c => a => a.OUT_ID == c.OUT_ID, null, SpOutStoreBeforUpdate);
-
-                    if (execResult.IsError)
+                    if ((await SaveAsync(request1)).IsError)
                     {
-                        throw new MessageException("主表保存失败");
+                        throw new MessageException("物资出库保存失败");
                     }
-
-                    requestdet ??= new SaveRequest<SP_OUTSTORE_DET>();
-
-                    execResult = await _dbContext.SaveEntityAnsyc(requestdet,
-                      c => new
-                      {
-                          c.SP_CODE,
-                          c.COUNT,
-                          c.OUTDET_ID,
-                      },
-                      c => a => a.OUTDET_ID == c.OUTDET_ID, BeforeAddSpOutStoredet);
-
-                    if (execResult.IsError)
+                    if ((await DetSaveAsync(request2)).IsError)
                     {
-                        throw new MessageException("明细表保存失败");
+                        throw new MessageException("物资出库明细保存失败");
                     }
                 });
             }
@@ -536,252 +343,497 @@ namespace EAM.Material.Services
             return AjaxResult.Success("保存成功");
         }
 
-        /// <summary>
-        /// 新增前处理
-        /// </summary>
-        private async Task BeforeAddSpOutStoredet(SP_OUTSTORE_DET entity)
-        {
-            entity.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
-            await Task.CompletedTask;
-        }
+        #endregion 同时保存主子表
+
+        #region 提交与撤销
 
         /// <summary>
-        /// 更新前处理
+        /// 提交出库
         /// </summary>
-        private async Task SpOutStoreBeforUpdate(SP_OUTSTORE entity)
+        public async Task<AjaxResult> SubmitAsync(string outId)
         {
-            if (!entity.AUDITING_A.Equals("0"))
+            // 判断是否有定义内部流程
+            var hasFlow = (await _flowEngineService.FlowListAsync(x => x.FlowCode == _flowCode)).Any();
+            if (hasFlow)
             {
-                throw new MessageException("未提交的状态下才能修改");
+                await SubmitWithFlow(outId);
             }
+            else
+            {
+                await SubmitNomal(outId);
+            }
+            return AjaxResult.Success();
         }
 
         /// <summary>
-        /// 提交物料领用出库
+        /// 无审批流程提交
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> SubmitSpOutStore(string sid)
+        private async Task SubmitNomal(string outId)
         {
-            var qry = await _dbContext.Query<SP_OUTSTORE>()
-                    .Where(c => c.OUT_ID == sid)
-                    .Select(c => new
+            await _dbContext.UseTransactionAsync(async () =>
+            {
+                // 分配批次
+                await AllocateBatch(outId);
+                // 更新库存，生成出库流水
+                await Outstore(outId);
+                // 更新记录状态为已提交
+                await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_ID == outId,
+                    x => new SP_OUTSTORE { AUDITING = "1" });
+            });
+        }
+
+        /// <summary>
+        /// 有审批流程提交
+        /// </summary>
+        private async Task SubmitWithFlow(string outId)
+        {
+            await _dbContext.UseTransactionAsync(async () =>
+            {
+                // 分配批次
+                await AllocateBatch(outId);
+                // 更新记录状态为审批中
+                await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_ID == outId,
+                    x => new SP_OUTSTORE { AUDITING = "2" });
+                // 创建审批流程
+                await CreateWorkFlow(outId);
+            });
+        }
+
+        /// <summary>
+        /// 创建审批流程
+        /// </summary>
+        private async Task CreateWorkFlow(string sid)
+        {
+            var flowExecuteInfo = new FlowExecuteInfo();
+            var dict = new Dictionary<string, object>();
+            dict.TryAdd("Sid", sid);
+            dict.TryAdd("isView", true);
+            // 计算出库金额
+            var EST_MONEY = _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == sid)
+                .Sum(x => x.TAX_MONEY) ?? 0;
+            dict.TryAdd("EST_MONEY", EST_MONEY);
+            var sp_out = await _dbContext.QueryByKeyAsync<SP_OUTSTORE>(sid);
+            // 单号
+            dict.TryAdd("DOCUMENT_CODE", sp_out.OUT_CODE);
+            // 获取部门信息
+            var corp = await _dbContext.QueryByKeyAsync<CF_CORP>(sp_out.OUT_DEPT_ID);
+            dict.TryAdd("DEPT_NAME", corp.CORP_SNAME);
+            // 组织层级
+            dict.TryAdd("DEPT_LEVEL", corp.CORP_PATH.Length / 3);
+            // 紧急程度
+            dict.TryAdd("EMERGENCY", sp_out.EMERGENCY);
+            // 领用人id
+            dict.TryAdd("OUT_USERID", sp_out.OUT_USERID);
+            flowExecuteInfo.FormData = dict;
+            flowExecuteInfo.FlowCode = _flowCode;
+            flowExecuteInfo.CorpId = sp_out.OUT_DEPT_ID;
+            await _flowEngineService.StartAsync(flowExecuteInfo);
+        }
+
+        /// <summary>
+        /// 审批流程回调
+        /// </summary>
+        public async Task Intercept(FlowExecuteInfo taskInfo)
+        {
+            var out_id = taskInfo.FormData.GetValueOrDefault("Sid").ToString();
+            var status = taskInfo.NodeStatus;
+            var current_node = "";
+            if (taskInfo.CurrentNode != null) current_node = taskInfo.CurrentNode.Name;
+            switch (status)
+            {
+                case NodeStatus.Agree:
+                    if (current_node == "end")
                     {
-                        c.OUT_DATE,
-                    }).FirstAsync();
-            if (qry.OUT_DATE == null)
-            {
-                throw new MessageException("核对出库日期是否选择！");
+                        // 审批通过，扣库存生成流水
+                        await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_ID == out_id,
+                            x => new SP_OUTSTORE { AUDITING = "3" });
+                        await Outstore(out_id);
+                    }
+                    break;
+                case NodeStatus.Reject:
+                    await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_ID == out_id,
+                        x => new SP_OUTSTORE { AUDITING = "4" });
+                    break;
+                case NodeStatus.Back:
+                    await _dbContext.UseTransactionAsync(async () =>
+                    {
+                        await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_ID == out_id,
+                            x => new SP_OUTSTORE { AUDITING = "6" });
+                    });
+                    break;
             }
-            //获取出库明细对应的数据
-            var qryoutstdets = await _dbContext.Query<SP_OUTSTORE_DET>()
-                 .Where(c => sid == c.OUT_ID)
-                 .Select(c => new
-                 {
-                     c.COUNT,
-                     c.STORE_CODE,
-                     c.STORE_ID,
-                     c.WATER_ID,
-                 })
-                 .ToListAsync();
-            //获取出库对应的数据
-            var qryoutst = await _dbContext.Query<SP_OUTSTORE>()
-                 .Where(c => sid == c.OUT_ID)
-                 .Select(c => new
-                 {
-                     c.OUT_CODE,
-                 }).FirstOrDefaultAsync();
-            //获取出库明细库存id
-            var outstoreDetIds = qryoutstdets.Select(q => q.STORE_ID).ToList();
-            //获取出库明细的库存数据
-            var qryStores = await _dbContext.Query<SP_STORE>()
-                .Where(s => outstoreDetIds.Contains(s.STORE_ID))
-                .ToListAsync();
-            var stwater = new List<SP_STORE_WATER>();
-            try
+        }
+
+        /// <summary>
+        /// 撤销提交
+        /// </summary>
+        public async Task<AjaxResult> RevokeAsync(string outId)
+        {
+            var sp_out_det = _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == outId).Select(x => x.OUT_DET_ID);
+            var qry_water = _dbContext.Query<SP_STORE_WATER>(x => sp_out_det.ToList().Contains(x.SRC_ID));
+            var qry_after_water = qry_water.InnerJoin<SP_STORE_WATER>(
+                (a, b) =>
+                    a.STORE_ID == b.STORE_ID &&
+                    b.WATER_DATE > a.WATER_DATE &&
+                    !qry_water.Where(x => x.WATER_ID == b.WATER_ID).Any())
+                .Select((a, b) => b);
+
+            if (qry_after_water.Any())
             {
+                throw new MessageException("库存已被使用，无法撤销");
+            }
+
+            // 撤销审批流程
+            var hasFlow = (await _flowEngineService.FlowListAsync(x => x.FlowCode == _flowCode)).Any();
+            if (hasFlow)
+            {
+                // 获取当前任务ID
+                var taskInfo = await _flowEngineService.TaskInfoAsync(t => t.TaskKey == outId && t.FlowCode == _flowCode);
+                if (taskInfo != null)
+                {
+                    var cancelInfo = new FlowExecuteInfo { TaskId = taskInfo.TaskId };
+                    await _flowEngineService.CancelAsync(cancelInfo);
+                }
+            }
+
+            await _dbContext.UseTransactionAsync(async () =>
+            {
+                // 相关库存主键
+                var store_ids = await qry_water.Select(x => x.STORE_ID).Distinct().ToListAsync();
+                // 删除流水
+                await _dbContext.DeleteAsync<SP_STORE_WATER>(x => sp_out_det.ToList().Contains(x.SRC_ID));
+                // 删除没有流水的库存
+                await _dbContext.DeleteAsync<SP_STORE>(x => store_ids.Contains(x.STORE_ID) && !_dbContext.Query<SP_STORE_WATER>(ssw => ssw.STORE_ID == x.STORE_ID).Any());
+                // 依据最后的流水更新库存
+                await _dbContext.UpdateAsync<SP_STORE>(x => store_ids.Contains(x.STORE_ID), x => new SP_STORE
+                {
+                    STORE_NUM = _dbContext.Query<SP_STORE_WATER>(ssw => ssw.STORE_ID == x.STORE_ID)
+                        .OrderByDesc(ssw => ssw.WATER_DATE).First().CUR_NUM,
+                    TAX_MONEY = _dbContext.Query<SP_STORE_WATER>(ssw => ssw.STORE_ID == x.STORE_ID)
+                        .OrderByDesc(ssw => ssw.WATER_DATE).First().CUR_TAX_MONEY,
+                    NOTAX_MONEY = _dbContext.Query<SP_STORE_WATER>(ssw => ssw.STORE_ID == x.STORE_ID)
+                        .OrderByDesc(ssw => ssw.WATER_DATE).First().CUR_NOTAX_MONEY
+                });
+
+                await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_ID == outId, x => new SP_OUTSTORE
+                {
+                    AUDITING = "0"
+                });
+            });
+
+            return AjaxResult.Success();
+        }
+
+        /// <summary>
+        /// 获取审批任务ID
+        /// </summary>
+        public async Task<string> GetTaskIdAsync(string outId)
+        {
+            var taskInfo = await _flowEngineService.TaskInfoAsync(t => t.TaskKey == outId && t.FlowCode == _flowCode);
+            return taskInfo?.TaskId;
+        }
+
+        #endregion 提交与撤销
+
+        #region FIFO批次分配
+
+        /// <summary>
+        /// 提交时按先进先出方式分配批次
+        /// </summary>
+        private async Task AllocateBatch(string outId)
+        {
+            // 获取当前登录用户所在公司的所有仓库
+            var house_id_list = await _dbContext.Query<SP_HOUSE>()
+                .LeftJoin<CF_CORP>((sh, cc) => sh.DEPT_ID == cc.CORPID)
+                .Where((sh, cc) => cc.CORP_PATH.StartsWith(_userSession.ParentCompany.TreeNode))
+                .Select((sh, cc) => sh.HOUSE_ID)
+                .ToListAsync();
+
+            // 获取所需领用的各仓库各物资总数及对应当前库存数量
+            var sum_out_det = _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == outId)
+                .GroupBy(x => new { x.SP_ID, x.SP_NAME })
+                .Select(x => new
+                {
+                    x.SP_ID,
+                    x.SP_NAME,
+                    SUM_OUT_NUM = Sql.Sum(x.OUT_NUM) ?? 0,
+                    SUM_STORE_NUM = _dbContext.Query<SP_STORE>(s =>
+                            s.SP_ID == x.SP_ID && house_id_list.Contains(s.HOUSE_ID))
+                        .Sum(s => s.STORE_NUM) ?? 0,
+                    SUM_OCCUPY_NUM = _dbContext.Query<SP_OUTSTORE>(so => so.AUDITING == "2")
+                        .InnerJoin<SP_OUTSTORE_DET>((so, sod) => so.OUT_ID == sod.OUT_ID)
+                        .Where((so, sod) => sod.SP_ID == x.SP_ID && house_id_list.Contains(sod.HOUSE_ID))
+                        .Select((so, sod) => Sql.Sum(sod.OUT_NUM)).FirstOrDefault() ?? 0
+                });
+
+            // 判断库存数量是否足够
+            var understock = await sum_out_det.Where(x => x.SUM_OUT_NUM > x.SUM_STORE_NUM - x.SUM_OCCUPY_NUM).ToListAsync();
+            if (understock.Any())
+            {
+                string msg = "库存数量不足\n";
+                foreach (var i in understock)
+                {
+                    msg += $"物资「{i.SP_NAME}」可领用数量为「{i.SUM_STORE_NUM - i.SUM_OCCUPY_NUM}」，领用数量「{i.SUM_OUT_NUM}」过多\n";
+                }
+                throw new MessageException(msg);
+            }
+
+            {
+                // 已有确定批次的出库明细不再重新分配批次，只计算出库金额并事先更新
+                var allocated_out_det_data = await _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == outId && !string.IsNullOrWhiteSpace(x.STORE_ID)).ToListAsync();
+                foreach (var out_det_datum in allocated_out_det_data)
+                {
+                    var batch = await _dbContext.QueryByKeyAsync<SP_STORE>(out_det_datum.STORE_ID);
+                    MessageException.ThrowIf(batch == null, $"批次「{out_det_datum.BATCH_CODE}」物资「{out_det_datum.SP_NAME}」可能已被冲红撤回，请删除后重新选择新批次");
+                    _dbContext.TrackEntity(out_det_datum);
+                    out_det_datum.TAX_MONEY = (out_det_datum.OUT_NUM == batch.STORE_NUM ? batch.TAX_MONEY : Math.Round((batch.TAX_MONEY * out_det_datum.OUT_NUM / batch.STORE_NUM).Value, 2)).Value;
+                    out_det_datum.NOTAX_MONEY = (out_det_datum.OUT_NUM == batch.STORE_NUM ? batch.NOTAX_MONEY : Math.Round((batch.NOTAX_MONEY * out_det_datum.OUT_NUM / batch.STORE_NUM).Value, 2)).Value;
+                    await _dbContext.UpdateAsync(out_det_datum);
+                }
+            }
+
+            // 按先进先出分配批次
+            var sum_out_det_data = await sum_out_det.ToListAsync();
+            foreach (var sum_out_det_datum in sum_out_det_data)
+            {
+                var out_det_data = await _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == outId && x.SP_ID == sum_out_det_datum.SP_ID && string.IsNullOrWhiteSpace(x.STORE_ID)).ToListAsync();
+                var all_store = await _dbContext.Query<SP_STORE>(x => x.SP_ID == sum_out_det_datum.SP_ID && house_id_list.Contains(x.HOUSE_ID))
+                    .Select(x => new SP_STORE
+                    {
+                        STORE_ID = x.STORE_ID,
+                        BATCH_CODE = x.BATCH_CODE,
+                        IN_DATE = x.IN_DATE,
+                        HOUSE_ID = x.HOUSE_ID,
+                        HOUSE_NAME = x.HOUSE_NAME,
+                        HOUSE_CODE = x.HOUSE_CODE,
+                        STORE_NUM = x.STORE_NUM - (_dbContext.Query<SP_OUTSTORE>(so => so.AUDITING == "2" || so.OUT_ID == outId)
+                            .InnerJoin<SP_OUTSTORE_DET>((so, sod) => so.OUT_ID == sod.OUT_ID)
+                            .Where((so, sod) => sod.STORE_ID == x.STORE_ID)
+                            .Select((so, sod) => Sql.Sum(sod.OUT_NUM)).FirstOrDefault() ?? 0),
+                        TAX_MONEY = x.TAX_MONEY - (_dbContext.Query<SP_OUTSTORE>(so => so.AUDITING == "2" || so.OUT_ID == outId)
+                            .InnerJoin<SP_OUTSTORE_DET>((so, sod) => so.OUT_ID == sod.OUT_ID)
+                            .Where((so, sod) => sod.STORE_ID == x.STORE_ID)
+                            .Select((so, sod) => Sql.Sum(sod.TAX_MONEY)).FirstOrDefault() ?? 0),
+                        NOTAX_MONEY = x.NOTAX_MONEY - (_dbContext.Query<SP_OUTSTORE>(so => so.AUDITING == "2" || so.OUT_ID == outId)
+                            .InnerJoin<SP_OUTSTORE_DET>((so, sod) => so.OUT_ID == sod.OUT_ID)
+                            .Where((so, sod) => sod.STORE_ID == x.STORE_ID)
+                            .Select((so, sod) => Sql.Sum(sod.NOTAX_MONEY)).FirstOrDefault() ?? 0)
+                    })
+                    .ToListAsync();
+                var has_error_store = all_store.Where(x => x.STORE_NUM < 0).Any();
+                MessageException.ThrowIf(has_error_store, $"物资「{sum_out_det_datum.SP_NAME}」库存不足\n");
+                var store = all_store.Where(x => x.STORE_NUM > 0).OrderBy(x => x.IN_DATE).ToList();
+
+                int i = 0;
+                foreach (var out_det_datum in out_det_data)
+                {
+                    decimal out_num = out_det_datum.OUT_NUM.Value;
+                    _dbContext.TrackEntity(out_det_datum);
+                    while (out_num > 0 && i < store.Count)
+                    {
+                        var batch = store[i];
+
+                        decimal cur_out_num = Math.Min(out_num, batch.STORE_NUM.Value);
+                        out_num -= cur_out_num;
+                        // 可变单价计算金额
+                        decimal cur_out_tax_money = (cur_out_num == batch.STORE_NUM ? batch.TAX_MONEY : Math.Round((batch.TAX_MONEY * cur_out_num / batch.STORE_NUM).Value, 2)).Value;
+                        decimal cur_out_notax_money = (cur_out_num == batch.STORE_NUM ? batch.NOTAX_MONEY : Math.Round((batch.NOTAX_MONEY * cur_out_num / batch.STORE_NUM).Value, 2)).Value;
+
+                        out_det_datum.STORE_ID = batch.STORE_ID;
+                        out_det_datum.BATCH_CODE = batch.BATCH_CODE;
+                        out_det_datum.HOUSE_ID = batch.HOUSE_ID;
+                        out_det_datum.HOUSE_NAME = batch.HOUSE_NAME;
+                        out_det_datum.HOUSE_CODE = batch.HOUSE_CODE;
+                        out_det_datum.OUT_NUM = cur_out_num;
+                        out_det_datum.TAX_MONEY = cur_out_tax_money;
+                        out_det_datum.NOTAX_MONEY = cur_out_notax_money;
+                        out_det_datum.MODIFYDATE = await _dbContext.GetSysdate();
+                        out_det_datum.MODIFY_USERID = _userSession.UserID;
+                        out_det_datum.MODIFYUSER = _userSession.UserName;
+                        await _dbContext.InsertOrUpdateAsync(out_det_datum);
+
+                        batch.STORE_NUM -= cur_out_num;
+                        batch.TAX_MONEY -= cur_out_tax_money;
+                        batch.NOTAX_MONEY -= cur_out_notax_money;
+                        if (batch.STORE_NUM == 0) ++i;
+                        else if (batch.STORE_NUM < 0) throw new MessageException("分配批次失败");
+
+                        // 剩余未分配数量需要分配到其它批次上，故重新生成主键
+                        out_det_datum.OUT_DET_ID = GuidHelper.NewSnowflakeId().ToString();
+                    }
+                    MessageException.ThrowIf(out_num > 0 && i >= store.Count, "分配批次失败");
+                }
+            }
+        }
+
+        #endregion FIFO批次分配
+
+        #region 扣库存与生成流水
+
+        /// <summary>
+        /// 提交完成后或审批完成后，根据分配好的批次扣除库存并生成流水
+        /// </summary>
+        private async Task Outstore(string outId)
+        {
+            var out_det_data = await _dbContext.Query<SP_OUTSTORE>(x => x.OUT_ID == outId)
+                .InnerJoin<SP_OUTSTORE_DET>((so, sod) => so.OUT_ID == sod.OUT_ID)
+                .Select((so, sod) => new
+                {
+                    so.OUT_CODE,
+                    so.OUT_DATE,
+                    so.OUT_TYPE,
+                    so.OUT_DEPT_ID,
+                    so.OUT_DEPT_NAME,
+                    sod.OUT_DET_ID,
+                    sod.STORE_ID,
+                    sod.SP_ID,
+                    sod.SP_NAME,
+                    sod.OUT_NUM,
+                    sod.TAX_MONEY,
+                    sod.NOTAX_MONEY
+                })
+                .ToListAsync();
+
+            // 重复出库验证
+            {
+                var outDetIdList = out_det_data.Select(x => x.OUT_DET_ID).ToList();
+                var isRepeatedOut = await _dbContext.Query<SP_STORE_WATER>(x => outDetIdList.Contains(x.SRC_ID)).AnyAsync();
+                MessageException.ThrowIf(isRepeatedOut, $"重复出库，请联系管理员\noutId='{outId}'");
+            }
+
+            foreach (var out_det_datum in out_det_data)
+            {
+                MessageException.ThrowIf(out_det_datum.STORE_ID.IsNullOrWhiteSpace(), $"物资「{out_det_datum.SP_NAME}」未分配批次");
+                MessageException.ThrowIf(!out_det_datum.OUT_NUM.HasValue || out_det_datum.OUT_NUM <= 0, $"物资「{out_det_datum.SP_NAME}」出库数量需为正数");
+                var batch = await _dbContext.QueryByKeyAsync<SP_STORE>(out_det_datum.STORE_ID);
+                MessageException.ThrowIf(out_det_datum.OUT_NUM > batch.STORE_NUM, $"批次号「{batch.BATCH_CODE}」的物资「{out_det_datum.SP_NAME}」库存数量不足\n出库数量「{out_det_datum.OUT_NUM}」\n库存数量「{batch.STORE_NUM}」");
+                _dbContext.TrackEntity(batch);
+
+                // 可变单价计算出库金额
+                decimal cur_out_num = out_det_datum.OUT_NUM.Value;
+                decimal cur_out_tax_money = (cur_out_num == batch.STORE_NUM ? batch.TAX_MONEY : Math.Round((batch.TAX_MONEY * cur_out_num / batch.STORE_NUM).Value, 2)).Value;
+                decimal cur_out_notax_money = (cur_out_num == batch.STORE_NUM ? batch.NOTAX_MONEY : Math.Round((batch.NOTAX_MONEY * cur_out_num / batch.STORE_NUM).Value, 2)).Value;
+
+                // 生成流水
+                var water = new SP_STORE_WATER();
+                water.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
+                water.STORE_ID = batch.STORE_ID;
+                water.SRC_TYPE = out_det_datum.OUT_TYPE;
+                water.SRC_ID = out_det_datum.OUT_DET_ID;
+                water.SRC_CODE = out_det_datum.OUT_CODE;
+                water.SRC_DATE = out_det_datum.OUT_DATE;
+                water.INIT_NUM = batch.STORE_NUM;
+                water.INIT_TAX_MONEY = batch.TAX_MONEY;
+                water.INIT_NOTAX_MONEY = batch.NOTAX_MONEY;
+                water.IN_NUM = 0;
+                water.IN_TAX_MONEY = 0;
+                water.IN_NOTAX_MONEY = 0;
+                water.OUT_NUM = out_det_datum.OUT_NUM;
+                water.OUT_TAX_MONEY = out_det_datum.TAX_MONEY;
+                water.OUT_NOTAX_MONEY = out_det_datum.NOTAX_MONEY;
+                water.CUR_NUM = batch.STORE_NUM - out_det_datum.OUT_NUM;
+                water.CUR_TAX_MONEY = batch.TAX_MONEY - out_det_datum.TAX_MONEY;
+                water.CUR_NOTAX_MONEY = batch.NOTAX_MONEY - out_det_datum.NOTAX_MONEY;
+                water.WATER_DATE = await _dbContext.GetSysdate();
+                water.DEPT_ID = out_det_datum.OUT_DEPT_ID;
+                water.DEPT_NAME = out_det_datum.OUT_DEPT_NAME;
                 await _dbContext.UseTransactionAsync(async () =>
                 {
-                    foreach (var qryoutstdet in qryoutstdets)
+                    // 插入流水记录
+                    var detRequest = new SaveRequest<SP_STORE_WATER> { Added = new List<SP_STORE_WATER> { water } };
+                    await _spStoreService.DetSaveAsync(detRequest);
+
+                    // 更新库存
+                    batch.STORE_NUM -= cur_out_num;
+                    batch.TAX_MONEY -= cur_out_tax_money;
+                    batch.NOTAX_MONEY -= cur_out_notax_money;
+                    await _dbContext.UpdateAsync(batch);
+
+                    // 更新出库明细中的出库金额
+                    await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => x.OUT_DET_ID == out_det_datum.OUT_DET_ID, x => new SP_OUTSTORE_DET
                     {
-                        //获取库存数据
-                        var qrystore = qryStores.FirstOrDefault(s =>
-                            s.STORE_ID == qryoutstdet.STORE_ID);
-                        if (qrystore.STORE_NUM < qryoutstdet.COUNT)
-                        {
-                            throw new MessageException("当前批次库存已经没这么多，请重新选择出库数量！");
-                        }
-                        if (qrystore != null)
-                        {
-                            //期初库存数量
-                            var bnum = qrystore.STORE_NUM;
-                            //期初库存金额
-                            var bmoney = qrystore.TAX_MONEY;
-                            //剩余库存数量
-                            var surnum = qrystore.STORE_NUM - qryoutstdet.COUNT;
-                            //剩余库存金额
-                            var surmoney = surnum * qrystore.TAX_PRICE;
-                            //剩余不含税金额
-                            var surnomoney = surnum * qrystore.NOTAX_PRICE;
-                            //更新库存表
-                            var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
-                                 x => new SP_STORE
-                                 {
-                                     STORE_NUM = surnum,
-                                     TAX_MONEY = surmoney,
-                                     NOTAX_MONEY = surnomoney,
-                                 });
-
-                            //往流水表插数据
-                            var waterdata = new SP_STORE_WATER();
-                            waterdata.STORE_ID = qryoutstdet.STORE_ID;
-                            waterdata.SRC_CODE = qryoutst.OUT_CODE;
-                            waterdata.SRC_TYPE = "3";
-                            waterdata.INIT_NUM = bnum;
-                            waterdata.INIT_TAX_MONEY = bmoney;
-                            waterdata.IN_NUM = 0;
-                            waterdata.IN_TAX_MONEY = 0;
-                            waterdata.IN_NOTAX_MONEY = 0;
-                            waterdata.OUT_NUM = qryoutstdet.COUNT;
-                            waterdata.OUT_TAX_MONEY = qryoutstdet.COUNT * qrystore.TAX_PRICE;
-                            waterdata.OUT_NOTAX_MONEY = qryoutstdet.COUNT * qrystore.NOTAX_PRICE;
-                            waterdata.CUR_NUM = surnum;
-                            waterdata.CUR_TAX_MONEY = surmoney;
-                            waterdata.CUR_NOTAX_MONEY = surnomoney;
-
-                            waterdata.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
-                            waterdata.WATER_DATE = Sysdate;
-                            stwater.Add(waterdata);
-
-                            await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
-                                      x => new SP_OUTSTORE_DET
-                                      {
-                                          WATER_ID = waterdata.WATER_ID,
-                                      });
-                        }
-                    }
-                    await _dbContext.InsertRangeAsync(stwater);
+                        TAX_MONEY = cur_out_tax_money,
+                        NOTAX_MONEY = cur_out_notax_money
+                    });
                 });
             }
-            catch (Exception)
-            {
-                throw;
-            }
-            return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
-                      x => new SP_OUTSTORE
-                      {
-                          AUDITING_A = "1",
-                      });
         }
 
+        #endregion 扣库存与生成流水
+
+        #region 出库冲红
+
         /// <summary>
-        /// 撤销物料领用出库
+        /// 出库冲红
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> UnSubmitSpOutStore(string sid)
+        public async Task OutRedAsync(string outId)
         {
-            //获取出库明细对应的数据
-            var qryoutstdets = await _dbContext.Query<SP_OUTSTORE_DET>()
-                 .Where(c => sid == c.OUT_ID)
-                 .Select(c => new
-                 {
-                     c.COUNT,
-                     c.STORE_CODE,
-                     c.STORE_ID,
-                     c.WATER_ID,
-                 })
-                 .ToListAsync();
-            //获取出库对应的数据
-            var qryoutst = await _dbContext.Query<SP_OUTSTORE>()
-                 .Where(c => sid == c.OUT_ID)
-                 .Select(c => new
-                 {
-                     c.OUT_CODE,
-                 }).FirstOrDefaultAsync();
-            //获取出库明细库存id
-            var outstoreDetIds = qryoutstdets.Select(q => q.STORE_ID).ToList();
-            //获取出库明细的库存数据
-            var qryStores = await _dbContext.Query<SP_STORE>()
-                .Where(s => outstoreDetIds.Contains(s.STORE_ID))
-                .ToListAsync();
-            try
+            var sp_out = await _dbContext.QueryByKeyAsync<SP_OUTSTORE>(outId);
+            MessageException.ThrowIf(sp_out == null, "出库单不存在");
+            await _dbContext.UseTransactionAsync(async () =>
             {
-                await _dbContext.UseTransactionAsync(async () =>
+                _dbContext.TrackEntity(sp_out);
+                sp_out.IS_RED = "1";
+                sp_out.RED_USERID = _userSession.UserID.ToString();
+                sp_out.RED_USER = _userSession.RealName;
+                sp_out.RED_DATE = await _dbContext.GetSysdate();
+                await _dbContext.UpdateAsync(sp_out);
+
+                var src_type = await _dbContext.Query<BC_CODE>().Where(c => c.CODE_CN == "出库冲红" && c.CODE_TYPE == "src_type").Select(c => c.CODE_EN).FirstAsync();
+                var sp_out_det_data = await _dbContext.Query<SP_OUTSTORE_DET>().Where(c => c.OUT_ID == sp_out.OUT_ID).ToListAsync();
+
+                foreach (var sp_out_det_datum in sp_out_det_data)
                 {
-                    foreach (var qryoutstdet in qryoutstdets)
+                    var store = await _dbContext.QueryByKeyAsync<SP_STORE>(sp_out_det_datum.STORE_ID);
+
+                    // 生成冲红流水
+                    var water = new SP_STORE_WATER();
+                    water.WATER_ID = GuidHelper.NewSnowflakeId().ToString();
+                    water.STORE_ID = store.STORE_ID;
+                    water.SRC_TYPE = src_type;
+                    water.SRC_ID = sp_out_det_datum.OUT_DET_ID;
+                    water.SRC_CODE = sp_out.OUT_CODE;
+                    water.SRC_DATE = sp_out.RED_DATE;
+                    water.INIT_NUM = store.STORE_NUM;
+                    water.INIT_TAX_MONEY = store.TAX_MONEY;
+                    water.INIT_NOTAX_MONEY = store.NOTAX_MONEY;
+                    water.IN_NUM = sp_out_det_datum.OUT_NUM ?? 0;
+                    water.IN_TAX_MONEY = sp_out_det_datum.TAX_MONEY ?? 0;
+                    water.IN_NOTAX_MONEY = sp_out_det_datum.NOTAX_MONEY ?? 0;
+                    water.OUT_NUM = 0;
+                    water.OUT_TAX_MONEY = 0;
+                    water.OUT_NOTAX_MONEY = 0;
+                    water.CUR_NUM = store.STORE_NUM + sp_out_det_datum.OUT_NUM ?? 0;
+                    water.CUR_TAX_MONEY = store.TAX_MONEY + sp_out_det_datum.TAX_MONEY ?? 0;
+                    water.CUR_NOTAX_MONEY = store.NOTAX_MONEY + sp_out_det_datum.NOTAX_MONEY ?? 0;
+                    water.WATER_DATE = await _dbContext.GetSysdate();
+                    water.DEPT_ID = sp_out.OUT_DEPT_ID;
+                    water.DEPT_NAME = sp_out.OUT_DEPT_NAME;
+                    var detRequest = new SaveRequest<SP_STORE_WATER> { Added = new List<SP_STORE_WATER> { water } };
+                    await _spStoreService.DetSaveAsync(detRequest);
+
+                    // 修改库存（冲红为入库）
+                    store.STORE_NUM = store.STORE_NUM + sp_out_det_datum.OUT_NUM;
+                    store.TAX_MONEY = store.TAX_MONEY + sp_out_det_datum.TAX_MONEY;
+                    store.NOTAX_MONEY = store.NOTAX_MONEY + sp_out_det_datum.NOTAX_MONEY;
+                    var request = new SaveRequest<SP_STORE>
                     {
-                        //获取库存数据
-                        var qrystore = qryStores.FirstOrDefault(s =>
-                            s.STORE_ID == qryoutstdet.STORE_ID);
-
-                        //剩余库存数量
-                        var surnum = qrystore.STORE_NUM + qryoutstdet.COUNT;
-                        //剩余库存金额
-                        var surmoney = surnum * qrystore.TAX_PRICE;
-                        //剩余不含税金额
-                        var surnomoney = surnum * qrystore.NOTAX_PRICE;
-                        //更新库存表
-                        var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qryoutstdet.STORE_ID,
-                             x => new SP_STORE
-                             {
-                                 STORE_NUM = surnum,
-                                 TAX_MONEY = surmoney,
-                                 NOTAX_MONEY = surnomoney,
-                             });
-
-                        //往流水表插数据
-                        await _dbContext.DeleteAsync<SP_OUTSTORE>(c => c.OUT_ID == sid);
-
-                        await _dbContext.UpdateAsync<SP_OUTSTORE_DET>(x => sid == x.OUT_ID,
-                                  x => new SP_OUTSTORE_DET
-                                  {
-                                      WATER_ID = "",
-                                  });
-                    }
-                });
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
-                      x => new SP_OUTSTORE
-                      {
-                          AUDITING_A = "0",
-                      });
+                        Original = new List<SP_STORE> { new SP_STORE { STORE_ID = store.STORE_ID } },
+                        Updated = new List<SP_STORE> { store }
+                    };
+                    await _spStoreService.SaveAsync(request);
+                }
+            });
         }
 
-        /// <summary>
-        /// 注销物料领用出库
-        /// </summary>
-        /// <returns></returns>
-        public async Task<int> ReturnedSpOutStore(string sid)
-        {
-            return await _dbContext.UpdateAsync<SP_OUTSTORE>(x => sid == x.OUT_ID,
-                      x => new SP_OUTSTORE
-                      {
-                          AUDITING_A = "7",
-                      });
-        }
+        #endregion 出库冲红
+
+        #region 冲红管理
 
         /// <summary>
-        /// 获取物料领用出库明细
+        /// 获取冲红记录列表
         /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutStoredetList(GridRequest request)
-        {
-            return await _dbContext.Query<SP_OUTSTORE_DET>()
-                .GetGridData(request);
-        }
-
-        #endregion 物料领用出库
-
-        #region 物料出库冲红
-
-        /// <summary>
-        /// 获取冲红记录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutBackList(GridRequest request)
+        public async Task<GridData> OutBackListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_OUT_BACK>()
                 .OrderBy(c => c.AUDITING)
@@ -790,21 +842,27 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 获取单条冲红记录
+        /// 获取冲红记录详情
         /// </summary>
-        /// <returns></returns>
-
-        public async Task<SP_OUT_BACK> GetSpOutBackListDetail(string ID)
+        public async Task<SP_OUT_BACK> OutBackDetailAsync(string id)
         {
-            var qry = await _dbContext.QueryByKeyAsync<SP_OUT_BACK>(ID);
-            return qry;
+            return await _dbContext.QueryByKeyAsync<SP_OUT_BACK>(id);
         }
 
         /// <summary>
-        /// 管理导入冲红记录
+        /// 保存冲红记录
         /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> ManageSpOutBack(List<SP_OUTSTORE> request)
+        public async Task<AjaxResult> SaveOutBackAsync(SaveRequest<SP_OUT_BACK> request)
+        {
+            return await _dbContext.SaveEntityAnsyc(request,
+                c => new { c.BACK_DATE, c.MEMO, c.OUT_BACK_ID },
+                c => a => a.OUT_BACK_ID == c.OUT_BACK_ID);
+        }
+
+        /// <summary>
+        /// 管理冲红导入
+        /// </summary>
+        public async Task<AjaxResult> ManageOutBackAsync(List<SP_OUTSTORE> request)
         {
             try
             {
@@ -813,41 +871,34 @@ namespace EAM.Material.Services
                     var outlist = request.Select(x => x.OUT_ID).ToList();
                     var outBackDets = _dbContext.Query<SP_OUTSTORE>().ToList();
                     var request2 = outBackDets
-                    .Where(x => outlist.Contains(x.OUT_ID))
-                    .Select(x =>
-                    {
-                        return x.MapTo<SP_OUT_BACK>();
-                    })
-                    .ToList();
+                        .Where(x => outlist.Contains(x.OUT_ID))
+                        .Select(x => x.MapTo<SP_OUT_BACK>())
+                        .ToList();
 
-                    foreach (var request1 in request2)
+                    var outDic = new Dictionary<string, string>();
+                    foreach (var req in request2)
                     {
-                        request1.BACK_DATE = Sysdate;
-                        var back_code = await _codeCreatorService.CreateCodeAsync<SP_OUT_BACK>("CH", a => a.BACK_CODE);
-                        request1.BACK_CODE = back_code;
-                        request1.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
-                        request1.MEMO = "";
-                        outDic[request1.OUT_ID] = request1.OUT_BACK_ID;
+                        req.BACK_DATE = await _dbContext.GetSysdate();
+                        req.BACK_CODE = await _codeCreatorService.CreateCodeAsync<SP_OUT_BACK>("CH", a => a.BACK_CODE);
+                        req.OUT_BACK_ID = GuidHelper.NewSnowflakeId().ToString();
+                        req.MEMO = "";
+                        outDic[req.OUT_ID] = req.OUT_BACK_ID;
                     }
                     await _dbContext.InsertRangeAsync(request2);
                     if (request2.Count > 0)
                     {
                         var keylist = request2.Select(x => x.OUT_ID).ToList();
                         var outstoreDets = _dbContext.Query<SP_OUTSTORE_DET>().ToList();
-
                         var spoutbackdets = outstoreDets
                             .Where(x => keylist.Contains(x.OUT_ID))
-                            .Select(x =>
-                            {
-                                return x.MapTo<SP_OUTBACK_DET>();
-                            })
+                            .Select(x => x.MapTo<SP_OUTBACK_DET>())
                             .ToList();
                         foreach (var spoutbackdet in spoutbackdets)
                         {
                             spoutbackdet.OUTDET_ID = GuidHelper.NewSnowflakeId().ToString();
                             spoutbackdet.OUT_BACK_ID = outDic[spoutbackdet.OUT_ID];
                         }
-                        await _dbContext.InsertRangeAsync(spoutbackdets); // 插入明细数据
+                        await _dbContext.InsertRangeAsync(spoutbackdets);
                     }
                 });
                 return AjaxResult.Success("保存成功");
@@ -859,173 +910,120 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
-        /// 提交
+        /// 提交冲红
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> SubmitSpOutBack(string sid)
+        public async Task<int> SubmitOutBackAsync(string sid)
         {
-            //查冲红的出库单号
-            var qryback = await _dbContext.Query<SP_OUT_BACK>(c => c.OUT_BACK_ID == sid)
-                .FirstOrDefaultAsync();
-            //查明细id的数据
-            var qrybackdets = await _dbContext.Query<SP_OUTBACK_DET>(c => c.OUT_BACK_ID == sid)
-                .ToListAsync();
-            //获取明细库存id
+            var qryback = await _dbContext.Query<SP_OUT_BACK>(c => c.OUT_BACK_ID == sid).FirstOrDefaultAsync();
+            var qrybackdets = await _dbContext.Query<SP_OUTBACK_DET>(c => c.OUT_BACK_ID == sid).ToListAsync();
             var backstoreDetIds = qrybackdets.Select(q => q.STORE_ID).ToList();
-            //获取出库明细的库存数据
             var qryStores = await _dbContext.Query<SP_STORE>()
                 .Where(s => backstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
-            //获取流水表的库存数据
             var qryWaters = await _dbContext.Query<SP_STORE_WATER>()
                 .Where(s => backstoreDetIds.Contains(s.STORE_ID))
                 .ToListAsync();
+
             foreach (var qrybackdet in qrybackdets)
             {
-                //获取库存数据
-                var qrystore = qryStores.FirstOrDefault(s =>
-                    s.STORE_ID == qrybackdet.STORE_ID);
+                var qrystore = qryStores.FirstOrDefault(s => s.STORE_ID == qrybackdet.STORE_ID);
                 if (qrystore != null)
                 {
-                    //期初库存数量
-                    var bnum = qrystore.STORE_NUM;
-                    //期初库存金额
-                    var bmoney = qrystore.TAX_MONEY;
-                    //冲红库存数量
                     var chnum = qrystore.STORE_NUM + qrybackdet.COUNT;
-                    //冲红库存金额
                     var chmoney = chnum * qrystore.TAX_PRICE;
-                    //冲红不含税金额
                     var chnomoney = chnum * qrystore.NOTAX_PRICE;
-                    //更新库存表
-                    var updatespstore = await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qrybackdet.STORE_ID,
-                         x => new SP_STORE
-                         {
-                             STORE_NUM = chnum,
-                             TAX_MONEY = chmoney,
-                             NOTAX_MONEY = chnomoney,
-                         });
+                    await _dbContext.UpdateAsync<SP_STORE>(x => x.STORE_ID == qrybackdet.STORE_ID,
+                        x => new SP_STORE
+                        {
+                            STORE_NUM = chnum,
+                            TAX_MONEY = chmoney,
+                            NOTAX_MONEY = chnomoney,
+                        });
 
-                    //获取流水数据
                     var qryWater = qryWaters.FirstOrDefault(s =>
                         s.STORE_ID == qrybackdet.STORE_ID && s.SRC_CODE == qryback.OUT_CODE);
                     if (qryWater != null)
                     {
-                        //更新出库表
-                        var updatespout = await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_CODE == qryback.OUT_CODE,
-                             x => new SP_OUTSTORE
-                             {
-                                 IS_RED = "1",
-                             });
+                        await _dbContext.UpdateAsync<SP_OUTSTORE>(x => x.OUT_CODE == qryback.OUT_CODE,
+                            x => new SP_OUTSTORE { IS_RED = "1" });
                     }
                 }
             }
 
             return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_BACK_ID,
-                      x => new SP_OUT_BACK
-                      {
-                          AUDITING = "1",
-                      });
+                x => new SP_OUT_BACK { AUDITING = "1" });
         }
 
         /// <summary>
-        /// 撤销提交
+        /// 撤销冲红
         /// </summary>
-        /// <returns></returns>
-        public async Task<int> UnSubmitSpOutBack(string sid)
+        public async Task<int> UnSubmitOutBackAsync(string sid)
         {
-
             return await _dbContext.UpdateAsync<SP_OUT_BACK>(x => sid == x.OUT_BACK_ID,
-                      x => new SP_OUT_BACK
-                      {
-                          AUDITING = "0",
-                      });
+                x => new SP_OUT_BACK { AUDITING = "0" });
         }
 
         /// <summary>
-        /// 导入功能
+        /// 导入冲红（已提交的出库单列表）
         /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> ImportList(GridRequest request)
+        public async Task<GridData> ImportOutBackListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_OUTSTORE>()
-                .Where(c => c.AUDITING_A == "1")
+                .Where(c => c.AUDITING == "1")
                 .GetGridData(request);
         }
 
         /// <summary>
-        /// 保存冲红
+        /// 获取冲红明细列表
         /// </summary>
-        /// <returns></returns>
-        public async Task<AjaxResult> SaveSpBack(SaveRequest<SP_OUT_BACK> request)
+        public async Task<GridData> GetOutBackDetListAsync(GridRequest request)
         {
-            return await _dbContext.SaveEntityAnsyc(request,
-                c => new
-                {
-                    c.BACK_DATE,
-                    c.MEMO,
-                    c.OUT_BACK_ID,
-                },
-                c => a => a.OUT_BACK_ID == c.OUT_BACK_ID);
+            return await _dbContext.Query<SP_OUTBACK_DET>()
+                .GetGridData(request);
         }
 
-        #endregion
+        #endregion 冲红管理
+
+        #region 出库明细汇总
+
         /// <summary>
-        /// 获取物料出库明细记录
+        /// 获取出库明细汇总记录
         /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutStoreDetailList(GridRequest request)
+        public async Task<GridData> GetOutStoreDetailListAsync(GridRequest request)
         {
             return await _dbContext.Query<SP_OUTSTORE_DET>()
                 .InnerJoin<SP_OUTSTORE>((a, b) => a.OUT_ID == b.OUT_ID)
-                .Where((a, b) => b.AUDITING_A == "1")
+                .Where((a, b) => b.AUDITING == "1")
                 .Select((a, b) => new
                 {
                     b.OUT_CODE,
-                    b.APPLY_CODE,
                     b.OUT_DATE,
-                    b.USER_NAME,
-                    b.DEPT_NAME,
-                    b.M_USER,
+                    b.OUT_USER,
+                    b.OUT_DEPT_NAME,
                     a.SP_NAME,
                     a.SP_CODE,
                     a.SP_SIZE,
                     a.PRODUCE,
                     a.UNIT,
-                    a.TYPE_CODE,
                     a.TYPE_NAME,
-                    a.APPLY_NUM,
-                    a.COUNT,
-                    a.PRICE,
-                    a.DEVICE_NO,
-                    a.MONEY,
-                    a.HOUSE_NAME,
-                    a.STOCK_NAME,
-                    a.STORE_CODE,
-                    a.IN_DATE,
-                    a.IS_RECOVERY,
-                    b.PROJECT_CODE,
-                    b.PROJECT_NAME,
-                    a.TAX_RATE,
-                    a.NOTAX_PRICE,
+                    a.OUT_NUM,
+                    a.TAX_MONEY,
                     a.NOTAX_MONEY,
-                    b.SEC_DEPT,
-                    a.MEMO,
+                    a.HOUSE_NAME,
+                    a.HOUSE_CODE,
+                    a.BATCH_CODE,
+                    a.DEVICE_NAME,
+                    a.DEVICE_NO,
+                    b.OUT_TYPE,
+                    b.PURPOSE,
+                    b.MEMO,
                     a.STORE_ID,
-                    a.OUTDET_ID,
+                    a.OUT_DET_ID,
                     a.OUT_ID,
-                    a.DEPT_ID,
                 })
-               .GetGridData(request);
-        }
-        /// <summary>
-        /// 获取物料冲红明细记录
-        /// </summary>
-        /// <returns></returns>
-        public async Task<GridData> GetSpOutBackDetailList(GridRequest request)
-        {
-            return await _dbContext.Query<SP_OUTBACK_DET>()
                 .GetGridData(request);
         }
+
+        #endregion 出库明细汇总
     }
 }

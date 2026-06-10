@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit">
+    <title>物资出库</title>
+    <script src="../../lib/LGboot.js" type="text/javascript"></script>
+</head>
+
+<body style="padding: 5px; height: 100%;">
+    <div id="mainsearch">
+        <form action="" id="formsearch" class="l-form">
+        </form>
+    </div>
+    <form action="" id="mainform">
+        <div id="maingrid">
+        </div>
+    </form>
+    <script type="text/javascript">
+        'use strict';
+        var business = {
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
+            setConfig: function () {
+                var me = this;
+                me.config = {
+                    search: {
+                        fields: [
+                            {
+                                display: "通用搜索",
+                                name: "_search_all",
+                                hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "OUT_CODE", type: "string" },
+                                    { op: "like", field: "OUT_USER", type: "string" },
+                                    { op: "like", field: "OUT_DEPT_NAME", type: "string" },
+                                    { op: "like", field: "PURPOSE", type: "string" },
+                                    { op: "like", field: "MEMO", type: "string" }
+                                ],
+                                options: {
+                                    onEnter: function () {
+                                        var me = this;
+                                        var $formsearch = $("#formsearch");
+                                        LG.commonSearch($formsearch, me.grid);
+                                    }.bind(me)
+                                },
+                            },
+                        ]
+                    },
+                    grid: {
+                        columns: [
+                            {
+                                display: "记录状态", name: "AUDITING", type: "select", format: {
+                                    data: me.Auditing,
+                                    formatRender: function (value, rowdata, column) {
+                                        if (value.length < 1) return "";
+                                        var text = value.join(",");
+                                        if (rowdata.IS_RED == "1") return `<span style="color:red">已冲红</span>`;
+                                        return text;
+                                    }
+                                }
+                            },
+                            { display: "出库单号", name: "OUT_CODE", type: "string" },
+                            { display: "出库日期", name: "OUT_DATE", type: "date", format: "yyyy-MM-dd hh:mm" },
+                            { display: "领用人", name: "OUT_USER", type: "string" },
+                            { display: "领用部门", name: "OUT_DEPT_NAME", type: "string" },
+                            {
+                                display: "紧急程度", name: "EMERGENCY", type: "select", format: {
+                                    data: me.Emergency,
+                                    formatRender: function (value, rowdata, column) {
+                                        if (value.length < 1) return "";
+                                        var text = value.join(",");
+                                        if (rowdata.EMERGENCY > "0") return `<span style="color: red">${text}</span>`;
+                                        return text;
+                                    }
+                                }
+                            },
+                            { display: "用途", name: "PURPOSE", type: "string", minWidth: 200, maxWidth: 300 },
+                            { display: "备注", name: "MEMO", type: "string", minWidth: 200, maxWidth: 300 },
+                        ]
+                    }
+                };
+            },
+            menuNo: getQueryStringByName("MenuNo"),
+            grid: null,
+            searchForm: null,
+            buttons: null,
+            Auditing: [],
+            Emergency: [],
+            loadComboxData: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Material/SpOut/ComboxData',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.Auditing = data.Auditing;
+                        me.Emergency = data.Emergency;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#maingrid").ligerGrid({
+                    dateFormat: 'yyyy-MM-dd HH:mm',
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: true,
+                    dataAction: 'server',
+                    toolbar: {},
+                    url: 'Material/SpOut/List',
+                    parms: {
+                        where: JSON.stringify({ op: 'and', rules: [] })
+                    },
+                    sortName: 'ORDERED_AUDITING, OUT_CODE',
+                    sortOrder: 'asc, desc',
+                    width: '100%',
+                    height: '100%',
+                    checkbox: true,
+                    enabledEdit: true,
+                    clickToEdit: true,
+                    onBeforeEdit: function (editParm) {
+                        switch (editParm.column.name) {
+                            case "":
+                                if (editParm.record.__status == "add") return true;
+                                else return false;
+                                break;
+                        }
+                    },
+                    onSuccess: function (data, g) {
+                        if (data && data.Rows) {
+                            var rows = data.Rows || [];
+                            for (var i = 0, len = rows.length; i < len; i++) {
+                                var row = rows[i];
+                                row.OLDID = row.ID;
+                            }
+                        }
+                    },
+                    onDblClickRow: function (data, rowid, rowdata) {
+                        me.view(rowid);
+                    }
+                });
+                me.grid.isValid = true;
+                me.loadToolbar();
+                me.bindGridEvent();
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAllAudited: function ({ msg = "未提交数据，无需撤销！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (!["1", "2", "3"].includes(row.AUDITING)) {
+                        if (msg) LG.tip(msg);
+                        return false;
+                    }
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (["1", "2", "3"].includes(row.AUDITING)) {
+                        if (msg) LG.tip(msg);
+                        return false;
+                    }
+                }
+                return true;
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reload();
+                            break;
+                        case "add":
+                            me.add();
+                            break;
+                        case "modify":
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) me.modify();
+                            break;
+                        case "delete":
+                            if (me.isSelectRow() && me.isAllUnaudited()) me.delete();
+                            break;
+                        case "submit":
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) me.submit();
+                            break;
+                        case "revoke":
+                            if (me.isSelectSingleRow() && me.isAllAudited()) me.revoke();
+                            break;
+                        case "red":
+                            if (me.isSelectSingleRow() && me.isAllAudited()) me.red();
+                            break;
+                        case "print":
+                            if (me.isSelectSingleRow()) me.print();
+                            break;
+                        case "flow-detail":
+                            if (me.isSelectSingleRow()) me.flowDetail();
+                            break;
+                        case "Excel":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
+                            break;
+                        case "Pdf":
+                            $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=pdf", window.gksybConfigs.urlBase), modal: true });
+                            break;
+                    }
+                };
+                me.grid.toolbarManager.options.group = 'main';
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            view: function (rowid) {
+                var me = this;
+                if (!rowid) return;
+                $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[查看]' + document.title,
+                    url: "sp_outstore_det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: me.grid.getRow(rowid).OUT_ID, isView: true, isNew: false }
+                });
+            },
+            add: function () {
+                var me = this;
+                me.dialog = $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[新增]' + document.title,
+                    url: "sp_outstore_det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: null, isView: false, isNew: true }
+                });
+            },
+            modify: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                var sid = row.OUT_ID;
+                me.dialog = $.ligerDialog.open({
+                    width: me.detailWidth,
+                    height: me.detailHeight,
+                    allowClose: true,
+                    title: '[修改]' + document.title,
+                    url: "sp_outstore_det.html?MenuNo=" + me.menuNo,
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    onClosed: me.reload.bind(me),
+                    data: { sid: sid, isView: false, isNew: false }
+                });
+            },
+            delete: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows) return;
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpOut/Save',
+                        loading: '正在删除中...',
+                        data: { deleted: rows },
+                        success: function () {
+                            LG.showSuccess('删除成功');
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            submit: function () {
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                var row = me.grid.getSelectedRow();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpOut/Submit',
+                    loading: '正在提交中...',
+                    data: { outId: row.OUT_ID },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            revoke: function () {
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                var row = me.grid.getSelectedRow();
+                if (row.IS_RED == "1") {
+                    LG.showError("已冲红数据不能撤销！");
+                    return false;
+                }
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpOut/Revoke',
+                    loading: '正在提交中...',
+                    data: { outId: row.OUT_ID },
+                    success: function () {
+                        LG.showSuccess('撤销成功');
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            red: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                $.ligerDialog.confirm('确定冲红吗?', function (confirm) {
+                    if (!confirm) return;
+                    LG.ajax({
+                        jsToken: true,
+                        url: 'Material/SpOut/OutRed',
+                        loading: '正在冲红中...',
+                        data: { outId: row.OUT_ID },
+                        success: function () {
+                            LG.showSuccess('冲红成功');
+                            me.reload();
+                        },
+                        error: function (message) {
+                            LG.showError(message);
+                        }
+                    });
+                });
+            },
+            print: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                $.ligerDialog.open({
+                    width: 500,
+                    height: 500,
+                    allowClose: true,
+                    title: '[打印]' + document.title,
+                    url: window.gksybConfigs.getUrl(`print/report-print-select.html?MenuNo=${me.menuNo}`, window.gksybConfigs.urlBase),
+                    isHidden: false,
+                    showMax: false,
+                    showToggle: false,
+                    showMin: false,
+                    isResize: true,
+                    slide: false,
+                    data: { sid: row.OUT_ID }
+                });
+            },
+            flowDetail: function () {
+                var me = this;
+                var row = me.grid.getSelectedRow();
+                var taskId = "";
+                LG.ajax({
+                    async: false,
+                    jsToken: true,
+                    url: 'Material/SpOut/GetTaskId',
+                    loading: '正在获取中...',
+                    data: { outId: row.OUT_ID },
+                    success: function (data) {
+                        taskId = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+                parent.f_addTab(undefined, row.OUT_CODE, window.gksybConfigs.getUrl(`workflow/flow-detail.html?taskId=${taskId}&MenuNo=${me.menuNo}&isView=1`, window.gksybConfigs.urlBase));
+            },
+            reload: function () {
+                var me = this;
+                me.buttons[0].click();
+            },
+            bindGridEvent: function () {
+                var me = this;
+                var menu = $.ligerMenu({
+                    items: [{
+                        id: 'Excel',
+                        text: '导出Excel',
+                        click: function (item) { me.toolbarBtnItemClick(item); },
+                        icon: "fa fa-file-excel-o"
+                    }, { line: true }, {
+                        id: 'Pdf',
+                        text: '导出Pdf',
+                        click: function (item) { me.toolbarBtnItemClick(item); },
+                        icon: "fa fa-file-pdf-o"
+                    }]
+                });
+                me.grid.bind("contextmenu", function (parm, e) {
+                    menu.show({ top: e.pageY, left: e.pageX });
+                    return false;
+                });
+                me.grid.bind('beforeSubmitEdit', function (e) {
+                    if (this.isValid) {
+                        if (!LG.validator.form()) {
+                            LG.showInvalidTip();
+                            return false;
+                        }
+                    } else {
+                        $(".l-verify-tip").remove();
+                    }
+                    return true;
+                });
+                LG.validate($("#mainform"), { debug: true });
+            },
+            setForm: function () {
+                var me = this;
+                me.config.search.fields.removeNull();
+                var $formsearch = $("#formsearch");
+                me.searchForm = $formsearch.ligerForm({
+                    fields: me.config.search ? me.config.search.fields : [],
+                    validate: true,
+                    buttons: [{
+                        text: '查询',
+                        width: 60,
+                        click: function () {
+                            LG.commonSearch($formsearch, me.grid);
+                        }
+                    }],
+                    onAfterSetFields: function (g) {
+                        me.searchForm = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+            },
+            init: function () {
+                var me = this;
+                me.loadComboxData();
+                me.setConfig();
+                me.setForm();
+                me.setGrid();
+                me.reload();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
+                return me;
+            }
+        };
+        $(function () {
+            business.init();
+        });
+    </script>
+</body>
+
+</html>
