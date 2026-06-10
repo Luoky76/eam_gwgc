@@ -28,6 +28,14 @@
     <script type="text/javascript">
         'use strict';
         var business = {
+            //textarea宽度
+            formLabelWidth: 120,
+            formInputWidth: 180,
+            getTextareaWidth: function () {
+                var me = this;
+                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
+                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
+            },
             setConfig: function () {
                 var me = this;
                 me.config = {
@@ -90,10 +98,11 @@
                                 }
                             },
                             { display: "领用部门", name: "OUT_DEPT_NAME", type: "hidden", options: {} },
+                            { display: "船舶部门", name: "SHIP_DEPT", type: "select", options: { type: "select", data: me.ShipDept } },
                             { display: "出库类型", name: "OUT_TYPE", type: "hidden", options: {} },
                             { display: "紧急程度", name: "EMERGENCY", type: "select", options: { data: me.Emergency, initValue: "0" } },
-                            { display: "用途", name: "PURPOSE", type: "textarea", newline: true, width: Math.floor($("#mainform").width() / 303) * 303 - 123, validate: { required: true } },
-                            { display: "备注", name: "MEMO", type: "textarea", newline: true, width: Math.floor($("#mainform").width() / 303) * 303 - 123 },
+                            { display: "用途", name: "PURPOSE", type: "textarea", newline: true, width: me.getTextareaWidth(), validate: { required: true } },
+                            { display: "备注", name: "MEMO", type: "textarea", newline: true, width: me.getTextareaWidth() },
                         ]
                     },
                     grid: {
@@ -167,6 +176,7 @@
             SpHouse: [],
             DeviceCard: [],
             Emergency: [],
+            ShipDept: [],
             showSuccessMessage: function (message = '成功') {
                 var me = this;
                 if (me.showSuccessMessage.isShown) return;
@@ -188,6 +198,7 @@
                         me.SpHouse = data.SpHouse;
                         me.DeviceCard = data.DeviceCard;
                         me.Emergency = data.Emergency;
+                        me.ShipDept = data.ShipDept;
                     },
                     error: function (message) {
                         LG.showError(message);
@@ -284,7 +295,8 @@
                     space: 3,
                     validate: true,
                     fields: me.config.form.fields,
-                    labelWidth: 120,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
                     readonly: me.isView,
                     onAfterSetFields: function (g) {
                         me.mainform = g;

@@ -50,9 +50,10 @@ namespace EAM.Material.Services
             {
                 { "BCCode@#Auditing", "auditing" },
                 { "BCCode@#Emergency", "emergency" },
+                { "BCCode@#ShipDept", "ship_dept" },
                 { "SpHouse", (Expression<Func<SP_HOUSE, bool>>)(x => true) },
                 { "DeviceCard", (Expression<Func<DEVICE_CARD, bool>>)(x => _dbContext.Query<CF_CORP>(cc => cc.CORPID == x.DEPT_ID && cc.CORP_PATH.StartsWith(_userSession.ParentCompany.TreeNode)).Any()) },
-                { "UserWithCorp@#User", (Expression<Func<CF_USER, bool>>)(x => true) },
+                { "User", (Expression<Func<CF_USER, bool>>)(x => true) },
             });
             data.TryAdd("Corp", await _corpService.ComboxDataAsync());
             return data;
