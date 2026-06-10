@@ -132,9 +132,12 @@ namespace EAM.Device.services
                        .Sum(t => t.ORDER_MONEY);
 
                     //物资消耗
-                    item.OUTSTORE = _dbContext.Query<SP_OUTSTORE>()
-                       .Where(a => a.DEPT_ID == item.DEPT_ID && a.AUDITING_A == "1" && a.OUT_DATE >= b_time && a.OUT_DATE <= e_time)
-                       .Sum(t => t.SUM_MONEY);
+                    var outIds = _dbContext.Query<SP_OUTSTORE>()
+                       .Where(a => a.OUT_DEPT_ID == item.DEPT_ID && a.AUDITING == "1" && a.OUT_DATE >= b_time && a.OUT_DATE <= e_time)
+                       .Select(a => a.OUT_ID).ToList();
+                    item.OUTSTORE = outIds.Any()
+                       ? _dbContext.Query<SP_OUTSTORE_DET>().Where(b => outIds.Contains(b.OUT_ID)).Sum(b => b.TAX_MONEY)
+                       : 0;
 
                     //耗能
                     var cost = _dbContext.Query<BUILD_COUNT>()
