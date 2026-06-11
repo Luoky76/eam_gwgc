@@ -5,19 +5,29 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Chloe.Annotations;
-using System;
 using System.ComponentModel;
 using System.Data;
-
 namespace Gksyb.Model
 {
-
     /// <summary>
-    /// 实体类spare_apply_det
+    /// 实体类SPARE_APPLY_DET
     /// </summary>
-    [Table("spare_apply_det")]
+    [Table("SPARE_APPLY_DET")]
     public class SPARE_APPLY_DET
     {
+        /// <summary>
+        /// 外键
+        /// </summary>
+        [Description("外键")]
+        [Column(DbType = DbType.AnsiString)]
+        public string APPLY_ID { get; set; }
+
+        /// <summary>
+        /// 主键
+        /// </summary>
+        [Description("主键")]
+        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        public string APPLY_DET_ID { get; set; }
 
         /// <summary>
         /// 物料编码
@@ -48,18 +58,18 @@ namespace Gksyb.Model
         public string DRAWING_NO { get; set; }
 
         /// <summary>
-        /// 物料分类
-        /// </summary>
-        [Description("物料分类")]
-        [Column(DbType = DbType.AnsiString)]
-        public string TYPE_NAME { get; set; }
-
-        /// <summary>
         /// 物料分类ID
         /// </summary>
         [Description("物料分类ID")]
         [Column(DbType = DbType.AnsiString)]
         public string TYPE_ID { get; set; }
+
+        /// <summary>
+        /// 物料分类
+        /// </summary>
+        [Description("物料分类")]
+        [Column(DbType = DbType.AnsiString)]
+        public string TYPE_NAME { get; set; }
 
         /// <summary>
         /// 物料分类编码
@@ -118,17 +128,10 @@ namespace Gksyb.Model
         public string PRODUCE { get; set; }
 
         /// <summary>
-        /// 外键
-        /// </summary>
-        [Description("外键")]
-        [Column(DbType = DbType.AnsiString)]
-        public string APPLY_ID { get; set; }
-
-        /// <summary>
         /// 主键
         /// </summary>
         [Description("主键")]
-        [Column(IsPrimaryKey = true, DbType = DbType.AnsiString)]
+        [Column(DbType = DbType.AnsiString)]
         public string SP_ID { get; set; }
 
         /// <summary>
@@ -213,5 +216,4 @@ namespace Gksyb.Model
         public string IS_RIGGING { get; set; }
 
     }
-
 }

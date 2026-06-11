@@ -55,6 +55,7 @@ namespace EAM.Material.Services
             /// </summary>
             public int DETAILCOUNT;
         }
+
         /// <summary>
         /// 获取列表
         /// </summary>
@@ -104,6 +105,14 @@ namespace EAM.Material.Services
         }
 
         /// <summary>
+        /// 根据ID获取数据
+        /// </summary>
+        public async Task<SPARE_APPLY> GetAsync(string applyId)
+        {
+            return await _dbContext.Query<SPARE_APPLY>().FirstOrDefaultAsync(c => c.APPLY_ID == applyId);
+        }
+
+        /// <summary>
         /// 保存
         /// </summary>
         /// <param name="request"></param>
@@ -129,7 +138,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFY_DATE
                 },
-                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete);
+                c => a => a.APPLY_ID == c.APPLY_ID, BeforeAdd, BeforeUpdate, BeforeDelete, orgin: true);
         }
 
         /// <summary>
@@ -139,9 +148,11 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
-            entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
+            if (entity.APPLY_ID.IsNullOrWhiteSpace())
+                entity.APPLY_ID = GuidHelper.NewSnowflakeId().ToString();
             //单号
-            entity.APPLY_CODE = await _codeCreatorService.CreateCodeAsync<SPARE_APPLY>("SQ", a => a.APPLY_CODE);
+            if (entity.APPLY_CODE.IsNullOrWhiteSpace())
+                entity.APPLY_CODE = await _codeCreatorService.CreateCodeAsync<SPARE_APPLY>("SQ", a => a.APPLY_CODE);
             entity.APPLY_DATE = dt;
             if (entity.SEC_DEPTID.IsNullOrWhiteSpace())
             {
@@ -169,6 +180,7 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdate(SPARE_APPLY entity)
         {
+            entity.MODIFY_DATE = DateTime.Now;
         }
 
         /// <summary>
@@ -330,6 +342,7 @@ namespace EAM.Material.Services
             return await _dbContext.SaveEntityAnsyc(request,
                 c => new
                 {
+                    c.APPLY_DET_ID,
                     c.APPLY_ID,
                     c.SP_CODE,
                     c.SP_NAME,
@@ -359,7 +372,7 @@ namespace EAM.Material.Services
                     c.MODIFY_USERID,
                     c.MODIFY_DATE
                 },
-                c => a => a.SP_ID == c.SP_ID, BeforeAddDet, BeforeUpdateDet);
+                c => a => a.APPLY_DET_ID == c.APPLY_DET_ID, BeforeAddDet, BeforeUpdateDet, null, orgin: true);
         }
 
         /// <summary>
@@ -369,6 +382,8 @@ namespace EAM.Material.Services
         {
             DateTime? dt = await _dbContext.GetSysdate();
 
+            if (entity.APPLY_DET_ID.IsNullOrWhiteSpace())
+                entity.APPLY_DET_ID = GuidHelper.NewSnowflakeId().ToString();
             entity.SP_ID = GuidHelper.NewSnowflakeId().ToString();
             if (string.IsNullOrEmpty(entity.SP_CODE))
             {
@@ -392,6 +407,54 @@ namespace EAM.Material.Services
         /// </summary>
         private async Task BeforeUpdateDet(SPARE_APPLY_DET entity)
         {
+        }
+
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SPARE_APPLY> request, SaveRequest<SPARE_APPLY_DET> requestDet)
+        {
+            string apply_id;
+            //填写主子表关联键值
+            if (request.Updated?.Any() == true && !request.Updated.First().APPLY_ID.IsNullOrWhiteSpace())
+            {
+                apply_id = request.Updated.First().APPLY_ID;
+            }
+            else if (request.Added?.Any() == true && !request.Added.First().APPLY_ID.IsNullOrWhiteSpace())
+            {
+                apply_id = request.Added.First().APPLY_ID;
+            }
+            else apply_id = GuidHelper.NewSnowflakeId().ToString();
+            if (request.Added?.Any() == true && request.Added.First().APPLY_ID.IsNullOrWhiteSpace())
+            {
+                request.Added[0].APPLY_ID = apply_id;
+            }
+
+            foreach (var entity in requestDet.Added ??= new List<SPARE_APPLY_DET>())
+            {
+                if (entity.APPLY_ID.IsNullOrWhiteSpace()) entity.APPLY_ID = apply_id;
+            }
+
+            try
+            {
+                await _dbContext.UseTransactionAsync(async () =>
+                {
+                    if ((await Save(request)).IsError)
+                    {
+                        throw new MessageException("物资编码申请保存失败");
+                    }
+                    if ((await DetailSave(requestDet)).IsError)
+                    {
+                        throw new MessageException("物资编码申请明细保存失败");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return AjaxResult.Error(ex.Message);
+            }
+
+            return AjaxResult.Success("保存成功");
         }
         #endregion
 

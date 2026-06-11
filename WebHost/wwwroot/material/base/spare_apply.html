@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -13,7 +13,7 @@
 </head>
 
 <body style="padding: 5px; height: 100%;">
-    <div id="mainsearch" style="width: 98%">
+    <div id="mainsearch">
         <form action="" id="formsearch" class="l-form">
         </form>
     </div>
@@ -24,46 +24,54 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-
-            formLabelWidth: 120,
-            formInputWidth: 180,
-            getTextareaWidth: function () {
-                var me = this;
-                var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
-                return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
-            },
-rootPath:'Material/SpareApply/',
-            MenuNo: getQueryStringByName("MenuNo"),
-            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            detailWidth: window.innerWidth * 0.9,
+            detailHeight: window.innerHeight * 0.9,
             setConfig: function () {
                 var me = this;
                 me.config = {
                     search: {
                         fields: [
-                            { display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, upper: true, type: "select", options: { type: "select", data: me.dataCheck } },
-                            { display: "申请单号", name: "_search_APPLY_CODE", dbname: "APPLY_CODE", newline: false, upper: true, type: "text", options: {} },
+                            {
+                                display: "通用搜索", name: "_search_all", hideLabel: true,
+                                filter: [
+                                    { op: "like", field: "APPLY_CODE", type: "string" },
+                                    { op: "like", field: "EDIT_USER", type: "string" },
+                                    { op: "like", field: "DEPT_NAME", type: "string" },
+                                    { op: "like", field: "SEC_DEPT", type: "string" }
+                                ],
+                                options: {
+                                    onEnter: function () {
+                                        var me = this;
+                                        var $formsearch = $("#formsearch");
+                                        LG.commonSearch($formsearch, me.grid);
+                                    }.bind(me)
+                                }
+                            },
+                            {
+                                display: "记录状态", name: "_search_AUDITING", dbname: "AUDITING", newline: false, type: "select",
+                                options: { type: "select", data: me.dataCheck }
+                            }
                         ]
                     },
                     grid: {
                         columns: [
                             { display: "已提交", name: "AUDITING", width: 100, type: "chk" },
-                            { display: "申请单号", name: "APPLY_CODE", width: 180, type: "text" },
-                            { display: "申请人", name: "EDIT_USER", width: 100, type: "text", },
+                            { display: "申请单号", name: "APPLY_CODE", width: 180, type: "string" },
+                            { display: "申请人", name: "EDIT_USER", width: 100, type: "string" },
                             { display: "申请日期", name: "APPLY_DATE", width: 150, type: "date", showTime: true, format: "yyyy-MM-dd hh:mm" },
-                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "text", },
-                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "text", },
-                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
-                            { display: "主键", name: "APPLY_ID", dbname: "APPLY_ID", width: 100, type: "text", hide: true },
+                            { display: "申请部门", name: "DEPT_NAME", width: 150, type: "string" },
+                            { display: "二级单位", name: "SEC_DEPT", width: 150, type: "string" },
+                            { display: "备注", name: "MEMO", width: 120, type: "string" },
+                            { display: "主键", name: "APPLY_ID", dbname: "APPLY_ID", width: 100, type: "string", hide: true },
                         ]
                     }
                 };
             },
+            menuNo: getQueryStringByName("MenuNo"),
+            dataCheck: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
             grid: null,
             searchForm: null,
             buttons: null,
-            loadComboxData: function () {
-                var me = this;
-            },
             setGrid: function () {
                 var me = this;
                 me.config.grid.columns.removeNull();
@@ -72,8 +80,8 @@ rootPath:'Material/SpareApply/',
                     delayLoad: true,
                     columns: me.config.grid.columns,
                     usePager: false,
-                    toolbar: { group: 'list'},
-                    url: me.rootPath + 'List',
+                    toolbar: {},
+                    url: 'Material/SpareApply/List',
                     parms: {
                         where: JSON.stringify({
                             op: 'and',
@@ -87,34 +95,51 @@ rootPath:'Material/SpareApply/',
                     checkbox: true,
                     enabledEdit: true,
                     clickToEdit: true,
-                    onBeforeEdit: function (editParm) {
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.AUDITING == "1") return false;
-                            else return true;
-                        }
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
+                    onDblClickRow: function (rowdata) {
+                        me.openDetail({ sid: rowdata.APPLY_ID, isNew: false, isView: true });
                     },
                     onSuccess: function (data, g) {
-                        if (data && data.Rows) {
-                            var rows = data.Rows || [];
-                            for (var i = 0, len = rows.length; i < len; i++) {
-                                var row = rows[i];
-                                row.OLDROLEID = row.ROLEID;
-                            }
-                        }
                     },
                     rowAttrRender: function (rowdata, rowid) {
                         return "";
                     }
                 });
                 me.grid.isValid = true;
+                me.grid.toolbarManager.options.group = 'main';
                 me.loadToolbar();
                 me.bindGridEvent();
+            },
+            isSelectRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isSelectSingleRow: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length > 1) {
+                    LG.tip("不能选择多行");
+                    return false;
+                } else if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            isAllUnaudited: function ({ msg = "有数据已提交，无法变更！" } = {}) {
+                var me = this;
+                var selecteds = me.grid.getSelectedRows();
+                for (let row of selecteds) {
+                    if (row.AUDITING == "1") {
+                        if (msg) LG.tip(msg);
+                        return false;
+                    }
+                }
+                return true;
             },
             loadToolbar: function () {
                 var me = this;
@@ -124,19 +149,23 @@ rootPath:'Material/SpareApply/',
                             me.reload();
                             break;
                         case "add":
-                            me.add();
+                            me.openDetail({ isNew: true, isView: false });
                             break;
                         case "delete":
-                            me.delete();
-                            break;
-                        case "save":
-                            me.save();
+                            if (me.isSelectRow() && me.isAllUnaudited()) {
+                                me.delete();
+                            }
                             break;
                         case "submit":
-                            me.submit();
+                            if (me.isSelectRow()) {
+                                me.submit();
+                            }
                             break;
-                        case "detail":
-                            me.detail();
+                        case "modify":
+                            if (me.isSelectSingleRow() && me.isAllUnaudited()) {
+                                var row = me.grid.getSelectedRow();
+                                me.openDetail({ sid: row.APPLY_ID, isNew: false, isView: false });
+                            }
                             break;
                         case "Excel":
                             $.ligerDialog.open({ url: window.gksybConfigs.getUrl("System/Export.html?exporttype=xls", window.gksybConfigs.urlBase), modal: true });
@@ -146,175 +175,19 @@ rootPath:'Material/SpareApply/',
                             break;
                     }
                 }
-
                 LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
             },
-            add: function () { //新增
+            openDetail: function ({ sid, isNew = false, isView = true } = {}) {
                 var me = this;
-                $.ligerDialog.prompt('输入申请原因', '', function (yes, value) {
-                    if (yes) {
-                        if (value.length == 0) {
-                            LG.showError("请输入申请原因");
-                            return
-                        }
-                        LG.ajax({
-                            url: me.rootPath + 'ApplySave',
-                            jsToken: true,
-                            loading: '正在处理中...',
-                            data: {
-                                memo: value
-                            },
-                            success: function (data) {
-                                LG.showSuccess('保存成功,请添加物资', function (confim) {
-                                    me.reload();
-                                    $.ligerDialog.open({
-                                        width: 980,
-                                        height: 650,
-                                        allowClose: true,
-                                        title: '[新增物资]',
-                                        url: "spare_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
-                                        isHidden: false,
-                                        showMax: false,
-                                        showToggle: false,
-                                        showMin: false,
-                                        isResize: true,
-                                        slide: false,
-                                        onClosed: me.reload.bind(me),
-                                        data: { sid: data, isNew: true, isView: false }
-                                    });
-                                });
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
-                    }
-                });
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-                    var changeRow = me.grid.getChangedRows();
-                    LG.ajax({
-                        jsToken: true,
-                        url: me.rootPath + 'Save',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
-                        },
-                        error: function (message) {
-                            LG.showError(message);
-                        }
-                    });
+                if (!isNew && !sid) {
+                    sid = me.grid.getSelectedRow().APPLY_ID;
                 }
-
-            },
-            reload: function () { //刷新
-                var me = this;
-                me.buttons[0].click();
-            },
-            delete: function () { //删除
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        if (selected[0].AUDITING == "1") {
-                            LG.tip('已提交，无法删除!');
-                        }
-                        else {
-                            $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                                if (confirm) {
-                                    for (var i = 0, len = (selected || []).length; i < len; i++) {
-                                        me.grid.deleteRow(selected[i]);
-                                    }
-                                    me.save();
-                                }
-                            });
-                        }
-                    } else {
-                        LG.tip('请选择行!');
-                    }
-                }
-            },
-            submit: function () {    //提交
-                var me = this;
-                var selected = me.grid.getSelectedRows();
-                if (selected.length > 0) {
-                    if (selected[0].AUDITING == null) {
-                        LG.tip('请先保存!');
-                    }
-                    else if (selected[0].AUDITING != "0") {
-                        LG.tip('已提交，无法再次提交!');
-                    }
-                    else {
-                        var flag = true;
-                        var sids = [];
-                        selected.forEach((a) => {
-                            if (a.AUDITING != "0") {
-                                LG.tip(a.APPLY_CODE + '已提交，无法再次提交!');
-                                flag = false;
-                                return;
-                            }
-
-                            if (a.DETAILCOUNT == 0) {
-                                LG.tip(a.APPLY_CODE + '未填写物资明细，无法提交!');
-                                flag = false;
-                                return;
-                            }
-                            sids.push(a.APPLY_ID)
-                        })
-                        if (!flag) {
-                            return;
-                        }
-
-                        LG.ajax({
-                            jsToken: true,
-                            url: me.rootPath + 'Submit',
-                            loading: '正在保存中...',
-                            data: { "sids": sids },
-                            success: function () {
-                                LG.showSuccess('提交成功');
-                                me.grid.isDataChanged = false;
-                                me.reload();
-                            },
-                            error: function (message) {
-                                LG.showError(message);
-                            }
-                        });
-                    }
-
-                }
-                else {
-                    LG.tip('请选择行!');
-                }
-            },
-            detail: function () { //明细
-                var me = this;
-                if (me.grid.getSelectedRows().length != 1) {
-                    LG.showError("请选择一条记录");
-                    return
-                }
-
-                var apply = me.grid.getSelectedRows()[0];
-                if (apply.APPLY_ID == null) {
-                    LG.showError("请先保存再打开明细");
-                    return
-                }
-
                 $.ligerDialog.open({
-                    width: 980,
-                    height: 650,
+                    width: me.detailWidth,
+                    height: me.detailHeight,
                     allowClose: true,
-                    title: '[修改物资]',
-                    url: "spare_apply_detail.html?MenuNo=" + me.MenuNo + "&ver=" + me.ver,
+                    title: (isNew ? '[新增]' : isView ? '[查看]' : '[修改]') + '物资编码申请',
+                    url: "spare_apply_detail.html?MenuNo=" + me.menuNo,
                     isHidden: false,
                     showMax: false,
                     showToggle: false,
@@ -322,38 +195,93 @@ rootPath:'Material/SpareApply/',
                     isResize: true,
                     slide: false,
                     onClosed: me.reload.bind(me),
-                    data: { sid: apply.APPLY_ID, isNew: false, isView: apply.AUDITING !== "0" }
+                    data: { sid: sid, isNew: isNew, isView: isView }
                 });
+            },
+            delete: function () {
+                var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (!rows) return;
+                $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                    if (!confirm) return;
+                    me.grid.deleteRange(rows);
+                    me.save();
+                });
+            },
+            save: function () {
+                var me = this;
+                if (me.grid.endEdit() === false) return;
+                if (!me.grid.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.grid.validChangeRows()) return false;
+                var changeRow = me.grid.getChangedRows();
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpareApply/Save',
+                    loading: '正在保存中...',
+                    data: changeRow,
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            submit: function () {
+                var me = this;
+                var selected = me.grid.getSelectedRows();
+                var flag = true;
+                var sids = [];
+                selected.forEach((a) => {
+                    if (a.AUDITING == "1") {
+                        LG.tip(a.APPLY_CODE + '已提交，无法再次提交!');
+                        flag = false;
+                        return;
+                    }
+                    if (a.DETAILCOUNT == 0) {
+                        LG.tip(a.APPLY_CODE + '未填写物资明细，无法提交!');
+                        flag = false;
+                        return;
+                    }
+                    sids.push(a.APPLY_ID);
+                });
+                if (!flag) return;
+
+                LG.ajax({
+                    jsToken: true,
+                    url: 'Material/SpareApply/Submit',
+                    loading: '正在提交中...',
+                    data: { "sids": sids },
+                    success: function () {
+                        LG.showSuccess('提交成功');
+                        me.grid.isDataChanged = false;
+                        me.reload();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            reload: function () {
+                var me = this;
+                me.buttons[0].click();
             },
             bindGridEvent: function () {
                 var me = this;
                 var menu = $.ligerMenu({
-                    items: [{
-                        id: 'Excel',
-                        text: '导出Excel',
-                        click: function (item) {
-                            me.toolbarBtnItemClick(item);
-                        },
-                        icon: "fa fa-file-excel-o"
-                    },
-                    {
-                        line: true
-                    },
-                    {
-                        id: 'Pdf',
-                        text: '导出Pdf',
-                        click: function (item) {
-                            me.toolbarBtnItemClick(item);
-                        },
-                        icon: "fa fa-file-pdf-o"
-                    }
+                    items: [
+                        { id: 'Excel', text: '导出Excel', icon: "fa fa-file-excel-o", click: function (item) { me.toolbarBtnItemClick(item); } },
+                        { line: true },
+                        { id: 'Pdf', text: '导出Pdf', icon: "fa fa-file-pdf-o", click: function (item) { me.toolbarBtnItemClick(item); } }
                     ]
                 });
                 me.grid.bind("contextmenu", function (parm, e) {
-                    menu.show({
-                        top: e.pageY,
-                        left: e.pageX
-                    });
+                    menu.show({ top: e.pageY, left: e.pageX });
                     return false;
                 });
                 me.grid.bind('beforeSubmitEdit', function (e) {
@@ -367,18 +295,13 @@ rootPath:'Material/SpareApply/',
                     }
                     return true;
                 });
-                LG.validate($("#mainform"), {
-                    debug: true
-                });
+                LG.validate($("#mainform"), { debug: true });
             },
             setForm: function () {
                 var me = this;
                 me.config.search.fields.removeNull();
-                var $formsearch = $("#formsearch")
-                //搜索表单应用ligerui样式
+                var $formsearch = $("#formsearch");
                 me.searchForm = $formsearch.ligerForm({
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
                     fields: me.config.search ? me.config.search.fields : [],
                     validate: true,
                     buttons: [{
@@ -396,15 +319,21 @@ rootPath:'Material/SpareApply/',
             },
             init: function () {
                 var me = this;
-                me.loadComboxData();
                 me.setConfig();
                 me.setForm();
                 me.setGrid();
                 me.reload();
+                window.closeQuery = function (callback) {
+                    if (!me.dialog) return callback();
+                    return me.dialog.frame.business.closeQuery(callback);
+                };
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
+
 </html>

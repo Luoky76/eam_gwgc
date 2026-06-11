@@ -23,11 +23,18 @@ namespace EAM.Material.Controllers
         /// <summary>
         /// 获取下拉框数据
         /// </summary>
-        /// <returns></returns>
         [HttpPost]
         public async Task<AjaxResult> ComboxDataAsync()
         {
             return await _service.ComboxDataAsync();
+        }
+
+        /// <summary>
+        /// 根据ID获取记录
+        /// </summary>
+        public async Task<AjaxResult> GetAsync(string applyId)
+        {
+            return AjaxResult.Success(await _service.GetAsync(applyId));
         }
 
         /// <summary>
@@ -120,6 +127,27 @@ namespace EAM.Material.Controllers
             var result = await ValidSaveAsync(request);
             if (result.IsError) return result;
             return await _service.DetailSave(request);
+        }
+
+        /// <summary>
+        /// 同时保存主子表
+        /// </summary>
+        [HttpPost]
+        [JsToken]
+        public async Task<AjaxResult> SaveAllAsync(SaveRequest<SPARE_APPLY> request, SaveRequest<SPARE_APPLY_DET> requestDet)
+        {
+            request.Added ??= new List<SPARE_APPLY>();
+            request.Updated ??= new List<SPARE_APPLY>();
+            request.Deleted ??= new List<SPARE_APPLY>();
+            if (request.Added.Count + request.Updated.Count != 1)
+            {
+                return AjaxResult.Error("主表修改记录有且只能有一条");
+            }
+            if (request.Deleted.Any())
+            {
+                return AjaxResult.Error("同时保存方法不能删除主表");
+            }
+            return await _service.SaveAllAsync(request, requestDet);
         }
         #endregion
 

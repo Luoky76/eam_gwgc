@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -8,23 +8,16 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="Cache" content="no-cache">
-    <title></title>
+    <title>物资编码申请明细</title>
     <script src="../../lib/LGboot.js" type="text/javascript"></script>
 </head>
 
-<body style="padding: 5px; height: 100%;">
-    <div id="mainsearch" style="width: 98%">
-        <form action="" id="formsearch" class="l-form">
-        </form>
-    </div>
-    <form action="" id="mainform">
-        <div id="maingrid">
-        </div>
-    </form>
+<body style="padding: 5px; height: 100%; overflow: auto;">
+    <form id="mainform"></form>
+    <form><div id="det-grid"></div></form>
     <script type="text/javascript">
         'use strict';
         var business = {
-
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -32,29 +25,36 @@
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
-rootPath:'Material/SpareApply/',
-            MenuNo: getQueryStringByName("MenuNo"),
-            dialog: null,
-            dialogData: null,
-            applyId: null,
-            BaseSpType: [],
-            SpUnit: [],
             setConfig: function () {
                 var me = this;
                 me.config = {
-                    search: {
+                    form: {
                         fields: [
-                            { display: "物料编码", name: "_search_SP_CODE", dbname: "SP_CODE", newline: false, upper: true, type: "text", options: {} },
-                            { display: "物料名称", name: "_search_SP_NAME", dbname: "SP_NAME", newline: false, upper: true, type: "text", options: {} },
-                            { display: "关联主键", name: "_search_APPLY_ID", dbname: "APPLY_ID", newline: false, type: "hidden" },
+                            {
+                                display: "记录状态", name: "AUDITING", type: "select", options: {
+                                    type: "select",
+                                    data: me.Auditing,
+                                    disabled: true
+                                }
+                            },
+                            { display: "申请单号", name: "APPLY_CODE", type: "string", options: { disabled: true } },
+                            { display: "申请日期", name: "APPLY_DATE", type: "date", options: { disabled: true, showTime: true, format: "yyyy-MM-dd hh:mm" } },
+                            { display: "申请人", name: "EDIT_USER", type: "string", options: { disabled: true } },
+                            { display: "申请部门", name: "DEPT_NAME", type: "string", options: { disabled: true } },
+                            { display: "二级单位", name: "SEC_DEPT", type: "string", options: { disabled: true } },
+                            { display: "申请原因", name: "MEMO", type: "textarea", width: me.getTextareaWidth(), options: {} },
+                            { display: "主键", name: "APPLY_ID", type: "hidden", options: {} },
+                            { display: "申请人ID", name: "EDIT_USERID", type: "hidden", options: {} },
+                            { display: "申请部门ID", name: "DEPT_ID", type: "hidden", options: {} },
+                            { display: "二级单位ID", name: "SEC_DEPTID", type: "hidden", options: {} },
                         ]
                     },
                     grid: {
                         columns: [
-                            { display: "物料编码", name: "SP_CODE", width: 150, type: "text", editor: { type: "text", }, },
-                            { display: "物料名称", name: "SP_NAME", width: 150, type: "text", validate: { required: true }, editor: { type: 'text' } },
-                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "text", editor: { type: 'text' } },
-                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "text", editor: { type: 'text' } },
+                            { display: "物料编码", name: "SP_CODE", width: 150, type: "string" },
+                            { display: "物料名称", name: "SP_NAME", width: 150, type: "string", validate: { required: true }, editor: { type: 'text' } },
+                            { display: "型号规格", name: "SP_SIZE", width: 150, type: "string", editor: { type: 'text' } },
+                            { display: "品牌、厂家", name: "PRODUCE", width: 150, type: "string", editor: { type: 'text' } },
                             { display: "计量单位", name: "UNIT", width: 150, type: "select", validate: { required: true }, editor: { type: 'select', data: me.SpUnit } },
                             {
                                 display: "物料分类", name: "TYPE_ID", width: 150, type: "select", validate: { required: true }, editor: {
@@ -62,48 +62,55 @@ rootPath:'Material/SpareApply/',
                                     data: me.BaseSpType,
                                     onChange: function (rowdata, rowIndex) {
                                         if (rowdata.selected) {
-                                            liger.get("maingrid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
-                                            liger.get("maingrid").updateCell("TYPE_CODE", rowdata.selected.VALUE, rowdata.record);
+                                            liger.get("det-grid").updateCell("TYPE_NAME", rowdata.selected.TEXT, rowdata.record);
+                                            liger.get("det-grid").updateCell("TYPE_CODE", rowdata.selected.VALUE, rowdata.record);
                                         } else {
-                                            liger.get("maingrid").updateCell("TYPE_NAME", "", rowdata.record);
-                                            liger.get("maingrid").updateCell("TYPE_CODE", "", rowdata.record);
+                                            liger.get("det-grid").updateCell("TYPE_NAME", "", rowdata.record);
+                                            liger.get("det-grid").updateCell("TYPE_CODE", "", rowdata.record);
                                         }
                                     },
                                 }
                             },
-                            { display: "材质", name: "STUFF", width: 150, type: "text", editor: { type: 'text' } },
-                            { display: "是否回收", name: "IS_RECOVERY", dbname: "IS_RECOVERY", width: 90, type: "text", align: "center", formatType: "chk", validate: { required: true }, editor: { type: 'chkStr' } },
-                            { display: "图号", name: "DRAWING_NO", width: 150, type: "text", editor: { type: 'text' } },
-                            {
-                                display: "是否专用件", name: "IS_SPECIAL", dbname: "IS_SPECIAL", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
-                            },
-                            {
-                                display: "是否加工件", name: "IS_WORK", dbname: "IS_WORK", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
-                            },
-                            {
-                                display: "是否标准件", name: "IS_STANDARD", dbname: "IS_STANDARD", width: 100, type: "text", align: "center", formatType: "chk", editor: { type: 'chkStr' }
-                            },
-                            { display: "备注", name: "MEMO", width: 120, type: "text", editor: { type: 'text' } },
-                            { display: "物料分类", name: "TYPE_NAME", width: 100, type: "text", hide: true },
-                            { display: "物料分类CODE", name: "TYPE_CODE", width: 100, type: "text", hide: true },
-                            { display: "APPLY_ID", name: "APPLY_ID", dbname: "APPLY_ID", width: 100, type: "text", hide: true },
-                            { display: "主键", name: "SP_ID", dbname: "SP_ID", width: 100, type: "text", hide: true },
+                            { display: "材质", name: "STUFF", width: 150, type: "string", editor: { type: 'text' } },
+                            { display: "是否回收", name: "IS_RECOVERY", dbname: "IS_RECOVERY", width: 90, type: "string", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "图号", name: "DRAWING_NO", width: 150, type: "string", editor: { type: 'text' } },
+                            { display: "是否专用件", name: "IS_SPECIAL", dbname: "IS_SPECIAL", width: 100, type: "string", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否加工件", name: "IS_WORK", dbname: "IS_WORK", width: 100, type: "string", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "是否标准件", name: "IS_STANDARD", dbname: "IS_STANDARD", width: 100, type: "string", align: "center", formatType: "chk", editor: { type: 'chkStr' } },
+                            { display: "备注", name: "MEMO", width: 120, type: "string", editor: { type: 'text' } },
+                            { display: "物料分类", name: "TYPE_NAME", type: "string", hide: true },
+                            { display: "物料分类CODE", name: "TYPE_CODE", type: "string", hide: true },
+                            { display: "APPLY_ID", name: "APPLY_ID", dbname: "APPLY_ID", type: "string", hide: true },
+                            { display: "主键", name: "APPLY_DET_ID", dbname: "APPLY_DET_ID", type: "string", hide: true },
+                            { display: "物资ID", name: "SP_ID", dbname: "SP_ID", type: "string", hide: true },
                         ]
                     }
                 };
             },
-            grid: null,
-            searchForm: null,
+            menuNo: getQueryStringByName("MenuNo"),
+            rootPath: 'Material/SpareApply/',
+            mainform: null,
             buttons: null,
+            formButtons: null,
+            //主表主键
+            sid: null,
+            isNew: false,
+            isView: true,
+            dialog: null,
+            dialogData: null,
+            //下拉数据
+            Auditing: [{ "ID": "0", "TEXT": "未提交" }, { "ID": "1", "TEXT": "已提交" }],
+            BaseSpType: [],
+            SpUnit: [],
             loadComboxData: function () {
                 var me = this;
                 LG.ajax({
                     async: false,
                     url: me.rootPath + 'ComboxData',
                     loading: '正在获取中...',
-                    success: function (data, message) {
+                    success: function (data) {
                         if (!me.isView) {
-                            data.BaseSpType = data.BaseSpType.filter(x => x.FLAG == "0");
+                            data.BaseSpType = data.BaseSpType;
                         }
                         me.BaseSpType = data.BaseSpType;
                         me.SpUnit = data.SpUnit;
@@ -113,123 +120,188 @@ rootPath:'Material/SpareApply/',
                     }
                 });
             },
-            setGrid: function () {
+            loadData: function () {
                 var me = this;
-                me.config.grid.columns.removeNull();
-                me.grid = $("#maingrid").ligerGrid({
-                    autoWidth: true,
-                    delayLoad: true,
-                    columns: me.config.grid.columns,
-                    usePager: false,
-                    toolbar: { group:"detail" },
-                    url: 'Material/SpareApply/DetailList',
-                    parms: {
-                        where: JSON.stringify({
-                            op: 'and',
-                            rules: []
-                        })
-                    },
-                    sortName: 'ADD_DATE',
-                    sortOrder: 'DESC',
-                    width: '98%',
-                    height: '100%',
-                    checkbox: true,
-                    enabledEdit: !me.isView,
-                    clickToEdit: true
-                });
-                me.grid.isValid = true;
-                me.loadToolbar();
-            },
-            loadToolbar: function () {
-                var me = this;
-                me.toolbarBtnItemClick = function (item) {
-                    switch (item.id) {
-                        case "refresh":
-                            me.reload();
-                            break;
-                        case "add":
-                            me.add();
-                            break;
-                        case "delete":
-                            me.delete();
-                            break;
-                        case "save":
-                            me.save();
-                            break;
-                        case "import":
-                            me.import();
-                            break;
-                    }
+                if (me.isNew) {
+                    me.mainform.setOrginData({ AUDITING: "0", APPLY_ID: me.sid });
                 }
-                if (!me.isView)
-                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
-            },
-            add: function () { //新增
-                var me = this;
-                me.grid.addEditRow({ "APPLY_ID": me.applyId, "IS_RECOVERY": "0", "IS_SPECIAL": "0", "IS_WORK": "0", "IS_STANDARD": "0" }, true);
-            },
-            save: function () { //保存
-                var me = this;
-                if (me.grid.endEdit() != false) {
-                    if (!me.grid.isDataChanged) {
-                        LG.showSuccess('无修改');
-                        return;
-                    }
-                    if (!me.grid.validChangeRows()) return false;
-
-                    var dataRow = me.grid.getData();
-
-                    var code = dataRow.map((a) => {
-                        return a.SP_CODE;
-                    });
-
-                    if (new Set(code).size !== code.length) {
-                        LG.showSuccess('物料编码不能重复');
-                        return;
-                    }
-
-                    var changeRow = me.grid.getChangedRows();
+                else {
                     LG.ajax({
-                        jsToken: true,
-                        url: me.rootPath + 'DetailSave',
-                        loading: '正在保存中...',
-                        data: changeRow,
-                        success: function () {
-                            LG.showSuccess('保存成功');
-                            me.grid.isDataChanged = false;
-                            me.reload();
+                        async: false,
+                        url: me.rootPath + 'Get',
+                        loading: '正在获取中...',
+                        data: { applyId: me.sid },
+                        success: function (data) {
+                            me.mainform.setOrginData(data);
                         },
                         error: function (message) {
                             LG.showError(message);
                         }
                     });
                 }
-
+                me.mainform.focus();
             },
-            reload: function () { //刷新
+            closeQuery: function (callback) {
                 var me = this;
-                me.buttons[0].click();
+                if (me._skipConfirm === true || ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged)) {
+                    callback();
+                    delete me._skipConfirm;
+                    return;
+                }
+                $.ligerDialog.confirm($.ligerDefaults.GridString.isContinueByDataChanged, function (confirm) {
+                    if (!confirm) return;
+                    callback();
+                });
             },
-            delete: function () { //删除
+            close: function (skipConfirm) {
                 var me = this;
-                if (me.grid.endEdit() != false) {
-                    var selected = me.grid.getSelectedRows();
-                    if (selected.length > 0) {
-                        $.ligerDialog.confirm('确定删除吗?', function (confirm) {
-                            if (confirm) {
-                                for (var i = 0, len = selected.length; i < len; i++) {
-                                    me.grid.deleteRow(selected[i]);
-                                }
-                                me.save();
-                            }
-                        });
-                    } else {
-                        LG.tip('请选择行!');
+                me._skipConfirm = skipConfirm === true ? true : false;
+                me.closeQuery(function () {
+                    if (me.dialog) {
+                        me.dialog.close();
+                        return;
                     }
+                    var win = parent || window;
+                    if (win.closeCurrentTab) win.closeCurrentTab();
+                    else win.close();
+                });
+            },
+            setFormDefaultBtn: function () {
+                var me = this;
+                var buttons = [];
+                if (me.dialog) buttons.push({
+                    text: '关闭',
+                    onclick: function () {
+                        me.close(false);
+                    }
+                });
+                if (!me.isView) buttons.push({
+                    text: '保存',
+                    icon: 'fa fa-save',
+                    onclick: function () {
+                        me.saveAll();
+                    }
+                });
+                LG.addFormButtons(buttons);
+                me.formButtons = buttons;
+            },
+            setForm: function () {
+                var me = this;
+                me.config.form.fields.removeNull();
+                var $mainform = $("#mainform");
+                me.mainform = $mainform.ligerForm({
+                    EnterMoveNextControl: true,
+                    labelAlign: 'right',
+                    space: 3,
+                    validate: true,
+                    fields: me.config.form.fields,
+                    labelWidth: me.formLabelWidth,
+                    inputWidth: me.formInputWidth,
+                    readonly: me.isView,
+                    onAfterSetFields: function (g) {
+                        me.mainform = g;
+                        me.buttons = g.options.buttons;
+                    }
+                });
+                me.setFormDefaultBtn();
+            },
+            grid: null,
+            setGrid: function () {
+                var me = this;
+                me.config.grid.columns.removeNull();
+                me.grid = $("#det-grid").ligerGrid({
+                    autoWidth: true,
+                    delayLoad: true,
+                    columns: me.config.grid.columns,
+                    usePager: false,
+                    toolbar: {},
+                    url: me.rootPath + 'DetailList',
+                    parms: {
+                        where: JSON.stringify({
+                            op: 'and',
+                            rules: [{ field: 'APPLY_ID', op: 'equal', value: me.sid }]
+                        })
+                    },
+                    sortName: 'ADD_DATE',
+                    sortOrder: 'DESC',
+                    width: '99%',
+                    height: '100%',
+                    heightDiff: -50,
+                    checkbox: true,
+                    enabledEdit: !me.isView,
+                    clickToEdit: true
+                });
+                me.grid.isValid = true;
+                me.grid.toolbarManager.options.group = 'detail';
+                if (!me.isView) {
+                    me.loadToolbar();
                 }
             },
-            import: function () { //导入物资
+            isSelectRow: function () {
                 var me = this;
+                var rows = me.grid.getSelectedRows();
+                if (rows.length == 0) {
+                    LG.tip("请选择一行");
+                    return false;
+                }
+                return true;
+            },
+            loadToolbar: function () {
+                var me = this;
+                me.toolbarBtnItemClick = function (item) {
+                    switch (item.id) {
+                        case "refresh":
+                            me.reloadGrid();
+                            break;
+                        case "add":
+                            me.addGrid();
+                            break;
+                        case "delete":
+                            if (me.isSelectRow()) {
+                                me.deleteGrid();
+                            }
+                            break;
+                        case "save":
+                            me.saveAll();
+                            break;
+                        case "import":
+                            me.importGrid();
+                            break;
+                    }
+                };
+                LG.loadToolbar(me.grid, me.toolbarBtnItemClick);
+            },
+            reloadGrid: function () {
+                var me = this;
+                me.grid.loadData();
+            },
+            addGrid: function (row = {}) {
+                var me = this;
+                $.extend(row, {
+                    APPLY_ID: me.sid,
+                    IS_RECOVERY: "0",
+                    IS_SPECIAL: "0",
+                    IS_WORK: "0",
+                    IS_STANDARD: "0"
+                });
+                me.grid.addEditRow(row, false);
+            },
+            deleteGrid: function () {
+                var me = this;
+                if (me.grid.endEdit() != false) {
+                    $.ligerDialog.confirm('确定删除吗?', function (confirm) {
+                        if (!confirm) return;
+                        me.grid.deleteSelectedRow();
+                        me.saveAll();
+                    });
+                }
+            },
+            importGrid: function () {
+                var me = this;
+                if (me.isNew) {
+                    LG.tip('请先保存后再导入');
+                    return;
+                }
                 LG.showUpload({
                     title: "导入",
                     server: me.rootPath + "ImportInDetail",
@@ -241,37 +313,78 @@ rootPath:'Material/SpareApply/',
                         width: 1920
                     },
                     showSuccess: false,
-                    data: { folder: '../../Adv', "sid": me.applyId },
+                    data: { folder: '../../Adv', "sid": me.sid },
                     callback: function (status, data) {
                         if (status) {
                             LG.showSuccess("导入成功");
-                            me.reload();
+                            me.reloadGrid();
                         }
                         else LG.showError(data.Message);
                     }
                 });
             },
-            setForm: function () {
+            saveAll: function () {
                 var me = this;
-                me.config.search.fields.removeNull();
-                var $formsearch = $("#formsearch")
-                //搜索表单应用ligerui样式
-                me.searchForm = $formsearch.ligerForm({
-                    labelWidth: me.formLabelWidth,
-                    inputWidth: me.formInputWidth,
-                    fields: me.config.search ? me.config.search.fields : [],
-                    validate: true,
-                    buttons: [{
-                        text: '查询',
-                        width: 60,
-                        click: function () {
-                            LG.commonSearch($formsearch, me.grid);
-                        }
-                    }],
-                    onAfterSetFields: function (g) {
-                        me.searchForm = g;
-                        me.buttons = g.options.buttons;
-                        me.searchForm.setData({ "_search_APPLY_ID": me.applyId });
+                if (me.grid.endEdit() === false) return;
+                if ($.isEmptyObject(me.mainform.getChanges()) && !me.grid.isDataChanged) {
+                    LG.showSuccess('无修改');
+                    return;
+                }
+                if (!me.mainform.valid()) {
+                    me.mainform.showInvalid();
+                    return;
+                }
+                if (!me.grid.validChangeRows()) return;
+
+                //检查物料编码重复
+                var dataRow = me.grid.getData();
+                var code = dataRow.map((a) => { return a.SP_CODE; });
+                if (new Set(code).size !== code.length) {
+                    LG.showError('物料编码不能重复');
+                    return;
+                }
+
+                var data = me.mainform.getData();
+                var original = me.mainform.getOrginData();
+                var changeRow = new Object();
+                if (me.isNew) {
+                    changeRow["added"] = [data];
+                }
+                else {
+                    changeRow["updated"] = [data];
+                    changeRow["original"] = [original];
+                }
+
+                var changeRowDet = me.grid.getChangedRows();
+                debugger;
+                LG.ajax({
+                    jsToken: true,
+                    url: me.rootPath + 'SaveAll',
+                    loading: '正在保存中...',
+                    data: { request: changeRow, requestDet: changeRowDet },
+                    success: function () {
+                        LG.showSuccess('保存成功');
+                        me.isNew = false;
+                        me.loadData();
+                        me.grid.isDataChanged = false;
+                        me.reloadGrid();
+                    },
+                    error: function (message) {
+                        LG.showError(message);
+                    }
+                });
+            },
+            getPrimaryKey: function () {
+                var me = this;
+                LG.ajax({
+                    async: false,
+                    url: 'Common/General/CreatePrimaryKey',
+                    loading: '正在获取中...',
+                    success: function (data) {
+                        me.sid = data;
+                    },
+                    error: function (message) {
+                        LG.showError(message);
                     }
                 });
             },
@@ -280,18 +393,27 @@ rootPath:'Material/SpareApply/',
 
                 me.dialog = frameElement.dialog;
                 me.dialogData = me.dialog.get('data');
-                me.applyId = me.dialogData.sid;
+                me.sid = me.dialogData.sid;
                 me.isView = Boolean(me.dialogData.isView);
+                me.isNew = Boolean(me.dialogData.isNew);
+
+                if (me.isNew) {
+                    me.getPrimaryKey();
+                }
 
                 me.loadComboxData();
                 me.setConfig();
                 me.setForm();
+                me.loadData();
                 me.setGrid();
-                me.reload();
+                me.reloadGrid();
                 return me;
             }
         };
-        business.init();
+        $(function () {
+            business.init();
+        });
     </script>
 </body>
+
 </html>
