@@ -731,9 +731,14 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task<AjaxResult> ImportInDetailAsync([FileOptions("xlsx,xls")] IFormFile formFile, string folder, string sid)
         {
-            var apply = string.IsNullOrEmpty(sid) ? new SP_APPLY { AUDITING = "0" } : _dbContext.QueryByKey<SP_APPLY>(sid);
-            if (string.IsNullOrEmpty(sid))
+            var apply = string.IsNullOrEmpty(sid) ? null : _dbContext.QueryByKey<SP_APPLY>(sid);
+            if (apply == null)
             {
+                apply = new SP_APPLY { AUDITING = "0" };
+                if (!string.IsNullOrEmpty(sid))
+                {
+                    apply.APPLY_ID = sid;
+                }
                 await BeforeAdd(apply);
                 _dbContext.Insert(apply);
             }
