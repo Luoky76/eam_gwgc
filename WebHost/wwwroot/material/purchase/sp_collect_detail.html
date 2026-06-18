@@ -52,18 +52,16 @@
                         inputWidth: me.formInputWidth,
                         fields: [
                             //基础信息
-                            { display: "申请单号", name: "COLLECT_CODE", newline: false, upper: true, type: "text", options: { disabled: true } },
-                            { display: "申请日期", name: "COLLECT_DATE", validate: { required: true }, newline: false, upper: true, type: "date", format: "yyyy-MM-dd", options: { type: 'date', disabled: true, format: "yyyy-MM-dd" } },
-
-                            { display: "采购部门", name: "DEPT_NAME", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
-                            { display: "采购人", name: "COLLECT_USER", validate: { required: true }, newline: false, upper: true, type: "text", options: { type: 'text', disabled: true } },
-                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, upper: true, width: me.getTextareaWidth(), type: "textarea", options: {} },
+                            { display: "申请单号", name: "COLLECT_CODE", type: "text", options: { disabled: true } },
+                            { display: "申请日期", name: "COLLECT_DATE", type: "date", options: { disabled: true, format: "yyyy-MM-dd" } },
+                            { display: "采购部门", name: "DEPT_NAME", type: "text", options: { type: 'text', disabled: true } },
+                            { display: "采购人", name: "COLLECT_USER", type: "text", options: { type: 'text', disabled: true } },
+                            { display: "备注", name: "MEMO", newline: true, validate: { required: true }, width: me.getTextareaWidth(), type: "textarea", options: {} },
 
                             //隐藏
-                            { display: "主键", name: "COLLECT_ID", newline: false, upper: true, type: "hidden", options: {} },
-                            { display: "AUDITING", name: "AUDITING", newline: false, upper: true, type: "hidden", options: {} },
+                            { display: "主键", name: "COLLECT_ID", type: "hidden", options: {} },
+                            { display: "AUDITING", name: "AUDITING", type: "hidden", options: {} },
                         ]
-
                     },
                     grid: {
                         columns: [
