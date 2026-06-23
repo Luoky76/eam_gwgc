@@ -24,7 +24,6 @@
     <script type="text/javascript">
         'use strict';
         var business = {
-
             formLabelWidth: 120,
             formInputWidth: 180,
             getTextareaWidth: function () {
@@ -32,7 +31,7 @@
                 var fieldWidth = me.formLabelWidth + me.formInputWidth + 3;
                 return Math.floor(($("#mainform").width() - 10) / fieldWidth) * fieldWidth - (me.formLabelWidth + 3);
             },
-rootPath: 'Material/SpApply/',
+            rootPath: 'Material/SpApply/',
             MenuNo: getQueryStringByName("MenuNo"),
             //明细页面大小
             detailWidth: null,
@@ -138,16 +137,6 @@ rootPath: 'Material/SpApply/',
                     enabledEdit: false,
                     clickToEdit: false,
                     onBeforeEdit: function (editParm) {
-                        if (editParm.record.__status == "nochanged") {
-                            if (editParm.record.AUDITING == "1") return false;
-                            else return true;
-                        }
-                        switch (editParm.column.name) {
-                            case "":
-                                if (editParm.record.__status == "add") return true;
-                                else return false;
-                                break;
-                        }
                     },
                     onSuccess: function (data, g) {
                         if (data && data.Rows) {

@@ -453,7 +453,7 @@ namespace EAM.Material.Services
             {
                 var flowExecuteInfo = new FlowExecuteInfo();
                 var dict = new Dictionary<string, object>();
-                dict.TryAdd("Sid", sid);
+                dict.TryAdd("sid", sid);
                 dict.TryAdd("isView", false);
                 flowExecuteInfo.FormData = dict;
                 flowExecuteInfo.FlowCode = "sp_apply";
@@ -468,7 +468,7 @@ namespace EAM.Material.Services
         /// <returns></returns>
         public async Task Intercept(FlowExecuteInfo taskInfo)
         {
-            var apply_id = taskInfo.FormData.GetValueOrDefault("Sid").ToString();
+            var apply_id = taskInfo.FormData.GetValueOrDefault("sid").ToString();
             var status = taskInfo.NodeStatus;
             //根据审批情况更新记录状态
             switch (status)

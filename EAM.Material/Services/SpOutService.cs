@@ -407,7 +407,7 @@ namespace EAM.Material.Services
         {
             var flowExecuteInfo = new FlowExecuteInfo();
             var dict = new Dictionary<string, object>();
-            dict.TryAdd("Sid", sid);
+            dict.TryAdd("sid", sid);
             dict.TryAdd("isView", true);
             // 计算出库金额
             var EST_MONEY = _dbContext.Query<SP_OUTSTORE_DET>(x => x.OUT_ID == sid)
@@ -436,7 +436,7 @@ namespace EAM.Material.Services
         /// </summary>
         public async Task Intercept(FlowExecuteInfo taskInfo)
         {
-            var out_id = taskInfo.FormData.GetValueOrDefault("Sid").ToString();
+            var out_id = taskInfo.FormData.GetValueOrDefault("sid").ToString();
             var status = taskInfo.NodeStatus;
             var current_node = "";
             if (taskInfo.CurrentNode != null) current_node = taskInfo.CurrentNode.Name;
